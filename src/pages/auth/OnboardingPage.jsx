@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -13,7 +13,13 @@ import {
   Building2,
   Layers3,
 } from "lucide-react";
-import { getToken, apiRequest, getCurrentUser, saveSession, getRoleHome } from "../../lib/auth";
+import {
+  getToken,
+  apiRequest,
+  getCurrentUser,
+  saveSession,
+  getRoleHome,
+} from "../../lib/auth";
 import ProfileImageUpload from "../../components/ui/ProfileImageUpload";
 
 const DEFAULT_CATEGORIES = [
@@ -110,7 +116,8 @@ export default function OnboardingPage() {
           setError("Profile image is required.");
           return false;
         }
-        const isUrl = profileImage.startsWith("http://") ||
+        const isUrl =
+          profileImage.startsWith("http://") ||
           profileImage.startsWith("https://");
         const isRelativePath = profileImage.startsWith("/uploads/");
         if (!isUrl && !isRelativePath) {
@@ -169,7 +176,11 @@ export default function OnboardingPage() {
                   onClick={() => setTheme(isDark ? "light" : "dark")}
                   className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
                 >
-                  {isDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+                  {isDark ? (
+                    <SunMedium className="h-4 w-4" />
+                  ) : (
+                    <MoonStar className="h-4 w-4" />
+                  )}
                   {isDark ? "Light" : "Dark"}
                 </button>
               </div>
@@ -215,8 +226,8 @@ export default function OnboardingPage() {
                         item.active
                           ? "border-sky-400/60 bg-sky-500/10 shadow-lg shadow-sky-500/10"
                           : item.done
-                          ? "border-emerald-400/40 bg-emerald-500/10"
-                          : "border-slate-200/70 bg-white/70 dark:border-white/10 dark:bg-white/[0.03]"
+                            ? "border-emerald-400/40 bg-emerald-500/10"
+                            : "border-slate-200/70 bg-white/70 dark:border-white/10 dark:bg-white/[0.03]"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -224,10 +235,18 @@ export default function OnboardingPage() {
                           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
                             {item.title}
                           </p>
-                          <h3 className="mt-1 text-base font-semibold">{item.desc}</h3>
+                          <h3 className="mt-1 text-base font-semibold">
+                            {item.desc}
+                          </h3>
                         </div>
-                        <div className={`flex h-9 w-9 items-center justify-center rounded-full ${item.done ? "bg-emerald-500 text-white" : item.active ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"}`}>
-                          {item.done ? <Check className="h-4 w-4" /> : index + 1}
+                        <div
+                          className={`flex h-9 w-9 items-center justify-center rounded-full ${item.done ? "bg-emerald-500 text-white" : item.active ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"}`}
+                        >
+                          {item.done ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            index + 1
+                          )}
                         </div>
                       </div>
                     </div>
@@ -240,10 +259,13 @@ export default function OnboardingPage() {
                       <Building2 className="h-6 w-6" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold">Premium setup experience</h3>
+                      <h3 className="text-lg font-semibold">
+                        Premium setup experience
+                      </h3>
                       <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                        A polished onboarding flow that feels fast, modern, and easy to complete.
-                        Built for a premium brand impression in both light and dark mode.
+                        A polished onboarding flow that feels fast, modern, and
+                        easy to complete. Built for a premium brand impression
+                        in both light and dark mode.
                       </p>
                     </div>
                   </div>
@@ -275,7 +297,9 @@ export default function OnboardingPage() {
                         <ImageIcon className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold">Add your profile image</h3>
+                        <h3 className="text-xl font-semibold">
+                          Add your profile image
+                        </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
                           Optional. You can paste a URL or upload an image.
                         </p>
@@ -298,7 +322,9 @@ export default function OnboardingPage() {
                         <Building2 className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold">Confirm your organization</h3>
+                        <h3 className="text-xl font-semibold">
+                          Confirm your organization
+                        </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
                           Use the official name used in documents.
                         </p>
@@ -316,7 +342,9 @@ export default function OnboardingPage() {
                     />
 
                     <div className="mt-4 rounded-2xl border border-slate-200/70 bg-white p-4 dark:border-white/10 dark:bg-slate-900/70">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Account role</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Account role
+                      </p>
                       <p className="mt-1 text-base font-semibold text-slate-900 dark:text-white">
                         {String(user?.role || "").replace("_", " ")}
                       </p>
@@ -331,7 +359,9 @@ export default function OnboardingPage() {
                         <CloudUpload className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold">Select categories</h3>
+                        <h3 className="text-xl font-semibold">
+                          Select categories
+                        </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
                           Pick a few categories you work with.
                         </p>
@@ -361,7 +391,11 @@ export default function OnboardingPage() {
                                     : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
                                 }`}
                               >
-                                {active ? <Check className="h-3.5 w-3.5" /> : "+"}
+                                {active ? (
+                                  <Check className="h-3.5 w-3.5" />
+                                ) : (
+                                  "+"
+                                )}
                               </span>
                             </div>
                           </button>

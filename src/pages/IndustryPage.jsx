@@ -7,7 +7,7 @@
     - Category landing page with pre-filtered results (project.md).
     - AI auto-reply widget for quick outreach using industry stats.
 */
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Sparkles, ArrowUpRight } from "lucide-react";
 import { apiRequest, getToken } from "../lib/auth";

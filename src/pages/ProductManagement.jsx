@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { apiRequest, getToken } from "../lib/auth";
 import { trackClientEvent } from "../lib/events";
 import {
@@ -47,12 +47,17 @@ const EMPTY_FORM = {
 function Badge({ children, tone = "blue" }) {
   const styles = {
     blue: "bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-400/15 dark:text-sky-200 dark:border-sky-500/20",
-    green: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-400/15 dark:text-emerald-200 dark:border-emerald-500/20",
-    amber: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-400/15 dark:text-amber-200 dark:border-amber-500/20",
-    slate: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-400/15 dark:text-slate-300 dark:border-slate-500/20",
+    green:
+      "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-400/15 dark:text-emerald-200 dark:border-emerald-500/20",
+    amber:
+      "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-400/15 dark:text-amber-200 dark:border-amber-500/20",
+    slate:
+      "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-400/15 dark:text-slate-300 dark:border-slate-500/20",
   };
   return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${styles[tone]}`}>
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${styles[tone]}`}
+    >
       {children}
     </span>
   );
@@ -66,8 +71,12 @@ function Stat({ icon: Icon, label, value }) {
           <Icon className="h-4 w-4" />
         </div>
         <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{label}</div>
-          <div className="text-lg font-semibold text-slate-900 dark:text-white">{value}</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+            {label}
+          </div>
+          <div className="text-lg font-semibold text-slate-900 dark:text-white">
+            {value}
+          </div>
         </div>
       </div>
     </div>
@@ -78,8 +87,14 @@ function Field({ label, children, hint }) {
   return (
     <label className="block space-y-1.5">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{label}</span>
-        {hint ? <span className="text-xs text-slate-500 dark:text-slate-400">{hint}</span> : null}
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+          {label}
+        </span>
+        {hint ? (
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            {hint}
+          </span>
+        ) : null}
       </div>
       {children}
     </label>
@@ -93,7 +108,9 @@ export default function ProductManagement() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [_error, setError] = useState("");
-  const [notice, setNotice] = useState("Drafts stay private until you publish them after media review.");
+  const [notice, setNotice] = useState(
+    "Drafts stay private until you publish them after media review.",
+  );
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -149,9 +166,9 @@ export default function ProductManagement() {
     if (modalOpen) {
       setModalOpen(false);
       // Wait a bit for modal to close
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    
+
     setEditing(null);
     setForm(EMPTY_FORM);
     setNotice("");
@@ -181,14 +198,19 @@ export default function ProductManagement() {
         setMediaGallery([]);
         // Reload the products list to ensure we have the latest
         await loadMine();
-        setNotice("Create a new product. Media must be uploaded inside GarTexHub using internal /uploads/... URLs.");
+        setNotice(
+          "Create a new product. Media must be uploaded inside GarTexHub using internal /uploads/... URLs.",
+        );
       } else {
         // If no ID returned, still allow manual entry without auto-save
         setNotice("Created draft manually. Save will create the product.");
       }
     } catch (err) {
       console.error("Create draft error:", err);
-      setNotice(err.message || "Failed to create draft. You can still enter product details and save.");
+      setNotice(
+        err.message ||
+          "Failed to create draft. You can still enter product details and save.",
+      );
     } finally {
       setSaving(false);
     }
@@ -196,7 +218,9 @@ export default function ProductManagement() {
 
   function openEdit(item) {
     setEditing(item);
-    const normalizedImageUrls = (Array.isArray(item?.image_urls) ? item.image_urls : []).map(url => toInternalUrl(url));
+    const normalizedImageUrls = (
+      Array.isArray(item?.image_urls) ? item.image_urls : []
+    ).map((url) => toInternalUrl(url));
     const normalizedCoverUrl = toInternalUrl(item?.cover_image_url);
     setForm({
       title: item?.title || "",
@@ -218,9 +242,13 @@ export default function ProductManagement() {
       cover_image_url: normalizedCoverUrl,
       status: item?.status || "draft",
     });
-    setNotice("Editing existing product. Drafts remain private; published items go live after review.");
+    setNotice(
+      "Editing existing product. Drafts remain private; published items go live after review.",
+    );
     setMediaNotice("");
-    setMediaGallery(Array.isArray(item?.image_gallery) ? item.image_gallery : []);
+    setMediaGallery(
+      Array.isArray(item?.image_gallery) ? item.image_gallery : [],
+    );
     setComplianceChecked(true);
     setVideoNotice("");
     setAdvancedOpen(false);
@@ -255,8 +283,8 @@ export default function ProductManagement() {
 
     setSaving(true);
     setError("");
-    const saveBody = { 
-      ...form, 
+    const saveBody = {
+      ...form,
       status: nextStatus,
       // Ensure required fields are set
       industry: form.industry || "",
@@ -266,7 +294,7 @@ export default function ProductManagement() {
       price_range: form.price_range || "",
       lead_time_days: form.lead_time_days || "",
     };
-    
+
     try {
       let savedProduct;
       if (editing?.id) {
@@ -275,18 +303,38 @@ export default function ProductManagement() {
           `/products/${encodeURIComponent(editing.id)}`,
           { method: "PATCH", token, body: saveBody },
         );
-        setItems((prev) => prev.map((p) => (p.id === savedProduct.id ? savedProduct : p)));
-        setNotice(nextStatus === "published" ? "Product updated and published." : "Draft saved.");
+        setItems((prev) =>
+          prev.map((p) => (p.id === savedProduct.id ? savedProduct : p)),
+        );
+        setNotice(
+          nextStatus === "published"
+            ? "Product updated and published."
+            : "Draft saved.",
+        );
         if (editing?.status !== "published" && nextStatus === "published") {
-          trackClientEvent("product_published", { entityType: "product", entityId: savedProduct.id });
+          trackClientEvent("product_published", {
+            entityType: "product",
+            entityId: savedProduct.id,
+          });
         }
       } else {
         // No editing.id - create new product from scratch (not from existing draft)
-        savedProduct = await apiRequest("/products", { method: "POST", token, body: saveBody });
+        savedProduct = await apiRequest("/products", {
+          method: "POST",
+          token,
+          body: saveBody,
+        });
         setItems((prev) => [savedProduct, ...prev]);
-        setNotice(nextStatus === "published" ? "Product created and published." : "Draft saved.");
+        setNotice(
+          nextStatus === "published"
+            ? "Product created and published."
+            : "Draft saved.",
+        );
         if (nextStatus === "published") {
-          trackClientEvent("product_published", { entityType: "product", entityId: savedProduct.id });
+          trackClientEvent("product_published", {
+            entityType: "product",
+            entityId: savedProduct.id,
+          });
         }
       }
       // Reload to ensure consistency
@@ -302,22 +350,30 @@ export default function ProductManagement() {
 
   async function remove(productId) {
     if (!token || !productId) return;
-    const productToDelete = items.find(p => p.id === productId);
+    const productToDelete = items.find((p) => p.id === productId);
     if (!productToDelete) {
       setNotice("Product not found in list.");
       return;
     }
-    const ok = window.confirm(`Delete "${productToDelete.title || productToDelete.name || 'this product'}"?`);
+    const ok = window.confirm(
+      `Delete "${productToDelete.title || productToDelete.name || "this product"}"?`,
+    );
     if (!ok) return;
     setError("");
     setNotice("");
     try {
-      await apiRequest(`/products/${encodeURIComponent(productId)}`, { method: "DELETE", token });
+      await apiRequest(`/products/${encodeURIComponent(productId)}`, {
+        method: "DELETE",
+        token,
+      });
       setItems((prev) => prev.filter((p) => p.id !== productId));
       setNotice("Product deleted.");
     } catch (err) {
       console.error("Delete error:", err);
-      setNotice(err.message || "Delete failed. The product may have already been deleted.");
+      setNotice(
+        err.message ||
+          "Delete failed. The product may have already been deleted.",
+      );
     }
   }
 
@@ -346,8 +402,38 @@ export default function ProductManagement() {
     const normalized = String(filePath).replace(/\\/g, "/");
     if (normalized.startsWith("/uploads/")) return normalized;
     const idx = normalized.indexOf("server/uploads/");
-    if (idx >= 0) return `/uploads/${normalized.slice(idx + "server/uploads/".length)}`;
+    if (idx >= 0)
+      return `/uploads/${normalized.slice(idx + "server/uploads/".length)}`;
     return normalized.startsWith("uploads/") ? `/${normalized}` : normalized;
+  }
+
+  function getStatusBadge(status) {
+    if (status === "approved") {
+      return (
+        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+          Approved
+        </span>
+      );
+    }
+    if (status === "rejected") {
+      return (
+        <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-500/20 dark:text-red-300">
+          Rejected
+        </span>
+      );
+    }
+    if (status === "pending_review") {
+      return (
+        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+          Pending
+        </span>
+      );
+    }
+    return (
+      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-500/20 dark:text-gray-300">
+        {status}
+      </span>
+    );
   }
 
   async function handleUploadFiles(files) {
@@ -366,11 +452,14 @@ export default function ProductManagement() {
         body.append("entity_type", "company_product");
         body.append("entity_id", editing.id);
         body.append("type", "image");
-        const res = await fetch(`${import.meta.env.VITE_API_URL || "/api"}/documents`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body,
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL || "/api"}/documents`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body,
+          },
+        );
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || "Image upload failed");
         const internalUrl = toInternalUrl(data.file_path || data.url || "");
@@ -379,14 +468,26 @@ export default function ProductManagement() {
           source_path: internalUrl,
           url: toPublicUrl(internalUrl),
           status: data.moderation_status || "pending_review",
-          flags: Array.isArray(data.moderation_flags) ? data.moderation_flags : [],
+          flags: Array.isArray(data.moderation_flags)
+            ? data.moderation_flags
+            : [],
         });
-        trackClientEvent("product_image_uploaded", { entityType: "product", entityId: editing.id, metadata: { document_id: data.id } });
+        trackClientEvent("product_image_uploaded", {
+          entityType: "product",
+          entityId: editing.id,
+          metadata: { document_id: data.id },
+        });
       }
       const nextForm = {
         ...form,
-        image_urls: Array.from(new Set([...(form.image_urls || []), ...uploadedEntries.map((e) => e.source_path).filter(Boolean)])),
-        cover_image_url: form.cover_image_url || uploadedEntries[0]?.source_path || "",
+        image_urls: Array.from(
+          new Set([
+            ...(form.image_urls || []),
+            ...uploadedEntries.map((e) => e.source_path).filter(Boolean),
+          ]),
+        ),
+        cover_image_url:
+          form.cover_image_url || uploadedEntries[0]?.source_path || "",
       };
       setForm(nextForm);
       setMediaGallery((prev) => [...prev, ...uploadedEntries]);
@@ -412,17 +513,24 @@ export default function ProductManagement() {
       body.append("entity_type", "company_product");
       body.append("entity_id", editing.id);
       body.append("type", "video");
-      const res = await fetch(`${import.meta.env.VITE_API_URL || "/api"}/documents`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body,
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "/api"}/documents`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body,
+        },
+      );
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Video upload failed");
       const internalUrl = toInternalUrl(data.file_path || data.url || "");
       await syncProductVideo(internalUrl);
       setVideoNotice("Video uploaded and pending review.");
-      trackClientEvent("product_video_uploaded", { entityType: "product", entityId: editing.id, metadata: { document_id: data.id } });
+      trackClientEvent("product_video_uploaded", {
+        entityType: "product",
+        entityId: editing.id,
+        metadata: { document_id: data.id },
+      });
     } catch (err) {
       setVideoNotice(err.message || "Video upload failed");
     } finally {
@@ -436,7 +544,10 @@ export default function ProductManagement() {
       await apiRequest(`/products/${encodeURIComponent(editing.id)}`, {
         method: "PATCH",
         token,
-        body: { image_urls: nextForm.image_urls, cover_image_url: nextForm.cover_image_url },
+        body: {
+          image_urls: nextForm.image_urls,
+          cover_image_url: nextForm.cover_image_url,
+        },
       });
     } catch (err) {
       console.error("Sync media failed:", err);
@@ -446,17 +557,22 @@ export default function ProductManagement() {
   async function syncProductVideo(videoUrl) {
     if (!editing?.id || !token) return;
     try {
-      await apiRequest(`/products/${encodeURIComponent(editing.id)}`, { method: "PATCH", token, body: { video_url: videoUrl } });
+      await apiRequest(`/products/${encodeURIComponent(editing.id)}`, {
+        method: "PATCH",
+        token,
+        body: { video_url: videoUrl },
+      });
     } catch (err) {
       console.error("Sync video failed:", err);
     }
   }
 
   const isEditing = editing?.id !== null;
-  const inputCls = "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400/40 dark:focus:ring-sky-400/15";
+  const inputCls =
+    "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400/40 dark:focus:ring-sky-400/15";
 
   return (
-<div className={isDark ? "dark" : ""}>
+    <div className={isDark ? "dark" : ""}>
       <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
         <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 dark:bg-none dark:from-transparent dark:via-transparent dark:to-transparent">
           <div className="hidden dark:block absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_36%),radial_gradient(circle_at_top_right,_rgba(96,165,250,0.16),_transparent_28%),linear-gradient(180deg,_rgba(2,6,23,1)_0%,_rgba(3,7,18,1)_100%)]" />
@@ -473,16 +589,23 @@ export default function ProductManagement() {
                   Product Management
                 </h1>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
-                  Buying houses and factories can post products. Drafts stay private; published items go live after media review.
+                  Buying houses and factories can post products. Drafts stay
+                  private; published items go live after media review.
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                  onClick={() =>
+                    setTheme((t) => (t === "dark" ? "light" : "dark"))
+                  }
                   className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                 >
-                  {isDark ? <SunMedium className="h-4 w-4 text-amber-500" /> : <MoonStar className="h-4 w-4 text-sky-500" />}
+                  {isDark ? (
+                    <SunMedium className="h-4 w-4 text-amber-500" />
+                  ) : (
+                    <MoonStar className="h-4 w-4 text-sky-500" />
+                  )}
                   {isDark ? "Light mode" : "Dark mode"}
                 </button>
                 <button
@@ -496,9 +619,17 @@ export default function ProductManagement() {
             </div>
 
             <div className="mb-6 grid gap-4 md:grid-cols-3">
-              <Stat icon={LayoutGrid} label="Published" value={stats.published} />
+              <Stat
+                icon={LayoutGrid}
+                label="Published"
+                value={stats.published}
+              />
               <Stat icon={Clock3} label="Drafts" value={stats.drafts} />
-              <Stat icon={BadgeCheck} label="Approved media" value={stats.approved} />
+              <Stat
+                icon={BadgeCheck}
+                label="Approved media"
+                value={stats.approved}
+              />
             </div>
 
             <div className="mb-6 rounded-3xl border border-sky-200 bg-white p-5 shadow-sm dark:border-sky-400/15 dark:bg-white/5 dark:shadow-2xl dark:shadow-sky-950/20 dark:backdrop-blur">
@@ -510,15 +641,21 @@ export default function ProductManagement() {
                   </div>
                   <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
                     Upload product images/videos inside GarTexHub. Only internal{" "}
-                    <span className="rounded-md bg-sky-100 px-1.5 py-0.5 font-mono text-sky-700 dark:bg-white/10 dark:text-sky-200">/uploads/...</span>{" "}
-                    URLs are allowed. Pending or rejected media stays hidden from buyers.
+                    <span className="rounded-md bg-sky-100 px-1.5 py-0.5 font-mono text-sky-700 dark:bg-white/10 dark:text-sky-200">
+                      /uploads/...
+                    </span>{" "}
+                    URLs are allowed. Pending or rejected media stays hidden
+                    from buyers.
                   </p>
                   <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Use Draft to keep items private while preparing your gallery; switch to Published when ready.
+                    Use Draft to keep items private while preparing your
+                    gallery; switch to Published when ready.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-300">
-                  <div className="font-medium text-slate-900 dark:text-white">Status rules</div>
+                  <div className="font-medium text-slate-900 dark:text-white">
+                    Status rules
+                  </div>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <Badge tone="slate">Draft private</Badge>
                     <Badge tone="green">Published live</Badge>
@@ -541,7 +678,9 @@ export default function ProductManagement() {
               </div>
             ) : items.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center dark:border-white/10 dark:bg-white/5">
-                <p className="text-slate-400">No products yet. Create your first product to get started.</p>
+                <p className="text-slate-400">
+                  No products yet. Create your first product to get started.
+                </p>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -553,35 +692,68 @@ export default function ProductManagement() {
                     <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="mb-3 flex flex-wrap items-center gap-2">
-                          <Badge tone={product.status === "published" ? "green" : "slate"}>
+                          <Badge
+                            tone={
+                              product.status === "published" ? "green" : "slate"
+                            }
+                          >
                             Status: {product.status}
                           </Badge>
-                          <Badge tone="blue">Video: {product.video_review_status || "approved"}</Badge>
-                          <Badge tone="blue">Content: {product.content_review_status || "approved"}</Badge>
+                          <Badge tone="blue">
+                            Video: {product.video_review_status || "approved"}
+                          </Badge>
+                          <Badge tone="blue">
+                            Content:{" "}
+                            {product.content_review_status || "approved"}
+                          </Badge>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
-                          <h2 className="truncate text-2xl font-semibold text-slate-900 dark:text-white">{product.title || product.name}</h2>
+                          <h2 className="truncate text-2xl font-semibold text-slate-900 dark:text-white">
+                            {product.title || product.name}
+                          </h2>
                           <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            MOQ {product.moq || "--"} · Lead {product.lead_time_days || "--"}
+                            MOQ {product.moq || "--"} · Lead{" "}
+                            {product.lead_time_days || "--"}
                           </div>
                         </div>
 
                         <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                           {[
-                            { label: "Industry", value: product.industry || "—" },
-                            { label: "Category", value: product.category || "—" },
-                            { label: "Material", value: product.material || "—" },
-                            { label: "Media", value: `${Array.isArray(product.image_urls) ? product.image_urls.length : 0} files` },
+                            {
+                              label: "Industry",
+                              value: product.industry || "—",
+                            },
+                            {
+                              label: "Category",
+                              value: product.category || "—",
+                            },
+                            {
+                              label: "Material",
+                              value: product.material || "—",
+                            },
+                            {
+                              label: "Media",
+                              value: `${Array.isArray(product.image_urls) ? product.image_urls.length : 0} files`,
+                            },
                           ].map((item) => (
-                            <div key={item.label} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-900/50">
-                              <div className="text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">{item.label}</div>
-                              <div className="mt-1 text-sm font-medium text-slate-900 dark:text-white">{item.value}</div>
+                            <div
+                              key={item.label}
+                              className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-900/50"
+                            >
+                              <div className="text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
+                                {item.label}
+                              </div>
+                              <div className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+                                {item.value}
+                              </div>
                             </div>
                           ))}
                         </div>
 
-                        <p className="mt-4 max-w-4xl text-sm leading-6 text-slate-600 dark:text-slate-300">{product.description}</p>
+                        <p className="mt-4 max-w-4xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                          {product.description}
+                        </p>
                       </div>
 
                       <div className="flex shrink-0 flex-wrap gap-3 xl:justify-end">
@@ -613,9 +785,12 @@ export default function ProductManagement() {
             <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40">
               <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 px-6 py-5 backdrop-blur dark:border-white/10 dark:bg-slate-950/95">
                 <div>
-                  <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">{isEditing ? "Edit product" : "Create product"}</h3>
+                  <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
+                    {isEditing ? "Edit product" : "Create product"}
+                  </h3>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    No music uploads. Videos and images must be uploaded inside GarTexHub (internal /uploads/... only).
+                    No music uploads. Videos and images must be uploaded inside
+                    GarTexHub (internal /uploads/... only).
                   </p>
                 </div>
                 <button
@@ -632,7 +807,9 @@ export default function ProductManagement() {
                     <Field label="Product name">
                       <input
                         value={form.title}
-                        onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, title: e.target.value }))
+                        }
                         className={inputCls}
                         placeholder="Untitled Draft"
                       />
@@ -640,22 +817,70 @@ export default function ProductManagement() {
 
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <Field label="Industry (optional)">
-                        <input value={form.industry} onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))} className={inputCls} placeholder="Garments, Home Textiles..." />
+                        <input
+                          value={form.industry}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, industry: e.target.value }))
+                          }
+                          className={inputCls}
+                          placeholder="Garments, Home Textiles..."
+                        />
                       </Field>
                       <Field label="Category (e.g. Shirts)">
-                        <input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className={inputCls} placeholder="Shirts" />
+                        <input
+                          value={form.category}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, category: e.target.value }))
+                          }
+                          className={inputCls}
+                          placeholder="Shirts"
+                        />
                       </Field>
                       <Field label="Material (e.g. Cotton)">
-                        <input value={form.material} onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))} className={inputCls} placeholder="Cotton" />
+                        <input
+                          value={form.material}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, material: e.target.value }))
+                          }
+                          className={inputCls}
+                          placeholder="Cotton"
+                        />
                       </Field>
                       <Field label="MOQ">
-                        <input value={form.moq} onChange={(e) => setForm((f) => ({ ...f, moq: e.target.value }))} className={inputCls} placeholder="1000" />
+                        <input
+                          value={form.moq}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, moq: e.target.value }))
+                          }
+                          className={inputCls}
+                          placeholder="1000"
+                        />
                       </Field>
                       <Field label="Price range (optional)">
-                        <input value={form.price_range} onChange={(e) => setForm((f) => ({ ...f, price_range: e.target.value }))} className={inputCls} placeholder="$4.50 - $7.20" />
+                        <input
+                          value={form.price_range}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              price_range: e.target.value,
+                            }))
+                          }
+                          className={inputCls}
+                          placeholder="$4.50 - $7.20"
+                        />
                       </Field>
                       <Field label="Lead time (days)">
-                        <input value={form.lead_time_days} onChange={(e) => setForm((f) => ({ ...f, lead_time_days: e.target.value }))} className={inputCls} placeholder="45" />
+                        <input
+                          value={form.lead_time_days}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              lead_time_days: e.target.value,
+                            }))
+                          }
+                          className={inputCls}
+                          placeholder="45"
+                        />
                       </Field>
                     </div>
                   </div>
@@ -667,26 +892,50 @@ export default function ProductManagement() {
                     </div>
                     <textarea
                       value={form.description}
-                      onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, description: e.target.value }))
+                      }
                       rows={5}
                       className={inputCls}
                       placeholder="Add your product description here..."
                     />
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setAdvancedOpen(!advancedOpen)}
                       className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700 transition hover:bg-sky-100 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-100 dark:hover:bg-sky-400/15"
                     >
                       <Sparkles className="h-4 w-4" />
-                      {advancedOpen ? "Hide advanced details" : "Add advanced details"}
+                      {advancedOpen
+                        ? "Hide advanced details"
+                        : "Add advanced details"}
                     </button>
                     {advancedOpen && (
                       <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <Field label="Fabric GSM">
-                          <input value={form.fabric_gsm} onChange={(e) => setForm((f) => ({ ...f, fabric_gsm: e.target.value }))} className={inputCls} placeholder="180" />
+                          <input
+                            value={form.fabric_gsm}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                fabric_gsm: e.target.value,
+                              }))
+                            }
+                            className={inputCls}
+                            placeholder="180"
+                          />
                         </Field>
                         <Field label="Size range">
-                          <input value={form.size_range} onChange={(e) => setForm((f) => ({ ...f, size_range: e.target.value }))} className={inputCls} placeholder="S-XXL" />
+                          <input
+                            value={form.size_range}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                size_range: e.target.value,
+                              }))
+                            }
+                            className={inputCls}
+                            placeholder="S-XXL"
+                          />
                         </Field>
                       </div>
                     )}
@@ -698,7 +947,8 @@ export default function ProductManagement() {
                       Product media
                     </div>
                     <p className="text-sm leading-6 text-slate-500 dark:text-slate-400">
-                      Upload images or video files. Pending/rejected media stays hidden from buyers.
+                      Upload images or video files. Pending/rejected media stays
+                      hidden from buyers.
                     </p>
 
                     <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -708,52 +958,76 @@ export default function ProductManagement() {
                             <ImageIcon className="h-4 w-4 text-sky-500 dark:text-sky-300" />
                             Save product first
                           </div>
-                          <div className="mt-1 text-xs text-slate-400">Save the product first to upload images.</div>
+                          <div className="mt-1 text-xs text-slate-400">
+                            Save the product first to upload images.
+                          </div>
                         </div>
                       ) : (
                         <>
-                          <div 
+                          <div
                             className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 cursor-pointer hover:border-sky-400 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-sky-400/40"
                             onClick={() => imageInputRef.current?.click()}
                           >
                             <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
                               <ImageIcon className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                              {mediaBusy ? "Uploading..." : "Click to upload images"}
+                              {mediaBusy
+                                ? "Uploading..."
+                                : "Click to upload images"}
                             </div>
-                            <div className="mt-1 text-xs text-slate-400">PNG, JPG up to 10MB each</div>
+                            <div className="mt-1 text-xs text-slate-400">
+                              PNG, JPG up to 10MB each
+                            </div>
                             <input
                               ref={imageInputRef}
                               type="file"
                               multiple
                               accept="image/*"
-                              onChange={(e) => handleUploadFiles(e.target.files)}
+                              onChange={(e) =>
+                                handleUploadFiles(e.target.files)
+                              }
                               disabled={mediaBusy}
                               className="hidden"
                             />
                             {mediaGallery.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {mediaGallery.map((entry, idx) => (
-                                  <div key={idx} className="h-16 w-16 rounded-lg overflow-hidden border border-slate-200 dark:border-white/10">
-                                    <img src={entry.url} alt="" className="h-full w-full object-cover" />
+                                  <div
+                                    key={idx}
+                                    className="relative h-16 w-16 rounded-lg overflow-hidden border border-slate-200 dark:border-white/10"
+                                  >
+                                    <img
+                                      src={entry.url}
+                                      alt=""
+                                      className="h-full w-full object-cover"
+                                    />
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black/50">
+                                      {getStatusBadge(entry.status)}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
                             )}
                           </div>
-                          <div 
+                          <div
                             className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 cursor-pointer hover:border-sky-400 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-sky-400/40"
                             onClick={() => videoInputRef.current?.click()}
                           >
                             <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
                               <Video className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                              {videoBusy ? "Uploading..." : "Click to upload video"}
+                              {videoBusy
+                                ? "Uploading..."
+                                : "Click to upload video"}
                             </div>
-                            <div className="mt-1 text-xs text-slate-400">MP4, WEBM up to 50MB</div>
+                            <div className="mt-1 text-xs text-slate-400">
+                              MP4, WEBM up to 50MB
+                            </div>
                             <input
                               ref={videoInputRef}
                               type="file"
                               accept="video/*"
-                              onChange={(e) => handleUploadVideo(e.target.files?.[0])}
+                              onChange={(e) =>
+                                handleUploadVideo(e.target.files?.[0])
+                              }
                               disabled={videoBusy}
                               className="hidden"
                             />
@@ -782,7 +1056,10 @@ export default function ProductManagement() {
                         "Published items go live after media review is approved.",
                         "Buyers only see internal media that passed review.",
                       ].map((text) => (
-                        <div key={text} className="flex items-start gap-3 rounded-2xl bg-white p-3 dark:bg-slate-900/50">
+                        <div
+                          key={text}
+                          className="flex items-start gap-3 rounded-2xl bg-white p-3 dark:bg-slate-900/50"
+                        >
                           <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500 dark:text-emerald-300" />
                           <span>{text}</span>
                         </div>
@@ -798,7 +1075,10 @@ export default function ProductManagement() {
                         onChange={(e) => setComplianceChecked(e.target.checked)}
                         className="mt-1 h-4 w-4 rounded border-slate-300 text-sky-500 dark:border-white/20"
                       />
-                      <span>I confirm this product media contains no music or prohibited instruments.</span>
+                      <span>
+                        I confirm this product media contains no music or
+                        prohibited instruments.
+                      </span>
                     </label>
 
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -819,7 +1099,8 @@ export default function ProductManagement() {
                     </div>
 
                     <div className="mt-4 rounded-2xl border border-slate-100 bg-white p-4 text-xs leading-6 text-slate-500 dark:border-white/10 dark:bg-slate-900/50 dark:text-slate-400">
-                      Tip: keep the item as Draft while your media is pending, then publish after everything is approved.
+                      Tip: keep the item as Draft while your media is pending,
+                      then publish after everything is approved.
                     </div>
                   </div>
                 </div>

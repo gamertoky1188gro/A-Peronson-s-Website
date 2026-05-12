@@ -23,13 +23,7 @@
     - AppLayout hides NavBar/Footer for /chat (immersive route).
     - This file is large; comments focus on major blocks (state/effects/render sections).
 */
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -482,7 +476,8 @@ export default function ChatInterface() {
   const navigate = useNavigate();
   const location = useLocation();
   const isLight = themeMode === "light";
-  const userRole = secureUser?.role || String(currentUser?.role || "").toLowerCase();
+  const userRole =
+    secureUser?.role || String(currentUser?.role || "").toLowerCase();
   const isBuyerUser = userRole === "buyer";
   const isAdminUser = ["owner", "admin"].includes(userRole);
 

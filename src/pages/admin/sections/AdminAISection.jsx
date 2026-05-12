@@ -1,7 +1,7 @@
 /**
  * Admin AI Section - AI Rules & Configuration
  */
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");

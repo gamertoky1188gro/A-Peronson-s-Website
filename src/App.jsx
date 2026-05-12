@@ -1,5 +1,5 @@
 /* global process */
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -43,10 +43,6 @@ import AdminPanel from "./pages/AdminPanel";
 import AdminGovernance from "./pages/AdminGovernance";
 import FloatingAssistant from "./components/FloatingAssistant";
 import Footer from "./components/Footer";
-import AccessDenied from "./pages/AccessDenied";
-import VerificationPage from "./pages/VerificationPage";
-import FeedManagement from "./pages/FeedManagement";
-import TaskTracker from "./pages/TaskTracker";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
 
@@ -65,7 +61,7 @@ const MEMBER_MANAGEMENT_ROLES = ["owner", "admin", "buying_house", "factory"];
 function ProtectedRoute({ children, roles }) {
   const location = useLocation();
   const token = getToken();
-  
+
   // Simple check - if no token, redirect to login
   if (!token) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
@@ -84,7 +80,12 @@ function ProtectedRoute({ children, roles }) {
   }
 
   const userRole = user?.role;
-  if (Array.isArray(roles) && roles.length && userRole && !roles.includes(userRole)) {
+  if (
+    Array.isArray(roles) &&
+    roles.length &&
+    userRole &&
+    !roles.includes(userRole)
+  ) {
     return (
       <Navigate
         to="/access-denied"

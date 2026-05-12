@@ -12,6 +12,7 @@ import requirementRoutes from "./routes/requirementRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminConfigRoutes from "./routes/adminConfigRoutes.js";
+import uploadsRoutes from "./routes/uploadsRoutes.js";
 import systemRoutes from "./routes/systemRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import socialRoutes from "./routes/socialRoutes.js";
@@ -181,6 +182,7 @@ app.use("/api/verification", verificationRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin", adminConfigRoutes);
+app.use("/api/admin", uploadsRoutes);
 app.use("/api/feed", feedRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/onboarding", onboardingRoutes);
@@ -850,6 +852,25 @@ async function start() {
   } catch (err) {
     logError("start_esign_retry_worker_failed", err);
   }
+
+  import("./services/aiModerationService.js")
+    .then(({ ensureVenv, isAIAnalyticsEnabled }) => {
+      import("./services/uploadsService.js")
+        .then(({ scanAndAnalyzeExistingFiles }) => {
+          setTimeout(() => {
+            if (!isAIAnalyticsEnabled()) {
+              console.log(
+                "[AI Moderation] Disabled via AI_HARAM_ANALYTICS_ENABLED — skipping venv setup and scan",
+              );
+              return;
+            }
+            ensureVenv().catch(console.error);
+            scanAndAnalyzeExistingFiles().catch(console.error);
+          }, 5000);
+        })
+        .catch(() => {});
+    })
+    .catch(() => {});
 }
 
 start().catch((error) => {

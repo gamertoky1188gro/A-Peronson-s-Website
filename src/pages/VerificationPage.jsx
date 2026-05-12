@@ -22,13 +22,7 @@
   Notes:
     - Buyer required documents vary by region (EU/USA/OTHER), derived from country.
 */
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import {
   BUYER_COUNTRY_OPTIONS,

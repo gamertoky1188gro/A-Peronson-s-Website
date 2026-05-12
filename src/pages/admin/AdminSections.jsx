@@ -15,8 +15,6 @@
  * - config: Configuration editor
  */
 
-import React from "react";
-
 // Section component imports - each handles its own rendering
 import { AdminHomeSection } from "./sections/AdminHomeSection";
 import { AdminPlatformSection } from "./sections/AdminPlatformSection";

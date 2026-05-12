@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../server/utils/prisma.js";
 
 const INVENTORY_DATA = [
   {

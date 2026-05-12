@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, File, X } from "lucide-react";
 import MarkdownMessage from "./MarkdownMessage";
 import Prism from "prismjs";

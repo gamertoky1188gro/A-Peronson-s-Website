@@ -7,9 +7,6 @@ import { adminAuditLogger } from "../middleware/adminAudit.js";
 import {
   approveDocument,
   approveVideo,
-  assignSupportTicket,
-  assignAccountManager,
-  listSupportTicketsAdminController,
   listReportsAudit,
   listSystemReportsAudit,
   listProductAppealReportsAudit,
@@ -20,10 +17,14 @@ import {
   rejectVideo,
   resolveReportAudit,
   subscriptionsAudit,
-  updateSupportTicket,
   usersAudit,
   verificationAudit,
   violationsAudit,
+  reanalyzeDocument,
+  assignSupportTicket,
+  updateSupportTicket,
+  listSupportTicketsAdminController,
+  assignAccountManager,
 } from "../controllers/adminController.js";
 import {
   listEsignFailures,
@@ -183,6 +184,14 @@ router.post(
   requireAdminStepUp,
   adminAuditLogger(),
   rejectDocument,
+);
+router.post(
+  "/media/:documentId/reanalyze",
+  requireAuth,
+  requireAdminSecurity,
+  requireAdminStepUp,
+  adminAuditLogger(),
+  reanalyzeDocument,
 );
 router.get(
   "/reports",

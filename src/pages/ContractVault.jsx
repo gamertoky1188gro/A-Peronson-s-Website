@@ -3,7 +3,7 @@
   Access: Protected (login required)
   Allowed roles: buyer, buying_house, factory, owner, admin, agent
  */
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AccessDeniedState from "../components/AccessDeniedState";
 import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";

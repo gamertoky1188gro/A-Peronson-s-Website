@@ -3,7 +3,6 @@
  * Location in main file: ~line 9911-11807
  */
 
-import React from "react";
 import {
   Network,
   Wifi,

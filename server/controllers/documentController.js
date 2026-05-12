@@ -8,6 +8,8 @@ import {
   saveDocumentMetadata,
   updateContractArtifact,
   updateContractSignatures,
+  approveDocument,
+  rejectDocument,
 } from "../services/documentService.js";
 import {
   createSignSession,
@@ -15,7 +17,7 @@ import {
 } from "../services/eSignService.js";
 import { normalizeProviderWebhook } from "../services/eSignCallbackMapper.js";
 import crypto from "crypto";
-import { updateLocalJson } from "../utils/localStore.js";
+import prisma from "../utils/prisma.js";
 import { deny, handleControllerError } from "../utils/permissions.js";
 import { ensureEntitlement } from "../services/entitlementService.js";
 import { logInfo, logError } from "../utils/logger.js";
@@ -69,6 +71,21 @@ export async function removeDocument(req, res) {
   if (result === "forbidden") return deny(res);
   if (!result) return res.status(404).json({ error: "Document not found" });
   return res.json({ ok: true });
+}
+
+export async function approveDocumentCtrl(req, res) {
+  const result = await approveDocument(req.params.documentId, req.user);
+  if (result === "forbidden") return deny(res);
+  if (!result) return res.status(404).json({ error: "Document not found" });
+  return res.json(result);
+}
+
+export async function rejectDocumentCtrl(req, res) {
+  const reason = req.body?.reason || "";
+  const result = await rejectDocument(req.params.documentId, req.user, reason);
+  if (result === "forbidden") return deny(res);
+  if (!result) return res.status(404).json({ error: "Document not found" });
+  return res.json(result);
 }
 
 export async function createContractDraft(req, res) {
@@ -211,25 +228,32 @@ export async function createContractSignCallback(req, res) {
             return res.status(403).json({ error: "Invalid signature format" });
           }
 
-          // Replay protection: store processed signatures in local app state
+          // Replay protection: store processed signatures in PostgreSQL
           try {
-            await updateLocalJson(
-              "esign_webhook_nonces",
-              (existing = []) => {
-                const nowTs = Date.now();
-                const arr = Array.isArray(existing)
-                  ? existing.filter((e) => nowTs - (e.ts || 0) <= retentionMs)
-                  : [];
-                if (arr.find((e) => e.sig === signature)) {
-                  const err = new Error("Replay detected");
-                  err.status = 403;
-                  throw err;
-                }
-                arr.push({ sig: signature, ts: nowTs });
-                return arr;
+            const nowTs = Date.now();
+            const cutoff = new Date(nowTs - retentionMs);
+
+            // Delete old nonces first
+            await prisma.esignWebhookNonce.deleteMany({
+              where: {
+                created_at: { lt: cutoff },
               },
-              [],
-            );
+            });
+
+            // Check if signature already used
+            const existing = await prisma.esignWebhookNonce.findUnique({
+              where: { nonce: signature },
+            });
+            if (existing) {
+              const err = new Error("Replay detected");
+              err.status = 403;
+              throw err;
+            }
+
+            // Store new nonce
+            await prisma.esignWebhookNonce.create({
+              data: { nonce: signature },
+            });
           } catch (e) {
             if (e && e.status === 403)
               return res.status(403).json({ error: "Replay detected" });

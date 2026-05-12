@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   motion,
@@ -6,8 +5,7 @@ import {
   useReducedMotion,
   useSpring,
 } from "framer-motion";
-
-const MotionLink = motion.create(Link);
+const _MotionLink = motion.create(Link);
 
 export default function MagneticButton({
   to,
@@ -80,9 +78,9 @@ export default function MagneticButton({
 
   if (to) {
     return (
-      <MotionLink to={to} {...commonProps}>
+      <_MotionLink to={to} {...commonProps}>
         {children}
-      </MotionLink>
+      </_MotionLink>
     );
   }
 

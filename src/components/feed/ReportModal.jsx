@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 
 const PRESET_REASONS = [

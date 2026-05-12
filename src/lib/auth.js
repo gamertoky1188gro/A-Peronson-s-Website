@@ -17,7 +17,7 @@ const CACHE_TTL_MS = 5000;
 export function getCurrentUser() {
   const token = getToken();
   if (!token) return null;
-  
+
   // First check localStorage for immediate availability
   const stored = localStorage.getItem(USER_KEY);
   if (stored) {
@@ -30,13 +30,13 @@ export function getCurrentUser() {
       // ignore parse errors
     }
   }
-  
+
   // If we have recent cache, return it
   const now = Date.now();
-  if (cachedUser && (now - cacheTime) < CACHE_TTL_MS) {
+  if (cachedUser && now - cacheTime < CACHE_TTL_MS) {
     return cachedUser;
   }
-  
+
   // Start background fetch to update cache
   if (!userFetchPromise) {
     userFetchPromise = apiRequest("/users/me", { token })
@@ -53,7 +53,7 @@ export function getCurrentUser() {
         userFetchPromise = null;
       });
   }
-  
+
   return cachedUser;
 }
 
@@ -78,7 +78,7 @@ export async function verifyAndSyncUser(token = getToken()) {
     clearSession();
     return null;
   }
-  
+
   // Always fetch fresh from API - never trust localStorage for security
   return syncUserFromApi(token);
 }
@@ -93,11 +93,13 @@ export function persistUser(user) {
     name: user.name,
     email: user.email,
     role: user.role,
-    profile: user.profile ? {
-      avatar_url: user.profile.avatar_url,
-      profile_image: user.profile.profile_image,
-      organization_name: user.profile.organization_name,
-    } : null,
+    profile: user.profile
+      ? {
+          avatar_url: user.profile.avatar_url,
+          profile_image: user.profile.profile_image,
+          organization_name: user.profile.organization_name,
+        }
+      : null,
   };
   localStorage.setItem(USER_KEY, JSON.stringify(minimalUser));
   return minimalUser;

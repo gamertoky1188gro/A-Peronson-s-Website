@@ -27,7 +27,7 @@
   Special:
     - FloatingAssistant switches to "Orb" styling only on this route.
 */
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Search,
   Sun,
@@ -69,7 +69,11 @@ const quickLinks = [
   { id: "quick-start", label: "Quick Start Guide", icon: Sparkles },
   { id: "account-types", label: "Account Types", icon: Users },
   { id: "verification", label: "Verification Process", icon: BadgeCheck },
-  { id: "messaging", label: "Messaging & Conversation Rules", icon: MessagesSquare },
+  {
+    id: "messaging",
+    label: "Messaging & Conversation Rules",
+    icon: MessagesSquare,
+  },
   { id: "subscription", label: "Subscription Plans", icon: ShieldCheck },
   { id: "calls", label: "Video & Audio Calls", icon: Video },
   { id: "contracts", label: "Contracts & Legal Vault", icon: FileSignature },
@@ -120,21 +124,34 @@ const featurePills = [
   "Premium visibility",
 ];
 
-function HelpSection({ id, icon: Icon, title, subtitle, children, accent = "from-sky-500/20 to-blue-500/10" }) {
+function HelpSection({
+  id,
+  icon: Icon,
+  title,
+  subtitle,
+  children,
+  accent = "from-sky-500/20 to-blue-500/10",
+}) {
   return (
     <section
       id={id}
       className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-950/70"
     >
-      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent} opacity-100`} />
+      <div
+        className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent} opacity-100`}
+      />
       <div className="relative">
         <div className="mb-5 flex items-start gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-slate-900 text-white shadow-lg shadow-sky-500/20 dark:bg-sky-400 dark:text-slate-950">
             <Icon className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{title}</h2>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">{subtitle}</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {title}
+            </h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+              {subtitle}
+            </p>
           </div>
         </div>
         {children}
@@ -149,8 +166,12 @@ function StatCard({ icon: Icon, title, text }) {
       <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
         <Icon className="h-5 w-5" />
       </div>
-      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{text}</p>
+      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+        {title}
+      </h3>
+      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+        {text}
+      </p>
     </div>
   );
 }
@@ -201,22 +222,52 @@ export default function HelpCenterPage() {
         item.question?.toLowerCase().includes(query) ||
         item.a?.toLowerCase().includes(query) ||
         item.answer?.toLowerCase().includes(query) ||
-        item.keywords?.toLowerCase().includes(query)
+        item.keywords?.toLowerCase().includes(query),
     );
   }, [faqQuery, faqs]);
 
   const searchableSections = useMemo(() => {
     const corpus = [
-      { id: "quick-start", text: "quick start guide create account profile setup main feed search post buyer requests products premium visibility analytics" },
-      { id: "account-types", text: "buyer factory buying house roles permissions messages calls requests products agents" },
-      { id: "verification", text: "verification document approval company registration trade license tin nid bank proof erc vat ein eori" },
-      { id: "messaging", text: "message requests inbox lock permission agent conversation conflict internal control" },
-      { id: "subscription", text: "free premium visibility analytics management capabilities plan" },
-      { id: "calls", text: "video audio calls chat scheduling recording compliance notify" },
-      { id: "contracts", text: "contracts legal vault pdf secure history financial transactions" },
-      { id: "security", text: "documents protection backend approval expired licenses encrypted systems" },
-      { id: "assistant", text: "floating assistant orb help articles support navigate settings dashboards" },
-      { id: "faq", text: "faq search users terms workflows admin knowledge base support ticket live chat" },
+      {
+        id: "quick-start",
+        text: "quick start guide create account profile setup main feed search post buyer requests products premium visibility analytics",
+      },
+      {
+        id: "account-types",
+        text: "buyer factory buying house roles permissions messages calls requests products agents",
+      },
+      {
+        id: "verification",
+        text: "verification document approval company registration trade license tin nid bank proof erc vat ein eori",
+      },
+      {
+        id: "messaging",
+        text: "message requests inbox lock permission agent conversation conflict internal control",
+      },
+      {
+        id: "subscription",
+        text: "free premium visibility analytics management capabilities plan",
+      },
+      {
+        id: "calls",
+        text: "video audio calls chat scheduling recording compliance notify",
+      },
+      {
+        id: "contracts",
+        text: "contracts legal vault pdf secure history financial transactions",
+      },
+      {
+        id: "security",
+        text: "documents protection backend approval expired licenses encrypted systems",
+      },
+      {
+        id: "assistant",
+        text: "floating assistant orb help articles support navigate settings dashboards",
+      },
+      {
+        id: "faq",
+        text: "faq search users terms workflows admin knowledge base support ticket live chat",
+      },
     ];
     const q = search.trim().toLowerCase();
     if (!q) return corpus;
@@ -246,7 +297,9 @@ export default function HelpCenterPage() {
                   Industrial reliability, tech-forward SaaS guidance.
                 </h1>
                 <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-                  A premium help experience for buyers, factories, and buying houses — built to guide onboarding, trust, messaging, contracts, and support in one place.
+                  A premium help experience for buyers, factories, and buying
+                  houses — built to guide onboarding, trust, messaging,
+                  contracts, and support in one place.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   {featurePills.map((pill) => (
@@ -263,14 +316,19 @@ export default function HelpCenterPage() {
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
                 <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-2 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
                   <button
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
                     className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
                   >
-                    {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    {theme === "dark" ? (
+                      <Sun className="h-4 w-4" />
+                    ) : (
+                      <Moon className="h-4 w-4" />
+                    )}
                     {theme === "dark" ? "Light mode" : "Dark mode"}
                   </button>
                 </div>
-
               </div>
             </div>
           </div>
@@ -293,7 +351,13 @@ export default function HelpCenterPage() {
                 />
               </div>
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
-                {["verification", "contracts", "messages", "premium", "sub-accounts"].map((tag) => (
+                {[
+                  "verification",
+                  "contracts",
+                  "messages",
+                  "premium",
+                  "sub-accounts",
+                ].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => setSearch(tag)}
@@ -324,13 +388,15 @@ export default function HelpCenterPage() {
                 ))}
               </div>
             </nav>
-
           </aside>
 
           <main className="space-y-6">
             {search && (
               <div className="rounded-3xl border border-sky-200/70 bg-sky-500/10 p-4 text-sm text-slate-700 dark:border-sky-500/20 dark:text-slate-200">
-                Showing matching sections for <span className="font-semibold">{search}</span>. Found {searchableSections.length} section{searchableSections.length === 1 ? "" : "s"}.
+                Showing matching sections for{" "}
+                <span className="font-semibold">{search}</span>. Found{" "}
+                {searchableSections.length} section
+                {searchableSections.length === 1 ? "" : "s"}.
               </div>
             )}
 
@@ -374,17 +440,26 @@ export default function HelpCenterPage() {
                     icon: ArrowUpRight,
                   },
                 ].map((item) => (
-                  <div key={item.n} className="rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                  <div
+                    key={item.n}
+                    className="rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
+                  >
                     <div className="mb-3 flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
                         <item.icon className="h-5 w-5" />
                       </div>
                       <div>
-                        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">{item.n}</div>
-                        <div className="text-sm font-semibold text-slate-900 dark:text-white">{item.title}</div>
+                        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
+                          {item.n}
+                        </div>
+                        <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {item.title}
+                        </div>
                       </div>
                     </div>
-                    <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{item.text}</p>
+                    <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      {item.text}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -404,8 +479,12 @@ export default function HelpCenterPage() {
                       <Building2 className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">Buyer Account</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">For sourcing and requests</p>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">
+                        Buyer Account
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        For sourcing and requests
+                      </p>
                     </div>
                   </div>
                   <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
@@ -422,8 +501,12 @@ export default function HelpCenterPage() {
                       <Factory className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">Factory Account</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">For production and product posts</p>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">
+                        Factory Account
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        For production and product posts
+                      </p>
                     </div>
                   </div>
                   <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
@@ -440,8 +523,12 @@ export default function HelpCenterPage() {
                       <BriefcaseBusiness className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">Buying House Account</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">For multi-agent deal flow</p>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">
+                        Buying House Account
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        For multi-agent deal flow
+                      </p>
                     </div>
                   </div>
                   <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
@@ -479,7 +566,8 @@ export default function HelpCenterPage() {
                 />
               </div>
               <div className="mt-4 rounded-2xl border border-sky-200/70 bg-sky-500/10 p-4 text-sm leading-6 text-slate-700 dark:border-sky-500/20 dark:text-slate-200">
-                The more verified documentation a company provides, the stronger its credibility.
+                The more verified documentation a company provides, the stronger
+                its credibility.
               </div>
             </HelpSection>
 
@@ -497,11 +585,17 @@ export default function HelpCenterPage() {
                       <BadgeCheck className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">Verified Users</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Direct inbox delivery</p>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">
+                        Verified Users
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Direct inbox delivery
+                      </p>
                     </div>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Messages go directly to inbox.</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Messages go directly to inbox.
+                  </p>
                 </div>
                 <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
                   <div className="flex items-center gap-3">
@@ -509,11 +603,17 @@ export default function HelpCenterPage() {
                       <MessageSquareMore className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">Unverified Users</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Message Requests first</p>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">
+                        Unverified Users
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Message Requests first
+                      </p>
                     </div>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Messages appear in "Message Requests."</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Messages appear in "Message Requests."
+                  </p>
                 </div>
                 <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
                   <div className="flex items-center gap-3">
@@ -521,12 +621,18 @@ export default function HelpCenterPage() {
                       <Lock className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">Buying House Conversation Lock</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Agent ownership control</p>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">
+                        Buying House Conversation Lock
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Agent ownership control
+                      </p>
                     </div>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    When an Agent starts a conversation, it is assigned to that Agent. Other Agents cannot message unless permission is granted. This prevents internal conflict.
+                    When an Agent starts a conversation, it is assigned to that
+                    Agent. Other Agents cannot message unless permission is
+                    granted. This prevents internal conflict.
                   </p>
                 </div>
               </div>
@@ -535,7 +641,9 @@ export default function HelpCenterPage() {
                   <Lock className="h-3.5 w-3.5" />
                   Locked
                 </div>
-                <span className="text-sm text-slate-600 dark:text-slate-300">Teammates need permission.</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">
+                  Teammates need permission.
+                </span>
                 <button className="ml-auto rounded-full border border-sky-200 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-500/15 dark:border-sky-500/20 dark:text-sky-200">
                   Grant permission
                 </button>
@@ -551,14 +659,27 @@ export default function HelpCenterPage() {
             >
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
-                  <div className="text-sm font-semibold text-slate-500 dark:text-slate-400">Free</div>
-                  <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">Core access</div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Essential profile, messaging, and basic discovery.</p>
+                  <div className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                    Free
+                  </div>
+                  <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+                    Core access
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Essential profile, messaging, and basic discovery.
+                  </p>
                 </div>
                 <div className="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-sky-500/12 to-blue-500/10 p-6 shadow-[0_12px_60px_rgba(14,165,233,0.12)] dark:border-sky-500/20 dark:from-sky-500/12 dark:to-slate-900/20">
-                  <div className="text-sm font-semibold text-sky-700 dark:text-sky-200">Premium</div>
-                  <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">Advanced access</div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">Increased profile visibility, advanced analytics for eligible accounts, and extended management capabilities.</p>
+                  <div className="text-sm font-semibold text-sky-700 dark:text-sky-200">
+                    Premium
+                  </div>
+                  <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+                    Advanced access
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Increased profile visibility, advanced analytics for
+                    eligible accounts, and extended management capabilities.
+                  </p>
                 </div>
               </div>
             </HelpSection>
@@ -571,10 +692,26 @@ export default function HelpCenterPage() {
               accent="from-cyan-400/18 to-sky-400/10"
             >
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard icon={Video} title="Direct from chat" text="Initiate calls without leaving the conversation." />
-                <StatCard icon={PlayCircle} title="Optional scheduling" text="Plan meetings ahead of time for better coordination." />
-                <StatCard icon={Mic} title="Audio support" text="Use audio-only or video-enabled communication." />
-                <StatCard icon={RadioTower} title="Recording notice" text="Calls may be recorded for security and compliance, and users are notified before recording begins." />
+                <StatCard
+                  icon={Video}
+                  title="Direct from chat"
+                  text="Initiate calls without leaving the conversation."
+                />
+                <StatCard
+                  icon={PlayCircle}
+                  title="Optional scheduling"
+                  text="Plan meetings ahead of time for better coordination."
+                />
+                <StatCard
+                  icon={Mic}
+                  title="Audio support"
+                  text="Use audio-only or video-enabled communication."
+                />
+                <StatCard
+                  icon={RadioTower}
+                  title="Recording notice"
+                  text="Calls may be recorded for security and compliance, and users are notified before recording begins."
+                />
               </div>
             </HelpSection>
 
@@ -588,21 +725,32 @@ export default function HelpCenterPage() {
               <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
                 <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
                   <ul className="space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    <li>Digital contracts can be signed through the platform.</li>
+                    <li>
+                      Digital contracts can be signed through the platform.
+                    </li>
                     <li>PDF copies are stored securely in the Legal Vault.</li>
                     <li>Both parties can access their contract history.</li>
-                    <li className="font-medium text-slate-800 dark:text-slate-200">GarTexHub does not process direct financial transactions.</li>
+                    <li className="font-medium text-slate-800 dark:text-slate-200">
+                      GarTexHub does not process direct financial transactions.
+                    </li>
                   </ul>
                 </div>
                 <div className="rounded-3xl border border-sky-200/70 bg-sky-500/10 p-6 dark:border-sky-500/20 dark:bg-sky-500/10">
                   <div className="flex items-center gap-3">
                     <FileSignature className="h-6 w-6 text-sky-600 dark:text-sky-300" />
                     <div>
-                      <div className="text-sm font-semibold text-slate-900 dark:text-white">Legal Vault</div>
-                      <div className="text-sm text-slate-600 dark:text-slate-300">Contracts · history · records</div>
+                      <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                        Legal Vault
+                      </div>
+                      <div className="text-sm text-slate-600 dark:text-slate-300">
+                        Contracts · history · records
+                      </div>
                     </div>
                   </div>
-                  <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">Store and review signed PDFs in one secure place with a clean audit trail.</p>
+                  <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    Store and review signed PDFs in one secure place with a
+                    clean audit trail.
+                  </p>
                 </div>
               </div>
             </HelpSection>
@@ -615,10 +763,26 @@ export default function HelpCenterPage() {
               accent="from-sky-400/18 to-blue-400/10"
             >
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard icon={FileCheck2} title="Documents stored securely" text="Uploaded documents are protected with secure storage controls." />
-                <StatCard icon={BadgeCheck} title="Backend approval" text="Verification status requires backend approval before activation." />
-                <StatCard icon={CircleDot} title="Expiry handling" text="Expired licenses may remove verified status." />
-                <StatCard icon={Lock} title="Encrypted systems" text="Financial details are protected through encrypted systems." />
+                <StatCard
+                  icon={FileCheck2}
+                  title="Documents stored securely"
+                  text="Uploaded documents are protected with secure storage controls."
+                />
+                <StatCard
+                  icon={BadgeCheck}
+                  title="Backend approval"
+                  text="Verification status requires backend approval before activation."
+                />
+                <StatCard
+                  icon={CircleDot}
+                  title="Expiry handling"
+                  text="Expired licenses may remove verified status."
+                />
+                <StatCard
+                  icon={Lock}
+                  title="Encrypted systems"
+                  text="Financial details are protected through encrypted systems."
+                />
               </div>
             </HelpSection>
 
@@ -628,8 +792,7 @@ export default function HelpCenterPage() {
               title="9. Floating AI Assistant"
               subtitle="The assistant helps users understand settings, navigate dashboards, access help articles, and connect to support. It does not handle negotiations."
               accent="from-cyan-400/18 to-sky-400/10"
-            >
-            </HelpSection>
+            ></HelpSection>
 
             <HelpSection
               id="faq"
@@ -656,14 +819,23 @@ export default function HelpCenterPage() {
                   </div>
                 ) : filteredFaq.length > 0 ? (
                   filteredFaq.map((item, idx) => (
-                    <details key={item.q || item.question || idx} className="group rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                    <details
+                      key={item.q || item.question || idx}
+                      className="group rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
+                    >
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left">
-                        <div className="text-sm font-semibold text-slate-900 dark:text-white">Q: {item.q || item.question}</div>
+                        <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                          Q: {item.q || item.question}
+                        </div>
                         <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-90" />
                       </summary>
-                      <div className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">A: {item.a || item.answer}</div>
+                      <div className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        A: {item.a || item.answer}
+                      </div>
                       {item.keywords && (
-                        <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">Keywords: {item.keywords}</div>
+                        <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                          Keywords: {item.keywords}
+                        </div>
                       )}
                     </details>
                   ))
@@ -677,8 +849,13 @@ export default function HelpCenterPage() {
               {isAdmin && (
                 <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
                   <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                    <div className="text-sm font-semibold text-slate-900 dark:text-white">Admin: Manage Knowledge Base FAQ</div>
-                    <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">Owner/Admin · Question · Answer · Keywords (comma separated) · Add FAQ</div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                      Admin: Manage Knowledge Base FAQ
+                    </div>
+                    <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                      Owner/Admin · Question · Answer · Keywords (comma
+                      separated) · Add FAQ
+                    </div>
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                     <button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-sky-400 dark:text-slate-950 dark:hover:bg-sky-300">

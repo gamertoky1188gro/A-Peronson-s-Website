@@ -21,7 +21,7 @@
     - DELETE /api/notifications/search-alerts/:id
     - GET /api/products/views/me (for the "Viewed Products" tab)
 */
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Bell,

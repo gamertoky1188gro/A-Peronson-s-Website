@@ -24,7 +24,7 @@
     - layoutId animated tab indicator.
     - Tactile CTA feedback (active:scale-95).
 */
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
@@ -92,7 +92,8 @@ export default function BuyerProfile() {
     is_admin: false,
   };
   const isBoosted = Boolean(profileBoost);
-  const isPremium = isPremiumFromApi || 
+  const isPremium =
+    isPremiumFromApi ||
     String(user?.subscription_status || "").toLowerCase() === "premium";
   const brandProfile = user?.profile || {};
   const hasBrandKit = Boolean(

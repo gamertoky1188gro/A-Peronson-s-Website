@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Briefcase,
   Building2,
@@ -29,7 +28,7 @@ export default function FeedControlBar({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {TYPE_OPTIONS.map((opt) => {
-              const Icon = opt.icon;
+              const _Icon = opt.icon;
               const active = activeType === opt.id;
               return (
                 <button

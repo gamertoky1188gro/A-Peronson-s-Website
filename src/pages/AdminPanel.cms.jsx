@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import React from "react";
 
 export function SkeletonLine({ className = "" }) {
   return (

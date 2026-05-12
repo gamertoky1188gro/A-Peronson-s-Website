@@ -3,7 +3,6 @@
  * Location in main file: ~line 14080-15067
  */
 
-import React from "react";
 import { Settings, FileText, Image, Layout } from "lucide-react";
 import { cn } from "../../../lib/utils";
 

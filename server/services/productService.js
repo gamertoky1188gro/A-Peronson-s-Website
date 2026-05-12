@@ -448,12 +448,13 @@ export async function createProduct(user, payload) {
   const { ownerId, ownerRole } = resolveProductOwner(user, users);
   const ownerUser = users.find((u) => String(u.id) === String(ownerId)) || user;
   const isDraft = payload.createAsDraft === true;
-  const title = sanitizeString(payload.title, 120) || (isDraft ? "Untitled Draft" : "");
-  
+  const title =
+    sanitizeString(payload.title, 120) || (isDraft ? "Untitled Draft" : "");
+
   if (!isDraft && !title) {
     throw new Error("Product title is required");
   }
-  
+
   let description = sanitizeString(payload.description || "", 1200);
   const videoUrl = sanitizeString(payload.video_url || "", 260);
 
@@ -463,7 +464,9 @@ export async function createProduct(user, payload) {
     nextVideoUrl: videoUrl,
   });
 
-  const status = normalizeProductStatus(payload.status || (isDraft ? "draft" : "published"));
+  const status = normalizeProductStatus(
+    payload.status || (isDraft ? "draft" : "published"),
+  );
   const imageCandidates = extractImageUrlCandidates(
     payload.image_urls || payload.imageUrls,
   );
@@ -477,8 +480,10 @@ export async function createProduct(user, payload) {
     assertInternalMediaUrl(videoUrl, "product video");
   }
   const { cover_image_url, image_urls } = syncCoverImage(imageUrls, coverSeed);
-  const moderation = isDraft ? { status: "approved" } : getVideoModerationResult({ title, description, videoUrl });
-  const clothingReview = isDraft 
+  const moderation = isDraft
+    ? { status: "approved" }
+    : getVideoModerationResult({ title, description, videoUrl });
+  const clothingReview = isDraft
     ? { status: "approved", reason: "", flags: [] }
     : await evaluateClothingModeration({
         title,
@@ -925,7 +930,7 @@ export async function removeProduct(actor, productId) {
     } catch {
       // JSON read failed, try database directly
     }
-    
+
     // If not in JSON, try Prisma database
     if (!existing) {
       try {
@@ -934,15 +939,15 @@ export async function removeProduct(actor, productId) {
         // Database might not have the table
       }
     }
-    
+
     if (!existing) {
       console.error("[deleteProduct] Product not found:", id);
       return null;
     }
-    
+
     // Check permission
     if (!canMutateProduct(actor, existing)) return "forbidden";
-    
+
     // Delete from database (Prisma)
     try {
       await prisma.product.delete({ where: { id } });
@@ -956,7 +961,7 @@ export async function removeProduct(actor, productId) {
         console.error("[deleteProduct] JSON fallback error:", e.message);
       }
     }
-    
+
     try {
       await deleteProductIndex(id);
     } catch {

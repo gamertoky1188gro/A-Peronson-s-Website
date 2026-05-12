@@ -14,7 +14,7 @@
     - This is intentionally lightweight and non-blocking: users can skip, but the app will
       re-prompt until onboarding_completed is true.
 */
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import BackButton from "../../components/ui/BackButton";
 import ProfileImageUpload from "../../components/ui/ProfileImageUpload";
 import { useNavigate } from "react-router-dom";
@@ -132,7 +132,8 @@ export default function OnboardingWizard() {
     const validate = (s) => {
       if (s === 1) {
         if (profileImage) {
-          const isUrl = profileImage.startsWith("http://") ||
+          const isUrl =
+            profileImage.startsWith("http://") ||
             profileImage.startsWith("https://");
           const isRelativePath = profileImage.startsWith("/uploads/");
           if (!isUrl && !isRelativePath) {

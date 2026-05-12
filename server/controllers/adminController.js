@@ -1,4 +1,6 @@
 import { readJson, writeJson } from "../utils/jsonStore.js";
+import path from "path";
+import fs from "fs";
 import { sanitizeString } from "../utils/validators.js";
 import { createNotification } from "../services/notificationService.js";
 import { listReports, resolveReport } from "../services/reportService.js";
@@ -11,6 +13,7 @@ import {
 import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 import { handleSignCallback } from "../services/eSignService.js";
 import { logInfo, logError } from "../utils/logger.js";
+import prisma from "../utils/prisma.js";
 
 function toPublicFileUrl(filePath = "") {
   if (!filePath) return "";
@@ -147,7 +150,45 @@ export async function pendingDocuments(req, res) {
     .sort((a, b) =>
       String(b.created_at || "").localeCompare(String(a.created_at || "")),
     );
-  return res.json({ items: pending });
+
+  try {
+    const dbPending = await prisma.document.findMany({
+      where: {
+        moderation_status: { in: ["pending_review", "auto_approved"] },
+      },
+      orderBy: { created_at: "desc" },
+      take: 100,
+    });
+    const dbItems = dbPending.map((d) => ({
+      id: d.id,
+      uploaded_by: d.uploaded_by,
+      entity_type: d.entity_type,
+      entity_id: d.entity_id,
+      file_path: d.file_path,
+      type: d.type,
+      moderation_status: d.moderation_status,
+      ai_label: d.ai_label,
+      ai_score: d.ai_score,
+      ai_confidence: d.ai_confidence,
+      ai_signals: d.ai_signals,
+      ai_details: d.ai_details,
+      ai_timing: d.ai_timing,
+      ai_severity: d.ai_severity,
+      ai_early_exit: d.ai_early_exit,
+      ai_analyzed_at: d.ai_analyzed_at ? d.ai_analyzed_at.toISOString() : null,
+      ai_auto_approved: d.ai_auto_approved,
+      moderation_flags: d.moderation_flags,
+      created_at: d.created_at ? d.created_at.toISOString() : null,
+      public_url: toPublicFileUrl(d.file_path || ""),
+    }));
+    const allPending = [...pending, ...dbItems].sort((a, b) =>
+      String(b.created_at || "").localeCompare(String(a.created_at || "")),
+    );
+    return res.json({ items: allPending });
+  } catch (err) {
+    console.error("Error fetching DB pending docs:", err);
+    return res.json({ items: pending });
+  }
 }
 
 export async function approveDocument(req, res) {
@@ -155,28 +196,36 @@ export async function approveDocument(req, res) {
   const docs = await readJson("documents.json");
   const items = Array.isArray(docs) ? docs : [];
   const idx = items.findIndex((d) => String(d.id) === docId);
-  if (idx < 0) return res.status(404).json({ error: "Document not found" });
+  if (idx >= 0) {
+    items[idx] = {
+      ...items[idx],
+      moderation_status: "approved",
+    };
+    await writeJson("documents.json", items);
+  }
 
-  items[idx] = {
-    ...items[idx],
-    moderation_status: "approved",
-  };
-  await writeJson("documents.json", items);
+  try {
+    await prisma.document.update({
+      where: { id: docId },
+      data: { moderation_status: "approved" },
+    });
+  } catch (_err) {
+    // AI disabled, swallow error
+  }
 
-  const ownerId = String(
-    items[idx].uploaded_by || items[idx].entity_id || "",
-  ).trim();
+  const item = idx >= 0 ? items[idx] : null;
+  const ownerId = String(item?.uploaded_by || item?.entity_id || "").trim();
   if (ownerId) {
     await createNotification(ownerId, {
       type: "media_review_approved",
-      entity_type: items[idx].entity_type || "document",
-      entity_id: items[idx].entity_id || items[idx].id,
+      entity_type: item?.entity_type || "document",
+      entity_id: item?.entity_id || docId,
       message: "Your uploaded document was approved by moderation.",
-      meta: { document_id: items[idx].id },
+      meta: { document_id: item?.id || docId },
     });
   }
 
-  return res.json({ ok: true, item: items[idx] });
+  return res.json({ ok: true, item });
 }
 
 export async function rejectDocument(req, res) {
@@ -188,21 +237,41 @@ export async function rejectDocument(req, res) {
   const docs = await readJson("documents.json");
   const items = Array.isArray(docs) ? docs : [];
   const idx = items.findIndex((d) => String(d.id) === docId);
-  if (idx < 0) return res.status(404).json({ error: "Document not found" });
 
-  const flags = Array.isArray(items[idx].moderation_flags)
-    ? items[idx].moderation_flags
-    : [];
-  items[idx] = {
-    ...items[idx],
-    moderation_status: "rejected",
-    moderation_flags: [...flags, `rejected:${reason}`],
-  };
-  await writeJson("documents.json", items);
+  let oldFlags = [];
+  let item = null;
+  if (idx >= 0) {
+    oldFlags = Array.isArray(items[idx].moderation_flags)
+      ? items[idx].moderation_flags
+      : [];
+    items[idx] = {
+      ...items[idx],
+      moderation_status: "rejected",
+      moderation_flags: [...oldFlags, `rejected:${reason}`],
+    };
+    await writeJson("documents.json", items);
+    item = items[idx];
+  }
 
-  const ownerId = String(
-    items[idx].uploaded_by || items[idx].entity_id || "",
-  ).trim();
+  try {
+    const existing = await prisma.document.findUnique({ where: { id: docId } });
+    if (existing) {
+      await prisma.document.update({
+        where: { id: docId },
+        data: {
+          moderation_status: "rejected",
+          moderation_flags: [
+            ...(existing.moderation_flags || []),
+            `rejected:${reason}`,
+          ],
+        },
+      });
+    }
+  } catch (_err) {
+    // AI disabled, swallow error
+  }
+
+  const ownerId = String(item?.uploaded_by || item?.entity_id || "").trim();
   if (ownerId) {
     await createNotification(ownerId, {
       type: "media_review_rejected",
@@ -214,6 +283,84 @@ export async function rejectDocument(req, res) {
   }
 
   return res.json({ ok: true, item: items[idx] });
+}
+
+export async function reanalyzeDocument(req, res) {
+  const docId = sanitizeString(String(req.params.documentId || ""), 120);
+
+  const doc = await prisma.document.findUnique({ where: { id: docId } });
+  if (!doc) return res.status(404).json({ error: "Document not found" });
+
+  const filePath = doc.file_path || "";
+  const fullPath = path.join(process.cwd(), "server", filePath);
+
+  if (!fs.existsSync(fullPath)) {
+    return res.status(400).json({ error: "File not found on disk" });
+  }
+
+  const { isAIAnalyticsEnabled } =
+    await import("../services/aiModerationService.js");
+  if (!isAIAnalyticsEnabled()) {
+    return res
+      .status(200)
+      .json({
+        error: null,
+        message:
+          "AI Haram Analytics is disabled via AI_HARAM_ANALYTICS_ENABLED",
+      });
+  }
+
+  res.json({ status: "processing", message: "Reanalysis queued" });
+
+  const { analyzeBufferWithAI } =
+    await import("../services/aiModerationService.js");
+
+  try {
+    const buffer = fs.readFileSync(fullPath);
+    const filename = path.basename(fullPath);
+    const result = await analyzeBufferWithAI(buffer, filename);
+
+    const label = result?.label || "UNKNOWN";
+    const score = result?.score || 0;
+    const confidence = result?.confidence || "low";
+    const signals = result?.signals || [];
+    const details = result?.details || {};
+    const timing = result?.timing || {};
+    const severity = result?.severity || null;
+    const earlyExit = result?.is_early_exit || false;
+    const autoApproved = label === "SAFE" || label === "QUESTIONABLE";
+
+    await prisma.document.update({
+      where: { id: docId },
+      data: {
+        ai_label: label,
+        ai_score: score,
+        ai_confidence: confidence,
+        ai_signals: signals,
+        ai_details: details,
+        ai_timing: timing,
+        ai_severity: severity,
+        ai_early_exit: earlyExit,
+        ai_analyzed_at: new Date(),
+        ai_auto_approved: autoApproved,
+        moderation_status: autoApproved ? "auto_approved" : "pending_review",
+      },
+    });
+
+    console.log(
+      `[Reanalyze] Completed for ${docId}: label=${label}, score=${score}`,
+    );
+  } catch (err) {
+    console.error(`[Reanalyze] Failed for ${docId}:`, err.message);
+    await prisma.document.update({
+      where: { id: docId },
+      data: {
+        ai_label: "ERROR",
+        ai_score: 0,
+        ai_analyzed_at: new Date(),
+      },
+    });
+  }
 }
 
 export async function listReportsAudit(req, res) {

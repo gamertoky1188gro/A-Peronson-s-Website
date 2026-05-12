@@ -14,6 +14,8 @@ import {
   uploadDocument,
   createContractSignSession,
   createContractSignCallback,
+  approveDocumentCtrl,
+  rejectDocumentCtrl,
 } from "../controllers/documentController.js";
 
 const upload = multer({
@@ -50,6 +52,8 @@ router.patch(
   patchContractArtifact,
 );
 router.get("/", requireAuth, getDocuments);
+router.patch("/:documentId/approve", requireAuth, approveDocumentCtrl);
+router.patch("/:documentId/reject", requireAuth, rejectDocumentCtrl);
 router.delete("/:documentId", requireAuth, removeDocument);
 
 export default router;

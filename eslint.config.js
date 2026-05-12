@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import babelParser from "@babel/eslint-parser";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
@@ -17,8 +18,16 @@ export default defineConfig([
     rules: {
       "no-unused-vars": [
         "error",
-        { varsIgnorePattern: "^[A-Z_].*", argsIgnorePattern: "^[A-Z_].*" },
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+          caughtErrors: "all",
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
+      "no-empty": "warn",
     },
   },
   {
@@ -31,17 +40,35 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parser: babelParser,
       parserOptions: {
         ecmaVersion: "latest",
-        ecmaFeatures: { jsx: true },
         sourceType: "module",
+        requireConfigFile: false,
+        babelOptions: {
+          presets: [["@babel/preset-react", { runtime: "classic" }]],
+        },
       },
     },
     rules: {
       "no-unused-vars": [
         "error",
-        { varsIgnorePattern: "^[A-Z_].*", argsIgnorePattern: "^[A-Z_].*" },
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+          caughtErrors: "all",
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
+      "no-empty": "warn",
+    },
+  },
+  {
+    files: ["src/**/*.jsx"],
+    rules: {
+      "no-unused-vars": "off",
     },
   },
 ]);

@@ -3,7 +3,7 @@
   Access: Protected (login required)
   Purpose: Show pending feedback requests and submit ratings.
 */
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { apiRequest, getToken } from "../lib/auth";
 

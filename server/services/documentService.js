@@ -132,7 +132,7 @@ function getMediaModerationResult(file) {
     if (name.includes(keyword)) flags.push(`prohibited_keyword:${keyword}`);
   }
 
-  const requiresReview = flags.length > 0 || VIDEO_EXTENSIONS.has(ext);
+  const requiresReview = true;
   return {
     flags,
     moderation_status: requiresReview ? "pending_review" : "approved",
@@ -435,6 +435,42 @@ export async function deleteDocument(docId, actor) {
   const next = docs.filter((d) => d.id !== docId);
   await writeJson(FILE, next);
   return true;
+}
+
+export async function approveDocument(docId, actor) {
+  const docs = await readJson(FILE);
+  const idx = docs.findIndex((d) => d.id === docId);
+  if (idx < 0) return null;
+  const existing = docs[idx];
+  if (!isOwnerOrAdmin(actor)) return "forbidden";
+
+  docs[idx] = {
+    ...existing,
+    moderation_status: "approved",
+    moderation_reason: "",
+    moderated_by: actor.id,
+    moderated_at: toIsoNow(),
+  };
+  await writeJson(FILE, docs);
+  return docs[idx];
+}
+
+export async function rejectDocument(docId, actor, reason = "") {
+  const docs = await readJson(FILE);
+  const idx = docs.findIndex((d) => d.id === docId);
+  if (idx < 0) return null;
+  const existing = docs[idx];
+  if (!isOwnerOrAdmin(actor)) return "forbidden";
+
+  docs[idx] = {
+    ...existing,
+    moderation_status: "rejected",
+    moderation_reason: reason || "Rejected by admin",
+    moderated_by: actor.id,
+    moderated_at: toIsoNow(),
+  };
+  await writeJson(FILE, docs);
+  return docs[idx];
 }
 
 export async function createDraftContract(actor, payload = {}) {

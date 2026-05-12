@@ -103,7 +103,8 @@ export async function login(req, res) {
   const ok = await verifyPassword(user, req.body.password);
   if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
-  const token = signToken(user, { authViaPasskey: false });
+  const expiresIn = req.body?.expiresIn || "12h";
+  const token = signToken(user, { authViaPasskey: false, expiresIn });
   const entitlements = await getEntitlements(user);
   return res.json({ user: { ...sanitizeUser(user), entitlements }, token });
 }
@@ -193,7 +194,8 @@ export async function passkeyLoginVerify(req, res) {
         });
       }
     }
-    const token = signToken(user, { authViaPasskey: true });
+    const expiresIn = req.body?.expiresIn || "12h";
+    const token = signToken(user, { authViaPasskey: true, expiresIn });
     const entitlements = await getEntitlements(user);
     return res.json({
       user: { ...sanitizeUser(user), entitlements },

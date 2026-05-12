@@ -19,7 +19,7 @@
   Notes:
     - Tailwind-only styling (no legacy App.css utilities).
 */
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   apiRequest,
@@ -103,6 +103,8 @@ export default function Login() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
+  const [sessionDuration, setSessionDuration] = useState("12h");
+  const [showSessionExpiry, setShowSessionExpiry] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [enrollLoading, setEnrollLoading] = useState(false);
@@ -206,9 +208,10 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
+      const expiresIn = sessionDuration === "never" ? null : sessionDuration;
       const data = await apiRequest("/auth/login", {
         method: "POST",
-        body: { identifier, password },
+        body: { identifier, password, expiresIn },
       });
       saveSession(data.user, data.token, { remember: rememberMe });
       const onboardingCompleted =
@@ -239,7 +242,10 @@ export default function Login() {
     try {
       const optionsRes = await apiRequest("/auth/passkey/login/options", {
         method: "POST",
-        body: { identifier: identifier.trim() || undefined },
+        body: {
+          identifier: identifier.trim() || undefined,
+          expiresIn: sessionDuration === "never" ? null : sessionDuration,
+        },
       });
       const assertion = await startAuthentication(optionsRes.options);
       const data = await apiRequest("/auth/passkey/login/verify", {
@@ -601,16 +607,56 @@ export default function Login() {
                   <span className={theme.muted}>Remember me</span>
                 </label>
 
-                <label className="inline-flex items-center gap-3 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={rememberPasskeyUser}
-                    onChange={(e) => setRememberPasskeyUser(e.target.checked)}
-                    className="h-4 w-4 rounded border-sky-400/40 text-sky-500 focus:ring-sky-400/30"
-                  />
-                  <span className={theme.muted}>Remember passkey user</span>
-                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowSessionExpiry(!showSessionExpiry)}
+                  className="text-xs text-sky-500 hover:text-sky-600"
+                >
+                  {showSessionExpiry
+                    ? "Hide session options"
+                    : "Session options"}
+                </button>
               </div>
+
+              {showSessionExpiry && (
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3">
+                  <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Session duration
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: "12h", label: "12 hours" },
+                      { value: "24h", label: "24 hours" },
+                      { value: "7d", label: "7 days" },
+                      { value: "30d", label: "30 days" },
+                      { value: "never", label: "Never expire" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setSessionDuration(opt.value)}
+                        className={`rounded-lg px-3 py-1 text-xs font-medium transition ${
+                          sessionDuration === opt.value
+                            ? "bg-sky-500 text-white"
+                            : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <label className="inline-flex items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={rememberPasskeyUser}
+                  onChange={(e) => setRememberPasskeyUser(e.target.checked)}
+                  className="h-4 w-4 rounded border-sky-400/40 text-sky-500 focus:ring-sky-400/30"
+                />
+                <span className={theme.muted}>Remember passkey user</span>
+              </label>
 
               {passkeyHint && (
                 <p className={`text-xs ${theme.soft}`}>

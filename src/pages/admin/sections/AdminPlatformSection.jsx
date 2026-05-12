@@ -3,7 +3,6 @@
  * Location in main file: ~line 5722-8338
  */
 
-import React from "react";
 import {
   Users,
   ShieldCheck,

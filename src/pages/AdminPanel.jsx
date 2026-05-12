@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -28,6 +28,7 @@ import {
   BarChart3,
   Bell,
   BookOpen,
+  FolderOpen,
   CalendarClock,
   CheckCircle2,
   ChevronDown,
@@ -76,6 +77,7 @@ import {
   MonitorCog,
   Crown,
   Home,
+  Image,
   Lock,
   Settings,
   Sparkle,
@@ -83,11 +85,15 @@ import {
   Sliders,
   XCircle,
   Bot,
+  ExternalLink,
+  Film,
+  X,
 } from "lucide-react";
 import { startAuthentication } from "@simplewebauthn/browser";
 import AccessDeniedState from "../components/AccessDeniedState";
 import RejectionReasonModal from "../components/admin/RejectionReasonModal";
 import { AdminAISection } from "./admin/sections/AdminAISection";
+import { FileExplorerSection } from "./admin/sections/FileExplorerSection";
 import { apiRequest, getCurrentUser, getToken, saveSession } from "../lib/auth";
 import {
   useInventory,
@@ -1009,6 +1015,9 @@ export default function AdminPanel() {
   });
   const [moderationPending, setModerationPending] = useState([]);
   const [moderationRejected, setModerationRejected] = useState([]);
+  const [loadingModeration, setLoadingModeration] = useState(false);
+  const [aiModalDoc, setAiModalDoc] = useState(null);
+  const [reanalzyingId, setReanalyzingId] = useState(null);
   const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
   const [rejectionItem, setRejectionItem] = useState(null);
   const [policyQueueItems, setPolicyQueueItems] = useState([]);
@@ -1935,25 +1944,38 @@ export default function AdminPanel() {
   }, [buildAdminHeaders, supportFilters]);
 
   const refreshModerationQueues = useCallback(async () => {
-    const token = getToken();
-    if (!token) return;
-    const headers = buildAdminHeaders();
-    const [pendingData, rejectedData] = await Promise.all([
-      apiRequest("/admin/moderation/products?status=pending_review", {
-        token,
-        headers,
-      }),
-      apiRequest("/admin/moderation/products?status=rejected", {
-        token,
-        headers,
-      }),
-    ]);
-    setModerationPending(
-      Array.isArray(pendingData?.items) ? pendingData.items : [],
-    );
-    setModerationRejected(
-      Array.isArray(rejectedData?.items) ? rejectedData.items : [],
-    );
+    setLoadingModeration(true);
+    try {
+      const token = getToken();
+      if (!token) return;
+      const headers = buildAdminHeaders();
+      const [pendingData, rejectedData, mediaPendingData] = await Promise.all([
+        apiRequest("/admin/moderation/products?status=pending_review", {
+          token,
+          headers,
+        }),
+        apiRequest("/admin/moderation/products?status=rejected", {
+          token,
+          headers,
+        }),
+        apiRequest("/admin/media/pending", {
+          token,
+          headers,
+        }),
+      ]);
+      const mediaItems = Array.isArray(mediaPendingData?.items)
+        ? mediaPendingData.items
+        : [];
+      setModerationPending([
+        ...mediaItems,
+        ...(Array.isArray(pendingData?.items) ? pendingData.items : []),
+      ]);
+      setModerationRejected(
+        Array.isArray(rejectedData?.items) ? rejectedData.items : [],
+      );
+    } finally {
+      setLoadingModeration(false);
+    }
   }, [buildAdminHeaders]);
 
   const refreshReportQueues = useCallback(async () => {
@@ -2540,6 +2562,11 @@ export default function AdminPanel() {
   }, [activeCategory, isAllowedAdminViewer, refreshOpenSearchStatus]);
 
   useEffect(() => {
+    if (activeCategory !== "media-review") return;
+    refreshModerationQueues();
+  }, [activeCategory, refreshModerationQueues]);
+
+  useEffect(() => {
     if (activeCategory !== "config") return;
     async function fetchConfigData() {
       setConfigEditorLoading(true);
@@ -2826,6 +2853,22 @@ export default function AdminPanel() {
       accent: true,
     });
 
+    items.push({
+      id: "files",
+      label: "File Explorer",
+      icon: FolderOpen,
+      sub: "Browse server uploads",
+      accent: false,
+    });
+
+    items.push({
+      id: "media-review",
+      label: "Media Review",
+      icon: ShieldCheck,
+      sub: "Approve uploads",
+      accent: false,
+    });
+
     return items;
   }, [inventory, uiFallbackInventory]);
 
@@ -2841,6 +2884,20 @@ export default function AdminPanel() {
         id: "ai",
         label: "AI Assistant",
         sub: "Configure AI rules & behavior",
+        sections: [],
+      };
+    if (activeCategory === "files")
+      return {
+        id: "files",
+        label: "File Explorer",
+        sub: "Browse server uploads",
+        sections: [],
+      };
+    if (activeCategory === "media-review")
+      return {
+        id: "media-review",
+        label: "Media Review",
+        sub: "Approve uploads",
         sections: [],
       };
     const cat =
@@ -3757,6 +3814,154 @@ export default function AdminPanel() {
 
               {activeCategory !== "home" ? (
                 <>
+                  {activeCategory === "files" && (
+                    <FileExplorerSection adminDark={adminDark} />
+                  )}
+                  {activeCategory === "media-review" && (
+                    <div className="space-y-4 p-4">
+                      <h2
+                        className={`text-xl font-semibold ${adminDark ? "text-white" : "text-slate-900"}`}
+                      >
+                        Media Review
+                      </h2>
+                      <p
+                        className={`text-sm ${adminDark ? "text-slate-400" : "text-slate-500"}`}
+                      >
+                        Approve or reject uploaded media
+                      </p>
+
+                      {loadingModeration ? (
+                        <div className="flex items-center justify-center py-16">
+                          <div className="animate-spin h-8 w-8 border-2 border-sky-500 border-t-transparent rounded-full" />
+                        </div>
+                      ) : !moderationPending.length ? (
+                        <div
+                          className={`text-center py-12 ${adminDark ? "text-slate-400" : "text-slate-500"}`}
+                        >
+                          No pending media for review
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {moderationPending.slice(0, 20).map((doc) => {
+                            const aiLabel = doc.ai_label || "PENDING";
+                            const isAutoApproved =
+                              doc.ai_auto_approved === true ||
+                              doc.ai_auto_approved === "true";
+                            return (
+                              <div key={doc.id} className="relative group">
+                                {doc.public_url ? (
+                                  doc.type === "video" ? (
+                                    <div className="w-full aspect-square bg-slate-800 rounded-xl overflow-hidden relative">
+                                      <video
+                                        src={doc.public_url}
+                                        className="w-full h-full object-cover"
+                                        preload="metadata"
+                                      />
+                                      <div className="absolute top-2 right-2 z-10">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(
+                                              doc.public_url,
+                                              "_blank",
+                                            );
+                                          }}
+                                          className="bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 hover:bg-black/90 cursor-pointer backdrop-blur-sm"
+                                        >
+                                          <ExternalLink className="h-3 w-3" />
+                                          {/Mobi|Android|iPhone|iPad/i.test(
+                                            navigator.userAgent,
+                                          )
+                                            ? "Open"
+                                            : "Play"}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <img
+                                      src={doc.public_url}
+                                      alt={doc.title || "Media"}
+                                      className="w-full aspect-square object-cover rounded-xl"
+                                      onError={(e) => {
+                                        e.target.style.display = "none";
+                                        e.target.nextSibling.style.display =
+                                          "flex";
+                                      }}
+                                    />
+                                  )
+                                ) : null}
+                                <div
+                                  className="w-full aspect-square bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center"
+                                  style={{
+                                    display: doc.public_url
+                                      ? "none"
+                                      : undefined,
+                                  }}
+                                >
+                                  {doc.type === "video" ? (
+                                    <Film className="h-10 w-10 text-slate-400" />
+                                  ) : (
+                                    <Image className="h-10 w-10 text-slate-400" />
+                                  )}
+                                </div>
+                                {aiLabel !== "PENDING" && (
+                                  <div
+                                    className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                      aiLabel === "HIGH RISK"
+                                        ? "bg-red-600 text-white"
+                                        : aiLabel === "HARAM"
+                                          ? "bg-orange-500 text-white"
+                                          : aiLabel === "QUESTIONABLE"
+                                            ? "bg-yellow-500 text-slate-900"
+                                            : "bg-emerald-500 text-white"
+                                    }`}
+                                  >
+                                    AI: {aiLabel}
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col items-center justify-center gap-1.5 p-2">
+                                  <button
+                                    onClick={() => setAiModalDoc(doc)}
+                                    className="bg-sky-600 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-sky-700"
+                                  >
+                                    Details
+                                  </button>
+                                  {!isAutoApproved && (
+                                    <button
+                                      onClick={async () => {
+                                        await apiRequest(
+                                          `/admin/media/${doc.id}/approve`,
+                                          {
+                                            method: "PATCH",
+                                            token: getToken(),
+                                          },
+                                        );
+                                        setModerationPending((prev) =>
+                                          prev.filter((d) => d.id !== doc.id),
+                                        );
+                                      }}
+                                      className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-emerald-600"
+                                    >
+                                      Approve
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => {
+                                      setRejectionModalOpen(true);
+                                      setRejectionItem(doc);
+                                    }}
+                                    className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-red-600"
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
                     <section className="space-y-4">
                       <div className="admin-card admin-sweep rounded-3xl p-6">
@@ -14290,7 +14495,9 @@ export default function AdminPanel() {
                       ) : null}
                     </section>
 
-                    {activeCategory === "ultra-security" ? null : (
+                    {activeCategory === "ultra-security" ||
+                    activeCategory === "files" ||
+                    activeCategory === "media-review" ? null : (
                       <aside className="space-y-4">
                         {activeCategory === "config" ? (
                           <div className="admin-card admin-sweep rounded-3xl p-6">
@@ -14537,21 +14744,291 @@ export default function AdminPanel() {
         }}
         onConfirm={async (reason) => {
           if (!rejectionItem) return;
-          await apiRequest(
-            `/admin/moderation/products/${encodeURIComponent(rejectionItem.id)}`,
-            {
-              method: "PATCH",
-              token: getToken(),
-              headers: buildAdminHeaders({ stepUp: true }),
-              body: { status: "rejected", reason },
-            },
-          );
+          const docId = rejectionItem.id;
+          await apiRequest(`/admin/media/${encodeURIComponent(docId)}/reject`, {
+            method: "PATCH",
+            token: getToken(),
+            headers: buildAdminHeaders({ stepUp: true }),
+            body: { reason },
+          });
           setRejectionModalOpen(false);
           setRejectionItem(null);
-          await refreshModerationQueues();
+          setModerationPending((prev) => prev.filter((d) => d.id !== docId));
         }}
-        itemTitle={rejectionItem?.title || "product"}
+        itemTitle={rejectionItem?.title || "media"}
       />
+
+      {aiModalDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <button
+            onClick={() => setAiModalDoc(null)}
+            className="absolute inset-0 bg-black/50"
+          />
+          <div className="relative w-[92vw] max-w-2xl max-h-[85vh] overflow-auto rounded-2xl bg-white dark:bg-slate-900 shadow-2xl">
+            <div className="sticky top-0 bg-white dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-slate-900 dark:text-white">
+                  AI Analysis Details
+                </p>
+                <p className="text-xs text-slate-500">
+                  {aiModalDoc.file_path || aiModalDoc.entity_id}
+                </p>
+              </div>
+              <button
+                onClick={() => setAiModalDoc(null)}
+                className="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-5">
+              {aiModalDoc.public_url && (
+                <div className="rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  {aiModalDoc.type === "video" ? (
+                    <video
+                      src={aiModalDoc.public_url}
+                      controls
+                      className="w-full max-h-64"
+                    />
+                  ) : (
+                    <img
+                      src={aiModalDoc.public_url}
+                      alt="Preview"
+                      className="w-full max-h-64 object-contain"
+                    />
+                  )}
+                </div>
+              )}
+              <div className="grid grid-cols-5 gap-3">
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+                  <p className="text-xs text-slate-500 mb-1">Label</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      aiModalDoc.ai_label === "HIGH RISK"
+                        ? "text-red-600"
+                        : aiModalDoc.ai_label === "HARAM"
+                          ? "text-orange-500"
+                          : aiModalDoc.ai_label === "QUESTIONABLE"
+                            ? "text-yellow-500"
+                            : "text-emerald-600"
+                    }`}
+                  >
+                    {aiModalDoc.ai_label || "PENDING"}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+                  <p className="text-xs text-slate-500 mb-1">Score</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">
+                    {aiModalDoc.ai_score ?? "—"}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+                  <p className="text-xs text-slate-500 mb-1">Confidence</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">
+                    {aiModalDoc.ai_confidence || "—"}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+                  <p className="text-xs text-slate-500 mb-1">Severity</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      aiModalDoc.ai_severity === "high"
+                        ? "text-red-600"
+                        : aiModalDoc.ai_severity === "medium"
+                          ? "text-amber-500"
+                          : aiModalDoc.ai_severity === "low"
+                            ? "text-emerald-600"
+                            : "text-slate-400"
+                    }`}
+                  >
+                    {aiModalDoc.ai_severity || "—"}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+                  <p className="text-xs text-slate-500 mb-1">Early Exit</p>
+                  <p
+                    className={`text-lg font-bold ${aiModalDoc.ai_early_exit ? "text-cyan-500" : "text-slate-400"}`}
+                  >
+                    {aiModalDoc.ai_early_exit ? "Yes" : "No"}
+                  </p>
+                </div>
+              </div>
+              {aiModalDoc.ai_signals && aiModalDoc.ai_signals.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase">
+                    Signals
+                  </p>
+                  <div className="space-y-1.5">
+                    {aiModalDoc.ai_signals.slice(0, 15).map((sig, i) => (
+                      <div
+                        key={i}
+                        className={`rounded-lg px-3 py-2 text-sm ${
+                          sig.risk === "high"
+                            ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
+                            : sig.risk === "medium"
+                              ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300"
+                              : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                        }`}
+                      >
+                        <span className="font-medium capitalize">
+                          [{sig.risk}]
+                        </span>{" "}
+                        {sig.message}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {aiModalDoc.ai_details && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase">
+                    Score Breakdown
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { key: "ocr_score", label: "OCR" },
+                      { key: "detection_score", label: "YOLO" },
+                      { key: "nsfw_score", label: "NSFW" },
+                      { key: "vision_score", label: "Vision" },
+                    ].map(
+                      ({ key, label }) =>
+                        aiModalDoc.ai_details[key] != null && (
+                          <div
+                            key={key}
+                            className="rounded-lg bg-slate-50 dark:bg-slate-800 p-2 text-center"
+                          >
+                            <p className="text-[10px] text-slate-500 mb-0.5">
+                              {label}
+                            </p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                              {aiModalDoc.ai_details[key]}
+                            </p>
+                          </div>
+                        ),
+                    )}
+                  </div>
+                  {aiModalDoc.ai_details.weights && (
+                    <div className="mt-2 text-xs text-slate-400">
+                      Weights: OCR{" "}
+                      {((aiModalDoc.ai_details.weights.ocr || 0) * 100).toFixed(
+                        0,
+                      )}
+                      % | YOLO{" "}
+                      {(
+                        (aiModalDoc.ai_details.weights.yolo || 0) * 100
+                      ).toFixed(0)}
+                      % | NSFW{" "}
+                      {(
+                        (aiModalDoc.ai_details.weights.nsfw || 0) * 100
+                      ).toFixed(0)}
+                      % | Vision{" "}
+                      {(
+                        (aiModalDoc.ai_details.weights.moondream || 0) * 100
+                      ).toFixed(0)}
+                      %
+                    </div>
+                  )}
+                </div>
+              )}
+              {aiModalDoc.ai_timing && (
+                <div className="text-xs text-slate-400 text-center">
+                  Timing:{" "}
+                  {Object.entries(aiModalDoc.ai_timing)
+                    .map(
+                      ([k, v]) =>
+                        `${k}: ${typeof v === "number" ? v.toFixed(2) + "s" : v}`,
+                    )
+                    .join(" | ")}
+                </div>
+              )}
+              {aiModalDoc.ai_analyzed_at && (
+                <p className="text-xs text-slate-400 text-center">
+                  Analyzed:{" "}
+                  {new Date(aiModalDoc.ai_analyzed_at).toLocaleString()}
+                </p>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={async () => {
+                    await apiRequest(`/admin/media/${aiModalDoc.id}/approve`, {
+                      method: "PATCH",
+                      token: getToken(),
+                    });
+                    setAiModalDoc(null);
+                    setModerationPending((prev) =>
+                      prev.filter((d) => d.id !== aiModalDoc.id),
+                    );
+                  }}
+                  className="flex-1 bg-emerald-500 text-white py-2 rounded-xl font-medium hover:bg-emerald-600"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={async () => {
+                    setReanalyzingId(aiModalDoc.id);
+                    try {
+                      const token = getToken();
+                      await apiRequest(
+                        `/admin/media/${aiModalDoc.id}/reanalyze`,
+                        {
+                          method: "POST",
+                          token,
+                        },
+                      );
+                      for (let i = 0; i < 30; i++) {
+                        await new Promise((r) => setTimeout(r, 2000));
+                        const updated = await apiRequest(
+                          `/admin/media/pending`,
+                          { token },
+                        );
+                        const found = (updated.items || []).find(
+                          (d) => d.id === aiModalDoc.id,
+                        );
+                        if (found && found.ai_label !== "PENDING") {
+                          setAiModalDoc(found);
+                          setModerationPending(updated.items || []);
+                          break;
+                        }
+                      }
+                    } catch (err) {
+                      alert(
+                        "Reanalysis failed: " +
+                          (err.message || "Unknown error"),
+                      );
+                    } finally {
+                      setReanalyzingId(null);
+                    }
+                  }}
+                  disabled={reanalzyingId === aiModalDoc.id}
+                  className="flex-1 bg-sky-500 text-white py-2 rounded-xl font-medium hover:bg-sky-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {reanalzyingId === aiModalDoc.id ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4" />
+                      Reanalyze
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setAiModalDoc(null);
+                    setRejectionModalOpen(true);
+                    setRejectionItem(aiModalDoc);
+                  }}
+                  className="flex-1 bg-red-500 text-white py-2 rounded-xl font-medium hover:bg-red-600"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

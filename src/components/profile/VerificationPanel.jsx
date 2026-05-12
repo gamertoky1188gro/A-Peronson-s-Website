@@ -1,4 +1,3 @@
-import React from "react";
 import { BadgeCheck, Shield } from "lucide-react";
 
 function statusChip(verified) {
@@ -20,7 +19,7 @@ function statusChip(verified) {
 export default function VerificationPanel({ summary }) {
   const verified = Boolean(summary?.verified);
   const chip = statusChip(verified);
-  const Icon = chip.icon;
+  const _Icon = chip.icon;
   const rawScore = Number(summary?.credibility?.score ?? 0);
   const score = Number.isFinite(rawScore)
     ? Math.max(0, Math.min(100, rawScore))

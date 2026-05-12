@@ -1,10 +1,8 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
 import { requireAuth } from "../middleware/auth.js";
 import { requireAdminSecurity } from "../middleware/adminSecurity.js";
+import prisma from "../utils/prisma.js";
 import chalk from "chalk";
-
-const prisma = new PrismaClient();
 
 import {
   getInventoryWithFallback,

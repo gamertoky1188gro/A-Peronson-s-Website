@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function SpotlightCard({ className = "", children }) {
   function handleSpotlightMove(event) {
     const rect = event.currentTarget.getBoundingClientRect();

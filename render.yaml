@@ -46,6 +46,8 @@ services:
         value: "0.65"
       - key: AI_HALLUCINATION_THRESHOLD
         value: "0.7"
+      - key: AI_HARAM_ANALYTICS_ENABLED
+        value: "false"
       - key: SERVE_DIST
         value: "true"
       - key: VITE_BASE_URL

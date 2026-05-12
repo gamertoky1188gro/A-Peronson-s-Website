@@ -2,7 +2,7 @@
  * Admin Config Section - Configuration Editor
  * Location in main file: ~line 16232-16489
  */
-import React from "react";
+
 import { Sliders, Database, Wrench, Save } from "lucide-react";
 import { cn } from "../../../lib/utils";
 

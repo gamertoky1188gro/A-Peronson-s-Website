@@ -18,7 +18,7 @@
     - GET /api/profiles/:id
     - GET /api/ratings/profiles/user::id (public ratings summary)
 */
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
@@ -84,7 +84,8 @@ export default function BuyingHouseProfile() {
     is_admin: false,
   };
   const isBoosted = Boolean(profileBoost);
-  const isPremium = isPremiumFromApi || 
+  const isPremium =
+    isPremiumFromApi ||
     String(user?.subscription_status || "").toLowerCase() === "premium";
   const brandProfile = user?.profile || {};
   const hasBrandKit = Boolean(

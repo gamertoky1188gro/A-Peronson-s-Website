@@ -18,7 +18,7 @@
     - WebSocket URL derived from API_BASE (http -> ws, /api -> /ws)
     - Message protocol expects { type: 'ask', question } and replies with { type: 'reply', answer }
 */
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { API_BASE, getToken } from "../lib/auth";
 import BotLogo from "./ui/BotLogo";

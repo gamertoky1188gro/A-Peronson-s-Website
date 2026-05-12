@@ -17,9 +17,8 @@
     - Keep the legal text exact; only structure/styling should change.
     - This page does not fetch data; it is static content.
 */
-import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
 
+import { motion, useReducedMotion } from "framer-motion";
 const easePremium = [0.16, 1, 0.3, 1];
 const Motion = motion;
 

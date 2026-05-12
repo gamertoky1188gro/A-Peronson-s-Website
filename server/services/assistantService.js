@@ -198,7 +198,7 @@ export function updateAiConfig(newConfig) {
   }
 }
 
-const CODE_CONTEXT_HINTS = new Set([
+const _CODE_CONTEXT_HINTS = new Set([
   "api",
   "route",
   "server",

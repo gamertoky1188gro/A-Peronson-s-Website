@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   apiRequest,
@@ -391,7 +391,9 @@ export default function OrgSettings() {
   const [walletRestricted, setWalletRestricted] = useState(0);
   const [verification, setVerification] = useState(null);
   const [_billingFeedback, setBillingFeedback] = useState("");
-  const [entitlements] = useState(() => secureEntitlements || currentUser?.entitlements || null);
+  const [entitlements] = useState(
+    () => secureEntitlements || currentUser?.entitlements || null,
+  );
   const [_planLimits] = useState(null);
 
   // Members state

@@ -7,14 +7,14 @@ export function useSecureUser() {
 
   useEffect(() => {
     let cancelled = false;
-    
+
     async function fetchUser() {
       const token = getToken();
       if (!token) {
         setLoading(false);
         return;
       }
-      
+
       try {
         const freshUser = await getUserFromApi(token);
         if (!cancelled) {
@@ -42,24 +42,30 @@ export function useSecureUser() {
 // Hook specifically for subscription/premium checks - always fetches from API
 export function usePremiumCheck() {
   const { user, loading } = useSecureUser();
-  
-  const isPremium = user?.subscription_status?.toLowerCase() === "premium" ||
-                    user?.entitlements?.plan?.toLowerCase() === "premium";
-  
+
+  const isPremium =
+    user?.subscription_status?.toLowerCase() === "premium" ||
+    user?.entitlements?.plan?.toLowerCase() === "premium";
+
   return { isPremium, loading, user };
 }
 
 // Hook for entitlement checks - always fetches from API
 export function useEntitlements() {
   const { user, loading } = useSecureUser();
-  
+
   const hasEntitlement = (feature) => {
     if (!user) return false;
     const entitlements = user.entitlements || {};
-    if (entitlements?.features && Object.prototype.hasOwnProperty.call(entitlements.features, feature)) {
+    if (
+      entitlements?.features &&
+      Object.prototype.hasOwnProperty.call(entitlements.features, feature)
+    ) {
       return Boolean(entitlements.features[feature]);
     }
-    const plan = String(entitlements?.plan || user.subscription_status || "").toLowerCase();
+    const plan = String(
+      entitlements?.plan || user.subscription_status || "",
+    ).toLowerCase();
     if (plan === "premium") return true;
     return false;
   };

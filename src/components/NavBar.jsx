@@ -27,13 +27,7 @@
     - POST /api/calls (start call)
 */
 /* global process */
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -95,7 +89,7 @@ const navigationGroups = [
       { to: "/search", label: "Search" },
       { to: "/contracts", label: "Contracts" },
       { to: "/verification", label: "Verification" },
-    ]
+    ],
   },
   {
     label: "Communication",
@@ -103,50 +97,94 @@ const navigationGroups = [
     items: [
       { to: "/notifications", label: "Notifications", badge: true },
       { to: "/chat", label: "Chat" },
-    ]
+    ],
   },
   {
     label: "Business",
     icon: ShoppingCart,
     items: [
-      { to: "/buyer-requests", label: "Requests", roles: ["buyer", "buying_house", "admin"] },
-      { to: "/product-management", label: "Products", roles: ["factory", "buying_house", "admin"] },
-      { to: "/partner-network", label: "Partners", roles: ["buying_house", "factory", "owner", "admin", "agent"] },
-      { to: "/ratings/feedback", label: "Ratings", roles: ["buyer", "buying_house", "factory", "owner", "admin", "agent"] },
-    ]
+      {
+        to: "/buyer-requests",
+        label: "Requests",
+        roles: ["buyer", "buying_house", "admin"],
+      },
+      {
+        to: "/product-management",
+        label: "Products",
+        roles: ["factory", "buying_house", "admin"],
+      },
+      {
+        to: "/partner-network",
+        label: "Partners",
+        roles: ["buying_house", "factory", "owner", "admin", "agent"],
+      },
+      {
+        to: "/ratings/feedback",
+        label: "Ratings",
+        roles: ["buyer", "buying_house", "factory", "owner", "admin", "agent"],
+      },
+    ],
   },
   {
     label: "Organization",
     icon: Building2,
     items: [
-      { to: "/member-management", label: "Members", roles: ["owner", "admin", "buying_house", "factory"] },
-      { to: "/org-settings", label: "Settings", roles: ["owner", "admin", "buying_house", "factory"] },
-      { to: "/insights", label: "Insights", roles: ["owner", "admin", "buying_house", "factory", "buyer"] },
-    ]
+      {
+        to: "/member-management",
+        label: "Members",
+        roles: ["owner", "admin", "buying_house", "factory"],
+      },
+      {
+        to: "/org-settings",
+        label: "Settings",
+        roles: ["owner", "admin", "buying_house", "factory"],
+      },
+      {
+        to: "/insights",
+        label: "Insights",
+        roles: ["owner", "admin", "buying_house", "factory", "buyer"],
+      },
+    ],
   },
   {
     label: "Management",
     icon: Star,
     items: [
-      { to: "/owner", label: "Owner Dashboard", roles: ["owner", "admin", "buying_house", "factory"] },
-      { to: "/agent", label: "Agent Dashboard", roles: ["buying_house", "owner", "admin", "agent"] },
-    ]
+      {
+        to: "/owner",
+        label: "Owner Dashboard",
+        roles: ["owner", "admin", "buying_house", "factory"],
+      },
+      {
+        to: "/agent",
+        label: "Agent Dashboard",
+        roles: ["buying_house", "owner", "admin", "agent"],
+      },
+    ],
   },
   {
     label: "Admin",
     icon: ShieldCheck,
     items: [
       { to: "/admin", label: "Admin Panel", roles: ["owner", "admin"] },
-      { to: "/admin/governance", label: "Governance", roles: ["owner", "admin"] },
-    ]
+      {
+        to: "/admin/governance",
+        label: "Governance",
+        roles: ["owner", "admin"],
+      },
+    ],
   },
   {
     label: "Support",
     icon: Settings,
     items: [
       { to: "/support", label: "Support" },
-      { to: "/onboarding", label: "Onboarding", roles: ["buyer", "buying_house", "factory", "owner", "admin", "agent"] },
-    ]
+      {
+        to: "/onboarding",
+        label: "Onboarding",
+        roles: ["buyer", "buying_house", "factory", "owner", "admin", "agent"],
+      },
+    ],
   },
 ];
 
@@ -216,7 +254,7 @@ function MagneticNavLink({ to, label, active }) {
 
 function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
   const reduceMotion = useReducedMotion();
-  const IconComponent = Icon;
+  const _IconComponent = Icon;
   return (
     // Wrapper is `group` so the tooltip can animate on hover.
     <div className="group relative flex items-center justify-center">
@@ -245,7 +283,7 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
             />
           ) : null}
           <span className="relative inline-flex">
-            <IconComponent className="h-5 w-5" />
+            <_IconComponent className="h-5 w-5" />
             {badgeCount > 0 ? (
               // Notification dot + ping layer (ping sits behind the solid dot).
               <span className="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5">
@@ -266,49 +304,61 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
 }
 
 // Dropdown navigation component - hover on desktop, click on mobile
-function NavDropdown({ group, isOpen, onToggle, userRole, badgeCount = 0, isTouchDevice }) {
+function NavDropdown({
+  group,
+  isOpen,
+  onToggle,
+  userRole,
+  badgeCount = 0,
+  isTouchDevice,
+}) {
   const location = useLocation();
-  const IconComponent = group.icon;
-  
+  const _IconComponent = group.icon;
+
   // Filter items by role
-  const visibleItems = group.items.filter(item => 
-    !item.roles || item.roles.includes(userRole)
+  const visibleItems = group.items.filter(
+    (item) => !item.roles || item.roles.includes(userRole),
   );
-  
+
   if (visibleItems.length === 0) return null;
-  
+
   const handleToggle = (e) => {
     e.stopPropagation();
     onToggle(isOpen ? null : group.label);
   };
-  
+
   return (
-    <div className={`relative group ${isTouchDevice ? '' : 'nav-dropdown'}`}>
+    <div className={`relative group ${isTouchDevice ? "" : "nav-dropdown"}`}>
       <button
         onClick={isTouchDevice ? handleToggle : undefined}
         className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm transition-colors ${
-          isOpen 
-            ? "text-gtBlue bg-sky-50 dark:bg-sky-900/30" 
+          isOpen
+            ? "text-gtBlue bg-sky-50 dark:bg-sky-900/30"
             : "text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue"
         }`}
       >
-        <IconComponent className="h-4 w-4" />
+        <_IconComponent className="h-4 w-4" />
         <span className="hidden lg:inline">{group.label}</span>
-        <ChevronRight className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+        <ChevronRight
+          className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`}
+        />
       </button>
-      
+
       {/* Dropdown Menu - hover on desktop, visible on mobile click */}
-      <div 
+      <div
         onClick={(e) => e.stopPropagation()}
         className={`absolute left-0 top-0 pt-10 w-48 rounded-2xl border border-slate-200/60 bg-white/95 backdrop-blur-xl py-2 shadow-xl dark:border-slate-800/60 dark:bg-slate-900/95 ${
-          isTouchDevice 
-            ? (isOpen ? "block" : "hidden")
+          isTouchDevice
+            ? isOpen
+              ? "block"
+              : "hidden"
             : "hidden group-hover:block"
         }`}
       >
         {visibleItems.map((item) => {
           const isActive = location.pathname === item.to;
-          const showBadge = item.badge && item.to === "/notifications" && badgeCount > 0;
+          const showBadge =
+            item.badge && item.to === "/notifications" && badgeCount > 0;
           return (
             <Link
               key={item.to}
@@ -345,7 +395,7 @@ export default function NavBar() {
   const [openDropdown, setOpenDropdown] = useState(null);
   // Detect touch device for dropdown behavior
   const [isTouchDevice, setIsTouchDevice] = useState(false);
-  
+
   useEffect(() => {
     setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
   }, []);
@@ -971,34 +1021,42 @@ export default function NavBar() {
                     </Link>
                   ))
                 : // Mobile menu with groups
-                    navigationGroups.map((group) => (
-                      <div key={group.label} className="space-y-1">
-                        <div className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500">
-                          {group.label}
-                        </div>
-                        {group.items
-                          .filter(item => !item.roles || item.roles.includes(String(user?.role || "").toLowerCase()))
-                          .map((item) => (
-                            <Link
-                              key={item.to}
-                              to={item.to}
-                              onClick={() => setMobileOpen(false)}
-                              className={`flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-                                location.pathname === item.to
-                                  ? "bg-sky-50 text-gtBlue dark:bg-sky-900/30 dark:text-sky-300"
-                                  : "text-slate-700 hover:bg-slate-100/60 dark:text-slate-100 dark:hover:bg-slate-800/50"
-                              }`}
-                            >
-                              <span>{item.label}</span>
-                              {item.badge && item.to === "/notifications" && unreadCount > 0 && (
+                  navigationGroups.map((group) => (
+                    <div key={group.label} className="space-y-1">
+                      <div className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500">
+                        {group.label}
+                      </div>
+                      {group.items
+                        .filter(
+                          (item) =>
+                            !item.roles ||
+                            item.roles.includes(
+                              String(user?.role || "").toLowerCase(),
+                            ),
+                        )
+                        .map((item) => (
+                          <Link
+                            key={item.to}
+                            to={item.to}
+                            onClick={() => setMobileOpen(false)}
+                            className={`flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+                              location.pathname === item.to
+                                ? "bg-sky-50 text-gtBlue dark:bg-sky-900/30 dark:text-sky-300"
+                                : "text-slate-700 hover:bg-slate-100/60 dark:text-slate-100 dark:hover:bg-slate-800/50"
+                            }`}
+                          >
+                            <span>{item.label}</span>
+                            {item.badge &&
+                              item.to === "/notifications" &&
+                              unreadCount > 0 && (
                                 <span className="rounded-full bg-gradient-to-tr from-red-500 to-pink-500 px-2 py-0.5 text-[10px] font-semibold text-white">
                                   {unreadCount > 99 ? "99+" : unreadCount}
                                 </span>
                               )}
-                            </Link>
-                          ))}
-                      </div>
-                    ))}
+                          </Link>
+                        ))}
+                    </div>
+                  ))}
 
               {!user ? (
                 <div className="mt-2 flex gap-2">

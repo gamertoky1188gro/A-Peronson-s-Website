@@ -1,5 +1,3 @@
-import React from "react";
-
 function ultraMetricShell(_dark) {
   return "rounded-xl border border-slate-800/50 bg-slate-900/50 p-4";
 }

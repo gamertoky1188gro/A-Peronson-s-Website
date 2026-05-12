@@ -1,0 +1,130 @@
+pipeline:
+  image_max_size_mb: 10
+  image_max_dim: 2048
+  timeout_seconds: 60
+  early_exit_threshold: 85
+  log_intermediate: true
+
+models:
+  yolo:
+    model_name: yolov8n
+    confidence_threshold: 0.4
+    iou_threshold: 0.45
+
+  nsfw:
+    model_name: ndp40
+    threshold: 0.3
+
+  ocr:
+    enabled: true
+    language: en
+    confidence_threshold: 0.5
+
+  moondream:
+    enabled: false
+    model_size: 2b
+    max_tokens: 100
+
+scoring:
+  weights:
+    ocr: 0.15
+    yolo: 0.25
+    nsfw: 0.35
+    moondream: 0.25
+
+  thresholds:
+    safe_max: 25
+    questionable_max: 50
+    haram_max: 75
+
+  nsfw_score_levels:
+    extreme: 70
+    high: 50
+    medium: 30
+    low: 15
+
+  object_risk_scores:
+    high: 35
+    medium: 15
+
+  keyword_risk_scores:
+    high: 40
+    medium: 20
+
+risky_objects:
+  high_risk:
+    - alcohol
+    - wine
+    - beer
+    - cigarette
+    - cigar
+    - vape
+    - gun
+    - weapon
+    - knife
+    - drug
+    - gambling
+    - casino
+    - poker
+    - dice
+
+  medium_risk:
+    - bottle
+    - cup
+    - person
+    - sports
+    - bikini
+    - underwear
+
+banned_keywords:
+  high_risk:
+    - porn
+    - xxx
+    - nude
+    - naked
+    - sex
+    - adult
+    - escort
+    - prostitute
+    - gambling
+    - bet
+    - win
+    - alcohol
+    - beer
+    - wine
+    - vodka
+    - whiskey
+    - casino
+    - weapon
+    - gun
+
+  medium_risk:
+    - party
+    - club
+    - bar
+    - smoke
+    - smoking
+    - vape
+    - ecigarette
+    - bikini
+    - swimsuit
+    - underwear
+
+context_triggers:
+  high_risk:
+    - "woman in revealing"
+    - "partially nude"
+    - "explicit content"
+    - "alcohol bottle"
+    - "gambling table"
+    - "casino"
+    - "weapon in hand"
+
+  medium_risk:
+    - "party scene"
+    - "night club"
+    - "bar"
+    - "smoking"
+    - "drinking"
+    - "beach"
+    - "swimsuit"

@@ -3,13 +3,7 @@
   Access: Protected (login required)
   Using the exact template layout with glass-morphism theme
 */
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import useLocalStorageState from "../hooks/useLocalStorageState";
@@ -432,7 +426,7 @@ export default function MainFeed() {
   const [activeCategory, setActiveCategory] = useState(
     feedConfig.labels.categories,
   );
-  const [unique, setUnique] = useLocalStorageState(uniqueKey, false); // eslint-disable-line no-unused-vars
+  const [unique, setUnique] = useLocalStorageState(uniqueKey, false);
   const [search, setSearch] = useState("");
 
   const [items, setItems] = useState([]);
@@ -446,7 +440,7 @@ export default function MainFeed() {
   const [commentsItem, setCommentsItem] = useState(null);
   const [reportItem, setReportItem] = useState(null);
   const [reportCooldowns, setReportCooldowns] = useState({});
-  const [reportBusy, setReportBusy] = useState(false); // eslint-disable-line no-unused-vars
+  const [reportBusy, setReportBusy] = useState(false);
   const [expressBusyId, setExpressBusyId] = useState("");
   const [claimedRequestId, setClaimedRequestId] = useState("");
 

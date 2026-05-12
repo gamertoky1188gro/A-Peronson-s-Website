@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
 import chalk from "chalk";
-
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
 
 const DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY = [
   {

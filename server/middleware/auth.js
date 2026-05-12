@@ -12,10 +12,6 @@ const JWT_ISSUER = process.env.JWT_ISSUER || "gartexhub-api";
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "gartexhub-client";
 
 export function signToken(user, options = {}) {
-  // Token includes only the fields needed for server-side authorization/scoping.
-  // Agents are enterprise sub-accounts, so we include `org_owner_id` and `member_id` to support:
-  // - scoping records to the owning organization
-  // - single-field "Agent ID" login UX (email-or-agent-id)
   const payload = {
     id: user.id,
     role: user.role,
@@ -26,12 +22,19 @@ export function signToken(user, options = {}) {
     passkey_verified_at: options.authViaPasskey ? new Date().toISOString() : "",
   };
 
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: "12h",
+  const tokenOptions = {
     issuer: JWT_ISSUER,
     audience: JWT_AUDIENCE,
     subject: user.id,
-  });
+  };
+
+  if (options.expiresIn && options.expiresIn > 0) {
+    tokenOptions.expiresIn = options.expiresIn;
+  } else if (!options.expiresIn) {
+    tokenOptions.expiresIn = "12h";
+  }
+
+  return jwt.sign(payload, JWT_SECRET, tokenOptions);
 }
 
 export async function requireAuth(req, res, next) {

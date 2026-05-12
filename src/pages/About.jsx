@@ -22,7 +22,7 @@
     - Skeleton -> fade-in "trust load" while documents/stats fetch.
     - Verified glow indicators (trust anchors).
 */
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, FileText, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { apiRequest } from "../lib/auth";

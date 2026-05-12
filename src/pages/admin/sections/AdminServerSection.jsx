@@ -3,7 +3,6 @@
  * Location in main file: ~line 11808-14079
  */
 
-import React from "react";
 import { Server, Database, HardDrive, Activity, Wrench } from "lucide-react";
 import { cn } from "../../../lib/utils";
 

@@ -17,7 +17,7 @@
   Key API endpoints:
     - GET /api/system/pricing  (via `apiRequest('/system/pricing')`)
 */
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
@@ -510,9 +510,7 @@ export default function PricingPage() {
   const token = getToken();
   const isLoggedIn = Boolean(token && sessionUser);
   const userRole = secureUser?.role || sessionUser?.role;
-  const activePlanKey = isLoggedIn
-    ? planKeyForUserRole(userRole)
-    : "neutral";
+  const activePlanKey = isLoggedIn ? planKeyForUserRole(userRole) : "neutral";
 
   useEffect(() => {
     if (typeof window !== "undefined" && location?.hash) {

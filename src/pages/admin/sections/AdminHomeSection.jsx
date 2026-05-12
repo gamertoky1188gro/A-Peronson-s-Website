@@ -5,7 +5,6 @@
  * Location in main file: ~line 5009-5721
  */
 
-import React from "react";
 import { LayoutDashboard, TrendingUp, Activity } from "lucide-react";
 import { cn } from "../../../lib/utils";
 

@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../server/utils/prisma.js";
 
 const LAST_30_DAYS = Array.from({ length: 30 }, (_, i) => {
   const d = new Date();

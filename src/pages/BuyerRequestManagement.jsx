@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   apiRequest,
@@ -286,7 +286,9 @@ export default function BuyerRequestManagement() {
   const { user: secureUser } = useSecureUser();
   const { hasEntitlement: secureHasEntitlement } = useEntitlements();
   const role = secureUser?.role || String(user?.role || "").toLowerCase();
-  const canSmartMatch = secureHasEntitlement("smart_supplier_matching") || hasEntitlement(user, "smart_supplier_matching");
+  const canSmartMatch =
+    secureHasEntitlement("smart_supplier_matching") ||
+    hasEntitlement(user, "smart_supplier_matching");
 
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
