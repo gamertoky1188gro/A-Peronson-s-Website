@@ -254,7 +254,7 @@ function MagneticNavLink({ to, label, active }) {
 
 function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
   const reduceMotion = useReducedMotion();
-  const _IconComponent = Icon;
+  const IconComponent = Icon;
   return (
     // Wrapper is `group` so the tooltip can animate on hover.
     <div className="group relative flex items-center justify-center">
@@ -283,7 +283,7 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
             />
           ) : null}
           <span className="relative inline-flex">
-            <_IconComponent className="h-5 w-5" />
+            {IconComponent && <IconComponent className="h-5 w-5" />}
             {badgeCount > 0 ? (
               // Notification dot + ping layer (ping sits behind the solid dot).
               <span className="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5">
@@ -313,7 +313,7 @@ function NavDropdown({
   isTouchDevice,
 }) {
   const location = useLocation();
-  const _IconComponent = group.icon;
+  const IconComponent = group.icon;
 
   // Filter items by role
   const visibleItems = group.items.filter(
@@ -337,7 +337,7 @@ function NavDropdown({
             : "text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue"
         }`}
       >
-        <_IconComponent className="h-4 w-4" />
+        {IconComponent && <IconComponent className="h-4 w-4" />}
         <span className="hidden lg:inline">{group.label}</span>
         <ChevronRight
           className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`}
