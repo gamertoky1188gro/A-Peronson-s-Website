@@ -46,7 +46,7 @@ export default defineConfig([
         sourceType: "module",
         requireConfigFile: false,
         babelOptions: {
-          presets: [["@babel/preset-react", { runtime: "classic" }]],
+          presets: [["@babel/preset-react", { runtime: "automatic" }]],
         },
       },
     },
