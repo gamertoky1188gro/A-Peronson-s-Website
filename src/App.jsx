@@ -41,6 +41,7 @@ import RatingFeedback from "./pages/RatingFeedback";
 import SupportReports from "./pages/SupportReports";
 import AdminPanel from "./pages/AdminPanel";
 import AdminGovernance from "./pages/AdminGovernance";
+import AccessDenied from "./pages/AccessDenied";
 import FloatingAssistant from "./components/FloatingAssistant";
 import Footer from "./components/Footer";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";

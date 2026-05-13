@@ -8556,7 +8556,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8596,7 +8599,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8636,7 +8642,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8676,7 +8685,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8716,7 +8728,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8756,7 +8771,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8865,7 +8883,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8875,5 +8896,48 @@
     },
     "prev_hash": "7608219a03077cfb1f6a3722b036136943008770732b109bfe92f84ed9dd4d8e",
     "hash": "6ce8a689b9cb22e4534fc30a64f3e4dad620a54ef2c23ee48a2fe61bbb8debbe"
+  },
+  {
+    "id": "e0e98bbc-a644-4c94-9543-7f1a7b428c12",
+    "at": "2026-05-12T18:38:45.583Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "6ce8a689b9cb22e4534fc30a64f3e4dad620a54ef2c23ee48a2fe61bbb8debbe",
+    "hash": "88af629c8711452633e50e708534330362f8b38a748b5b49a40047cdcf630177"
+  },
+  {
+    "id": "70a59396-88eb-4bcb-9ee1-edac5430c912",
+    "at": "2026-05-12T18:38:45.586Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "88af629c8711452633e50e708534330362f8b38a748b5b49a40047cdcf630177",
+    "hash": "21dd0a830b57bcfce71eb1f5624fcf06431488539ab22fb5850aa70f50499c7a"
   }
 ]

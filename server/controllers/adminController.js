@@ -301,13 +301,10 @@ export async function reanalyzeDocument(req, res) {
   const { isAIAnalyticsEnabled } =
     await import("../services/aiModerationService.js");
   if (!isAIAnalyticsEnabled()) {
-    return res
-      .status(200)
-      .json({
-        error: null,
-        message:
-          "AI Haram Analytics is disabled via AI_HARAM_ANALYTICS_ENABLED",
-      });
+    return res.status(200).json({
+      error: null,
+      message: "AI Haram Analytics is disabled via AI_HARAM_ANALYTICS_ENABLED",
+    });
   }
 
   res.json({ status: "processing", message: "Reanalysis queued" });
