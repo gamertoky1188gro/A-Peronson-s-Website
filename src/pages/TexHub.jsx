@@ -131,7 +131,7 @@ function AnimatedHeroHeading({ text, className = "" }) {
         {words.map((word, wordIndex) => {
           const chars = Array.from(word);
           return (
-            <>
+            <span key={`${word}-${wordIndex}`}>
               <span className="inline-block whitespace-nowrap">
                 {chars.map((ch, idx) => {
                   const charIndex = globalIndex++;
@@ -153,7 +153,7 @@ function AnimatedHeroHeading({ text, className = "" }) {
                 })}
               </span>
               {wordIndex < words.length - 1 ? " " : ""}
-            </>
+            </span>
           );
         })}
       </span>

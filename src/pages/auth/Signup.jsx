@@ -5,8 +5,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import PasswordStrengthBar from "react-password-strength-bar";
+import PasswordStrengthBarModule from "react-password-strength-bar";
 import PasswordChecklist from "react-password-checklist";
+
+const PasswordStrengthBar = PasswordStrengthBarModule.default;
 import {
   apiRequest,
   getCurrentUser,
@@ -459,27 +461,21 @@ export default function Signup() {
                         </button>
                       </div>
                       {password && (
-                        <>
-                          <PasswordStrengthBar
-                            password={password}
-                            minLength={8}
-                            maxLength={32}
-                          />
-                          <PasswordChecklist
-                            password={password}
-                            valueAgain={confirmPassword}
-                            minLength={8}
-                            maxLength={32}
-                            specialChar
-                            number
-                            capital
-                            letter
-                            lowercase
-                            notEmpty
-                            noSpaces={false}
-                          />
-                        </>
-                      )}
+                      <>
+                        <PasswordStrengthBar
+                          password={password}
+                          minLength={8}
+                          maxLength={32}
+                        />
+                        <PasswordChecklist
+                          value={password}
+                          valueAgain={confirmPassword}
+                          minLength={8}
+                          maxLength={32}
+                          rules={["minLength", "maxLength", "specialChar", "number", "capital", "letter", "lowercase", "match", "notEmpty", "noSpaces"]}
+                        />
+                      </>
+                    )}
                     </div>
                   </FieldShell>
 
