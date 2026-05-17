@@ -415,6 +415,14 @@ export async function registerUser(payload) {
   if (payload?.coupon_code) {
     await redeemCouponForUser({ userId: user.id, code: payload.coupon_code });
   }
+
+  try {
+    const { createUserOpencodeSession } = await import("./assistantService.js");
+    await createUserOpencodeSession(user.id);
+  } catch (err) {
+    // non-blocking: session creation should not block signup
+  }
+
   return cleanUser(user);
 }
 

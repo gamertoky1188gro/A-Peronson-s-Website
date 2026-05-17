@@ -8,20 +8,60 @@
   Purpose:
     - Provide a persistent AI/help assistant UI as a slide-in panel.
     - Connects to backend WebSocket (`/ws`) to stream answers.
+    - Per-user session management via Opencode API
 
   Key behaviors:
     - Floating button toggles the panel.
     - Messages list auto-scrolls on new messages.
     - Optional typewriter effect for new assistant messages (UI polish).
+    - One session per user - new session clears old messages
+    - Auto-load history from opencode API on open
+    - Delete session button to start fresh
 
   Key backend:
     - WebSocket URL derived from API_BASE (http -> ws, /api -> /ws)
     - Message protocol expects { type: 'ask', question } and replies with { type: 'reply', answer }
+    - Session history via /api/assistant/session-messages
+    - Delete session via /api/assistant/session
 */
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { API_BASE, getToken } from "../lib/auth";
+import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
 import BotLogo from "./ui/BotLogo";
+
+function getUserId() {
+  const user = getCurrentUser();
+  return user?.id || null;
+}
+
+async function fetchSessionMessages() {
+  const token = getToken();
+  if (!token) return [];
+  try {
+    const res = await fetch(`${API_BASE}/assistant/session-messages`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    return data.messages || [];
+  } catch {
+    return [];
+  }
+}
+
+async function deleteSessionAPI() {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(`${API_BASE}/assistant/session`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    return data.ok || false;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Helper component to simulate typing effect
@@ -50,29 +90,51 @@ function TypewriterText({ text, speed = 20, onComplete }) {
 }
 
 export default function FloatingAssistant() {
-  // Used to detect current route; we enable a special "orb" skin on /help only.
+  const userId = getUserId();
   const location = useLocation();
   const orbMode = location.pathname === "/help";
-  // Whether the slide-in panel is visible.
   const [open, setOpen] = useState(false);
-  // Controlled input for the message composer.
   const [input, setInput] = useState("");
-  // Chat transcript (simple array of { role, text, isNew }).
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      text: "Hello! I am your GarTex Assistant (WS). How can I help you with your textile business today?",
-      isNew: false,
-    },
-  ]);
-  // "Thinking" state: drives typing indicator dot and disables sending duplicates.
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  // Refs:
-  // - scrollRef: DOM element for scrolling message list to bottom
-  // - socketRef: WebSocket instance reused across renders
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   const scrollRef = useRef(null);
   const socketRef = useRef(null);
   const requestSeqRef = useRef(1);
+
+  useEffect(() => {
+    if (open && userId && !sessionLoaded) {
+      fetchSessionMessages().then((msgs) => {
+        if (msgs && msgs.length > 0) {
+          const formatted = msgs.map((m) => ({
+            role: m.role === "user" ? "user" : "assistant",
+            text: m.text,
+            isNew: false,
+          }));
+          setMessages(formatted);
+        } else {
+          setMessages([{
+            role: "assistant",
+            text: "Hello! I am your GarTex Assistant. How can I help you with your textile business today?",
+            isNew: false,
+          }]);
+        }
+        setSessionLoaded(true);
+      });
+    }
+  }, [open, userId, sessionLoaded]);
+
+  async function deleteSession() {
+    if (userId) {
+      await deleteSessionAPI();
+    }
+    setMessages([{
+      role: "assistant",
+      text: "Chat cleared. How can I help you with your textile business today?",
+      isNew: false,
+    }]);
+    setSessionLoaded(false);
+  }
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -102,7 +164,13 @@ export default function FloatingAssistant() {
     };
     socket.onmessage = (event) => {
       // Server sends JSON messages. We expect { type: 'reply' | 'error', ... }.
-      const data = JSON.parse(event.data);
+      let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch (err) {
+        console.error("Failed to parse WS message", err);
+        return;
+      }
       if (data.type === "reply") {
         const botMsg = {
           role: "assistant",
@@ -239,7 +307,7 @@ export default function FloatingAssistant() {
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Drawer header: title + live status (thinking/live) + close button. */}
+        {/* Drawer header: title + live status (thinking/live) + close button + delete session */}
         <div className="p-4 bg-[#0A66C2] text-white flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm">
@@ -262,30 +330,56 @@ export default function FloatingAssistant() {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => setOpen(false)}
-            aria-label="Close assistant"
-            title="Close assistant"
-            type="button"
-            className="hover:bg-white/10 p-1 rounded-full transition-colors w-8 h-8 flex items-center justify-center"
-          >
-            <svg
-              aria-hidden="true"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="text-white"
+          <div className="flex items-center gap-1">
+            <button
+              onClick={deleteSession}
+              aria-label="Delete session"
+              title="Delete session & start new chat"
+              type="button"
+              className="hover:bg-white/10 p-1.5 rounded-full transition-colors w-8 h-8 flex items-center justify-center"
             >
-              <path
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 6 L18 18 M6 18 L18 6"
-              />
-            </svg>
-          </button>
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-white"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Close assistant"
+              title="Close assistant"
+              type="button"
+              className="hover:bg-white/10 p-1 rounded-full transition-colors w-8 h-8 flex items-center justify-center"
+            >
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-white"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 6 L18 18 M6 18 L18 6"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Transcript: scrollable list of chat bubbles. */}
@@ -359,6 +453,7 @@ export default function FloatingAssistant() {
               />
             </div>
             <button
+              type="button"
               onClick={() => handleSend()}
               disabled={loading || !input.trim()}
               className="w-10 h-10 rounded-full bg-[#0A66C2] text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all hover:bg-[#004182] hover:shadow-lg active:scale-90 shrink-0"
@@ -379,7 +474,7 @@ export default function FloatingAssistant() {
             </button>
           </div>
           <p className="text-[10px] text-gray-400 text-center mt-3 font-medium">
-            GarTex Hub Intelligence - WebSocket Powered
+            GarTex AI Assistant • Session stored locally
           </p>
         </div>
       </div>

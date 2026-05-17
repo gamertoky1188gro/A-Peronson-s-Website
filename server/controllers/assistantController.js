@@ -10,6 +10,8 @@ import {
   removeAssistantRule,
   getAssistantConfig,
   updateAssistantConfig,
+  getOpencodeSessionMessages,
+  deleteOpencodeSession,
 } from "../services/assistantService.js";
 import aiOrchestration from "../services/aiOrchestrationService.js";
 import {
@@ -40,11 +42,13 @@ function handleError(res, error) {
 export async function askAssistant(req, res) {
   const orgId = orgIdFromUser(req.user);
   const question = req.body?.question || "";
+  const userId = req.user?.id || null;
   logInfo("Assistant /ask request received", {
     org_id: orgId,
     question_chars: String(question).length,
+    user_id: userId,
   });
-  const result = await assistantReply(orgId, question);
+  const result = await assistantReply(orgId, question, userId);
   return res.json(result);
 }
 
@@ -55,6 +59,21 @@ export async function askAssistantPublic(req, res) {
   });
   const result = await assistantReply("public_ws", question);
   return res.json(result);
+}
+
+export async function getSessionMessages(req, res) {
+  const userId = req.user?.id || null;
+  logInfo("Getting session messages", { user_id: userId, hasUser: !!req.user });
+  const messages = await getOpencodeSessionMessages(userId);
+  logInfo("Returning session messages", { count: messages?.length || 0, userId });
+  return res.json({ messages });
+}
+
+export async function deleteSession(req, res) {
+  const userId = req.user?.id || null;
+  logInfo("Deleting session", { user_id: userId });
+  const success = await deleteOpencodeSession(userId);
+  return res.json({ ok: success });
 }
 
 export async function getAssistantKnowledge(req, res) {

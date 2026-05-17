@@ -14,7 +14,7 @@
     - Provide mobile navigation drawer.
 
   Key UX patterns:
-    - Glassmorphism base via `.nav-glass` (App.css): semi-transparent + blur + subtle shadow.
+    - Glassmorphism base: semi-transparent + blur + subtle shadow.
     - "Active" indicator uses Framer Motion `layoutId="nav-active"` so it smoothly slides between links.
     - Ctrl+K / Cmd+K focuses search.
 
@@ -33,15 +33,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
   Building2,
+  ChevronDown,
   ChevronRight,
-  DollarSign,
   Factory,
   FileText,
   LayoutDashboard,
   Menu,
   MessageSquare,
   Moon,
-  NotebookPen,
   Package,
   PlusCircle,
   Search,
@@ -52,6 +51,7 @@ import {
   Sun,
   Users,
   Vote,
+  X,
 } from "lucide-react";
 import {
   motion as Motion,
@@ -71,12 +71,15 @@ import {
   subscribeNotificationsRealtime,
 } from "../lib/notificationsRealtime";
 
+const cn = (...classes) => classes.filter(Boolean).join(" ");
+
 // Public navigation (shown for logged-out visitors).
 const publicLinks = [
   { to: "/pricing", label: "Pricing" },
   { to: "/about", label: "About" },
   { to: "/help", label: "Help" },
   { to: "/support", label: "Support" },
+  { to: "/mvp", label: "MVP" },
 ];
 
 // Auth navigation dropdown structure
@@ -86,6 +89,7 @@ const navigationGroups = [
     icon: LayoutDashboard,
     items: [
       { to: "/feed", label: "Feed" },
+      { to: "/feed/manage", label: "Manage Feed" },
       { to: "/search", label: "Search" },
       { to: "/contracts", label: "Contracts" },
       { to: "/verification", label: "Verification" },
@@ -188,29 +192,25 @@ const navigationGroups = [
   },
 ];
 
-// Premium-feeling easing curve used across nav animations.
 const easePremium = [0.16, 1, 0.3, 1];
 
-// Utility: keep values within a range (used for magnetic hover translation).
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
 function MagneticNavLink({ to, label, active }) {
-  // Reduced motion: when user prefers reduced motion, disable the magnetic movement.
   const reduceMotion = useReducedMotion();
-  // Motion values hold the current offset; springs smooth the movement.
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const springX = useSpring(x, { stiffness: 500, damping: 32, mass: 0.6 });
   const springY = useSpring(y, { stiffness: 500, damping: 32, mass: 0.6 });
 
-  // Active state changes typography + color (also used by the moving `layoutId` pill below).
-  const className = `relative inline-flex items-center rounded-full px-3 py-2 text-sm transition-colors ${
+  const className = cn(
+    "relative inline-flex items-center rounded-full px-3 py-2 text-sm font-medium transition-colors",
     active
-      ? "font-semibold text-gtBlue"
-      : "text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue"
-  }`;
+      ? "text-sky-700 dark:text-sky-300"
+      : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+  );
 
   return (
     <Link
@@ -218,7 +218,6 @@ function MagneticNavLink({ to, label, active }) {
       className={className}
       onMouseMove={(e) => {
         if (reduceMotion) return;
-        // Compute relative mouse position so the label subtly "pulls" toward the cursor.
         const rect = e.currentTarget.getBoundingClientRect();
         const relX = e.clientX - rect.left - rect.width / 2;
         const relY = e.clientY - rect.top - rect.height / 2;
@@ -228,23 +227,20 @@ function MagneticNavLink({ to, label, active }) {
         y.set(clamp((relY / (rect.height / 2)) * maxY, -maxY, maxY));
       }}
       onMouseLeave={() => {
-        // Spring back to center when cursor leaves.
         x.set(0);
         y.set(0);
       }}
     >
       {active ? (
-        // The "active" pill: uses layoutId so it animates between links.
         <Motion.span
           layoutId="nav-active"
-          className="absolute inset-x-1 inset-y-1 rounded-full bg-[rgba(10,102,194,0.10)] dark:bg-[rgba(10,102,194,0.16)]"
-          transition={{ type: "spring", stiffness: 420, damping: 32 }}
+          className="absolute inset-0 rounded-full bg-sky-500/15 ring-1 ring-sky-400/30 shadow-[0_0_0_1px_rgba(56,189,248,0.12)]"
+          transition={{ type: "spring", stiffness: 500, damping: 42 }}
         />
       ) : null}
-      {/* Text wrapper uses spring x/y to create magnetic feel. */}
       <Motion.span
         style={{ x: springX, y: springY }}
-        className="relative inline-block"
+        className="relative z-10 inline-block"
       >
         {label}
       </Motion.span>
@@ -256,66 +252,59 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
   const reduceMotion = useReducedMotion();
   const IconComponent = Icon;
   return (
-    // Wrapper is `group` so the tooltip can animate on hover.
     <div className="group relative flex items-center justify-center">
       <Motion.div
-        // Hover bounce: subtle scale + lift to signal interactivity.
         whileHover={reduceMotion ? undefined : { scale: 1.08, y: -1 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98, y: 0 }}
         transition={{ type: "spring", stiffness: 520, damping: 28 }}
       >
         <Link
           to={to}
-          // Visual: rounded icon button with soft hover background (light + dark).
-          className={`relative rounded-full p-2 transition-colors${
-            active
-              ? "text-gtBlue"
-              : "text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue"
-          }hover:bg-slate-100/50 dark:hover:bg-slate-800/50`}
+          className={cn(
+            "relative inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:-translate-y-0.5 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-300",
+            active && "text-sky-600 dark:text-sky-300"
+          )}
           aria-label={label}
         >
           {active ? (
-            // Active pill behind the icon (also uses layoutId for smooth transitions).
             <Motion.span
               layoutId="nav-active"
-              className="absolute inset-0 rounded-full bg-[rgba(10,102,194,0.10)] dark:bg-[rgba(10,102,194,0.16)]"
-              transition={{ type: "spring", stiffness: 420, damping: 32 }}
+              className="absolute inset-0 rounded-full bg-sky-500/15 ring-1 ring-sky-400/30"
+              transition={{ type: "spring", stiffness: 500, damping: 42 }}
             />
           ) : null}
-          <span className="relative inline-flex">
+          <span className="relative z-10 inline-flex">
             {IconComponent && <IconComponent className="h-5 w-5" />}
             {badgeCount > 0 ? (
-              // Notification dot + ping layer (ping sits behind the solid dot).
-              <span className="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gradient-to-tr from-red-500 to-pink-500 opacity-35" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-red-500 to-pink-500" />
+              <span className="absolute right-0 top-0 rounded-full bg-cyan-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                {badgeCount > 99 ? "99+" : badgeCount}
               </span>
             ) : null}
           </span>
         </Link>
       </Motion.div>
 
-      {/* Tooltip: hidden by default; fades/scales in on group hover. */}
-      <span className="pointer-events-none absolute top-full z-50 mt-2 w-max origin-top scale-0 rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 shadow-md transition-all duration-200 group-hover:scale-100 group-hover:opacity-100 dark:bg-slate-700">
+      <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full border border-white/10 bg-slate-950/95 px-2.5 py-1 text-xs text-white opacity-0 shadow-lg transition duration-200 group-hover:block group-hover:opacity-100 dark:bg-slate-900/95">
         {label}
       </span>
     </div>
   );
 }
 
-// Dropdown navigation component - hover on desktop, click on mobile
 function NavDropdown({
   group,
   isOpen,
   onToggle,
+  onMouseEnter,
+  onMouseLeave,
   userRole,
   badgeCount = 0,
   isTouchDevice,
 }) {
   const location = useLocation();
   const IconComponent = group.icon;
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Filter items by role
   const visibleItems = group.items.filter(
     (item) => !item.roles || item.roles.includes(userRole),
   );
@@ -328,99 +317,135 @@ function NavDropdown({
   };
 
   return (
-    <div className={`relative group ${isTouchDevice ? "" : "nav-dropdown"}`}>
+    <div 
+      className={cn("relative group", isTouchDevice ? "" : "nav-dropdown")}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        onMouseEnter?.();
+        onToggle(group.label);
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        onMouseLeave?.();
+      }}
+    >
       <button
         onClick={isTouchDevice ? handleToggle : undefined}
-        className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm transition-colors ${
+        className={cn(
+          "group inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition",
           isOpen
-            ? "text-gtBlue bg-sky-50 dark:bg-sky-900/30"
-            : "text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue"
-        }`}
+            ? "text-sky-700 bg-sky-500/10 ring-1 ring-sky-400/25 dark:text-sky-300"
+            : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+        )}
       >
-        {IconComponent && <IconComponent className="h-4 w-4" />}
-        <span className="hidden lg:inline">{group.label}</span>
-        <ChevronRight
-          className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`}
-        />
+        <span className="inline-flex items-center gap-2">
+          {IconComponent && <IconComponent className="h-4 w-4" />}
+          <span className="hidden lg:inline">{group.label}</span>
+        </span>
+        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen ? "rotate-180" : "")} />
       </button>
 
-      {/* Dropdown Menu - hover on desktop, visible on mobile click */}
       <div
-        onClick={(e) => e.stopPropagation()}
-        className={`absolute left-0 top-0 pt-10 w-48 rounded-2xl border border-slate-200/60 bg-white/95 backdrop-blur-xl py-2 shadow-xl dark:border-slate-800/60 dark:bg-slate-900/95 ${
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={cn(
+          "absolute left-0 top-full z-50 mt-2 min-w-72 overflow-hidden rounded-3xl border border-white/10 bg-white/80 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:bg-slate-950/85",
           isTouchDevice
             ? isOpen
               ? "block"
               : "hidden"
-            : "hidden group-hover:block"
-        }`}
+            : isOpen || isHovered ? "block" : "hidden"
+        )}
       >
-        {visibleItems.map((item) => {
-          const isActive = location.pathname === item.to;
-          const showBadge =
-            item.badge && item.to === "/notifications" && badgeCount > 0;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={() => onToggle(null)}
-              className={`flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                isActive
-                  ? "bg-sky-50 text-gtBlue dark:bg-sky-900/30 dark:text-sky-300"
-                  : "text-slate-700 hover:bg-slate-100/60 dark:text-slate-200 dark:hover:bg-slate-800/60"
-              }`}
-            >
-              <span>{item.label}</span>
-              {showBadge && (
-                <span className="rounded-full bg-gradient-to-tr from-red-500 to-pink-500 px-2 py-0.5 text-[10px] font-semibold text-white">
-                  {badgeCount > 99 ? "99+" : badgeCount}
+        <div className="px-3 pb-2 pt-1">
+          <div className="flex items-center justify-between text-xs uppercase tracking-[0.22em] text-slate-400">
+            <span>{group.label}</span>
+            <span className="rounded-full bg-sky-500/10 px-2 py-1 text-sky-700 dark:text-sky-300">
+              {visibleItems.length} links
+            </span>
+          </div>
+        </div>
+        {group.label === "Communication" && badgeCount > 0 && (
+          <div className="mt-2 mx-3 mb-2 rounded-2xl bg-sky-500/10 px-3 py-2 text-xs text-sky-700 dark:text-sky-300">
+            {badgeCount} unread notifications
+          </div>
+        )}
+        <div className="space-y-1">
+          {visibleItems.map((item) => {
+            const isActive = location.pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => onToggle(null)}
+                className={cn(
+                  "group/item flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
+                  isActive
+                    ? "bg-sky-500/10 text-sky-700 ring-1 ring-sky-400/25 dark:text-sky-300"
+                    : "text-slate-600 hover:bg-slate-900/5 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                )}
+              >
+                <span className="flex items-center gap-3">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900/5 text-slate-700 dark:bg-white/5 dark:text-slate-200">
+                    {item.label === "Feed" && <LayoutDashboard className="h-4 w-4" />}
+                    {item.label === "Search" && <Search className="h-4 w-4" />}
+                    {item.label === "Contracts" && <FileText className="h-4 w-4" />}
+                    {item.label === "Verification" && <ShieldCheck className="h-4 w-4" />}
+                    {item.label === "Notifications" && <Bell className="h-4 w-4" />}
+                    {item.label === "Chat" && <MessageSquare className="h-4 w-4" />}
+                    {item.label === "Requests" && <FileText className="h-4 w-4" />}
+                    {item.label === "Products" && <Package className="h-4 w-4" />}
+                    {item.label === "Partners" && <Users className="h-4 w-4" />}
+                    {item.label === "Ratings" && <Star className="h-4 w-4" />}
+                    {item.label === "Members" && <Users className="h-4 w-4" />}
+                    {item.label === "Settings" && <Settings className="h-4 w-4" />}
+                    {item.label === "Insights" && <FileText className="h-4 w-4" />}
+                    {item.label === "Owner Dashboard" && <Star className="h-4 w-4" />}
+                    {item.label === "Agent Dashboard" && <Star className="h-4 w-4" />}
+                    {item.label === "Admin Panel" && <ShieldCheck className="h-4 w-4" />}
+                    {item.label === "Governance" && <Settings className="h-4 w-4" />}
+                    {item.label === "Support" && <Settings className="h-4 w-4" />}
+                    {item.label === "Onboarding" && <Star className="h-4 w-4" />}
+                  </span>
+                  <span>{item.label}</span>
                 </span>
-              )}
-            </Link>
-          );
-        })}
+                <ChevronRight className="h-4 w-4 opacity-40 transition group-hover/item:translate-x-0.5 group-hover/item:opacity-80" />
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
 
 export default function NavBar() {
-  // Theme preference: read on first render; subsequent changes sync to <html class="dark"> + localStorage.
   const [dark, setDark] = useState(
     () => localStorage.getItem("theme") === "dark",
   );
-  // Mobile nav drawer open/close state.
   const [mobileOpen, setMobileOpen] = useState(false);
-  // Navigation dropdown state
   const [openDropdown, setOpenDropdown] = useState(null);
-  // Detect touch device for dropdown behavior
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [dropdownTimeout, setDropdownTimeout] = useState(null);
 
   useEffect(() => {
     setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
   }, []);
-  // Global user search input + dropdown state (suggestions list).
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchError, setSearchError] = useState("");
-  // Unread badge count for notifications icon.
   const [unreadCount, setUnreadCount] = useState(0);
-  // Small ephemeral feedback strings for inline actions (follow/connect/message/call).
   const [actionStatus, setActionStatus] = useState("");
-  // Used to disable only the button that's currently running (prevents double-submits).
   const [actionBusyKey, setActionBusyKey] = useState("");
 
-  // Current route used to highlight active link and to re-run unread refresh on navigation.
   const location = useLocation();
   const navigate = useNavigate();
-  // Session user is stored client-side; when absent we show public links.
   const user = getCurrentUser();
   const userId = user?.id || "";
-  // Ref to focus the search input via Ctrl/Cmd+K.
   const searchInputRef = useRef(null);
-  // Used to render the correct keyboard shortcut hint depending on platform.
   const isMac = useMemo(
     () =>
       typeof navigator !== "undefined" &&
@@ -428,8 +453,45 @@ export default function NavBar() {
     [],
   );
 
+  const searchRef = useRef(null);
+
+  const handleSetDropdown = useCallback((label) => {
+    if (dropdownTimeout) {
+      clearTimeout(dropdownTimeout);
+      setDropdownTimeout(null);
+    }
+    setOpenDropdown(label);
+  }, [dropdownTimeout]);
+
+  const handleDropdownHover = useCallback(() => {
+    if (dropdownTimeout) {
+      clearTimeout(dropdownTimeout);
+      setDropdownTimeout(null);
+    }
+  }, [dropdownTimeout]);
+
+  const handleDropdownLeave = useCallback(() => {
+    if (dropdownTimeout) clearTimeout(dropdownTimeout);
+    const timeout = setTimeout(() => {
+      setOpenDropdown(null);
+      setDropdownTimeout(null);
+    }, 3000);
+    setDropdownTimeout(timeout);
+  }, []);
+
   useEffect(() => {
-    // Toggle `.dark` class on <html> so Tailwind `dark:` variants activate.
+    const handleClickOutside = (e) => {
+      if (searchExpanded && searchRef.current && !searchRef.current.contains(e.target)) {
+        if (!searchQuery.trim()) {
+          setSearchExpanded(false);
+        }
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [searchExpanded, searchQuery]);
+
+  useEffect(() => {
     const root = document.documentElement;
     if (dark) {
       root.classList.add("dark");
@@ -441,7 +503,6 @@ export default function NavBar() {
     window.dispatchEvent(new Event("theme-change"));
   }, [dark]);
 
-  // Close dropdowns when clicking outside (only on touch devices, desktop uses hover)
   useEffect(() => {
     const handleClickOutside = () => setOpenDropdown(null);
     if (openDropdown && isTouchDevice) {
@@ -451,7 +512,6 @@ export default function NavBar() {
   }, [openDropdown, isTouchDevice]);
 
   useEffect(() => {
-    // Global shortcut to focus search (mirrors modern SaaS patterns).
     const handler = (e) => {
       const key = String(e.key || "").toLowerCase();
       if (key !== "k") return;
@@ -698,7 +758,6 @@ export default function NavBar() {
     }
   };
 
-  // Add a ref to the mobile menu container
   const mobileMenuRef = useRef(null);
   const mobileOpenRef = useRef(mobileOpen);
 
@@ -739,32 +798,31 @@ export default function NavBar() {
   }, [mobileOpen]);
 
   return (
-    // Top navigation shell.
-    // Glass nav: translucent background + blur + subtle divider shadow (Tailwind-only).
-    // `sticky top-0 z-50` keeps the nav pinned and above content during scroll.
-    <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md shadow-dividerB ring-1 ring-slate-200/60 dark:bg-slate-950/75 dark:shadow-dividerBDark dark:ring-white/10">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 py-2">
-          {/* Left cluster: brand + primary nav (desktop). */}
+    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/65 backdrop-blur-2xl dark:bg-slate-950/55">
+      <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-20 flex-wrap items-center justify-between gap-3 py-3">
           <div className="flex items-center gap-4">
-            {/* Brand: routes to role home when authenticated, otherwise routes to landing page. */}
             <Link
               to={user ? getRoleHome(user.role) : "/"}
-              className="inline-flex items-center gap-2"
+              className="group inline-flex items-center gap-3 rounded-full px-2 py-1 transition"
             >
-              <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
-                B2B
+              <span className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-cyan-500 to-blue-600 text-white shadow-lg shadow-sky-500/20 ring-1 ring-white/30">
+                <span className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 blur-xl transition group-hover:opacity-100" />
+                <ShoppingCart className="h-5 w-5" />
               </span>
-              <span className="text-lg font-bold text-slate-900 dark:text-white">
-                GarTexHub
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold tracking-[0.18em] text-slate-900 dark:text-white">
+                  GarTexHub
+                </span>
+                <span className="block text-xs text-slate-500 dark:text-slate-400">
+                  B2B Textile Marketplace
+                </span>
               </span>
             </Link>
 
-            {/* Desktop-only nav list (hidden on mobile). */}
-            <div className="hidden items-center gap-4 md:flex">
+            <div className="hidden items-center gap-1 md:flex">
               {!user
-                ? // Public Links (Text)
-                  publicLinks.map(({ to, label }, idx) => (
+                ? publicLinks.map(({ to, label }, idx) => (
                     <Motion.div
                       key={to}
                       initial={{ opacity: 0, y: -8 }}
@@ -782,8 +840,7 @@ export default function NavBar() {
                       />
                     </Motion.div>
                   ))
-                : // Authenticated Links (Dropdown System)
-                  navigationGroups.map((group, idx) => (
+                : navigationGroups.map((group, idx) => (
                     <Motion.div
                       key={group.label}
                       initial={{ opacity: 0, y: -8 }}
@@ -797,7 +854,9 @@ export default function NavBar() {
                       <NavDropdown
                         group={group}
                         isOpen={openDropdown === group.label}
-                        onToggle={setOpenDropdown}
+                        onToggle={handleSetDropdown}
+                        onMouseEnter={handleDropdownHover}
+                        onMouseLeave={handleDropdownLeave}
                         userRole={String(user?.role || "").toLowerCase()}
                         badgeCount={unreadCount}
                         isTouchDevice={isTouchDevice}
@@ -807,33 +866,58 @@ export default function NavBar() {
             </div>
           </div>
 
-          {/* Right cluster: desktop search + theme/auth actions + mobile menu button. */}
-          <div className="flex w-full items-center gap-3 md:w-auto">
-            {/* Desktop search:
-                - Expands width on focus (`transition-[width]` + `focus-within:w-[420px]`)
-                - Shows shortcut hint chip (Ctrl/Cmd + K)
-                - Shows suggestion dropdown for authenticated users
-            */}
-            <div className="relative hidden items-center md:flex md:flex-none w-[400px] focus-within:w-[550px] transition-[width] duration-300">
-              <input
-                ref={searchInputRef}
-                value={searchQuery}
-                onChange={(e) => {
-                  // Controlled input: update query state; dropdown opens as user types.
-                  setSearchQuery(e.target.value);
-                  setSearchOpen(true);
-                }}
-                onFocus={() => setSearchOpen(true)}
-                placeholder="Search users..."
-                className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark bg-white/70 px-4 py-2 pr-16 text-sm text-slate-700 shadow-inner outline-none ring-sky-300/30 transition focus:ring-2 dark:bg-slate-900/60 dark:text-slate-100"
-              />
-              {/* Shortcut hint chip shown inside the input (visual only). */}
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full shadow-borderless dark:shadow-borderlessDark bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-500 dark:bg-slate-950/50 dark:text-slate-400">
-                {isMac ? "Cmd K" : "Ctrl K"}
-              </span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div ref={searchRef} className="relative hidden items-center md:flex">
+              {searchExpanded ? (
+                <div
+                  className={cn(
+                    "relative flex w-[400px] items-center rounded-full border border-white/10 bg-white/65 px-3 py-2 backdrop-blur-xl shadow-[0_20px_45px_rgba(14,165,233,0.12)] transition-[width,box-shadow] duration-300",
+                    "dark:bg-slate-950/70"
+                  )}
+                >
+                  <Search className="h-4 w-4 text-slate-400" />
+                  <input
+                    ref={searchInputRef}
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setSearchOpen(true);
+                    }}
+                    onFocus={() => setSearchOpen(true)}
+                    onBlur={() => {
+                      if (!searchQuery.trim()) {
+                        setSearchExpanded(false);
+                      }
+                    }}
+                    placeholder="Search users..."
+                    autoFocus
+                    className="min-w-0 flex-1 bg-transparent px-2 text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchExpanded(false);
+                      setSearchQuery("");
+                      setSearchOpen(false);
+                    }}
+                    className="pointer-events-auto rounded-full bg-slate-900/5 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSearchExpanded(true)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/65 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-sky-600 dark:bg-slate-950/70 dark:text-slate-300 dark:hover:text-sky-300"
+                  aria-label="Open search"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+              )}
 
               {user && searchOpen && searchQuery.trim().length >= 1 ? (
-                <div className="absolute right-0 top-11 z-50 w-[360px] rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-2 shadow-xl dark:bg-slate-900">
+                <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[360px] overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.16)] backdrop-blur-2xl dark:bg-slate-950/95">
                   {searchLoading ? (
                     <p className="px-2 py-3 text-xs text-slate-500">
                       Searching...
@@ -854,12 +938,12 @@ export default function NavBar() {
                   {!searchLoading &&
                   !searchError &&
                   searchResults.length > 0 ? (
-                    <p className="px-2 pb-2 text-[11px] text-slate-500">
+                    <p className="px-3 pb-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
                       Suggestions
                     </p>
                   ) : null}
                   {actionStatus ? (
-                    <p className="px-2 pb-2 text-[11px] text-emerald-600">
+                    <p className="px-3 pb-2 text-[11px] text-emerald-600">
                       {actionStatus}
                     </p>
                   ) : null}
@@ -869,7 +953,7 @@ export default function NavBar() {
                     searchResults.map((result) => (
                       <div
                         key={result.id}
-                        className="mb-1 rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-2 last:mb-0"
+                        className="mb-1 rounded-2xl px-2 py-2 last:mb-0 transition hover:bg-slate-900/5 dark:hover:bg-white/5"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div>
@@ -882,7 +966,7 @@ export default function NavBar() {
                             </p>
                           </div>
                           {result.verified ? (
-                            <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
                               Verified
                             </span>
                           ) : null}
@@ -896,7 +980,7 @@ export default function NavBar() {
                               actionBusyKey === `follow:${result.id}`
                             }
                             onClick={() => followUser(result.id)}
-                            className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-sky-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-sky-300"
+                            className="inline-flex items-center rounded-xl bg-sky-500/10 px-2.5 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-sky-300"
                           >
                             {actionBusyKey === `follow:${result.id}`
                               ? "Following..."
@@ -904,7 +988,7 @@ export default function NavBar() {
                                 ? "Follow"
                                 : result.following
                                   ? "Following"
-                                  : "Follow (optional)"}
+                                  : "Follow"}
                           </button>
                           <button
                             disabled={
@@ -915,14 +999,14 @@ export default function NavBar() {
                               actionBusyKey === `friend:${result.id}`
                             }
                             onClick={() => addFriend(result.id)}
-                            className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
+                            className="inline-flex items-center rounded-xl bg-indigo-500/10 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
                           >
                             {actionBusyKey === `friend:${result.id}`
                               ? "Sending..."
                               : result.is_self
                                 ? "Add Friend"
                                 : result.friend_status === "incoming"
-                                  ? "Accept Friend"
+                                  ? "Accept"
                                   : "Add Friend"}
                           </button>
                           {result.friend_status === "friends" ? (
@@ -932,14 +1016,14 @@ export default function NavBar() {
                                   actionBusyKey === `message:${result.id}`
                                 }
                                 onClick={() => messageFriend(result.id)}
-                                className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-300"
+                                className="inline-flex items-center rounded-xl bg-emerald-500/10 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-300"
                               >
                                 Message
                               </button>
                               <button
                                 disabled={actionBusyKey === `call:${result.id}`}
                                 onClick={() => callFriend(result.id)}
-                                className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-violet-300"
+                                className="inline-flex items-center rounded-xl bg-violet-500/10 px-2.5 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-violet-300"
                               >
                                 Call
                               </button>
@@ -952,10 +1036,18 @@ export default function NavBar() {
               ) : null}
             </div>
 
-            <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <div className="ml-auto flex items-center gap-2">
+              <IconNavLink
+                to="/notifications"
+                Icon={Bell}
+                label="Notifications"
+                badgeCount={unreadCount}
+                active={location.pathname === "/notifications"}
+              />
+
               <button
                 onClick={() => setDark(!dark)}
-                className="inline-flex items-center gap-2 rounded-full shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900 dark:text-slate-100"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/65 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white"
                 aria-label="Toggle dark mode"
               >
                 {dark ? (
@@ -963,22 +1055,20 @@ export default function NavBar() {
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
-                <span>{dark ? "Light" : "Dark"}</span>
+                <span className="hidden sm:inline">{dark ? "Light" : "Dark"}</span>
               </button>
 
               {user ? (
-                <>
-                  <button
-                    onClick={handleLogout}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
-                  >
-                    Logout
-                  </button>
-                </>
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
+                >
+                  Logout
+                </button>
               ) : (
                 <Link
                   to="/login"
-                  className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
                 >
                   Login
                 </Link>
@@ -986,10 +1076,10 @@ export default function NavBar() {
 
               <button
                 onClick={() => setMobileOpen((v) => !v)}
-                className="inline-flex items-center justify-center rounded-full shadow-borderless dark:shadow-borderlessDark bg-white/70 p-2 text-slate-700 shadow-sm md:hidden dark:bg-slate-950/60 dark:text-slate-100"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white md:hidden"
                 aria-label={mobileOpen ? "Close menu" : "Open menu"}
               >
-                <Menu className="h-5 w-5" />
+                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           </div>
@@ -997,105 +1087,193 @@ export default function NavBar() {
       </div>
 
       {mobileOpen ? (
-        <div className="fixed inset-0 z-[60] md:hidden">
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={() => setMobileOpen(false)}
-            className="absolute inset-0 bg-slate-950/30 backdrop-blur-sm"
-          />
-          <div
+        <Motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[60] bg-slate-950/35 backdrop-blur-sm md:hidden"
+        >
+          <Motion.div
             ref={mobileMenuRef}
-            className="absolute left-4 right-4 top-20 rounded-2xl bg-white/90 p-3 shadow-2xl ring-1 ring-slate-200/70 backdrop-blur-md dark:bg-slate-950/85 dark:ring-slate-800/60"
+            initial={{ y: -18, opacity: 0, scale: 0.99 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -18, opacity: 0, scale: 0.99 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="mx-auto mt-16 w-[min(92vw,28rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-white/85 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-2xl dark:bg-slate-950/90"
           >
-            <div className="space-y-1">
-              {!user
-                ? publicLinks.map(({ to, label }) => (
-                    <Link
-                      key={to}
-                      to={to}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100/60 active:scale-[0.98] dark:text-slate-100 dark:hover:bg-slate-800/50"
-                    >
-                      {label}
-                    </Link>
-                  ))
-                : // Mobile menu with groups
-                  navigationGroups.map((group) => (
-                    <div key={group.label} className="space-y-1">
-                      <div className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500">
-                        {group.label}
-                      </div>
-                      {group.items
-                        .filter(
-                          (item) =>
-                            !item.roles ||
-                            item.roles.includes(
-                              String(user?.role || "").toLowerCase(),
-                            ),
-                        )
-                        .map((item) => (
-                          <Link
-                            key={item.to}
-                            to={item.to}
-                            onClick={() => setMobileOpen(false)}
-                            className={`flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-                              location.pathname === item.to
-                                ? "bg-sky-50 text-gtBlue dark:bg-sky-900/30 dark:text-sky-300"
-                                : "text-slate-700 hover:bg-slate-100/60 dark:text-slate-100 dark:hover:bg-slate-800/50"
-                            }`}
-                          >
-                            <span>{item.label}</span>
-                            {item.badge &&
-                              item.to === "/notifications" &&
-                              unreadCount > 0 && (
-                                <span className="rounded-full bg-gradient-to-tr from-red-500 to-pink-500 px-2 py-0.5 text-[10px] font-semibold text-white">
-                                  {unreadCount > 99 ? "99+" : unreadCount}
+            <div className="flex items-center justify-between border-b border-slate-900/5 px-5 py-4 dark:border-white/10">
+              <div>
+                <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                  GarTexHub
+                </div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Navigation
+                </div>
+              </div>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="rounded-full p-2 text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="max-h-[70vh] overflow-y-auto p-4">
+              <div className="space-y-3">
+                {!user
+                  ? publicLinks.map(({ to, label }) => (
+                      <Link
+                        key={to}
+                        to={to}
+                        onClick={() => setMobileOpen(false)}
+                        className={cn(
+                          "flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-medium transition",
+                          location.pathname === to
+                            ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
+                            : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
+                        )}
+                      >
+                        <span>{label}</span>
+                        <ChevronRight className="h-4 w-4 opacity-40" />
+                      </Link>
+                    ))
+                  : navigationGroups.map((group) => (
+                      <div
+                        key={group.label}
+                        className="rounded-3xl border border-slate-900/5 bg-white/70 p-3 dark:border-white/10 dark:bg-white/5"
+                      >
+                        <div className="mb-2 flex items-center gap-2 px-1 text-sm font-semibold text-slate-900 dark:text-white">
+                          <group.icon className="h-4 w-4 text-sky-500" />
+                          {group.label}
+                        </div>
+                        <div className="space-y-1">
+                          {group.items
+                            .filter(
+                              (item) =>
+                                !item.roles ||
+                                item.roles.includes(
+                                  String(user?.role || "").toLowerCase(),
+                                ),
+                            )
+                            .map((item) => {
+                              const ItemIcon = {
+                                Feed: LayoutDashboard,
+                                Search: Search,
+                                Contracts: FileText,
+                                Verification: ShieldCheck,
+                                Notifications: Bell,
+                                Chat: MessageSquare,
+                                Requests: FileText,
+                                Products: Package,
+                                Partners: Users,
+                                Ratings: Star,
+                                Members: Users,
+                                Settings: Settings,
+                                Insights: FileText,
+                                "Owner Dashboard": Star,
+                                "Agent Dashboard": Star,
+                                "Admin Panel": ShieldCheck,
+                                Governance: Settings,
+                                Support: Settings,
+                                Onboarding: Star,
+                              }[item.label] || Settings;
+                              return (
+                              <Link
+                                key={item.to}
+                                to={item.to}
+                                onClick={() => setMobileOpen(false)}
+                                className={cn(
+                                  "flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
+                                  location.pathname === item.to
+                                    ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
+                                    : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
+                                )}
+                              >
+                                <span className="flex items-center gap-3">
+                                  <ItemIcon className="h-4 w-4" />
+                                  {item.label}
                                 </span>
-                              )}
-                          </Link>
-                        ))}
-                    </div>
-                  ))}
+                                {item.badge &&
+                                  item.to === "/notifications" &&
+                                  unreadCount > 0 && (
+                                    <span className="rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                      {unreadCount > 99 ? "99+" : unreadCount}
+                                    </span>
+                                  )}
+                                <ChevronRight className="h-4 w-4 opacity-40" />
+                              </Link>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    ))}
+              </div>
 
               {!user ? (
-                <div className="mt-2 flex gap-2">
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex-1 inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 active:scale-[0.98] dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/signup"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 active:scale-[0.98] dark:bg-white/10 dark:hover:bg-white/15"
-                  >
-                    Signup
-                  </Link>
+                <div className="mt-4 rounded-3xl border border-sky-400/10 bg-gradient-to-br from-sky-500/10 to-cyan-500/10 p-4">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                    Guest access
+                  </div>
+                  <div className="mt-3 flex flex-col gap-2">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileOpen(false)}
+                      className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setMobileOpen(false)}
+                      className="inline-flex items-center justify-center rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                    >
+                      Signup
+                    </Link>
+                    <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <Link
+                        to="/terms"
+                        onClick={() => setMobileOpen(false)}
+                        className="hover:text-sky-600"
+                      >
+                        Terms
+                      </Link>
+                      <Link
+                        to="/privacy"
+                        onClick={() => setMobileOpen(false)}
+                        className="text-right hover:text-sky-600"
+                      >
+                        Privacy
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               ) : null}
-
-              <div className="mt-4 shadow-dividerT dark:shadow-dividerTDark pt-3">
-                <Link
-                  to="/terms"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center rounded-xl px-3 py-2 text-xs text-slate-600 hover:bg-slate-100/60 active:scale-[0.98] dark:text-slate-400 dark:hover:bg-slate-800/50"
-                >
-                  Terms of Service
-                </Link>
-                <Link
-                  to="/privacy"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center rounded-xl px-3 py-2 text-xs text-slate-600 hover:bg-slate-100/60 active:scale-[0.98] dark:text-slate-400 dark:hover:bg-slate-800/50"
-                >
-                  Privacy Policy
-                </Link>
-              </div>
             </div>
-          </div>
-        </div>
+
+            <div className="flex items-center justify-between border-t border-slate-900/5 px-5 py-4 dark:border-white/10">
+              <button
+                onClick={() => setDark(!dark)}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
+              >
+                {dark ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+                {dark ? "Light mode" : "Dark mode"}
+              </button>
+              {user ? (
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Logout
+                </button>
+              ) : null}
+            </div>
+          </Motion.div>
+        </Motion.div>
       ) : null}
     </nav>
   );

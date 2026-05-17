@@ -5,7 +5,6 @@ export default function ProfileImageUpload({
   value = "",
   onChange,
   label = "Profile image",
-  placeholder = "https://...",
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -54,41 +53,17 @@ export default function ProfileImageUpload({
     }
   };
 
-  const handleUrlChange = (e) => {
-    onChange(e.target.value);
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-          {label}
-        </label>
-        <input
-          type="text"
-          value={value}
-          onChange={handleUrlChange}
-          placeholder={placeholder}
-          className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
-        />
-      </div>
-
+    <div className="space-y-3">
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={triggerFileInput}
+          onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="rounded-xl bg-gtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-gtBlueHover disabled:opacity-60"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
-          {uploading ? "Uploading..." : "Upload Image"}
+          {uploading ? "Uploading..." : "Choose Image"}
         </button>
-        <span className="text-xs text-slate-500 dark:text-slate-400">
-          or paste a URL above
-        </span>
         <input
           ref={fileInputRef}
           type="file"
@@ -104,21 +79,19 @@ export default function ProfileImageUpload({
         </div>
       )}
 
-      {value ? (
+      {value && (
         <div className="flex items-center gap-3">
           <img
             src={value}
             alt="Preview"
-            className="h-12 w-12 rounded-full object-cover ring-1 ring-slate-200/60 dark:ring-slate-800"
+            className="h-16 w-16 rounded-xl object-cover ring-1 ring-slate-200/60 dark:ring-slate-800"
             onError={(e) => {
               e.target.style.display = "none";
             }}
           />
-          <div className="text-xs text-slate-600 dark:text-slate-300">
-            Preview
-          </div>
+          <span className="text-xs text-slate-500">Image set</span>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

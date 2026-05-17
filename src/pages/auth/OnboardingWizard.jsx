@@ -68,6 +68,7 @@ export default function OnboardingWizard() {
   const [organizationName, setOrganizationName] = useState(
     () => user?.profile?.organization_name || user?.company_name || "",
   );
+  const [bio, setBio] = useState(() => user?.profile?.bio || "");
   const [categories, setCategories] = useState(() => {
     const current = user?.profile?.categories;
     return Array.isArray(current) && current.length ? current : [];
@@ -109,6 +110,7 @@ export default function OnboardingWizard() {
         organization_name: skipped
           ? organizationName || ""
           : organizationName || "",
+        bio: skipped ? bio || "" : bio || "",
         categories: skipped ? categories || [] : categories || [],
       };
 
@@ -174,8 +176,7 @@ export default function OnboardingWizard() {
               <ProfileImageUpload
                 value={profileImage}
                 onChange={setProfileImage}
-                label="Profile image URL"
-                placeholder="https://..."
+                label="Profile Image"
               />
             </>
           ) : null}
@@ -202,6 +203,16 @@ export default function OnboardingWizard() {
                   {String(user?.role || "").replace("_", " ")}
                 </span>
               </div>
+              <label className="mt-4 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Description / Bio
+              </label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell us about your organization..."
+                rows={3}
+                className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224] resize-none"
+              />
             </>
           ) : null}
 

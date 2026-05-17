@@ -31,7 +31,7 @@ export async function getIndustryAutoReply(req, res) {
     .filter(Boolean)
     .join("\n");
 
-  const response = await assistantReply("public_industry", prompt);
+  const response = await assistantReply("public_industry", prompt, null);
   const reply = sanitizeString(
     response?.matched_answer || response?.answer || "",
     700,

@@ -417,11 +417,7 @@ export default function FeedManagementPage() {
       >
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium tracking-wide uppercase text-sky-400 border-sky-400/20 bg-sky-400/10">
-                <Icon.Sparkles className="h-3.5 w-3.5" />
-                Premium feed studio
-              </div>
+              <div className="space-y-2">
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                   Feed Management

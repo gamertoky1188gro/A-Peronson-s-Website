@@ -8556,7 +8556,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8596,7 +8599,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8636,7 +8642,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8676,7 +8685,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8716,7 +8728,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8756,7 +8771,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8865,7 +8883,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8905,7 +8926,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -8915,5 +8939,346 @@
     },
     "prev_hash": "88af629c8711452633e50e708534330362f8b38a748b5b49a40047cdcf630177",
     "hash": "21dd0a830b57bcfce71eb1f5624fcf06431488539ab22fb5850aa70f50499c7a"
+  },
+  {
+    "id": "authz:1778779352271:avhhn1in",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T17:22:32.272Z",
+    "prev_hash": "21dd0a830b57bcfce71eb1f5624fcf06431488539ab22fb5850aa70f50499c7a",
+    "hash": "a7874aab5228dbef0aec6a71a39cd4534581bf3d01aed379347445823794c713"
+  },
+  {
+    "id": "authz:1778779353105:6037mu5m",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T17:22:33.106Z",
+    "prev_hash": "a7874aab5228dbef0aec6a71a39cd4534581bf3d01aed379347445823794c713",
+    "hash": "c51ceab89db60e4c9634406b2d266c46d078c60064dd9aa917d8cc7441cedd52"
+  },
+  {
+    "id": "authz:1778779615684:jinhh004",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T17:26:55.685Z",
+    "prev_hash": "c51ceab89db60e4c9634406b2d266c46d078c60064dd9aa917d8cc7441cedd52",
+    "hash": "360d5377352687f1a15d42c9492758ad0b9c9e1b1b995a529107bbebf62b9a56"
+  },
+  {
+    "id": "authz:1778780255641:mp4sfdwj",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T17:37:35.642Z",
+    "prev_hash": "360d5377352687f1a15d42c9492758ad0b9c9e1b1b995a529107bbebf62b9a56",
+    "hash": "7b6f8c3b6b8a4f450eef4cc7bae24011080825a2c6786c5a79ff494b3cb0bb6b"
+  },
+  {
+    "id": "authz:1778780256457:9t5y48qs",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T17:37:36.457Z",
+    "prev_hash": "7b6f8c3b6b8a4f450eef4cc7bae24011080825a2c6786c5a79ff494b3cb0bb6b",
+    "hash": "5f615e17d5b309ee438f3813b498932883df4a932003418a2ec2161ec31d71fa"
+  },
+  {
+    "id": "authz:1778780943725:kblo3dwe",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T17:49:03.726Z",
+    "prev_hash": "5f615e17d5b309ee438f3813b498932883df4a932003418a2ec2161ec31d71fa",
+    "hash": "1b9cd4f2ac2ed6427021f1598a0505caf7319d63fb5536e2bf6cacaa10bdb2d6"
+  },
+  {
+    "id": "authz:1778780944749:vlr6xj6z",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T17:49:04.749Z",
+    "prev_hash": "1b9cd4f2ac2ed6427021f1598a0505caf7319d63fb5536e2bf6cacaa10bdb2d6",
+    "hash": "db6d250a5843e58d9156e74973dbe1afad1cb7d98bdb5c217c0b367fa15d9db4"
+  },
+  {
+    "id": "authz:1778782846917:il7reh48",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T18:20:46.918Z",
+    "prev_hash": "db6d250a5843e58d9156e74973dbe1afad1cb7d98bdb5c217c0b367fa15d9db4",
+    "hash": "6fcce7ac86a9aceb700248a50c07890a16109e7fa01c816f0de612b4a6930a77"
+  },
+  {
+    "id": "authz:1778782847713:xle5b8m9",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T18:20:47.713Z",
+    "prev_hash": "6fcce7ac86a9aceb700248a50c07890a16109e7fa01c816f0de612b4a6930a77",
+    "hash": "3b25766d229753d393938fe6f5753af8bb93a704d9a027d70cbdc68838e9187a"
+  },
+  {
+    "id": "authz:1778784774863:pf73qrh7",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T18:52:54.864Z",
+    "prev_hash": "3b25766d229753d393938fe6f5753af8bb93a704d9a027d70cbdc68838e9187a",
+    "hash": "303cd6528817cae63abb4eb12d2b754af88f1bcbe721fd4b64bedbac5451d4af"
+  },
+  {
+    "id": "authz:1778784871775:vfyfx1fd",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T18:54:31.776Z",
+    "prev_hash": "303cd6528817cae63abb4eb12d2b754af88f1bcbe721fd4b64bedbac5451d4af",
+    "hash": "eea53b626dd4344efa3372e1d5188db32ca2000888a5810e5b90836e7695c6c9"
+  },
+  {
+    "id": "authz:1778785635129:9r2z0e9r",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T19:07:15.129Z",
+    "prev_hash": "eea53b626dd4344efa3372e1d5188db32ca2000888a5810e5b90836e7695c6c9",
+    "hash": "eedb0dfcc79bc08e23a6ff2c130b0173c28978eab6684e10c566ea6f8cf6f92e"
+  },
+  {
+    "id": "authz:1778785636588:0jgman89",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T19:07:16.588Z",
+    "prev_hash": "eedb0dfcc79bc08e23a6ff2c130b0173c28978eab6684e10c566ea6f8cf6f92e",
+    "hash": "09470f724f4d1ff845084b2ebdd0e85961c261fa15a79951d029740c88a51166"
+  },
+  {
+    "id": "authz:1778785712790:5suvs3v9",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T19:08:32.792Z",
+    "prev_hash": "09470f724f4d1ff845084b2ebdd0e85961c261fa15a79951d029740c88a51166",
+    "hash": "69c1296d091c047a3ee4ceb5f92efcee0b5bbc2542459c258b05a5e77423814f"
+  },
+  {
+    "id": "authz:1778785736993:w4e5al73",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T19:08:56.994Z",
+    "prev_hash": "69c1296d091c047a3ee4ceb5f92efcee0b5bbc2542459c258b05a5e77423814f",
+    "hash": "a0579b2b5f2eff824448dc3dcb2e8fccf14fbc738d0b3df3f30f428dfeeb8537"
+  },
+  {
+    "id": "authz:1778785751807:imf1tqyv",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-05-14T19:09:11.808Z",
+    "prev_hash": "a0579b2b5f2eff824448dc3dcb2e8fccf14fbc738d0b3df3f30f428dfeeb8537",
+    "hash": "d7dba57c839210cc134e7ff9b1b1b37011fe03af0e1f05e0037bb40a484289a5"
+  },
+  {
+    "id": "authz:1778840974493:b5wywimu",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-05-15T10:29:34.494Z",
+    "prev_hash": "d7dba57c839210cc134e7ff9b1b1b37011fe03af0e1f05e0037bb40a484289a5",
+    "hash": "0eed4c11c943148d953573442847020c7e64767dee2a3c347a9f49daf8349383"
+  },
+  {
+    "id": "authz:1778840975427:3f9o5ute",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-05-15T10:29:35.427Z",
+    "prev_hash": "0eed4c11c943148d953573442847020c7e64767dee2a3c347a9f49daf8349383",
+    "hash": "24a6f90b41582008ffb6e805957fe5c77e068cbac1901aa88348edb85ddb17fb"
+  },
+  {
+    "id": "authz:1778840976754:x6z42q34",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-05-15T10:29:36.754Z",
+    "prev_hash": "24a6f90b41582008ffb6e805957fe5c77e068cbac1901aa88348edb85ddb17fb",
+    "hash": "03d0f9fac7fe41e34e935aae7c06302a590b64dbd41e4663559f85d89c2b332c"
+  },
+  {
+    "id": "authz:1778840976757:8namdw8v",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-05-15T10:29:36.757Z",
+    "prev_hash": "03d0f9fac7fe41e34e935aae7c06302a590b64dbd41e4663559f85d89c2b332c",
+    "hash": "63951c007db96a2b10acdd0723b6343db566e5b7712988fe3f17fcf9689891dc"
+  },
+  {
+    "id": "authz:1778840976759:eixgq1hx",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-05-15T10:29:36.759Z",
+    "prev_hash": "63951c007db96a2b10acdd0723b6343db566e5b7712988fe3f17fcf9689891dc",
+    "hash": "6268a219678b4768c4c95dc496941f46d8f6d36811312e4dda779daef023d8d9"
+  },
+  {
+    "id": "15fbdc90-4424-48c6-97b4-6aa02a2569d0",
+    "at": "2026-05-15T10:29:36.902Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "6268a219678b4768c4c95dc496941f46d8f6d36811312e4dda779daef023d8d9",
+    "hash": "fcbf2396800e9c80db401729575df48d20decefdd5b8ad0dca3ce2c786826c1f"
   }
 ]

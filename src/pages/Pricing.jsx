@@ -673,7 +673,7 @@ export default function PricingPage() {
                 const rolePlan =
                   plansByRole[section.key] || plansByRole.neutral;
                 return (
-                  <React.Fragment key={section.key}>
+                  <>
                     <PlanCard
                       title={section.title}
                       role={
@@ -705,7 +705,7 @@ export default function PricingPage() {
                       highlighted
                       icon="✨"
                     />
-                  </React.Fragment>
+                  </>
                 );
               })}
             </div>

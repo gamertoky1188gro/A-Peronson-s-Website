@@ -3,15 +3,13 @@ import { allowRoles, requireAuth } from "../middleware/auth.js";
 import {
   askAssistant,
   askAssistantPublic,
+  getSessionMessages,
+  deleteSession,
   postExtractRequirement,
   postGenerateFirstResponse,
   postValidateResponse,
-  createAssistantKnowledge,
   getConversationSummary,
-  getAssistantKnowledge,
   getNegotiationHelper,
-  removeAssistantKnowledge,
-  updateAssistantKnowledge,
   getAssistantRules,
   putAssistantRules,
   postAssistantRule,
@@ -24,30 +22,13 @@ const router = Router();
 
 router.post("/ask", requireAuth, askAssistant);
 router.post("/ask-public", askAssistantPublic);
+router.get("/session-messages", requireAuth, getSessionMessages);
+router.delete("/session", requireAuth, deleteSession);
 router.post("/extract-requirement", requireAuth, postExtractRequirement);
 router.post("/generate-first-response", requireAuth, postGenerateFirstResponse);
 router.post("/validate-response", requireAuth, postValidateResponse);
 router.post("/conversation-summary", requireAuth, getConversationSummary);
 router.post("/negotiation", requireAuth, getNegotiationHelper);
-router.get("/knowledge", requireAuth, getAssistantKnowledge);
-router.post(
-  "/knowledge",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  createAssistantKnowledge,
-);
-router.put(
-  "/knowledge/:entryId",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  updateAssistantKnowledge,
-);
-router.delete(
-  "/knowledge/:entryId",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  removeAssistantKnowledge,
-);
 
 router.get(
   "/rules",

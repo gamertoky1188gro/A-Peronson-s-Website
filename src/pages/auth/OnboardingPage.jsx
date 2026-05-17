@@ -49,6 +49,7 @@ export default function OnboardingPage() {
   const [organizationName, setOrganizationName] = useState(
     () => user?.profile?.organization_name || user?.company_name || "",
   );
+  const [bio, setBio] = useState(() => user?.profile?.bio || "");
   const [categories, setCategories] = useState(() => {
     const current = user?.profile?.categories;
     return Array.isArray(current) && current.length ? current : [];
@@ -91,6 +92,7 @@ export default function OnboardingPage() {
         organization_name: skipped
           ? organizationName || ""
           : organizationName || "",
+        bio: skipped ? bio || "" : bio || "",
         categories: skipped ? categories || [] : categories || [],
       };
 
@@ -309,8 +311,7 @@ export default function OnboardingPage() {
                     <ProfileImageUpload
                       value={profileImage}
                       onChange={setProfileImage}
-                      label="Profile image URL"
-                      placeholder="https://..."
+                      label="Profile Image"
                     />
                   </section>
                 )}
@@ -349,6 +350,17 @@ export default function OnboardingPage() {
                         {String(user?.role || "").replace("_", " ")}
                       </p>
                     </div>
+
+                    <label className="mt-4 mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Description / Bio
+                    </label>
+                    <textarea
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      placeholder="Tell us about your organization..."
+                      rows={3}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:shadow-[0_0_0_4px_rgba(14,165,233,0.12)] dark:border-white/10 dark:bg-slate-900/80 dark:placeholder:text-slate-500 resize-none"
+                    />
                   </section>
                 )}
 

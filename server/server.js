@@ -59,7 +59,7 @@ import workflowLifecycleRoutes from "./routes/workflowLifecycleRoutes.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { logInfo, logError } from "./utils/logger.js";
-import { assistantReply } from "./services/assistantService.js";
+import { assistantReply, initOpencodeServer, initAllUserSessions } from "./services/assistantService.js";
 import { maybeGenerateBotReply } from "./services/chatbotService.js";
 import jwt from "jsonwebtoken";
 import {
@@ -765,7 +765,8 @@ wsServer.on("connection", (socket, req) => {
     });
 
     try {
-      const result = await assistantReply("public_ws", question);
+      const userId = socket?.userId || null;
+      const result = await assistantReply("public_ws", question, userId);
       const answer =
         result?.matched_answer ||
         "I could not find a response right now. Please try again.";
@@ -843,6 +844,11 @@ async function start() {
     },
     5 * 60 * 1000,
   );
+  
+  initOpencodeServer()
+    .then(() => initAllUserSessions())
+    .catch((err) => logError("init_opencode_failed", err));
+  
   server.listen(PORT, () => {
     logInfo(`Verification MVP API running on http://localhost:${PORT}`);
   });

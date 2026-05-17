@@ -157,11 +157,15 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
               <li>
                 <span className="font-semibold">Email:</span>{" "}
-                support@gartexhub.com
+                <a href="mailto:gartexhub@gmail.com" className="text-gtBlue hover:underline">
+                  gartexhub@gmail.com
+                </a>
               </li>
               <li>
                 <span className="font-semibold">Business:</span>{" "}
-                business@gartexhub.com
+                <a href="mailto:gartexhub@gmail.com" className="text-gtBlue hover:underline">
+                  gartexhub@gmail.com
+                </a>
               </li>
               <li className="pt-2 text-xs italic text-slate-500">
                 The more verified documentation a company provides, the stronger

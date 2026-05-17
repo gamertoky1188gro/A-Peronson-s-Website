@@ -176,10 +176,9 @@ const DEFAULT_FEED_CONFIG = {
     search: "Search",
     search_placeholder: "Search posts, buyers...",
     categories: "All categories",
-    premium_experience: "Premium feed experience",
-    hero_title: "Modern buyer and company feed, tuned for clarity and speed.",
+    hero_title: "Feed Center",
     hero_description:
-      "Browse buyer requests, company products, and posts from one polished admin-friendly workspace with a clean blue-sky visual system.",
+      "Browse buyer requests, company products, and posts from one unified workspace.",
     stats: {
       buyer_requests: "Buyer Requests",
       company_products: "Company Products",
@@ -766,23 +765,36 @@ export default function MainFeed() {
             <div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-                    <LayoutGrid className="h-6 w-6" />
-                  </div>
+                  {user?.profile?.profile_image || user?.avatar_url ? (
+                    <img
+                      src={user.profile?.profile_image || user.avatar_url}
+                      alt={user?.name || "User"}
+                      className="h-12 w-12 rounded-2xl object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+                      <LayoutGrid className="h-6 w-6" />
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm/none font-medium opacity-90">
-                      {user?.name?.split(" ")[0] || "User"}
+                      {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ") : "User"}
                     </p>
                     <p className="text-xl font-semibold">
-                      {feedConfig.labels.feed_center}
+                      {user?.name || "Feed Center"}
                     </p>
                   </div>
                 </div>
               </div>
               <div className="mt-4 flex items-center gap-2 text-sm opacity-95">
                 <BadgeCheck className="h-4 w-4" />
-                {feedConfig.labels.premium_badge}
+                {user?.profile?.bio || feedConfig.labels.premium_badge}
               </div>
+              {user?.email && (
+                <div className="mt-2 text-xs opacity-75">
+                  {user.email}
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
@@ -869,20 +881,6 @@ export default function MainFeed() {
             {/* Hero Section */}
             <section className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6">
               <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-                <div className="max-w-3xl">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
-                    <Sparkles className="h-4 w-4" />
-                    {feedConfig.labels.premium_experience}
-                  </div>
-                  <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                    Modern buyer and company feed, tuned for clarity and speed.
-                  </h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
-                    Browse buyer requests, company products, and posts from one
-                    polished admin-friendly workspace with a clean blue-sky
-                    visual system.
-                  </p>
-                </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:w-[540px]">
                   <StatCard
                     icon={<BriefcaseBusiness className="h-3 w-3" />}

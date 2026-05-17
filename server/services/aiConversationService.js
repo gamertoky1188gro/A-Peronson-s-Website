@@ -82,7 +82,7 @@ function fallbackSummary(messages, requirement) {
 }
 
 async function generateAiText(prompt) {
-  const response = await assistantReply("public_ws", prompt);
+  const response = await assistantReply("public_ws", prompt, null);
   const text = sanitizeString(
     response?.matched_answer || response?.answer || "",
     1200,

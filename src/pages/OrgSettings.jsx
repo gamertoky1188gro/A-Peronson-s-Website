@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   apiRequest,
@@ -8,6 +8,7 @@ import {
   hasEntitlement,
 } from "../lib/auth";
 import { useEntitlements } from "../hooks/useSecureUser";
+import ProfileImageUpload from "../components/ui/ProfileImageUpload";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -434,9 +435,88 @@ export default function OrgSettings() {
   const [brandLogoUrl, setBrandLogoUrl] = useState(() =>
     String(currentUser?.profile?.brand_logo_url || ""),
   );
-  const [_brandCoverUrl] = useState(() =>
+  const [brandCoverUrl, setBrandCoverUrl] = useState(() =>
     String(currentUser?.profile?.brand_cover_url || ""),
   );
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const bannerInputRef = useRef(null);
+  const logoInputRef = useRef(null);
+
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setStatusMessage("Only JPG, PNG, and WebP images are allowed");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setStatusMessage("File size must be less than 10MB");
+      return;
+    }
+
+    setBannerUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const token = getToken();
+      const response = await fetch("/api/users/me/avatar", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Upload failed");
+      const data = await response.json();
+      const uploadedUrl = data.avatar_url || data.profile_image;
+      setBrandCoverUrl(uploadedUrl);
+      setStatusMessage("Banner uploaded successfully");
+    } catch (err) {
+      setStatusMessage(err.message || "Failed to upload banner");
+    } finally {
+      setBannerUploading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setStatusMessage("Only JPG, PNG, and WebP images are allowed");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setStatusMessage("File size must be less than 5MB");
+      return;
+    }
+
+    setLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const token = getToken();
+      const response = await fetch("/api/users/me/avatar", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Upload failed");
+      const data = await response.json();
+      const uploadedUrl = data.avatar_url || data.profile_image;
+      setBrandLogoUrl(uploadedUrl);
+      setStatusMessage("Logo uploaded successfully");
+    } catch (err) {
+      setStatusMessage(err.message || "Failed to upload logo");
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
   const [_brandColor] = useState(() =>
     String(currentUser?.profile?.brand_color || ""),
   );
@@ -462,7 +542,7 @@ export default function OrgSettings() {
   const canBranding = hasEntitlement(
     entitlements ? { entitlements } : null,
     "custom_branding",
-  );
+  ) || currentUser?.role === "admin" || currentUser?.role === "owner";
 
   const verificationStatus = useMemo(() => {
     if (remainingDays <= 0) return "expired";
@@ -728,7 +808,7 @@ export default function OrgSettings() {
     setProfileFeedback("");
     try {
       await apiRequest("/users/me/profile", {
-        method: "PUT",
+        method: "PATCH",
         token,
         body: {
           display_name: profileDisplayName,
@@ -753,7 +833,7 @@ export default function OrgSettings() {
     setProfileFeedback("");
     try {
       await apiRequest("/users/me/profile", {
-        method: "PUT",
+        method: "PATCH",
         token,
         body: { phone: profilePhone },
       });
@@ -797,6 +877,29 @@ export default function OrgSettings() {
       setPasswordFeedback(err.message || "Failed to change password");
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  // Save branding
+  const saveBrandingSettings = async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await apiRequest("/users/me/profile", {
+        method: "PATCH",
+        token,
+        body: {
+          brand_name: brandName,
+          brand_website: brandWebsite,
+          brand_logo_url: brandLogoUrl,
+          brand_cover_url: brandCoverUrl,
+          brand_tagline: brandTagline,
+          brand_accent: brandAccent,
+        },
+      });
+      setStatusMessage("Branding saved.");
+    } catch (err) {
+      setStatusMessage(err.message || "Failed to save branding");
     }
   };
 
@@ -1001,7 +1104,7 @@ export default function OrgSettings() {
     if (!token) return;
     try {
       await apiRequest("/users/me/profile", {
-        method: "PUT",
+        method: "PATCH",
         token,
         body: { visibility: value },
       });
@@ -1397,37 +1500,12 @@ export default function OrgSettings() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <Label>Avatar URL</Label>
-                    <Input
+                    <Label>Profile Image</Label>
+                    <ProfileImageUpload
                       value={profileAvatarUrl}
-                      onChange={(e) => setProfileAvatarUrl(e.target.value)}
-                      placeholder="https://..."
+                      onChange={setProfileAvatarUrl}
+                      label="Profile Image"
                     />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <div className="rounded-3xl border border-dashed border-sky-300 bg-sky-50/60 p-4 dark:border-slate-700 dark:bg-slate-900">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-sky-500 to-cyan-400 text-2xl font-black text-white">
-                          {profileAvatarUrl ? (
-                            <img
-                              src={profileAvatarUrl}
-                              alt="Preview"
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            profileDisplayName.slice(0, 1).toUpperCase()
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-slate-900 dark:text-white">
-                            Avatar preview
-                          </div>
-                          <div className="text-sm text-slate-500 dark:text-slate-400">
-                            Updates when URL is provided.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div className="mt-4 flex gap-3">
@@ -1857,12 +1935,70 @@ export default function OrgSettings() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <Label>Logo URL</Label>
-                    <Input
-                      value={brandLogoUrl}
-                      onChange={(e) => setBrandLogoUrl(e.target.value)}
-                      disabled={!canBranding}
+                    <Label>Logo Image</Label>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleLogoUpload}
+                      disabled={!canBranding || logoUploading}
+                      className="hidden"
                     />
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={!canBranding || logoUploading}
+                        className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                      >
+                        {logoUploading ? "Uploading..." : "Choose Image"}
+                      </button>
+                      {brandLogoUrl && (
+                        <span className="text-sm text-slate-500">Logo set</span>
+                      )}
+                    </div>
+                    {brandLogoUrl && (
+                      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 w-20 h-20">
+                        <img
+                          src={brandLogoUrl}
+                          alt="Logo preview"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label>Banner / Cover Image</Label>
+                    <input
+                      ref={bannerInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleBannerUpload}
+                      disabled={!canBranding || bannerUploading}
+                      className="hidden"
+                    />
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => bannerInputRef.current?.click()}
+                        disabled={!canBranding || bannerUploading}
+                        className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                      >
+                        {bannerUploading ? "Uploading..." : "Choose Image"}
+                      </button>
+                      {brandCoverUrl && (
+                        <span className="text-sm text-slate-500">Banner set</span>
+                      )}
+                    </div>
+                    {brandCoverUrl && (
+                      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                        <img
+                          src={brandCoverUrl}
+                          alt="Banner preview"
+                          className="h-32 w-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label>Accent style</Label>
@@ -1887,7 +2023,7 @@ export default function OrgSettings() {
                 </div>
                 <div className="mt-4 flex gap-3">
                   <PrimaryButton
-                    onClick={() => save("Branding saved.")}
+                    onClick={saveBrandingSettings}
                     disabled={!canBranding}
                   >
                     Save Branding
