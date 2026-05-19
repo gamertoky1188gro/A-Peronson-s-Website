@@ -2758,7 +2758,7 @@ export default function AdminPanel() {
     setSecurityGateNotice("");
   }
 
-  const theme = useMemo(() => {
+  const themeStyles = useMemo(() => {
     return adminDark
       ? {
           shell: "bg-slate-950 text-slate-100",
@@ -2931,7 +2931,7 @@ export default function AdminPanel() {
         onDecline={handleSecurityDecline}
       />
       <div
-        className={`admin-shell h-screen w-screen ${theme.shell} ${theme.background} flex overflow-hidden transition-colors`}
+        className={`admin-shell h-screen w-screen ${themeStyles.shell} ${themeStyles.background} flex overflow-hidden transition-colors`}
       >
         <div className="admin-plasma" />
         <div className="admin-current" />
@@ -2964,12 +2964,12 @@ export default function AdminPanel() {
                 </div>
                 <div>
                   <div
-                    className={`text-lg font-semibold tracking-tight ${theme.soft}`}
+                    className={`text-lg font-semibold tracking-tight ${themeStyles.soft}`}
                   >
                     GarTexHub
                   </div>
                   <div
-                    className={`mt-0.5 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${theme.chip}`}
+                    className={`mt-0.5 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${themeStyles.chip}`}
                   >
                     <Crown className="h-3.5 w-3.5" />
                     Admin Matrix
@@ -3004,7 +3004,7 @@ export default function AdminPanel() {
                     type="button"
                     onClick={() => setActiveCategory(item.id)}
                     className={`group relative flex w-full items-center gap-3 rounded-[16px] border px-4 py-3 text-left transition-all duration-300 ${
-                      isActive ? theme.itemActive : theme.item
+                      isActive ? themeStyles.itemActive : themeStyles.item
                     } ${isActive ? "border-cyan-300/20" : "border-transparent"}`}
                   >
                     <div
@@ -3019,7 +3019,7 @@ export default function AdminPanel() {
                       }`}
                     >
                       <Icon
-                        className={`h-5 w-5 ${isActive ? theme.accentText : theme.soft}`}
+                        className={`h-5 w-5 ${isActive ? themeStyles.accentText : themeStyles.soft}`}
                       />
                     </div>
 
@@ -3041,19 +3041,19 @@ export default function AdminPanel() {
                         </span>
                         {item.accent && (
                           <span
-                            className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${theme.chip}`}
+                            className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${themeStyles.chip}`}
                           >
                             Core
                           </span>
                         )}
                       </div>
-                      <p className={`mt-0.5 truncate text-xs ${theme.muted}`}>
+                      <p className={`mt-0.5 truncate text-xs ${themeStyles.muted}`}>
                         {item.sub}
                       </p>
                     </div>
 
                     <ChevronRight
-                      className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? theme.accentText : theme.muted}`}
+                      className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? themeStyles.accentText : themeStyles.muted}`}
                     />
                   </button>
                 );

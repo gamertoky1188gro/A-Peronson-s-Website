@@ -524,9 +524,7 @@ export default function ContractVaultPage() {
                   </p>
                 </div>
                 <button
-                  onClick={toggleTheme}
-                    window.dispatchEvent(new Event("theme-change"));
-                  }}
+                  onClick={() => { toggleTheme(); window.dispatchEvent(new Event("theme-change")); }}
                   className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
                 >
                   {theme === "dark" ? "Light" : "Dark"}
