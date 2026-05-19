@@ -519,13 +519,13 @@ function appendAction(state, entry) {
   return next;
 }
 
-async function hasShellInjection(cmd) {
+function hasShellInjection(cmd) {
   const dangerous = /[;&|`$()]|#.*$/m;
   const stripped = cmd.replace(/"[^"]*"/g, "").replace(/'[^']*'/g, "");
   return dangerous.test(stripped);
 }
 
-function runCommand(command) {
+async function runCommand(command) {
   if (!EXEC_ENABLED) {
     return {
       ok: false,
