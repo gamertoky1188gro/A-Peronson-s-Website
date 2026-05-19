@@ -1,5 +1,5 @@
 /* global process */
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -8,47 +8,48 @@ import {
   useLocation,
 } from "react-router-dom";
 import NavBar from "./components/NavBar";
-import TexHub from "./pages/TexHub";
-import Pricing from "./pages/Pricing";
-import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
-import SignupUltra from "./pages/auth/SignupUltra";
-import OnboardingPage from "./pages/auth/OnboardingPage";
-import MainFeed from "./pages/MainFeed";
-import FeedManagement from "./pages/FeedManagement";
-import SearchResults from "./pages/SearchResults";
-import BuyerProfile from "./pages/BuyerProfile";
-import FactoryProfile from "./pages/FactoryProfile";
-import BuyingHouseProfile from "./pages/BuyingHouseProfile";
-import MemberManagement from "./pages/MemberManagement";
-import PartnerNetwork from "./pages/PartnerNetwork";
-import ProductManagement from "./pages/ProductManagement";
-import BuyerRequestManagement from "./pages/BuyerRequestManagement";
-import HelpCenter from "./pages/HelpCenter";
-import ContractVault from "./pages/ContractVault";
-import NotificationsCenter from "./pages/NotificationsCenter";
-import OrgSettings from "./pages/OrgSettings";
-import Insights from "./pages/Insights";
-import About from "./pages/About";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import ChatInterface from "./pages/ChatInterface";
-import CallInterface from "./pages/CallInterface";
-import OwnerDashboard from "./pages/OwnerDashboard";
-import AgentDashboard from "./pages/AgentDashboard";
-import MvpDashboard from "./pages/MvpDashboard";
-import IndustryPage from "./pages/IndustryPage";
-import RatingFeedback from "./pages/RatingFeedback";
-import SupportReports from "./pages/SupportReports";
-import VerificationPage from "./pages/VerificationPage";
-import TaskTracker from "./pages/TaskTracker";
-import AdminPanel from "./pages/AdminPanel";
-import AdminGovernance from "./pages/AdminGovernance";
-import AccessDenied from "./pages/AccessDenied";
-import FloatingAssistant from "./components/FloatingAssistant";
 import Footer from "./components/Footer";
+import FloatingAssistant from "./components/FloatingAssistant";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
+
+const TexHub = lazy(() => import("./pages/TexHub"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Login = lazy(() => import("./pages/auth/Login"));
+const Signup = lazy(() => import("./pages/auth/Signup"));
+const SignupUltra = lazy(() => import("./pages/auth/SignupUltra"));
+const OnboardingPage = lazy(() => import("./pages/auth/OnboardingPage"));
+const MainFeed = lazy(() => import("./pages/MainFeed"));
+const FeedManagement = lazy(() => import("./pages/FeedManagement"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const BuyerProfile = lazy(() => import("./pages/BuyerProfile"));
+const FactoryProfile = lazy(() => import("./pages/FactoryProfile"));
+const BuyingHouseProfile = lazy(() => import("./pages/BuyingHouseProfile"));
+const MemberManagement = lazy(() => import("./pages/MemberManagement"));
+const PartnerNetwork = lazy(() => import("./pages/PartnerNetwork"));
+const ProductManagement = lazy(() => import("./pages/ProductManagement"));
+const BuyerRequestManagement = lazy(() => import("./pages/BuyerRequestManagement"));
+const HelpCenter = lazy(() => import("./pages/HelpCenter"));
+const ContractVault = lazy(() => import("./pages/ContractVault"));
+const NotificationsCenter = lazy(() => import("./pages/NotificationsCenter"));
+const OrgSettings = lazy(() => import("./pages/OrgSettings"));
+const Insights = lazy(() => import("./pages/Insights"));
+const About = lazy(() => import("./pages/About"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const ChatInterface = lazy(() => import("./pages/ChatInterface"));
+const CallInterface = lazy(() => import("./pages/CallInterface"));
+const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard"));
+const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
+const MvpDashboard = lazy(() => import("./pages/MvpDashboard"));
+const IndustryPage = lazy(() => import("./pages/IndustryPage"));
+const RatingFeedback = lazy(() => import("./pages/RatingFeedback"));
+const SupportReports = lazy(() => import("./pages/SupportReports"));
+const VerificationPage = lazy(() => import("./pages/VerificationPage"));
+const TaskTracker = lazy(() => import("./pages/TaskTracker"));
+const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const AdminGovernance = lazy(() => import("./pages/AdminGovernance"));
+const AccessDenied = lazy(() => import("./pages/AccessDenied"));
 
 const AUTH_ROLES = [
   "buyer",
@@ -456,7 +457,13 @@ function AppLayout() {
       <main
         className={`${hideChrome ? "" : "pb-10 "}flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220]`}
       >
-        <AppRoutes />
+        <Suspense fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
+          </div>
+        }>
+          <AppRoutes />
+        </Suspense>
       </main>
       {!hideChrome ? <Footer /> : null}
       {!hideChrome ? <FloatingAssistant /> : null}

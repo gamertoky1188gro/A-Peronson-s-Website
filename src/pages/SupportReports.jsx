@@ -15,6 +15,7 @@ import {
   getToken,
   hasEntitlement,
 } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 import { usePremiumCheck } from "../hooks/useSecureUser";
 
 const CATEGORY_OPTIONS = [
@@ -53,24 +54,8 @@ export default function SupportReports() {
     accountManager.account_manager_phone,
   );
 
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") !== "light";
-    }
-    return true;
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (darkMode) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-    window.dispatchEvent(new Event("theme-change"));
-  }, [darkMode]);
+  const { theme: currentTheme, toggleTheme } = useTheme();
+  const darkMode = currentTheme === "dark";
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState("Bug Report");
   const [description, setDescription] = useState("");
@@ -240,7 +225,7 @@ export default function SupportReports() {
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                onClick={() => setDarkMode((v) => !v)}
+                onClick={toggleTheme}
                 className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:scale-[1.01] active:scale-[0.99] ${
                   darkMode
                     ? "border-white/10 bg-white/5 text-white hover:bg-white/10"

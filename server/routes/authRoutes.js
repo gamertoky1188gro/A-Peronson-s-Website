@@ -12,13 +12,17 @@ import {
   register,
 } from "../controllers/authController.js";
 import { requireAuth } from "../middleware/auth.js";
+import { createRateLimiter } from "../middleware/rateLimiter.js";
 
 const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/passkey/login/options", passkeyLoginOptions);
-router.post("/passkey/login/verify", passkeyLoginVerify);
+const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
+const passkeyLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
+
+router.post("/register", authLimiter, register);
+router.post("/login", authLimiter, login);
+router.post("/passkey/login/options", passkeyLimiter, passkeyLoginOptions);
+router.post("/passkey/login/verify", passkeyLimiter, passkeyLoginVerify);
 router.post(
   "/passkey/registration/options",
   requireAuth,

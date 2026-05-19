@@ -5,6 +5,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTheme } from "../lib/ThemeProvider";
 import AccessDeniedState from "../components/AccessDeniedState";
 import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
 
@@ -360,12 +361,7 @@ function isOwnerLevel(user) {
 }
 
 export default function ContractVaultPage() {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") === "dark" ? "dark" : "light";
-    }
-    return "dark";
-  });
+  const { theme, toggleTheme } = useTheme();
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState("SEED-001");
   const [tab, setTab] = useState("All");
@@ -381,24 +377,6 @@ export default function ContractVaultPage() {
     currency: "USD",
     document_file: null,
   });
-
-  useEffect(() => {
-    const handleThemeChange = () => {
-      const isDark = document.documentElement.classList.contains("dark");
-      setTheme(isDark ? "dark" : "light");
-    };
-    window.addEventListener("theme-change", handleThemeChange);
-    return () => window.removeEventListener("theme-change", handleThemeChange);
-  }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [theme]);
 
   const handleESign = async () => {
     const token = getToken();
@@ -546,17 +524,7 @@ export default function ContractVaultPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => {
-                    const newTheme = theme === "dark" ? "light" : "dark";
-                    setTheme(newTheme);
-                    const root = document.documentElement;
-                    if (newTheme === "dark") {
-                      root.classList.add("dark");
-                      localStorage.setItem("theme", "dark");
-                    } else {
-                      root.classList.remove("dark");
-                      localStorage.setItem("theme", "light");
-                    }
+                  onClick={toggleTheme}
                     window.dispatchEvent(new Event("theme-change"));
                   }}
                   className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"

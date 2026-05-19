@@ -20,8 +20,8 @@
   Theme: Merged with user's new sky-blue theme while preserving all functionality
 */
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { apiRequest } from "../lib/auth";
+import { Link, useNavigate } from "react-router-dom";
+import { apiRequest, getToken } from "../lib/auth";
 import {
   AnimatePresence,
   motion,
@@ -235,6 +235,13 @@ function GlassSurface({ className = "", children }) {
 }
 
 export default function TexHub() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = getToken();
+    setIsLoggedIn(!!token);
+  }, []);
+
   const initialHome = useMemo(
     () => ({
       hero: {
@@ -577,24 +584,43 @@ export default function TexHub() {
             ) : null}
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <MagneticLinkButton
-                to="/signup"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5"
-              >
-                Create Buyer Account <ArrowRight className="h-4 w-4" />
-              </MagneticLinkButton>
-              <MagneticLinkButton
-                to="/signup"
-                className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200"
-              >
-                Register Factory
-              </MagneticLinkButton>
-              <MagneticLinkButton
-                to="/login"
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
-              >
-                View enterprise plans
-              </MagneticLinkButton>
+              {isLoggedIn ? (
+                <>
+                  <MagneticLinkButton
+                    to="/feed"
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5"
+                  >
+                    Go to Dashboard <ArrowRight className="h-4 w-4" />
+                  </MagneticLinkButton>
+                  <MagneticLinkButton
+                    to="/search"
+                    className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200"
+                  >
+                    Browse Suppliers
+                  </MagneticLinkButton>
+                </>
+              ) : (
+                <>
+                  <MagneticLinkButton
+                    to="/signup"
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5"
+                  >
+                    Create Buyer Account <ArrowRight className="h-4 w-4" />
+                  </MagneticLinkButton>
+                  <MagneticLinkButton
+                    to="/signup"
+                    className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200"
+                  >
+                    Register Factory
+                  </MagneticLinkButton>
+                  <MagneticLinkButton
+                    to="/login"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+                  >
+                    View enterprise plans
+                  </MagneticLinkButton>
+                </>
+              )}
             </div>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -913,18 +939,37 @@ export default function TexHub() {
                   Create account • Login
                 </div>
                 <div className="mt-4 flex gap-3">
-                  <MagneticLinkButton
-                    to="/signup"
-                    className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900"
-                  >
-                    Create account
-                  </MagneticLinkButton>
-                  <MagneticLinkButton
-                    to="/login"
-                    className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    Login
-                  </MagneticLinkButton>
+                  {isLoggedIn ? (
+                    <>
+                      <MagneticLinkButton
+                        to="/feed"
+                        className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900"
+                      >
+                        Go to Dashboard
+                      </MagneticLinkButton>
+                      <MagneticLinkButton
+                        to="/search"
+                        className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
+                      >
+                        Browse Suppliers
+                      </MagneticLinkButton>
+                    </>
+                  ) : (
+                    <>
+                      <MagneticLinkButton
+                        to="/signup"
+                        className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900"
+                      >
+                        Create account
+                      </MagneticLinkButton>
+                      <MagneticLinkButton
+                        to="/login"
+                        className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
+                      >
+                        Login
+                      </MagneticLinkButton>
+                    </>
+                  )}
                 </div>
               </div>
             </Card>

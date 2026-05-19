@@ -7,6 +7,7 @@ import {
   getToken,
   hasEntitlement,
 } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 import { useEntitlements } from "../hooks/useSecureUser";
 import ProfileImageUpload from "../components/ui/ProfileImageUpload";
 
@@ -227,22 +228,8 @@ export default function OrgSettings() {
   }, [searchParams]);
 
   const [tab, setTab] = useState(initialTab);
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") === "dark" ? "dark" : "light";
-    }
-    return "dark";
-  });
+  const { theme, toggleTheme } = useTheme();
   const [statusMessage, setStatusMessage] = useState("Ready.");
-
-  useEffect(() => {
-    const handleThemeChange = () => {
-      const isDark = document.documentElement.classList.contains("dark");
-      setTheme(isDark ? "dark" : "light");
-    };
-    window.addEventListener("theme-change", handleThemeChange);
-    return () => window.removeEventListener("theme-change", handleThemeChange);
-  }, []);
 
   const currentUser = useMemo(() => getCurrentUser(), []);
   const { entitlements: secureEntitlements } = useEntitlements();
@@ -1137,19 +1124,7 @@ export default function OrgSettings() {
     loadMembers,
   ]);
 
-  const onThemeToggle = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    const root = document.documentElement;
-    if (newTheme === "dark") {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-    window.dispatchEvent(new Event("theme-change"));
-  };
+  const onThemeToggle = toggleTheme;
   const verificationTone =
     verificationStatus === "verified_active"
       ? "green"

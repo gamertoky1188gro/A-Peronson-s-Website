@@ -63,6 +63,7 @@ import {
   Globe2,
 } from "lucide-react";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 import { useSecureUser } from "../hooks/useSecureUser";
 
 const quickLinks = [
@@ -177,7 +178,7 @@ function StatCard({ icon: Icon, title, text }) {
 }
 
 export default function HelpCenterPage() {
-  const [theme, setTheme] = useState("dark");
+  const { theme, toggleTheme } = useTheme();
   const [search, setSearch] = useState("");
   const [faqQuery, setFaqQuery] = useState("");
   const [faqs, setFaqs] = useState([]);
@@ -186,12 +187,6 @@ export default function HelpCenterPage() {
   const { user: secureUser } = useSecureUser();
   const token = getToken();
   const userRole = secureUser?.role || user?.role;
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-  }, [theme]);
 
   useEffect(() => {
     async function fetchFaqs() {
@@ -316,9 +311,7 @@ export default function HelpCenterPage() {
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
                 <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-2 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
                   <button
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
+                    onClick={toggleTheme}
                     className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
                   >
                     {theme === "dark" ? (

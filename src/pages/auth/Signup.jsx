@@ -15,6 +15,7 @@ import {
   getRoleHome,
   saveSession,
 } from "../../lib/auth";
+import { useTheme } from "../../lib/ThemeProvider";
 
 const COUNTRIES = [
   "Bangladesh",
@@ -143,14 +144,8 @@ export default function Signup() {
   const navigate = useNavigate();
   const existingUser = getCurrentUser();
 
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme");
-      if (saved) return saved;
-      if (document.documentElement.classList.contains("dark")) return "dark";
-    }
-    return "dark";
-  });
+  const { theme: currentTheme, toggleTheme } = useTheme();
+  const isDark = currentTheme === "dark";
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -194,39 +189,6 @@ export default function Signup() {
     if (!q) return COUNTRIES;
     return COUNTRIES.filter((c) => c.toLowerCase().includes(q));
   }, [countryQuery]);
-
-  const isDark = theme === "dark";
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
-
-  useEffect(() => {
-    const handleStorage = () => {
-      const saved = localStorage.getItem("theme");
-      if (saved && saved !== theme) {
-        setTheme(saved);
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    const interval = setInterval(() => {
-      const saved = localStorage.getItem("theme");
-      if (saved && saved !== theme) {
-        setTheme(saved);
-      }
-    }, 500);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      clearInterval(interval);
-    };
-  }, [theme]);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -301,7 +263,7 @@ export default function Signup() {
 
               <button
                 type="button"
-                onClick={() => setTheme(isDark ? "light" : "dark")}
+                onClick={toggleTheme}
                 className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-100"
               >
                 {isDark ? "Light mode" : "Dark mode"}

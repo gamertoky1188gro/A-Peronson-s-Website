@@ -29,6 +29,7 @@
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useTheme } from "../lib/ThemeProvider";
 import {
   Search,
   Filter,
@@ -230,7 +231,8 @@ export default function SearchResults() {
     return raw || null;
   }, []);
 
-  const [dark, setDark] = useState(true);
+  const { theme, toggleTheme } = useTheme();
+  const dark = theme === "dark";
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -284,11 +286,6 @@ export default function SearchResults() {
   const CUSTOMIZATION = filterOptions.customization;
   const CURRENCIES = filterOptions.currencies;
   const SAMPLE_LOCATIONS = filterOptions.locations;
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", dark);
-  }, [dark]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1218,7 +1215,7 @@ export default function SearchResults() {
                         <Bell className="h-4 w-4" /> Alerts
                       </Link>
                       <button
-                        onClick={() => setDark((v) => !v)}
+                        onClick={toggleTheme}
                         className="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 lg:ml-0"
                       >
                         {dark ? (

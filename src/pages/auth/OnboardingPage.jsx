@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../lib/ThemeProvider";
 import {
   ArrowLeft,
   ArrowRight,
@@ -38,7 +39,8 @@ export default function OnboardingPage() {
   const user = getCurrentUser();
   const token = getToken();
 
-  const [theme, setTheme] = useState("dark");
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -56,7 +58,6 @@ export default function OnboardingPage() {
   });
 
   const progress = useMemo(() => ((step - 1) / 2) * 100, [step]);
-  const isDark = theme === "dark";
 
   function toggleCategory(cat) {
     setCategories((prev) => {
@@ -175,7 +176,7 @@ export default function OnboardingPage() {
                 </div>
 
                 <button
-                  onClick={() => setTheme(isDark ? "light" : "dark")}
+                  onClick={toggleTheme}
                   className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
                 >
                   {isDark ? (

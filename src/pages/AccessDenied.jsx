@@ -16,7 +16,6 @@
     - Tailwind-only styling (no legacy App.css utilities).
     - This page does not call any API.
 */
-import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -27,25 +26,17 @@ import {
   ShieldAlert,
   SunMedium,
   MoonStar,
+  Home,
 } from "lucide-react";
+import { getToken } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 
 export default function AccessDenied() {
-  const [dark, setDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      return document.documentElement.classList.contains("dark");
-    }
-    return true;
-  });
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [dark]);
+  const isLoggedIn = Boolean(getToken());
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -56,7 +47,7 @@ export default function AccessDenied() {
   };
 
   return (
-    <div className={dark ? "dark" : ""}>
+    <div>
       <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-slate-950 dark:text-slate-50">
         {/* Background accents */}
         <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden">
@@ -103,13 +94,23 @@ export default function AccessDenied() {
                   Back
                 </button>
 
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white/80 px-5 py-3.5 text-sm font-semibold text-sky-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-50 dark:border-sky-500/20 dark:bg-white/5 dark:text-sky-200 dark:hover:border-sky-400/30 dark:hover:bg-white/10 dark:focus:ring-offset-slate-950"
-                >
-                  <LogIn className="h-4 w-4" />
-                  Login with another account
-                </Link>
+                {isLoggedIn ? (
+                  <Link
+                    to="/feed"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white/80 px-5 py-3.5 text-sm font-semibold text-sky-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-50 dark:border-sky-500/20 dark:bg-white/5 dark:text-sky-200 dark:hover:border-sky-400/30 dark:hover:bg-white/10 dark:focus:ring-offset-slate-950"
+                  >
+                    <Home className="h-4 w-4" />
+                    Go to Feed
+                  </Link>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white/80 px-5 py-3.5 text-sm font-semibold text-sky-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-50 dark:border-sky-500/20 dark:bg-white/5 dark:text-sky-200 dark:hover:border-sky-400/30 dark:hover:bg-white/10 dark:focus:ring-offset-slate-950"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Login with another account
+                  </Link>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-3 pt-2">
@@ -186,10 +187,10 @@ export default function AccessDenied() {
 
         {/* Floating theme toggle */}
         <button
-          onClick={() => setDark((d) => !d)}
+          onClick={toggleTheme}
           className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-lg shadow-slate-200/60 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-xl dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 dark:shadow-black/30"
         >
-          {dark ? (
+          {isDark ? (
             <>
               <SunMedium className="h-4 w-4 text-amber-500" /> Light mode
             </>

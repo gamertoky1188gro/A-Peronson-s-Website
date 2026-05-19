@@ -70,6 +70,7 @@ import {
   connectNotificationsRealtime,
   subscribeNotificationsRealtime,
 } from "../lib/notificationsRealtime";
+import { useTheme } from "../lib/ThemeProvider";
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
@@ -420,9 +421,8 @@ function NavDropdown({
 }
 
 export default function NavBar() {
-  const [dark, setDark] = useState(
-    () => localStorage.getItem("theme") === "dark",
-  );
+  const { theme, toggleTheme } = useTheme();
+  const dark = theme === "dark";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -490,18 +490,6 @@ export default function NavBar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [searchExpanded, searchQuery]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (dark) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-    window.dispatchEvent(new Event("theme-change"));
-  }, [dark]);
 
   useEffect(() => {
     const handleClickOutside = () => setOpenDropdown(null);
@@ -1046,7 +1034,7 @@ export default function NavBar() {
               />
 
               <button
-                onClick={() => setDark(!dark)}
+                onClick={toggleTheme}
                 className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/65 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white"
                 aria-label="Toggle dark mode"
               >
@@ -1253,7 +1241,7 @@ export default function NavBar() {
 
             <div className="flex items-center justify-between border-t border-slate-900/5 px-5 py-4 dark:border-white/10">
               <button
-                onClick={() => setDark(!dark)}
+                onClick={toggleTheme}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
               >
                 {dark ? (

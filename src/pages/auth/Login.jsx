@@ -27,6 +27,7 @@ import {
   getRoleHome,
   saveSession,
 } from "../../lib/auth";
+import { useTheme } from "../../lib/ThemeProvider";
 import {
   startAuthentication,
   startRegistration,
@@ -128,14 +129,8 @@ export default function Login() {
     return !!window.PublicKeyCredential;
   });
 
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme");
-      if (saved) return saved === "dark";
-      if (document.documentElement.classList.contains("dark")) return true;
-    }
-    return true;
-  });
+  const { theme: currentTheme, toggleTheme } = useTheme();
+  const darkMode = currentTheme === "dark";
 
   const redirectTo = location.state?.from || null;
 
@@ -161,39 +156,6 @@ export default function Login() {
       setPasskeyHint(null);
     }
   }, [rememberPasskeyUser]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (darkMode) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
-
-  useEffect(() => {
-    const handleStorage = () => {
-      const saved = localStorage.getItem("theme");
-      if (saved) {
-        const isDark = saved === "dark";
-        if (isDark !== darkMode) setDarkMode(isDark);
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    const interval = setInterval(() => {
-      const saved = localStorage.getItem("theme");
-      if (saved) {
-        const isDark = saved === "dark";
-        if (isDark !== darkMode) setDarkMode(isDark);
-      }
-    }, 500);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      clearInterval(interval);
-    };
-  }, [darkMode]);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -375,7 +337,7 @@ export default function Login() {
             buttonAlt: "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100",
             outline: "border-sky-200 hover:bg-sky-50",
           },
-    [darkMode],
+    [currentTheme],
   );
 
   const roles = ["Buyer", "Factory", "Buying House"];
@@ -398,7 +360,7 @@ export default function Login() {
             <div className="absolute right-5 top-5 flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setDarkMode((v) => !v)}
+                onClick={toggleTheme}
                 className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition ${theme.outline}`}
                 aria-label="Toggle theme"
               >

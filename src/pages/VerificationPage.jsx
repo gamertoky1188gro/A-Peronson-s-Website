@@ -24,6 +24,7 @@
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 import {
   BUYER_COUNTRY_OPTIONS,
   EU_COUNTRIES,
@@ -120,14 +121,8 @@ export default function VerificationPage() {
   const token = getToken();
   const role = user?.role || "buyer";
 
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme");
-      if (saved) return saved;
-      if (document.documentElement.classList.contains("dark")) return "dark";
-    }
-    return "dark";
-  });
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [verification, setVerification] = useState(null);
   const [buyerCountry, setBuyerCountry] = useState("");
   const [busyDoc, setBusyDoc] = useState("");
@@ -139,39 +134,6 @@ export default function VerificationPage() {
 
   const fileInputRef = useRef(null);
   const pendingDocRef = useRef("");
-
-  const isDark = theme === "dark";
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
-
-  useEffect(() => {
-    const handleStorage = () => {
-      const saved = localStorage.getItem("theme");
-      if (saved && saved !== theme) {
-        setTheme(saved);
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    const interval = setInterval(() => {
-      const saved = localStorage.getItem("theme");
-      if (saved && saved !== theme) {
-        setTheme(saved);
-      }
-    }, 500);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      clearInterval(interval);
-    };
-  }, [theme]);
 
   const buyerRegion = useMemo(() => {
     if (role !== "buyer") return "";
@@ -460,7 +422,7 @@ export default function VerificationPage() {
           </div>
 
           <button
-            onClick={() => setTheme(isDark ? "light" : "dark")}
+            onClick={toggleTheme}
             className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
           >
             <Icon d={isDark ? icons.sun : icons.moon} className="h-4 w-4" />

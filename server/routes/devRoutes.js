@@ -1,8 +1,11 @@
 import { Router } from "express";
 import axios from "axios";
 import crypto from "crypto";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
+
+router.use(requireAuth);
 
 const BASE_URL = (
   process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 4000}`

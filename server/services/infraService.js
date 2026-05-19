@@ -519,7 +519,13 @@ function appendAction(state, entry) {
   return next;
 }
 
-async function runCommand(command) {
+async function hasShellInjection(cmd) {
+  const dangerous = /[;&|`$()]|#.*$/m;
+  const stripped = cmd.replace(/"[^"]*"/g, "").replace(/'[^']*'/g, "");
+  return dangerous.test(stripped);
+}
+
+function runCommand(command) {
   if (!EXEC_ENABLED) {
     return {
       ok: false,
@@ -530,9 +536,20 @@ async function runCommand(command) {
     };
   }
 
+  if (hasShellInjection(command)) {
+    return {
+      ok: false,
+      simulated: false,
+      stdout: "",
+      stderr: "Command rejected: shell metacharacters detected.",
+      exitCode: 1,
+    };
+  }
+
   if (!EXEC_ALLOW_ANY && EXEC_ALLOWLIST.size > 0) {
-    const allowed = [...EXEC_ALLOWLIST].some((prefix) =>
-      command.startsWith(prefix),
+    const commandPrefix = command.split(/\s+/)[0];
+    const allowed = [...EXEC_ALLOWLIST].some(
+      (entry) => entry === commandPrefix,
     );
     if (!allowed) {
       return {
@@ -1288,9 +1305,6 @@ export async function performInfraAction(action = "", payload = {}) {
     command = isWindows()
       ? `powershell -NoProfile -Command "Compress-Archive -Path '${path.join(process.cwd(), "server", "database", "*")}' -DestinationPath '${backupPath}' -Force"`
       : `tar -czf ${backupPath} -C ${path.join(process.cwd(), "server", "database")} .`;
-  } else if (name === "command.execute") {
-    const raw = String(payload?.command || "").trim();
-    command = raw;
   }
 
   if (stateUpdater) {

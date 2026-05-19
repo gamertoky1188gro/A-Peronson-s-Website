@@ -390,14 +390,6 @@ async function joinChatRoom(socket, payload) {
   socket.userId = user.id;
   registerSocketUser(socket, user.id);
   setUserOnline(user.id);
-  const canSend = await canAccessMatch(matchId, socket.userId);
-  if (!canSend) {
-    sendWs(socket, {
-      type: "chat_error",
-      error: "Forbidden: thread access denied",
-    });
-    return;
-  }
 
   const room = chatRooms.get(matchId);
   const participants = [...room]
@@ -805,8 +797,15 @@ wsServer.on("connection", (socket, req) => {
   socket.on("close", () => {
     leaveCallRoom(socket);
     leaveChatRoom(socket);
-    if (socket.userId) setUserOffline(socket.userId);
-    if (socket.userId) unregisterSocketUser(socket, socket.userId);
+    unregisterSocketUser(socket, socket.userId);
+    delete socket.userId;
+  });
+
+  socket.on("error", () => {
+    leaveCallRoom(socket);
+    leaveChatRoom(socket);
+    unregisterSocketUser(socket, socket.userId);
+    delete socket.userId;
   });
 });
 

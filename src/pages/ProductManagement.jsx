@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { apiRequest, getToken } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 import { trackClientEvent } from "../lib/events";
 import {
   Plus,
@@ -104,7 +105,8 @@ function Field({ label, children, hint }) {
 export default function ProductManagement() {
   const token = useMemo(() => getToken(), []);
 
-  const [theme, setTheme] = useState("dark");
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [_error, setError] = useState("");
@@ -127,14 +129,6 @@ export default function ProductManagement() {
 
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
-
-  const isDark = theme === "dark";
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) root.classList.add("dark");
-    else root.classList.remove("dark");
-  }, [isDark]);
 
   const loadMine = useCallback(async () => {
     if (!token) return;
@@ -596,9 +590,7 @@ export default function ProductManagement() {
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() =>
-                    setTheme((t) => (t === "dark" ? "light" : "dark"))
-                  }
+                  onClick={toggleTheme}
                   className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                 >
                   {isDark ? (

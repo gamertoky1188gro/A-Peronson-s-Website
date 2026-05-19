@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 import ProductQuickViewModal from "../components/products/ProductQuickViewModal";
 import {
   connectNotificationsRealtime,
@@ -148,49 +149,12 @@ export default function NotificationsCenter() {
   const token = useMemo(() => getToken(), []);
   const user = useMemo(() => getCurrentUser(), []);
   const reduceMotion = useReducedMotion();
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || "dark";
-    }
-    return "dark";
-  });
+  const { theme, setTheme, toggleTheme } = useTheme();
   const [tab, setTab] = useState("all");
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [livePulse, setLivePulse] = useState(true);
-
-  useEffect(() => {
-    const handler = () => {
-      const stored = localStorage.getItem("theme");
-      if (stored) {
-        setTheme(stored);
-      }
-    };
-    window.addEventListener("storage", handler);
-    window.addEventListener("theme-change", handler);
-    const interval = setInterval(() => {
-      const stored = localStorage.getItem("theme");
-      if (stored !== theme) {
-        setTheme(stored);
-      }
-    }, 500);
-    return () => {
-      window.removeEventListener("storage", handler);
-      window.removeEventListener("theme-change", handler);
-      clearInterval(interval);
-    };
-  }, [theme]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   const [items, setItems] = useState([]);
   const [alerts, setAlerts] = useState([]);

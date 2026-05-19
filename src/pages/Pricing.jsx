@@ -17,7 +17,7 @@
   Key API endpoints:
     - GET /api/system/pricing  (via `apiRequest('/system/pricing')`)
 */
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
@@ -277,6 +277,8 @@ function PlanCard({
   buttonLabel,
   highlighted,
   icon,
+  isLoggedIn,
+  userRole,
 }) {
   const IconComponent = icon;
   return (
@@ -324,7 +326,7 @@ function PlanCard({
 
         <div className="mt-6">
           <Link
-            to="/signup"
+            to={isLoggedIn ? "/feed" : "/signup"}
             className={
               "group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-300 " +
               (highlighted
@@ -332,7 +334,7 @@ function PlanCard({
                 : "border border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200")
             }
           >
-            {buttonLabel}
+            {isLoggedIn ? "Go to Dashboard" : buttonLabel}
             <span className="h-4 w-4 transition-transform group-hover:translate-x-0.5">
               →
             </span>
@@ -489,21 +491,6 @@ export default function PricingPage() {
   const [pricing, setPricing] = useState(defaultPricing);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [dark, setDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") === "dark";
-    }
-    return true;
-  });
-
-  useEffect(() => {
-    const handleThemeChange = () => {
-      const isDark = document.documentElement.classList.contains("dark");
-      setDark(isDark);
-    };
-    window.addEventListener("theme-change", handleThemeChange);
-    return () => window.removeEventListener("theme-change", handleThemeChange);
-  }, []);
 
   const sessionUser = getCurrentUser();
   const { user: secureUser } = useSecureUser();
@@ -617,8 +604,7 @@ export default function PricingPage() {
     : roleSections;
 
   return (
-    <div className={dark ? "dark" : ""}>
-      <div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
+    <div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
         <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.16),transparent_30%),radial-gradient(circle_at_bottom,rgba(14,165,233,0.12),transparent_28%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_30%),radial-gradient(circle_at_bottom,rgba(14,165,233,0.1),transparent_28%)]" />
 
         <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
@@ -637,20 +623,41 @@ export default function PricingPage() {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-                >
-                  Create your organization
-                  <span>→</span>
-                </Link>
-                <Link
-                  to="#plans"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
-                >
-                  <span>🔍</span>
-                  View plans
-                </Link>
+                {isLoggedIn ? (
+                  <>
+                    <Link
+                      to="/feed"
+                      className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                    >
+                      Go to Dashboard
+                      <span>→</span>
+                    </Link>
+                    <Link
+                      to="#plans"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
+                    >
+                      <span>🔍</span>
+                      View plans
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/signup"
+                      className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                    >
+                      Create your organization
+                      <span>→</span>
+                    </Link>
+                    <Link
+                      to="#plans"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
+                    >
+                      <span>🔍</span>
+                      View plans
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
 
@@ -673,7 +680,7 @@ export default function PricingPage() {
                 const rolePlan =
                   plansByRole[section.key] || plansByRole.neutral;
                 return (
-                  <>
+                  <React.Fragment key={section.key}>
                     <PlanCard
                       title={section.title}
                       role={
@@ -694,6 +701,7 @@ export default function PricingPage() {
                             ? "🏭"
                             : "👥"
                       }
+                      isLoggedIn={isLoggedIn}
                     />
                     <PlanCard
                       title={`${section.title} Premium`}
@@ -704,8 +712,9 @@ export default function PricingPage() {
                       buttonLabel="Choose premium"
                       highlighted
                       icon="✨"
+                      isLoggedIn={isLoggedIn}
                     />
-                  </>
+                  </React.Fragment>
                 );
               })}
             </div>
@@ -819,24 +828,43 @@ export default function PricingPage() {
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-                >
-                  Create your organization
-                  <span>→</span>
-                </Link>
-                <Link
-                  to="#plans"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
-                >
-                  Choose premium
-                </Link>
+                {isLoggedIn ? (
+                  <>
+                    <Link
+                      to="/feed"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                    >
+                      Go to Dashboard
+                      <span>→</span>
+                    </Link>
+                    <Link
+                      to="#plans"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
+                    >
+                      View plans
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/signup"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                    >
+                      Create your organization
+                      <span>→</span>
+                    </Link>
+                    <Link
+                      to="#plans"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
+                    >
+                      Choose premium
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </section>
         </main>
-      </div>
     </div>
   );
 }

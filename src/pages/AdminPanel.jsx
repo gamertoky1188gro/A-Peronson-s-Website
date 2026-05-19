@@ -95,6 +95,7 @@ import RejectionReasonModal from "../components/admin/RejectionReasonModal";
 import { AdminAISection } from "./admin/sections/AdminAISection";
 import { FileExplorerSection } from "./admin/sections/FileExplorerSection";
 import { apiRequest, getCurrentUser, getToken, saveSession } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 import {
   useInventory,
   useUiConfig,
@@ -948,12 +949,8 @@ function UltraTinyChart({
 export default function AdminPanel() {
   const user = getCurrentUser();
   const userRole = normalizeRole(user?.role);
-  const [adminDark, setAdminDark] = useState(() => {
-    const stored = localStorage.getItem("admin_theme");
-    if (stored === "light") return false;
-    if (stored === "dark") return true;
-    return true;
-  });
+  const { theme, toggleTheme } = useTheme();
+  const adminDark = theme === "dark";
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -1206,17 +1203,6 @@ export default function AdminPanel() {
     if (!mfaCode) return;
     localStorage.setItem("admin_mfa_code", mfaCode);
   }, [mfaCode]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (adminDark) {
-      root.classList.add("dark");
-      localStorage.setItem("admin_theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("admin_theme", "light");
-    }
-  }, [adminDark]);
 
   useEffect(() => {
     if (!deviceId) return;
@@ -2992,7 +2978,7 @@ export default function AdminPanel() {
               </div>
 
               <button
-                onClick={() => setAdminDark((v) => !v)}
+                onClick={toggleTheme}
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all duration-300 ${
                   adminDark
                     ? "border-white/10 bg-white/5 hover:bg-white/10"
@@ -3200,7 +3186,7 @@ export default function AdminPanel() {
 
                       <div className="flex flex-wrap items-center gap-3">
                         <button
-                          onClick={() => setAdminDark((v) => !v)}
+                          onClick={toggleTheme}
                           className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:text-slate-100"
                         >
                           {adminDark ? (
@@ -6680,7 +6666,7 @@ export default function AdminPanel() {
                                     <div className="flex items-center gap-3">
                                       <button
                                         type="button"
-                                        onClick={() => setAdminDark((v) => !v)}
+                                        onClick={toggleTheme}
                                         className={cn(
                                           "inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition",
                                           adminDark
@@ -8246,7 +8232,7 @@ export default function AdminPanel() {
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    setAdminDark(adminDark ? false : true)
+                                    toggleTheme
                                   }
                                   className={cn(
                                     "inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm",
@@ -8389,7 +8375,7 @@ export default function AdminPanel() {
                                 <div className="flex flex-wrap items-center gap-3">
                                   <button
                                     type="button"
-                                    onClick={() => setAdminDark((v) => !v)}
+                                    onClick={toggleTheme}
                                     className={cn(
                                       "inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition-all",
                                       adminDark
@@ -10164,7 +10150,7 @@ export default function AdminPanel() {
                               <div className="flex flex-wrap items-center gap-3">
                                 <button
                                   type="button"
-                                  onClick={() => setAdminDark((v) => !v)}
+                                  onClick={toggleTheme}
                                   className={cn(
                                     "inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium shadow-lg transition hover:-translate-y-0.5",
                                     adminDark
@@ -12436,7 +12422,7 @@ export default function AdminPanel() {
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => setAdminDark((v) => !v)}
+                                  onClick={toggleTheme}
                                   className={cn(
                                     "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5",
                                     adminDark
@@ -13386,7 +13372,7 @@ export default function AdminPanel() {
                               <div className="flex flex-wrap items-center gap-3">
                                 <button
                                   type="button"
-                                  onClick={() => setAdminDark((v) => !v)}
+                                  onClick={toggleTheme}
                                   className={cn(
                                     "inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:-translate-y-0.5",
                                     adminDark
