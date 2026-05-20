@@ -63,6 +63,7 @@ import {
   Globe2,
 } from "lucide-react";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import usePageMeta from "../lib/usePageMeta";
 import { useTheme } from "../lib/ThemeProvider";
 import { useSecureUser } from "../hooks/useSecureUser";
 
@@ -178,6 +179,13 @@ function StatCard({ icon: Icon, title, text }) {
 }
 
 export default function HelpCenterPage() {
+  usePageMeta({
+    title: "Help Center — GarTexHub",
+    type: "website",
+    description: "Get help with GarTexHub. Browse FAQs, documentation, and submit support tickets.",
+    siteName: "GarTexHub",
+    locale: "en_US",
+  });
   const { theme, toggleTheme } = useTheme();
   const [search, setSearch] = useState("");
   const [faqQuery, setFaqQuery] = useState("");

@@ -21,6 +21,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import usePageMeta from "../lib/usePageMeta";
 import { useSecureUser } from "../hooks/useSecureUser";
 
 function planKeyForUserRole(role) {
@@ -487,6 +488,14 @@ function FAQItem({ q, a }) {
 }
 
 export default function PricingPage() {
+  usePageMeta({
+    title: "Pricing — GarTexHub",
+    type: "website",
+    description:
+      "Choose the right plan for your garment and textile sourcing needs. Free and premium tiers for buyers, factories, and buying houses.",
+    siteName: "GarTexHub",
+    locale: "en_US",
+  });
   const location = useLocation();
   const [pricing, setPricing] = useState(defaultPricing);
   const [loading, setLoading] = useState(true);

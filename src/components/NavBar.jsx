@@ -80,7 +80,7 @@ const publicLinks = [
   { to: "/about", label: "About" },
   { to: "/help", label: "Help" },
   { to: "/support", label: "Support" },
-  { to: "/mvp", label: "MVP" },
+
 ];
 
 const ENTER_DELAY = 180;

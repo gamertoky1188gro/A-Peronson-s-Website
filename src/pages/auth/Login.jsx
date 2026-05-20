@@ -28,6 +28,7 @@ import {
   saveSession,
 } from "../../lib/auth";
 import { useTheme } from "../../lib/ThemeProvider";
+import usePageMeta from "../../lib/usePageMeta";
 import {
   startAuthentication,
   startRegistration,
@@ -97,6 +98,13 @@ const UserRound = (p) => (
 const ChevronRight = (p) => <Icon d="M9 18l6-6-6-6" {...p} />;
 
 export default function Login() {
+  usePageMeta({
+    title: "Login — GarTexHub",
+    type: "website",
+    description: "Sign in to your GarTexHub account to manage sourcing, products, and connections.",
+    siteName: "GarTexHub",
+    locale: "en_US",
+  });
   const navigate = useNavigate();
   const location = useLocation();
   const existingUser = getCurrentUser();

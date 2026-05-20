@@ -22,6 +22,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest, getToken } from "../lib/auth";
+import usePageMeta from "../lib/usePageMeta";
 import {
   AnimatePresence,
   motion,
@@ -235,6 +236,17 @@ function GlassSurface({ className = "", children }) {
 }
 
 export default function TexHub() {
+  const heroHeadline =
+    "Where global buyers, factories, and buying houses connect with clarity";
+  usePageMeta({
+    title: "GarTexHub — B2B Textile & Garment Sourcing Platform",
+    type: "website",
+    description:
+      "A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, and connect with verified partners.",
+    siteName: "GarTexHub",
+    locale: "en_US",
+    twitterSite: "@gartexhub",
+  });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {

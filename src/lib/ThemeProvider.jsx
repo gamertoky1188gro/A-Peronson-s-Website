@@ -30,6 +30,14 @@ export function ThemeProvider({ children }) {
       root.classList.remove("dark");
     }
     window.dispatchEvent(new Event("theme-change"));
+
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "theme-color");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", theme === "dark" ? "#0f172a" : "#f8fafc");
   }, [theme]);
 
   useEffect(() => {

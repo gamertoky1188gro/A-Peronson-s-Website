@@ -16,6 +16,7 @@ import {
   saveSession,
 } from "../../lib/auth";
 import { useTheme } from "../../lib/ThemeProvider";
+import usePageMeta from "../../lib/usePageMeta";
 
 const COUNTRIES = [
   "Bangladesh",
@@ -141,6 +142,13 @@ const ROLE_VALUE_TO_API = {
 };
 
 export default function Signup() {
+  usePageMeta({
+    title: "Create Account — GarTexHub",
+    type: "website",
+    description: "Join GarTexHub — the B2B sourcing platform for garments and textiles. Create your account as a buyer, factory, or buying house.",
+    siteName: "GarTexHub",
+    locale: "en_US",
+  });
   const navigate = useNavigate();
   const existingUser = getCurrentUser();
 

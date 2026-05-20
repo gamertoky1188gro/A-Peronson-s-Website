@@ -41,7 +41,7 @@ const ChatInterface = lazy(() => import("./pages/ChatInterface"));
 const CallInterface = lazy(() => import("./pages/CallInterface"));
 const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard"));
 const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
-const MvpDashboard = lazy(() => import("./pages/MvpDashboard"));
+
 const IndustryPage = lazy(() => import("./pages/IndustryPage"));
 const RatingFeedback = lazy(() => import("./pages/RatingFeedback"));
 const SupportReports = lazy(() => import("./pages/SupportReports"));
@@ -329,7 +329,7 @@ function AppRoutes() {
         }
       />
 
-      <Route path="/mvp" element={<MvpDashboard />} />
+
       <Route path="/tasks" element={<TaskTracker />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
