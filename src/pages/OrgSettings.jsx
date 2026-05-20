@@ -7,6 +7,7 @@ import {
   getToken,
   hasEntitlement,
 } from "../lib/auth";
+import { Sun, Moon } from "lucide-react";
 import { useTheme } from "../lib/ThemeProvider";
 import { useEntitlements } from "../hooks/useSecureUser";
 import ProfileImageUpload from "../components/ui/ProfileImageUpload";
@@ -205,6 +206,8 @@ const hasRoleAccess = (userRole, requiredRole) => {
 const TABS = [
   { id: "general", label: "General Info", requiredRole: "viewer" },
   { id: "profile", label: "My Profile", requiredRole: "observer" },
+  { id: "theme", label: "Theme", requiredRole: "viewer" },
+  { id: "privacy", label: "Privacy", requiredRole: "observer" },
   { id: "verification", label: "Verification", requiredRole: "factory" },
   { id: "branding", label: "Branding", requiredRole: "factory" },
   { id: "security", label: "Security", requiredRole: "factory" },
@@ -1616,6 +1619,21 @@ export default function OrgSettings() {
                 subtitle="Export data, review sessions, and remove the account securely."
               >
                 <div className="space-y-4">
+                  <div className="rounded-2xl border border-amber-200/60 bg-amber-50/50 p-4 dark:border-amber-800/40 dark:bg-amber-950/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                          Account Lock
+                        </div>
+                        <div className="text-xs text-amber-700 dark:text-amber-300">
+                          Temporarily freeze your account and hide listings
+                        </div>
+                      </div>
+                      <button className="rounded-full border border-amber-200 bg-white px-4 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60">
+                        Lock Now
+                      </button>
+                    </div>
+                  </div>
                   <SecondaryButton
                     onClick={exportUserData}
                     disabled={exportingData}
@@ -1709,6 +1727,152 @@ export default function OrgSettings() {
                         ))
                       )}
                     </div>
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+          )}
+
+        {/* ==================== THEME TAB ==================== */}
+        {activeTab === "theme" &&
+          hasRoleAccess(currentUserRole, "viewer") && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <SectionCard
+                title="Appearance"
+                subtitle="Customize how GarTexHub looks for you."
+              >
+                <div className="space-y-4">
+                  <div>
+                    <Label>Theme Mode</Label>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      Choose your preferred color scheme.
+                    </p>
+                    <div className="mt-3 grid grid-cols-3 gap-3">
+                      <button
+                        onClick={() => setTheme("light")}
+                        className={cx(
+                          "flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
+                          theme === "light"
+                            ? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
+                            : "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500"
+                        )}
+                      >
+                        <Sun className="h-6 w-6" />
+                        Light
+                      </button>
+                      <button
+                        onClick={() => setTheme("dark")}
+                        className={cx(
+                          "flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
+                          theme === "dark"
+                            ? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
+                            : "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500"
+                        )}
+                      >
+                        <Moon className="h-6 w-6" />
+                        Dark
+                      </button>
+                      <button
+                        onClick={() => {
+                          const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                          setTheme(prefersDark ? "dark" : "light");
+                        }}
+                        className="flex flex-col items-center gap-2 rounded-2xl border-2 border-slate-200 p-4 text-sm font-medium text-slate-600 transition hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                        System
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+          )}
+
+        {/* ==================== PRIVACY TAB ==================== */}
+        {activeTab === "privacy" &&
+          hasRoleAccess(currentUserRole, "observer") && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <SectionCard
+                title="Profile Visibility"
+                subtitle="Control who can see your profile and information."
+              >
+                <div className="space-y-4">
+                  <div>
+                    <Label>Profile Visibility</Label>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      Controls who can view your company profile and product listings.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-white">
+                          Search Engine Indexing
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Allow search engines to index your public profile
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                        defaultChecked
+                      />
+                    </div>
+                  </div>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                title="Data & Sharing"
+                subtitle="Manage how your data is used and shared."
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-white">
+                        Show email on profile
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Display your email address publicly
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                      defaultChecked
+                    />
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-white">
+                        Show phone on profile
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Display your phone number publicly
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                      defaultChecked
+                    />
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-white">
+                        Activity status
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Show when you are online or recently active
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                      defaultChecked
+                    />
                   </div>
                 </div>
               </SectionCard>
@@ -1879,6 +2043,40 @@ export default function OrgSettings() {
                       </div>
                     ))
                   )}
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                title="Account Lock"
+                subtitle="Temporarily restrict access to your account."
+              >
+                <div className="space-y-4">
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+                    <div className="flex items-start gap-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      <div>
+                        <div className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                          Lock your account
+                        </div>
+                        <div className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                          This will temporarily freeze your account, hide your listings, and prevent new messages. You can unlock at any time.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-white">
+                        Account status
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Currently active — all features available
+                      </div>
+                    </div>
+                    <button className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60">
+                      Lock Account
+                    </button>
+                  </div>
                 </div>
               </SectionCard>
             </div>

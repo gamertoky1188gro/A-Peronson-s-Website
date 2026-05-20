@@ -67,7 +67,7 @@ function SectionTitle({ eyebrow, title, text }) {
 
 function Pill({ children }) {
   return (
-    <div className="rounded-full border border-slate-200/50 bg-slate-800 px-3 py-1 text-xs font-medium text-slate-200 dark:border-white/10 dark:bg-white/10 dark:text-white/85">
+    <div className="rounded-full border border-slate-200/50 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:border-white/10 dark:bg-white/10 dark:text-white/85">
       {children}
     </div>
   );
@@ -639,10 +639,10 @@ export default function TexHub() {
 
           <div className="relative">
             <Card className="overflow-hidden p-5">
-              <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-sky-900 p-5 text-white shadow-2xl shadow-sky-950/25 dark:from-slate-950 dark:to-sky-950">
+              <div className="rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 shadow-2xl shadow-sky-200/30 dark:from-slate-950 dark:to-sky-950 dark:text-white dark:shadow-sky-950/25">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-sky-100/80">
+                    <div className="text-sm font-medium text-sky-600/80 dark:text-sky-100/80">
                       Buyer Request
                     </div>
                     <div className="mt-1 text-xl font-semibold">
@@ -658,16 +658,16 @@ export default function TexHub() {
                     return (
                       <div
                         key={item.label}
-                        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4"
+                        className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
-                          <Icon className="h-5 w-5 text-sky-200" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/10">
+                          <Icon className="h-5 w-5 text-sky-600 dark:text-sky-200" />
                         </div>
                         <div className="flex-1">
                           <div className="text-sm font-medium">
                             {item.label}
                           </div>
-                          <div className="text-xs text-sky-100/70">
+                          <div className="text-xs text-slate-500 dark:text-sky-100/70">
                             {item.status}
                           </div>
                         </div>
@@ -676,19 +676,19 @@ export default function TexHub() {
                   })}
                 </div>
 
-                <div className="mt-5 rounded-3xl border border-white/10 bg-white/10 p-4">
+                <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-100 p-4 dark:border-white/10 dark:bg-white/10">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm font-medium">
-                      <BadgeCheck className="h-4 w-4 text-cyan-200" />{" "}
+                      <BadgeCheck className="h-4 w-4 text-cyan-600 dark:text-cyan-200" />{" "}
                       {heroFactories.title}
                     </div>
-                    <div className="text-xs text-sky-100/70">
+                    <div className="text-xs text-slate-500 dark:text-sky-100/70">
                       {heroFactories.subtitle}
                     </div>
                   </div>
-                  <div className="mt-3 grid gap-2 text-xs text-sky-50/85 sm:grid-cols-2">
+                  <div className="mt-3 grid gap-2 text-xs text-slate-600/85 sm:grid-cols-2 dark:text-sky-50/85">
                     {heroValueProps.slice(0, 4).map((t) => (
-                      <div key={t} className="rounded-2xl bg-white/5 px-3 py-2">
+                      <div key={t} className="rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5">
                         {t}
                       </div>
                     ))}
@@ -931,8 +931,8 @@ export default function TexHub() {
                   </span>
                 ))}
               </div>
-              <div className="mt-6 rounded-3xl bg-gradient-to-br from-slate-800 to-sky-800 p-5 text-white dark:from-slate-950 dark:to-sky-950">
-                <div className="text-sm text-sky-100/75">
+              <div className="mt-6 rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 dark:from-slate-950 dark:to-sky-950 dark:text-white">
+                <div className="text-sm text-sky-600/75 dark:text-sky-100/75">
                   Start connecting with the right partners
                 </div>
                 <div className="mt-1 text-lg font-semibold">
@@ -949,7 +949,7 @@ export default function TexHub() {
                       </MagneticLinkButton>
                       <MagneticLinkButton
                         to="/search"
-                        className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
+                        className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white"
                       >
                         Browse Suppliers
                       </MagneticLinkButton>
@@ -964,7 +964,7 @@ export default function TexHub() {
                       </MagneticLinkButton>
                       <MagneticLinkButton
                         to="/login"
-                        className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
+                        className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white"
                       >
                         Login
                       </MagneticLinkButton>

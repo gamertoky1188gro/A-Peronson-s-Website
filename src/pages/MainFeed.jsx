@@ -721,25 +721,23 @@ export default function MainFeed() {
     if (role === "buyer") {
       return [
         { to: "/buyer-requests", label: "Post a Buyer Request" },
-        { to: "/feed/manage", label: "Manage Feed Posts" },
+        { to: "/feed/manage", label: "Create Listing" },
       ];
     }
     if (role === "factory") {
       return [
-        { to: "/product-management", label: "Post a Product" },
-        { to: "/feed/manage", label: "Manage Feed Posts" },
+        { to: "/product-management", label: "Create Listing" },
         { to: "/member-management", label: "Members" },
       ];
     }
     if (role === "buying_house") {
       return [
-        { to: "/product-management", label: "Post a Product" },
-        { to: "/feed/manage", label: "Manage Feed Posts" },
+        { to: "/product-management", label: "Create Listing" },
         { to: "/agent", label: "Go to Agent Dashboard" },
       ];
     }
     return [
-      { to: "/feed/manage", label: "Manage Feed Posts" },
+      { to: "/feed/manage", label: "Create Listing" },
       { to: "/search", label: "Search" },
     ];
   }, [user?.role]);

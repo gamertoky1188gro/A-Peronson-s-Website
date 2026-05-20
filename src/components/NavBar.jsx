@@ -83,14 +83,92 @@ const publicLinks = [
   { to: "/mvp", label: "MVP" },
 ];
 
+const ENTER_DELAY = 180;
+const EXIT_DELAY = 250;
+const TRAJECTORY_SAMPLE = 4;
+
+function useSmartHover(containerRef) {
+  const [trail, setTrail] = useState([]);
+  const enterTimer = useRef(null);
+  const exitTimer = useRef(null);
+  const [intent, setIntent] = useState(null);
+
+  const clearTimers = useCallback(() => {
+    if (enterTimer.current) clearTimeout(enterTimer.current);
+    if (exitTimer.current) clearTimeout(exitTimer.current);
+    enterTimer.current = null;
+    exitTimer.current = null;
+  }, []);
+
+  const handlePointerMove = useCallback((e) => {
+    setTrail((prev) => {
+      const next = [...prev, { x: e.clientX, y: e.clientY, t: Date.now() }];
+      return next.length > TRAJECTORY_SAMPLE ? next.slice(-TRAJECTORY_SAMPLE) : next;
+    });
+  }, []);
+
+  const headingToward = useCallback((rect) => {
+    if (trail.length < 2) return false;
+    const prev = trail[trail.length - 2];
+    const curr = trail[trail.length - 1];
+    const dx = curr.x - prev.x;
+    const dy = curr.y - prev.y;
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const toCx = cx - curr.x;
+    const toCy = cy - curr.y;
+    const dot = dx * toCx + dy * toCy;
+    return dot > 0;
+  }, [trail]);
+
+  const onEnter = useCallback((rect) => {
+    clearTimers();
+    if (rect && headingToward(rect)) {
+      setIntent(true);
+      return;
+    }
+    enterTimer.current = setTimeout(() => setIntent(true), ENTER_DELAY);
+  }, [clearTimers, headingToward]);
+
+  const onExit = useCallback(() => {
+    clearTimers();
+    exitTimer.current = setTimeout(() => setIntent(false), EXIT_DELAY);
+  }, [clearTimers]);
+
+  const onImmediateEnter = useCallback(() => {
+    clearTimers();
+    setIntent(true);
+  }, [clearTimers]);
+
+  const onImmediateExit = useCallback(() => {
+    clearTimers();
+    setIntent(false);
+  }, [clearTimers]);
+
+  useEffect(() => {
+    return () => clearTimers();
+  }, [clearTimers]);
+
+  return {
+    intent,
+    onEnter,
+    onExit,
+    onImmediateEnter,
+    onImmediateExit,
+    handlePointerMove,
+    trail,
+  };
+}
+
 // Auth navigation dropdown structure
 const navigationGroups = [
   {
     label: "Core",
     icon: LayoutDashboard,
     items: [
+      { to: "/org-settings?tab=profile", label: "My Profile" },
       { to: "/feed", label: "Feed" },
-      { to: "/feed/manage", label: "Manage Feed" },
+      { to: "/feed/manage", label: "Manage Listings" },
       { to: "/search", label: "Search" },
       { to: "/contracts", label: "Contracts" },
       { to: "/verification", label: "Verification" },
@@ -304,7 +382,9 @@ function NavDropdown({
 }) {
   const location = useLocation();
   const IconComponent = group.icon;
-  const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const hover = useSmartHover(containerRef);
 
   const visibleItems = group.items.filter(
     (item) => !item.roles || item.roles.includes(userRole),
@@ -317,24 +397,53 @@ function NavDropdown({
     onToggle(isOpen ? null : group.label);
   };
 
+  const handleTriggerEnter = () => {
+    const rect = dropdownRef.current?.getBoundingClientRect();
+    if (isOpen) {
+      hover.onImmediateEnter();
+      onMouseEnter?.();
+    } else {
+      hover.onEnter(rect);
+      onMouseEnter?.();
+      if (!isTouchDevice) {
+        const timer = setTimeout(() => {
+          if (hover.intent) onToggle(group.label);
+        }, ENTER_DELAY);
+        return () => clearTimeout(timer);
+      }
+    }
+  };
+
+  const handleTriggerLeave = () => {
+    hover.onExit();
+    onMouseLeave?.();
+  };
+
+  const handleDropdownEnter = () => {
+    hover.onImmediateEnter();
+    onMouseEnter?.();
+  };
+
+  const handleDropdownLeave = () => {
+    hover.onExit();
+    onMouseLeave?.();
+  };
+
+  const show = isTouchDevice ? isOpen : (isOpen || hover.intent);
+
   return (
-    <div 
-      className={cn("relative group", isTouchDevice ? "" : "nav-dropdown")}
-      onMouseEnter={() => {
-        setIsHovered(true);
-        onMouseEnter?.();
-        onToggle(group.label);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        onMouseLeave?.();
-      }}
+    <div
+      ref={containerRef}
+      className="relative"
+      onPointerMove={hover.handlePointerMove}
     >
       <button
-        onClick={isTouchDevice ? handleToggle : undefined}
+        onClick={isTouchDevice ? handleToggle : handleTriggerEnter}
+        onMouseEnter={!isTouchDevice ? handleTriggerEnter : undefined}
+        onMouseLeave={!isTouchDevice ? handleTriggerLeave : undefined}
         className={cn(
           "group inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition",
-          isOpen
+          show
             ? "text-sky-700 bg-sky-500/10 ring-1 ring-sky-400/25 dark:text-sky-300"
             : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
         )}
@@ -343,19 +452,24 @@ function NavDropdown({
           {IconComponent && <IconComponent className="h-4 w-4" />}
           <span className="hidden lg:inline">{group.label}</span>
         </span>
-        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen ? "rotate-180" : "")} />
+        <ChevronDown className={cn("h-4 w-4 transition-transform", show ? "rotate-180" : "")} />
       </button>
 
+      {/* Invisible buffer zone between trigger and dropdown */}
+      {show && !isTouchDevice && (
+        <div className="absolute left-0 right-0 top-full h-4 z-40" />
+      )}
+
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        ref={dropdownRef}
+        onMouseEnter={!isTouchDevice ? handleDropdownEnter : undefined}
+        onMouseLeave={!isTouchDevice ? handleDropdownLeave : undefined}
         className={cn(
           "absolute left-0 top-full z-50 mt-2 min-w-72 overflow-hidden rounded-3xl border border-white/10 bg-white/80 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:bg-slate-950/85",
+          "transition-opacity duration-150",
           isTouchDevice
-            ? isOpen
-              ? "block"
-              : "hidden"
-            : isOpen || isHovered ? "block" : "hidden"
+            ? isOpen ? "block" : "hidden"
+            : show ? "block animate-in fade-in" : "hidden"
         )}
       >
         <div className="px-3 pb-2 pt-1">
@@ -373,7 +487,7 @@ function NavDropdown({
         )}
         <div className="space-y-1">
           {visibleItems.map((item) => {
-            const isActive = location.pathname === item.to;
+            const isActive = location.pathname === item.to || location.pathname + "?" + location.search === item.to;
             return (
               <Link
                 key={item.to}
@@ -388,7 +502,9 @@ function NavDropdown({
               >
                 <span className="flex items-center gap-3">
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900/5 text-slate-700 dark:bg-white/5 dark:text-slate-200">
+                    {item.label === "My Profile" && <Vote className="h-4 w-4" />}
                     {item.label === "Feed" && <LayoutDashboard className="h-4 w-4" />}
+                    {item.label === "Manage Listings" && <Package className="h-4 w-4" />}
                     {item.label === "Search" && <Search className="h-4 w-4" />}
                     {item.label === "Contracts" && <FileText className="h-4 w-4" />}
                     {item.label === "Verification" && <ShieldCheck className="h-4 w-4" />}
@@ -456,26 +572,18 @@ export default function NavBar() {
   const searchRef = useRef(null);
 
   const handleSetDropdown = useCallback((label) => {
-    if (dropdownTimeout) {
-      clearTimeout(dropdownTimeout);
-      setDropdownTimeout(null);
-    }
     setOpenDropdown(label);
-  }, [dropdownTimeout]);
+  }, []);
 
   const handleDropdownHover = useCallback(() => {
-    if (dropdownTimeout) {
-      clearTimeout(dropdownTimeout);
-      setDropdownTimeout(null);
-    }
-  }, [dropdownTimeout]);
+    setDropdownTimeout(null);
+  }, []);
 
   const handleDropdownLeave = useCallback(() => {
-    if (dropdownTimeout) clearTimeout(dropdownTimeout);
     const timeout = setTimeout(() => {
       setOpenDropdown(null);
       setDropdownTimeout(null);
-    }, 3000);
+    }, 600);
     setDropdownTimeout(timeout);
   }, []);
 
@@ -789,7 +897,14 @@ export default function NavBar() {
     <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/65 backdrop-blur-2xl dark:bg-slate-950/55">
       <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-20 flex-wrap items-center justify-between gap-3 py-3">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 md:gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10 md:hidden"
+              aria-label="Go back"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
             <Link
               to={user ? getRoleHome(user.role) : "/"}
               className="group inline-flex items-center gap-3 rounded-full px-2 py-1 transition"
@@ -1146,7 +1261,9 @@ export default function NavBar() {
                             )
                             .map((item) => {
                               const ItemIcon = {
+                                "My Profile": Vote,
                                 Feed: LayoutDashboard,
+                                "Manage Listings": Package,
                                 Search: Search,
                                 Contracts: FileText,
                                 Verification: ShieldCheck,
@@ -1173,7 +1290,7 @@ export default function NavBar() {
                                 onClick={() => setMobileOpen(false)}
                                 className={cn(
                                   "flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
-                                  location.pathname === item.to
+                                  (location.pathname === item.to || location.pathname + "?" + location.search === item.to)
                                     ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
                                     : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
                                 )}
