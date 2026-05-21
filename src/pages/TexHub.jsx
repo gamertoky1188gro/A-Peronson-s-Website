@@ -236,8 +236,6 @@ function GlassSurface({ className = "", children }) {
 }
 
 export default function TexHub() {
-  const heroHeadline =
-    "Where global buyers, factories, and buying houses connect with clarity";
   usePageMeta({
     title: "GarTexHub — B2B Textile & Garment Sourcing Platform",
     type: "website",
