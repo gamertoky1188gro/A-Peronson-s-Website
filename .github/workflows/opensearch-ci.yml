@@ -6,13 +6,16 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   opensearch-test:
     runs-on: ubuntu-latest
     services:
       opensearch:
         image: opensearchproject/opensearch:2
-        options: --health-cmd="curl -ksS https://localhost:9200/_cluster/health || exit 1" --health-interval=10s --health-timeout=5s --health-retries=30 -e discovery.type=single-node -e OPENSEARCH_INITIAL_ADMIN_PASSWORD=S3cur3P@ss2024!
+        options: --health-cmd="curl -s http://localhost:9200/_cluster/health || exit 1" --health-interval=10s --health-timeout=5s --health-retries=30 -e discovery.type=single-node -e OPENSEARCH_INITIAL_ADMIN_PASSWORD=${{ secrets.OPENSEARCH_PASSWORD }}
         ports:
           - 9200:9200
 
@@ -27,7 +30,7 @@ jobs:
       - name: Wait for OpenSearch
         run: |
           for i in {1..30}; do
-            if curl -ksS https://localhost:9200/_cluster/health | grep -q '"status"'; then
+            if curl -s http://localhost:9200/_cluster/health | grep -q '"status"'; then
               echo "OpenSearch ready"
               break
             fi

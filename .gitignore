@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-package-lock.json
+# package-lock.json intentionally tracked for reproducible builds
 
 *.local
 
@@ -32,3 +32,5 @@ cloudflared-windows-amd64.exe
 nul
 
 PythonAi/HaramDetection/.venv
+__pycache__/
+*.pyc

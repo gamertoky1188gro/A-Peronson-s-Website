@@ -18,12 +18,6 @@ function isAllowedDevice(_req, _allowlist) {
 }
 
 export async function requireAdminSecurity(req, res, next) {
-  // Skip security checks in development if explicitly allowed
-  if (process.env.ADMIN_EXEC_ALLOW_ANY === "true") {
-    console.log(chalk.cyan("[adminSecurity] ADMIN_EXEC_ALLOW_ANY bypass"));
-    return next();
-  }
-
   console.log(
     chalk.cyan("[adminSecurity]"),
     "user:" + chalk.bold.white(req.user?.id || "unknown"),

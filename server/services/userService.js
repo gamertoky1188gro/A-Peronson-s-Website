@@ -352,7 +352,7 @@ export async function registerUser(payload) {
     password_hash: hash,
     role: payload.role,
     status: "active",
-    verified: payload.role === "admin",
+    verified: false,
     subscription_status:
       payload.subscription_status === "premium" ? "premium" : "free",
     created_at: nowIso,

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const BASE_URL = "https://gartexhub.com";
+const BASE_URL = "https://gartexhub.onrender.com";
 const DEFAULT_IMAGE = "/og-image.png";
 
 const registry = {};

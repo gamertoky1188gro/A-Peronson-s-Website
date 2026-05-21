@@ -90,12 +90,16 @@ async function loadConfig() {
     return cachedConfig.value;
   const admin = await getAdminConfig();
   const raw = admin?.integrations?.opensearch || {};
-  const enabled = Boolean(raw.enabled);
+
+  const envUrl = safeString(process.env.OPENSEARCH_URL || "");
+  const envUser = safeString(process.env.OPENSEARCH_USERNAME || "");
+  const envPass = safeString(process.env.OPENSEARCH_PASSWORD || "");
+
   const cfg = {
-    enabled,
-    url: safeString(raw.url),
-    username: safeString(raw.username),
-    password: safeString(raw.password),
+    enabled: Boolean(raw.enabled) || Boolean(envUrl),
+    url: safeString(raw.url) || envUrl,
+    username: safeString(raw.username) || envUser,
+    password: safeString(raw.password) || envPass,
     index_prefix: normalizePrefix(raw.index_prefix),
     timeout_ms: Math.max(500, Math.min(60000, Number(raw.timeout_ms || 3000))),
     verify_tls: raw.verify_tls !== false,

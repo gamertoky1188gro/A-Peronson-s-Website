@@ -6,7 +6,8 @@ Param(
   [int]$PortNpmDev = 5173,
   [int]$PortNpmPreview = 4173,
   [int]$PortBackend = 4000,
-  [int]$PortPostgre = 5432
+  [int]$PortPostgre = 5432,
+  [int]$PortOpenSearch = 9200
 )
 
 function Show-Usage {
@@ -39,6 +40,17 @@ $skipBuild = $false
 if ($env:SKIP_BUILD) {
   $value = $env:SKIP_BUILD.ToLower()
   if ($value -in @("true","1","yes","y")) { $skipBuild = $true }
+}
+
+if (-not $env:OPENSEARCH_URL) {
+  Write-Host "OPENSEARCH_URL not set, starting OpenSearch via Docker..."
+  docker compose up -d opensearch 2>$null
+  Write-Host "Waiting for OpenSearch on localhost:$PortOpenSearch..."
+  for ($i = 0; $i -lt 30; $i++) {
+    try { $r = Invoke-WebRequest -Uri "http://localhost:$PortOpenSearch" -UseBasicParsing -TimeoutSec 2; if ($r.StatusCode -eq 200) { Write-Host "OpenSearch is ready"; break } } catch {}
+    Start-Sleep -Seconds 2
+  }
+  $env:OPENSEARCH_URL = "http://localhost:$PortOpenSearch"
 }
 
 if ($DevOrPreview -eq "dev") {

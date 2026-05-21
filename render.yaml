@@ -46,6 +46,12 @@ services:
         value: "0.65"
       - key: AI_HALLUCINATION_THRESHOLD
         value: "0.7"
+      - key: OPENSEARCH_URL
+        value: https://gartexhub-oc-shakibul0715-aec3.i.aivencloud.com:443
+      - key: OPENSEARCH_USERNAME
+        value: avnadmin
+      - key: OPENSEARCH_PASSWORD
+        value: AVNS_5jxzXb4MdXsXWeUrVsp
       - key: AI_HARAM_ANALYTICS_ENABLED
         value: "false"
       - key: SERVE_DIST
@@ -63,5 +69,5 @@ services:
       # Optional: Add Redis for caching at scale (e.g., redis://...)
       # - key: REDIS_URL
       #   value: "redis://your-redis-host:6379"
-    buildCommand: npm install && npm run build && npx prisma migrate deploy && npm run db:generate
+    buildCommand: npm install && npm run build && npx prisma migrate deploy && npm run db:generate && ./scripts/run.sh --mode=ci
     startCommand: SKIP_BUILD=true ./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=10000

@@ -10,11 +10,7 @@ export default defineConfig({
   },
   plugins: [
     tailwindcss(),
-    react({
-      babel: {
-        plugins: [["babel-plugin-react-compiler"]],
-      },
-    }),
+    react(),
   ],
   server: {
     allowedHosts: ["habits-asia-occur-acute.trycloudflare.com"],

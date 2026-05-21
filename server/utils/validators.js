@@ -1,4 +1,5 @@
 const ROLES = ["buyer", "factory", "buying_house", "admin", "agent", "owner"];
+const PUBLIC_ROLES = ["buyer", "factory", "buying_house", "agent"];
 
 export function validateEmail(email) {
   return typeof email === "string" && /.+@.+\..+/.test(email);
@@ -6,6 +7,10 @@ export function validateEmail(email) {
 
 export function validateRole(role) {
   return ROLES.includes(role);
+}
+
+export function validatePublicRole(role) {
+  return PUBLIC_ROLES.includes(role);
 }
 
 export function escapeHtml(str) {

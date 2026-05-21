@@ -1,8 +1,7 @@
 import "./utils/dotenv.js";
 import express from "express";
 import cors from "cors";
-import path from "path";
-import fs from "fs";
+import helmet from "helmet";
 import http from "http";
 import { WebSocketServer } from "ws";
 import { REALTIME_EVENTS, realtimeBus } from "./realtime/realtimeBus.js";
@@ -54,6 +53,7 @@ import aiRoutes from "./routes/aiRoutes.js";
 import exportRoutes from "./routes/exportRoutes.js";
 import devRoutes from "./routes/devRoutes.js";
 import { startEsignWebhookRetryWorker } from "./services/esignRetryService.js";
+import { startSyslogServer } from "./services/syslogServer.js";
 import dealJourneyRoutes from "./routes/dealJourneyRoutes.js";
 import workflowLifecycleRoutes from "./routes/workflowLifecycleRoutes.js";
 import { requestLogger } from "./middleware/requestLogger.js";
@@ -139,6 +139,7 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
+app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "5mb" }));
 
@@ -232,15 +233,33 @@ if (serveDist && fs.existsSync(distRoot)) {
 }
 
 const server = http.createServer(app);
-const wsServer = new WebSocketServer({ server });
+const ALLOWED_WS_ORIGINS = (
+  process.env.ALLOWED_WS_ORIGINS ||
+  "http://localhost:5173,http://localhost:4000"
+).split(",").map((s) => s.trim());
+const wsServer = new WebSocketServer({
+  server,
+  verifyClient: (info, cb) => {
+    const origin = info.origin || info.req.headers.origin || "";
+    const allowed = ALLOWED_WS_ORIGINS.some(
+      (o) => origin === o || origin.startsWith(o + "/"),
+    );
+    if (allowed || !origin) {
+      cb(true);
+    } else {
+      cb(false, 403, "Forbidden");
+    }
+  },
+});
 const recentGreetingByIp = new Map();
 const callRooms = new Map();
 const chatRooms = new Map();
 const socketsByUserId = new Map();
-const JWT_SECRET = process.env.JWT_SECRET || "mvp-dev-secret";
-if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
-  console.error("[server] ERROR: JWT_SECRET must be set in production!");
+if (!process.env.JWT_SECRET) {
+  console.error("[server] FATAL: JWT_SECRET environment variable is required");
+  process.exit(1);
 }
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ISSUER = process.env.JWT_ISSUER || "gartexhub-api";
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "gartexhub-client";
 
@@ -851,6 +870,8 @@ async function start() {
   server.listen(PORT, () => {
     logInfo(`Verification MVP API running on http://localhost:${PORT}`);
   });
+
+  startSyslogServer();
 
   try {
     startEsignWebhookRetryWorker();

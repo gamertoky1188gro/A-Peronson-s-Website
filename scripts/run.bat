@@ -9,6 +9,7 @@ set PORT_NPM_DEV=5173
 set PORT_NPM_PREVIEW=4173
 set PORT_BACKEND=4000
 set PORT_POSTGRE=5432
+set PORT_OPENSEARCH=9200
 
 for %%A in (%*) do (
   set ARG=%%~A
@@ -21,6 +22,7 @@ for %%A in (%*) do (
     if /I "%%K"=="--port-npm-preview" set PORT_NPM_PREVIEW=%%L
     if /I "%%K"=="--port-backend" set PORT_BACKEND=%%L
     if /I "%%K"=="--port-postgre" set PORT_POSTGRE=%%L
+    if /I "%%K"=="--port-opensearch" set PORT_OPENSEARCH=%%L
   )
 )
 
@@ -44,6 +46,25 @@ set SKIP_BUILD_NORM=%SKIP_BUILD%
 for %%Z in (TRUE True true 1 YES Yes yes Y y) do (
   if /I "%SKIP_BUILD_NORM%"=="%%Z" set SKIP_BUILD_NORM=true
 )
+
+if "%OPENSEARCH_URL%"=="" (
+  where docker >nul 2>&1
+  if not errorlevel 1 (
+    echo OPENSEARCH_URL not set, starting OpenSearch via Docker...
+    docker compose up -d opensearch 2>nul
+    echo Waiting for OpenSearch on localhost:%PORT_OPENSEARCH%...
+    for /l %%i in (1,1,30) do (
+      curl -s http://localhost:%PORT_OPENSEARCH% >nul 2>&1
+      if not errorlevel 1 (
+        echo OpenSearch is ready
+        goto :os_ready
+      )
+      timeout /t 2 /nobreak >nul
+    )
+  )
+)
+:os_ready
+if "%OPENSEARCH_URL%"=="" set OPENSEARCH_URL=http://localhost:%PORT_OPENSEARCH%
 
 if /I "%DEV_OR_PREVIEW%"=="dev" (
   if /I not "%RUN_FRONTEND_BY%"=="npm" (

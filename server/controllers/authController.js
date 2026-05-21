@@ -10,7 +10,7 @@ import { signToken } from "../middleware/auth.js";
 import {
   requireFields,
   validateEmail,
-  validateRole,
+  validatePublicRole,
 } from "../utils/validators.js";
 import {
   createAuthenticationOptions,
@@ -52,7 +52,7 @@ export async function register(req, res) {
       .json({ error: `Missing fields: ${missing.join(", ")}` });
   if (!validateEmail(req.body.email))
     return res.status(400).json({ error: "Invalid email" });
-  if (!validateRole(req.body.role))
+  if (!validatePublicRole(req.body.role))
     return res.status(400).json({ error: "Invalid role" });
 
   const existing = await findUserByEmail(req.body.email);

@@ -128,14 +128,12 @@ class VisionReasoningEngine:
                 logger.info(f"Loading Moondream: {self.model_info['description']}")
                 
                 self._processor = AutoTokenizer.from_pretrained(
-                    model_name, 
+                    model_name,
                     revision=revision,
-                    trust_remote_code=True
                 )
                 self._model = AutoModelForCausalLM.from_pretrained(
                     model_name,
                     revision=revision,
-                    trust_remote_code=True,
                     torch_dtype="auto",
                     device_map="cpu"
                 )

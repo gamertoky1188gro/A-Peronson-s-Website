@@ -2,19 +2,12 @@ import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
 import os from "os";
+import crypto from "crypto";
 
-const HARAM_DETECTION_DIR =
-  process.env.HARAM_DETECTION_DIR ||
-  path.join(
-    "C:",
-    "Users",
-    "tokyi",
-    "OneDrive",
-    "Desktop",
-    "meow",
-    "PythonAi",
-    "HaramDetection",
-  );
+const HARAM_DETECTION_DIR = process.env.HARAM_DETECTION_DIR;
+if (!HARAM_DETECTION_DIR) {
+  throw new Error("FATAL: HARAM_DETECTION_DIR environment variable is required");
+}
 
 export function isAIAnalyticsEnabled() {
   const val = process.env.AI_HARAM_ANALYTICS_ENABLED;
@@ -142,25 +135,16 @@ export async function ensureVenv() {
   console.log("[AI Moderation] venv setup complete");
 }
 
-export async function analyzeImageWithAI(filePath) {
-  if (!isAIAnalyticsEnabled()) {
-    throw new Error(
-      "AI Haram Analytics is disabled via AI_HARAM_ANALYTICS_ENABLED",
-    );
-  }
-  await ensureVenv();
-  const py = getVenvPython() || "python3";
-  const scriptPath = path.join(os.tmpdir(), `haram_${Date.now()}.py`);
-  const escapedPath = filePath.replace(/\\/g, "\\\\");
-  const script = `import sys\nimport json\nimport os\nsys.path.insert(0, r'${HARAM_DETECTION_DIR.replace(/\\/g, "\\\\")}')\nos.environ['PYTHONWARNINGS']='ignore'\nos.environ['KMP_DUPLICATE_LIB_OK']='TRUE'\nimport warnings;warnings.filterwarnings('ignore')\nfrom src.api import create_api\napi=create_api()\nresult=api.check_file(r'${escapedPath}')\nprint(json.dumps(result))`;
+function buildPythonScript(filePath) {
+  const safeDir = JSON.stringify(HARAM_DETECTION_DIR);
+  const safePath = JSON.stringify(filePath);
+  return `import sys\nimport json\nimport os\nsys.path.insert(0, ${safeDir})\nos.environ['PYTHONWARNINGS']='ignore'\nos.environ['KMP_DUPLICATE_LIB_OK']='TRUE'\nimport warnings;warnings.filterwarnings('ignore')\nfrom src.api import create_api\napi=create_api()\nresult=api.check_file(${safePath})\nprint(json.dumps(result))`;
+}
 
+function runPython(script) {
+  const py = getVenvPython() || "python3";
   return new Promise((resolve, reject) => {
-    try {
-      fs.writeFileSync(scriptPath, script, "utf8");
-    } catch (_) {
-      /* ignore */
-    }
-    const proc = spawn(py, [scriptPath], {
+    const proc = spawn(py, ["-c", script], {
       cwd: HARAM_DETECTION_DIR,
       windowsHide: true,
     });
@@ -182,11 +166,6 @@ export async function analyzeImageWithAI(filePath) {
     }, 300000);
     proc.on("close", (code) => {
       clearTimeout(timer);
-      try {
-        fs.unlinkSync(scriptPath);
-      } catch (_) {
-        /* ignore if already gone */
-      }
       if (code === 0) {
         try {
           resolve(JSON.parse(stdout.trim()));
@@ -199,14 +178,19 @@ export async function analyzeImageWithAI(filePath) {
     });
     proc.on("error", (err) => {
       clearTimeout(timer);
-      try {
-        fs.unlinkSync(scriptPath);
-      } catch (_) {
-        /* ignore if already gone */
-      }
       reject(err);
     });
   });
+}
+
+export async function analyzeImageWithAI(filePath) {
+  if (!isAIAnalyticsEnabled()) {
+    throw new Error(
+      "AI Haram Analytics is disabled via AI_HARAM_ANALYTICS_ENABLED",
+    );
+  }
+  await ensureVenv();
+  return runPython(buildPythonScript(filePath));
 }
 
 export async function analyzeBufferWithAI(buffer, filename = "image.jpg") {
@@ -216,76 +200,33 @@ export async function analyzeBufferWithAI(buffer, filename = "image.jpg") {
     );
   }
   await ensureVenv();
-  const py = getVenvPython() || "python3";
   const tempDir = os.tmpdir();
-  const tempFile = path.join(tempDir, `haram_${Date.now()}_${filename}`);
-  const scriptPath = path.join(tempDir, `haram_${Date.now()}.py`);
+  const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "");
+  const tempFile = path.join(tempDir, `haram_${crypto.randomUUID()}_${safeFilename}`);
 
   return new Promise((resolve, reject) => {
     try {
       fs.writeFileSync(tempFile, buffer);
-      const escapedPath = tempFile.replace(/\\/g, "\\\\");
-      const script = `import sys\nimport json\nimport os\nsys.path.insert(0, r'${HARAM_DETECTION_DIR.replace(/\\/g, "\\\\")}')\nos.environ['PYTHONWARNINGS']='ignore'\nos.environ['KMP_DUPLICATE_LIB_OK']='TRUE'\nimport warnings;warnings.filterwarnings('ignore')\nfrom src.api import create_api\napi=create_api()\nresult=api.check_file(r'${escapedPath}')\nprint(json.dumps(result))`;
-      fs.writeFileSync(scriptPath, script, "utf8");
     } catch (err) {
       return reject(err);
     }
 
-    const proc = spawn(py, [scriptPath], {
-      cwd: HARAM_DETECTION_DIR,
-      windowsHide: true,
-    });
-    let stdout = "";
-    let stderr = "";
-    proc.stdout?.on("data", (d) => {
-      stdout += d.toString();
-    });
-    proc.stderr?.on("data", (d) => {
-      stderr += d.toString();
-    });
-    const timer = setTimeout(() => {
+    const cleanup = () => {
       try {
-        proc.kill();
+        fs.unlinkSync(tempFile);
       } catch {
-        /* ignore - process may already be gone */
-      }
-      reject(new Error("timeout"));
-    }, 300000);
-    proc.on("close", (code) => {
-      clearTimeout(timer);
-      try {
-        fs.unlinkSync(tempFile);
-      } catch (_) {
         /* ignore if already gone */
       }
-      try {
-        fs.unlinkSync(scriptPath);
-      } catch (_) {
-        /* ignore if already gone */
-      }
-      if (code === 0) {
-        try {
-          resolve(JSON.parse(stdout.trim()));
-        } catch {
-          reject(new Error("parse error"));
-        }
-      } else {
-        reject(new Error(stderr || `exit ${code}`));
-      }
-    });
-    proc.on("error", (err) => {
-      clearTimeout(timer);
-      try {
-        fs.unlinkSync(tempFile);
-      } catch (_) {
-        /* ignore if already gone */
-      }
-      try {
-        fs.unlinkSync(scriptPath);
-      } catch (_) {
-        /* ignore if already gone */
-      }
-      reject(err);
-    });
+    };
+
+    runPython(buildPythonScript(tempFile))
+      .then((result) => {
+        cleanup();
+        resolve(result);
+      })
+      .catch((err) => {
+        cleanup();
+        reject(err);
+      });
   });
 }

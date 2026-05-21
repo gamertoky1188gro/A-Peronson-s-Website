@@ -1,17 +1,7 @@
-import fs from "fs/promises";
-import path from "path";
+import prisma from "./prisma.js";
 import crypto from "crypto";
 
-const AUDIT_PATH = path.join(
-  process.cwd(),
-  "server",
-  "database",
-  "admin_audit.json",
-);
-
-let auditQueue = Promise.resolve();
-
-const AUDIT_CACHE_TTL = 10000; // 10 second cache for audit
+const AUDIT_CACHE_TTL = 10000;
 let auditCache = { data: null, timestamp: 0 };
 
 function getAuditCache() {
@@ -29,44 +19,26 @@ export function invalidateAuditCache() {
   auditCache = { data: null, timestamp: 0 };
 }
 
-function normalizeValue(value) {
-  if (value === undefined) return null;
-  if (value instanceof Date) return value.toISOString();
-  if (Array.isArray(value)) return value.map(normalizeValue);
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, normalizeValue(v)]),
-    );
-  }
-  return value;
-}
-
-function hashPayload(payload) {
-  return crypto
-    .createHash("sha256")
-    .update(String(payload || ""))
-    .digest("hex");
-}
-
-async function ensureAuditFile() {
-  try {
-    await fs.access(AUDIT_PATH);
-  } catch {
-    await fs.mkdir(path.dirname(AUDIT_PATH), { recursive: true });
-    await fs.writeFile(AUDIT_PATH, JSON.stringify([], null, 2), "utf8");
-  }
-}
-
 export async function readAuditLog() {
   const cached = getAuditCache();
-  if (cached !== null) {
-    return cached;
-  }
-  await ensureAuditFile();
-  const raw = await fs.readFile(AUDIT_PATH, "utf8");
+  if (cached !== null) return cached;
+
   try {
-    const parsed = JSON.parse(raw);
-    const data = Array.isArray(parsed) ? parsed : [];
+    const rows = await prisma.adminAudit.findMany({
+      orderBy: { created_at: "desc" },
+      take: 500,
+    });
+    const data = rows.map((r) => ({
+      id: r.id,
+      admin_id: r.admin_id,
+      action: r.action,
+      entity_type: r.entity_type,
+      entity_id: r.entity_id,
+      details: r.details,
+      ip_address: r.ip_address,
+      user_agent: r.user_agent,
+      created_at: r.created_at.toISOString(),
+    }));
     setAuditCache(data);
     return data;
   } catch {
@@ -74,46 +46,38 @@ export async function readAuditLog() {
   }
 }
 
+const REDACTED_KEYS = new Set([
+  "password", "new_password", "token", "authorization", "jwt", "secret",
+]);
+
 export function sanitizeAuditPayload(payload = {}) {
-  const redactedKeys = new Set([
-    "password",
-    "new_password",
-    "token",
-    "authorization",
-    "jwt",
-    "secret",
-  ]);
   if (!payload || typeof payload !== "object") return payload;
   return Object.fromEntries(
     Object.entries(payload).map(([key, value]) => {
-      if (redactedKeys.has(String(key).toLowerCase())) {
+      if (REDACTED_KEYS.has(String(key).toLowerCase())) {
         return [key, "[redacted]"];
       }
-      return [key, normalizeValue(value)];
+      return [key, value];
     }),
   );
 }
 
 export async function appendAuditLog(entry) {
-  auditQueue = auditQueue.then(async () => {
-    await ensureAuditFile();
-    const existing = await readAuditLog();
-    const last = existing[existing.length - 1];
-    const prevHash = last?.hash || "";
-    const core = {
-      ...normalizeValue(entry || {}),
-      prev_hash: prevHash,
-    };
-    const hash = hashPayload(`${prevHash}:${JSON.stringify(core)}`);
-    const record = {
-      ...core,
-      hash,
-    };
-    existing.push(record);
-    await fs.writeFile(AUDIT_PATH, JSON.stringify(existing, null, 2), "utf8");
+  try {
+    const record = await prisma.adminAudit.create({
+      data: {
+        admin_id: entry.admin_id || entry.adminId || "system",
+        action: entry.action || "unknown",
+        entity_type: entry.entity_type || entry.entityType || null,
+        entity_id: entry.entity_id || entry.entityId || null,
+        details: entry.details || entry.payload || {},
+        ip_address: entry.ip_address || entry.ipAddress || null,
+        user_agent: entry.user_agent || entry.userAgent || null,
+      },
+    });
     invalidateAuditCache();
     return record;
-  });
-
-  return auditQueue;
+  } catch {
+    return null;
+  }
 }
