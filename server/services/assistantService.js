@@ -1056,19 +1056,27 @@ async function ensureOpencodeServer() {
           config: {
             model: `${cfg.providerID}/${cfg.modelID}`,
             autoupdate: false,
+            logLevel: "DEBUG",
           },
         });
         opencodeServer = opencode;
         opencodePort = port;
 
+        // Log server info to debug process access
+        logInfo("Opencode server object keys", { keys: Object.keys(opencode) });
+        if (opencode.server) {
+          logInfo("Opencode server keys", { keys: Object.keys(opencode.server) });
+        }
+
         // Forward opencode server stderr to our logs
-        if (opencode.server?.process?.stderr) {
-          opencode.server.process.stderr.on("data", (d) => {
+        const proc = opencode?.server?.process || opencode?.process;
+        if (proc?.stderr) {
+          proc.stderr.on("data", (d) => {
             logError("Opencode server stderr", { data: d.toString() });
           });
         }
-        if (opencode.server?.process?.stdout) {
-          opencode.server.process.stdout.on("data", (d) => {
+        if (proc?.stdout) {
+          proc.stdout.on("data", (d) => {
             logInfo("Opencode server stdout", { data: d.toString() });
           });
         }
