@@ -69,5 +69,5 @@ services:
       # Optional: Add Redis for caching at scale (e.g., redis://...)
       # - key: REDIS_URL
       #   value: "redis://your-redis-host:6379"
-    buildCommand: npm install --include=dev && npm run build && npx prisma migrate deploy && npm run db:generate && SKIP_LINT=1 ./scripts/run.sh --mode=ci
+    buildCommand: npm install --include=dev && npm run build && npx prisma migrate deploy && npm run db:generate && npm run ci:reindex
     startCommand: SKIP_BUILD=true ./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=10000

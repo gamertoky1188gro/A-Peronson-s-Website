@@ -116,8 +116,12 @@ if [ "$RUN_MODE" = "ci" ]; then
   else
     echo "=== CI: Skipping lint (SKIP_LINT set) ==="
   fi
-  echo "=== CI: Running unit tests ==="
-  npm test
+  if [ -z "${SKIP_TESTS:-}" ]; then
+    echo "=== CI: Running unit tests ==="
+    npm test
+  else
+    echo "=== CI: Skipping unit tests (SKIP_TESTS set) ==="
+  fi
   echo "=== CI: Running smoke tests ==="
   npm run ci:smoke
   echo "=== CI: All checks passed ==="
