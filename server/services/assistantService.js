@@ -391,7 +391,7 @@ const aiConfig = {
   opencode: {
     baseUrl: process.env.OPENCODE_BASE_URL || "http://localhost:4096",
     providerID: process.env.OPENCODE_PROVIDER_ID || "opencode",
-    modelID: process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") || "deepseek-v4-flash",
+    modelID: process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") || "deepseek-v4-flash-free",
     timeoutMs: Number(process.env.OPENCODE_TIMEOUT_MS || 120000),
   },
 };
@@ -1053,6 +1053,10 @@ async function ensureOpencodeServer() {
           hostname: "127.0.0.1",
           port: port,
           timeout: 20000,
+          config: {
+            model: `${cfg.providerID}/${cfg.modelID}`,
+            autoupdate: false,
+          },
         });
         opencodeServer = opencode;
         opencodePort = port;
