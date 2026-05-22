@@ -7,7 +7,10 @@ const STRICT_MODE =
   String(process.env.CI || "").toLowerCase() === "true" ||
   String(process.env.OPENSEARCH_REQUIRED || "").toLowerCase() === "true";
 
-const client = new Client({ node: OPENSEARCH_URL });
+const auth = process.env.OPENSEARCH_USERNAME && process.env.OPENSEARCH_PASSWORD
+  ? { username: process.env.OPENSEARCH_USERNAME, password: process.env.OPENSEARCH_PASSWORD }
+  : undefined;
+const client = new Client({ node: OPENSEARCH_URL, auth });
 
 function productMappings() {
   return {
