@@ -1,5 +1,6 @@
+import { spawn } from "child_process";
 import { GoogleGenAI } from "@google/genai";
-import { createOpencode, createOpencodeClient } from "@opencode-ai/sdk";
+import { createOpencodeClient } from "@opencode-ai/sdk";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs";
@@ -1048,44 +1049,53 @@ async function ensureOpencodeServer() {
 
   for (let port = defaultPort; port < defaultPort + 20; port++) {
     const isFree = await findFreePort(port, 1);
-    if (isFree) {
-      try {
-        logInfo("Starting opencode server...", { port });
-        const opencode = await createOpencode({
-          hostname: "127.0.0.1",
-          port: port,
-          timeout: 20000,
-        });
-        opencodeServer = opencode;
-        opencodePort = port;
+    if (!isFree) continue;
 
-        // Log server info to debug process access
-        logInfo("Opencode server object keys", { keys: Object.keys(opencode) });
-        if (opencode.server) {
-          logInfo("Opencode server keys", { keys: Object.keys(opencode.server) });
-        }
+    try {
+      logInfo("Starting opencode server...", { port });
+      
+      const child = spawn("opencode", ["serve", "--port", String(port), "--hostname", "127.0.0.1"], {
+        stdio: ["ignore", "pipe", "pipe"],
+        env: { ...process.env, OPENCODE_LOG_LEVEL: "DEBUG" },
+      });
 
-        // Forward opencode server stderr to our logs
-        const proc = opencode?.server?.process || opencode?.process;
-        if (proc?.stderr) {
-          proc.stderr.on("data", (d) => {
-            logError("Opencode server stderr", { data: d.toString() });
+      child.stderr.on("data", (d) => {
+        logError("Opencode server stderr", { data: d.toString() });
+      });
+      child.stdout.on("data", (d) => {
+        logInfo("Opencode server stdout", { data: d.toString() });
+      });
+      child.on("exit", (code) => {
+        logError("Opencode server process exited", { code, port });
+        if (opencodePort === port) opencodePort = null;
+      });
+
+      // Poll until healthy or timeout
+      const started = await new Promise((resolve) => {
+        const deadline = Date.now() + 20000;
+        const poll = () => {
+          if (Date.now() > deadline) return resolve(false);
+          checkOpencodeRunning(port).then((ok) => {
+            if (ok) return resolve(true);
+            setTimeout(poll, 500);
           });
-        }
-        if (proc?.stdout) {
-          proc.stdout.on("data", (d) => {
-            logInfo("Opencode server stdout", { data: d.toString() });
-          });
-        }
+        };
+        poll();
+      });
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        logInfo("Opencode server started", { port: opencodePort });
-        return opencodePort;
-      } catch (error) {
-        logError("Failed to start opencode on port", { port, error: error.message });
+      if (!started) {
+        child.kill();
+        logError("Opencode server failed to start within timeout", { port });
         continue;
       }
+
+      opencodeServer = child;
+      opencodePort = port;
+      logInfo("Opencode server started", { port });
+      return opencodePort;
+    } catch (error) {
+      logError("Failed to start opencode on port", { port, error: error.message });
+      continue;
     }
   }
 
