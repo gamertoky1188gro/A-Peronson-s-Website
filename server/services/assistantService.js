@@ -1204,7 +1204,7 @@ export async function createUserOpencodeSession(userId) {
     }
 
     const createRes = await client.session.create({
-      body: { title: `user-${userId}` },
+      body: { title: userId ? `user-${userId}` : "guest" },
     });
 
     if (createRes?.error) {
