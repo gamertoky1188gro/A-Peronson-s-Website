@@ -7,6 +7,9 @@ export default defineConfig({
   base: process.env.VITE_BASE_URL || "./",
   build: {
     chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      external: ["rtf.js"],
+    },
   },
   plugins: [
     tailwindcss(),

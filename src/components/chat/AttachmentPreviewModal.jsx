@@ -812,7 +812,13 @@ export default function AttachmentPreviewModal({
         }
 
         const buffer = await response.arrayBuffer();
-        const { EMFJS, RTFJS, WMFJS } = await import("rtf.js");
+        let EMFJS, RTFJS, WMFJS;
+        try {
+          ({ EMFJS, RTFJS, WMFJS } = await import("rtf.js"));
+        } catch {
+          setRtfState({ loading: false, error: "RTF preview is not available (missing library). Please download the file.", html: "", meta: null });
+          return;
+        }
 
         // Disable noisy logging in production.
         try {
