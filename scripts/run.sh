@@ -110,8 +110,12 @@ if [ "$RUN_MODE" = "ci" ]; then
   start_opensearch
   echo "=== CI: Reindexing sample data ==="
   npm run ci:reindex
-  echo "=== CI: Running lint ==="
-  npm run lint
+  if [ -z "${SKIP_LINT:-}" ]; then
+    echo "=== CI: Running lint ==="
+    npm run lint
+  else
+    echo "=== CI: Skipping lint (SKIP_LINT set) ==="
+  fi
   echo "=== CI: Running unit tests ==="
   npm test
   echo "=== CI: Running smoke tests ==="

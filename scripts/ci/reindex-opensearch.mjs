@@ -10,7 +10,10 @@ const STRICT_MODE =
 const auth = process.env.OPENSEARCH_USERNAME && process.env.OPENSEARCH_PASSWORD
   ? { username: process.env.OPENSEARCH_USERNAME, password: process.env.OPENSEARCH_PASSWORD }
   : undefined;
-const client = new Client({ node: OPENSEARCH_URL, auth });
+const ssl = OPENSEARCH_URL.startsWith("https://")
+  ? { rejectUnauthorized: false }
+  : undefined;
+const client = new Client({ node: OPENSEARCH_URL, auth, ssl });
 
 function productMappings() {
   return {
