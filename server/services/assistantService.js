@@ -391,7 +391,7 @@ const aiConfig = {
   opencode: {
     baseUrl: process.env.OPENCODE_BASE_URL || "http://localhost:4096",
     providerID: process.env.OPENCODE_PROVIDER_ID || "opencode",
-    modelID: process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") || "minimax-m2.5-free",
+    modelID: process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") || "deepseek-v4-flash-free",
     timeoutMs: Number(process.env.OPENCODE_TIMEOUT_MS || 120000),
   },
 };

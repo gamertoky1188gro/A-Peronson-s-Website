@@ -66,6 +66,8 @@ services:
         value: "gartexhub-api"
       - key: JWT_AUDIENCE
         value: "gartexhub-client"
+      - key: OPENCODE_MODEL_ID
+        value: "opencode/deepseek-v4-flash-free"
       # Optional: Add Redis for caching at scale (e.g., redis://...)
       # - key: REDIS_URL
       #   value: "redis://your-redis-host:6379"
