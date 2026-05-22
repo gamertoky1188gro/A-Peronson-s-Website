@@ -1185,8 +1185,6 @@ export async function initOpencodeServer() {
 }
 
 export async function createUserOpencodeSession(userId) {
-  if (!userId) return null;
-  
   const cfg = aiConfig.opencode;
   if (!cfg.baseUrl || !cfg.modelID) return null;
 
@@ -1217,7 +1215,7 @@ export async function createUserOpencodeSession(userId) {
     const actualSessionId = createRes?.data?.id;
     logInfo("Created user session", { userId, actualSessionId });
     
-    if (actualSessionId) {
+    if (userId && actualSessionId) {
       await saveSessionMeta(userId, {
         sessionId: actualSessionId,
         sessionIdKey: sessionId,
@@ -1380,7 +1378,7 @@ async function callOpencode(
   }
   
   if (!actualSessionId) {
-    actualSessionId = sessionIdKey;
+    actualSessionId = await createUserOpencodeSession(null);
   }
 
   logInfo("Calling Opencode", { 
