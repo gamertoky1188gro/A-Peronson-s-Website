@@ -1060,7 +1060,19 @@ async function ensureOpencodeServer() {
         });
         opencodeServer = opencode;
         opencodePort = port;
-        
+
+        // Forward opencode server stderr to our logs
+        if (opencode.server?.process?.stderr) {
+          opencode.server.process.stderr.on("data", (d) => {
+            logError("Opencode server stderr", { data: d.toString() });
+          });
+        }
+        if (opencode.server?.process?.stdout) {
+          opencode.server.process.stdout.on("data", (d) => {
+            logInfo("Opencode server stdout", { data: d.toString() });
+          });
+        }
+
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         logInfo("Opencode server started", { port: opencodePort });
@@ -1385,6 +1397,15 @@ async function callOpencode(
 
     const responseStr = JSON.stringify(response);
     logInfo("Opencode response full", responseStr.substring(0, 800));
+
+    if (response?.error) {
+      logError("Opencode server returned error", {
+        errorName: response.error.name,
+        errorData: JSON.stringify(response.error.data),
+        errorRef: response.error.data?.ref,
+        rawResponse: responseStr.substring(0, 2000),
+      });
+    }
 
     let text = null;
     const info = response?.data?.info || {};
