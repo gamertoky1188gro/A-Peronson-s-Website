@@ -5,8 +5,10 @@ import os from "os";
 import crypto from "crypto";
 
 const HARAM_DETECTION_DIR = process.env.HARAM_DETECTION_DIR;
-if (!HARAM_DETECTION_DIR) {
-  throw new Error("FATAL: HARAM_DETECTION_DIR environment variable is required");
+const aiAvailable = Boolean(HARAM_DETECTION_DIR);
+
+if (!aiAvailable) {
+  console.warn("[AI Moderation] HARAM_DETECTION_DIR not set — AI moderation disabled");
 }
 
 export function isAIAnalyticsEnabled() {
@@ -69,6 +71,7 @@ async function runSync(
 }
 
 export async function ensureVenv() {
+  if (!aiAvailable) return;
   if (!isAIAnalyticsEnabled()) return;
   const pyExe = getVenvPython();
   if (pyExe) {
@@ -184,6 +187,9 @@ function runPython(script) {
 }
 
 export async function analyzeImageWithAI(filePath) {
+  if (!aiAvailable) {
+    throw new Error("AI moderation unavailable (HARAM_DETECTION_DIR not set)");
+  }
   if (!isAIAnalyticsEnabled()) {
     throw new Error(
       "AI Haram Analytics is disabled via AI_HARAM_ANALYTICS_ENABLED",
@@ -194,6 +200,9 @@ export async function analyzeImageWithAI(filePath) {
 }
 
 export async function analyzeBufferWithAI(buffer, filename = "image.jpg") {
+  if (!aiAvailable) {
+    throw new Error("AI moderation unavailable (HARAM_DETECTION_DIR not set)");
+  }
   if (!isAIAnalyticsEnabled()) {
     throw new Error(
       "AI Haram Analytics is disabled via AI_HARAM_ANALYTICS_ENABLED",
