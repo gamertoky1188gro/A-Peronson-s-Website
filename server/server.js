@@ -146,10 +146,10 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       imgSrc: ["'self'", "data:", "blob:"],
       connectSrc: ["'self'", "wss:", "https:"],
-      fontSrc: ["'self'", "data:"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'", "blob:"],
       frameSrc: ["'none'"],
@@ -257,8 +257,9 @@ const wsServer = new WebSocketServer({
   server,
   verifyClient: (info, cb) => {
     const origin = info.origin || info.req.headers.origin || "";
+    const host = info.req.headers.host || "";
     const allowed = ALLOWED_WS_ORIGINS.some(
-      (o) => origin === o || origin.startsWith(o + "/"),
+      (o) => origin === o || origin.startsWith(o + "/") || origin === `https://${host}` || origin === `http://${host}`,
     );
     if (allowed || !origin) {
       cb(true);
