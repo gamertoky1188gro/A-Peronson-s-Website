@@ -15,7 +15,7 @@ services:
       - key: PORT
         value: "10000"
       - key: DATABASE_URL
-        value: "postgresql://avnadmin:AVNS_WWLEH0jf7S331y7y7R8@gartexhub-shakibul0715-aec3.a.aivencloud.com:17598/defaultdb?sslmode=require"
+        value: "postgresql://avnadmin:AVNS_WWLEH0jf7S331y7y7R8@gartexhub-shakibul0715-aec3.a.aivencloud.com:17598/defaultdb?sslmode=require&connection_limit=3"
       - key: PGSSLMODE
         value: require
       - key: ADMIN_MFA_CODE
@@ -74,6 +74,8 @@ services:
         value: "opencode"
       - key: OPENCODE_MODEL
         value: "opencode/deepseek-v4-flash-free"
+      - key: OPENCODE_LOG_LEVEL
+        value: "DEBUG"
       # Optional: Add Redis for caching at scale (e.g., redis://...)
       # - key: REDIS_URL
       #   value: "redis://your-redis-host:6379"
