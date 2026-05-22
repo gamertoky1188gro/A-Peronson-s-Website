@@ -11,26 +11,43 @@ if (!aiAvailable) {
   console.warn("[AI Moderation] HARAM_DETECTION_DIR not set — AI moderation disabled");
 }
 
+let _dirChecked = false;
+function ensureDir() {
+  if (_dirChecked) return HARAM_DETECTION_DIR;
+  _dirChecked = true;
+  return HARAM_DETECTION_DIR;
+}
+
 export function isAIAnalyticsEnabled() {
   const val = process.env.AI_HARAM_ANALYTICS_ENABLED;
   if (val === undefined || val === null) return true;
   return val === "true" || val === "1";
 }
-const VENV_DIR = path.join(HARAM_DETECTION_DIR, ".venv");
-const VENV_PY_WIN = path.join(VENV_DIR, "Scripts", "python.exe");
-const VENV_PY_LIN = path.join(VENV_DIR, "bin", "python");
-const VENV_UV =
-  path.join(VENV_DIR, "Scripts", "uv.exe") || path.join(VENV_DIR, "bin", "uv");
+
+function getVenvDir() {
+  const dir = ensureDir();
+  return dir ? path.join(dir, ".venv") : null;
+}
 
 function getVenvPython() {
-  if (process.platform === "win32" && fs.existsSync(VENV_PY_WIN))
-    return VENV_PY_WIN;
-  if (fs.existsSync(VENV_PY_LIN)) return VENV_PY_LIN;
+  const venvDir = getVenvDir();
+  if (!venvDir) return null;
+  if (process.platform === "win32") {
+    const p = path.join(venvDir, "Scripts", "python.exe");
+    if (fs.existsSync(p)) return p;
+  }
+  const p = path.join(venvDir, "bin", "python");
+  if (fs.existsSync(p)) return p;
   return null;
 }
 
 function getVenvUv() {
-  if (process.platform === "win32" && fs.existsSync(VENV_UV)) return VENV_UV;
+  const venvDir = getVenvDir();
+  if (!venvDir) return "uv";
+  if (process.platform === "win32") {
+    const p = path.join(venvDir, "Scripts", "uv.exe");
+    if (fs.existsSync(p)) return p;
+  }
   return "uv";
 }
 
