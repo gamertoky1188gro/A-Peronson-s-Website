@@ -1056,7 +1056,7 @@ async function ensureOpencodeServer() {
           config: {
             model: `${cfg.providerID}/${cfg.modelID}`,
             autoupdate: false,
-            logLevel: "DEBUG",
+            logLevel: "debug",
           },
         });
         opencodeServer = opencode;
