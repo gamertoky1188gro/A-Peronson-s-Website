@@ -1,7 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { createOpencode, createOpencodeClient } from "@opencode-ai/sdk";
 import crypto from "crypto";
-import fs from "fs/promises";
+import path from "path";
+import fs from "fs";
+import fsp from "fs/promises";
 import net from "net";
 
 async function findFreePort(startPort = 4096, maxAttempts = 100) {
@@ -527,7 +529,7 @@ function mapKnowledgeRow(row) {
 async function collectCodeFiles(dirPath, collector, limit = MAX_FILES_TO_SCAN) {
   if (collector.length >= limit) return;
 
-  const entries = await fs.readdir(dirPath, { withFileTypes: true });
+  const entries = await fsp.readdir(dirPath, { withFileTypes: true });
   for (const entry of entries) {
     if (collector.length >= limit) return;
 
@@ -602,7 +604,7 @@ async function searchCodeContext(questionText) {
   for (const filePath of files) {
     let stat;
     try {
-      stat = await fs.stat(filePath);
+      stat = await fsp.stat(filePath);
     } catch {
       continue;
     }
@@ -610,7 +612,7 @@ async function searchCodeContext(questionText) {
 
     let content = "";
     try {
-      content = await fs.readFile(filePath, "utf8");
+      content = await fsp.readFile(filePath, "utf8");
     } catch {
       continue;
     }
@@ -1053,11 +1055,6 @@ async function ensureOpencodeServer() {
           hostname: "127.0.0.1",
           port: port,
           timeout: 20000,
-          config: {
-            model: `${cfg.providerID}/${cfg.modelID}`,
-            autoupdate: false,
-            logLevel: "debug",
-          },
         });
         opencodeServer = opencode;
         opencodePort = port;
