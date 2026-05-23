@@ -616,7 +616,7 @@ async function buildKnowledgeContext(questionText, entries) {
 
 async function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
   const config = await loadAssistantConfig();
-  const sections = [config.systemPrompt + "\n\nUse the following context to answer the user's question accurately. If the answer isn't in the context, use your general knowledge but stay professional."];
+  const sections = [config.systemPrompt + "\n\nUse the following context — which may include code snippets from the codebase — to answer the user's question accurately. If the answer isn't in the context, use your general knowledge but stay professional."];
 
   if (knowledgeContext) {
     sections.push(`PROJECT KNOWLEDGE BASE:\n${knowledgeContext}`);
