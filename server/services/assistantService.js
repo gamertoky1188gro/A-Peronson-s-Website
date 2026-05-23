@@ -262,17 +262,11 @@ If uncertain whether information is sensitive:
 - Do not expose it
 
 Your purpose is to HELP users use GarTexHub safely — not expose how GarTexHub works internally.`;
-const DEFAULT_AGENT_PROMPT = `You are the GarTex Assistant, an expert on the GarTexHub textile marketplace platform.
-Your goal is to help users understand and navigate this specific web application.
-Use the following context to provide accurate, specific answers. If the answer isn't in the context, use your general knowledge but stay professional.
-Always be helpful and detailed. Never say "message is incomplete" unless it is truly gibberish.`;
-
 async function loadAssistantConfig() {
   try {
     const data = await readJson(CONFIG_FILE);
     return {
       systemPrompt: data.systemPrompt || DEFAULT_SYSTEM_PROMPT,
-      agentPrompt: data.agentPrompt || DEFAULT_AGENT_PROMPT,
       codeContextEnabled: data.codeContextEnabled !== false,
       codeContextKeywords: data.codeContextKeywords || [
         "api",
@@ -293,7 +287,6 @@ async function loadAssistantConfig() {
   } catch {
     return {
       systemPrompt: DEFAULT_SYSTEM_PROMPT,
-      agentPrompt: DEFAULT_AGENT_PROMPT,
       codeContextEnabled: true,
       codeContextKeywords: [
         "api",
@@ -623,7 +616,7 @@ async function buildKnowledgeContext(questionText, entries) {
 
 async function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
   const config = await loadAssistantConfig();
-  const sections = [config.agentPrompt];
+  const sections = [config.systemPrompt + "\n\nUse the following context to answer the user's question accurately. If the answer isn't in the context, use your general knowledge but stay professional."];
 
   if (knowledgeContext) {
     sections.push(`PROJECT KNOWLEDGE BASE:\n${knowledgeContext}`);
@@ -1513,10 +1506,6 @@ export async function updateAssistantConfig(payload) {
     systemPrompt: sanitizeString(
       payload.systemPrompt || current.systemPrompt,
       2000,
-    ),
-    agentPrompt: sanitizeString(
-      payload.agentPrompt || current.agentPrompt,
-      4000,
     ),
     codeContextEnabled:
       payload.codeContextEnabled !== undefined
