@@ -1166,13 +1166,17 @@ export async function initOpencodeServer() {
         provider: aiConfig.opencode.providerID,
         model: aiConfig.opencode.modelID
       });
-    } else if (response?.data?.info?.parts?.[0]?.text) {
-      logInfo("Opencode test successful", { 
-        port, 
-        response: response.data.info.parts[0].text.substring(0, 100) 
-      });
     } else {
-      logInfo("Opencode server is up and responding", { port });
+      const parts = response?.data?.parts;
+      const textPart = Array.isArray(parts) ? parts.find(p => p.type === "text") : null;
+      if (textPart?.text) {
+        logInfo("Opencode test successful", { 
+          port, 
+          response: textPart.text.substring(0, 100) 
+        });
+      } else {
+        logInfo("Opencode server is up and responding", { port });
+      }
     }
   } catch (error) {
     logError("Opencode test exception", { 
@@ -1421,28 +1425,12 @@ async function callOpencode(
     }
 
     let text = null;
-    const info = response?.data?.info || {};
-    
-    if (info.parts?.[0]?.text) {
-      text = info.parts[0].text;
-    } else if (info.content) {
-      text = info.content;
-    } else if (info.message) {
-      text = info.message;
-    } else if (info.output) {
-      text = info.output;
-    } else if (info.result) {
-      text = info.result;
-    } else if (response?.data?.text) {
-      text = response.data.text;
-    } else if (response?.text) {
-      text = response.text;
-    } else if (info.response) {
-      text = info.response;
-    } else if (info.answer) {
-      text = info.answer;
-    } else if (info.text) {
-      text = info.text;
+    const parts = response?.data?.parts;
+    if (Array.isArray(parts)) {
+      const textPart = parts.find(p => p.type === "text");
+      if (textPart?.text) {
+        text = textPart.text;
+      }
     }
 
     if (!text) {
