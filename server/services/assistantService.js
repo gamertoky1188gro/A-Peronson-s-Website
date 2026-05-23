@@ -1763,8 +1763,6 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
         fullText = textPart.text;
       }
     }
-      }
-    }
 
     onComplete(unescapeHtml(sanitizeString(fullText, MAX_AI_ANSWER_CHARS)) || null, null);
   } catch (error) {
