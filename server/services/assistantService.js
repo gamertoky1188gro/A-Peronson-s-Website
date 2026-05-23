@@ -26,7 +26,7 @@ async function findFreePort(startPort = 4096, maxAttempts = 100) {
   return startPort;
 }
 import { readJson, updateJson } from "../utils/jsonStore.js";
-import { sanitizeString } from "../utils/validators.js";
+import { sanitizeString, unescapeHtml } from "../utils/validators.js";
 import { logError, logInfo } from "../utils/logger.js";
 import { updateLocalJson } from "../utils/localStore.js";
 import { saveOpencodeConfig, saveSessionMeta, deleteSessionMeta, loadSessionMeta } from "../utils/sessionStore.js";
@@ -883,10 +883,10 @@ async function callOllamaChat(
   if (!response.ok) return null;
   const payload = await response.json();
   return (
-    sanitizeString(
+    unescapeHtml(sanitizeString(
       payload?.choices?.[0]?.message?.content || "",
       MAX_AI_ANSWER_CHARS,
-    ) || null
+    )) || null
   );
 }
 
@@ -907,10 +907,10 @@ async function callOllamaCompletion(prompt, signal) {
   if (!response.ok) return null;
   const payload = await response.json();
   return (
-    sanitizeString(
+    unescapeHtml(sanitizeString(
       payload?.content || payload?.response || "",
       MAX_AI_ANSWER_CHARS,
-    ) || null
+    )) || null
   );
 }
 
@@ -959,10 +959,10 @@ async function callOpenRouter(
 
     const payload = await response.json();
     return (
-      sanitizeString(
+      unescapeHtml(sanitizeString(
         payload?.choices?.[0]?.message?.content || "",
         MAX_AI_ANSWER_CHARS,
-      ) || null
+      )) || null
     );
   } catch (error) {
     if (error.name === "AbortError") {
@@ -1005,7 +1005,7 @@ async function callGemini(
     });
 
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return sanitizeString(text || "", MAX_AI_ANSWER_CHARS) || null;
+    return unescapeHtml(sanitizeString(text || "", MAX_AI_ANSWER_CHARS)) || null;
   } catch (error) {
     logError("Gemini call failed", error);
     return null;
@@ -1458,7 +1458,7 @@ async function callOpencode(
       });
     }
 
-    return sanitizeString(text || "", MAX_AI_ANSWER_CHARS) || null;
+    return unescapeHtml(sanitizeString(text || "", MAX_AI_ANSWER_CHARS)) || null;
   } catch (error) {
     logError("Opencode call failed", { 
       message: error.message, 

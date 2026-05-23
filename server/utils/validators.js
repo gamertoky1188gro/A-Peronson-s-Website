@@ -25,6 +25,16 @@ export function escapeHtml(str) {
   return str.replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
 }
 
+export function unescapeHtml(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, ">")
+    .replace(/&lt;/g, "<")
+    .replace(/&amp;/g, "&");
+}
+
 export function sanitizeString(input, max = 500) {
   if (typeof input !== "string") return "";
   const escaped = escapeHtml(input);
