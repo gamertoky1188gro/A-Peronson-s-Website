@@ -484,6 +484,7 @@ function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
 
 const MAX_CONTEXT_CHARS = 1_600;
 const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200;
+const MAX_AI_ANSWER_CHARS = 1200;
 
 async function searchCodeContext(questionText) {
   const port = await ensureOpencodeServer();
