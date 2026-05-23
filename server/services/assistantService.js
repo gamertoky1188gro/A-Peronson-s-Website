@@ -346,6 +346,142 @@ function mapKnowledgeRow(row) {
   };
 }
 
+const AI_PROVIDERS = {
+  OLLAMA: "ollama",
+  OPENROUTER: "openrouter",
+  GEMINI: "gemini",
+  OPENCODE: "opencode",
+  NONE: "none",
+};
+
+const aiConfig = {
+  primary:
+    process.env.AI_PRIMARY_PROVIDER?.toLowerCase() || AI_PROVIDERS.OLLAMA,
+  fallback:
+    process.env.AI_FALLBACK_PROVIDER?.toLowerCase() || AI_PROVIDERS.OPENROUTER,
+  enabled: process.env.AI_ENABLED !== "false",
+  ollama: {
+    host: process.env.OLLAMA_HOST || "127.0.0.1",
+    port: process.env.OLLAMA_PORT || "11434",
+    model: process.env.OLLAMA_MODEL || "llama3",
+    timeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS || 45000),
+    chatEndpoint:
+      process.env.OLLAMA_CHAT_ENDPOINT ||
+      `http://${process.env.OLLAMA_HOST || "127.0.0.1"}:${process.env.OLLAMA_PORT || "11434"}/v1/chat/completions`,
+    completionEndpoint:
+      process.env.OLLAMA_COMPLETION_ENDPOINT ||
+      `http://${process.env.OLLAMA_HOST || "127.0.0.1"}:${process.env.OLLAMA_PORT || "11434"}/completion`,
+  },
+  openrouter: {
+    apiKey: process.env.OPENROUTER_API_KEY || "",
+    model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct",
+    baseUrl: "https://openrouter.ai/api/v1/chat/completions",
+    timeoutMs: Number(process.env.OPENROUTER_TIMEOUT_MS || 60000),
+    referer: process.env.OPENROUTER_REFERER || "https://gartexhub.com",
+    appTitle: process.env.OPENROUTER_APP_TITLE || "GarTexHub",
+  },
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || "",
+    model: process.env.GEMINI_MODEL || "gemini-2.0-flash-lite",
+    timeoutMs: Number(process.env.GEMINI_TIMEOUT_MS || 60000),
+  },
+  opencode: {
+    baseUrl: process.env.OPENCODE_BASE_URL || "http://localhost:4096",
+    providerID: process.env.OPENCODE_PROVIDER_ID || "opencode",
+    modelID:
+      process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") ||
+      "deepseek-v4-flash-free",
+    timeoutMs: Number(process.env.OPENCODE_TIMEOUT_MS || 120000),
+  },
+};
+
+function getPrimaryProvider() {
+  if (!aiConfig.enabled) return AI_PROVIDERS.NONE;
+  return aiConfig.primary;
+}
+
+function getFallbackProvider() {
+  if (!aiConfig.enabled) return AI_PROVIDERS.NONE;
+  if (aiConfig.fallback === aiConfig.primary) return AI_PROVIDERS.NONE;
+  return aiConfig.fallback;
+}
+
+function isProviderAvailable(provider) {
+  switch (provider) {
+    case AI_PROVIDERS.OLLAMA:
+      return aiConfig.ollama.model && aiConfig.ollama.host;
+    case AI_PROVIDERS.OPENROUTER:
+      return aiConfig.openrouter.apiKey && aiConfig.openrouter.model;
+    case AI_PROVIDERS.GEMINI:
+      return aiConfig.gemini.apiKey && aiConfig.gemini.model;
+    case AI_PROVIDERS.OPENCODE:
+      return aiConfig.opencode.baseUrl && aiConfig.opencode.modelID;
+    default:
+      return false;
+  }
+}
+
+export function getAiConfig() {
+  return {
+    ...aiConfig,
+    primaryProvider: getPrimaryProvider(),
+    fallbackProvider: getFallbackProvider(),
+    primaryAvailable: isProviderAvailable(getPrimaryProvider()),
+    fallbackAvailable: isProviderAvailable(getFallbackProvider()),
+  };
+}
+
+export function updateAiConfig(newConfig) {
+  if (newConfig.primary !== undefined) {
+    aiConfig.primary = newConfig.primary.toLowerCase();
+  }
+  if (newConfig.fallback !== undefined) {
+    aiConfig.fallback = newConfig.fallback.toLowerCase();
+  }
+  if (newConfig.enabled !== undefined) {
+    aiConfig.enabled = newConfig.enabled;
+  }
+  if (newConfig.ollama) {
+    Object.assign(aiConfig.ollama, newConfig.ollama);
+  }
+  if (newConfig.openrouter) {
+    Object.assign(aiConfig.openrouter, newConfig.openrouter);
+  }
+}
+
+function normalize(text = "") {
+  return sanitizeString(String(text || "").toLowerCase(), 500);
+}
+
+function tokenize(text = "") {
+  return normalize(text)
+    .split(/[^a-z0-9]+/)
+    .filter((word) => word.length > 2);
+}
+
+function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
+  const normalizedQuestion = normalize(questionText);
+  const normalizedCandidate = normalize(candidateQuestion);
+  const questionTokens = tokenize(normalizedQuestion);
+
+  let score = 0;
+  if (
+    normalizedCandidate &&
+    (normalizedQuestion.includes(normalizedCandidate) ||
+      normalizedCandidate.includes(normalizedQuestion))
+  ) {
+    score += 2;
+  }
+
+  const keywordSet = new Set(
+    candidateKeywords.map((keyword) => normalize(keyword)).filter(Boolean),
+  );
+  for (const token of questionTokens) {
+    if (keywordSet.has(token)) score += 1;
+  }
+  return score;
+}
+
 const MAX_CONTEXT_CHARS = 1_600;
 const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200;
 
