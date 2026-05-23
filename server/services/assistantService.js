@@ -326,187 +326,6 @@ async function loadAssistantRules() {
   }
 }
 
-const CODE_EXTENSIONS = new Set([
-  ".js",
-  ".jsx",
-  ".ts",
-  ".tsx",
-  ".json",
-  ".md",
-  ".css",
-  ".html",
-]);
-const SKIP_DIRECTORIES = new Set([
-  ".git",
-  "node_modules",
-  "dist",
-  "build",
-  "coverage",
-  ".vite",
-]);
-const MAX_FILES_TO_SCAN = 400;
-const MAX_FILE_BYTES = 80_000;
-const MAX_MATCHED_SNIPPETS = 4;
-const MAX_SNIPPET_LENGTH = 320;
-const MAX_CONTEXT_CHARS = 1_600;
-const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200;
-const MAX_AI_ANSWER_CHARS = 1200;
-
-const AI_PROVIDERS = {
-  OLLAMA: "ollama",
-  OPENROUTER: "openrouter",
-  GEMINI: "gemini",
-  OPENCODE: "opencode",
-  NONE: "none",
-};
-
-const aiConfig = {
-  primary:
-    process.env.AI_PRIMARY_PROVIDER?.toLowerCase() || AI_PROVIDERS.OLLAMA,
-  fallback:
-    process.env.AI_FALLBACK_PROVIDER?.toLowerCase() || AI_PROVIDERS.OPENROUTER,
-  enabled: process.env.AI_ENABLED !== "false",
-  ollama: {
-    host: process.env.OLLAMA_HOST || "127.0.0.1",
-    port: process.env.OLLAMA_PORT || "11434",
-    model: process.env.OLLAMA_MODEL || "llama3",
-    timeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS || 45000),
-    chatEndpoint:
-      process.env.OLLAMA_CHAT_ENDPOINT ||
-      `http://${process.env.OLLAMA_HOST || "127.0.0.1"}:${process.env.OLLAMA_PORT || "11434"}/v1/chat/completions`,
-    completionEndpoint:
-      process.env.OLLAMA_COMPLETION_ENDPOINT ||
-      `http://${process.env.OLLAMA_HOST || "127.0.0.1"}:${process.env.OLLAMA_PORT || "11434"}/completion`,
-  },
-  openrouter: {
-    apiKey: process.env.OPENROUTER_API_KEY || "",
-    model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct",
-    baseUrl: "https://openrouter.ai/api/v1/chat/completions",
-    timeoutMs: Number(process.env.OPENROUTER_TIMEOUT_MS || 60000),
-    referer: process.env.OPENROUTER_REFERER || "https://gartexhub.com",
-    appTitle: process.env.OPENROUTER_APP_TITLE || "GarTexHub",
-  },
-  gemini: {
-    apiKey: process.env.GEMINI_API_KEY || "",
-    model: process.env.GEMINI_MODEL || "gemini-2.0-flash-lite",
-    timeoutMs: Number(process.env.GEMINI_TIMEOUT_MS || 60000),
-  },
-  opencode: {
-    baseUrl: process.env.OPENCODE_BASE_URL || "http://localhost:4096",
-    providerID: process.env.OPENCODE_PROVIDER_ID || "opencode",
-    modelID: process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") || "deepseek-v4-flash-free",
-    timeoutMs: Number(process.env.OPENCODE_TIMEOUT_MS || 120000),
-  },
-};
-
-function getPrimaryProvider() {
-  if (!aiConfig.enabled) return AI_PROVIDERS.NONE;
-  return aiConfig.primary;
-}
-
-function getFallbackProvider() {
-  if (!aiConfig.enabled) return AI_PROVIDERS.NONE;
-  if (aiConfig.fallback === aiConfig.primary) return AI_PROVIDERS.NONE;
-  return aiConfig.fallback;
-}
-
-function isProviderAvailable(provider) {
-  switch (provider) {
-    case AI_PROVIDERS.OLLAMA:
-      return aiConfig.ollama.model && aiConfig.ollama.host;
-    case AI_PROVIDERS.OPENROUTER:
-      return aiConfig.openrouter.apiKey && aiConfig.openrouter.model;
-    case AI_PROVIDERS.GEMINI:
-      return aiConfig.gemini.apiKey && aiConfig.gemini.model;
-    case AI_PROVIDERS.OPENCODE:
-      return aiConfig.opencode.baseUrl && aiConfig.opencode.modelID;
-    default:
-      return false;
-  }
-}
-
-export function getAiConfig() {
-  return {
-    ...aiConfig,
-    primaryProvider: getPrimaryProvider(),
-    fallbackProvider: getFallbackProvider(),
-    primaryAvailable: isProviderAvailable(getPrimaryProvider()),
-    fallbackAvailable: isProviderAvailable(getFallbackProvider()),
-  };
-}
-
-export function updateAiConfig(newConfig) {
-  if (newConfig.primary !== undefined) {
-    aiConfig.primary = newConfig.primary.toLowerCase();
-  }
-  if (newConfig.fallback !== undefined) {
-    aiConfig.fallback = newConfig.fallback.toLowerCase();
-  }
-  if (newConfig.enabled !== undefined) {
-    aiConfig.enabled = newConfig.enabled;
-  }
-  if (newConfig.ollama) {
-    Object.assign(aiConfig.ollama, newConfig.ollama);
-  }
-  if (newConfig.openrouter) {
-    Object.assign(aiConfig.openrouter, newConfig.openrouter);
-  }
-}
-
-const _CODE_CONTEXT_HINTS = new Set([
-  "api",
-  "route",
-  "server",
-  "controller",
-  "service",
-  "code",
-  "bug",
-  "error",
-  "endpoint",
-  "json",
-  "database",
-  "model",
-  "function",
-]);
-
-let codeFileCache = {
-  expiresAt: 0,
-  files: [],
-};
-
-function normalize(text = "") {
-  return sanitizeString(String(text || "").toLowerCase(), 500);
-}
-
-function tokenize(text = "") {
-  return normalize(text)
-    .split(/[^a-z0-9]+/)
-    .filter((word) => word.length > 2);
-}
-
-function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
-  const normalizedQuestion = normalize(questionText);
-  const normalizedCandidate = normalize(candidateQuestion);
-  const questionTokens = tokenize(normalizedQuestion);
-
-  let score = 0;
-  if (
-    normalizedCandidate &&
-    (normalizedQuestion.includes(normalizedCandidate) ||
-      normalizedCandidate.includes(normalizedQuestion))
-  ) {
-    score += 2;
-  }
-
-  const keywordSet = new Set(
-    candidateKeywords.map((keyword) => normalize(keyword)).filter(Boolean),
-  );
-  for (const token of questionTokens) {
-    if (keywordSet.has(token)) score += 1;
-  }
-  return score;
-}
-
 function normalizeType(type) {
   const normalized = sanitizeString(type, 30).toLowerCase();
   return normalized === KNOWLEDGE_TYPES.FACT
@@ -527,144 +346,50 @@ function mapKnowledgeRow(row) {
   };
 }
 
-async function collectCodeFiles(dirPath, collector, limit = MAX_FILES_TO_SCAN) {
-  if (collector.length >= limit) return;
-
-  const entries = await fsp.readdir(dirPath, { withFileTypes: true });
-  for (const entry of entries) {
-    if (collector.length >= limit) return;
-
-    const resolvedPath = path.join(dirPath, entry.name);
-    if (entry.isDirectory()) {
-      if (SKIP_DIRECTORIES.has(entry.name)) continue;
-      await collectCodeFiles(resolvedPath, collector, limit);
-      continue;
-    }
-
-    if (!entry.isFile()) continue;
-    const extension = path.extname(entry.name).toLowerCase();
-    if (!CODE_EXTENSIONS.has(extension)) continue;
-    collector.push(resolvedPath);
-  }
-}
-
-async function getCodeFiles() {
-  const now = Date.now();
-  if (codeFileCache.expiresAt > now && codeFileCache.files.length > 0) {
-    return codeFileCache.files;
-  }
-
-  const files = [];
-  await collectCodeFiles(process.cwd(), files);
-  codeFileCache = {
-    files,
-    expiresAt: now + 60_000,
-  };
-  return files;
-}
-
-function findBestSnippet(content, tokens) {
-  const lines = content.split("\n");
-  let best = { score: 0, line: "", lineNumber: 1 };
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const rawLine = lines[index];
-    const normalizedLine = normalize(rawLine);
-    if (!normalizedLine) continue;
-
-    let score = 0;
-    for (const token of tokens) {
-      if (normalizedLine.includes(token)) score += 1;
-    }
-
-    if (score > best.score) {
-      best = {
-        score,
-        line: sanitizeString(rawLine.trim(), MAX_SNIPPET_LENGTH),
-        lineNumber: index + 1,
-      };
-    }
-  }
-
-  return best.score > 0 ? best : null;
-}
+const MAX_CONTEXT_CHARS = 1_600;
+const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200;
 
 async function searchCodeContext(questionText) {
-  const tokens = tokenize(questionText);
-  if (tokens.length === 0) {
-    return {
-      summary: "",
-      snippets: [],
-      prompt_context: "",
-    };
-  }
+  const port = await ensureOpencodeServer();
+  if (!port) return { summary: "", snippets: [], prompt_context: "" };
 
-  const files = await getCodeFiles();
-  const matches = [];
-
-  for (const filePath of files) {
-    let stat;
-    try {
-      stat = await fsp.stat(filePath);
-    } catch {
-      continue;
-    }
-    if (!stat.isFile() || stat.size > MAX_FILE_BYTES) continue;
-
-    let content = "";
-    try {
-      content = await fsp.readFile(filePath, "utf8");
-    } catch {
-      continue;
-    }
-
-    const relativePath = path.relative(process.cwd(), filePath);
-    const fileTokens = tokenize(relativePath);
-
-    let score = 0;
-    for (const token of tokens) {
-      if (fileTokens.includes(token)) score += 2;
-      if (normalize(content).includes(token)) score += 1;
-    }
-
-    if (score === 0) continue;
-
-    const bestSnippet = findBestSnippet(content, tokens);
-    matches.push({
-      path: relativePath,
-      score: score + (bestSnippet?.score || 0),
-      snippet: bestSnippet,
+  try {
+    const client = createOpencodeClient({
+      baseUrl: `http://localhost:${port}`,
+      throwOnError: false,
     });
+    const result = await client.find.text({
+      query: { pattern: questionText },
+    });
+    const raw = Array.isArray(result) ? result : result?.data;
+    const matches = Array.isArray(raw) ? raw : [];
+    if (matches.length === 0) {
+      return { summary: "", snippets: [], prompt_context: "" };
+    }
+
+    const snippets = matches.slice(0, 8).map((m) => ({
+      file: m.path || "",
+      line: m.line_number || null,
+      snippet: (m.lines || "").trim().substring(0, 320),
+    }));
+
+    const summary = snippets
+      .map((s) => `${s.file}${s.line ? `:${s.line}` : ""}`)
+      .join(", ");
+
+    const promptContext = snippets
+      .map((s) => `[${s.file}${s.line ? `:${s.line}` : ""}] ${s.snippet}`)
+      .join("\n");
+
+    return {
+      summary,
+      snippets,
+      prompt_context: sanitizeString(promptContext, MAX_CONTEXT_CHARS),
+    };
+  } catch (error) {
+    logError("Opencode code search failed", { error: error.message });
+    return { summary: "", snippets: [], prompt_context: "" };
   }
-
-  const topMatches = matches
-    .sort((a, b) => b.score - a.score)
-    .slice(0, MAX_MATCHED_SNIPPETS);
-
-  const snippets = topMatches.map((match) => ({
-    file: match.path,
-    score: match.score,
-    line: match.snippet?.lineNumber || null,
-    snippet: match.snippet?.line || "",
-  }));
-
-  const summary = snippets
-    .map((item) => `${item.file}${item.line ? `:${item.line}` : ""}`)
-    .join(", ");
-
-  let promptContext = snippets
-    .map(
-      (item) =>
-        `[${item.file}${item.line ? `:${item.line}` : ""}] ${item.snippet}`,
-    )
-    .join("\n");
-  promptContext = sanitizeString(promptContext, MAX_CONTEXT_CHARS);
-
-  return {
-    summary,
-    snippets,
-    prompt_context: promptContext,
-  };
 }
 
 async function shouldSearchCodeContext(questionText) {
