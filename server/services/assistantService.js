@@ -500,7 +500,7 @@ async function searchCodeContext(questionText) {
     const snippets = matches.slice(0, 8).map((m) => ({
       file: m.path || "",
       line: m.line_number || null,
-      snippet: (m.lines || "").trim().substring(0, 320),
+      snippet: (Array.isArray(m.lines) ? m.lines.join("\n") : (m.lines || "")).trim().substring(0, 320),
     }));
 
     const summary = snippets
