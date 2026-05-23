@@ -61,7 +61,7 @@ import workflowLifecycleRoutes from "./routes/workflowLifecycleRoutes.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { logInfo, logError } from "./utils/logger.js";
-import { assistantReply, initOpencodeServer, initAllUserSessions } from "./services/assistantService.js";
+import { assistantReply, streamOpencodeReply, initOpencodeServer, initAllUserSessions } from "./services/assistantService.js";
 import { maybeGenerateBotReply } from "./services/chatbotService.js";
 import jwt from "jsonwebtoken";
 import {
@@ -794,23 +794,75 @@ wsServer.on("connection", (socket, req) => {
 
     try {
       const userId = socket?.userId || null;
-      const result = await assistantReply("public_ws", question, userId);
-      const answer =
-        result?.matched_answer ||
-        "I could not find a response right now. Please try again.";
-      sendReply({
-        type: "reply",
-        request_id: payload?.request_id || null,
-        question,
-        matched_answer: answer,
-        source: result?.source || "ws:fallback",
-        metadata: result?.metadata || {
-          matched_source: null,
-          matched_type: null,
-          confidence: 0,
-          fallback_reason: "empty_result",
-        },
-      });
+      const requestId = payload?.request_id || null;
+
+      let streamedText = "";
+      let streamError = null;
+      let streamDone = false;
+
+      const gotChunk = (delta, fullText) => {
+        streamedText = fullText;
+        sendReply({
+          type: "chunk",
+          request_id: requestId,
+          question,
+          delta,
+          text: fullText,
+          done: false,
+        });
+      };
+
+      const gotComplete = (answer, error) => {
+        streamDone = true;
+        streamError = error;
+        if (error) {
+          sendReply({
+            type: "reply",
+            request_id: requestId,
+            question,
+            matched_answer: answer || "I could not find a response right now. Please try again.",
+            source: "ws:stream_error",
+            metadata: {
+              matched_source: "ws:stream_error",
+              matched_type: "error",
+              confidence: 0,
+              fallback_reason: error,
+            },
+          });
+        } else {
+          sendReply({
+            type: "reply",
+            request_id: requestId,
+            question,
+            matched_answer: answer || "I could not find a response right now. Please try again.",
+            source: "ws:stream",
+            metadata: {
+              matched_source: "ws:stream",
+              matched_type: "ai_generated",
+              confidence: 2,
+              fallback_reason: null,
+            },
+          });
+        }
+      };
+
+      await streamOpencodeReply(question, userId, gotChunk, gotComplete);
+
+      if (!streamDone) {
+        sendReply({
+          type: "reply",
+          request_id: requestId,
+          question,
+          matched_answer: streamedText || "I could not find a response right now. Please try again.",
+          source: "ws:fallback",
+          metadata: {
+            matched_source: "ws:fallback",
+            matched_type: "unknown",
+            confidence: 0,
+            fallback_reason: "stream_not_started",
+          },
+        });
+      }
     } catch (error) {
       logError("Assistant WebSocket ask failed", error);
       sendReply({

@@ -124,6 +124,8 @@ export default function FloatingAssistant() {
         console.warn("Assistant identify failed", err);
       }
     };
+    const streamingIds = new Set();
+
     socket.onmessage = (event) => {
       let data;
       try {
@@ -132,12 +134,35 @@ export default function FloatingAssistant() {
         console.error("Failed to parse WS message", err);
         return;
       }
-      if (data.type === "reply") {
+      if (data.type === "chunk") {
+        const rid = data.request_id;
+        streamingIds.add(rid);
+        setMessages((prev) => {
+          const idx = prev.findLastIndex(
+            (m) => m.role === "assistant" && m.request_id === rid,
+          );
+          if (idx >= 0) {
+            const updated = [...prev];
+            updated[idx] = { ...updated[idx], text: data.text || "" };
+            return updated;
+          }
+          return [
+            ...prev,
+            {
+              role: "assistant",
+              text: data.text || "",
+              isNew: false,
+              request_id: rid,
+            },
+          ];
+        });
+      } else if (data.type === "reply") {
+        streamingIds.delete(data.request_id);
         const botMsg = {
           role: "assistant",
           text:
             data.answer || "I am sorry, I could not find an answer to that.",
-          isNew: true,
+          isNew: !streamingIds.has(data.request_id),
           request_id: data.request_id || null,
         };
         setMessages((prev) => [...prev, botMsg]);

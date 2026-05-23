@@ -1679,3 +1679,100 @@ export async function assistantReply(orgId, question = "", userId = null) {
     },
   };
 }
+
+export async function streamOpencodeReply(question, userId, onChunk, onComplete) {
+  const questionText = sanitizeString(question, 800);
+  const codeContext = shouldSearchCodeContext(questionText)
+    ? await searchCodeContext(questionText)
+    : { summary: "", snippets: [], prompt_context: "" };
+  const entries = await listKnowledge("public_ws");
+  const knowledgeContext = await buildKnowledgeContext(questionText, entries);
+  const prompt = await buildAgentPrompt(questionText, codeContext, knowledgeContext);
+  const systemPrompt = DEFAULT_SYSTEM_PROMPT;
+
+  const cfg = aiConfig.opencode;
+  if (!cfg.baseUrl || !cfg.modelID) return onComplete(null, "AI not configured");
+
+  const port = await ensureOpencodeServer();
+  if (!port) return onComplete(null, "AI server unavailable");
+
+  const baseUrl = `http://localhost:${port}`;
+  const client = createOpencodeClient({ baseUrl, throwOnError: false });
+
+  let sessionId = null;
+  if (userId) {
+    const meta = await loadSessionMeta(userId);
+    sessionId = meta?.sessionId || null;
+  }
+  if (!sessionId && userId) sessionId = await createUserOpencodeSession(userId);
+  if (!sessionId) sessionId = await createUserOpencodeSession(null);
+  if (!sessionId) return onComplete(null, "Could not create AI session");
+
+  const deadline = Date.now() + 120_000;
+
+  try {
+    const events = await client.event.subscribe({
+      query: { directory: process.cwd() },
+    });
+    const streamObj = events.stream;
+    let aborted = false;
+
+    const cleanup = () => {
+      aborted = true;
+      if (streamObj?.controller?.abort) {
+        try { streamObj.controller.abort(); } catch {}
+      }
+    };
+
+    try {
+      await client.session.promptAsync({
+        path: { id: sessionId },
+        body: {
+          model: { providerID: cfg.providerID, modelID: cfg.modelID },
+          parts: [{ type: "text", text: prompt }],
+          system: systemPrompt,
+        },
+        query: { directory: process.cwd() },
+      });
+    } catch (err) {
+      cleanup();
+      return onComplete(null, `Prompt failed: ${err.message}`);
+    }
+
+    let fullText = "";
+
+    for await (const event of streamObj) {
+      if (aborted) break;
+      if (Date.now() > deadline) {
+        cleanup();
+        return onComplete(unescapeHtml(sanitizeString(fullText, MAX_AI_ANSWER_CHARS)) || null, "Timed out");
+      }
+
+      if (event?.type === "message.part.updated") {
+        const part = event.properties?.part;
+        if (part?.sessionID === sessionId && part?.type === "text") {
+          const delta = event.properties?.delta || "";
+          if (delta) {
+            fullText += delta;
+            const safeDelta = unescapeHtml(delta);
+            const safeFull = unescapeHtml(fullText);
+            onChunk(safeDelta, safeFull);
+          }
+        }
+      }
+
+      if (event?.type === "session.status" || event?.type === "session.updated") {
+        const status = event.properties?.status || event.properties?.info?.status;
+        if (status === "idle") {
+          cleanup();
+          return onComplete(unescapeHtml(sanitizeString(fullText, MAX_AI_ANSWER_CHARS)) || null, null);
+        }
+      }
+    }
+
+    onComplete(unescapeHtml(sanitizeString(fullText, MAX_AI_ANSWER_CHARS)) || null, null);
+  } catch (error) {
+    logError("Opencode stream failed", { error: error.message });
+    onComplete(null, error.message);
+  }
+}
