@@ -1,29 +1,3 @@
-/*
-  Component: FloatingAssistant (global)
-
-  Routes impacted:
-    - Renders on most routes (AppLayout always mounts it).
-    - Special visual mode on /help: "Orb" styling (glass + conic ring) via `assistant-orb-btn`.
-
-  Purpose:
-    - Provide a persistent AI/help assistant UI as a slide-in panel.
-    - Connects to backend WebSocket (`/ws`) to stream answers.
-    - Per-user session management via Opencode API
-
-  Key behaviors:
-    - Floating button toggles the panel.
-    - Messages list auto-scrolls on new messages.
-    - Optional typewriter effect for new assistant messages (UI polish).
-    - One session per user - new session clears old messages
-    - Auto-load history from opencode API on open
-    - Delete session button to start fresh
-
-  Key backend:
-    - WebSocket URL derived from API_BASE (http -> ws, /api -> /ws)
-    - Message protocol expects { type: 'ask', question } and replies with { type: 'reply', answer }
-    - Session history via /api/assistant/session-messages
-    - Delete session via /api/assistant/session
-*/
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
@@ -63,17 +37,11 @@ async function deleteSessionAPI() {
   }
 }
 
-/**
- * Helper component to simulate typing effect
- */
 function TypewriterText({ text, speed = 20, onComplete }) {
-  // `displayedText` grows one character at a time to mimic typing.
   const [displayedText, setDisplayedText] = useState("");
-  // Current character index that has been "typed".
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    // If we still have characters left, schedule the next tick.
     if (index < text.length) {
       const timeout = setTimeout(() => {
         setDisplayedText((prev) => prev + text[index]);
@@ -81,7 +49,6 @@ function TypewriterText({ text, speed = 20, onComplete }) {
       }, speed);
       return () => clearTimeout(timeout);
     } else if (onComplete) {
-      // Once typing finishes, notify parent so it can mark the message as no longer "new".
       onComplete();
     }
   }, [index, text, speed, onComplete]);
@@ -136,11 +103,7 @@ export default function FloatingAssistant() {
     setSessionLoaded(false);
   }
 
-  // Initialize WebSocket connection
   useEffect(() => {
-    // Derive the WS endpoint from API_BASE:
-    // - If API_BASE is absolute (http/https), swap scheme to ws/wss and map /api -> /ws.
-    // - Otherwise, use current origin and `/ws`.
     const wsUrl = (() => {
       if (API_BASE.startsWith("http://") || API_BASE.startsWith("https://")) {
         return API_BASE.replace(/^http/, "ws").replace(/\/api\/*$/, "/ws");
@@ -150,7 +113,6 @@ export default function FloatingAssistant() {
     })();
     const socket = new WebSocket(wsUrl);
 
-    // Basic lifecycle logging (useful during dev).
     socket.onopen = () => {
       console.log("Assistant WS Connected");
       try {
@@ -163,7 +125,6 @@ export default function FloatingAssistant() {
       }
     };
     socket.onmessage = (event) => {
-      // Server sends JSON messages. We expect { type: 'reply' | 'error', ... }.
       let data;
       try {
         data = JSON.parse(event.data);
@@ -179,11 +140,9 @@ export default function FloatingAssistant() {
           isNew: true,
           request_id: data.request_id || null,
         };
-        // Append assistant message to transcript and stop loading indicator.
         setMessages((prev) => [...prev, botMsg]);
         setLoading(false);
       } else if (data.type === "error") {
-        // Surface server errors as assistant messages so the UI stays consistent.
         setMessages((prev) => [
           ...prev,
           {
@@ -198,38 +157,31 @@ export default function FloatingAssistant() {
     socket.onclose = () => console.log("Assistant WS Disconnected");
     socket.onerror = (err) => console.error("Assistant WS Error", err);
 
-    // Store socket in ref so `handleSend` can use it without re-creating listeners.
     socketRef.current = socket;
 
     return () => {
-      // Cleanly close connection on unmount.
       if (socket.readyState === WebSocket.OPEN) {
         socket.close();
       }
     };
   }, []);
 
-  // Auto-scroll to bottom
   useEffect(() => {
-    // Ensures latest message is visible without user needing to scroll.
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, loading]);
 
   async function handleSend(textOverride) {
-    // Allow sending from quick suggestions or from input box.
     const text = textOverride || input;
     if (!text.trim() || loading) return;
 
-    // Add the user's message to transcript immediately for snappy UX.
     const requestId = `req_${requestSeqRef.current++}`;
     const userMsg = { role: "user", text, request_id: requestId, isNew: false };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
-    // Send the question over WS if connected; otherwise show a recoverable error message.
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(
         JSON.stringify({ type: "ask", question: text, request_id: requestId }),
@@ -247,14 +199,12 @@ export default function FloatingAssistant() {
     }
   }
 
-  // After the typewriter effect finishes, mark the message as "old" so it renders as plain text next time.
   function markAsOld(msgIndex) {
     setMessages((prev) =>
       prev.map((m, i) => (i === msgIndex ? { ...m, isNew: false } : m)),
     );
   }
 
-  // Quick-start suggestion prompts (shown when the assistant is fresh / not busy).
   const suggestions = [
     "How do I verify my account?",
     "Tell me about Premium benefits",
@@ -264,16 +214,15 @@ export default function FloatingAssistant() {
 
   return (
     <>
-      {/* Floating launcher button (bottom-right). */}
       <div className="fixed right-6 bottom-6 z-50">
         <button
           type="button"
           onClick={() => setOpen(!open)}
           className={[
-            "w-14 h-14 rounded-full flex items-center justify-center text-white transition-transform active:scale-95",
+            "w-14 h-14 rounded-full flex items-center justify-center text-white transition-all duration-300 active:scale-90",
             orbMode
               ? "assistant-orb-btn hover:scale-110"
-              : "bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] shadow-xl hover:scale-110 ring-2 ring-white/20",
+              : "bg-gradient-to-br from-sky-500 to-cyan-400 shadow-lg shadow-sky-500/30 hover:shadow-xl hover:shadow-sky-500/40 hover:scale-110 ring-2 ring-white/30 dark:ring-white/10",
           ].join(" ")}
           aria-label={open ? "Close assistant" : "Open assistant"}
           title={open ? "Close assistant" : "Open assistant"}
@@ -301,181 +250,179 @@ export default function FloatingAssistant() {
         </button>
       </div>
 
-      {/* Slide-in drawer panel (off-canvas). */}
       <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col shadow-dividerL dark:shadow-dividerLDark ${
+        className={`fixed top-0 right-0 h-full w-full md:w-[420px] z-50 transform transition-all duration-300 ease-out flex flex-col ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Drawer header: title + live status (thinking/live) + close button + delete session */}
-        <div className="p-4 bg-[#0A66C2] text-white flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm">
-              <BotLogo
-                width={24}
-                height={24}
-                variant="glyph"
-                className="text-white"
-              />
-            </div>
-            <div>
-              <p className="font-bold tracking-tight">GarTex Assistant</p>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className={`w-2 h-2 rounded-full animate-pulse${loading ? "bg-amber-400" : "bg-green-400"}`}
-                ></span>
-                <p className="text-[10px] uppercase tracking-wider text-sky-100 font-semibold">
-                  {loading ? "Thinking..." : "Live Guidance"}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={deleteSession}
-              aria-label="Delete session"
-              title="Delete session & start new chat"
-              type="button"
-              className="hover:bg-white/10 p-1.5 rounded-full transition-colors w-8 h-8 flex items-center justify-center"
-            >
-              <svg
-                aria-hidden="true"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="text-white"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
+        <div className="h-full w-full bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border-l border-slate-200/70 dark:border-slate-800/60 shadow-borderless dark:shadow-borderlessDark flex flex-col">
+          <div className="bg-gradient-to-r from-sky-500 via-sky-600 to-cyan-400 text-white flex items-center justify-between px-5 py-4 shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm shrink-0">
+                <BotLogo
+                  width={22}
+                  height={22}
+                  variant="glyph"
+                  className="text-white"
                 />
-              </svg>
-            </button>
-            <button
-              onClick={() => setOpen(false)}
-              aria-label="Close assistant"
-              title="Close assistant"
-              type="button"
-              className="hover:bg-white/10 p-1 rounded-full transition-colors w-8 h-8 flex items-center justify-center"
-            >
-              <svg
-                aria-hidden="true"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="text-white"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 6 L18 18 M6 18 L18 6"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Transcript: scrollable list of chat bubbles. */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50"
-        >
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex${msg.role === "user" ? "justify-end" : "justify-start"}animate-in fade-in slide-in-from-bottom-2 duration-300`}
-            >
-              <div
-                className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed${
-                  msg.role === "user"
-                    ? "bg-[#0A66C2] text-white rounded-tr-none shadow-blue-100 shadow-lg"
-                    : "bg-white text-gray-800 rounded-tl-none shadow-sm"
-                }`}
-              >
-                {msg.role === "assistant" && msg.isNew ? (
-                  <TypewriterText
-                    text={msg.text}
-                    onComplete={() => markAsOld(i)}
-                  />
-                ) : (
-                  msg.text
-                )}
               </div>
-            </div>
-          ))}
-
-          {loading && (
-            // Typing indicator bubble shown while awaiting server reply.
-            <div className="flex justify-start animate-in fade-in duration-200">
-              <div className="bg-white shadow-borderless dark:shadow-borderlessDark p-4 rounded-2xl rounded-tl-none shadow-sm">
-                <div className="flex gap-1.5">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-duration:0.8s]"></div>
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.2s]"></div>
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.4s]"></div>
+              <div className="min-w-0">
+                <p className="font-bold tracking-tight text-[15px]">GarTex Assistant</p>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`w-2 h-2 rounded-full animate-pulse ${
+                      loading ? "bg-amber-300" : "bg-green-300"
+                    }`}
+                  ></span>
+                  <p className="text-[10px] uppercase tracking-wider text-white/80 font-semibold">
+                    {loading ? "Thinking..." : "Online"}
+                  </p>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Composer/footer: quick suggestions + input + send button. */}
-        <div className="p-4 shadow-dividerT dark:shadow-dividerTDark bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
-          {messages.length < 3 && !loading && (
-            // Quick suggestion chips appear early to guide first-time users.
-            <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-bottom-1 duration-500">
-              {suggestions.map((s, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSend(s)}
-                  className="text-[11px] bg-sky-50 text-[#0A66C2] shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 rounded-full hover:bg-sky-100 transition-all hover:scale-105 active:scale-95"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-2 items-center">
-            <div className="flex-1 relative">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Type your question..."
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2] transition-all placeholder:text-gray-400"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => handleSend()}
-              disabled={loading || !input.trim()}
-              className="w-10 h-10 rounded-full bg-[#0A66C2] text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all hover:bg-[#004182] hover:shadow-lg active:scale-90 shrink-0"
-            >
-              <svg
-                className="w-5 h-5 rotate-45"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-0.5 shrink-0">
+              <button
+                onClick={deleteSession}
+                aria-label="Delete session"
+                title="Delete session & start new chat"
+                type="button"
+                className="hover:bg-white/15 p-2 rounded-xl transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2.5"
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                ></path>
-              </svg>
-            </button>
+                <svg
+                  aria-hidden="true"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="text-white/80"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Close assistant"
+                title="Close assistant"
+                type="button"
+                className="hover:bg-white/15 p-2 rounded-xl transition-colors"
+              >
+                <svg
+                  aria-hidden="true"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="text-white/80"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 6 L18 18 M6 18 L18 6"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
-          <p className="text-[10px] text-gray-400 text-center mt-3 font-medium">
-            GarTex AI Assistant • Session stored locally
-          </p>
+
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto px-4 py-5 space-y-4 scroll-smooth"
+          >
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+              >
+                <div
+                  className={`max-w-[88%] text-sm leading-relaxed ${
+                    msg.role === "user"
+                      ? "bg-gradient-to-br from-sky-500 to-cyan-400 text-white rounded-2xl rounded-br-none px-4 py-3 shadow-md shadow-sky-500/20"
+                      : "bg-white dark:bg-slate-900/80 text-slate-800 dark:text-slate-100 rounded-2xl rounded-bl-none px-4 py-3 border border-slate-200/60 dark:border-slate-700/50 shadow-sm"
+                  }`}
+                >
+                  {msg.role === "assistant" && msg.isNew ? (
+                    <TypewriterText
+                      text={msg.text}
+                      onComplete={() => markAsOld(i)}
+                    />
+                  ) : (
+                    msg.text
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {loading && (
+              <div className="flex justify-start animate-in fade-in duration-200">
+                <div className="bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl rounded-bl-none px-4 py-3.5 shadow-sm">
+                  <div className="flex gap-1.5">
+                    <div className="w-2 h-2 bg-sky-400 rounded-full animate-bounce [animation-duration:0.8s]"></div>
+                    <div className="w-2 h-2 bg-sky-400 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.2s]"></div>
+                    <div className="w-2 h-2 bg-sky-400 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.4s]"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="px-4 pt-3 pb-5 border-t border-slate-200/60 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm shrink-0">
+            {messages.length < 3 && !loading && (
+              <div className="flex flex-wrap gap-2 mb-3 animate-in fade-in slide-in-from-bottom-1 duration-500">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSend(s)}
+                    className="text-[11px] font-medium bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/50 px-3 py-1.5 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2 items-center">
+              <div className="flex-1 relative">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  placeholder="Type your question..."
+                  className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/50"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSend()}
+                disabled={loading || !input.trim()}
+                className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all hover:shadow-lg hover:shadow-sky-500/30 active:scale-90 shrink-0"
+              >
+                <svg
+                  className="w-5 h-5 rotate-45"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2.5"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-3 font-medium">
+              GarTex AI Assistant
+            </p>
+          </div>
         </div>
       </div>
     </>
