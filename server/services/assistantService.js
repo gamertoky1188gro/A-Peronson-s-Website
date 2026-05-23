@@ -497,11 +497,15 @@ async function searchCodeContext(questionText) {
       return { summary: "", snippets: [], prompt_context: "" };
     }
 
-    const snippets = matches.slice(0, 8).map((m) => ({
-      file: m.path || "",
-      line: m.line_number || null,
-      snippet: (Array.isArray(m.lines) ? m.lines.join("\n") : (m.lines || "")).trim().substring(0, 320),
-    }));
+    const snippets = matches.slice(0, 8).map((m) => {
+      const rawLines = m.lines;
+      const linesStr = Array.isArray(rawLines) ? rawLines.join("\n") : String(rawLines || "");
+      return {
+        file: m.path || "",
+        line: m.line_number || null,
+        snippet: linesStr.trim().substring(0, 320),
+      };
+    });
 
     const summary = snippets
       .map((s) => `${s.file}${s.line ? `:${s.line}` : ""}`)
