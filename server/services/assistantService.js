@@ -1704,62 +1704,65 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
   const deadline = Date.now() + 120_000;
 
   try {
-    const events = await client.event.subscribe({
-      query: { directory: process.cwd() },
-    });
-    const streamObj = events.stream;
-    let aborted = false;
-
-    const cleanup = () => {
-      aborted = true;
-      if (streamObj?.controller?.abort) {
-        try { streamObj.controller.abort(); } catch {}
-      }
-    };
-
-    try {
-      await client.session.promptAsync({
-        path: { id: sessionId },
-        body: {
-          model: { providerID: cfg.providerID, modelID: cfg.modelID },
-          parts: [{ type: "text", text: prompt }],
-          system: systemPrompt,
-        },
-        query: { directory: process.cwd() },
-      });
-    } catch (err) {
-      cleanup();
-      return onComplete(null, `Prompt failed: ${err.message}`);
-    }
-
     let fullText = "";
 
-    for await (const event of streamObj) {
-      if (aborted) break;
-      if (Date.now() > deadline) {
-        cleanup();
-        return onComplete(unescapeHtml(sanitizeString(fullText, MAX_AI_ANSWER_CHARS)) || null, "Timed out");
-      }
+    const blockingPrompt = client.session.prompt({
+      path: { id: sessionId },
+      body: {
+        model: { providerID: cfg.providerID, modelID: cfg.modelID },
+        parts: [{ type: "text", text: prompt }],
+        systemInstruction: systemPrompt,
+      },
+    });
 
-      if (event?.type === "message.part.updated") {
-        const part = event.properties?.part;
-        if (part?.sessionID === sessionId && part?.type === "text") {
-          const delta = event.properties?.delta || "";
-          if (delta) {
-            fullText += delta;
-            const safeDelta = unescapeHtml(delta);
-            const safeFull = unescapeHtml(fullText);
-            onChunk(safeDelta, safeFull);
+    // Subscribe to SSE events for streaming chunks
+    try {
+      const events = await client.event.subscribe();
+      const streamObj = events.stream;
+      let aborted = false;
+
+      const stopStream = () => {
+        aborted = true;
+        if (streamObj?.controller?.abort) {
+          try { streamObj.controller.abort(); } catch {}
+        }
+      };
+
+      const sseLoop = (async () => {
+        for await (const event of streamObj) {
+          if (aborted || Date.now() > deadline) break;
+          if (event?.type === "message.part.updated") {
+            const part = event.properties?.part;
+            if (part?.type === "text") {
+              const delta = event.properties?.delta || "";
+              if (delta) {
+                fullText += delta;
+                onChunk(unescapeHtml(delta), unescapeHtml(fullText));
+              }
+            }
+          }
+          if (event?.type === "session.status" || event?.type === "session.updated") {
+            const status = event.properties?.status || event.properties?.info?.status;
+            if (status === "idle") break;
           }
         }
-      }
+      })();
 
-      if (event?.type === "session.status" || event?.type === "session.updated") {
-        const status = event.properties?.status || event.properties?.info?.status;
-        if (status === "idle") {
-          cleanup();
-          return onComplete(unescapeHtml(sanitizeString(fullText, MAX_AI_ANSWER_CHARS)) || null, null);
-        }
+      const raceTimeout = new Promise((r) => setTimeout(r, 6000));
+      await Promise.race([sseLoop, raceTimeout]);
+      stopStream();
+    } catch {
+      // SSE best-effort; blocking call still resolves
+    }
+
+    const blockingResult = await blockingPrompt;
+    const parts = blockingResult?.data?.parts;
+    if (Array.isArray(parts)) {
+      const textPart = parts.find(p => p.type === "text");
+      if (textPart?.text && !fullText) {
+        fullText = textPart.text;
+      }
+    }
       }
     }
 
