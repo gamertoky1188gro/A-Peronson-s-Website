@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
 import BotLogo from "./ui/BotLogo";
+import MarkdownMessage from "./chat/MarkdownMessage";
 
 function getUserId() {
   const user = getCurrentUser();
@@ -378,6 +379,8 @@ export default function FloatingAssistant() {
                       text={msg.text}
                       onComplete={() => markAsOld(i)}
                     />
+                  ) : msg.role === "assistant" ? (
+                    <MarkdownMessage text={msg.text} />
                   ) : (
                     msg.text
                   )}
