@@ -220,6 +220,13 @@ Your responses must be:
 - Concise
 - User-focused
 
+Use Markdown formatting:
+- **bold** for emphasis
+- `inline code` for code, paths, filenames, commands
+- ```fenced code blocks``` for multi-line code, SQL, JSON, configs
+- Bullet lists and numbered lists for steps
+- Tables for comparisons or structured data where appropriate
+
 Avoid:
 - Technical oversharing
 - Internal terminology
