@@ -484,7 +484,7 @@ function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
 
 const MAX_CONTEXT_CHARS = 1_600;
 const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200;
-const MAX_AI_ANSWER_CHARS = 1200;
+const MAX_AI_ANSWER_CHARS = 8000;
 
 async function searchCodeContext(questionText) {
   const port = await ensureOpencodeServer();
@@ -1766,7 +1766,7 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
     const parts = blockingResult?.data?.parts;
     if (Array.isArray(parts)) {
       const textPart = parts.find(p => p.type === "text");
-      if (textPart?.text && !fullText) {
+      if (textPart?.text && (!fullText || textPart.text.length > fullText.length)) {
         fullText = textPart.text;
       }
     }

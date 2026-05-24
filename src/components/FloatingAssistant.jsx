@@ -158,15 +158,28 @@ export default function FloatingAssistant() {
           ];
         });
       } else if (data.type === "reply") {
-        streamingIds.delete(data.request_id);
-        const botMsg = {
-          role: "assistant",
-          text:
-            data.answer || "I am sorry, I could not find an answer to that.",
-          isNew: !streamingIds.has(data.request_id),
-          request_id: data.request_id || null,
-        };
-        setMessages((prev) => [...prev, botMsg]);
+        const rid = data.request_id;
+        streamingIds.delete(rid);
+        setMessages((prev) => {
+          const idx = prev.findLastIndex(
+            (m) => m.role === "assistant" && m.request_id === rid,
+          );
+          const text = data.answer || "I am sorry, I could not find an answer to that.";
+          if (idx >= 0) {
+            const updated = [...prev];
+            updated[idx] = { ...updated[idx], text, isNew: false };
+            return updated;
+          }
+          return [
+            ...prev,
+            {
+              role: "assistant",
+              text,
+              isNew: true,
+              request_id: rid,
+            },
+          ];
+        });
         setLoading(false);
       } else if (data.type === "error") {
         setMessages((prev) => [
