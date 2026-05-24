@@ -484,7 +484,6 @@ function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
 
 const MAX_CONTEXT_CHARS = 1_600;
 const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200;
-const MAX_AI_ANSWER_CHARS = 8000;
 
 async function searchCodeContext(questionText) {
   const port = await ensureOpencodeServer();
@@ -749,10 +748,7 @@ async function callOllamaChat(
   if (!response.ok) return null;
   const payload = await response.json();
   return (
-    unescapeHtml(sanitizeString(
-      payload?.choices?.[0]?.message?.content || "",
-      MAX_AI_ANSWER_CHARS,
-    )) || null
+    unescapeHtml(payload?.choices?.[0]?.message?.content || "") || null
   );
 }
 
@@ -773,10 +769,7 @@ async function callOllamaCompletion(prompt, signal) {
   if (!response.ok) return null;
   const payload = await response.json();
   return (
-    unescapeHtml(sanitizeString(
-      payload?.content || payload?.response || "",
-      MAX_AI_ANSWER_CHARS,
-    )) || null
+    unescapeHtml(payload?.content || payload?.response || "") || null
   );
 }
 
@@ -825,10 +818,7 @@ async function callOpenRouter(
 
     const payload = await response.json();
     return (
-      unescapeHtml(sanitizeString(
-        payload?.choices?.[0]?.message?.content || "",
-        MAX_AI_ANSWER_CHARS,
-      )) || null
+      unescapeHtml(payload?.choices?.[0]?.message?.content || "") || null
     );
   } catch (error) {
     if (error.name === "AbortError") {
@@ -871,7 +861,7 @@ async function callGemini(
     });
 
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return unescapeHtml(sanitizeString(text || "", MAX_AI_ANSWER_CHARS)) || null;
+    return unescapeHtml(text || "") || null;
   } catch (error) {
     logError("Gemini call failed", error);
     return null;
@@ -1324,7 +1314,7 @@ async function callOpencode(
       });
     }
 
-    return unescapeHtml(sanitizeString(text || "", MAX_AI_ANSWER_CHARS)) || null;
+    return unescapeHtml(text || "") || null;
   } catch (error) {
     logError("Opencode call failed", { 
       message: error.message, 
@@ -1771,7 +1761,7 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
       }
     }
 
-    onComplete(unescapeHtml(sanitizeString(fullText, MAX_AI_ANSWER_CHARS)) || null, null);
+    onComplete(unescapeHtml(fullText) || null, null);
   } catch (error) {
     logError("Opencode stream failed", { error: error.message });
     onComplete(null, error.message);
