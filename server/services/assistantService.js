@@ -1281,20 +1281,55 @@ async function callOpencode(
     }
 
     let text = null;
+    const reasoningParts = [];
+    const textParts = [];
+    const toolCallParts = [];
+    const toolResultParts = [];
+    const commandParts = [];
     const parts = response?.data?.parts;
     if (Array.isArray(parts)) {
-      const textPart = parts.find(p => p.type === "text");
-      if (textPart?.text) {
-        text = textPart.text;
+      for (const part of parts) {
+        if (part.type === "text") {
+          textParts.push(part);
+          if (part.text) text = part.text;
+        } else if (part.type === "reasoning") {
+          reasoningParts.push(part);
+        } else if (part.type === "tool-call") {
+          toolCallParts.push(part);
+        } else if (part.type === "tool-result") {
+          toolResultParts.push(part);
+        } else if (part.type === "command") {
+          commandParts.push(part);
+        }
       }
     }
 
+    const sessionUserId = userId || "guest";
+    logInfo("=== ASSISTANT INTERACTION ===", {
+      user: sessionUserId,
+      session: actualSessionId,
+      question: (prompt || "").substring(0, 500),
+      answer: (text || "").substring(0, 2000),
+      reasoning_count: reasoningParts.length,
+      reasoning: reasoningParts.map(p => (p.text || "").substring(0, 500)).join("\n---\n"),
+      text_parts: textParts.map(p => (p.text || "").substring(0, 500)).join("\n---\n"),
+      tool_calls: toolCallParts.map(p => ({
+        tool: p.toolName || p.name || "unknown",
+        args: JSON.stringify(p.args || p.input || {}).substring(0, 300),
+      })),
+      tool_results: toolResultParts.map(p => ({
+        tool: p.toolName || p.name || "unknown",
+        result: (typeof p.result === "string" ? p.result : JSON.stringify(p.result || {})).substring(0, 300),
+      })),
+      command_parts: commandParts.map(p => (typeof p === "string" ? p : JSON.stringify(p)).substring(0, 300)),
+      system_prompt_length: (systemPrompt || "").length,
+      system_prompt_preview: (systemPrompt || "").substring(0, 300),
+    });
+
     if (!text) {
       logError("Opencode returned empty response", { 
-        infoKeys: Object.keys(info),
-        mode: info.mode,
-        hasParts: !!info.parts,
-        hasContent: !!info.content
+        partTypes: Array.isArray(parts) ? parts.map(p => p.type) : [],
+        rawPreview: responseStr.substring(0, 500),
       });
     }
 
@@ -1759,6 +1794,35 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
       if (textPart?.text && (!fullText || textPart.text.length > fullText.length)) {
         fullText = textPart.text;
       }
+    }
+
+    if (fullText) {
+      const streamUserId = userId || "guest";
+      const reasoningParts = (parts || []).filter(p => p.type === "reasoning");
+      const textParts = (parts || []).filter(p => p.type === "text");
+      const toolCallParts = (parts || []).filter(p => p.type === "tool-call");
+      const toolResultParts = (parts || []).filter(p => p.type === "tool-result");
+      const commandParts2 = (parts || []).filter(p => p.type === "command");
+      logInfo("=== ASSISTANT INTERACTION (stream) ===", {
+        user: streamUserId,
+        session: sessionId,
+        question: (prompt || "").substring(0, 500),
+        answer: (fullText || "").substring(0, 2000),
+        reasoning_count: reasoningParts.length,
+        reasoning: reasoningParts.map(p => (p.text || "").substring(0, 500)).join("\n---\n"),
+        text_parts: textParts.map(p => (p.text || "").substring(0, 500)).join("\n---\n"),
+        tool_calls: toolCallParts.map(p => ({
+          tool: p.toolName || p.name || "unknown",
+          args: JSON.stringify(p.args || p.input || {}).substring(0, 300),
+        })),
+        tool_results: toolResultParts.map(p => ({
+          tool: p.toolName || p.name || "unknown",
+          result: (typeof p.result === "string" ? p.result : JSON.stringify(p.result || {})).substring(0, 300),
+        })),
+        command_parts: commandParts2.map(p => (typeof p === "string" ? p : JSON.stringify(p)).substring(0, 300)),
+        system_prompt_length: (systemPrompt || "").length,
+        system_prompt_preview: (systemPrompt || "").substring(0, 300),
+      });
     }
 
     onComplete(unescapeHtml(fullText) || null, null);
