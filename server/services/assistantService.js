@@ -624,9 +624,31 @@ async function buildKnowledgeContext(questionText, entries) {
   return sanitizeString(lines.join("\n\n"), MAX_KNOWLEDGE_CONTEXT_CHARS);
 }
 
-async function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
+function formatConversationHistory(messages = []) {
+  return messages
+    .map((m) => {
+      const role = m.role === "assistant" ? "Assistant" : "User";
+      const text = m.text || "";
+      return `${role}: ${text}`;
+    })
+    .join("\n");
+}
+
+function generateSessionTitle(text) {
+  const cleaned = (text || "").trim().replace(/\s+/g, " ");
+  if (!cleaned) return null;
+  const words = cleaned.split(" ");
+  if (words.length <= 6) return cleaned;
+  return words.slice(0, 6).join(" ") + "...";
+}
+
+async function buildAgentPrompt(questionText, codeContext, knowledgeContext, conversationHistory = []) {
   const config = await loadAssistantConfig();
-  const sections = [config.systemPrompt + "\n\nUse the following context — which may include code snippets from the codebase — to answer the user's question accurately. If the answer isn't in the context, use your general knowledge but stay professional."];
+  const sections = [config.systemPrompt + "\n\nUse the following context — which may include code snippets from the codebase, as well as the conversation history — to answer the user's question accurately. If the answer isn't in the context, use your general knowledge but stay professional."];
+
+  if (conversationHistory.length > 0) {
+    sections.push(`CONVERSATION HISTORY:\n${formatConversationHistory(conversationHistory)}`);
+  }
 
   if (knowledgeContext) {
     sections.push(`PROJECT KNOWLEDGE BASE:\n${knowledgeContext}`);
@@ -1162,16 +1184,24 @@ export async function getOpencodeSessionMessages(userId) {
       createdAt: msg.info?.created_at || msg.created_at || null,
     }));
 
+    let title = null;
     if (userId) {
+      const meta = await loadSessionMeta(userId);
+      title = meta?.title || null;
+      const firstUserMsg = messages.find((m) => m.role === "user");
+      if (!title && firstUserMsg) {
+        title = generateSessionTitle(firstUserMsg.text);
+      }
       await saveSessionMeta(userId, {
-        sessionId,
+        sessionId: actualSessionId,
         model: cfg.modelID,
         provider: cfg.providerID,
         messageCount: messages.length,
+        title: title || meta?.title || null,
       });
     }
 
-    return messages;
+    return { messages, title };
   } catch (error) {
     logError("Failed to get opencode session messages", { 
       message: error.message 
@@ -1342,11 +1372,33 @@ async function callOpencode(
     });
 
     if (userId) {
-      await saveSessionMeta(userId, {
-        sessionId: actualSessionId,
-        model: cfg.modelID,
-        provider: cfg.providerID,
-      });
+      const meta = await loadSessionMeta(userId);
+      if (!meta?.title) {
+        const questionMatch = (prompt || "").match(/USER QUESTION:\s*(.+?)\s*\nANSWER:/s);
+        const questionText = questionMatch ? questionMatch[1].trim() : "";
+        const title = generateSessionTitle(questionText);
+        if (title) {
+          await saveSessionMeta(userId, {
+            sessionId: actualSessionId,
+            model: cfg.modelID,
+            provider: cfg.providerID,
+            title,
+          });
+        } else {
+          await saveSessionMeta(userId, {
+            sessionId: actualSessionId,
+            model: cfg.modelID,
+            provider: cfg.providerID,
+          });
+        }
+      } else {
+        await saveSessionMeta(userId, {
+          sessionId: actualSessionId,
+          model: cfg.modelID,
+          provider: cfg.providerID,
+          title: meta.title,
+        });
+      }
     }
 
     return unescapeHtml(text || "") || null;
@@ -1375,13 +1427,14 @@ async function generateDynamicAnswer(
   codeContext,
   knowledgeContext,
   userId = null,
+  conversationHistory = [],
 ) {
   if (!aiConfig.enabled) {
     logInfo("AI is disabled");
     return null;
   }
 
-  const prompt = await buildAgentPrompt(questionText, codeContext, knowledgeContext);
+  const prompt = await buildAgentPrompt(questionText, codeContext, knowledgeContext, conversationHistory);
   const primary = getPrimaryProvider();
   const fallback = getFallbackProvider();
 
@@ -1644,6 +1697,30 @@ function buildMatchedResponse({
   };
 }
 
+async function fetchSessionHistory(userId, currentQuestion, baseUrl = null) {
+  if (!userId && !baseUrl) return [];
+  try {
+    let actualSessionId = null;
+    if (userId) {
+      const meta = await loadSessionMeta(userId);
+      actualSessionId = meta?.sessionId || null;
+    }
+    if (!actualSessionId) return [];
+
+    const url = baseUrl || `http://localhost:${opencodePort || 4096}`;
+    const client = createOpencodeClient({ baseUrl: url, throwOnError: false });
+    const historyResponse = await client.session.messages({ path: { id: actualSessionId } });
+    const rawData = historyResponse?.data;
+    const msgArray = Array.isArray(rawData) ? rawData : rawData?.info || [];
+    return msgArray.map((msg) => ({
+      role: msg.info?.role || msg.role || "user",
+      text: msg.parts?.[0]?.text || msg.text || "",
+    })).filter((m) => m.text && m.text !== currentQuestion);
+  } catch {
+    return [];
+  }
+}
+
 export async function assistantReply(orgId, question = "", userId = null) {
   const questionText = sanitizeString(question, 800);
   const codeContext = shouldSearchCodeContext(questionText)
@@ -1652,11 +1729,14 @@ export async function assistantReply(orgId, question = "", userId = null) {
   const entries = await listKnowledge(orgId);
   const knowledgeContext = await buildKnowledgeContext(questionText, entries);
 
+  const conversationHistory = await fetchSessionHistory(userId, questionText);
+
   const dynamicAnswer = await generateDynamicAnswer(
     questionText,
     codeContext,
     knowledgeContext,
     userId,
+    conversationHistory,
   );
   if (dynamicAnswer) {
     await updateLocalJson(
@@ -1712,7 +1792,6 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
     : { summary: "", snippets: [], prompt_context: "" };
   const entries = await listKnowledge("public_ws");
   const knowledgeContext = await buildKnowledgeContext(questionText, entries);
-  const prompt = await buildAgentPrompt(questionText, codeContext, knowledgeContext);
   const systemPrompt = DEFAULT_SYSTEM_PROMPT;
 
   const cfg = aiConfig.opencode;
@@ -1732,6 +1811,10 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
   if (!sessionId && userId) sessionId = await createUserOpencodeSession(userId);
   if (!sessionId) sessionId = await createUserOpencodeSession(null);
   if (!sessionId) return onComplete(null, "Could not create AI session");
+
+  const conversationHistory = await fetchSessionHistory(userId, questionText, baseUrl);
+
+  const prompt = await buildAgentPrompt(questionText, codeContext, knowledgeContext, conversationHistory);
 
   const deadline = Date.now() + 120_000;
 
@@ -1823,6 +1906,23 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
         system_prompt_length: (systemPrompt || "").length,
         system_prompt_preview: (systemPrompt || "").substring(0, 300),
       });
+    }
+
+    if (fullText && userId) {
+      const meta = await loadSessionMeta(userId);
+      if (!meta?.title) {
+        const questionMatch = (prompt || "").match(/USER QUESTION:\s*(.+?)\s*\nANSWER:/s);
+        const questionText = questionMatch ? questionMatch[1].trim() : "";
+        const title = generateSessionTitle(questionText);
+        if (title) {
+          await saveSessionMeta(userId, {
+            sessionId,
+            model: cfg.modelID,
+            provider: cfg.providerID,
+            title,
+          });
+        }
+      }
     }
 
     onComplete(unescapeHtml(fullText) || null, null);

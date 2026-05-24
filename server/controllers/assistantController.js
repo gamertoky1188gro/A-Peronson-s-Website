@@ -64,9 +64,11 @@ export async function askAssistantPublic(req, res) {
 export async function getSessionMessages(req, res) {
   const userId = req.user?.id || null;
   logInfo("Getting session messages", { user_id: userId, hasUser: !!req.user });
-  const messages = await getOpencodeSessionMessages(userId);
-  logInfo("Returning session messages", { count: messages?.length || 0, userId });
-  return res.json({ messages });
+  const result = await getOpencodeSessionMessages(userId);
+  const messages = result?.messages || [];
+  const title = result?.title || null;
+  logInfo("Returning session messages", { count: messages.length, title, userId });
+  return res.json({ messages, title });
 }
 
 export async function deleteSession(req, res) {

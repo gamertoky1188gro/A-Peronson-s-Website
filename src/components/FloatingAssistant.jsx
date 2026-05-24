@@ -9,17 +9,17 @@ function getUserId() {
   return user?.id || null;
 }
 
-async function fetchSessionMessages() {
+async function fetchSessionData() {
   const token = getToken();
-  if (!token) return [];
+  if (!token) return { messages: [], title: null };
   try {
     const res = await fetch(`${API_BASE}/assistant/session-messages`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
-    return data.messages || [];
+    return { messages: data.messages || [], title: data.title || null };
   } catch {
-    return [];
+    return { messages: [], title: null };
   }
 }
 
@@ -64,15 +64,18 @@ export default function FloatingAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
+  const [title, setTitle] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [firstChunkReceived, setFirstChunkReceived] = useState(false);
   const scrollRef = useRef(null);
   const socketRef = useRef(null);
   const requestSeqRef = useRef(1);
+  const hasUserMessagesRef = useRef(false);
 
   useEffect(() => {
     if (open && userId && !sessionLoaded) {
-      fetchSessionMessages().then((msgs) => {
+      fetchSessionData().then(({ messages: msgs, title: t }) => {
         if (msgs && msgs.length > 0) {
           const formatted = msgs.map((m) => ({
             role: m.role === "user" ? "user" : "assistant",
@@ -80,6 +83,7 @@ export default function FloatingAssistant() {
             isNew: false,
           }));
           setMessages(formatted);
+          hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
         } else {
           setMessages([{
             role: "assistant",
@@ -87,6 +91,7 @@ export default function FloatingAssistant() {
             isNew: false,
           }]);
         }
+        setTitle(t || null);
         setSessionLoaded(true);
       });
     }
@@ -101,7 +106,9 @@ export default function FloatingAssistant() {
       text: "Chat cleared. How can I help you with your textile business today?",
       isNew: false,
     }]);
+    setTitle(null);
     setSessionLoaded(false);
+    hasUserMessagesRef.current = false;
   }
 
   useEffect(() => {
@@ -138,6 +145,7 @@ export default function FloatingAssistant() {
       if (data.type === "chunk") {
         const rid = data.request_id;
         streamingIds.add(rid);
+        setFirstChunkReceived(true);
         setMessages((prev) => {
           const idx = prev.findLastIndex(
             (m) => m.role === "assistant" && m.request_id === rid,
@@ -160,6 +168,11 @@ export default function FloatingAssistant() {
       } else if (data.type === "reply") {
         const rid = data.request_id;
         streamingIds.delete(rid);
+
+        if (data.source === "system:greeting" && hasUserMessagesRef.current) {
+          return;
+        }
+
         setMessages((prev) => {
           const idx = prev.findLastIndex(
             (m) => m.role === "assistant" && m.request_id === rid,
@@ -181,6 +194,7 @@ export default function FloatingAssistant() {
           ];
         });
         setLoading(false);
+        setFirstChunkReceived(false);
       } else if (data.type === "error") {
         setMessages((prev) => [
           ...prev,
@@ -191,6 +205,7 @@ export default function FloatingAssistant() {
           },
         ]);
         setLoading(false);
+        setFirstChunkReceived(false);
       }
     };
     socket.onclose = () => console.log("Assistant WS Disconnected");
@@ -218,8 +233,10 @@ export default function FloatingAssistant() {
     const requestId = `req_${requestSeqRef.current++}`;
     const userMsg = { role: "user", text, request_id: requestId, isNew: false };
     setMessages((prev) => [...prev, userMsg]);
+    hasUserMessagesRef.current = true;
     setInput("");
     setLoading(true);
+    setFirstChunkReceived(false);
 
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(
@@ -306,7 +323,9 @@ export default function FloatingAssistant() {
                 />
               </div>
               <div className="min-w-0">
-                <p className="font-bold tracking-tight text-[15px]">GarTex Assistant</p>
+                <p className="font-bold tracking-tight text-[15px] truncate max-w-[200px]">
+                  {title || "GarTex Assistant"}
+                </p>
                 <div className="flex items-center gap-1.5">
                   <span
                     className={`w-2 h-2 rounded-full animate-pulse ${
@@ -401,7 +420,7 @@ export default function FloatingAssistant() {
               </div>
             ))}
 
-            {loading && (
+            {loading && !firstChunkReceived && (
               <div className="flex justify-start animate-in fade-in duration-200">
                 <div className="bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl rounded-bl-none px-4 py-3.5 shadow-sm">
                   <div className="flex gap-1.5">
