@@ -285,7 +285,7 @@ function MagneticNavLink({ to, label, active }) {
   const springY = useSpring(y, { stiffness: 500, damping: 32, mass: 0.6 });
 
   const className = cn(
-    "relative inline-flex items-center rounded-full px-3 py-2 text-sm font-medium transition-colors",
+    "relative inline-flex items-center rounded-full px-2 lg:px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap",
     active
       ? "text-sky-700 dark:text-sky-300"
       : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
@@ -442,7 +442,7 @@ function NavDropdown({
         onMouseEnter={!isTouchDevice ? handleTriggerEnter : undefined}
         onMouseLeave={!isTouchDevice ? handleTriggerLeave : undefined}
         className={cn(
-          "group inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition",
+          "group inline-flex items-center gap-2 rounded-full px-2 lg:px-3 py-2 text-sm font-medium whitespace-nowrap transition",
           show
             ? "text-sky-700 bg-sky-500/10 ring-1 ring-sky-400/25 dark:text-sky-300"
             : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
@@ -896,8 +896,8 @@ export default function NavBar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/65 backdrop-blur-2xl dark:bg-slate-950/55">
       <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
-        <div className="flex min-h-20 flex-wrap items-center justify-between gap-3 py-3">
-          <div className="flex items-center gap-1 md:gap-4">
+        <div className="flex min-h-20 flex-nowrap items-center justify-between gap-1 sm:gap-3 py-3">
+          <div className="flex min-w-0 flex-shrink items-center gap-1 md:gap-4">
             <button
               onClick={() => navigate(-1)}
               className="inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10 md:hidden"
@@ -923,7 +923,7 @@ export default function NavBar() {
               </span>
             </Link>
 
-            <div className="hidden items-center gap-1 md:flex">
+            <div className="hidden min-w-0 flex-shrink items-center gap-1 overflow-hidden md:flex">
               {!user
                 ? publicLinks.map(({ to, label }, idx) => (
                     <Motion.div
@@ -969,7 +969,7 @@ export default function NavBar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
             <div ref={searchRef} className="relative hidden items-center md:flex">
               {searchExpanded ? (
                 <div
