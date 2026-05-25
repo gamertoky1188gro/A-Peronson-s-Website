@@ -133,15 +133,24 @@ export default function FloatingAssistant() {
     hasUserMessagesRef.current = false;
   }
 
-  useEffect(() => {
-    const wsUrl = (() => {
-      if (API_BASE.startsWith("http://") || API_BASE.startsWith("https://")) {
-        return API_BASE.replace(/^http/, "ws").replace(/\/api\/*$/, "/ws");
-      }
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      return `${protocol}//${window.location.host}/ws`;
-    })();
-    const socket = new WebSocket(wsUrl);
+  function getWsUrl() {
+    if (API_BASE.startsWith("http://") || API_BASE.startsWith("https://")) {
+      return API_BASE.replace(/^http/, "ws").replace(/\/api\/*$/, "/ws");
+    }
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.host}/ws`;
+  }
+
+  const streamingIdsRef = useRef(new Set());
+  const reconnectTimerRef = useRef(null);
+  const wsUrlRef = useRef(getWsUrl());
+
+  function connectWs() {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    const socket = new WebSocket(wsUrlRef.current);
 
     socket.onopen = () => {
       console.log("Assistant WS Connected");
@@ -154,7 +163,6 @@ export default function FloatingAssistant() {
         console.warn("Assistant identify failed", err);
       }
     };
-    const streamingIds = new Set();
 
     socket.onmessage = (event) => {
       let data;
@@ -166,7 +174,7 @@ export default function FloatingAssistant() {
       }
       if (data.type === "chunk") {
         const rid = data.request_id;
-        streamingIds.add(rid);
+        streamingIdsRef.current.add(rid);
         setFirstChunkReceived(true);
         setMessages((prev) => {
           const idx = prev.findLastIndex(
@@ -189,7 +197,7 @@ export default function FloatingAssistant() {
         });
       } else if (data.type === "reply") {
         const rid = data.request_id;
-        streamingIds.delete(rid);
+        streamingIdsRef.current.delete(rid);
 
         if (data.source === "system:greeting" && hasUserMessagesRef.current) {
           return;
@@ -230,14 +238,45 @@ export default function FloatingAssistant() {
         setFirstChunkReceived(false);
       }
     };
-    socket.onclose = () => console.log("Assistant WS Disconnected");
-    socket.onerror = (err) => console.error("Assistant WS Error", err);
+
+    socket.onclose = () => {
+      console.log("Assistant WS Disconnected — reconnecting in 30s");
+      scheduleReconnect();
+    };
+    socket.onerror = () => {
+      socket.close();
+    };
 
     socketRef.current = socket;
+  }
 
+  function scheduleReconnect() {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+    }
+    reconnectTimerRef.current = setTimeout(() => {
+      console.log("Assistant WS reconnecting...");
+      connectWs();
+    }, 30000);
+  }
+
+  function cancelReconnect() {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+  }
+
+  useEffect(() => {
+    connectWs();
     return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close();
+      cancelReconnect();
+      if (socketRef.current) {
+        socketRef.current.onclose = null;
+        socketRef.current.onerror = null;
+        if (socketRef.current.readyState === WebSocket.OPEN) {
+          socketRef.current.close();
+        }
       }
     };
   }, []);
