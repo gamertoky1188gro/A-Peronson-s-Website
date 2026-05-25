@@ -172,6 +172,16 @@ const navigationGroups = [
       { to: "/search", label: "Search" },
       { to: "/contracts", label: "Contracts" },
       { to: "/verification", label: "Verification" },
+      {
+        to: "/owner",
+        label: "Owner Dashboard",
+        roles: ["owner", "admin", "buying_house", "factory"],
+      },
+      {
+        to: "/agent",
+        label: "Agent Dashboard",
+        roles: ["buying_house", "owner", "admin", "agent"],
+      },
     ],
   },
   {
@@ -226,22 +236,6 @@ const navigationGroups = [
         to: "/insights",
         label: "Insights",
         roles: ["owner", "admin", "buying_house", "factory", "buyer"],
-      },
-    ],
-  },
-  {
-    label: "Management",
-    icon: Star,
-    items: [
-      {
-        to: "/owner",
-        label: "Owner Dashboard",
-        roles: ["owner", "admin", "buying_house", "factory"],
-      },
-      {
-        to: "/agent",
-        label: "Agent Dashboard",
-        roles: ["buying_house", "owner", "admin", "agent"],
       },
     ],
   },
