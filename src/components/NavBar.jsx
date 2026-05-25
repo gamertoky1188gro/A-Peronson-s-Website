@@ -285,7 +285,7 @@ function MagneticNavLink({ to, label, active }) {
   const springY = useSpring(y, { stiffness: 500, damping: 32, mass: 0.6 });
 
   const className = cn(
-    "relative inline-flex items-center rounded-full px-2 lg:px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap",
+    "relative inline-flex items-center rounded-full px-1.5 xl:px-3 py-2 text-[0.65rem] xl:text-sm font-medium transition-colors whitespace-nowrap",
     active
       ? "text-sky-700 dark:text-sky-300"
       : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
@@ -442,7 +442,7 @@ function NavDropdown({
         onMouseEnter={!isTouchDevice ? handleTriggerEnter : undefined}
         onMouseLeave={!isTouchDevice ? handleTriggerLeave : undefined}
         className={cn(
-          "group inline-flex items-center gap-2 rounded-full px-2 lg:px-3 py-2 text-sm font-medium whitespace-nowrap transition",
+          "group inline-flex items-center gap-2 rounded-full px-1.5 xl:px-3 py-2 text-[0.65rem] xl:text-sm font-medium whitespace-nowrap transition",
           show
             ? "text-sky-700 bg-sky-500/10 ring-1 ring-sky-400/25 dark:text-sky-300"
             : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
@@ -923,7 +923,7 @@ export default function NavBar() {
               </span>
             </Link>
 
-            <div className="hidden min-w-0 flex-shrink items-center gap-1 overflow-hidden md:flex">
+            <div className="hidden min-w-0 flex-shrink items-center gap-1 md:flex">
               {!user
                 ? publicLinks.map(({ to, label }, idx) => (
                     <Motion.div
