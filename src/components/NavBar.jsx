@@ -1134,13 +1134,15 @@ export default function NavBar() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
-              <IconNavLink
-                to="/notifications"
-                Icon={Bell}
-                label="Notifications"
-                badgeCount={unreadCount}
-                active={location.pathname === "/notifications"}
-              />
+              <div className="hidden md:block">
+                <IconNavLink
+                  to="/notifications"
+                  Icon={Bell}
+                  label="Notifications"
+                  badgeCount={unreadCount}
+                  active={location.pathname === "/notifications"}
+                />
+              </div>
 
               <button
                 onClick={toggleTheme}
@@ -1158,14 +1160,14 @@ export default function NavBar() {
               {user ? (
                 <button
                   onClick={handleLogout}
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
+                  className="hidden md:inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
                 >
                   Logout
                 </button>
               ) : (
                 <Link
                   to="/login"
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
+                  className="hidden md:inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
                 >
                   Login
                 </Link>
