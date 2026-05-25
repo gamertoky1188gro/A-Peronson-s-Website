@@ -9,7 +9,6 @@ const WS_BASE = (() => {
 let socket = null;
 let currentToken = "";
 let reconnectTimer = null;
-let reconnectDelayMs = 750;
 const listeners = new Set();
 
 function safeParse(raw) {
@@ -35,8 +34,7 @@ function scheduleReconnect(token) {
   reconnectTimer = window.setTimeout(() => {
     reconnectTimer = null;
     connectNotificationsRealtime(token);
-  }, reconnectDelayMs);
-  reconnectDelayMs = Math.min(15000, Math.round(reconnectDelayMs * 1.5));
+  }, 30000);
 }
 
 export function subscribeNotificationsRealtime(cb) {
@@ -47,7 +45,6 @@ export function subscribeNotificationsRealtime(cb) {
 
 export function disconnectNotificationsRealtime() {
   currentToken = "";
-  reconnectDelayMs = 750;
   if (reconnectTimer) {
     window.clearTimeout(reconnectTimer);
     reconnectTimer = null;
@@ -74,7 +71,6 @@ export function connectNotificationsRealtime(token = getToken()) {
     return;
 
   currentToken = nextToken;
-  reconnectDelayMs = 750;
 
   try {
     if (socket) socket.close();

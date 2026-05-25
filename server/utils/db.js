@@ -57,6 +57,31 @@ export async function ensureDatabaseConnection() {
   }
 }
 
+export function startDbHeartbeat() {
+  const HEARTBEAT_INTERVAL_MS = 30_000;
+
+  async function checkConnection() {
+    try {
+      if (dbConnected) {
+        await prisma.$queryRaw`SELECT 1`;
+      } else {
+        await prisma.$connect();
+        dbConnected = true;
+        dbError = "";
+        console.log(chalk.green("[db] Reconnected successfully"));
+      }
+    } catch {
+      if (dbConnected) {
+        dbConnected = false;
+        dbError = "Connection lost";
+        console.warn(chalk.yellow("[db] Connection lost, will retry every 30s"));
+      }
+    }
+  }
+
+  setInterval(checkConnection, HEARTBEAT_INTERVAL_MS).unref();
+}
+
 export async function closeDatabaseConnection() {
   await prisma.$disconnect();
   dbConnected = false;

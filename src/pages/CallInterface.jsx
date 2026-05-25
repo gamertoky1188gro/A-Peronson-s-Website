@@ -134,6 +134,7 @@ export default function CallInterface() {
   const morePopoverRef = useRef(null);
   const toastTimerRef = useRef(null);
   const wsRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const iceServersRef = useRef(ICE_SERVERS);
   const localStreamRef = useRef(null);
@@ -1320,6 +1321,12 @@ export default function CallInterface() {
           setRtcConnectionState("new");
           setRtcIceState("new");
         }
+        if (mountedRef.current) {
+          reconnectTimerRef.current = window.setTimeout(() => {
+            reconnectTimerRef.current = null;
+            setReconnectNonce((n) => n + 1);
+          }, 30000);
+        }
       };
     }
 
@@ -1329,6 +1336,10 @@ export default function CallInterface() {
 
     return () => {
       active = false;
+      if (reconnectTimerRef.current) {
+        window.clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
       if (ws) ws.close();
     };
   }, [

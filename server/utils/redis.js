@@ -17,13 +17,8 @@ export async function initRedis() {
       url: redisUrl,
       socket: {
         reconnectStrategy: (retries) => {
-          if (retries > 3) {
-            console.error(
-              chalk.red("[redis] Max reconnection attempts reached"),
-            );
-            return new Error("Max retries reached");
-          }
-          return Math.min(retries * 100, 3000);
+          console.log(chalk.yellow(`[redis] Reconnecting (attempt ${retries})...`));
+          return 30000;
         },
       },
     });

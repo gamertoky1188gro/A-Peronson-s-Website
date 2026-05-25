@@ -84,8 +84,10 @@ import {
 import {
   ensureDatabaseConnection,
   closeDatabaseConnection,
+  startDbHeartbeat,
 } from "./utils/db.js";
 import { initRedis, closeRedis } from "./utils/redis.js";
+import { startOpenSearchHeartbeat } from "./services/openSearchService.js";
 import { revokeExpiredVerifications } from "./services/verificationService.js";
 import { enforcePartnerFreeTierLimits } from "./services/partnerNetworkService.js";
 import { runLeadReminderSweep } from "./services/leadReminderService.js";
@@ -899,8 +901,10 @@ wsServer.on("connection", (socket, req) => {
 
 async function start() {
   await ensureDatabaseConnection();
+  startDbHeartbeat();
   // Redis caching (optional - only if REDIS_URL is set)
   await initRedis();
+  startOpenSearchHeartbeat();
   // Verification renewals: keep badges in sync with subscription validity.
   revokeExpiredVerifications().catch((error) =>
     logError("verification_expiry_check_failed", error),

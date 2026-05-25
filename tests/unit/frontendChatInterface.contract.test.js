@@ -24,13 +24,13 @@ describe("ChatInterface send/error/reconnect contracts", () => {
     expect(source).toMatch(/setError/);
   });
 
-  test("websocket reconnects on close with backoff timer", async () => {
+  test("websocket reconnects on close every 30s", async () => {
     const source = await readChatSource();
     expect(source).toMatch(
       /ws\.onclose = \(\) => \{[\s\S]*setChatConnectionStatus\("offline"\)/,
     );
     expect(source).toMatch(
-      /reconnectTimerRef\.current = window\.setTimeout\(connect, 1500\)/,
+      /reconnectTimerRef\.current = window\.setTimeout\(connect, 30000\)/,
     );
   });
 });

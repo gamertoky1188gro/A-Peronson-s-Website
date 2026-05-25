@@ -1052,7 +1052,7 @@ export default function ChatInterface() {
         setChatConnectionStatus("offline");
         if (reconnectTimerRef.current)
           window.clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = window.setTimeout(connect, 1500);
+        reconnectTimerRef.current = window.setTimeout(connect, 30000);
       };
     };
 

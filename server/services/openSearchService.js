@@ -1,4 +1,5 @@
 import { Client } from "@opensearch-project/opensearch";
+import chalk from "chalk";
 import { getAdminConfig } from "./adminConfigService.js";
 import { readJson } from "../utils/jsonStore.js";
 import { getBaseCurrency, normalizeMoney } from "./currencyService.js";
@@ -1102,4 +1103,23 @@ export async function getOpenSearchStatus() {
     last_error_at: lastStatus.last_error_at,
     last_error: error || lastStatus.last_error,
   };
+}
+
+export function startOpenSearchHeartbeat() {
+  async function beat() {
+    const { client } = await getClient();
+    if (!client) {
+      console.log(chalk.yellow("[opensearch] No client available, will retry in 30s..."));
+      return;
+    }
+    try {
+      await client.ping();
+      console.log(chalk.green("[opensearch] Heartbeat OK"));
+    } catch (err) {
+      console.warn(chalk.yellow(`[opensearch] Heartbeat failed: ${err.message}. Recreating client...`));
+      clientState.client = null;
+    }
+  }
+  setInterval(beat, 30000).unref();
+  beat().catch(() => {});
 }
