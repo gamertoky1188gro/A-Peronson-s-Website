@@ -72,30 +72,51 @@ export default function FloatingAssistant() {
   const socketRef = useRef(null);
   const requestSeqRef = useRef(1);
   const hasUserMessagesRef = useRef(false);
+  const sessionLoadedRef = useRef(false);
 
+  // Pre-load session data on mount (before panel opens)
   useEffect(() => {
-    if (open && userId && !sessionLoaded) {
-      fetchSessionData().then(({ messages: msgs, title: t }) => {
-        if (msgs && msgs.length > 0) {
-          const formatted = msgs.map((m) => ({
-            role: m.role === "user" ? "user" : "assistant",
-            text: m.text,
-            isNew: false,
-          }));
-          setMessages(formatted);
-          hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
-        } else {
-          setMessages([{
-            role: "assistant",
-            text: "Hello! I am your GarTex Assistant. How can I help you with your textile business today?",
-            isNew: false,
-          }]);
-        }
-        setTitle(t || null);
-        setSessionLoaded(true);
-      });
-    }
-  }, [open, userId, sessionLoaded]);
+    if (!userId) return;
+    fetchSessionData().then(({ messages: msgs, title: t }) => {
+      if (msgs && msgs.length > 0) {
+        const formatted = msgs.map((m) => ({
+          role: m.role === "user" ? "user" : "assistant",
+          text: m.text,
+          isNew: false,
+        }));
+        setMessages(formatted);
+        hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
+      }
+      if (t) setTitle(t);
+      setSessionLoaded(true);
+      sessionLoadedRef.current = true;
+    });
+  }, [userId]);
+
+  // Fallback: load session when panel opens if mount-load didn't run
+  useEffect(() => {
+    if (!open || !userId || sessionLoadedRef.current) return;
+    fetchSessionData().then(({ messages: msgs, title: t }) => {
+      if (msgs && msgs.length > 0) {
+        const formatted = msgs.map((m) => ({
+          role: m.role === "user" ? "user" : "assistant",
+          text: m.text,
+          isNew: false,
+        }));
+        setMessages(formatted);
+        hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
+      } else {
+        setMessages([{
+          role: "assistant",
+          text: "Hello! I am your GarTex Assistant. How can I help you with your textile business today?",
+          isNew: false,
+        }]);
+      }
+      if (t) setTitle(t);
+      setSessionLoaded(true);
+      sessionLoadedRef.current = true;
+    });
+  }, [open, userId]);
 
   async function deleteSession() {
     if (userId) {
@@ -108,6 +129,7 @@ export default function FloatingAssistant() {
     }]);
     setTitle(null);
     setSessionLoaded(false);
+    sessionLoadedRef.current = false;
     hasUserMessagesRef.current = false;
   }
 
