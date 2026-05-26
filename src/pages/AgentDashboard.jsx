@@ -3,6 +3,69 @@ import { Link } from "react-router-dom";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import LeadManager from "../components/leads/LeadManager";
 import { apiRequest, getToken } from "../lib/auth";
+import {
+  Bell,
+  Bot,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardCopy,
+  Factory,
+  Landmark,
+  LayoutDashboard,
+  LogOut,
+  MessageSquareText,
+  Users2,
+  FileText,
+  Gauge,
+  AlertTriangle,
+  BrainCircuit,
+  RefreshCcw,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  ArrowUpRight,
+} from "lucide-react";
+
+const cn = (...classes) => classes.filter(Boolean).join(" ");
+
+const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => (
+  <div
+    className={cn(
+      "rounded-2xl border p-4 shadow-sm backdrop-blur-xl transition-all",
+      accent
+        ? "border-sky-500/30 bg-gradient-to-br from-sky-500/15 to-cyan-400/10"
+        : "border-slate-200/70 bg-white/80 dark:border-slate-800/70 dark:bg-slate-950/60"
+    )}
+  >
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+        <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{value}</p>
+        {sublabel ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sublabel}</p> : null}
+      </div>
+      <div
+        className={cn(
+          "flex h-11 w-11 items-center justify-center rounded-2xl border",
+          accent
+            ? "border-sky-500/25 bg-sky-500/15 text-sky-500"
+            : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+        )}
+      >
+        <Icon className="h-5 w-5" />
+      </div>
+    </div>
+  </div>
+);
+
+const SectionTitle = ({ title, subtitle, right }) => (
+  <div className="mb-5 flex items-end justify-between gap-4">
+    <div>
+      <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{title}</h2>
+      {subtitle ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p> : null}
+    </div>
+    {right}
+  </div>
+);
 
 export default function AgentDashboard() {
   const [activeTab, setActiveTab] = useState("requests");
@@ -128,248 +191,355 @@ export default function AgentDashboard() {
     }
   }
 
+  const activityTabs = [
+    { key: "requests", label: "Requests" },
+    { key: "chats", label: "Chats" },
+    { key: "leads", label: "Leads" },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
-      <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <aside className="lg:col-span-1">
-          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 space-y-3 sticky top-20 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.12),_transparent_26%),linear-gradient(180deg,_#f8fbff_0%,_#eef6ff_48%,_#f8fafc_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.12),_transparent_26%),linear-gradient(180deg,_#020617_0%,_#06101f_52%,_#020617_100%)] dark:text-slate-100">
+      <div className="mx-auto flex min-h-screen max-w-[1600px] flex-col lg:flex-row">
+        <aside className="border-b border-white/20 bg-white/70 p-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/70 lg:sticky lg:top-0 lg:h-screen lg:w-80 lg:border-b-0 lg:border-r">
+          <div className="flex items-center gap-3 rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-500/10 to-cyan-400/10 p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/25">
+                <LayoutDashboard className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-sky-500">gTBlue</p>
+                <h1 className="text-lg font-semibold">Agent Dashboard</h1>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-4">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/60">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Plan</p>
+                  <p className="mt-1 text-2xl font-semibold capitalize">{subscription?.plan || "free"} plan</p>
+                </div>
+                <div className={cn("rounded-2xl px-3 py-2 text-xs font-semibold", isEnterprise ? "bg-sky-500/15 text-sky-600 dark:text-sky-300" : "bg-slate-100 text-slate-600 dark:bg-slate-900 dark:text-slate-300")}>
+                  {isEnterprise ? "Enterprise analytics on" : "Free analytics view"}
+                </div>
+              </div>
+            </div>
+
+            <nav className="space-y-2">
+              <Link
+                to="/agent?tab=requests"
+                className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-400/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-950/60"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">My Requests</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Assigned: {totals.open_buyer_requests ?? 0}</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-sky-500" />
+              </Link>
+              <Link
+                to="/agent?tab=chats"
+                className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-400/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-950/60"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
+                    <MessageSquareText className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">My Chats</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Active conversations: {totals.chats ?? 0}</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-sky-500" />
+              </Link>
+              <Link
+                to="/agent?tab=factories"
+                className="group flex items-center justify-between rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-400/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-950/60"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
+                    <Factory className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Connected Factories</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{totals.partner_network ?? 0} connected</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-sky-500" />
+              </Link>
+            </nav>
+
             <Link
-              to="/agent?tab=requests"
-              className="block font-semibold text-gtBlue cursor-pointer"
+              to="/login"
+              className="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 shadow-sm transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-200"
             >
-              📋 My Requests
+              <span className="flex items-center gap-3 font-medium">
+                <LogOut className="h-5 w-5" />
+                Logout
+              </span>
+              <ChevronRight className="h-4 w-4" />
             </Link>
-            <div className="text-sm text-slate-600 dark:text-slate-300">
-              Assigned: {totals.open_buyer_requests ?? 0}
-            </div>
           </div>
-
-          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 mt-4 sticky top-56 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
-            <Link
-              to="/agent?tab=chats"
-              className="block font-semibold text-gtBlue cursor-pointer mb-3"
-            >
-              💬 My Chats
-            </Link>
-            <div className="text-sm text-slate-600 dark:text-slate-300 mt-2">
-              Active conversations: {totals.chats ?? 0}
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 mt-4 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
-            <Link
-              to="/agent?tab=factories"
-              className="block font-semibold text-gtBlue cursor-pointer mb-3"
-            >
-              🏭 Connected Factories
-            </Link>
-            <div className="text-sm text-slate-600 dark:text-slate-300">
-              {totals.partner_network ?? 0} connected
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 mt-4 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
-            <h3 className="font-semibold mb-2">Plan</h3>
-            <div className="text-sm text-slate-600 dark:text-slate-300">
-              {subscription?.plan || "free"} plan
-            </div>
-            <div className="text-sm text-slate-600 dark:text-slate-300">
-              {isEnterprise ? "Enterprise analytics on" : "Free analytics view"}
-            </div>
-          </div>
-
-          <Link
-            to="/login"
-            className="block w-full mt-4 px-3 py-2 text-center bg-red-50 text-red-600 rounded-md font-medium hover:bg-red-100"
-          >
-            Logout
-          </Link>
         </aside>
 
-        <main className="lg:col-span-3 space-y-4">
+        <main className="flex-1 p-4 md:p-6 xl:p-8">
+          <div className="mb-6 rounded-3xl border border-sky-500/20 bg-white/75 p-5 shadow-lg shadow-sky-500/5 backdrop-blur-xl dark:bg-slate-950/55">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-sm text-sky-600 dark:text-sky-300">
+                  <Sparkles className="h-4 w-4" />
+                  Agent Dashboard
+                </div>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                  Agent Activity
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  Assigned request tracking, live chat analytics, connected factory visibility, plan status, activity tabs,
+                  and an AI reply assistant for textile sourcing workflows.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-[460px]">
+                <StatCard icon={Users2} label="Buyer requests" value={totals.buyer_requests ?? 0} />
+                <StatCard icon={Gauge} label="Open requests" value={totals.open_buyer_requests ?? 0} accent />
+                <StatCard icon={Factory} label="Factories" value={totals.partner_network ?? 0} />
+                <StatCard icon={Bell} label="Messages" value={totals.messages ?? 0} />
+              </div>
+            </div>
+          </div>
+
           {loading ? (
-            <div className="bg-white rounded-xl p-4">
+            <div className="mb-5 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm dark:border-slate-800 dark:bg-slate-950/60">
               Loading agent metrics...
             </div>
           ) : null}
           {error ? (
-            <div className="bg-red-50 text-red-600 rounded-xl p-4">{error}</div>
+            <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/25 dark:text-red-200">
+              {error}
+            </div>
           ) : null}
 
-          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
-            <div className="flex items-center justify-between mb-3 shadow-dividerB dark:shadow-dividerBDark pb-3">
-              <h3 className="font-semibold">Agent Activity</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setActiveTab("requests")}
-                  className={`px-3 py-1 rounded${activeTab === "requests" ? "bg-gtBlue text-white" : "bg-white shadow-borderless ring-1 ring-slate-200/60 text-slate-700 hover:bg-slate-50 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:text-slate-200 dark:hover:bg-white/8"}`}
-                >
-                  Requests
-                </button>
-                <button
-                  onClick={() => setActiveTab("chats")}
-                  className={`px-3 py-1 rounded${activeTab === "chats" ? "bg-gtBlue text-white" : "bg-white shadow-borderless ring-1 ring-slate-200/60 text-slate-700 hover:bg-slate-50 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:text-slate-200 dark:hover:bg-white/8"}`}
-                >
-                  Chats
-                </button>
-                <button
-                  onClick={() => setActiveTab("leads")}
-                  className={`px-3 py-1 rounded${activeTab === "leads" ? "bg-gtBlue text-white" : "bg-white shadow-borderless ring-1 ring-slate-200/60 text-slate-700 hover:bg-slate-50 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:text-slate-200 dark:hover:bg-white/8"}`}
-                >
-                  Leads
-                </button>
-              </div>
-            </div>
-
-            {activeTab === "requests" ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="p-3 rounded-lg bg-[#F4F9FF] dark:bg-slate-950/30">
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
-                    Buyer Requests
-                  </div>
-                  <div className="text-xl font-semibold">
-                    {totals.buyer_requests ?? 0}
-                  </div>
-                </div>
-                <div className="p-3 rounded-lg bg-[#F4F9FF] dark:bg-slate-950/30">
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
-                    Open Requests
-                  </div>
-                  <div className="text-xl font-semibold">
-                    {totals.open_buyer_requests ?? 0}
-                  </div>
-                </div>
-                <div className="p-3 rounded-lg bg-[#F4F9FF] dark:bg-slate-950/30">
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
-                    Contracts / Docs
-                  </div>
-                  <div className="text-xl font-semibold">{`${totals.contracts ?? 0} / ${totals.documents ?? 0}`}</div>
-                </div>
-              </div>
-            ) : activeTab === "chats" ? (
-              <div className="space-y-2">
-                <div className="text-sm text-[#5A5A5A]">
-                  Active chat threads: {totals.chats ?? 0}
-                </div>
-                <div className="text-sm text-[#5A5A5A]">
-                  Messages exchanged: {totals.messages ?? 0}
-                </div>
-                <div className="text-sm text-[#5A5A5A]">
-                  Partner factories connected: {totals.partner_network ?? 0}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="rounded-lg bg-slate-50 p-3 text-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <p>
-                      Queue ownership:{" "}
-                      <strong>{queueSummary.queue.length}</strong> leads
-                    </p>
-                    <button
-                      type="button"
-                      className="text-xs px-2 py-1 rounded bg-white shadow-borderless dark:shadow-borderlessDark"
-                      onClick={refreshQueueSummary}
-                    >
-                      Refresh queue
-                    </button>
-                  </div>
-                  <div className="mt-2 text-xs text-slate-600">
-                    Escalations pending:{" "}
-                    {queueSummary?.escalations?.filter(
-                      (item) => !item.resolved_at,
-                    ).length || 0}
-                  </div>
-                  <div className="mt-1 text-xs text-slate-600">
-                    My workload rows: {queueSummary?.workload?.length || 0}
-                  </div>
-                </div>
-                <LeadManager
-                  title="My Leads (CRM)"
-                  allowAssign={false}
-                  showOperations
+          <div className="grid gap-6 xl:grid-cols-[1.55fr_1fr]">
+            <section className="space-y-6">
+              <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
+                <SectionTitle
+                  title="Agent Activity"
+                  subtitle="Switch between requests, chats, and leads while keeping the core overview in one place."
+                  right={
+                    <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-900/60">
+                      {activityTabs.map((tab) => (
+                        <button
+                          key={tab.key}
+                          onClick={() => setActiveTab(tab.key)}
+                          className={cn(
+                            "rounded-xl px-4 py-2 text-sm font-medium transition",
+                            activeTab === tab.key
+                              ? "bg-sky-500 text-white shadow-md shadow-sky-500/20"
+                              : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                          )}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                  }
                 />
-              </div>
-            )}
-          </div>
 
-          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
-            <div className="flex items-center justify-between mb-3 shadow-dividerB dark:shadow-dividerBDark pb-3">
-              <h3 className="font-semibold">AI Suggested Reply</h3>
-              <button
-                type="button"
-                onClick={generateAiReply}
-                className="px-3 py-1 rounded bg-gtBlue hover:bg-gtBlueHover text-white text-xs font-semibold disabled:opacity-70"
-                disabled={aiLoading}
-              >
-                {aiLoading ? "Thinking..." : "Generate"}
-              </button>
-            </div>
-
-            <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
-              Paste a short prompt or let the assistant draft a default reply.
-            </p>
-            <textarea
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
-              className="w-full bg-white shadow-borderless ring-1 ring-slate-200/60 rounded px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-gtBlue/25 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10"
-              rows={3}
-              placeholder="Example: Reply to a buyer asking for MOQ and lead time."
-            />
-
-            {aiError ? (
-              <div className="text-xs text-rose-600 mb-2">{aiError}</div>
-            ) : null}
-            {aiSuggestion ? (
-              <div className="rounded-lg shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-sm dark:bg-white/5">
-                <textarea
-                  className="w-full rounded shadow-borderless dark:shadow-borderlessDark bg-white px-2 py-2 whitespace-pre-wrap dark:bg-black/30"
-                  rows={6}
-                  value={aiSuggestion}
-                  onChange={(e) => setAiSuggestion(e.target.value)}
-                />
-                {aiChecklist.length ? (
-                  <div className="mt-2 rounded bg-amber-50 px-2 py-2 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
-                    Missing-info checklist: {aiChecklist.join(", ")}
+                {activeTab === "requests" ? (
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <StatCard icon={FileText} label="Buyer Requests" value={totals.buyer_requests ?? 0} />
+                    <StatCard icon={Gauge} label="Open Requests" value={totals.open_buyer_requests ?? 0} accent />
+                    <StatCard icon={Landmark} label="Contracts / Docs" value={`${totals.contracts ?? 0} / ${totals.documents ?? 0}`} />
                   </div>
                 ) : null}
-                <div className="mt-2 flex flex-wrap items-center gap-3">
+
+                {activeTab === "chats" ? (
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <StatCard icon={MessageSquareText} label="Active chat threads" value={totals.chats ?? 0} />
+                    <StatCard icon={Bell} label="Messages exchanged" value={totals.messages ?? 0} accent />
+                    <StatCard icon={Factory} label="Partner factories connected" value={totals.partner_network ?? 0} />
+                  </div>
+                ) : null}
+
+                {activeTab === "leads" ? (
+                  <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <StatCard icon={Users2} label="Queue ownership" value={`${queueSummary.queue.length} leads`} accent />
+                      <StatCard icon={AlertTriangle} label="Escalations pending" value={queueSummary?.escalations?.filter((item) => !item.resolved_at).length || 0} />
+                      <StatCard icon={RefreshCcw} label="My workload rows" value={queueSummary?.workload?.length || 0} />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={refreshQueueSummary}
+                        className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-600"
+                      >
+                        <RefreshCcw className="h-4 w-4" />
+                        Refresh queue
+                      </button>
+                      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
+                        {queueSummary.queue.length} leads currently in queue
+                      </div>
+                    </div>
+
+                    <LeadManager
+                      title="My Leads (CRM)"
+                      allowAssign={false}
+                      showOperations
+                    />
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <StatCard icon={CheckCircle2} label="Contracts" value={totals.contracts ?? 0} />
+                <StatCard icon={FileText} label="Documents" value={totals.documents ?? 0} />
+                <StatCard icon={Users2} label="Chats" value={totals.chats ?? 0} />
+                <StatCard icon={Factory} label="Connected factories" value={totals.partner_network ?? 0} accent />
+              </div>
+            </section>
+
+            <aside className="space-y-6">
+              <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
+                <SectionTitle
+                  title="AI Suggested Reply"
+                  subtitle="Paste a short prompt or let the assistant draft a default reply."
+                  right={<Bot className="h-5 w-5 text-sky-500" />}
+                />
+
+                <textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  rows={3}
+                  placeholder="Example: Reply to a buyer asking for MOQ and lead time."
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-500"
+                />
+
+                <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={copySuggestion}
-                    className="text-xs font-semibold text-gtBlue hover:underline"
+                    onClick={generateAiReply}
+                    disabled={aiLoading}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    Copy suggestion
+                    <Sparkles className="h-4 w-4" />
+                    {aiLoading ? "Thinking..." : "Generate"}
                   </button>
                   <button
                     type="button"
-                    onClick={approveSuggestion}
-                    className="rounded bg-slate-900 px-2 py-1 text-xs font-semibold text-white"
+                    onClick={copySuggestion}
+                    disabled={!aiSuggestion}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-200"
                   >
+                    <ClipboardCopy className="h-4 w-4" />
+                    Copy suggestion
+                  </button>
+                </div>
+
+                {aiError ? (
+                  <div className="mt-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/25 dark:text-red-200">
+                    {aiError}
+                  </div>
+                ) : null}
+
+                <div className="mt-4">
+                  {aiSuggestion ? (
+                    <textarea
+                      value={aiSuggestion}
+                      onChange={(e) => setAiSuggestion(e.target.value)}
+                      rows={6}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900/70"
+                    />
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
+                      No suggestion yet.
+                    </div>
+                  )}
+                </div>
+
+                {aiSuggestion && aiChecklist.length ? (
+                  <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-100">
+                    <p className="font-medium">Missing-info checklist</p>
+                    <p className="mt-1 text-amber-800/90 dark:text-amber-200">{aiChecklist.join(", ")}</p>
+                  </div>
+                ) : null}
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={approveSuggestion}
+                    disabled={aiLoading || !aiSuggestion}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-200"
+                  >
+                    <ShieldCheck className="h-4 w-4" />
                     Approve draft
                   </button>
                   <button
                     type="button"
                     onClick={sendSuggestion}
-                    className="rounded bg-gtBlue hover:bg-gtBlueHover px-2 py-1 text-xs font-semibold text-white"
+                    disabled={aiLoading || !aiSuggestion}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
                   >
+                    <Send className="h-4 w-4" />
                     One-click send
                   </button>
                 </div>
-                {approvalState?.status ? (
-                  <div className="mt-2 text-xs text-slate-600">
-                    Approval: {approvalState.status}
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/60">
+                    <p className="text-slate-500 dark:text-slate-400">Approval</p>
+                    <p className="mt-1 font-medium">{approvalState?.status || "idle"}</p>
+                    {approvalState?.reason ? <p className="mt-1 text-rose-600 dark:text-rose-300">{approvalState.reason}</p> : null}
                   </div>
-                ) : null}
-                {sendState?.status ? (
-                  <div className="mt-1 text-xs text-slate-600">
-                    Send status: {sendState.status}
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/60">
+                    <p className="text-slate-500 dark:text-slate-400">Send status</p>
+                    <p className="mt-1 font-medium">{sendState?.status || "idle"}</p>
+                    {sendState?.message ? <p className="mt-1 text-slate-500 dark:text-slate-400">{sendState.message}</p> : null}
                   </div>
-                ) : null}
+                </div>
               </div>
-            ) : (
-              <div className="text-sm text-slate-500">No suggestion yet.</div>
-            )}
+
+              <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
+                <SectionTitle title="Operational snapshot" subtitle="High-signal metrics designed for quick scanning." />
+                <div className="space-y-3">
+                  {[
+                    { label: "Active conversations", value: totals.chats ?? 0, icon: MessageSquareText },
+                    { label: "Messages exchanged", value: totals.messages ?? 0, icon: Bell },
+                    { label: "Connected factories", value: totals.partner_network ?? 0, icon: Factory },
+                    { label: "Plan", value: subscription?.plan || "free", icon: Landmark },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
+                          <row.icon className="h-4 w-4" />
+                        </div>
+                        <p className="font-medium text-slate-700 dark:text-slate-200">{row.label}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-slate-900 dark:text-white">{row.value}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Live signal</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-500/10 to-cyan-400/10 p-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-200">
+                    <ArrowUpRight className="h-4 w-4" />
+                    /api/analytics/dashboard • /ai/reply/* • /org/ops/*
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                    Designed for protected access, fast triage, and AI-assisted response handling with guardrails.
+                  </p>
+                </div>
+              </div>
+            </aside>
           </div>
         </main>
       </div>
