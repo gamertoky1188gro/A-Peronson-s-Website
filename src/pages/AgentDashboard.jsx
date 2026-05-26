@@ -223,9 +223,32 @@ export default function AgentDashboard() {
                 <div className={cn("rounded-2xl px-3 py-2 text-xs font-semibold", isEnterprise ? "bg-sky-500/15 text-sky-600 dark:text-sky-300" : "bg-slate-100 text-slate-600 dark:bg-slate-900 dark:text-slate-300")}>
                   {isEnterprise ? "Enterprise analytics on" : "Free analytics view"}
                 </div>
-              </div>
             </div>
 
+              <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
+                <SectionTitle title="Operational snapshot" subtitle="High-signal metrics designed for quick scanning." />
+                <div className="space-y-3">
+                  {[
+                    { label: "Active conversations", value: totals.chats ?? 0, icon: MessageSquareText },
+                    { label: "Messages exchanged", value: totals.messages ?? 0, icon: Bell },
+                    { label: "Connected factories", value: totals.partner_network ?? 0, icon: Factory },
+                    { label: "Plan", value: subscription?.plan || "free", icon: Landmark },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
+                          <row.icon className="h-4 w-4" />
+                        </div>
+                        <p className="font-medium text-slate-700 dark:text-slate-200">{row.label}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-slate-900 dark:text-white">{row.value}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Live signal</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
 
             <Link
@@ -459,40 +482,7 @@ export default function AgentDashboard() {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
-                <SectionTitle title="Operational snapshot" subtitle="High-signal metrics designed for quick scanning." />
-                <div className="space-y-3">
-                  {[
-                    { label: "Active conversations", value: totals.chats ?? 0, icon: MessageSquareText },
-                    { label: "Messages exchanged", value: totals.messages ?? 0, icon: Bell },
-                    { label: "Connected factories", value: totals.partner_network ?? 0, icon: Factory },
-                    { label: "Plan", value: subscription?.plan || "free", icon: Landmark },
-                  ].map((row) => (
-                    <div key={row.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
-                          <row.icon className="h-4 w-4" />
-                        </div>
-                        <p className="font-medium text-slate-700 dark:text-slate-200">{row.label}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-slate-900 dark:text-white">{row.value}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Live signal</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
 
-                <div className="mt-4 rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-500/10 to-cyan-400/10 p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-200">
-                    <ArrowUpRight className="h-4 w-4" />
-                    /api/analytics/dashboard • /ai/reply/* • /org/ops/*
-                  </div>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                    Designed for protected access, fast triage, and AI-assisted response handling with guardrails.
-                  </p>
-                </div>
-              </div>
             </aside>
           </div>
         </main>
