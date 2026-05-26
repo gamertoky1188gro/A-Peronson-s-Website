@@ -452,7 +452,7 @@ function AppLayout() {
   }, []);
 
   return (
-    <div className="app-shell flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100" style={{ zoom: 0.9 }}>
+    <div className="app-shell flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100" style={{ zoom: hideChrome ? 1 : 0.9 }}>
       {!hideChrome ? <NavBar /> : null}
       <main
         className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220]"
