@@ -6,29 +6,63 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { apiRequest, getToken } from "../lib/auth";
+import { CheckCircle2, Loader2, MessageSquareText, ShieldCheck, Star, Sparkles, UserRound } from "lucide-react";
 
 const STAR_OPTIONS = [1, 2, 3, 4, 5];
+const MAX_COMMENT_LEN = 500;
+
+function buildSignals(row) {
+  const parts = [];
+  parts.push(row?.signals?.contract_signed ? "Contract signed" : "No contract");
+  parts.push(row?.signals?.recorded_call ? "Recorded call" : "No call");
+  if (row?.signals?.avg_response_hours !== null && row?.signals?.avg_response_hours !== undefined) {
+    parts.push(`Avg response ${row.signals.avg_response_hours}h`);
+  }
+  return parts;
+}
 
 function Stars({ value, onChange }) {
   return (
     <div className="flex items-center gap-1">
-      {STAR_OPTIONS.map((score) => (
-        <button
-          key={score}
-          type="button"
-          onClick={() => onChange(score)}
-          className={`h-8 w-8 rounded-full text-sm font-semibold transition${
-            score <= value
-              ? "bg-amber-400 text-white shadow-sm"
-              : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-          }`}
-          aria-label={`${score} star`}
-        >
-          {score}
-        </button>
-      ))}
+      {STAR_OPTIONS.map((score) => {
+        const active = score <= value;
+        return (
+          <button
+            key={score}
+            type="button"
+            aria-label={`${score} star`}
+            onClick={() => onChange(score)}
+            className={[
+              "group inline-flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-200",
+              "focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-transparent",
+              active
+                ? "border-sky-400/60 bg-sky-500/10 text-sky-300 shadow-sm shadow-sky-500/10"
+                : "border-slate-200/70 bg-white/70 text-slate-300 hover:border-sky-300/60 hover:text-sky-400 dark:border-white/10 dark:bg-slate-950/40 dark:text-slate-600 dark:hover:border-sky-400/50 dark:hover:text-sky-300",
+            ].join(" ")}
+          >
+            <Star className={`h-5 w-5 ${active ? "fill-current" : ""}`} />
+          </button>
+        );
+      })}
     </div>
   );
+}
+
+function StatChip({ icon: Icon, label, value }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/5 px-3 py-1.5 text-sm text-slate-600 shadow-sm dark:text-slate-300">
+      <Icon className="h-4 w-4 text-sky-400" />
+      <span className="font-medium">{label}:</span>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+function formatDate(value) {
+  if (!value) return "recently";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "recently";
+  return d.toLocaleDateString();
 }
 
 export default function RatingFeedback() {
@@ -118,144 +152,207 @@ export default function RatingFeedback() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 text-slate-600 dark:bg-[#020617] dark:text-slate-200">
-        Loading feedback requests...
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)]">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex min-h-[280px] items-center justify-center rounded-[2rem] border border-sky-500/15 bg-white/75 p-8 shadow-[0_10px_40px_rgba(56,189,248,0.08)] backdrop-blur-xl dark:bg-slate-950/60">
+            <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
+              <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
+              <span className="text-sm font-medium">Loading feedback requests...</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200">
-        {error}
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)]">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="rounded-[2rem] border border-red-500/20 bg-white/80 p-6 shadow-[0_10px_40px_rgba(239,68,68,0.08)] dark:bg-slate-950/70">
+            <p className="text-sm font-medium text-red-600 dark:text-red-300">{error}</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            Rate recent interactions
-          </h1>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            Feedback helps strengthen trust signals across GarTexHub.
-          </p>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)] dark:text-white">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-6 rounded-[2rem] border border-sky-500/15 bg-white/75 p-6 shadow-[0_10px_40px_rgba(56,189,248,0.08)] backdrop-blur-xl dark:bg-slate-950/70">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300">
+                <Sparkles className="h-3.5 w-3.5" />
+                GarTexHub / Ratings
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Rate recent interactions</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
+                  Feedback helps strengthen trust signals across GarTexHub.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {feedback ? (
-          <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3 text-sm text-slate-700">
+          <div className="mb-5 rounded-2xl border border-emerald-500/20 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
             {feedback}
           </div>
         ) : null}
 
         {items.length === 0 ? (
-          <div className="rounded-2xl bg-white p-6 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-            No pending rating requests right now.
+          <div className="rounded-[2rem] border border-slate-200/70 bg-white/80 p-10 text-center shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-slate-950/70">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-500/15 bg-sky-500/10">
+              <MessageSquareText className="h-7 w-7 text-sky-500" />
+            </div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">No pending rating requests right now.</h2>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              New requests will appear here after qualifying interactions are completed.
+            </p>
           </div>
         ) : null}
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {items.map((row) => {
-            const targetId = String(row.profile_key || "").replace(
-              /^user:/,
-              "",
-            );
+            const targetId = String(row.profile_key || "").replace(/^user:/, "");
             const target = lookup[targetId] || {};
             const draft = drafts[row.id] || { score: 4, comment: "" };
-            const suggested = row?.suggested_score
-              ? Number(row.suggested_score)
-              : null;
-            const isFocused =
-              focusProfileKey && row.profile_key === focusProfileKey;
+            const suggested = row?.suggested_score ? Number(row.suggested_score) : null;
+            const isFocused = focusProfileKey && row.profile_key === focusProfileKey;
+            const signalsList = buildSignals(row);
+            const suggestedReasons = Array.isArray(row.suggested_reasons) ? row.suggested_reasons : [];
+
             return (
               <div
                 key={row.id}
-                className={`rounded-2xl bg-white p-5 shadow-sm ring-1${isFocused ? "ring-gtBlue" : "ring-slate-200/60"}dark:bg-slate-900/50 dark:ring-slate-800`}
+                className={[
+                  "relative overflow-hidden rounded-3xl border p-5 shadow-[0_10px_35px_rgba(15,23,42,0.08)] transition-all",
+                  "bg-white/85 backdrop-blur-xl dark:bg-slate-950/70",
+                  isFocused
+                    ? "border-sky-400/70 ring-2 ring-sky-400/30 shadow-sky-500/10"
+                    : "border-slate-200/70 dark:border-white/10",
+                ].join(" ")}
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                      {target.name || "Counterparty"}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      {target.role || "User"} - {target.email || "--"}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      Interaction: {row.interaction_type || "deal"}
-                    </p>
-                  </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                    Requested{" "}
-                    {row.created_at
-                      ? new Date(row.created_at).toLocaleDateString()
-                      : "recently"}
-                  </div>
-                </div>
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 opacity-80" />
 
-                {suggested ? (
-                  <div className="mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-emerald-50 p-3 text-xs text-emerald-900">
-                    Suggested rating:{" "}
-                    <span className="font-semibold">
-                      {suggested.toFixed(1)}
-                    </span>
-                    {Array.isArray(row.suggested_reasons) &&
-                    row.suggested_reasons.length ? (
-                      <span className="ml-2 text-emerald-800">
-                        ({row.suggested_reasons.join(", ")})
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+                        {target.name || "Counterparty"}
+                      </h3>
+                      <span className="rounded-full border border-sky-500/15 bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-600 dark:text-sky-300">
+                        {target.role || "User"}
                       </span>
+                      {isFocused ? (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300">
+                          <Sparkles className="h-3.5 w-3.5" />
+                          Focused
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="grid gap-2 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+                        <UserRound className="h-4 w-4 text-sky-500" />
+                        <span className="truncate">{target.email || "--"}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+                        <ShieldCheck className="h-4 w-4 text-sky-500" />
+                        <span>{row.interaction_type || "deal"}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+                        <MessageSquareText className="h-4 w-4 text-sky-500" />
+                        <span>{formatDate(row.created_at)}</span>
+                      </div>
+                      <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+                        <CheckCircle2 className="h-4 w-4 text-sky-500" />
+                        <span>profile_key: {row.profile_key || "—"}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {signalsList.map((signal) => (
+                        <StatChip key={signal} icon={Sparkles} label="Signal" value={signal} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="w-full max-w-[360px] rounded-3xl border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-cyan-500/5 to-transparent p-4 dark:from-sky-500/15 dark:via-sky-500/5 dark:to-transparent">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">Suggested rating</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {suggested !== null ? `Score ${suggested.toFixed(1)}` : "Default score 4"}
+                        </p>
+                      </div>
+                      {suggested !== null ? (
+                        <button
+                          type="button"
+                          onClick={() => updateDraft(row.id, { score: Math.round(suggested) })}
+                          className="rounded-full border border-sky-500/20 bg-white px-3 py-1.5 text-xs font-medium text-sky-600 shadow-sm transition hover:border-sky-400/40 hover:bg-sky-50 dark:bg-slate-950 dark:text-sky-300 dark:hover:bg-slate-900"
+                        >
+                          Use suggested
+                        </button>
+                      ) : null}
+                    </div>
+
+                    {suggested !== null ? (
+                      <div className="mb-3 rounded-2xl border border-sky-500/10 bg-white/80 p-3 text-sm text-slate-600 dark:bg-slate-950/60 dark:text-slate-300">
+                        <div className="mb-1 font-medium text-slate-800 dark:text-slate-100">Why this score?</div>
+                        <div className="flex flex-wrap gap-2">
+                          {suggestedReasons.length > 0 ? (
+                            suggestedReasons.map((reason) => (
+                              <span key={reason} className="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs text-sky-700 dark:text-sky-300">
+                                {reason}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-xs text-slate-500 dark:text-slate-400">No suggested reasons available.</span>
+                          )}
+                        </div>
+                      </div>
                     ) : null}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateDraft(row.id, { score: Math.round(suggested) })
-                      }
-                      className="ml-3 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-                    >
-                      Use suggested
-                    </button>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Rating</label>
+                        <Stars
+                          value={draft.score}
+                          onChange={(score) => updateDraft(row.id, { score })}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Comment</label>
+                        <textarea
+                          rows={3}
+                          value={draft.comment}
+                          onChange={(e) => updateDraft(row.id, { comment: e.target.value })}
+                          placeholder="Optional comment for this interaction..."
+                          className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-950/50 dark:text-white dark:placeholder:text-slate-500"
+                        />
+                        <div className="mt-1 text-right text-xs text-slate-500 dark:text-slate-400">
+                          {draft.comment.length}/{MAX_COMMENT_LEN}
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-200/70 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                        <span className="font-medium text-slate-800 dark:text-slate-100">Signals:</span> {signalsList.join(" · ")}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => submitRating(row)}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-blue-400"
+                      >
+                        Submit rating
+                      </button>
+                    </div>
                   </div>
-                ) : null}
-
-                <div className="mt-4">
-                  <Stars
-                    value={draft.score}
-                    onChange={(score) => updateDraft(row.id, { score })}
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <textarea
-                    value={draft.comment}
-                    onChange={(e) =>
-                      updateDraft(row.id, { comment: e.target.value })
-                    }
-                    placeholder="Optional comment for this interaction..."
-                    className="w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-slate-950/40 dark:text-slate-100"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                  <div className="text-xs text-slate-500">
-                    Signals:{" "}
-                    {row?.signals?.contract_signed
-                      ? "Contract signed"
-                      : "No contract"}{" "}
-                    -{" "}
-                    {row?.signals?.recorded_call ? "Recorded call" : "No call"}
-                    {row?.signals?.avg_response_hours !== null
-                      ? ` - Avg response ${row.signals.avg_response_hours}h`
-                      : ""}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => submitRating(row)}
-                    className="rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
-                  >
-                    Submit rating
-                  </button>
                 </div>
               </div>
             );
