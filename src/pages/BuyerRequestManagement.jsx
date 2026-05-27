@@ -9,6 +9,7 @@ import {
 } from "../lib/auth";
 import { useSecureUser, useEntitlements } from "../hooks/useSecureUser";
 import { mapExtractedToForm } from "../lib/aiPrefill";
+import { useTheme } from "../lib/ThemeProvider";
 import {
   getBuyerRequestErrorStep,
   getBuyerRequestStepErrors,
@@ -346,18 +347,7 @@ export default function BuyerRequestManagement() {
     secureHasEntitlement("smart_supplier_matching") ||
     hasEntitlement(user, "smart_supplier_matching");
 
-  const [theme, setTheme] = useState(() => {
-    try {
-      const stored = localStorage.getItem("buyer-requests-theme");
-      if (stored === "dark" || stored === "light") return stored;
-    } catch {}
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
-    return "dark";
-  });
-
-  useEffect(() => {
-    try { localStorage.setItem("buyer-requests-theme", theme); } catch {}
-  }, [theme]);
+  const { theme, toggleTheme } = useTheme();
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [step, setStep] = useState(0);
@@ -959,7 +949,7 @@ export default function BuyerRequestManagement() {
                   </Link>
                 ) : null}
                 <button
-                  onClick={() => setTheme(dark ? "light" : "dark")}
+                  onClick={toggleTheme}
                   className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition ${dark ? "border-white/10 bg-white/5 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
                 >
                   {dark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
