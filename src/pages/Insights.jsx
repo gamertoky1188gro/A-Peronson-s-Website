@@ -2,19 +2,275 @@ import { useEffect, useMemo, useState } from "react";
 import AccessDeniedState from "../components/AccessDeniedState";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import {
+  Activity,
+  ArrowUpRight,
+  BadgeInfo,
+  BarChart3,
+  Building2,
+  CheckCircle2,
+  ChevronRight,
+  Crown,
+  Download,
+  Eye,
+  FileDown,
+  FileText,
+  Gauge,
+  Globe2,
+  Link2,
+  Loader2,
+  Lock,
+  MousePointerClick,
+  Radar,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 
-function StatCard({ label, value, hint = "" }) {
+function cx(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function formatNumber(value) {
+  if (value === null || value === undefined || value === "") return "--";
+  const n = Number(value);
+  if (Number.isNaN(n)) return String(value);
+  return new Intl.NumberFormat().format(n);
+}
+
+function formatPercent(value) {
+  if (value === null || value === undefined || value === "") return "--";
+  const n = Number(value);
+  if (Number.isNaN(n)) return `${value}%`;
+  return `${n}%`;
+}
+
+function formatDuration(seconds) {
+  if (seconds === null || seconds === undefined || seconds === "") return "--";
+  const n = Number(seconds);
+  if (Number.isNaN(n)) return `${seconds}s`;
+  return `${n}s`;
+}
+
+function formatDateTime(value) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString();
+}
+
+function safeLabel(value) {
+  return String(value ?? "").replaceAll(/_/g, " ");
+}
+
+function downloadBlob(content, mimeType, filename) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function renderCsvFromReport(report = {}) {
+  const lines = [];
+  lines.push("# Totals");
+  lines.push("metric,value");
+  const totals = report.totals || {};
+  Object.keys(totals).forEach((k) =>
+    lines.push(`${k},${String(totals[k] ?? "")}`),
+  );
+  lines.push("");
+
+  if (Array.isArray(report.monthly_demand_trend)) {
+    lines.push("# Monthly Demand Trend");
+    lines.push("month,count");
+    report.monthly_demand_trend.forEach((r) =>
+      lines.push(`${r.month || ""},${Number(r.count || 0)}`),
+    );
+    lines.push("");
+  }
+
+  if (Array.isArray(report.top_categories_global)) {
+    lines.push("# Top Categories (Global)");
+    lines.push("category,count");
+    report.top_categories_global.forEach((r) =>
+      lines.push(`${r.label || ""},${Number(r.count || 0)}`),
+    );
+    lines.push("");
+  }
+
+  if (Array.isArray(report.price_range_demand)) {
+    lines.push("# Price Range Demand");
+    lines.push("bucket,count");
+    report.price_range_demand.forEach((r) =>
+      lines.push(`${r.bucket || ""},${Number(r.count || 0)}`),
+    );
+    lines.push("");
+  }
+
+  if (Array.isArray(report.top_search_categories_global)) {
+    lines.push("# Top Search Categories (Global)");
+    lines.push("label,count");
+    report.top_search_categories_global.forEach((r) =>
+      lines.push(`${r.label || ""},${Number(r.count || 0)}`),
+    );
+    lines.push("");
+  }
+
+  if (Array.isArray(report.top_categories_by_country)) {
+    lines.push("# Top Categories By Country");
+    lines.push("country,category,count");
+    report.top_categories_by_country.forEach((c) => {
+      const country = c.country || "";
+      const categories = Array.isArray(c.categories) ? c.categories : [];
+      categories.forEach((cat) =>
+        lines.push(`${country},${cat.label || ""},${Number(cat.count || 0)}`),
+      );
+    });
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
+
+function renderHtmlReport(report = {}) {
+  const escape = (s) =>
+    String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  let html = `<html><head><meta charset="utf-8"><title>Analytics Export</title></head><body style="font-family:system-ui,Arial,Helvetica,sans-serif;padding:24px;">`;
+  html += `<h1>Analytics Export</h1>`;
+  html += `<h2>Totals</h2><ul>`;
+  const totals = report.totals || {};
+  Object.keys(totals).forEach((k) => {
+    html += `<li><strong>${escape(k)}:</strong> ${escape(totals[k])}</li>`;
+  });
+  html += `</ul>`;
+
+  if (Array.isArray(report.monthly_demand_trend)) {
+    html += `<h2>Monthly Demand Trend</h2><table border="1" cellpadding="6" cellspacing="0"><tr><th>Month</th><th>Count</th></tr>`;
+    report.monthly_demand_trend.forEach((r) => {
+      html += `<tr><td>${escape(r.month)}</td><td>${escape(r.count)}</td></tr>`;
+    });
+    html += `</table>`;
+  }
+
+  if (Array.isArray(report.top_categories_global)) {
+    html += `<h2>Top Categories (Global)</h2><ul>`;
+    report.top_categories_global.forEach((r) => {
+      html += `<li>${escape(r.label)} — ${escape(r.count)}</li>`;
+    });
+    html += `</ul>`;
+  }
+
+  html += `<p>Generated at ${new Date().toISOString()}</p>`;
+  html += `</body></html>`;
+  return html;
+}
+
+function StatCard({ icon: Icon, label, value, hint = "", subtle = false, className = "" }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-      <div className="text-sm text-slate-600 dark:text-slate-400">{label}</div>
-      <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-        {value}
-      </div>
-      {hint ? (
-        <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {hint}
+    <div
+      className={cx(
+        "group rounded-3xl border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl",
+        subtle
+          ? "border-sky-200/70 bg-white/80 backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70"
+          : "border-sky-200/70 bg-gradient-to-br from-white to-sky-50/80 dark:border-sky-500/20 dark:from-slate-950 dark:to-slate-900",
+        className,
+      )}
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 shadow-sm dark:bg-sky-500/10 dark:text-sky-300">
+          {Icon ? <Icon className="h-5 w-5" /> : null}
         </div>
-      ) : null}
+        <div className="rounded-full border border-sky-200/70 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-500 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-slate-300">
+          {hint || "Analytics"}
+        </div>
+      </div>
+      <div className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{value}</div>
+      <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{label}</div>
+    </div>
+  );
+}
+
+function SectionHeader({ icon: Icon, title, right }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-white text-sky-700 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-sky-300">
+          {Icon ? <Icon className="h-5 w-5" /> : null}
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{title}</h2>
+          <div className="text-xs text-slate-500 dark:text-slate-400">Premium analytics and platform intelligence</div>
+        </div>
+      </div>
+      {right || null}
+    </div>
+  );
+}
+
+function Badge({ children, tone = "default", className = "" }) {
+  const tones = {
+    default: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300",
+    green: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300",
+    rose: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300",
+    amber: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300",
+    slate: "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300",
+  };
+  return (
+    <span className={cx("inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium", tones[tone], className)}>
+      {children}
+    </span>
+  );
+}
+
+function EmptyState({ icon: Icon, title, description }) {
+  return (
+    <div className="rounded-3xl border border-dashed border-sky-200 bg-white/70 p-6 text-center shadow-sm dark:border-sky-500/20 dark:bg-slate-950/60">
+      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+        {Icon ? <Icon className="h-5 w-5" /> : null}
+      </div>
+      <div className="text-base font-semibold text-slate-900 dark:text-white">{title}</div>
+      <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/70">
+      <div className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="mt-0.5 font-medium text-slate-900 dark:text-white">{value}</div>
+    </div>
+  );
+}
+
+function PanelList({ title, items, emptyText, renderItem }) {
+  return (
+    <div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
+        <ChevronRight className="h-4 w-4 text-slate-400" />
+      </div>
+      <div className="space-y-2">
+        {Array.isArray(items) && items.length ? (
+          items.map((item, idx) => (
+            <div key={item.id || item.label || item.product_id || item.country || item.source_type || item.page || idx} className="rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60">
+              {typeof renderItem === "function" ? renderItem(item) : String(item)}
+            </div>
+          ))
+        ) : (
+          <div className="text-sm text-slate-500 dark:text-slate-400">{emptyText}</div>
+        )}
+      </div>
     </div>
   );
 }
@@ -146,302 +402,221 @@ export default function Insights() {
     loadViewers();
   }, [premiumRole, currentUser?.id, companyAnalytics?.top_products]);
 
-  // Helpers for exporting sanitized analytics
-  function downloadBlob(content, mimeType, filename) {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
+  const platformTopCategories = platformCategories
+    .slice(0, 3)
+    .map((c) => c.label)
+    .filter(Boolean);
 
-  function renderCsvFromReport(report = {}) {
-    const lines = [];
-    // Totals
-    lines.push("# Totals");
-    lines.push("metric,value");
-    const totals = report.totals || {};
-    Object.keys(totals).forEach((k) =>
-      lines.push(`${k},${String(totals[k] ?? "")}`),
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-white sm:p-6 lg:p-8">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-3xl border border-sky-200 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+          <Loader2 className="h-5 w-5 animate-spin text-sky-600 dark:text-sky-300" />
+          <div className="text-sm font-medium">Loading analytics...</div>
+        </div>
+      </div>
     );
-    lines.push("");
-
-    // Monthly demand trend
-    if (Array.isArray(report.monthly_demand_trend)) {
-      lines.push("# Monthly Demand Trend");
-      lines.push("month,count");
-      report.monthly_demand_trend.forEach((r) =>
-        lines.push(`${r.month || ""},${Number(r.count || 0)}`),
-      );
-      lines.push("");
-    }
-
-    // Top categories global
-    if (Array.isArray(report.top_categories_global)) {
-      lines.push("# Top Categories (Global)");
-      lines.push("category,count");
-      report.top_categories_global.forEach((r) =>
-        lines.push(`${r.label || ""},${Number(r.count || 0)}`),
-      );
-      lines.push("");
-    }
-
-    // Price range demand
-    if (Array.isArray(report.price_range_demand)) {
-      lines.push("# Price Range Demand");
-      lines.push("bucket,count");
-      report.price_range_demand.forEach((r) =>
-        lines.push(`${r.bucket || ""},${Number(r.count || 0)}`),
-      );
-      lines.push("");
-    }
-
-    // Top search categories
-    if (Array.isArray(report.top_search_categories_global)) {
-      lines.push("# Top Search Categories (Global)");
-      lines.push("label,count");
-      report.top_search_categories_global.forEach((r) =>
-        lines.push(`${r.label || ""},${Number(r.count || 0)}`),
-      );
-      lines.push("");
-    }
-
-    // Top categories by country
-    if (Array.isArray(report.top_categories_by_country)) {
-      lines.push("# Top Categories By Country");
-      lines.push("country,category,count");
-      report.top_categories_by_country.forEach((c) => {
-        const country = c.country || "";
-        const categories = Array.isArray(c.categories) ? c.categories : [];
-        categories.forEach((cat) =>
-          lines.push(`${country},${cat.label || ""},${Number(cat.count || 0)}`),
-        );
-      });
-      lines.push("");
-    }
-
-    return lines.join("\n");
   }
 
-  function renderHtmlReport(report = {}) {
-    const escape = (s) =>
-      String(s || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    let html = `<html><head><meta charset="utf-8"><title>Analytics Export</title></head><body style="font-family:system-ui,Arial,Helvetica,sans-serif;padding:24px;">`;
-    html += `<h1>Analytics Export</h1>`;
-    html += `<h2>Totals</h2><ul>`;
-    const totals = report.totals || {};
-    Object.keys(totals).forEach((k) => {
-      html += `<li><strong>${escape(k)}:</strong> ${escape(totals[k])}</li>`;
-    });
-    html += `</ul>`;
-
-    if (Array.isArray(report.monthly_demand_trend)) {
-      html += `<h2>Monthly Demand Trend</h2><table border="1" cellpadding="6" cellspacing="0"><tr><th>Month</th><th>Count</th></tr>`;
-      report.monthly_demand_trend.forEach((r) => {
-        html += `<tr><td>${escape(r.month)}</td><td>${escape(r.count)}</td></tr>`;
-      });
-      html += `</table>`;
-    }
-
-    if (Array.isArray(report.top_categories_global)) {
-      html += `<h2>Top Categories (Global)</h2><ul>`;
-      report.top_categories_global.forEach((r) => {
-        html += `<li>${escape(r.label)} — ${escape(r.count)}</li>`;
-      });
-      html += `</ul>`;
-    }
-
-    html += `<p>Generated at ${new Date().toISOString()}</p>`;
-    html += `</body></html>`;
-    return html;
+  if (forbidden) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
+        <AccessDeniedState message={error} />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">
-            Insights &amp; Analytics{" "}
-            <span className="text-sm text-slate-500 dark:text-slate-400">
-              ({isEnterprise ? "Enterprise" : "Free"} Plan)
-            </span>
-          </h1>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-white">
+      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+        <div className="relative overflow-hidden rounded-[2rem] border border-sky-200/80 bg-white/85 p-6 shadow-[0_20px_80px_-30px_rgba(14,165,233,0.35)] backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70 lg:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.18),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_28%)]" />
 
-        {loading ? (
-          <div className="mb-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-            Loading analytics...
-          </div>
-        ) : null}
-        {forbidden ? (
-          <div className="mb-4">
-            <AccessDeniedState message={error} />
-          </div>
-        ) : null}
-        {!forbidden && error ? (
-          <div className="mb-4 rounded-2xl bg-rose-50 p-3 text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/20">
-            {error}
-          </div>
-        ) : null}
-
-        {forbidden ? null : (
-          <>
-            <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-5">
-              {(topMetrics.length
-                ? topMetrics
-                : [
-                    {
-                      key: "buyer_requests",
-                      label: "Buyer Requests",
-                      value: String(totals.buyer_requests ?? 0),
-                      hint: "",
-                    },
-                    {
-                      key: "chats",
-                      label: "Active Chats",
-                      value: String(totals.chats ?? 0),
-                      hint: "",
-                    },
-                    {
-                      key: "partners",
-                      label: "Partner Network",
-                      value: String(totals.partner_network ?? 0),
-                      hint: "",
-                    },
-                    {
-                      key: "contracts",
-                      label: "Contracts",
-                      value: String(totals.contracts ?? 0),
-                      hint: "",
-                    },
-                    {
-                      key: "documents",
-                      label: "Documents",
-                      value: String(totals.documents ?? 0),
-                      hint: "",
-                    },
-                  ]
-              )
-                .slice(0, 5)
-                .map((m) => (
-                  <StatCard
-                    key={m.key}
-                    label={m.label}
-                    value={m.value}
-                    hint={m.hint || ""}
-                  />
-                ))}
+          {error ? (
+            <div className="relative mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+              {error}
             </div>
+          ) : null}
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <StatCard
-                label="Total Buyer Requests"
-                value={totals.buyer_requests ?? 0}
-              />
-              <StatCard label="Active Chats" value={totals.chats ?? 0} />
-              <StatCard
-                label="Connected Partners"
-                value={totals.partner_network ?? 0}
-              />
-              <StatCard
-                label="Contracts / Documents"
-                value={`${totals.contracts ?? 0} / ${totals.documents ?? 0}`}
-              />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+                <Sparkles className="h-3.5 w-3.5" />
+                Insights &amp; Analytics
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                Insights &amp; Analytics
+              </h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                Owner/admin intelligence dashboard for KPIs, interaction metrics, company analytics, platform analytics, and premium insights.
+              </p>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone={isEnterprise ? "green" : "slate"}>
+                {isEnterprise ? "Enterprise Plan" : "Free Plan"}
+              </Badge>
+              <Badge tone={scopeLevel === "platform_admin_full_detail" ? "green" : "amber"}>
+                Scope: {safeLabel(scopeLevel)}
+              </Badge>
+              <Badge tone={canExportAnalytics ? "green" : "rose"}>
+                {canExportAnalytics ? "Export enabled" : "Export blocked"}
+              </Badge>
+            </div>
+          </div>
 
-            <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
-              <StatCard
-                label="Total Page Views"
-                value={interactionSummary.total_page_views ?? 0}
-              />
-              <StatCard
-                label="Total Clicks"
-                value={interactionSummary.total_clicks ?? 0}
-              />
-              <StatCard
-                label="Avg Session Duration"
-                value={`${interactionSummary.avg_session_duration_seconds ?? 0}s`}
-              />
-              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                <div className="text-sm text-slate-600 dark:text-slate-400">
-                  Top Pages
+          <div className="relative mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            {(topMetrics.length
+              ? topMetrics
+              : [
+                  {
+                    key: "buyer_requests",
+                    label: "Buyer Requests",
+                    value: String(totals.buyer_requests ?? 0),
+                    hint: "",
+                  },
+                  {
+                    key: "chats",
+                    label: "Active Chats",
+                    value: String(totals.chats ?? 0),
+                    hint: "",
+                  },
+                  {
+                    key: "partners",
+                    label: "Partner Network",
+                    value: String(totals.partner_network ?? 0),
+                    hint: "",
+                  },
+                  {
+                    key: "contracts",
+                    label: "Contracts",
+                    value: String(totals.contracts ?? 0),
+                    hint: "",
+                  },
+                  {
+                    key: "documents",
+                    label: "Documents",
+                    value: String(totals.documents ?? 0),
+                    hint: "",
+                  },
+                ]
+            )
+              .slice(0, 5)
+              .map((m, idx) => (
+                <StatCard
+                  key={m.key || idx}
+                  icon={[Gauge, Users, Link2, FileText, Building2][idx % 5]}
+                  label={m.label}
+                  value={formatNumber(m.value)}
+                  hint={m.hint || "Top metric"}
+                />
+              ))}
+          </div>
+
+          <div className="relative mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <StatCard icon={Users} label="Total Buyer Requests" value={formatNumber(totals.buyer_requests ?? 0)} hint="Requests" subtle />
+            <StatCard icon={Activity} label="Active Chats" value={formatNumber(totals.chats ?? 0)} hint="Chats" subtle />
+            <StatCard icon={Link2} label="Connected Partners" value={formatNumber(totals.partner_network ?? 0)} hint="Partners" subtle />
+            <StatCard icon={FileText} label="Contracts / Documents" value={`${formatNumber(totals.contracts ?? 0)} / ${formatNumber(totals.documents ?? 0)}`} hint="Docs" subtle />
+          </div>
+
+          <div className="relative mt-7 grid gap-4 xl:grid-cols-4">
+            <StatCard icon={Eye} label="Total Page Views" value={formatNumber(interactionSummary.total_page_views ?? 0)} hint="Views" subtle />
+            <StatCard icon={MousePointerClick} label="Total Clicks" value={formatNumber(interactionSummary.total_clicks ?? 0)} hint="Clicks" subtle />
+            <StatCard icon={TrendingUp} label="Avg Session Duration" value={formatDuration(interactionSummary.avg_session_duration_seconds ?? 0)} hint="Seconds" subtle />
+            <div className="rounded-3xl border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                  <Search className="h-5 w-5" />
                 </div>
-                <div className="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
-                  {(interactionSummary.top_pages || []).length ? (
-                    interactionSummary.top_pages.map((row) => (
-                      <div
-                        key={row.page}
-                        className="flex items-center justify-between"
-                      >
-                        <span className="truncate">{row.page}</span>
-                        <span className="font-semibold">{row.count}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-slate-500">No page view data yet.</div>
-                  )}
-                </div>
+                <Badge tone="default">Top Pages</Badge>
+              </div>
+              <div className="space-y-2">
+                {(interactionSummary.top_pages || []).length ? (
+                  interactionSummary.top_pages.map((row) => (
+                    <div
+                      key={row.page}
+                      className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900/60"
+                    >
+                      <span className="truncate text-slate-700 dark:text-slate-300">{row.page}</span>
+                      <span className="ml-3 font-medium text-slate-950 dark:text-white">{formatNumber(row.count)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-slate-500 dark:text-slate-400">No page view data yet.</div>
+                )}
               </div>
             </div>
+          </div>
 
-            <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              {!isEnterprise ? (
-                <div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    You are currently on{" "}
-                    <strong>{subscription?.plan || "free"}</strong>. Upgrade to
-                    Premium/Enterprise to unlock unlimited advanced filters,
-                    expanded analytics, and exports.
-                  </div>
-                  <div className="mt-4">
-                    <button className="px-3 py-2 bg-gtBlue hover:bg-gtBlueHover text-white rounded">
-                      Upgrade to Enterprise
-                    </button>
+          <div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+            <SectionHeader
+              icon={Crown}
+              title="Analytics Panel"
+              right={<Badge tone={isEnterprise ? "green" : "amber"}>{isEnterprise ? "Enterprise view" : "Free view"}</Badge>}
+            />
+
+            {!isEnterprise ? (
+              <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
+                <div className="rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5 dark:border-sky-500/20 dark:from-sky-500/10 dark:to-slate-950">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                      <Crown className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-base font-semibold text-slate-950 dark:text-white">Upgrade to unlock advanced analytics</div>
+                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        You are currently on <strong>{subscription?.plan || "free"}</strong>. Upgrade to Premium/Enterprise to unlock unlimited advanced filters, expanded analytics, and exports.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <>
-                  <h3 className="font-semibold mb-3">
-                    Analytics Events by Type
-                  </h3>
-                  <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-center rounded-3xl border border-dashed border-sky-200 bg-white/70 p-5 dark:border-sky-500/20 dark:bg-slate-950/60">
+                  <button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:bg-sky-500">
+                    Upgrade to Enterprise <ArrowUpRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Analytics Events by Type</h3>
+                    <Badge tone="default">Live</Badge>
+                  </div>
+                  <div className="space-y-2">
                     {Object.keys(byType).length === 0 ? (
-                      <div className="text-slate-600 dark:text-slate-400">
-                        No analytics events recorded yet.
-                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">No analytics events recorded yet.</div>
                     ) : null}
                     {Object.entries(byType).map(([type, count]) => (
                       <div
                         key={type}
-                        className="flex items-center justify-between rounded-md p-2 ring-1 ring-slate-200/60 dark:ring-slate-800"
+                        className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
                       >
-                        <span>{type}</span>
-                        <span className="font-medium">{count}</span>
+                        <span className="truncate text-slate-700 dark:text-slate-300">{type}</span>
+                        <span className="font-medium text-slate-950 dark:text-white">{formatNumber(count)}</span>
                       </div>
                     ))}
                   </div>
+                </div>
 
-                  <div className="mt-4 flex gap-2">
+                <div className="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-white to-sky-50/80 p-5 dark:border-sky-500/20 dark:from-slate-950 dark:to-slate-900">
+                  <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                    <Download className="h-4 w-4 text-sky-600 dark:text-sky-300" />
+                    Export Controls
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <button
-                      className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800 disabled:opacity-50"
-                      disabled={
-                        !canExportAnalytics ||
-                        scopeLevel !== "platform_admin_full_detail" ||
-                        exportLoading
-                      }
                       title={
                         !canExportAnalytics
                           ? "Export disabled by policy"
                           : scopeLevel !== "platform_admin_full_detail"
                             ? "Export restricted to admin full-platform view"
                             : "Export CSV"
+                      }
+                      disabled={
+                        !canExportAnalytics ||
+                        scopeLevel !== "platform_admin_full_detail" ||
+                        exportLoading
                       }
                       onClick={async () => {
                         if (
@@ -470,22 +645,28 @@ export default function Insights() {
                           setExportLoading(false);
                         }
                       }}
+                      className={cx(
+                        "inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition",
+                        !canExportAnalytics || scopeLevel !== "platform_admin_full_detail" || exportLoading
+                          ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600"
+                          : "bg-sky-600 text-white shadow-lg shadow-sky-600/20 hover:bg-sky-500",
+                      )}
                     >
+                      {exportLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
                       {exportLoading ? "Exporting..." : "Export CSV"}
                     </button>
                     <button
-                      className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800 disabled:opacity-50"
-                      disabled={
-                        !canExportAnalytics ||
-                        scopeLevel !== "platform_admin_full_detail" ||
-                        exportLoading
-                      }
                       title={
                         !canExportAnalytics
                           ? "Export disabled by policy"
                           : scopeLevel !== "platform_admin_full_detail"
                             ? "Export restricted to admin full-platform view"
                             : "Download PDF Report"
+                      }
+                      disabled={
+                        !canExportAnalytics ||
+                        scopeLevel !== "platform_admin_full_detail" ||
+                        exportLoading
                       }
                       onClick={async () => {
                         if (
@@ -512,694 +693,405 @@ export default function Insights() {
                           setExportLoading(false);
                         }
                       }}
+                      className={cx(
+                        "inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition",
+                        !canExportAnalytics || scopeLevel !== "platform_admin_full_detail" || exportLoading
+                          ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600"
+                          : "border border-sky-200 bg-white text-sky-700 shadow-sm hover:bg-sky-50 dark:border-sky-500/20 dark:bg-slate-950 dark:text-sky-300 dark:hover:bg-slate-900",
+                      )}
                     >
+                      {exportLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
                       {exportLoading ? "Preparing..." : "Download PDF Report"}
                     </button>
                   </div>
                   {exportError ? (
-                    <p className="mt-2 text-xs text-rose-600">{exportError}</p>
+                    <div className="mt-3 text-xs text-rose-600 dark:text-rose-300">{exportError}</div>
                   ) : null}
                   {!canExportAnalytics ? (
-                    <p className="mt-2 text-xs text-slate-500">
-                      Export is disabled by organization policy.
-                    </p>
+                    <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">Export is disabled by organization policy.</div>
                   ) : null}
-                </>
-              )}
-            </div>
-
-            <div className="mt-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Premium Insights</h3>
-                <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">
-                  {premiumRole || "premium"}
-                </span>
+                </div>
               </div>
-              {!premiumInsights ? (
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-                  Premium analytics unlock buying patterns, conversion insights,
-                  and agent performance. Upgrade to Premium to view.
-                </p>
-              ) : (
-                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+            )}
+          </div>
+
+          <div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+            <SectionHeader icon={Radar} title="Premium Insights" right={<Badge tone={premiumInsights ? "green" : "amber"}>{premiumRole || "premium"}</Badge>} />
+
+            {!premiumInsights ? (
+              <EmptyState
+                icon={Lock}
+                title="Premium analytics locked"
+                description="Premium analytics unlock buying patterns, conversion insights, and agent performance. Upgrade to Premium to view."
+              />
+            ) : (
+              <div className="space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                   {premiumInsights.request_performance ? (
-                    <StatCard
-                      label="Request Match Rate"
-                      value={`${premiumInsights.request_performance.match_rate_pct ?? 0}%`}
-                      hint="Matched buyer requests"
-                    />
+                    <StatCard icon={CheckCircle2} label="Request Match Rate" value={formatPercent(premiumInsights.request_performance.match_rate_pct ?? 0)} hint="Matched buyer requests" subtle />
                   ) : null}
                   {premiumInsights.smart_matching_success_rate ? (
-                    <StatCard
-                      label="Smart Match Success"
-                      value={`${premiumInsights.smart_matching_success_rate.match_rate_pct ?? 0}%`}
-                      hint="Matched requests converted"
-                    />
+                    <StatCard icon={ShieldCheck} label="Smart Match Success" value={formatPercent(premiumInsights.smart_matching_success_rate.match_rate_pct ?? 0)} hint="Matched requests converted" subtle />
                   ) : null}
                   {premiumInsights.request_performance_insights ? (
-                    <StatCard
-                      label="Open Requests"
-                      value={
-                        premiumInsights.request_performance_insights
-                          .open_requests ?? 0
-                      }
-                      hint="Requests still open"
-                    />
+                    <StatCard icon={Activity} label="Open Requests" value={formatNumber(premiumInsights.request_performance_insights.open_requests ?? 0)} hint="Requests still open" subtle />
                   ) : null}
                   {premiumInsights.request_performance_insights ? (
-                    <StatCard
-                      label="Response Speed"
-                      value={
-                        premiumInsights.request_performance_insights
-                          .response_speed ||
-                        premiumInsights.request_performance_insights
-                          .response_speed_hours ||
-                        "--"
-                      }
-                      hint="Avg response time"
-                    />
+                    <StatCard icon={Gauge} label="Response Speed" value={premiumInsights.request_performance_insights.response_speed || premiumInsights.request_performance_insights.response_speed_hours || "--"} hint="Avg response time" subtle />
                   ) : null}
                   {premiumInsights.request_performance ? (
-                    <StatCard
-                      label="Avg Response Time"
-                      value={
-                        premiumInsights.request_performance.avg_response_time ||
-                        "--"
-                      }
-                      hint="Premium response speed"
-                    />
+                    <StatCard icon={TrendingUp} label="Avg Response Time" value={premiumInsights.request_performance.avg_response_time || "--"} hint="Premium response speed" subtle />
                   ) : null}
                   {premiumInsights.buyer_conversion_insights ? (
-                    <StatCard
-                      label="Conversion Rate"
-                      value={`${premiumInsights.buyer_conversion_insights.conversion_rate_pct ?? 0}%`}
-                      hint="Deals closed"
-                    />
+                    <StatCard icon={TrendingUp} label="Conversion Rate" value={formatPercent(premiumInsights.buyer_conversion_insights.conversion_rate_pct ?? 0)} hint="Deals closed" subtle />
                   ) : null}
                   {premiumInsights.advanced_analytics ? (
-                    <StatCard
-                      label="Product Views"
-                      value={
-                        premiumInsights.advanced_analytics.product_views ?? 0
-                      }
-                      hint="Premium visibility"
-                    />
+                    <StatCard icon={Eye} label="Product Views" value={formatNumber(premiumInsights.advanced_analytics.product_views ?? 0)} hint="Premium visibility" subtle />
                   ) : null}
                   {premiumInsights.advanced_analytics ? (
-                    <StatCard
-                      label="Inquiry Rate"
-                      value={
-                        premiumInsights.advanced_analytics.inquiry_rate ?? 0
-                      }
-                      hint="Inbound inquiries per view"
-                    />
+                    <StatCard icon={MousePointerClick} label="Inquiry Rate" value={premiumInsights.advanced_analytics.inquiry_rate ?? "--"} hint="Inbound inquiries per view" subtle />
                   ) : null}
                   {premiumInsights.buyer_interest_analytics ? (
-                    <StatCard
-                      label="Buyer Interest"
-                      value={
-                        premiumInsights.buyer_interest_analytics
-                          .unique_buyers ?? 0
-                      }
-                      hint="Unique buyers reached"
-                    />
+                    <StatCard icon={Users} label="Buyer Interest" value={formatNumber(premiumInsights.buyer_interest_analytics.unique_buyers ?? 0)} hint="Unique buyers reached" subtle />
                   ) : null}
                   {premiumInsights.buyer_interest_analytics ? (
-                    <StatCard
-                      label="Matched Requests"
-                      value={
-                        premiumInsights.buyer_interest_analytics
-                          .matched_requests ?? 0
-                      }
-                      hint="Requests matched"
-                    />
+                    <StatCard icon={Link2} label="Matched Requests" value={formatNumber(premiumInsights.buyer_interest_analytics.matched_requests ?? 0)} hint="Requests matched" subtle />
                   ) : null}
                   {premiumInsights.buyer_communication_insights ? (
-                    <StatCard
-                      label="Inbound Messages"
-                      value={
-                        premiumInsights.buyer_communication_insights
-                          .inbound_messages ?? 0
-                      }
-                      hint="Buyer communications"
-                    />
+                    <StatCard icon={Activity} label="Inbound Messages" value={formatNumber(premiumInsights.buyer_communication_insights.inbound_messages ?? 0)} hint="Buyer communications" subtle />
                   ) : null}
                   {premiumInsights.buyer_communication_insights ? (
-                    <StatCard
-                      label="Total Messages"
-                      value={
-                        premiumInsights.buyer_communication_insights
-                          .total_messages ?? 0
-                      }
-                      hint="All thread messages"
-                    />
+                    <StatCard icon={FileText} label="Total Messages" value={formatNumber(premiumInsights.buyer_communication_insights.total_messages ?? 0)} hint="All thread messages" subtle />
                   ) : null}
                   {premiumInsights.buyer_communication_insights ? (
-                    <StatCard
-                      label="Avg Reply Time"
-                      value={
-                        premiumInsights.buyer_communication_insights
-                          .avg_response_time || "--"
-                      }
-                      hint="Response speed"
-                    />
+                    <StatCard icon={Gauge} label="Avg Reply Time" value={premiumInsights.buyer_communication_insights.avg_response_time || "--"} hint="Response speed" subtle />
                   ) : null}
                   {premiumInsights.order_completion_certification ? (
-                    <StatCard
-                      label="Completion Cert"
-                      value={
-                        premiumInsights.order_completion_certification.status ||
-                        "pending"
-                      }
-                      hint="Order completion status"
-                    />
+                    <StatCard icon={BadgeInfo} label="Completion Cert" value={premiumInsights.order_completion_certification.status || "pending"} hint="Order completion status" subtle />
                   ) : null}
                   {premiumInsights.buyer_conversion_insights ? (
-                    <StatCard
-                      label="Contracts Signed"
-                      value={
-                        premiumInsights.buyer_conversion_insights
-                          .contracts_signed ?? 0
-                      }
-                      hint="Closed deals"
-                    />
+                    <StatCard icon={BarChart3} label="Contracts Signed" value={formatNumber(premiumInsights.buyer_conversion_insights.contracts_signed ?? 0)} hint="Closed deals" subtle />
                   ) : null}
                 </div>
-              )}
 
-              {premiumInsights?.agent_performance_analytics?.length ? (
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    Agent Performance
-                  </p>
-                  <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                    {premiumInsights.agent_performance_analytics.map(
-                      (agent) => (
-                        <div
-                          key={agent.agent_id}
-                          className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                        >
-                          <span className="truncate">
-                            {agent.name || agent.agent_id}
-                          </span>
-                          <span className="text-xs font-semibold">
-                            {agent.assigned_leads ?? 0} leads
-                          </span>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                  <div className="mt-3 rounded-xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                      Agent Outcomes
-                    </p>
-                    <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
-                      <div className="grid grid-cols-6 gap-2 text-[10px] uppercase tracking-widest text-slate-400">
-                        <span className="col-span-2">Agent</span>
-                        <span className="text-right">Assigned</span>
-                        <span className="text-right">Closed</span>
-                        <span className="text-right">Confirmed</span>
-                        <span className="text-right">Converted</span>
-                      </div>
-                      {premiumInsights.agent_performance_analytics.map(
-                        (agent) => (
-                          <div
-                            key={`${agent.agent_id}-outcomes`}
-                            className="grid grid-cols-6 gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                          >
-                            <span className="col-span-2 truncate">
-                              {agent.name || agent.agent_id}
-                            </span>
-                            <span className="text-right">
-                              {agent.assigned_leads ?? 0}
-                            </span>
-                            <span className="text-right">
-                              {agent.closed_leads ?? 0}
-                            </span>
-                            <span className="text-right">
-                              {agent.orders_confirmed ?? 0}
-                            </span>
-                            <span className="text-right">
-                              {agent.conversions ?? 0}
-                            </span>
-                          </div>
-                        ),
-                      )}
+                {premiumInsights?.agent_performance_analytics?.length ? (
+                  <div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Agent Performance</h3>
+                      <Badge tone="default">Team view</Badge>
                     </div>
-                  </div>
-                </div>
-              ) : null}
-
-              {premiumInsights?.buying_pattern_analysis?.length ? (
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    Buying Pattern Analysis
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-700 dark:text-slate-300">
-                    {premiumInsights.buying_pattern_analysis.map((row) => (
-                      <span
-                        key={row.label}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1"
-                      >
-                        {row.label} - {row.count}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-              {premiumInsights?.lead_distribution ? (
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    Lead Distribution
-                  </p>
-                  <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
-                    {Object.entries(premiumInsights.lead_distribution).map(
-                      ([agentId, count]) => (
-                        <div
-                          key={agentId}
-                          className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                        >
-                          <span className="truncate">{agentId}</span>
-                          <span className="font-semibold">{count}</span>
+                    <div className="space-y-2">
+                      {premiumInsights.agent_performance_analytics.map((agent) => (
+                        <div key={agent.agent_id} className="rounded-2xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/60">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="font-medium text-slate-950 dark:text-white">{agent.name || agent.agent_id}</div>
+                            <div className="text-sm text-slate-600 dark:text-slate-300">{formatNumber(agent.assigned_leads ?? 0)} leads</div>
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                            <MiniStat label="Agent" value={agent.agent_id || "--"} />
+                            <MiniStat label="Assigned" value={formatNumber(agent.assigned_leads ?? 0)} />
+                            <MiniStat label="Closed" value={formatNumber(agent.closed_leads ?? 0)} />
+                            <MiniStat label="Confirmed" value={formatNumber(agent.orders_confirmed ?? 0)} />
+                            <MiniStat label="Converted" value={formatNumber(agent.conversions ?? 0)} />
+                          </div>
                         </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-              ) : null}
-
-              {["factory", "buying_house"].includes(
-                String(premiumRole || "").toLowerCase(),
-              ) ? (
-                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                      Recent Profile Viewers
-                    </p>
-                    {viewerLoading ? (
-                      <div className="mt-2 text-xs text-slate-500">
-                        Loading viewers...
-                      </div>
-                    ) : (
-                      <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
-                        {profileViewers.length ? (
-                          profileViewers.map((row) => (
-                            <div
-                              key={row.viewer_id}
-                              className="flex items-center justify-between"
-                            >
-                              <span className="truncate">
-                                {row.viewer?.name || row.viewer_id}
-                              </span>
-                              <span className="text-[11px] text-slate-500">
-                                {new Date(row.viewed_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-xs text-slate-500">
-                            No viewers yet.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                      Recent Product Viewers
-                    </p>
-                    {viewerLoading ? (
-                      <div className="mt-2 text-xs text-slate-500">
-                        Loading viewers...
-                      </div>
-                    ) : (
-                      <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
-                        {productViewers.length ? (
-                          productViewers.map((row) => (
-                            <div
-                              key={row.viewer_id}
-                              className="flex items-center justify-between"
-                            >
-                              <span className="truncate">
-                                {row.viewer?.name || row.viewer_id}
-                              </span>
-                              <span className="text-[11px] text-slate-500">
-                                {new Date(row.viewed_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-xs text-slate-500">
-                            No viewers yet.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            {companyAnalytics ? (
-              <div className="mt-6 space-y-4">
-                {companyAnalytics.limited ? (
-                  <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
-                    Advanced analytics (who viewed, inquiry rate, conversion
-                    metrics) are available on Premium. Upgrade to unlock full
-                    company analytics.
+                      ))}
+                    </div>
                   </div>
                 ) : null}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-                  <StatCard
-                    label="Profile Visits"
-                    value={companyTotals.profile_visits ?? 0}
-                  />
-                  <StatCard
-                    label="Product Views"
-                    value={companyTotals.product_views ?? 0}
-                  />
-                  <StatCard
-                    label="Inbound Messages"
-                    value={companyTotals.inbound_messages ?? 0}
-                  />
-                  <StatCard
-                    label="Conversion Rate"
-                    value={`${companyTotals.conversion_rate_pct ?? 0}%`}
-                  />
-                  <StatCard
-                    label="Avg Response Time"
-                    value={companyTotals.avg_response_time || "--"}
-                  />
-                </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      Top Viewed Products
-                    </p>
-                    <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                      {topProducts.length ? (
-                        topProducts.map((row) => (
-                          <div
-                            key={row.product_id}
-                            className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                          >
-                            <span className="truncate">{row.title}</span>
-                            <span className="text-xs font-semibold">
-                              {row.views}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-sm text-slate-500">
-                          No product views yet.
-                        </div>
-                      )}
+                {premiumInsights?.buying_pattern_analysis?.length ? (
+                  <div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+                    <h3 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">Buying Pattern Analysis</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {premiumInsights.buying_pattern_analysis.map((row) => (
+                        <Badge key={row.label} tone="slate">
+                          {row.label} - {formatNumber(row.count)}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      Profile Visits by Country
-                    </p>
-                    <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                      {visitCountries.length ? (
-                        visitCountries.map((row) => (
-                          <div
-                            key={row.country}
-                            className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                          >
-                            <span className="truncate">{row.country}</span>
-                            <span className="text-xs font-semibold">
-                              {row.count}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-sm text-slate-500">
-                          No visits yet.
+                ) : null}
+
+                {premiumInsights?.lead_distribution ? (
+                  <div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+                    <h3 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">Lead Distribution</h3>
+                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {Object.entries(premiumInsights.lead_distribution).map(([agentId, count]) => (
+                        <div key={agentId} className="rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60">
+                          <span className="text-slate-600 dark:text-slate-300">{agentId}</span>
+                          <span className="ml-2 font-semibold text-slate-950 dark:text-white">{formatNumber(count)}</span>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
-                </div>
+                ) : null}
 
-                <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    Top Lead Sources
-                  </p>
-                  <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                    {leadSources.length ? (
-                      leadSources.map((row) => (
-                        <div
-                          key={`${row.source_type || row.label}-${row.source_id || row.label}`}
-                          className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                        >
-                          <div className="min-w-0">
-                            <span className="block truncate">{row.label}</span>
-                            {row.source_type ? (
-                              <span className="text-[10px] text-slate-400">
-                                {row.source_type.replace(/_/g, " ")}
-                              </span>
-                            ) : null}
-                          </div>
-                          <span className="text-xs font-semibold">
-                            {row.count}
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-sm text-slate-500">
-                        No lead source data yet.
+                {["factory", "buying_house"].includes(
+                  String(premiumRole || "").toLowerCase(),
+                ) ? (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Recent Profile Viewers</h3>
+                        <Badge tone="default">Limit 8</Badge>
                       </div>
-                    )}
+                      {viewerLoading ? (
+                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                          <Loader2 className="h-4 w-4 animate-spin" /> Loading viewers...
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {profileViewers.length ? (
+                            profileViewers.map((row) => (
+                              <div
+                                key={row.viewer_id}
+                                className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
+                              >
+                                <span className="truncate text-slate-700 dark:text-slate-300">
+                                  {row.viewer?.name || row.viewer_id}
+                                </span>
+                                <span className="ml-3 shrink-0 text-xs text-slate-500 dark:text-slate-400">
+                                  {formatDateTime(row.viewed_at)}
+                                </span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-sm text-slate-500 dark:text-slate-400">No viewers yet.</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Recent Product Viewers</h3>
+                        <Badge tone="default">Limit 8</Badge>
+                      </div>
+                      {viewerLoading ? (
+                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                          <Loader2 className="h-4 w-4 animate-spin" /> Loading viewers...
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {productViewers.length ? (
+                            productViewers.map((row) => (
+                              <div
+                                key={row.viewer_id}
+                                className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
+                              >
+                                <span className="truncate text-slate-700 dark:text-slate-300">
+                                  {row.viewer?.name || row.viewer_id}
+                                </span>
+                                <span className="ml-3 shrink-0 text-xs text-slate-500 dark:text-slate-400">
+                                  {formatDateTime(row.viewed_at)}
+                                </span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-sm text-slate-500 dark:text-slate-400">No viewers yet.</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+
+          {companyAnalytics ? (
+            <div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+              <SectionHeader
+                icon={Building2}
+                title="Company Analytics"
+                right={companyAnalytics.limited ? <Badge tone="amber">Limited</Badge> : <Badge tone="green">Full</Badge>}
+              />
+
+              {companyAnalytics.limited ? (
+                <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+                  Advanced analytics (who viewed, inquiry rate, conversion metrics) are available on Premium. Upgrade to unlock full company analytics.
+                </div>
+              ) : null}
+
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                <StatCard icon={Eye} label="Profile Visits" value={formatNumber(companyTotals.profile_visits ?? 0)} hint="Profiles" subtle />
+                <StatCard icon={Gauge} label="Product Views" value={formatNumber(companyTotals.product_views ?? 0)} hint="Products" subtle />
+                <StatCard icon={Activity} label="Inbound Messages" value={formatNumber(companyTotals.inbound_messages ?? 0)} hint="Messages" subtle />
+                <StatCard icon={TrendingUp} label="Conversion Rate" value={formatPercent(companyTotals.conversion_rate_pct ?? 0)} hint="Percent" subtle />
+                <StatCard icon={Gauge} label="Avg Response Time" value={companyTotals.avg_response_time || "--"} hint="Response" subtle />
+              </div>
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-3">
+                <PanelList
+                  title="Top Viewed Products"
+                  items={topProducts}
+                  emptyText="No product views yet."
+                  renderItem={(item) => (
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{item.title}</span>
+                      <span className="ml-3 font-semibold text-slate-950 dark:text-white">{formatNumber(item.views)}</span>
+                    </div>
+                  )}
+                />
+                <PanelList
+                  title="Profile Visits by Country"
+                  items={visitCountries}
+                  emptyText="No visits yet."
+                  renderItem={(item) => (
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{item.country}</span>
+                      <span className="ml-3 font-semibold text-slate-950 dark:text-white">{formatNumber(item.count)}</span>
+                    </div>
+                  )}
+                />
+                <PanelList
+                  title="Top Lead Sources"
+                  items={leadSources}
+                  emptyText="No lead source data yet."
+                  renderItem={(item) => (
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="truncate">{item.label}</span>
+                        <span className="ml-3 font-semibold text-slate-950 dark:text-white">{formatNumber(item.count)}</span>
+                      </div>
+                      {item.source_type ? (
+                        <div className="text-[10px] text-slate-400">{safeLabel(item.source_type)}</div>
+                      ) : null}
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {platformAnalytics ? (
+            <div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+              <SectionHeader icon={Globe2} title="Platform Analytics" right={<Badge tone="default">Privacy-aware</Badge>} />
+
+              <div className="mb-4 grid gap-3 lg:grid-cols-3">
+                <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
+                  <div className="font-semibold">Scope: {safeLabel(scopeLevel)}</div>
+                  <div className="mt-1 text-xs">Privacy thresholds: {privacyThresholdApplied ? "applied" : "not applied"}.{suppressedFields.length ? ` Suppressed controls: ${suppressedFields.join(", ")}.` : " No suppressed slices in this snapshot."}</div>
+                </div>
+                <div className="rounded-2xl border border-sky-200 bg-white p-4 text-sm text-slate-700 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-slate-300">
+                  {suppressedFields.length ? (
+                    <>
+                      <div className="font-semibold">Suppressed controls</div>
+                      <div className="mt-1 text-xs">{suppressedFields.join(", ")}</div>
+                    </>
+                  ) : (
+                    <div>No suppressed slices in this snapshot.</div>
+                  )}
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                  {privacyThresholdApplied ? (
+                    <div title="Anonymized platform data: identifiers removed/suppressed according to privacy policy">
+                      <span className="inline-flex items-center gap-2 font-semibold"><BadgeInfo className="h-4 w-4" /> Anonymized platform data</span>
+                      <div className="mt-1 text-xs">Identifiers removed/suppressed according to privacy policy</div>
+                    </div>
+                  ) : (
+                    <div>No anonymization threshold active.</div>
+                  )}
                 </div>
               </div>
-            ) : null}
 
-            {platformAnalytics ? (
-              <div className="mt-8 space-y-4">
-                <div className="rounded-2xl bg-blue-50 p-4 text-xs text-blue-900 ring-1 ring-blue-200 dark:bg-blue-500/10 dark:text-blue-200 dark:ring-blue-500/30">
-                  <div className="font-semibold uppercase tracking-[0.12em]">
-                    Scope: {scopeLevel.replace(/_/g, " ")}
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <div>
-                      Privacy thresholds:{" "}
-                      {privacyThresholdApplied ? "applied" : "not applied"}.
-                      {suppressedFields.length
-                        ? ` Suppressed controls: ${suppressedFields.join(", ")}.`
-                        : " No suppressed slices in this snapshot."}
-                    </div>
-                    {privacyThresholdApplied ? (
-                      <div
-                        className="text-[11px] text-slate-500"
-                        title="Anonymized platform data: identifiers removed/suppressed according to privacy policy"
-                      >
-                        ℹ️ Anonymized platform data
-                      </div>
-                    ) : null}
-                  </div>
+              {!searchDataReady ? (
+                <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+                  Search trends are still warming up. We need more search activity to show reliable demand insights. Current events: {searchEventCount}/{searchMinEvents}. Showing proxy demand from buyer requests.
                 </div>
-                {!searchDataReady ? (
-                  <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
-                    Search trends are still warming up. We need more search
-                    activity to show reliable demand insights. Current events:{" "}
-                    {searchEventCount}/{searchMinEvents}. Showing proxy demand
-                    from buyer requests.
-                  </div>
-                ) : null}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <StatCard
-                    label="Total Buyer Requests"
-                    value={platformTotals.buyer_requests ?? 0}
-                  />
-                  <StatCard
-                    label="Repeat Buyer Rate"
-                    value={`${platformTotals.repeat_buyer_rate ?? 0}%`}
-                  />
-                  <StatCard
-                    label="Top Categories"
-                    value={
-                      platformCategories
-                        .map((c) => c.label)
-                        .slice(0, 3)
-                        .join(", ") || "--"
-                    }
-                  />
-                </div>
+              ) : null}
 
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <StatCard icon={Users} label="Total Buyer Requests" value={formatNumber(platformTotals.buyer_requests ?? 0)} hint="Platform" subtle />
+                <StatCard icon={TrendingUp} label="Repeat Buyer Rate" value={formatPercent(platformTotals.repeat_buyer_rate ?? 0)} hint="Retention" subtle />
+                <StatCard icon={Sparkles} label="Top Categories" value={platformTopCategories.length ? platformTopCategories.join(", ") : "--"} hint="Global" subtle />
+              </div>
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
                 {scopeLevel !== "platform_summary_aggregated" ? (
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                        Top Categories by Country
-                      </p>
-                      <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-300">
-                        {platformByCountry.length ? (
-                          platformByCountry.map((row) => (
-                            <div
-                              key={row.country}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                            >
-                              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                {row.country}
-                              </div>
-                              <div className="mt-1 text-sm">
-                                {(row.categories || [])
-                                  .map((c) => c.label)
-                                  .join(", ") || "--"}
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-sm text-slate-500">
-                            No data yet.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                        Price Range Demand
-                      </p>
-                      <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                        {platformPriceDemand.length ? (
-                          platformPriceDemand.map((row) => (
-                            <div
-                              key={row.bucket}
-                              className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                            >
-                              <span className="truncate">{row.bucket}</span>
-                              <span className="text-xs font-semibold">
-                                {row.count}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-sm text-slate-500">
-                            No price-range data yet.
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                  <div className="grid gap-4 lg:grid-cols-2 lg:col-span-2">
+                    <PanelList
+                      title="Top Categories by Country"
+                      items={platformByCountry}
+                      emptyText="No data yet."
+                      renderItem={(item) => (
+                        <div>
+                          <div className="font-medium text-slate-900 dark:text-white">{item.country}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{(item.categories || []).map((c) => c.label).join(", ") || "--"}</div>
+                        </div>
+                      )}
+                    />
+                    <PanelList
+                      title="Price Range Demand"
+                      items={platformPriceDemand}
+                      emptyText="No price-range data yet."
+                      renderItem={(item) => (
+                        <div className="flex items-center justify-between">
+                          <span className="truncate">{item.bucket}</span>
+                          <span className="ml-3 font-semibold text-slate-950 dark:text-white">{formatNumber(item.count)}</span>
+                        </div>
+                      )}
+                    />
                   </div>
                 ) : (
-                  <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
-                    Detailed geography and segment breakdowns are hidden for
-                    this role. Switch to organization-scoped or admin scope for
-                    deeper cuts.
+                  <div className="rounded-3xl border border-dashed border-sky-200 bg-white/70 p-6 text-sm text-slate-600 shadow-sm dark:border-sky-500/20 dark:bg-slate-950/60 dark:text-slate-300 lg:col-span-2">
+                    Detailed geography and segment breakdowns are hidden for this role. Switch to organization-scoped or admin scope for deeper cuts.
                   </div>
                 )}
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      Top Search Categories
-                    </p>
-                    <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                      {platformSearchGlobal.length ? (
-                        platformSearchGlobal.map((row) => (
-                          <div
-                            key={row.label}
-                            className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                          >
-                            <span className="truncate">{row.label}</span>
-                            <span className="text-xs font-semibold">
-                              {row.count}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-sm text-slate-500">
-                          No search data yet.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      Trending Searches (30d)
-                    </p>
-                    <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                      {platformTrending.length ? (
-                        platformTrending.map((row) => (
-                          <div
-                            key={row.label}
-                            className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                          >
-                            <span className="truncate">{row.label}</span>
-                            <span className="text-xs font-semibold">
-                              {row.delta}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-sm text-slate-500">
-                          No trend data yet.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    Search Categories by Country
-                  </p>
-                  <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-300">
-                    {platformSearchByCountry.length ? (
-                      platformSearchByCountry.map((row) => (
-                        <div
-                          key={row.country}
-                          className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                        >
-                          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                            {row.country}
-                          </div>
-                          <div className="mt-1 text-sm">
-                            {(row.categories || [])
-                              .map((c) => c.label)
-                              .join(", ") || "--"}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-sm text-slate-500">
-                        No search data yet.
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    Monthly Demand Trend
-                  </p>
-                  <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                    {platformMonthly.length ? (
-                      platformMonthly.map((row) => (
-                        <div
-                          key={row.month}
-                          className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
-                        >
-                          <span>{row.month}</span>
-                          <span className="text-xs font-semibold">
-                            {row.count}
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-sm text-slate-500">
-                        No monthly data yet.
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
-            ) : null}
-          </>
-        )}
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                <PanelList
+                  title="Top Search Categories"
+                  items={platformSearchGlobal}
+                  emptyText="No search data yet."
+                  renderItem={(item) => (
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{item.label}</span>
+                      <span className="ml-3 font-semibold text-slate-950 dark:text-white">{formatNumber(item.count)}</span>
+                    </div>
+                  )}
+                />
+                <PanelList
+                  title="Trending Searches (30d)"
+                  items={platformTrending}
+                  emptyText="No trend data yet."
+                  renderItem={(item) => (
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{item.label}</span>
+                      <span className="ml-3 font-semibold text-slate-950 dark:text-white">{item.delta}</span>
+                    </div>
+                  )}
+                />
+              </div>
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                <PanelList
+                  title="Search Categories by Country"
+                  items={platformSearchByCountry}
+                  emptyText="No search data yet."
+                  renderItem={(item) => (
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-white">{item.country}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">{(item.categories || []).map((c) => c.label).join(", ") || "--"}</div>
+                    </div>
+                  )}
+                />
+                <PanelList
+                  title="Monthly Demand Trend"
+                  items={platformMonthly}
+                  emptyText="No monthly data yet."
+                  renderItem={(item) => (
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{item.month}</span>
+                      <span className="ml-3 font-semibold text-slate-950 dark:text-white">{formatNumber(item.count)}</span>
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );
