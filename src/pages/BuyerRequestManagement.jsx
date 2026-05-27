@@ -1743,10 +1743,11 @@ export default function BuyerRequestManagement() {
                         <span className="text-sm font-medium">Smart match</span>
                         <Pill className="bg-white/5 text-slate-300">GET /api/requirements/{'{id}'}/matches</Pill>
                       </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ) : null}
-          </div>
 
           {role === "buyer" ? (
             <div className="grid gap-4 border-t border-white/10 p-4 lg:grid-cols-12 lg:p-6">
