@@ -178,7 +178,15 @@ app.use("/uploads", express.static(uploadsRoot));
 const distRoot = path.join(process.cwd(), "dist");
 const serveDist = process.env.SERVE_DIST === "true";
 if (serveDist && fs.existsSync(distRoot)) {
-  app.use(express.static(distRoot));
+  app.use(express.static(distRoot, {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith(".js") || filePath.endsWith(".mjs")) {
+        res.setHeader("Content-Type", "application/javascript");
+      } else if (filePath.endsWith(".css")) {
+        res.setHeader("Content-Type", "text/css");
+      }
+    },
+  }));
 }
 
 app.use(
@@ -246,6 +254,9 @@ app.use(errorHandler);
 
 if (serveDist && fs.existsSync(distRoot)) {
   app.get(/.*/, (req, res) => {
+    if (req.path.match(/\.\w+$/)) {
+      return res.status(404).end();
+    }
     res.sendFile(path.join(distRoot, "index.html"));
   });
 }
