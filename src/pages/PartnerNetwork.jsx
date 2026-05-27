@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { useTheme } from "../lib/ThemeProvider";
 import {
   AlertCircle,
   ArrowRightLeft,
@@ -89,7 +90,8 @@ function Card({ children, className = "" }) {
 export default function PartnerNetwork() {
   const user = getCurrentUser();
   const token = getToken();
-  const [isDark, setIsDark] = useState(true);
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("connected");
   const [targetAccountId, setTargetAccountId] = useState("");
@@ -203,7 +205,6 @@ export default function PartnerNetwork() {
   return (
     <div
       className={cls(
-        isDark ? "dark" : "",
         "min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.24),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_30%),linear-gradient(to_bottom,_#f8fcff,_#edf6ff_35%,_#e2efff)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(96,165,250,0.14),_transparent_25%),linear-gradient(to_bottom,_#0b1120,_#090d18_48%,_#050816)] dark:text-slate-100",
       )}
     >
@@ -253,7 +254,7 @@ export default function PartnerNetwork() {
 
             <ActionButton
               variant="secondary"
-              onClick={() => setIsDark(!isDark)}
+              onClick={toggleTheme}
             >
               {isDark ? (
                 <SunMedium className="h-4 w-4" />
@@ -298,9 +299,6 @@ export default function PartnerNetwork() {
                     Send Request
                   </ActionButton>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  API: POST /api/partners/requests
-                </p>
               </div>
             </Card>
 
@@ -370,9 +368,6 @@ export default function PartnerNetwork() {
                       {item.label}
                     </button>
                   ))}
-                </div>
-                <div className="text-sm text-slate-500 dark:text-slate-400">
-                  GET /api/partners?status={tab}
                 </div>
               </div>
             </Card>
