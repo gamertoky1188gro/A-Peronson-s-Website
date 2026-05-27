@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import AccessDeniedState from "../components/AccessDeniedState";
 import {
   apiRequest,
@@ -13,33 +13,102 @@ const DEFAULT_CREATE_FORM = {
   name: "",
   username: "",
   member_id: "",
-  // Phase 2: "members" are enterprise sub-accounts (agents). Role is fixed server-side.
   role: "agent",
   password: "",
   permissions: [],
   permission_matrix: {},
 };
 
-function Modal({ title, children, onClose }) {
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-2xl p-6 shadow-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <button onClick={onClose} className="text-sm text-gray-500">
-            Close
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function badgeClass(status) {
+  return status === "active"
+    ? "bg-emerald-500/15 text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-300"
+    : "bg-rose-500/15 text-rose-600 ring-1 ring-rose-500/20 dark:text-rose-300";
 }
 
 function createBlankMatrix(sections = []) {
   return sections.reduce(
     (acc, section) => ({ ...acc, [section]: { view: false, edit: false } }),
     {},
+  );
+}
+
+function PermissionChips({ permissions }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {permissions.length ? (
+        permissions.map((perm) => (
+          <span
+            key={perm}
+            className="rounded-full border border-sky-500/20 bg-sky-500/10 px-2.5 py-0.5 text-xs font-medium text-sky-700 dark:text-sky-200"
+          >
+            {perm}
+          </span>
+        ))
+      ) : (
+        <span className="text-xs text-slate-400">—</span>
+      )}
+    </div>
+  );
+}
+
+function Modal({ title, children, onClose, footer }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-4xl rounded-3xl border border-white/10 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{title}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
+            aria-label="Close modal"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="max-h-[75vh] overflow-y-auto px-6 py-5">{children}</div>
+        {footer ? (
+          <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-800">{footer}</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function InfoCard({ title, value }) {
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">{title}</div>
+      <div className="mt-2 text-sm font-medium text-slate-900 dark:text-white">{value}</div>
+    </div>
+  );
+}
+
+function ActionButton({ label, onClick, variant = "default" }) {
+  const styles = {
+    default:
+      "border-slate-200 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300",
+    warning:
+      "border-amber-500/20 bg-amber-500/10 text-amber-800 hover:border-amber-500/40 dark:text-amber-100",
+    danger:
+      "border-rose-500/20 bg-rose-500/10 text-rose-800 hover:border-rose-500/40 dark:text-rose-100",
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={classNames(
+        "rounded-xl border px-3.5 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow-md",
+        styles[variant],
+      )}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -64,6 +133,7 @@ export default function MemberManagement() {
   const [activePermissionMember, setActivePermissionMember] = useState(null);
 
   const token = getToken();
+  const editFormRef = useRef(null);
 
   async function loadMembers() {
     setLoading(true);
@@ -147,7 +217,6 @@ export default function MemberManagement() {
         body: payload,
       });
       const created = data?.member || null;
-      // If the UI didn't provide a password, server may return a generated temp password to share with the agent.
       const temp = created?.temporary_password
         ? ` Temporary password: ${created.temporary_password}`
         : "";
@@ -228,187 +297,228 @@ export default function MemberManagement() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold">Member Management</h1>
-            <p className="text-sm text-[#5A5A5A]">
-              Manage sub-accounts and permissions
-            </p>
-          </div>
-          <button
-            className="px-4 py-2 bg-[#0A66C2] text-white rounded-md disabled:opacity-50"
-            onClick={() => setShowCreate(true)}
-            disabled={!canManageMembers}
-          >
-            + Add New Member
-          </button>
-        </div>
-
-        {!!error && (
-          <div className="mb-3 text-sm text-red-700 bg-red-50 shadow-borderless dark:shadow-borderlessDark rounded p-2">
-            {error}
-          </div>
-        )}
-        {!!success && (
-          <div className="mb-3 text-sm text-green-700 bg-green-50 shadow-borderless dark:shadow-borderlessDark rounded p-2">
-            {success}
-          </div>
-        )}
-
-        {forbidden || !canManageMembers ? (
+  if (forbidden || !canManageMembers) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-sky-950/40 dark:text-white">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <AccessDeniedState message="You do not have permission to manage members for this organization." />
-        ) : null}
+        </div>
+      </div>
+    );
+  }
 
-        {forbidden || !canManageMembers ? null : (
-          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
-            <div className="mb-4 flex items-center gap-3">
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search members"
-                className="px-3 py-2 shadow-borderless dark:shadow-borderlessDark rounded w-64"
-              />
-              <div className="text-sm text-[#5A5A5A]">
-                Plan: {planLabel} • Free limit: {constraints.free_member_limit}{" "}
-                • Premium limit: {premiumLimitLabel}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-sky-950/40 dark:text-white">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="rounded-[2rem] border border-white/60 bg-white/80 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <div className="mb-2 inline-flex rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 dark:text-sky-200">
+                /member-management
               </div>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+                Member Management
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300 sm:text-base">
+                Manage sub-accounts and permissions
+              </p>
             </div>
-            {!canTeamAccess ? (
-              <div className="mb-3 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-amber-50 p-3 text-xs text-amber-900">
-                Team/agent access management is a Premium feature. Upgrade to
-                edit permissions and access controls.
-              </div>
-            ) : null}
 
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="relative w-full sm:w-80">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search members"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pl-11 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                />
+                <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">⌕</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setError(""); setSuccess(""); setShowCreate(true); }}
+                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:brightness-110"
+              >
+                + Add New Member
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <InfoCard title="Plan" value={`${planLabel} • Free limit: ${constraints.free_member_limit} • Premium limit: ${premiumLimitLabel}`} />
+            <InfoCard title="Team access" value={canTeamAccess ? "Premium permissions enabled" : "Premium permissions locked"} />
+            <InfoCard title="Members" value={`${filtered.length} shown / ${members.length} total`} />
+          </div>
+
+          {!canTeamAccess ? (
+            <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+              Team/agent access management is a Premium feature. Upgrade to edit permissions and access controls.
+            </div>
+          ) : null}
+
+          {error ? (
+            <div className="mt-5 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-800 dark:text-rose-100">
+              {error}
+            </div>
+          ) : null}
+          {success ? (
+            <div className="mt-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-800 dark:text-emerald-100">
+              {success}
+            </div>
+          ) : null}
+
+          <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="text-[#5A5A5A]">
-                    <th className="py-2 px-3">Name</th>
-                    <th className="py-2 px-3">Username</th>
-                    <th className="py-2 px-3">Member ID</th>
-                    <th className="py-2 px-3">Role</th>
-                    <th className="py-2 px-3">Status</th>
-                    <th className="py-2 px-3">Actions</th>
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                <thead className="bg-slate-50 dark:bg-slate-900/70">
+                  <tr>
+                    {["Name", "Username", "Member ID", "Role", "Status", "Actions"].map((h) => (
+                      <th
+                        key={h}
+                        className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400"
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody>
-                  {loading && (
+                <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
+                  {loading ? (
                     <tr>
-                      <td className="py-4 px-3" colSpan={6}>
+                      <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         Loading members...
                       </td>
                     </tr>
-                  )}
-                  {!loading && filtered.length === 0 && (
+                  ) : filtered.length ? (
+                    filtered.map((m) => (
+                      <tr key={m.id} className="transition hover:bg-sky-50/50 dark:hover:bg-slate-900/60">
+                        <td className="px-6 py-5">
+                          <div>
+                            <div className="font-semibold text-slate-900 dark:text-white">{m.name}</div>
+                            <div className="mt-1">
+                              <PermissionChips permissions={m.permissions || []} />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">{m.username}</td>
+                        <td className="px-6 py-5 text-sm font-medium text-slate-700 dark:text-slate-200">{m.member_id || m.account_id}</td>
+                        <td className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">{m.role}</td>
+                        <td className="px-6 py-5">
+                          <span className={classNames("inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize", badgeClass(m.status))}>
+                            {m.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-wrap gap-2">
+                            <ActionButton label="Edit" onClick={() => setActivePermissionMember(m)} />
+                            <ActionButton label="Reset" onClick={() => handleResetPassword(m.id)} />
+                            <ActionButton label="Deactivate" onClick={() => handleDeactivateOrRemove(m.id, false)} variant="warning" />
+                            <ActionButton label="Remove" onClick={() => handleDeactivateOrRemove(m.id, true)} variant="danger" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
                     <tr>
-                      <td className="py-4 px-3" colSpan={6}>
+                      <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         No members found.
                       </td>
                     </tr>
                   )}
-                  {!loading &&
-                    filtered.map((m) => (
-                      <tr
-                        key={m.id}
-                        className="shadow-dividerT dark:shadow-dividerTDark"
-                      >
-                        <td className="py-2 px-3">{m.name}</td>
-                        <td className="py-2 px-3">{m.username}</td>
-                        <td className="py-2 px-3">
-                          {m.member_id || m.account_id}
-                        </td>
-                        <td className="py-2 px-3">{m.role}</td>
-                        <td className="py-2 px-3">{m.status}</td>
-                        <td className="py-2 px-3">
-                          <button
-                            className="px-2 py-1 bg-[#0A66C2] text-white rounded mr-2"
-                            onClick={() => setActivePermissionMember(m)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="px-2 py-1 shadow-borderless dark:shadow-borderlessDark rounded mr-2"
-                            onClick={() => handleResetPassword(m.id)}
-                          >
-                            Reset
-                          </button>
-                          <button
-                            className="px-2 py-1 shadow-borderless dark:shadow-borderlessDark rounded mr-2 text-amber-700"
-                            onClick={() =>
-                              handleDeactivateOrRemove(m.id, false)
-                            }
-                          >
-                            Deactivate
-                          </button>
-                          <button
-                            className="px-2 py-1 shadow-borderless dark:shadow-borderlessDark rounded text-red-600"
-                            onClick={() => handleDeactivateOrRemove(m.id, true)}
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
                 </tbody>
               </table>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {showCreate && (
-        <Modal title="Create member" onClose={() => setShowCreate(false)}>
-          <form className="space-y-3" onSubmit={handleCreateMember}>
-            <input
-              className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-              placeholder="Member name"
-              value={createForm.name}
-              onChange={(e) =>
-                setCreateForm({ ...createForm, name: e.target.value })
-              }
-            />
-            <input
-              className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-              placeholder="Unique username"
-              value={createForm.username}
-              onChange={(e) =>
-                setCreateForm({ ...createForm, username: e.target.value })
-              }
-            />
-            <input
-              className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-              placeholder="Unique member ID"
-              value={createForm.member_id}
-              onChange={(e) =>
-                setCreateForm({ ...createForm, member_id: e.target.value })
-              }
-            />
-            <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-              Role is fixed to <span className="font-semibold">Agent</span>.
-              Agents login using their{" "}
-              <span className="font-semibold">Member ID</span>.
+        <Modal
+          title="Create member"
+          onClose={() => setShowCreate(false)}
+          footer={
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setShowCreate(false)}
+                className="rounded-2xl border border-slate-200 px-5 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateMember}
+                className="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2.5 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:brightness-110"
+              >
+                Create
+              </button>
             </div>
-            <input
-              className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-              placeholder="Initial password (optional -- auto-generate if empty)"
-              value={createForm.password}
-              onChange={(e) =>
-                setCreateForm({ ...createForm, password: e.target.value })
-              }
-            />
+          }
+        >
+          <form className="space-y-6" onSubmit={handleCreateMember}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Member name</span>
+                <input
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                  placeholder="Enter member name"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Unique username</span>
+                <input
+                  value={createForm.username}
+                  onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                  placeholder="Enter username"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Unique member ID</span>
+                <input
+                  value={createForm.member_id}
+                  onChange={(e) => setCreateForm({ ...createForm, member_id: e.target.value })}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                  placeholder="Enter member ID"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Initial password (optional)</span>
+                <input
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                  placeholder="Leave empty to auto-generate"
+                />
+              </label>
+            </div>
 
-            <PermissionMatrixEditor
-              matrix={createForm.permission_matrix}
-              sections={constraints.permission_matrix_sections}
-              onChange={(permission_matrix) =>
-                setCreateForm({ ...createForm, permission_matrix })
-              }
-              disabled={!canTeamAccess}
-            />
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/40">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Role is fixed to Agent. Agents login using their Member ID.</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Role: Agent (fixed)</p>
+              {!canTeamAccess ? (
+                <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
+                  Team/agent access management is a Premium feature. Upgrade to edit permissions and access controls.
+                </div>
+              ) : null}
+            </div>
+
+            <div>
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-base font-semibold text-slate-900 dark:text-white">Permission matrix</h4>
+                <span className="text-sm text-slate-500 dark:text-slate-400">view/edit per module</span>
+              </div>
+              <PermissionMatrixEditor
+                matrix={createForm.permission_matrix}
+                sections={constraints.permission_matrix_sections}
+                onChange={(permission_matrix) =>
+                  setCreateForm({ ...createForm, permission_matrix })
+                }
+                disabled={!canTeamAccess}
+              />
+            </div>
 
             <PermissionSelector
               permissions={createForm.permissions}
@@ -420,12 +530,11 @@ export default function MemberManagement() {
               disabled={!canTeamAccess}
             />
 
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#0A66C2] text-white rounded"
-            >
-              Create
-            </button>
+            {getConflictMessage(createForm.permissions) ? (
+              <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm font-medium text-rose-800 dark:text-rose-100">
+                {getConflictMessage(createForm.permissions)}
+              </div>
+            ) : null}
           </form>
         </Modal>
       )}
@@ -434,14 +543,34 @@ export default function MemberManagement() {
         <Modal
           title={`Edit member: ${activePermissionMember.name}`}
           onClose={() => setActivePermissionMember(null)}
+          footer={
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setActivePermissionMember(null)}
+                className="rounded-2xl border border-slate-200 px-5 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (editFormRef.current) {
+                    handleUpdateMember(activePermissionMember.id, editFormRef.current);
+                  }
+                }}
+                className="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2.5 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:brightness-110"
+              >
+                Save changes
+              </button>
+            </div>
+          }
         >
           <MemberEditor
+            ref={editFormRef}
             member={activePermissionMember}
             constraints={constraints}
             getConflictMessage={getConflictMessage}
-            onSave={(payload) =>
-              handleUpdateMember(activePermissionMember.id, payload)
-            }
             canTeamAccess={canTeamAccess}
           />
         </Modal>
@@ -458,11 +587,11 @@ function PermissionSelector({
   disabled = false,
 }) {
   return (
-    <div>
-      <div className="text-sm mb-1">Permissions</div>
-      <div className={`grid grid-cols-2 gap-2${disabled ? " opacity-60" : ""}`}>
+    <div className={disabled ? " opacity-60" : ""}>
+      <div className="mb-3 text-base font-semibold text-slate-900 dark:text-white">Permissions</div>
+      <div className="grid grid-cols-2 gap-3">
         {validPermissions.map((perm) => (
-          <label key={perm} className="text-sm flex items-center gap-2">
+          <label key={perm} className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-sky-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
             <input
               type="checkbox"
               checked={permissions.includes(perm)}
@@ -473,13 +602,16 @@ function PermissionSelector({
                   : permissions.filter((p) => p !== perm);
                 onChange(next);
               }}
+              className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
             />
             {perm}
           </label>
         ))}
       </div>
       {!!conflict && (
-        <div className="text-red-600 text-sm mt-1">{conflict}</div>
+        <div className="mt-3 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm font-medium text-rose-800 dark:text-rose-100">
+          {conflict}
+        </div>
       )}
     </div>
   );
@@ -492,72 +624,74 @@ function PermissionMatrixEditor({
   disabled = false,
 }) {
   return (
-    <div>
-      <div className="text-sm mb-1">
-        Permission matrix (view/edit per module)
-      </div>
-      <div className={`space-y-2${disabled ? " opacity-60" : ""}`}>
-        {sections.map((section) => (
-          <div
-            key={section}
-            className="flex items-center justify-between shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-          >
-            <span className="text-sm font-medium capitalize">{section}</span>
-            <div className="flex items-center gap-4 text-sm">
-              <label className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={Boolean(matrix?.[section]?.view)}
-                  disabled={disabled}
-                  onChange={(e) =>
-                    onChange({
-                      ...matrix,
-                      [section]: {
-                        ...matrix?.[section],
-                        view: e.target.checked,
-                      },
-                    })
-                  }
-                />
-                View
-              </label>
-              <label className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={Boolean(matrix?.[section]?.edit)}
-                  disabled={disabled}
-                  onChange={(e) =>
-                    onChange({
-                      ...matrix,
-                      [section]: {
-                        ...matrix?.[section],
-                        edit: e.target.checked,
-                      },
-                    })
-                  }
-                />
-                Edit
-              </label>
+    <div className={disabled ? " opacity-60" : ""}>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {sections.map((section) => {
+          const current = matrix?.[section] || { view: false, edit: false };
+          const isMembers = section === "members";
+          return (
+            <div
+              key={section}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">
+                  {section}
+                </span>
+                {isMembers ? (
+                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    Forced false
+                  </span>
+                ) : null}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-sky-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
+                  <input
+                    type="checkbox"
+                    checked={isMembers ? false : !!current.view}
+                    disabled={disabled || isMembers}
+                    onChange={(e) =>
+                      onChange({
+                        ...matrix,
+                        [section]: { ...current, view: e.target.checked },
+                      })
+                    }
+                    className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  View
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-sky-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
+                  <input
+                    type="checkbox"
+                    checked={isMembers ? false : !!current.edit}
+                    disabled={disabled || isMembers}
+                    onChange={(e) =>
+                      onChange({
+                        ...matrix,
+                        [section]: { ...current, edit: e.target.checked },
+                      })
+                    }
+                    className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  Edit
+                </label>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function MemberEditor({
-  member,
-  constraints,
-  getConflictMessage,
-  onSave,
-  canTeamAccess,
-}) {
+const MemberEditor = forwardRef(function MemberEditor(
+  { member, constraints, getConflictMessage, canTeamAccess },
+  ref,
+) {
   const [form, setForm] = useState({
     name: member.name || "",
     username: member.username || "",
     member_id: member.member_id || member.account_id || "",
-    // Role is fixed to agent; keep in payload for backwards compatibility but prevent editing.
     role: "agent",
     status: member.status || "active",
     permissions: member.permissions || [],
@@ -568,47 +702,79 @@ function MemberEditor({
 
   const conflict = getConflictMessage(form.permissions);
 
+  useEffect(() => {
+    if (ref) {
+      if (typeof ref === "function") ref(form);
+      else ref.current = form;
+    }
+  }, [form, ref]);
+
   return (
-    <div className="space-y-3">
-      <input
-        className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        placeholder="Member name"
-      />
-      <input
-        className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-        value={form.username}
-        onChange={(e) => setForm({ ...form, username: e.target.value })}
-        placeholder="Username"
-      />
-      <input
-        className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-        value={form.member_id}
-        onChange={(e) => setForm({ ...form, member_id: e.target.value })}
-        placeholder="Member ID"
-      />
-      <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-        Role: <span className="font-semibold">Agent</span> (fixed)
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Member name</span>
+          <input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+            placeholder="Enter member name"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Username</span>
+          <input
+            value={form.username}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+            placeholder="Enter username"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Member ID</span>
+          <input
+            value={form.member_id}
+            onChange={(e) => setForm({ ...form, member_id: e.target.value })}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+            placeholder="Enter member ID"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Status</span>
+          <select
+            value={form.status}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+          >
+            <option value="active">active</option>
+            <option value="inactive">inactive</option>
+          </select>
+        </label>
       </div>
 
-      <select
-        className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2"
-        value={form.status}
-        onChange={(e) => setForm({ ...form, status: e.target.value })}
-      >
-        <option value="active">active</option>
-        <option value="inactive">inactive</option>
-      </select>
+      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/40">
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Role: Agent (fixed)</p>
+        {!canTeamAccess ? (
+          <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
+            Team/agent access management is a Premium feature. Upgrade to edit permissions and access controls.
+          </div>
+        ) : null}
+      </div>
 
-      <PermissionMatrixEditor
-        matrix={form.permission_matrix}
-        sections={constraints.permission_matrix_sections}
-        onChange={(permission_matrix) =>
-          setForm({ ...form, permission_matrix })
-        }
-        disabled={!canTeamAccess}
-      />
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h4 className="text-base font-semibold text-slate-900 dark:text-white">Permission matrix</h4>
+          <span className="text-sm text-slate-500 dark:text-slate-400">view/edit per module</span>
+        </div>
+        <PermissionMatrixEditor
+          matrix={form.permission_matrix}
+          sections={constraints.permission_matrix_sections}
+          onChange={(permission_matrix) =>
+            setForm({ ...form, permission_matrix })
+          }
+          disabled={!canTeamAccess}
+        />
+      </div>
 
       <PermissionSelector
         permissions={form.permissions}
@@ -618,12 +784,11 @@ function MemberEditor({
         disabled={!canTeamAccess}
       />
 
-      <button
-        className="px-4 py-2 bg-[#0A66C2] text-white rounded"
-        onClick={() => onSave(form)}
-      >
-        Save changes
-      </button>
+      {conflict ? (
+        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm font-medium text-rose-800 dark:text-rose-100">
+          {conflict}
+        </div>
+      ) : null}
     </div>
   );
-}
+});
