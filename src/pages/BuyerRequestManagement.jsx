@@ -1741,7 +1741,7 @@ export default function BuyerRequestManagement() {
                     <div className="mt-4 rounded-2xl border border-white/10 p-4">
                       <div className="mb-3 flex items-center justify-between">
                         <span className="text-sm font-medium">Smart match</span>
-                        <Pill className="bg-white/5 text-slate-300">GET /api/requirements/{"{id}"}/matches</Pill>
+                        <Pill className="bg-white/5 text-slate-300">GET /api/requirements/{'{id}'}/matches</Pill>
                       </div>
                 </div>
               </div>
