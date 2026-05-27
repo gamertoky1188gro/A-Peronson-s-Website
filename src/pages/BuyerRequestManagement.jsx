@@ -961,7 +961,7 @@ export default function BuyerRequestManagement() {
           </div>
 
           <div className="grid gap-4 p-4 lg:grid-cols-12 lg:p-6">
-            <div className="lg:col-span-8 xl:col-span-8">
+            <div className={role === "buyer" ? "lg:col-span-8 xl:col-span-8" : "lg:col-span-12"}>
               <div className={`rounded-[28px] border p-5 ${panel}`}>
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -1714,8 +1714,8 @@ export default function BuyerRequestManagement() {
               </div>
             </div>
 
+            {role === "buyer" ? (
             <div className="space-y-4 lg:col-span-4 xl:col-span-4">
-              {role === "buyer" ? (
                 <div className={`rounded-[28px] border p-5 ${panel}`}>
                   <div className="mb-4 flex items-center justify-between">
                     <div>
@@ -1743,11 +1743,9 @@ export default function BuyerRequestManagement() {
                         <span className="text-sm font-medium">Smart match</span>
                         <Pill className="bg-white/5 text-slate-300">GET /api/requirements/{"{id}"}/matches</Pill>
                       </div>
-                    </div>
-                  ) : null}
                 </div>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </div>
 
           {role === "buyer" ? (
