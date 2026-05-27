@@ -2048,6 +2048,7 @@ export default function BuyerRequestManagement() {
               </div>
             </div>
           ) : null}
+          </div>
         </div>
       </div>
     </div>
