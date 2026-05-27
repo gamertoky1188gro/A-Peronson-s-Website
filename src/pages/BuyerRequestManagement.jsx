@@ -29,11 +29,9 @@ import {
   MoonStar,
   Plus,
   RefreshCw,
-  ShieldCheck,
   Sparkles,
   SunMedium,
   Trash2,
-  Users,
   X,
   Zap,
 } from "lucide-react";
@@ -348,7 +346,18 @@ export default function BuyerRequestManagement() {
     secureHasEntitlement("smart_supplier_matching") ||
     hasEntitlement(user, "smart_supplier_matching");
 
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(() => {
+    try {
+      const stored = localStorage.getItem("buyer-requests-theme");
+      if (stored === "dark" || stored === "light") return stored;
+    } catch {}
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+    return "dark";
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem("buyer-requests-theme", theme); } catch {}
+  }, [theme]);
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [step, setStep] = useState(0);
@@ -933,13 +942,12 @@ export default function BuyerRequestManagement() {
               <div className="flex flex-wrap items-center gap-2">
                 <div className={`flex items-center gap-2 rounded-2xl border px-2 py-2 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}>
                   {roles.map((r) => (
-                    <button
+                    <span
                       key={r}
-                      onClick={() => {}}
-                      className={`rounded-xl px-3 py-2 text-sm font-medium transition ${role === r ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : dark ? "text-slate-300 hover:bg-white/10" : "text-slate-600 hover:bg-slate-100"}`}
+                      className={`rounded-xl px-3 py-2 text-sm font-medium ${role === r ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : dark ? "text-slate-500" : "text-slate-400"}`}
                     >
                       {r === "buying_house" ? "Buying House" : r.charAt(0).toUpperCase() + r.slice(1)}
-                    </button>
+                    </span>
                   ))}
                 </div>
                 {role !== "buyer" ? (
@@ -960,12 +968,6 @@ export default function BuyerRequestManagement() {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Pill className={`${dark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700"}`}>POST /api/requirements</Pill>
-              <Pill className={`${dark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700"}`}>GET /api/requirements/browse</Pill>
-              <Pill className={`${dark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700"}`}>POST /api/ai/requirements/extract</Pill>
-              <Pill className={`${dark ? "bg-white/5 text-slate-200" : "bg-white text-slate-700"}`}>GET /api/requirements/search</Pill>
-            </div>
           </div>
 
           <div className="grid gap-4 p-4 lg:grid-cols-12 lg:p-6">
@@ -1723,35 +1725,6 @@ export default function BuyerRequestManagement() {
             </div>
 
             <div className="space-y-4 lg:col-span-4 xl:col-span-4">
-              <div className={`rounded-[28px] border p-5 ${panel}`}>
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-3 text-white">
-                      <ShieldCheck className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Role access</h3>
-                      <p className={`text-xs ${soft}`}>Buyer, buying house, admin</p>
-                    </div>
-                  </div>
-                  <Pill className="bg-emerald-500/15 text-emerald-300">Auth required</Pill>
-                </div>
-                <div className="grid gap-3 text-sm">
-                  <div className={`rounded-2xl border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}>
-                    <div className="font-medium">Buyer</div>
-                    <div className={`mt-1 ${soft}`}>Create, manage, browse summaries, and attach files.</div>
-                  </div>
-                  <div className={`rounded-2xl border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}>
-                    <div className="font-medium">Buying house</div>
-                    <div className={`mt-1 ${soft}`}>Lead queue, assignment dropdowns, and request tracking.</div>
-                  </div>
-                  <div className={`rounded-2xl border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}>
-                    <div className="font-medium">Admin</div>
-                    <div className={`mt-1 ${soft}`}>Manage lead queue, update requests, and delete requests.</div>
-                  </div>
-                </div>
-              </div>
-
               {role === "buyer" ? (
                 <div className={`rounded-[28px] border p-5 ${panel}`}>
                   <div className="mb-4 flex items-center justify-between">
@@ -1784,17 +1757,6 @@ export default function BuyerRequestManagement() {
                   ) : null}
                 </div>
               ) : null}
-
-              <div className={`rounded-[28px] border p-5 ${panel}`}>
-                <h3 className="mb-4 font-semibold">Technical notes</h3>
-                <div className={`space-y-3 text-sm ${soft}`}>
-                  <div>{"\u2022"} JWT token from getToken() for protected calls.</div>
-                  <div>{"\u2022"} Document uploads use bearer auth.</div>
-                  <div>{"\u2022"} Form-to-payload maps camelCase to snake_case.</div>
-                  <div>{"\u2022"} Browse view shows redacted market data only.</div>
-                  <div>{"\u2022"} Manual refresh buttons only; no auto-refresh.</div>
-                </div>
-              </div>
             </div>
           </div>
 
