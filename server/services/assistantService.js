@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import { spawn, execSync } from "child_process";
 import { GoogleGenAI } from "@google/genai";
 import { createOpencodeClient } from "@opencode-ai/sdk";
 import crypto from "crypto";
@@ -911,9 +911,28 @@ function formatSessionId(userId) {
   return `session-${userId}`;
 }
 
+function isOpencodeBinaryAvailable() {
+  try {
+    execSync("which opencode", { stdio: "ignore" });
+    return true;
+  } catch {
+    try {
+      execSync("where opencode", { stdio: "ignore" });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
 async function ensureOpencodeServer() {
   const cfg = aiConfig.opencode;
   const defaultPort = parseInt(cfg.baseUrl.split(":").pop()) || 4096;
+
+  if (!isOpencodeBinaryAvailable()) {
+    logError("opencode binary not found in PATH — cannot start local server");
+    return null;
+  }
 
   for (let port = defaultPort; port < defaultPort + 20; port++) {
     logInfo("Checking for opencode server", { port });
@@ -937,6 +956,12 @@ async function ensureOpencodeServer() {
         env: { ...process.env, OPENCODE_LOG_LEVEL: "DEBUG" },
       });
 
+      let spawnError = null;
+      child.on("error", (err) => {
+        spawnError = err;
+        logError("Opencode spawn error", { port, error: err.message });
+      });
+
       child.stderr.on("data", (d) => {
         logError("Opencode server stderr", { data: d.toString() });
       });
@@ -948,10 +973,11 @@ async function ensureOpencodeServer() {
         if (opencodePort === port) opencodePort = null;
       });
 
-      // Poll until healthy or timeout
+      // Poll until healthy, spawn error, or timeout
       const started = await new Promise((resolve) => {
         const deadline = Date.now() + 20000;
         const poll = () => {
+          if (spawnError) return resolve(false);
           if (Date.now() > deadline) return resolve(false);
           checkOpencodeRunning(port).then((ok) => {
             if (ok) return resolve(true);

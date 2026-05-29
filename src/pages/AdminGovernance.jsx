@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { apiRequest } from "../lib/auth";
+import { apiRequest, getToken } from "../lib/auth";
 import {
   Activity,
   ArrowRight,
@@ -196,9 +196,9 @@ export default function AdminGovernance() {
 
   const load = async () => {
     const [policyRes, historyRes, templatesRes] = await Promise.all([
-      apiRequest("/admin/governance/policies"),
-      apiRequest("/admin/governance/enforcement/history?limit=50"),
-      apiRequest("/admin/governance/templates"),
+      apiRequest("/admin/governance/policies", { token: getToken() }),
+      apiRequest("/admin/governance/enforcement/history?limit=50", { token: getToken() }),
+      apiRequest("/admin/governance/templates", { token: getToken() }),
     ]);
     setPolicies(policyRes?.items || []);
     setHistory(historyRes?.items || []);
@@ -223,6 +223,7 @@ export default function AdminGovernance() {
   const savePolicy = async () => {
     await apiRequest("/admin/governance/policies", {
       method: "POST",
+      token: getToken(),
       body: policy,
     });
     setPolicy(initialPolicy);
@@ -234,6 +235,7 @@ export default function AdminGovernance() {
     const rules = JSON.parse(version.rulesJson || "{}");
     await apiRequest("/admin/governance/policy-versions", {
       method: "POST",
+      token: getToken(),
       body: {
         policyId: version.policyId,
         status: version.status,
@@ -253,6 +255,7 @@ export default function AdminGovernance() {
   const simulate = async () => {
     const result = await apiRequest("/admin/governance/simulate", {
       method: "POST",
+      token: getToken(),
       body: {
         policyVersionId: simulation.policyVersionId,
         actor: {
@@ -269,14 +272,17 @@ export default function AdminGovernance() {
     if (!userId) return;
     const signals = await apiRequest(
       `/admin/governance/trust/signals?user_id=${encodeURIComponent(userId)}`,
+      { token: getToken() },
     );
     setTrustSignals(signals);
     const evalRow = await apiRequest("/admin/governance/trust/evaluate", {
       method: "POST",
+      token: getToken(),
       body: { user_id: userId, decision: "auto_evaluated" },
     });
     await apiRequest("/admin/governance/enforcement/apply", {
       method: "POST",
+      token: getToken(),
       body: {
         userId,
         evaluationId: evalRow?.id,
@@ -290,6 +296,7 @@ export default function AdminGovernance() {
   const saveTemplate = async () => {
     await apiRequest("/admin/governance/templates", {
       method: "POST",
+      token: getToken(),
       body: initialTemplate,
     });
     setStatus("Template saved");
@@ -299,6 +306,7 @@ export default function AdminGovernance() {
   const generateReport = async () => {
     const result = await apiRequest("/admin/governance/reports/monthly", {
       method: "POST",
+      token: getToken(),
       body: { month: reportMonth },
     });
     setMonthlyReport(result?.item || null);
