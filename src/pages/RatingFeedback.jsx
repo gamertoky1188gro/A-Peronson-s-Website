@@ -72,6 +72,8 @@ export default function RatingFeedback() {
   const focusProfileKey = searchParams.get("profile_key") || "";
 
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [lookupDone, setLookupDone] = useState(false);
   const [error, setError] = useState("");
   const [items, setItems] = useState([]);
   const [lookup, setLookup] = useState({});
@@ -111,9 +113,11 @@ export default function RatingFeedback() {
               }, {});
               setLookup(map);
             })
-            .catch(() => setLookup({}));
+            .catch(() => setLookup({}))
+            .finally(() => setLookupDone(true));
         } else {
           setLookup({});
+          setLookupDone(true);
         }
       })
       .catch((err) => {
@@ -122,6 +126,12 @@ export default function RatingFeedback() {
       })
       .finally(() => setLoading(false));
   }, [token]);
+
+  useEffect(() => {
+    if (pageLoading && !loading && lookupDone) {
+      setPageLoading(false);
+    }
+  }, [pageLoading, loading, lookupDone]);
 
   function updateDraft(id, patch) {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -151,8 +161,8 @@ export default function RatingFeedback() {
     }
   }
 
-  if (loading) {
-    return <NeonAtom fill size={64} text="Loading feedback requests..." />;
+  if (pageLoading) {
+    return <NeonAtom fill />;
   }
 
   if (error) {

@@ -341,7 +341,7 @@ function formatRequestStatus(status = "") {
 
 export default function BuyerRequestManagement() {
   const user = useMemo(() => getCurrentUser(), []);
-  const { user: secureUser } = useSecureUser();
+  const { user: secureUser, loading: secureLoading } = useSecureUser();
   const { hasEntitlement: secureHasEntitlement } = useEntitlements();
   const role = secureUser?.role || String(user?.role || "").toLowerCase();
   const canSmartMatch =
@@ -365,6 +365,7 @@ export default function BuyerRequestManagement() {
 
   const [loading, setLoading] = useState(true);
   const [loadingBrowse, setLoadingBrowse] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -566,6 +567,12 @@ export default function BuyerRequestManagement() {
     loadBrowse();
     loadAgents();
   }, [loadAgents, loadBrowse, loadRequests]);
+
+  useEffect(() => {
+    if (pageLoading && !loading && !secureLoading && !loadingBrowse) {
+      setPageLoading(false);
+    }
+  }, [pageLoading, loading, secureLoading, loadingBrowse]);
 
   async function createRequest(statusOverride = "open") {
     if (!token) return;
@@ -909,6 +916,10 @@ export default function BuyerRequestManagement() {
     role === "buyer"
       ? "Create structured requests so factories and buying houses can compare requirements quickly."
       : "Lead queue for buyer requests. Use Assign to route a request to a specific agent.";
+
+  if (pageLoading) {
+    return <NeonAtom fill />;
+  }
 
   return (
     <div className={`min-h-screen ${shell}`}>
@@ -1655,9 +1666,7 @@ export default function BuyerRequestManagement() {
                         </button>
                       </div>
 
-                      {loading ? (
-                        <NeonAtom fill size={64} text="Loading..." />
-                      ) : !myRequests.length ? (
+                      {!myRequests.length ? (
                         <div className={`text-sm ${soft}`}>No open requests.</div>
                       ) : (
                         <div className="overflow-hidden rounded-[22px] border border-white/10">
@@ -1768,9 +1777,7 @@ export default function BuyerRequestManagement() {
                     </button>
                   </div>
 
-                  {loading ? (
-                    <NeonAtom fill size={64} text="Loading..." />
-                  ) : !myRequests.length ? (
+                  {!myRequests.length ? (
                     <div className={`text-sm ${soft}`}>No requests yet.</div>
                   ) : (
                     <div className="grid gap-4">

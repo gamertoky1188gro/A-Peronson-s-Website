@@ -440,6 +440,7 @@ export default function ChatInterface() {
   const [draftMessage, setDraftMessage] = useState("");
   const [isLiveMessagingEnabled] = useState(true);
   const [, setChatConnectionStatus] = useState("offline");
+  const [pageLoading, setPageLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [policyFeedback, setPolicyFeedback] = useState({
@@ -473,7 +474,7 @@ export default function ChatInterface() {
   const activeThreadMatchIdRef = useRef("");
   const pendingMatchIdRef = useRef("");
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
-  const { user: secureUser } = useSecureUser();
+  const { user: secureUser, loading: secureLoading } = useSecureUser();
   const navigate = useNavigate();
   const location = useLocation();
   const isLight = themeMode === "light";
@@ -683,6 +684,16 @@ export default function ChatInterface() {
   useEffect(() => {
     loadInbox();
   }, [loadInbox]);
+
+  useEffect(() => {
+    if (pageLoading && !loading && !secureLoading) {
+      if (!activeThread?.matchId) {
+        setPageLoading(false);
+      } else if (messagesByThread[activeThread.matchId]) {
+        setPageLoading(false);
+      }
+    }
+  }, [pageLoading, loading, secureLoading, activeThread, messagesByThread]);
 
   const filteredPriorityInbox = useMemo(() => {
     if (!query.trim()) return priorityInbox;
@@ -1729,6 +1740,10 @@ export default function ChatInterface() {
   const todayLabel = dateDividerLabel(
     activeMessages[activeMessages.length - 1]?.timestamp,
   );
+
+  if (pageLoading) {
+    return <NeonAtom fill />;
+  }
 
   return (
     <div

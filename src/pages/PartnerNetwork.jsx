@@ -96,6 +96,7 @@ export default function PartnerNetwork() {
   const [tab, setTab] = useState("connected");
   const [targetAccountId, setTargetAccountId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState("");
   const [rows, setRows] = useState([]);
   const [permissions, setPermissions] = useState({
@@ -129,6 +130,12 @@ export default function PartnerNetwork() {
   useEffect(() => {
     loadNetwork(tab);
   }, [loadNetwork, tab]);
+
+  useEffect(() => {
+    if (pageLoading && !loading) {
+      setPageLoading(false);
+    }
+  }, [pageLoading, loading]);
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -201,6 +208,10 @@ export default function PartnerNetwork() {
     { label: `Pending ${pendingIncoming}`, tone: "amber" },
     { label: `Role ${capitalize(user?.role || "unknown")}`, tone: "blue" },
   ];
+
+  if (pageLoading) {
+    return <NeonAtom fill />;
+  }
 
   return (
     <div
@@ -379,10 +390,6 @@ export default function PartnerNetwork() {
                   <div>{error}</div>
                 </div>
               </div>
-            )}
-
-            {loading && (
-              <NeonAtom fill size={64} text="Loading..." />
             )}
 
             <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">

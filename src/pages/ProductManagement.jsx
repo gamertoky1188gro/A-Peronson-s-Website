@@ -110,6 +110,7 @@ export default function ProductManagement() {
   const isDark = theme === "dark";
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [_error, setError] = useState("");
   const [notice, setNotice] = useState(
     "Drafts stay private until you publish them after media review.",
@@ -149,6 +150,12 @@ export default function ProductManagement() {
   useEffect(() => {
     loadMine();
   }, [loadMine]);
+
+  useEffect(() => {
+    if (pageLoading && !loading) {
+      setPageLoading(false);
+    }
+  }, [pageLoading, loading]);
 
   const stats = useMemo(() => {
     const published = items.filter((p) => p.status === "published").length;
@@ -566,6 +573,10 @@ export default function ProductManagement() {
   const inputCls =
     "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400/40 dark:focus:ring-sky-400/15";
 
+  if (pageLoading) {
+    return <NeonAtom fill />;
+  }
+
   return (
     <div className={isDark ? "dark" : ""}>
       <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
@@ -665,9 +676,7 @@ export default function ProductManagement() {
               </div>
             ) : null}
 
-            {loading ? (
-              <NeonAtom fill size={64} text="Loading..." />
-            ) : items.length === 0 ? (
+            {items.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center dark:border-white/10 dark:bg-white/5">
                 <p className="text-slate-400">
                   No products yet. Create your first product to get started.
