@@ -7,6 +7,7 @@ import {
   getToken,
   hasEntitlement,
 } from "../lib/auth";
+import NeonAtom from "../components/ui/NeonAtom";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "../lib/ThemeProvider";
 import { useEntitlements } from "../hooks/useSecureUser";
@@ -1681,7 +1682,7 @@ export default function OrgSettings() {
                     </div>
                     <div className="space-y-3">
                       {loadingSessions ? (
-                        <p className="text-sm text-slate-500">Loading...</p>
+                        <NeonAtom size={40} text="Loading..." />
                       ) : sessions.length === 0 ? (
                         <p className="text-sm text-slate-500">
                           No active sessions.
@@ -2006,7 +2007,7 @@ export default function OrgSettings() {
               >
                 <div className="space-y-3">
                   {loadingSessions ? (
-                    <p className="text-sm text-slate-500">Loading...</p>
+                    <NeonAtom size={40} text="Loading..." />
                   ) : sessions.length === 0 ? (
                     <p className="text-sm text-slate-500">No sessions.</p>
                   ) : (
@@ -2547,7 +2548,7 @@ function NotificationPreferencesTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+        <NeonAtom size={40} />
       </div>
     );
   }

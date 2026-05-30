@@ -109,6 +109,7 @@ import * as UI from "./AdminPanel.ui";
 import * as Helpers from "./AdminPanel.helpers";
 import * as CMS from "./AdminPanel.cms";
 import * as Ultra from "./AdminPanel.ultra";
+import NeonAtom from "../components/ui/NeonAtom";
 
 const {
   KNOWN_ROLES,
@@ -162,13 +163,8 @@ const {
 
 function SkeletonChart({ height = 320 }) {
   return (
-    <div style={{ height }} className="flex flex-col gap-4">
-      <div className="flex-1 rounded-2xl bg-slate-100/50 dark:bg-white/5 animate-pulse" />
-      <div className="flex justify-between gap-4">
-        <div className="h-4 w-12 rounded bg-slate-100/50 dark:bg-white/5 animate-pulse" />
-        <div className="h-4 w-12 rounded bg-slate-100/50 dark:bg-white/5 animate-pulse" />
-        <div className="h-4 w-12 rounded bg-slate-100/50 dark:bg-white/5 animate-pulse" />
-      </div>
+    <div className="flex items-center justify-center" style={{ height }}>
+      <NeonAtom size={60} />
     </div>
   );
 }
@@ -197,13 +193,8 @@ function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
   if (loading) {
     return (
       <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <SkeletonLine className="h-4 w-24 opacity-50" />
-            <SkeletonLine className="mt-3 h-8 w-20" />
-            <SkeletonLine className="mt-3 h-3 w-32 opacity-40" />
-          </div>
-          <SkeletonLine className="h-11 w-11 rounded-2xl opacity-30" />
+        <div className="flex items-center justify-center">
+          <NeonAtom size={32} />
         </div>
       </div>
     );
@@ -3257,7 +3248,7 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <SkeletonLine className="h-8 w-20" />
+                              <NeonAtom size={16} />
                             ) : (
                               formatNumber(summary?.users?.total)
                             )}
@@ -3269,7 +3260,7 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <SkeletonLine className="h-8 w-16" />
+                              <NeonAtom size={16} />
                             ) : (
                               formatNumber(summary?.verification?.pending)
                             )}
@@ -3281,7 +3272,7 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <SkeletonLine className="h-8 w-16" />
+                              <NeonAtom size={16} />
                             ) : (
                               formatNumber(summary?.support?.open)
                             )}
@@ -3293,14 +3284,14 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <SkeletonLine className="h-8 w-32" />
+                              <NeonAtom size={16} />
                             ) : (
                               `${formatNumber(summary?.traffic?.clicks)} / ${formatNumber(summary?.traffic?.visits)}`
                             )}
                           </div>
                           <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             {loading ? (
-                              <SkeletonLine className="h-4 w-36" />
+                              <NeonAtom size={16} />
                             ) : (
                               <>
                                 Spend:{" "}
@@ -3340,7 +3331,7 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <SkeletonLine className="h-7 w-12" />
+                                      <NeonAtom size={16} />
                                     ) : (
                                       `${infra?.cpu?.usage_percent?.toFixed?.(0) || "0"}%`
                                     )}
@@ -3357,7 +3348,7 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <SkeletonLine className="h-7 w-20" />
+                                      <NeonAtom size={16} />
                                     ) : (
                                       `${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : "0"} MB`
                                     )}
@@ -3374,7 +3365,7 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <SkeletonLine className="h-7 w-24" />
+                                      <NeonAtom size={16} />
                                     ) : (
                                       `${formatNumber(network?.device_up)} / ${formatNumber(network?.device_down)}`
                                     )}
@@ -3391,7 +3382,7 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <SkeletonLine className="h-7 w-12" />
+                                      <NeonAtom size={16} />
                                     ) : (
                                       formatNumber(network?.alert_count)
                                     )}
@@ -3446,7 +3437,7 @@ export default function AdminPanel() {
                               </span>
                               <span className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {loading ? (
-                                  <SkeletonLine className="h-5 w-12" />
+                                  <NeonAtom size={16} />
                                 ) : (
                                   formatNumber(premiumUsers.length)
                                 )}
@@ -3458,7 +3449,7 @@ export default function AdminPanel() {
                               </span>
                               <span className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {loading ? (
-                                  <SkeletonLine className="h-5 w-12" />
+                                  <NeonAtom size={16} />
                                 ) : (
                                   formatNumber(summary?.users?.suspended)
                                 )}
@@ -3818,7 +3809,7 @@ export default function AdminPanel() {
 
                       {loadingModeration ? (
                         <div className="flex items-center justify-center py-16">
-                          <div className="animate-spin h-8 w-8 border-2 border-sky-500 border-t-transparent rounded-full" />
+                          <NeonAtom size={40} />
                         </div>
                       ) : !moderationPending.length ? (
                         <div
@@ -13273,7 +13264,7 @@ export default function AdminPanel() {
                                         <span
                                           className={cmsChipClass(adminDark)}
                                         >
-                                          <Loader2 className="h-3.5 w-3.5 animate-spin" />{" "}
+                                          <NeonAtom size={14} />{" "}
                                           {log.status ?? 200}
                                         </span>
                                       </div>
@@ -14518,10 +14509,10 @@ export default function AdminPanel() {
                               ))}
                             </div>
 
-                            {configEditorLoading ? (
-                              <div className="py-8 text-center text-slate-500">
-                                Loading...
-                              </div>
+                        {configEditorLoading ? (
+                          <div className="py-8 text-center">
+                            <NeonAtom size={20} />
+                          </div>
                             ) : configEditorError ? (
                               <div className="py-8 text-center text-rose-500">
                                 {configEditorError}
@@ -14989,10 +14980,7 @@ export default function AdminPanel() {
                   className="flex-1 bg-sky-500 text-white py-2 rounded-xl font-medium hover:bg-sky-600 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {reanalzyingId === aiModalDoc.id ? (
-                    <>
-                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                      Processing...
-                    </>
+                    <NeonAtom size={16} />
                   ) : (
                     <>
                       <RefreshCw className="h-4 w-4" />

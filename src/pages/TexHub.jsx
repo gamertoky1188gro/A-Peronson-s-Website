@@ -30,6 +30,7 @@ import {
   useReducedMotion,
   useSpring,
 } from "framer-motion";
+import NeonAtom from "../components/ui/NeonAtom";
 import {
   ArrowRight,
   BadgeCheck,
@@ -202,21 +203,9 @@ function MagneticLinkButton({ to, className = "", children }) {
   );
 }
 
-function SkeletonLine({ className = "" }) {
-  return (
-    <div
-      className={[
-        "rounded-xl relative overflow-hidden bg-slate-200/80 dark:bg-white/5",
-        "after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%]",
-        "after:pointer-events-none after:opacity-70 dark:after:opacity-90",
-        "after:animate-skeleton",
-        "after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)]",
-        "dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]",
-        className,
-      ].join(" ")}
-    />
-  );
-}
+const SkeletonLine = ({ className = "" }) => (
+  <NeonAtom size={24} className={`inline-block ${className}`} />
+);
 
 function GlassSurface({ className = "", children }) {
   return (
@@ -557,6 +546,14 @@ export default function TexHub() {
       },
     };
   }, [bento, mode]);
+
+  if (_loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#07111f]">
+        <NeonAtom size={48} text="Loading..." />
+      </div>
+    );
+  }
 
   return (
     <div className="relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white">

@@ -1,3 +1,4 @@
+import NeonAtom from "../components/ui/NeonAtom";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import AccessDeniedState from "../components/AccessDeniedState";
 import {
@@ -385,8 +386,8 @@ export default function MemberManagement() {
                 <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-                        Loading members...
+                      <td colSpan={6} className="px-6 py-12 text-center">
+                        <NeonAtom size={40} text="Loading members..." />
                       </td>
                     </tr>
                   ) : filtered.length ? (

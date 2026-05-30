@@ -1,11 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 
+import NeonAtom from "../components/ui/NeonAtom";
+
 export function SkeletonLine({ className = "" }) {
-  return (
-    <div
-      className={`h-4 animate-pulse rounded bg-slate-200 dark:bg-slate-700 ${className}`}
-    />
-  );
+  return <NeonAtom size={24} className={`inline-block ${className}`} />;
 }
 
 export function Badge({ children, tone = "default" }) {

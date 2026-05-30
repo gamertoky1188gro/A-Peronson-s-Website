@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
 import BotLogo from "./ui/BotLogo";
 import MarkdownMessage from "./chat/MarkdownMessage";
+import NeonAtom from "./ui/NeonAtom";
 
 function getUserId() {
   const user = getCurrentUser();
@@ -388,14 +389,14 @@ export default function FloatingAssistant() {
                   {title || "GarTex Assistant"}
                 </p>
                 <div className="flex items-center gap-1.5">
-                  <span
-                    className={`w-2 h-2 rounded-full animate-pulse ${
-                      loading ? "bg-amber-300" : "bg-green-300"
-                    }`}
-                  ></span>
-                  <p className="text-[10px] uppercase tracking-wider text-white/80 font-semibold">
-                    {loading ? "Thinking..." : "Online"}
-                  </p>
+                  {loading ? (
+                    <NeonAtom size={20} text="Thinking..." />
+                  ) : (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-green-300"></span>
+                      <p className="text-[10px] uppercase tracking-wider text-white/80 font-semibold">Online</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

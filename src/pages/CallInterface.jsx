@@ -44,6 +44,7 @@ import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { trackClientEvent } from "../lib/events";
 import MarkdownMessage from "../components/chat/MarkdownMessage";
 import JourneyTimeline from "../components/JourneyTimeline";
+import NeonAtom from "../components/ui/NeonAtom";
 
 const WS_BASE = (() => {
   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
@@ -1788,16 +1789,12 @@ export default function CallInterface() {
           <span
             className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex${connectionBadge.pillClass}`}
           >
-            <span
-              className={`h-2 w-2 rounded-full${connectionBadge.dotClass}`}
-            />
+            <NeonAtom size={12} />
             {connectionBadge.label}
           </span>
           {recordingState !== "idle" ? (
             <span className="hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 sm:inline-flex">
-              <span
-                className={`h-2 w-2 rounded-full${recordingState === "recording" ? "bg-rose-500 animate-pulse" : recordingState === "available" ? "bg-emerald-500" : recordingState === "uploading" ? "bg-amber-500 animate-pulse" : "bg-rose-500"}`}
-              />
+              <NeonAtom size={16} />
               {recordingState === "recording"
                 ? "REC"
                 : recordingState === "uploading"
@@ -2016,9 +2013,7 @@ export default function CallInterface() {
                 <span
                   className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex${isChatLive ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200" : "bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300"}`}
                 >
-                  <span
-                    className={`h-2 w-2 rounded-full${isChatLive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
-                  />
+                  <NeonAtom size={16} />
                   {isChatLive ? "Live" : "Syncing"}
                 </span>
                 <button

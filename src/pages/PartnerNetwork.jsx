@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
+import NeonAtom from "../components/ui/NeonAtom";
 import {
   AlertCircle,
   ArrowRightLeft,
   CheckCircle2,
   Filter,
-  Loader2,
   Search,
   Shield,
   Sparkles,
@@ -292,7 +292,7 @@ export default function PartnerNetwork() {
                     className="min-w-32"
                   >
                     {loading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <NeonAtom size={20} />
                     ) : (
                       <Sparkles className="h-4 w-4" />
                     )}
@@ -382,11 +382,8 @@ export default function PartnerNetwork() {
             )}
 
             {loading && (
-              <div className="rounded-2xl border border-sky-200 bg-white/80 px-4 py-3 text-sm text-slate-700 shadow-sm dark:border-sky-500/20 dark:bg-slate-950/60 dark:text-slate-200">
-                <div className="flex items-center gap-3">
-                  <Loader2 className="h-4 w-4 animate-spin text-sky-500" />
-                  Loading...
-                </div>
+              <div className="flex justify-center py-8">
+                <NeonAtom size={40} text="Loading..." />
               </div>
             )}
 

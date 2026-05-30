@@ -23,6 +23,7 @@
 */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import NeonAtom from "../components/ui/NeonAtom";
 import {
   Bell,
   Factory,
@@ -503,18 +504,9 @@ export default function NotificationsCenter() {
                 </div>
 
                 <div className="space-y-3">
-                  {loading ? (
-                    <div className="space-y-3">
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <div
-                          key={`notif-skel-${i}`}
-                          className={cn("rounded-3xl border p-4", cardBg)}
-                        >
-                          <div className="h-4 w-1/3 rounded-full bg-slate-400/20 animate-pulse" />
-                          <div className="mt-3 h-3 w-2/3 rounded-full bg-slate-400/20 animate-pulse" />
-                          <div className="mt-2 h-3 w-1/2 rounded-full bg-slate-400/20 animate-pulse" />
-                        </div>
-                      ))}
+                    {loading ? (
+                    <div className="flex justify-center py-8">
+                      <NeonAtom size={40} />
                     </div>
                   ) : error ? (
                     <div className="text-sm text-rose-300">{error}</div>
@@ -583,7 +575,7 @@ export default function NotificationsCenter() {
 
                   <div className="mt-5 space-y-3">
                     {loadingViews ? (
-                      <div className="text-sm text-slate-400">Loading...</div>
+                      <NeonAtom size={24} />
                     ) : views.length === 0 ? (
                       <EmptyState
                         title="No viewed products yet"

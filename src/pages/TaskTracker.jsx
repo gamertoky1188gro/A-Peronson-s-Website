@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ChevronRight, ChevronDown, Check, X } from "lucide-react";
 import tasksData from "../tasks.json";
+import NeonAtom from "../components/ui/NeonAtom";
 
 function TreeNode({ task, onToggle, depth = 0 }) {
   const [isOpen, setIsOpen] = useState(depth < 2);

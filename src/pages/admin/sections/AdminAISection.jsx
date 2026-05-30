@@ -16,13 +16,13 @@ import {
   CheckCircle,
   MessageSquare,
   Lightbulb,
-  Loader2,
   Settings,
   Code2,
   ToggleLeft,
   ToggleRight,
 } from "lucide-react";
 import { apiRequest } from "../../../lib/auth";
+import NeonAtom from "../../../components/ui/NeonAtom";
 
 export function AdminAISection({ activeCategory, adminDark }) {
   const [rules, setRules] = useState({ globalRules: [], smallTalkRules: [] });
@@ -254,7 +254,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+          <NeonAtom size={40} text="Loading..." />
         </div>
       ) : activeTab === "settings" ? (
         <div className="space-y-6">
@@ -434,7 +434,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/20 px-6 py-3 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-500/30 disabled:opacity-50"
           >
             {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <NeonAtom size={20} />
             ) : (
               <Save className="h-4 w-4" />
             )}

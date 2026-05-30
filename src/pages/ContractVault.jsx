@@ -3,6 +3,7 @@
   Access: Protected (login required)
   Allowed roles: buyer, buying_house, factory, owner, admin, agent
  */
+import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";

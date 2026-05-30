@@ -22,6 +22,7 @@
   Notes:
     - Buyer required documents vary by region (EU/USA/OTHER), derived from country.
 */
+import NeonAtom from "../components/ui/NeonAtom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
@@ -525,8 +526,8 @@ export default function VerificationPage() {
                     ))}
                   </select>
                   {savingCountry && (
-                    <span className={`flex items-center text-sm ${mutedText}`}>
-                      Saving...
+                    <span className="flex items-center">
+                      <NeonAtom size={20} />
                     </span>
                   )}
                 </div>

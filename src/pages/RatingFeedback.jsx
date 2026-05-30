@@ -6,7 +6,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { apiRequest, getToken } from "../lib/auth";
-import { CheckCircle2, Loader2, MessageSquareText, ShieldCheck, Star, Sparkles, UserRound } from "lucide-react";
+import NeonAtom from "../components/ui/NeonAtom";
+import { CheckCircle2, MessageSquareText, ShieldCheck, Star, Sparkles, UserRound } from "lucide-react";
 
 const STAR_OPTIONS = [1, 2, 3, 4, 5];
 const MAX_COMMENT_LEN = 500;
@@ -155,10 +156,7 @@ export default function RatingFeedback() {
       <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)]">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex min-h-[280px] items-center justify-center rounded-[2rem] border border-sky-500/15 bg-white/75 p-8 shadow-[0_10px_40px_rgba(56,189,248,0.08)] backdrop-blur-xl dark:bg-slate-950/60">
-            <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
-              <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
-              <span className="text-sm font-medium">Loading feedback requests...</span>
-            </div>
+            <NeonAtom size={64} text="Loading feedback requests..." />
           </div>
         </div>
       </div>

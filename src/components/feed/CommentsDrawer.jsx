@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { apiRequest, getToken } from "../../lib/auth";
+import NeonAtom from "../ui/NeonAtom";
 
 function formatDateTime(value) {
   if (!value) return "";
@@ -196,7 +197,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
                 disabled={submitting || !replyInput.trim()}
                 className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
               >
-                {submitting ? "Posting..." : "Send"}
+                {submitting ? <NeonAtom size={16} /> : "Send"}
               </button>
               <button
                 type="button"
@@ -268,7 +269,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
           {loading ? (
-            <div className="text-sm text-slate-500">Loading comments...</div>
+            <NeonAtom size={40} text="Loading comments..." />
           ) : null}
           {!loading && error ? (
             <div className="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">

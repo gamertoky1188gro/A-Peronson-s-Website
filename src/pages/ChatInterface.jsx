@@ -46,6 +46,7 @@ import {
   SendHorizontal,
   VolumeX,
 } from "lucide-react";
+import NeonAtom from "../components/ui/NeonAtom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { useSecureUser } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
@@ -1931,8 +1932,8 @@ export default function ChatInterface() {
 
           <div className="h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar">
             {loading ? (
-              <div className="p-4 text-center text-sm text-slate-400">
-                Loading inbox...
+              <div className="flex h-full items-center justify-center">
+                <NeonAtom size={64} text="Loading..." />
               </div>
             ) : null}
             {!loading && visibleError ? (
@@ -2308,7 +2309,7 @@ export default function ChatInterface() {
                     disabled={aiSuggesting || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiSuggesting ? "Thinking..." : "Generate"}
+                    {aiSuggesting ? <NeonAtom size={20} /> : "Generate"}
                   </button>
                 </div>
                 {aiError ? (
@@ -2325,7 +2326,7 @@ export default function ChatInterface() {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading || !canSendMessage}
                   >
-                    <Plus size={20} />
+                    {uploading ? <NeonAtom size={20} /> : <Plus size={20} />}
                   </button>
                   <textarea
                     rows={1}
@@ -2424,9 +2425,7 @@ export default function ChatInterface() {
               </div>
 
               {leadLoading ? (
-                <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-500 dark:bg-slate-800/30">
-                  Loading AI pre-qualification summary...
-                </div>
+                <NeonAtom size={20} />
               ) : prequal ? (
                 <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
@@ -2453,7 +2452,7 @@ export default function ChatInterface() {
                     disabled={aiSummaryLoading || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiSummaryLoading ? "Summarizing..." : "Refresh"}
+                    {aiSummaryLoading ? <NeonAtom size={20} /> : "Refresh"}
                   </button>
                 </div>
                 {aiSummaryError ? (
@@ -2490,7 +2489,7 @@ export default function ChatInterface() {
                     disabled={aiNegotiationLoading || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiNegotiationLoading ? "Thinking..." : "Generate"}
+                    {aiNegotiationLoading ? <NeonAtom size={20} /> : "Generate"}
                   </button>
                 </div>
                 {aiNegotiationError ? (

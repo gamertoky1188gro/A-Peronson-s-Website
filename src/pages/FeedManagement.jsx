@@ -1,3 +1,4 @@
+import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
@@ -51,24 +52,6 @@ const Icon = {
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />
       <path d="M21 15l-5-5L5 21" />
-    </svg>
-  ),
-  Loader: (p) => (
-    <svg {...p} className={p.className + " animate-spin"} viewBox="0 0 24 24">
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-        fill="none"
-        opacity="0.2"
-      />
-      <path
-        d="M22 12a10 10 0 0 1-10 10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
     </svg>
   ),
   Plus: (p) => (
@@ -633,7 +616,7 @@ export default function FeedManagementPage() {
                     className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:translate-y-[-1px] hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {uploading ? (
-                      <Icon.Loader className="h-4 w-4 animate-spin" />
+                      <NeonAtom size={20} />
                     ) : (
                       <Icon.Upload className="h-4 w-4" />
                     )}
@@ -747,7 +730,7 @@ export default function FeedManagementPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] hover:shadow-xl hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {saving ? (
-                    <Icon.Loader className="h-4 w-4 animate-spin" />
+                    <NeonAtom size={20} />
                   ) : (
                     <Icon.Check className="h-4 w-4" />
                   )}
@@ -875,9 +858,8 @@ export default function FeedManagementPage() {
 
               <div className="p-5">
                 {loadingPosts ? (
-                  <div className="flex items-center justify-center py-10 text-sm text-sky-400">
-                    <Icon.Loader className="mr-2 h-4 w-4 animate-spin" />
-                    Loading posts...
+                  <div className="flex items-center justify-center py-10">
+                    <NeonAtom size={40} />
                   </div>
                 ) : posts.length === 0 ? (
                   <div

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { apiRequest, getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import { trackClientEvent } from "../lib/events";
+import NeonAtom from "../components/ui/NeonAtom";
 import {
   Plus,
   Upload,
@@ -666,7 +667,7 @@ export default function ProductManagement() {
 
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+                <NeonAtom size={64} text="Loading..." />
               </div>
             ) : items.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center dark:border-white/10 dark:bg-white/5">
@@ -1086,7 +1087,7 @@ export default function ProductManagement() {
                         disabled={saving}
                         className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:scale-[1.01] hover:shadow-sky-500/35 disabled:opacity-60"
                       >
-                        {saving ? "Publishing..." : "Publish"}
+                        {saving ? <NeonAtom size={20} /> : "Publish"}
                       </button>
                     </div>
 

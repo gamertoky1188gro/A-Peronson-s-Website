@@ -1,3 +1,4 @@
+import NeonAtom from "../components/ui/NeonAtom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -1605,7 +1606,7 @@ export default function BuyerRequestManagement() {
                           onClick={saveDraft}
                           className="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-70 dark:text-sky-200"
                         >
-                          <CloudUpload className="h-4 w-4" /> {saving ? "Saving..." : "Save Draft"}
+                          <CloudUpload className="h-4 w-4" /> {saving ? <NeonAtom size={20} /> : "Save Draft"}
                         </button>
                       </div>
                       <div className="flex gap-2">
@@ -1616,7 +1617,7 @@ export default function BuyerRequestManagement() {
                             onClick={() => createRequest()}
                             className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5 disabled:opacity-70"
                           >
-                            {saving ? "Posting..." : "Post Request"} <Sparkles className="h-4 w-4" />
+                            {saving ? <NeonAtom size={20} /> : "Post Request"} <Sparkles className="h-4 w-4" />
                           </button>
                         ) : (
                           <button
@@ -1655,7 +1656,7 @@ export default function BuyerRequestManagement() {
                       </div>
 
                       {loading ? (
-                        <div className={`text-sm ${soft}`}>Loading...</div>
+                        <NeonAtom size={40} text="Loading..." />
                       ) : !myRequests.length ? (
                         <div className={`text-sm ${soft}`}>No open requests.</div>
                       ) : (
@@ -1768,7 +1769,7 @@ export default function BuyerRequestManagement() {
                   </div>
 
                   {loading ? (
-                    <div className={`text-sm ${soft}`}>Loading...</div>
+                    <NeonAtom size={40} text="Loading..." />
                   ) : !myRequests.length ? (
                     <div className={`text-sm ${soft}`}>No requests yet.</div>
                   ) : (
@@ -1870,7 +1871,7 @@ export default function BuyerRequestManagement() {
                                       onClick={() => loadSmartMatches(r.id)}
                                       className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium dark:border-white/10 dark:bg-white/5 disabled:opacity-60"
                                     >
-                                      <Sparkles className="h-3.5 w-3.5" /> {smartMatchLoading === r.id ? "Matching..." : "Smart match"}
+                                      <Sparkles className="h-3.5 w-3.5" /> {smartMatchLoading === r.id ? <NeonAtom size={20} /> : "Smart match"}
                                     </button>
                                     <button
                                       type="button"
@@ -1979,7 +1980,7 @@ export default function BuyerRequestManagement() {
                                       <option value="other">Other</option>
                                     </Select>
                                     <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white">
-                                      {uploadingAttachmentId === r.id ? "Uploading..." : "Upload file"}
+                                      {uploadingAttachmentId === r.id ? <NeonAtom size={20} /> : "Upload file"}
                                       <input
                                         type="file"
                                         className="hidden"
@@ -2014,7 +2015,7 @@ export default function BuyerRequestManagement() {
                       onClick={loadBrowse}
                       className="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium dark:border-white/10 dark:bg-white/5"
                     >
-                      <RefreshCw className="h-4 w-4" /> {loadingBrowse ? "Refreshing..." : "Refresh"}
+                      <RefreshCw className="h-4 w-4" /> {loadingBrowse ? <NeonAtom size={20} /> : "Refresh"}
                     </button>
                   </div>
 

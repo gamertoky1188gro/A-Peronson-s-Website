@@ -27,6 +27,7 @@ import { trackClientEvent } from "../lib/events";
 import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel";
+import NeonAtom from "../components/ui/NeonAtom";
 
 const Motion = motion;
 
@@ -784,7 +785,7 @@ export default function BuyingHouseProfile() {
                     ))}
                   </div>
                   {loadingProducts ? (
-                    <div className="text-sm text-slate-600">Loading...</div>
+                    <NeonAtom size={40} text="Loading products..." />
                   ) : null}
                   {productsNext !== null && !loadingProducts ? (
                     <button

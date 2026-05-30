@@ -17,6 +17,7 @@ import { trackClientEvent } from "../lib/events";
 import { recordLeadSource } from "../lib/leadSource";
 import FeedItemCard from "../components/feed/FeedItemCard";
 import CommentsDrawer from "../components/feed/CommentsDrawer";
+import NeonAtom from "../components/ui/NeonAtom";
 import ReportModal from "../components/feed/ReportModal";
 
 const Motion = motion;
@@ -334,23 +335,11 @@ async function copyToClipboard(text) {
   return ok;
 }
 
-function FeedSkeletonCard() {
-  return (
-    <div className="rounded-[28px] border border-white/60 bg-white/85 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 p-5 sm:p-6">
-      <div className="flex items-center gap-3">
-        <div className="h-12 w-12 rounded-2xl relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-1/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
-          <div className="h-3 w-1/4 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
-        </div>
-      </div>
-      <div className="mt-6 space-y-3">
-        <div className="h-5 w-2/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
-        <div className="h-4 w-full rounded-xl relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
-      </div>
-    </div>
-  );
-}
+const FeedSkeletonCard = ({ className = "" }) => (
+  <div className={`flex items-center justify-center rounded-xl bg-white/50 p-12 dark:bg-gray-900/50 ${className}`}>
+    <NeonAtom size={64} />
+  </div>
+);
 
 // ====== UI COMPONENTS ======
 function Pill({ children, active = false, onClick }) {

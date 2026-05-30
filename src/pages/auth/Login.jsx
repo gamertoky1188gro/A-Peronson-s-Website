@@ -19,6 +19,7 @@
   Notes:
     - Tailwind-only styling (no legacy App.css utilities).
 */
+import NeonAtom from "../../components/ui/NeonAtom";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -645,7 +646,7 @@ export default function Login() {
                   disabled={loading}
                   className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-semibold shadow-lg shadow-sky-500/20 transition ${theme.button}`}
                 >
-                  {loading ? "Signing in..." : "Sign in"}
+                  {loading ? <NeonAtom size={20} /> : "Sign in"}
                   {!loading && (
                     <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                   )}
@@ -659,7 +660,7 @@ export default function Login() {
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
                   >
                     <Fingerprint className="h-4 w-4" />
-                    {passkeyLoading ? "Opening..." : "Passkey"}
+                    {passkeyLoading ? <NeonAtom size={20} /> : "Passkey"}
                   </button>
                   <button
                     type="button"
@@ -668,7 +669,7 @@ export default function Login() {
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
                   >
                     <BadgeCheck className="h-4 w-4" />
-                    {enrollLoading ? "Setting up..." : "Set up passkey"}
+                    {enrollLoading ? <NeonAtom size={20} /> : "Set up passkey"}
                   </button>
                 </div>
               </div>

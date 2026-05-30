@@ -20,6 +20,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Check } from "lucide-react";
+import NeonAtom from "../components/ui/NeonAtom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import usePageMeta from "../lib/usePageMeta";
 import { useSecureUser } from "../hooks/useSecureUser";
@@ -370,17 +371,9 @@ function AnalyticsCard({ tiles = [], loading = false, loadError = "" }) {
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {loading ? (
-            <>
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl border border-white/60 bg-white/80 p-4 backdrop-blur dark:border-white/10 dark:bg-white/5 animate-pulse"
-                >
-                  <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700" />
-                  <div className="mt-2 h-8 w-16 rounded bg-slate-200 dark:bg-slate-700" />
-                </div>
-              ))}
-            </>
+            <div className="flex h-64 items-center justify-center">
+              <NeonAtom size={64} text="Loading..." />
+            </div>
           ) : (
             displayMetrics.slice(0, 4).map((m) => (
               <div
@@ -398,9 +391,9 @@ function AnalyticsCard({ tiles = [], loading = false, loadError = "" }) {
           )}
         </div>
         {loadError && (
-          <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
-            {loadError}
-          </p>
+          <div className="flex h-64 items-center justify-center">
+            <NeonAtom size={64} text="Failed to load analytics" />
+          </div>
         )}
       </div>
     </div>

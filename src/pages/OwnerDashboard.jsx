@@ -1,3 +1,4 @@
+import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
@@ -408,11 +409,8 @@ export default function OwnerDashboard() {
 
             <main className="px-4 py-6 sm:px-6 xl:px-8">
               {loading && (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <div className="w-12 h-12 border-4 border-sky-300 border-t-sky-500 rounded-full animate-spin mb-4" />
-                  <p className="text-slate-500 dark:text-slate-400">
-                    Loading dashboard...
-                  </p>
+                <div className="flex justify-center py-20">
+                  <NeonAtom size={64} text="Loading dashboard..." />
                 </div>
               )}
               {error && (

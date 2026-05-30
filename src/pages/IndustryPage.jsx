@@ -7,6 +7,7 @@
     - Category landing page with pre-filtered results (project.md).
     - AI auto-reply widget for quick outreach using industry stats.
 */
+import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Sparkles, ArrowUpRight } from "lucide-react";
@@ -121,8 +122,8 @@ export default function IndustryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 text-slate-600 dark:bg-[#020617] dark:text-slate-200">
-        Loading industry page...
+      <div className="min-h-screen bg-slate-50 p-6 text-slate-600 dark:bg-[#020617] dark:text-slate-200 flex items-center justify-center">
+        <NeonAtom size={64} text="Loading..." />
       </div>
     );
   }

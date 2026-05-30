@@ -26,6 +26,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, FileText, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { apiRequest } from "../lib/auth";
+import NeonAtom from "../components/ui/NeonAtom";
 import MagneticButton from "../components/ui/MagneticButton";
 import SpotlightCard from "../components/ui/SpotlightCard";
 
@@ -66,21 +67,9 @@ const fallbackAbout = {
   ],
 };
 
-function Skeleton({ className = "" }) {
-  return (
-    <div
-      className={[
-        "relative overflow-hidden bg-slate-200/80 dark:bg-white/5",
-        "after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%]",
-        "after:pointer-events-none after:opacity-70 dark:after:opacity-90",
-        "after:animate-skeleton",
-        "after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)]",
-        "dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]",
-        className,
-      ].join(" ")}
-    />
-  );
-}
+const Skeleton = ({ className = "" }) => (
+  <NeonAtom size={24} className={className} />
+);
 
 function MotionItem({ index, className = "", children }) {
   const reduceMotion = useReducedMotion();
@@ -184,6 +173,14 @@ export default function About() {
     event.currentTarget.style.setProperty(
       "--needle-y",
       `${event.clientY - rect.top}px`,
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
+        <NeonAtom size={64} text="Loading..." />
+      </div>
     );
   }
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth";
+import NeonAtom from "../ui/NeonAtom";
 
 const STATUS_OPTIONS = [
   { key: "new", label: "New" },
@@ -372,7 +373,7 @@ export default function LeadManager({
           </div>
 
           {loading ? (
-            <div className="text-sm text-slate-500">Loading leads...</div>
+            <NeonAtom size={40} text="Loading leads..." />
           ) : null}
           {error ? (
             <div className="mt-2 text-sm text-rose-600">{error}</div>

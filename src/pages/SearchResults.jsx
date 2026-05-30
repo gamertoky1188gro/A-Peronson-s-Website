@@ -30,6 +30,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
+import NeonAtom from "../components/ui/NeonAtom";
 import {
   Search,
   Filter,
@@ -1281,7 +1282,7 @@ export default function SearchResults() {
                   className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   <Search className="h-5 w-5" />{" "}
-                  {loading ? "Searching..." : "Search"}
+                  {loading ? <NeonAtom size={20} /> : "Search"}
                 </button>
               </div>
 
@@ -1290,7 +1291,7 @@ export default function SearchResults() {
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                   <Badge tone="blue">
                     {loading
-                      ? "Loading..."
+                      ? <NeonAtom size={20} />
                       : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies (${fmtNumber(estimatedCounts.total)} total)`}
                   </Badge>
                 </div>
@@ -1894,13 +1895,8 @@ export default function SearchResults() {
 
               <div className="mt-5">
                 {loading ? (
-                  <div className="grid gap-4 xl:grid-cols-2">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-56 animate-pulse rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/80"
-                      />
-                    ))}
+                  <div className="flex justify-center py-12">
+                    <NeonAtom size={64} />
                   </div>
                 ) : (
                   <ResultCards />

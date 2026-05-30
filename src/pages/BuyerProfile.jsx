@@ -34,6 +34,7 @@ import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel";
 import JourneyTimeline from "../components/JourneyTimeline";
+import NeonAtom from "../components/ui/NeonAtom";
 
 const Motion = motion;
 
@@ -712,9 +713,7 @@ export default function BuyerProfile() {
                         </div>
                       ))}
                       {loadingRequests ? (
-                        <div className="text-sm text-slate-600 dark:text-slate-300">
-                          Loading...
-                        </div>
+                        <NeonAtom size={40} text="Loading requests..." />
                       ) : null}
                       {requestsNext !== null && !loadingRequests ? (
                         <button

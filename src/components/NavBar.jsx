@@ -71,6 +71,7 @@ import {
   subscribeNotificationsRealtime,
 } from "../lib/notificationsRealtime";
 import { useTheme } from "../lib/ThemeProvider";
+import NeonAtom from "./ui/NeonAtom";
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
@@ -1016,9 +1017,7 @@ export default function NavBar() {
               {user && searchOpen && searchQuery.trim().length >= 1 ? (
                 <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[360px] overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.16)] backdrop-blur-2xl dark:bg-slate-950/95">
                   {searchLoading ? (
-                    <p className="px-2 py-3 text-xs text-slate-500">
-                      Searching...
-                    </p>
+                    <NeonAtom size={16} />
                   ) : null}
                   {!searchLoading && searchError ? (
                     <p className="px-2 py-3 text-xs text-rose-500">

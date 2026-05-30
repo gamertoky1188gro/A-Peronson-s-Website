@@ -25,6 +25,7 @@ import {
   getToken,
   saveSession,
 } from "../../lib/auth";
+import NeonAtom from "../../components/ui/NeonAtom";
 
 const DEFAULT_CATEGORIES = [
   "T-Shirt",
@@ -280,7 +281,7 @@ export default function OnboardingWizard() {
                   disabled={saving}
                   className="rounded-xl bg-gtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-gtBlueHover disabled:opacity-60"
                 >
-                  {saving ? "Saving..." : "Finish setup"}
+                  {saving ? <NeonAtom size={20} /> : "Finish setup"}
                 </button>
               )}
             </div>

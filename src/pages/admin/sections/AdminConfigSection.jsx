@@ -5,6 +5,7 @@
 
 import { Sliders, Database, Wrench, Save } from "lucide-react";
 import { cn } from "../../../lib/utils";
+import NeonAtom from "../../../components/ui/NeonAtom";
 
 export function AdminConfigSection({
   activeCategory,
@@ -88,7 +89,7 @@ export function AdminConfigSection({
 
       {/* Loading State */}
       {configEditorLoading ? (
-        <div className="py-8 text-center text-slate-500">Loading...</div>
+        <NeonAtom size={20} />
       ) : configEditorError ? (
         <div className="py-8 text-center text-rose-500">
           {configEditorError}

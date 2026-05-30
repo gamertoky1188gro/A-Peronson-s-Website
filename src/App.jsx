@@ -10,6 +10,7 @@ import {
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import FloatingAssistant from "./components/FloatingAssistant";
+import NeonAtom from "./components/ui/NeonAtom";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
 
@@ -79,7 +80,7 @@ function ProtectedRoute({ children, roles }) {
     // User is loading - show spinner while auth is being verified
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
+        <NeonAtom size={48} />
       </div>
     );
   }
@@ -459,7 +460,7 @@ function AppLayout() {
       >
         <Suspense fallback={
           <div className="flex min-h-screen items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
+            <NeonAtom size={48} />
           </div>
         }>
           <AppRoutes />

@@ -1,9 +1,10 @@
+import NeonAtom from "../components/ui/NeonAtom";
+
 export function SkeletonChart({ height = 320 }) {
   return (
-    <div
-      className="animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800"
-      style={{ height }}
-    />
+    <div className={`flex items-center justify-center`} style={{ height }}>
+      <NeonAtom size={60} />
+    </div>
   );
 }
 
@@ -44,7 +45,7 @@ export function MetricCard({
             {label}
           </p>
           {loading ? (
-            <div className="mt-2 h-8 w-16 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+            <NeonAtom size={32} />
           ) : (
             <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
               {value}

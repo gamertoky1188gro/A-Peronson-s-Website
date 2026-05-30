@@ -27,6 +27,7 @@
   Special:
     - FloatingAssistant switches to "Orb" styling only on this route.
 */
+import NeonAtom from "../components/ui/NeonAtom";
 import { useMemo, useState, useEffect } from "react";
 import {
   Search,
@@ -815,8 +816,8 @@ export default function HelpCenterPage() {
               </div>
               <div className="space-y-3">
                 {loading ? (
-                  <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
-                    Loading FAQs...
+                  <div className="flex justify-center py-6">
+                    <NeonAtom size={40} text="Loading..." />
                   </div>
                 ) : filteredFaq.length > 0 ? (
                   filteredFaq.map((item, idx) => (

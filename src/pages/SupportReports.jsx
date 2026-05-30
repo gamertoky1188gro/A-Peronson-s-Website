@@ -6,6 +6,7 @@
     - Collect bug reports, feature requests, account issues, and general feedback.
     - Store submissions in the reports queue for admin review.
 */
+import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -512,7 +513,7 @@ export default function SupportReports() {
                 className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-500 px-5 py-4 text-sm font-semibold text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? (
-                  <Icon className="h-4 w-4 animate-spin">⏳</Icon>
+                  <NeonAtom size={20} />
                 ) : (
                   <Icon className="h-4 w-4">✓</Icon>
                 )}
@@ -544,18 +545,14 @@ export default function SupportReports() {
                       : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  <Icon
-                    className={`h-4 w-4 ${ticketsLoading ? "animate-spin" : ""}`}
-                  >
-                    ↻
-                  </Icon>
+                  {ticketsLoading ? <NeonAtom size={20} /> : <Icon className="h-4 w-4">↻</Icon>}
                   Refresh
                 </button>
               </div>
 
               {ticketsLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+                  <NeonAtom size={40} text="Loading..." />
                 </div>
               ) : tickets.length === 0 ? (
                 <div

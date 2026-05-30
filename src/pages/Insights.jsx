@@ -18,7 +18,6 @@ import {
   Gauge,
   Globe2,
   Link2,
-  Loader2,
   Lock,
   MousePointerClick,
   Radar,
@@ -28,6 +27,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import NeonAtom from "../components/ui/NeonAtom";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -409,11 +409,8 @@ export default function Insights() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-white sm:p-6 lg:p-8">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-3xl border border-sky-200 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
-          <Loader2 className="h-5 w-5 animate-spin text-sky-600 dark:text-sky-300" />
-          <div className="text-sm font-medium">Loading analytics...</div>
-        </div>
+      <div className="flex h-64 items-center justify-center">
+        <NeonAtom size={64} text="Loading analytics..." />
       </div>
     );
   }
@@ -652,7 +649,7 @@ export default function Insights() {
                           : "bg-sky-600 text-white shadow-lg shadow-sky-600/20 hover:bg-sky-500",
                       )}
                     >
-                      {exportLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+                      {exportLoading ? <NeonAtom size={20} /> : <FileDown className="h-4 w-4" />}
                       {exportLoading ? "Exporting..." : "Export CSV"}
                     </button>
                     <button
@@ -700,7 +697,7 @@ export default function Insights() {
                           : "border border-sky-200 bg-white text-sky-700 shadow-sm hover:bg-sky-50 dark:border-sky-500/20 dark:bg-slate-950 dark:text-sky-300 dark:hover:bg-slate-900",
                       )}
                     >
-                      {exportLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                      {exportLoading ? <NeonAtom size={20} /> : <FileText className="h-4 w-4" />}
                       {exportLoading ? "Preparing..." : "Download PDF Report"}
                     </button>
                   </div>
@@ -837,9 +834,7 @@ export default function Insights() {
                         <Badge tone="default">Limit 8</Badge>
                       </div>
                       {viewerLoading ? (
-                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                          <Loader2 className="h-4 w-4 animate-spin" /> Loading viewers...
-                        </div>
+                        <NeonAtom size={24} text="Loading viewers..." />
                       ) : (
                         <div className="space-y-2">
                           {profileViewers.length ? (
@@ -868,9 +863,7 @@ export default function Insights() {
                         <Badge tone="default">Limit 8</Badge>
                       </div>
                       {viewerLoading ? (
-                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                          <Loader2 className="h-4 w-4 animate-spin" /> Loading viewers...
-                        </div>
+                        <NeonAtom size={24} text="Loading viewers..." />
                       ) : (
                         <div className="space-y-2">
                           {productViewers.length ? (
