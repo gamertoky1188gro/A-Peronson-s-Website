@@ -192,8 +192,9 @@ export default function HelpCenterPage() {
   const [faqQuery, setFaqQuery] = useState("");
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const user = getCurrentUser();
-  const { user: secureUser } = useSecureUser();
+  const { user: secureUser, loading: secureLoading } = useSecureUser();
   const token = getToken();
   const userRole = secureUser?.role || user?.role;
 
@@ -215,6 +216,12 @@ export default function HelpCenterPage() {
       fetchFaqs();
     }
   }, [token]);
+
+  useEffect(() => {
+    if (pageLoading && !loading && !secureLoading) {
+      setPageLoading(false);
+    }
+  }, [pageLoading, loading, secureLoading]);
 
   const filteredFaq = useMemo(() => {
     const query = faqQuery.trim().toLowerCase();
@@ -284,6 +291,10 @@ export default function HelpCenterPage() {
   };
 
   const isAdmin = userRole === "admin" || userRole === "owner";
+
+  if (pageLoading) {
+    return <NeonAtom fill />;
+  }
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.24),transparent_34%),linear-gradient(180deg,#eff8ff_0%,#f8fbff_35%,#ffffff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_52%,#020617_100%)] dark:text-slate-100">
@@ -815,9 +826,7 @@ export default function HelpCenterPage() {
                 </div>
               </div>
               <div className="space-y-3">
-                {loading ? (
-                  <NeonAtom fill size={64} text="Loading..." />
-                ) : filteredFaq.length > 0 ? (
+                {filteredFaq.length > 0 ? (
                   filteredFaq.map((item, idx) => (
                     <details
                       key={item.q || item.question || idx}

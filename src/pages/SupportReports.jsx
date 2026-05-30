@@ -42,7 +42,7 @@ export default function SupportReports() {
   const token = useMemo(() => getToken(), []);
   const navigate = useNavigate();
   const sessionUser = getCurrentUser();
-  const { isPremium } = usePremiumCheck();
+  const { isPremium, loading: premiumLoading } = usePremiumCheck();
 
   const canPrioritySupport =
     isPremium || hasEntitlement(sessionUser, "dedicated_support");
@@ -69,6 +69,7 @@ export default function SupportReports() {
   const [reportId, setReportId] = useState("");
   const [tickets, setTickets] = useState([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const theme = useMemo(() => {
     return darkMode ? "bg-slate-950 text-white" : "bg-sky-50 text-slate-900";
@@ -102,6 +103,12 @@ export default function SupportReports() {
   useEffect(() => {
     loadTickets();
   }, [loadTickets]);
+
+  useEffect(() => {
+    if (pageLoading && !ticketsLoading && !premiumLoading) {
+      setPageLoading(false);
+    }
+  }, [pageLoading, ticketsLoading, premiumLoading]);
 
   async function submitReport(e) {
     e.preventDefault();
@@ -167,6 +174,10 @@ export default function SupportReports() {
     if (p === "Medium") return "bg-amber-500/15 text-amber-300";
     return "bg-emerald-500/15 text-emerald-300";
   };
+
+  if (pageLoading) {
+    return <NeonAtom fill />;
+  }
 
   return (
     <div className={`min-h-screen ${theme} transition-colors duration-300`}>

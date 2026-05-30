@@ -126,6 +126,7 @@ export default function MemberManagement() {
     permission_matrix_sections: [],
   });
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [success, setSuccess] = useState("");
@@ -163,6 +164,12 @@ export default function MemberManagement() {
     loadMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (pageLoading && !loading) {
+      setPageLoading(false);
+    }
+  }, [pageLoading, loading]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -296,6 +303,10 @@ export default function MemberManagement() {
     } catch (err) {
       setError(err.message);
     }
+  }
+
+  if (pageLoading) {
+    return <NeonAtom fill />;
   }
 
   if (forbidden || !canManageMembers) {

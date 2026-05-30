@@ -179,6 +179,7 @@ export default function AdminGovernance() {
   const [monthlyReport, setMonthlyReport] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [status, setStatus] = useState("");
+  const [pageLoading, setPageLoading] = useState(true);
 
   const shellClass = darkMode
     ? "dark bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.22),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),_transparent_23%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] text-slate-100"
@@ -212,6 +213,8 @@ export default function AdminGovernance() {
         await load();
       } catch {
         if (active) setStatus("Failed to load governance data");
+      } finally {
+        if (active) setPageLoading(false);
       }
     };
     run();
@@ -311,6 +314,10 @@ export default function AdminGovernance() {
     });
     setMonthlyReport(result?.item || null);
   };
+
+  if (pageLoading) {
+    return <NeonAtom fill />;
+  }
 
   return (
     <div className={cn("min-h-screen transition-colors", shellClass)}>

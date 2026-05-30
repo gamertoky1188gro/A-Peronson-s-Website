@@ -945,6 +945,7 @@ export default function AdminPanel() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState("");
   const [master, setMaster] = useState(null);
   const [catalog, setCatalog] = useState(null);
@@ -1461,6 +1462,12 @@ export default function AdminPanel() {
   useEffect(() => {
     loadAdminData();
   }, [loadAdminData]);
+
+  useEffect(() => {
+    if (pageLoading && !loading) {
+      setPageLoading(false);
+    }
+  }, [pageLoading, loading]);
 
   const summary = master?.summary || {};
   const uiFallbackInventory = useMemo(
@@ -2896,6 +2903,10 @@ export default function AdminPanel() {
   const infraFieldPanel = adminDark
     ? "rounded-2xl border border-slate-800 bg-slate-900/60 p-4"
     : "rounded-2xl border border-slate-200 bg-slate-50 p-4";
+
+  if (pageLoading) {
+    return <NeonAtom fill />;
+  }
 
   if (!isAllowedAdminViewer) {
     const roles = adminPanelAllowedRoles.join(", ");
