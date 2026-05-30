@@ -180,31 +180,36 @@ const serveDist = process.env.SERVE_DIST === "true";
 if (serveDist) {
   console.log("[static] SERVE_DIST=true, dist exists:", fs.existsSync(distRoot));
 }
+const MIME_TYPES = {
+  ".js": "application/javascript",
+  ".mjs": "application/javascript",
+  ".css": "text/css",
+  ".html": "text/html",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".woff2": "font/woff2",
+  ".json": "application/json",
+};
+
 if (serveDist && fs.existsSync(distRoot)) {
   app.use((req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();
-    if (ext === ".js" || ext === ".mjs") {
-      res.setHeader("Content-Type", "application/javascript");
-    } else if (ext === ".css") {
-      res.setHeader("Content-Type", "text/css");
-    } else if (ext === ".svg") {
-      res.setHeader("Content-Type", "image/svg+xml");
-    } else if (ext === ".png") {
-      res.setHeader("Content-Type", "image/png");
-    } else if (ext === ".jpg" || ext === ".jpeg") {
-      res.setHeader("Content-Type", "image/jpeg");
-    } else if (ext === ".webp") {
-      res.setHeader("Content-Type", "image/webp");
-    } else if (ext === ".ico") {
-      res.setHeader("Content-Type", "image/x-icon");
-    } else if (ext === ".woff2") {
-      res.setHeader("Content-Type", "font/woff2");
-    } else if (ext === ".json") {
-      res.setHeader("Content-Type", "application/json");
-    }
-    next();
+    const contentType = MIME_TYPES[ext];
+    if (!contentType) return next();
+    const filePath = path.join(distRoot, req.path);
+    if (!fs.existsSync(filePath)) return next();
+    const content = fs.readFileSync(filePath);
+    res.writeHead(200, {
+      "Content-Type": contentType,
+      "Content-Length": Buffer.byteLength(content),
+      "Cache-Control": "public, max-age=31536000, immutable",
+    });
+    res.end(content);
   });
-  app.use(express.static(distRoot));
 }
 
 app.use(
