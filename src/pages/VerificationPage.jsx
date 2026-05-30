@@ -24,7 +24,7 @@
 */
 import NeonAtom from "../components/ui/NeonAtom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import {
   BUYER_COUNTRY_OPTIONS,
@@ -132,6 +132,7 @@ export default function VerificationPage() {
   const [feedback, setFeedback] = useState("");
   const [optionalLicenseInput, setOptionalLicenseInput] = useState("");
   const [renewing, setRenewing] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const fileInputRef = useRef(null);
   const pendingDocRef = useRef("");
@@ -181,7 +182,35 @@ export default function VerificationPage() {
   }, [token]);
 
   useEffect(() => {
-    loadStatus();
+    let cancelled = false;
+    let statusDone = false;
+    let userDone = false;
+
+    function tryDone() {
+      if (statusDone && userDone && !cancelled) {
+        setPageLoading(false);
+      }
+    }
+
+    (async () => {
+      try {
+        await loadStatus();
+      } finally {
+        statusDone = true;
+        tryDone();
+      }
+    })();
+
+    (async () => {
+      try {
+        await syncUserFromApi(getToken());
+      } finally {
+        userDone = true;
+        tryDone();
+      }
+    })();
+
+    return () => { cancelled = true; };
   }, [loadStatus]);
 
   useEffect(() => {
@@ -387,6 +416,8 @@ export default function VerificationPage() {
     desc: documents?.[key] ? "Submitted" : "Missing",
     done: Boolean(documents?.[key]),
   }));
+
+  if (pageLoading) return <NeonAtom fill />;
 
   return (
     <div className={`min-h-screen ${pageBg} transition-colors duration-300`}>
