@@ -1,9 +1,9 @@
 import NeonAtom from "../components/ui/NeonAtom";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import LeadManager from "../components/leads/LeadManager";
-import { apiRequest, getToken } from "../lib/auth";
+import { apiRequest, getToken, syncUserFromApi } from "../lib/auth";
 import {
   Bell,
   Bot,
@@ -82,6 +82,21 @@ export default function AgentDashboard() {
   const [approvalState, setApprovalState] = useState(null);
   const [sendState, setSendState] = useState(null);
   const [queueSummary, setQueueSummary] = useState({ queue: [] });
+  const [pageLoading, setPageLoading] = useState(true);
+  const pageLoadCountRef = useRef(0);
+
+  useEffect(() => {
+    if (loading) return;
+    pageLoadCountRef.current += 1;
+    if (pageLoadCountRef.current >= 2) setPageLoading(false);
+  }, [loading]);
+
+  useEffect(() => {
+    syncUserFromApi(getToken()).finally(() => {
+      pageLoadCountRef.current += 1;
+      if (pageLoadCountRef.current >= 2) setPageLoading(false);
+    });
+  }, []);
 
   async function generateAiReply() {
     const token = getToken();
@@ -197,6 +212,8 @@ export default function AgentDashboard() {
     { key: "chats", label: "Chats" },
     { key: "leads", label: "Leads" },
   ];
+
+  if (pageLoading) return <NeonAtom fill />;
 
   return (
     <div className="min-h-full bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.12),_transparent_26%),linear-gradient(180deg,_#f8fbff_0%,_#eef6ff_48%,_#f8fafc_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.12),_transparent_26%),linear-gradient(180deg,_#020617_0%,_#06101f_52%,_#020617_100%)] dark:text-slate-100">
