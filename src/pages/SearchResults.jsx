@@ -1895,9 +1895,7 @@ export default function SearchResults() {
 
               <div className="mt-5">
                 {loading ? (
-                  <div className="flex justify-center py-12">
-                    <NeonAtom size={64} />
-                  </div>
+                  <NeonAtom fill size={64} />
                 ) : (
                   <ResultCards />
                 )}

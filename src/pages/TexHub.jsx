@@ -548,11 +548,7 @@ export default function TexHub() {
   }, [bento, mode]);
 
   if (_loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#07111f]">
-        <NeonAtom size={48} text="Loading..." />
-      </div>
-    );
+    return <NeonAtom fill size={64} text="Loading..." />;
   }
 
   return (

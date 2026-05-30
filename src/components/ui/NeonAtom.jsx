@@ -1,11 +1,11 @@
-export default function NeonAtom({ size = 180, className = "", text = "" }) {
+export default function NeonAtom({ size = 180, className = "", text = "", fill = false }) {
   const s = size;
   const orbitSize = s * 0.89;
   const coreSize = s * 0.2;
   const particleSize = s * 0.089;
 
   return (
-    <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
+    <div className={`flex flex-col items-center justify-center gap-3 ${fill ? "min-h-[50vh] w-full" : ""} ${className}`}>
       <style>{`
         @keyframes atom-float {
           0% { transform: translateY(-${s*0.083}px) rotateX(5deg) rotateY(5deg); }

@@ -1682,7 +1682,7 @@ export default function OrgSettings() {
                     </div>
                     <div className="space-y-3">
                       {loadingSessions ? (
-                        <NeonAtom size={40} text="Loading..." />
+                        <NeonAtom fill size={64} text="Loading..." />
                       ) : sessions.length === 0 ? (
                         <p className="text-sm text-slate-500">
                           No active sessions.
@@ -2007,7 +2007,7 @@ export default function OrgSettings() {
               >
                 <div className="space-y-3">
                   {loadingSessions ? (
-                    <NeonAtom size={40} text="Loading..." />
+                    <NeonAtom fill size={64} text="Loading..." />
                   ) : sessions.length === 0 ? (
                     <p className="text-sm text-slate-500">No sessions.</p>
                   ) : (
@@ -2546,11 +2546,7 @@ function NotificationPreferencesTab() {
   );
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <NeonAtom size={40} />
-      </div>
-    );
+    return <NeonAtom fill size={64} />;
   }
 
   return (

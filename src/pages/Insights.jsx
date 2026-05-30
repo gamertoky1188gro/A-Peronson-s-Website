@@ -408,11 +408,7 @@ export default function Insights() {
     .filter(Boolean);
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <NeonAtom size={64} text="Loading analytics..." />
-      </div>
-    );
+    return <NeonAtom fill size={64} text="Loading analytics..." />;
   }
 
   if (forbidden) {

@@ -78,11 +78,7 @@ function ProtectedRoute({ children, roles }) {
 
   if (!user) {
     // User is loading - show spinner while auth is being verified
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <NeonAtom size={48} />
-      </div>
-    );
+    return <NeonAtom fill size={80} />;
   }
 
   const userRole = user?.role;

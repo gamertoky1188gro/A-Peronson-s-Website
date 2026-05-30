@@ -950,9 +950,7 @@ export default function MainFeed() {
             {/* Feed Items */}
             <section className="grid gap-5">
               {loading ? (
-                <div className="flex items-center justify-center py-20">
-                  <NeonAtom size={80} text="Loading feed..." />
-                </div>
+                <NeonAtom fill size={80} text="Loading feed..." />
               ) : null}
 
               {error ? (

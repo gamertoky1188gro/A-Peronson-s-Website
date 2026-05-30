@@ -666,9 +666,7 @@ export default function ProductManagement() {
             ) : null}
 
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <NeonAtom size={64} text="Loading..." />
-              </div>
+              <NeonAtom fill size={64} text="Loading..." />
             ) : items.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center dark:border-white/10 dark:bg-white/5">
                 <p className="text-slate-400">

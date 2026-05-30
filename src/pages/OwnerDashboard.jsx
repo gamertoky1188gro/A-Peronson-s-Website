@@ -409,9 +409,7 @@ export default function OwnerDashboard() {
 
             <main className="px-4 py-6 sm:px-6 xl:px-8">
               {loading && (
-                <div className="flex justify-center py-20">
-                  <NeonAtom size={64} text="Loading dashboard..." />
-                </div>
+                <NeonAtom fill size={64} text="Loading dashboard..." />
               )}
               {error && (
                 <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl p-4 flex items-center gap-3">

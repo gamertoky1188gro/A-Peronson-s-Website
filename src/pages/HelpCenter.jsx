@@ -816,9 +816,7 @@ export default function HelpCenterPage() {
               </div>
               <div className="space-y-3">
                 {loading ? (
-                  <div className="flex justify-center py-6">
-                    <NeonAtom size={40} text="Loading..." />
-                  </div>
+                  <NeonAtom fill size={64} text="Loading..." />
                 ) : filteredFaq.length > 0 ? (
                   filteredFaq.map((item, idx) => (
                     <details

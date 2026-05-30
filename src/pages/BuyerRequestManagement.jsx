@@ -1656,7 +1656,7 @@ export default function BuyerRequestManagement() {
                       </div>
 
                       {loading ? (
-                        <NeonAtom size={40} text="Loading..." />
+                        <NeonAtom fill size={64} text="Loading..." />
                       ) : !myRequests.length ? (
                         <div className={`text-sm ${soft}`}>No open requests.</div>
                       ) : (
@@ -1769,7 +1769,7 @@ export default function BuyerRequestManagement() {
                   </div>
 
                   {loading ? (
-                    <NeonAtom size={40} text="Loading..." />
+                    <NeonAtom fill size={64} text="Loading..." />
                   ) : !myRequests.length ? (
                     <div className={`text-sm ${soft}`}>No requests yet.</div>
                   ) : (

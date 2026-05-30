@@ -412,9 +412,7 @@ export function FileExplorerSection({ adminDark }) {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <NeonAtom size={40} text="Loading files..." />
-            </div>
+            <NeonAtom fill size={64} text="Loading files..." />
           ) : filteredFiles.length === 0 ? (
             <EmptyState darkMode={adminDark} />
           ) : (

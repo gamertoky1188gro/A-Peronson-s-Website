@@ -253,9 +253,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <NeonAtom size={40} text="Loading..." />
-        </div>
+        <NeonAtom fill size={64} text="Loading..." />
       ) : activeTab === "settings" ? (
         <div className="space-y-6">
           {/* System Prompt */}

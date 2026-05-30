@@ -382,9 +382,7 @@ export default function PartnerNetwork() {
             )}
 
             {loading && (
-              <div className="flex justify-center py-8">
-                <NeonAtom size={40} text="Loading..." />
-              </div>
+              <NeonAtom fill size={64} text="Loading..." />
             )}
 
             <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">

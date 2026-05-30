@@ -269,7 +269,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
           {loading ? (
-            <NeonAtom size={40} text="Loading comments..." />
+            <NeonAtom fill size={64} text="Loading comments..." />
           ) : null}
           {!loading && error ? (
             <div className="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">

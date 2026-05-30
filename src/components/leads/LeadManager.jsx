@@ -373,7 +373,7 @@ export default function LeadManager({
           </div>
 
           {loading ? (
-            <NeonAtom size={40} text="Loading leads..." />
+            <NeonAtom fill size={64} text="Loading leads..." />
           ) : null}
           {error ? (
             <div className="mt-2 text-sm text-rose-600">{error}</div>

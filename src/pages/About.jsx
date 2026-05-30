@@ -177,11 +177,7 @@ export default function About() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
-        <NeonAtom size={64} text="Loading..." />
-      </div>
-    );
+    return <NeonAtom fill size={64} text="Loading..." />;
   }
 
   return (

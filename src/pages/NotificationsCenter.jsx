@@ -505,9 +505,7 @@ export default function NotificationsCenter() {
 
                 <div className="space-y-3">
                     {loading ? (
-                    <div className="flex justify-center py-8">
-                      <NeonAtom size={40} />
-                    </div>
+                    <NeonAtom fill size={64} />
                   ) : error ? (
                     <div className="text-sm text-rose-300">{error}</div>
                   ) : filteredItems.length === 0 ? (

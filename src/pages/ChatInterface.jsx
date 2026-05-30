@@ -1932,9 +1932,7 @@ export default function ChatInterface() {
 
           <div className="h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar">
             {loading ? (
-              <div className="flex h-full items-center justify-center">
-                <NeonAtom size={64} text="Loading..." />
-              </div>
+              <NeonAtom fill size={64} text="Loading..." />
             ) : null}
             {!loading && visibleError ? (
               <div className="p-4 text-center text-sm text-red-400">

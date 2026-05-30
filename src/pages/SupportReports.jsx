@@ -551,9 +551,7 @@ export default function SupportReports() {
               </div>
 
               {ticketsLoading ? (
-                <div className="flex justify-center py-8">
-                  <NeonAtom size={40} text="Loading..." />
-                </div>
+                <NeonAtom fill size={64} text="Loading..." />
               ) : tickets.length === 0 ? (
                 <div
                   className={`rounded-[24px] border border-dashed p-8 text-center ${darkMode ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"}`}
