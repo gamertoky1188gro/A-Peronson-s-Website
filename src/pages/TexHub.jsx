@@ -841,12 +841,8 @@ export default function TexHub() {
                   </div>
                   <button
                     type="button"
-                    onClick={() =>
-                      setMode((current) =>
-                        current === "professional" ? "diverse" : "professional",
-                      )
-                    }
-                    className="relative h-8 w-16 rounded-full bg-slate-200 p-1 dark:bg-slate-800"
+                    disabled
+                    className="relative h-8 w-16 cursor-not-allowed rounded-full bg-slate-200 p-1 opacity-50 dark:bg-slate-800"
                   >
                     <motion.div
                       layout
