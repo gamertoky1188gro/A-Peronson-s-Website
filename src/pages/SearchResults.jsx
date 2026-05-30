@@ -256,6 +256,8 @@ export default function SearchResults() {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [requests, setRequests] = useState([]);
   const [companies, setCompanies] = useState([]);
+  const [pageLoading, setPageLoading] = useState(true);
+  const pageLoadCountRef = useRef(0);
   const [filterOptions, setFilterOptions] = useState({
     industries: DEFAULT_FILTERS.industries,
     incoterms: DEFAULT_FILTERS.incoterms,
@@ -324,14 +326,17 @@ export default function SearchResults() {
 
   useEffect(() => {
     async function fetchRecentViews() {
-      if (!token) return;
       try {
+        if (!token) return;
         const data = await apiRequest("/products/views/me?limit=5", { token });
         if (Array.isArray(data?.items)) {
           setRecentViews(data.items.slice(0, 5));
         }
       } catch (err) {
         console.warn("Unable to load recent views", err);
+      } finally {
+        pageLoadCountRef.current += 1;
+        if (pageLoadCountRef.current >= 3) setPageLoading(false);
       }
     }
     fetchRecentViews();
@@ -339,8 +344,8 @@ export default function SearchResults() {
 
   useEffect(() => {
     async function fetchQuota() {
-      if (!token) return;
       try {
+        if (!token) return;
         const data = await apiRequest("/search/alerts/quota", { token });
         if (data?.quota?.remaining !== undefined) {
           setAlertsQuota(Number(data.quota.remaining) || 0);
@@ -349,6 +354,9 @@ export default function SearchResults() {
         }
       } catch (err) {
         console.warn("Unable to load quota", err);
+      } finally {
+        pageLoadCountRef.current += 1;
+        if (pageLoadCountRef.current >= 3) setPageLoading(false);
       }
     }
     fetchQuota();
@@ -356,8 +364,8 @@ export default function SearchResults() {
 
   useEffect(() => {
     async function fetchFilterOptions() {
-      if (!token) return;
       try {
+        if (!token) return;
         const data = await apiRequest("/filters/options", { token });
         if (data) {
           setFilterOptions((prev) => ({
@@ -402,6 +410,9 @@ export default function SearchResults() {
         }
       } catch (err) {
         console.warn("Unable to load filter options", err);
+      } finally {
+        pageLoadCountRef.current += 1;
+        if (pageLoadCountRef.current >= 3) setPageLoading(false);
       }
     }
     fetchFilterOptions();
@@ -1158,6 +1169,8 @@ export default function SearchResults() {
   const isMac =
     typeof navigator !== "undefined" &&
     /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+
+  if (pageLoading) return <NeonAtom fill />;
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] text-slate-900 dark:text-white transition-colors">
