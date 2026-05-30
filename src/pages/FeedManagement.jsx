@@ -2,6 +2,7 @@ import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
+import { getToken, syncUserFromApi } from "../lib/auth";
 import ReactMarkdown from "react-markdown";
 
 const Icon = {
@@ -165,14 +166,23 @@ export default function FeedManagementPage() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
+    let postsDone = false;
+    let userDone = false;
+
+    function tryDone() {
+      if (postsDone && userDone) {
+        setPageLoading(false);
+      }
+    }
+
     const loadMine = async () => {
       setLoadingPosts(true);
       setError("");
       try {
-        const token =
-          localStorage.getItem("jwt") || localStorage.getItem("token");
+        const token = getToken();
         const res = await fetch("/api/feed/posts/mine", {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
@@ -194,10 +204,22 @@ export default function FeedManagementPage() {
         setError(message);
       } finally {
         setLoadingPosts(false);
+        postsDone = true;
+        tryDone();
+      }
+    };
+
+    const loadUser = async () => {
+      try {
+        await syncUserFromApi(getToken());
+      } finally {
+        userDone = true;
+        tryDone();
       }
     };
 
     loadMine();
+    loadUser();
   }, []);
 
   const previewCtaVisible = form.ctaText.trim().length > 0;
@@ -370,6 +392,8 @@ export default function FeedManagementPage() {
     theme === "dark"
       ? "bg-slate-900/60 text-slate-100 placeholder:text-slate-500 border-white/10 focus:border-sky-400"
       : "bg-white text-slate-900 placeholder:text-slate-400 border-slate-200 focus:border-sky-500";
+
+  if (pageLoading) return <NeonAtom fill />;
 
   return (
     <div className={cn("min-h-screen transition-colors duration-300", pageBg)}>
