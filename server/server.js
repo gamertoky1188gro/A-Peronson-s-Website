@@ -177,16 +177,34 @@ app.use("/uploads", express.static(uploadsRoot));
 
 const distRoot = path.join(process.cwd(), "dist");
 const serveDist = process.env.SERVE_DIST === "true";
+if (serveDist) {
+  console.log("[static] SERVE_DIST=true, dist exists:", fs.existsSync(distRoot));
+}
 if (serveDist && fs.existsSync(distRoot)) {
-  app.use(express.static(distRoot, {
-    setHeaders(res, filePath) {
-      if (filePath.endsWith(".js") || filePath.endsWith(".mjs")) {
-        res.setHeader("Content-Type", "application/javascript");
-      } else if (filePath.endsWith(".css")) {
-        res.setHeader("Content-Type", "text/css");
-      }
-    },
-  }));
+  app.use((req, res, next) => {
+    const ext = path.extname(req.path).toLowerCase();
+    if (ext === ".js" || ext === ".mjs") {
+      res.setHeader("Content-Type", "application/javascript");
+    } else if (ext === ".css") {
+      res.setHeader("Content-Type", "text/css");
+    } else if (ext === ".svg") {
+      res.setHeader("Content-Type", "image/svg+xml");
+    } else if (ext === ".png") {
+      res.setHeader("Content-Type", "image/png");
+    } else if (ext === ".jpg" || ext === ".jpeg") {
+      res.setHeader("Content-Type", "image/jpeg");
+    } else if (ext === ".webp") {
+      res.setHeader("Content-Type", "image/webp");
+    } else if (ext === ".ico") {
+      res.setHeader("Content-Type", "image/x-icon");
+    } else if (ext === ".woff2") {
+      res.setHeader("Content-Type", "font/woff2");
+    } else if (ext === ".json") {
+      res.setHeader("Content-Type", "application/json");
+    }
+    next();
+  });
+  app.use(express.static(distRoot));
 }
 
 app.use(
@@ -895,7 +913,16 @@ wsServer.on("connection", (socket, req) => {
     }
   });
 
+  const keepaliveTimer = setInterval(() => {
+    if (socket.readyState === 1) {
+      socket.ping();
+    } else {
+      clearInterval(keepaliveTimer);
+    }
+  }, 25_000);
+
   socket.on("close", () => {
+    clearInterval(keepaliveTimer);
     leaveCallRoom(socket);
     leaveChatRoom(socket);
     unregisterSocketUser(socket, socket.userId);
@@ -903,6 +930,7 @@ wsServer.on("connection", (socket, req) => {
   });
 
   socket.on("error", () => {
+    clearInterval(keepaliveTimer);
     leaveCallRoom(socket);
     leaveChatRoom(socket);
     unregisterSocketUser(socket, socket.userId);
