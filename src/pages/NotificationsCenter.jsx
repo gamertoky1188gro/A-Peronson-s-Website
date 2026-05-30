@@ -21,7 +21,7 @@
     - DELETE /api/notifications/search-alerts/:id
     - GET /api/products/views/me (for the "Viewed Products" tab)
 */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import NeonAtom from "../components/ui/NeonAtom";
 import {
@@ -33,7 +33,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import ProductQuickViewModal from "../components/products/ProductQuickViewModal";
 import {
@@ -165,6 +165,7 @@ export default function NotificationsCenter() {
   const [viewsNext, setViewsNext] = useState(null);
   const [loadingViews, setLoadingViews] = useState(false);
   const [quickViewItem, setQuickViewItem] = useState(null);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const loadNotifications = useCallback(async () => {
     if (!token) return;
@@ -216,8 +217,24 @@ export default function NotificationsCenter() {
   );
 
   useEffect(() => {
-    loadNotifications();
-    loadAlerts();
+    let notifsDone = false;
+    let alertsDone = false;
+    let userDone = false;
+    function tryDone() {
+      if (notifsDone && alertsDone && userDone) setPageLoading(false);
+    }
+    (async () => {
+      try { await loadNotifications(); }
+      finally { notifsDone = true; tryDone(); }
+    })();
+    (async () => {
+      try { await loadAlerts(); }
+      finally { alertsDone = true; tryDone(); }
+    })();
+    (async () => {
+      try { await syncUserFromApi(getToken()); }
+      finally { userDone = true; tryDone(); }
+    })();
   }, [loadAlerts, loadNotifications]);
 
   useEffect(() => {
@@ -321,6 +338,8 @@ export default function NotificationsCenter() {
   const softBg = theme === "dark" ? "bg-white/5" : "bg-slate-900/5";
   const subtleText = theme === "dark" ? "text-slate-400" : "text-slate-600";
   const mutedText = theme === "dark" ? "text-slate-300" : "text-slate-700";
+
+  if (pageLoading) return <NeonAtom fill />;
 
   return (
     <div className={cn("min-h-screen transition-colors duration-500", pageBg)}>
