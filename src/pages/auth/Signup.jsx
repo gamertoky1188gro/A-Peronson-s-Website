@@ -5,10 +5,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import PasswordStrengthBarModule from "react-password-strength-bar";
+import PasswordStrengthBar from "react-password-strength-bar";
 import PasswordChecklist from "react-password-checklist";
-
-const PasswordStrengthBar = PasswordStrengthBarModule.default;
 import NeonAtom from "../../components/ui/NeonAtom";
 import {
   apiRequest,
