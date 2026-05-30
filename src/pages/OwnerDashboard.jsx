@@ -1,10 +1,10 @@
 import NeonAtom from "../components/ui/NeonAtom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import LeadManager from "../components/leads/LeadManager";
-import { apiRequest, getToken } from "../lib/auth";
+import { apiRequest, getToken, syncUserFromApi } from "../lib/auth";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -197,6 +197,8 @@ export default function OwnerDashboard() {
     observers: 2,
   });
   const [vaultHealth, setVaultHealth] = useState(100);
+  const [pageLoading, setPageLoading] = useState(true);
+  const pageLoadCountRef = useRef(0);
 
   const totals = dashboard?.totals || {};
 
@@ -209,6 +211,12 @@ export default function OwnerDashboard() {
         ? "Premium"
         : "Enterprise";
   }, [plan]);
+
+  useEffect(() => {
+    if (loading) return;
+    pageLoadCountRef.current += 1;
+    if (pageLoadCountRef.current >= 3) setPageLoading(false);
+  }, [loading]);
 
   useEffect(() => {
     const token = getToken();
@@ -237,7 +245,15 @@ export default function OwnerDashboard() {
           setVaultHealth(membersRes.vault_health);
         }
       })
-      .catch(() => null);
+      .catch(() => null)
+      .finally(() => {
+        pageLoadCountRef.current += 1;
+        if (pageLoadCountRef.current >= 3) setPageLoading(false);
+      });
+    syncUserFromApi(token).finally(() => {
+      pageLoadCountRef.current += 1;
+      if (pageLoadCountRef.current >= 3) setPageLoading(false);
+    });
   }, []);
 
   const go = (href) => {
@@ -281,6 +297,8 @@ export default function OwnerDashboard() {
   const chartDocsData = dashboard?.series?.documents?.map(
     (item) => item.count,
   ) || [6, 7, 9, 10, 12, 15, 16, 18, 17, 20, 22, 26];
+
+  if (pageLoading) return <NeonAtom fill />;
 
   return (
     <div className={theme === "dark" ? "dark" : ""}>
