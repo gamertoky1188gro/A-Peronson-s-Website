@@ -335,12 +335,6 @@ async function copyToClipboard(text) {
   return ok;
 }
 
-const FeedSkeletonCard = ({ className = "" }) => (
-  <div className={`flex items-center justify-center rounded-xl bg-white/50 p-12 dark:bg-gray-900/50 ${className}`}>
-    <NeonAtom size={64} />
-  </div>
-);
-
 // ====== UI COMPONENTS ======
 function Pill({ children, active = false, onClick }) {
   return (
@@ -956,10 +950,8 @@ export default function MainFeed() {
             {/* Feed Items */}
             <section className="grid gap-5">
               {loading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <FeedSkeletonCard key={`feed-skel-${i}`} />
-                  ))}
+                <div className="flex items-center justify-center py-20">
+                  <NeonAtom size={80} text="Loading feed..." />
                 </div>
               ) : null}
 
