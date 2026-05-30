@@ -14,43 +14,57 @@ import NeonAtom from "./components/ui/NeonAtom";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
 
-const TexHub = lazy(() => import("./pages/TexHub"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const Login = lazy(() => import("./pages/auth/Login"));
-const Signup = lazy(() => import("./pages/auth/Signup"));
-const SignupUltra = lazy(() => import("./pages/auth/SignupUltra"));
-const OnboardingPage = lazy(() => import("./pages/auth/OnboardingPage"));
-const MainFeed = lazy(() => import("./pages/MainFeed"));
-const FeedManagement = lazy(() => import("./pages/FeedManagement"));
-const SearchResults = lazy(() => import("./pages/SearchResults"));
-const BuyerProfile = lazy(() => import("./pages/BuyerProfile"));
-const FactoryProfile = lazy(() => import("./pages/FactoryProfile"));
-const BuyingHouseProfile = lazy(() => import("./pages/BuyingHouseProfile"));
-const MemberManagement = lazy(() => import("./pages/MemberManagement"));
-const PartnerNetwork = lazy(() => import("./pages/PartnerNetwork"));
-const ProductManagement = lazy(() => import("./pages/ProductManagement"));
-const BuyerRequestManagement = lazy(() => import("./pages/BuyerRequestManagement"));
-const HelpCenter = lazy(() => import("./pages/HelpCenter"));
-const ContractVault = lazy(() => import("./pages/ContractVault"));
-const NotificationsCenter = lazy(() => import("./pages/NotificationsCenter"));
-const OrgSettings = lazy(() => import("./pages/OrgSettings"));
-const Insights = lazy(() => import("./pages/Insights"));
-const About = lazy(() => import("./pages/About"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const ChatInterface = lazy(() => import("./pages/ChatInterface"));
-const CallInterface = lazy(() => import("./pages/CallInterface"));
-const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard"));
-const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
+const safeLazy = (importFn) => {
+  return lazy(() =>
+    importFn().catch((error) => {
+      if (
+        error.message?.includes("dynamically imported module") ||
+        error.name === "ChunkLoadError"
+      ) {
+        window.location.reload();
+      }
+      throw error;
+    }),
+  );
+};
 
-const IndustryPage = lazy(() => import("./pages/IndustryPage"));
-const RatingFeedback = lazy(() => import("./pages/RatingFeedback"));
-const SupportReports = lazy(() => import("./pages/SupportReports"));
-const VerificationPage = lazy(() => import("./pages/VerificationPage"));
-const TaskTracker = lazy(() => import("./pages/TaskTracker"));
-const AdminPanel = lazy(() => import("./pages/AdminPanel"));
-const AdminGovernance = lazy(() => import("./pages/AdminGovernance"));
-const AccessDenied = lazy(() => import("./pages/AccessDenied"));
+const TexHub = safeLazy(() => import("./pages/TexHub"));
+const Pricing = safeLazy(() => import("./pages/Pricing"));
+const Login = safeLazy(() => import("./pages/auth/Login"));
+const Signup = safeLazy(() => import("./pages/auth/Signup"));
+const SignupUltra = safeLazy(() => import("./pages/auth/SignupUltra"));
+const OnboardingPage = safeLazy(() => import("./pages/auth/OnboardingPage"));
+const MainFeed = safeLazy(() => import("./pages/MainFeed"));
+const FeedManagement = safeLazy(() => import("./pages/FeedManagement"));
+const SearchResults = safeLazy(() => import("./pages/SearchResults"));
+const BuyerProfile = safeLazy(() => import("./pages/BuyerProfile"));
+const FactoryProfile = safeLazy(() => import("./pages/FactoryProfile"));
+const BuyingHouseProfile = safeLazy(() => import("./pages/BuyingHouseProfile"));
+const MemberManagement = safeLazy(() => import("./pages/MemberManagement"));
+const PartnerNetwork = safeLazy(() => import("./pages/PartnerNetwork"));
+const ProductManagement = safeLazy(() => import("./pages/ProductManagement"));
+const BuyerRequestManagement = safeLazy(() => import("./pages/BuyerRequestManagement"));
+const HelpCenter = safeLazy(() => import("./pages/HelpCenter"));
+const ContractVault = safeLazy(() => import("./pages/ContractVault"));
+const NotificationsCenter = safeLazy(() => import("./pages/NotificationsCenter"));
+const OrgSettings = safeLazy(() => import("./pages/OrgSettings"));
+const Insights = safeLazy(() => import("./pages/Insights"));
+const About = safeLazy(() => import("./pages/About"));
+const Terms = safeLazy(() => import("./pages/Terms"));
+const Privacy = safeLazy(() => import("./pages/Privacy"));
+const ChatInterface = safeLazy(() => import("./pages/ChatInterface"));
+const CallInterface = safeLazy(() => import("./pages/CallInterface"));
+const OwnerDashboard = safeLazy(() => import("./pages/OwnerDashboard"));
+const AgentDashboard = safeLazy(() => import("./pages/AgentDashboard"));
+
+const IndustryPage = safeLazy(() => import("./pages/IndustryPage"));
+const RatingFeedback = safeLazy(() => import("./pages/RatingFeedback"));
+const SupportReports = safeLazy(() => import("./pages/SupportReports"));
+const VerificationPage = safeLazy(() => import("./pages/VerificationPage"));
+const TaskTracker = safeLazy(() => import("./pages/TaskTracker"));
+const AdminPanel = safeLazy(() => import("./pages/AdminPanel"));
+const AdminGovernance = safeLazy(() => import("./pages/AdminGovernance"));
+const AccessDenied = safeLazy(() => import("./pages/AccessDenied"));
 
 const AUTH_ROLES = [
   "buyer",
