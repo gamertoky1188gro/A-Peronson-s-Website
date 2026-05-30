@@ -8,32 +8,52 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import AccessDeniedState from "../components/AccessDeniedState";
-import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
 
-const contractsSeed = [
-  {
-    id: "SEED-001",
-    status: "Signed",
-    title: "Seeded Contract",
-    buyer: "Seed Buyer",
-    factory: "Seed Factory",
-    date: "2026-04-21",
-    next: "Lock pending",
-    buyerSign: "signed",
-    factorySign: "signed",
-    pdf: "ready",
-    timeline: [
-      "Discovered",
-      "Matched",
-      "Contacted",
-      "Meeting scheduled",
-      "Negotiating",
-      "Contract drafted",
-      "Contract signed",
-      "Closed",
-    ],
-  },
+const TIMELINE = [
+  "Discovered",
+  "Matched",
+  "Contacted",
+  "Meeting scheduled",
+  "Negotiating",
+  "Contract drafted",
+  "Contract signed",
+  "Closed",
 ];
+
+function mapContract(c) {
+  const ls = c.lifecycle_status || "draft";
+  const artifactStatus = c.artifact?.status || "draft";
+  const next = (() => {
+    if (ls === "archived") return "Archived";
+    if (artifactStatus === "locked") return "Archived";
+    if (ls === "signed") return "Lock pending";
+    if (c.buyer_signature_state === "signed" && c.factory_signature_state === "signed") return "Generate PDF";
+    if (c.buyer_signature_state === "signed" || c.factory_signature_state === "signed") return "Other party sign";
+    return "Awaiting signatures";
+  })();
+  const statusLabel = ls === "draft" ? "Draft" : ls === "pending_signature" ? "Pending" : ls === "signed" ? "Signed" : "Archived";
+  const pdfStatus = artifactStatus === "generated" || artifactStatus === "locked" ? "ready" : "pending";
+  const buyerSign = c.buyer_signature_state || "pending";
+  const factorySign = c.factory_signature_state || "pending";
+  const timelineIdx = ls === "archived" ? 7 : ls === "signed" ? 6 : ls === "pending_signature" ? 5 : 2;
+  return {
+    id: c.id,
+    contract_number: c.contract_number || c.id,
+    status: statusLabel,
+    title: c.title || "",
+    buyer: c.buyer_name || "",
+    factory: c.factory_name || "",
+    date: c.created_at ? new Date(c.created_at).toLocaleDateString() : "",
+    next,
+    buyerSign,
+    factorySign,
+    pdf: pdfStatus,
+    timeline: TIMELINE,
+    timelineIdx,
+    raw: c,
+  };
+}
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -364,9 +384,11 @@ function isOwnerLevel(user) {
 export default function ContractVaultPage() {
   const { theme, toggleTheme } = useTheme();
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState("SEED-001");
+  const [selectedId, setSelectedId] = useState(null);
   const [tab, setTab] = useState("All");
   const [saving, setSaving] = useState(false);
+  const [contracts, setContracts] = useState([]);
+  const [pageLoading, setPageLoading] = useState(true);
   const [paymentForm, setPaymentForm] = useState({
     type: "bank_transfer",
     transaction_reference: "",
@@ -379,38 +401,51 @@ export default function ContractVaultPage() {
     document_file: null,
   });
 
-  const handleESign = async () => {
-    const token = getToken();
-    if (!token) return;
-    await runAction(async () => {
-      const res = await apiRequest(
-        "/documents/contracts/SEED-001/sign-session",
-        {
-          method: "POST",
-          token,
-        },
-      );
-      if (res?.signing_url) {
-        window.open(res.signing_url, "_blank");
+  useEffect(() => {
+    let cancelled = false;
+    let contractsDone = false;
+    let userDone = false;
+
+    function tryDone() {
+      if (contractsDone && userDone && !cancelled) {
+        setPageLoading(false);
       }
-    }, "Failed to create session");
-  };
+    }
 
-  const handleDownloadPdf = () => {
-    window.open(
-      `${API_BASE}/uploads/contracts/CN-1776429426220-v1.pdf`,
-      "_blank",
-    );
-  };
+    (async () => {
+      try {
+        const data = await apiRequest("/documents/contracts", { token: getToken() });
+        if (cancelled) return;
+        const mapped = (Array.isArray(data) ? data : []).map(mapContract);
+        setContracts(mapped);
+        if (mapped.length > 0) setSelectedId(mapped[0].id);
+      } catch (err) {
+        console.warn("Failed to load contracts", err);
+      } finally {
+        contractsDone = true;
+        tryDone();
+      }
+    })();
 
-  const contract =
-    contractsSeed.find((c) => c.id === selectedId) || contractsSeed[0];
+    (async () => {
+      try {
+        await syncUserFromApi(getToken());
+      } finally {
+        userDone = true;
+        tryDone();
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
+
+  const contract = contracts.find((c) => c.id === selectedId) || contracts[0] || null;
   const currentUser = useMemo(() => getCurrentUser(), []);
   const navigate = useNavigate();
 
   const filtered = useMemo(() => {
-    return contractsSeed.filter((c) => {
-      const matchesQuery = [c.id, c.status, c.title, c.buyer, c.factory]
+    return contracts.filter((c) => {
+      const matchesQuery = [c.id, c.contract_number, c.status, c.title, c.buyer, c.factory]
         .join(" ")
         .toLowerCase()
         .includes(query.toLowerCase());
@@ -418,7 +453,7 @@ export default function ContractVaultPage() {
         tab === "All" ? true : c.status.toLowerCase() === tab.toLowerCase();
       return matchesQuery && matchesTab;
     });
-  }, [query, tab]);
+  }, [query, tab, contracts]);
 
   const shell = theme === "dark" ? "dark" : "";
 
@@ -433,11 +468,34 @@ export default function ContractVaultPage() {
     }
   };
 
+  const cid = contract?.id || "";
+
+  const handleESign = async () => {
+    const token = getToken();
+    if (!token || !cid) return;
+    await runAction(async () => {
+      const res = await apiRequest(`/documents/contracts/${cid}/sign-session`, {
+        method: "POST",
+        token,
+      });
+      if (res?.signing_url) {
+        window.open(res.signing_url, "_blank");
+      }
+    }, "Failed to create session");
+  };
+
+  const handleDownloadPdf = () => {
+    const pdfPath = contract?.raw?.artifact?.pdf_path;
+    if (pdfPath) {
+      window.open(`${API_BASE}${pdfPath}`, "_blank");
+    }
+  };
+
   const handleBuyerSign = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token || !cid) return;
     await runAction(async () => {
-      await apiRequest("/documents/contracts/SEED-001/signatures", {
+      await apiRequest(`/documents/contracts/${cid}/signatures`, {
         method: "PATCH",
         token,
         body: { buyer_signature_state: "signed", is_draft: false },
@@ -447,9 +505,9 @@ export default function ContractVaultPage() {
 
   const handleFactorySign = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token || !cid) return;
     await runAction(async () => {
-      await apiRequest("/documents/contracts/SEED-001/signatures", {
+      await apiRequest(`/documents/contracts/${cid}/signatures`, {
         method: "PATCH",
         token,
         body: { factory_signature_state: "signed", is_draft: false },
@@ -459,9 +517,9 @@ export default function ContractVaultPage() {
 
   const handleLockPdf = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token || !cid) return;
     await runAction(async () => {
-      await apiRequest("/documents/contracts/SEED-001/artifact", {
+      await apiRequest(`/documents/contracts/${cid}/artifact`, {
         method: "PATCH",
         token,
         body: { status: "locked" },
@@ -471,9 +529,9 @@ export default function ContractVaultPage() {
 
   const handleArchive = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token || !cid) return;
     await runAction(async () => {
-      await apiRequest("/documents/contracts/SEED-001/artifact", {
+      await apiRequest(`/documents/contracts/${cid}/artifact`, {
         method: "PATCH",
         token,
         body: { status: "archived" },
@@ -483,13 +541,13 @@ export default function ContractVaultPage() {
 
   const handleSubmitProof = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token || !cid) return;
     await runAction(async () => {
       await apiRequest("/payment-proofs", {
         method: "POST",
         token,
         body: {
-          contract_id: "SEED-001",
+          contract_id: cid,
           type: paymentForm.type,
           transaction_reference: paymentForm.transaction_reference,
           bank_name: paymentForm.bank_name,
@@ -504,6 +562,17 @@ export default function ContractVaultPage() {
   };
 
   const canSign = currentUser && isOwnerLevel(currentUser);
+
+  if (pageLoading) return <NeonAtom fill />;
+  if (!contract) {
+    return (
+      <div className={shell}>
+        <div className="flex min-h-screen items-center justify-center">
+          <p className="text-slate-500 dark:text-slate-400">No contracts found.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={shell}>
@@ -659,8 +728,8 @@ export default function ContractVaultPage() {
                           <Step
                             key={step}
                             label={step}
-                            done={idx <= 6}
-                            active={idx === 7}
+                            done={idx < contract.timelineIdx}
+                            active={idx === contract.timelineIdx}
                             last={idx === contract.timeline.length - 1}
                           />
                         ))}
