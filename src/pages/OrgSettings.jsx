@@ -282,6 +282,7 @@ export default function OrgSettings() {
   const [autoReplyTone, setAutoReplyTone] = useState("professional");
   const [autoReplyQualification, setAutoReplyQualification] = useState("");
   const [_autoReplyFeedback, setAutoReplyFeedback] = useState("");
+  const [pageLoading, setPageLoading] = useState(true);
   const [_loadingAutoReply, setLoadingAutoReply] = useState(false);
   const [policyMessageCaps, setPolicyMessageCaps] = useState("12");
   const [policyWindowMinutes, setPolicyWindowMinutes] = useState("15");
@@ -391,7 +392,6 @@ export default function OrgSettings() {
   // Members state
   const [entries, setEntries] = useState([]);
   const [members, setMembers] = useState([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
   const [memberInviteEmail, setMemberInviteEmail] = useState("");
   const [memberInviteRole, setMemberInviteRole] = useState("Editor");
   const [invitingMember, setInvitingMember] = useState(false);
@@ -622,14 +622,11 @@ export default function OrgSettings() {
   const loadMembers = useCallback(async () => {
     const token = getToken();
     if (!token) return;
-    setLoadingMembers(true);
     try {
       const data = await apiRequest("/org/members", { token });
       setMembers(Array.isArray(data?.members) ? data.members : []);
     } catch {
       setMembers([]);
-    } finally {
-      setLoadingMembers(false);
     }
   }, []);
 
@@ -1104,17 +1101,21 @@ export default function OrgSettings() {
     }
   };
 
-  // Initial load
+  // Initial load — single full-screen loader until everything resolves
   useEffect(() => {
     if (isOrgManager) {
-      loadBilling();
-      loadUserProfile();
-      loadSessions();
-      loadPasskeys();
-      loadChatbotSettings();
-      loadCommunicationPolicy();
-      loadFaqs();
-      loadMembers();
+      Promise.allSettled([
+        loadBilling(),
+        loadUserProfile(),
+        loadSessions(),
+        loadPasskeys(),
+        loadChatbotSettings(),
+        loadCommunicationPolicy(),
+        loadFaqs(),
+        loadMembers(),
+      ]).finally(() => setPageLoading(false));
+    } else {
+      setPageLoading(false);
     }
   }, [
     isOrgManager,
@@ -1137,6 +1138,8 @@ export default function OrgSettings() {
         : "red";
 
   const bodyTheme = theme === "dark" ? "dark" : "";
+
+  if (pageLoading) return <NeonAtom fill text="Loading..." />;
 
   return (
     <div
@@ -2300,9 +2303,7 @@ export default function OrgSettings() {
             <div className="grid gap-6 lg:grid-cols-2">
               <SectionCard title="Team Members" subtitle="Manage your team.">
                 <div className="space-y-3">
-                  {loadingMembers ? (
-                    <p className="text-sm text-slate-500">Loading members...</p>
-                  ) : members.length === 0 ? (
+                  {members.length === 0 ? (
                     <p className="text-sm text-slate-500">
                       No team members yet.
                     </p>
