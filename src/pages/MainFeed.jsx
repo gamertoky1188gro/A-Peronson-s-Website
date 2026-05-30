@@ -414,6 +414,15 @@ export default function MainFeed() {
   const [items, setItems] = useState([]);
   const [tags, setTags] = useState([]);
   const [nextCursor, setNextCursor] = useState(0);
+  const [pageLoading, setPageLoading] = useState(true);
+  const loadFlags = useRef({ user: false, config: false, feed: false });
+  const markLoaded = (key) => {
+    loadFlags.current[key] = true;
+    if (loadFlags.current.user && loadFlags.current.config && loadFlags.current.feed) {
+      setPageLoading(false);
+    }
+  };
+
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
@@ -441,6 +450,8 @@ export default function MainFeed() {
       if (fresh) setUser(fresh);
     } catch {
       /* ignore */
+    } finally {
+      markLoaded("user");
     }
   }, [token]);
 
@@ -521,6 +532,9 @@ export default function MainFeed() {
       } finally {
         setLoading(false);
         setLoadingMore(false);
+        if (!loadFlags.current.feed && reset) {
+          markLoaded("feed");
+        }
       }
     },
     [
@@ -540,10 +554,11 @@ export default function MainFeed() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) return;
+    if (!token) return markLoaded("config");
     apiRequest("/admin/config/feed-page", { token })
       .then((data) => setFeedConfig({ ...DEFAULT_FEED_CONFIG, ...data }))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => markLoaded("config"));
   }, []);
 
   useEffect(() => {
@@ -949,9 +964,9 @@ export default function MainFeed() {
 
             {/* Feed Items */}
             <section className="grid gap-5">
-              {loading ? (
-                <NeonAtom fill size={80} text="Loading feed..." />
-              ) : null}
+              {pageLoading ? (
+  <NeonAtom fill size={80} text="Loading feed..." />
+) : null}
 
               {error ? (
                 <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
