@@ -85,12 +85,12 @@ function Stat({ icon: Icon, label, value }) {
   );
 }
 
-function Field({ label, children, hint }) {
+function Field({ label, children, hint, required }) {
   return (
     <label className="block space-y-1.5">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-          {label}
+          {label} {required ? <span className="text-sky-500">*</span> : null}
         </span>
         {hint ? (
           <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -275,7 +275,35 @@ export default function ProductManagement() {
       return;
     }
     if (!form.title.trim()) {
-      setNotice("Title is required.");
+      setNotice("Product name is required.");
+      return;
+    }
+    if (!form.industry.trim()) {
+      setNotice("Industry is required.");
+      return;
+    }
+    if (!form.category.trim()) {
+      setNotice("Category is required.");
+      return;
+    }
+    if (!form.material.trim()) {
+      setNotice("Material is required.");
+      return;
+    }
+    if (!form.price_range.trim()) {
+      setNotice("Price range is required.");
+      return;
+    }
+    if (!form.lead_time_days.trim()) {
+      setNotice("Lead time (days) is required.");
+      return;
+    }
+    if (!form.description.trim()) {
+      setNotice("Description is required.");
+      return;
+    }
+    if (!form.image_urls?.length) {
+      setNotice("At least one product image is required.");
       return;
     }
     if (!complianceChecked) {
@@ -804,7 +832,7 @@ export default function ProductManagement() {
               <div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.3fr_0.9fr]">
                 <div className="space-y-5">
                   <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-                    <Field label="Product name">
+                    <Field label="Product name" required>
                       <input
                         value={form.title}
                         onChange={(e) =>
@@ -812,11 +840,12 @@ export default function ProductManagement() {
                         }
                         className={inputCls}
                         placeholder="Untitled Draft"
+                        required
                       />
                     </Field>
 
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
-                      <Field label="Industry (optional)">
+                      <Field label="Industry" required>
                         <input
                           value={form.industry}
                           onChange={(e) =>
@@ -824,9 +853,10 @@ export default function ProductManagement() {
                           }
                           className={inputCls}
                           placeholder="Garments, Home Textiles..."
+                          required
                         />
                       </Field>
-                      <Field label="Category (e.g. Shirts)">
+                      <Field label="Category (e.g. Shirts)" required>
                         <input
                           value={form.category}
                           onChange={(e) =>
@@ -834,9 +864,10 @@ export default function ProductManagement() {
                           }
                           className={inputCls}
                           placeholder="Shirts"
+                          required
                         />
                       </Field>
-                      <Field label="Material (e.g. Cotton)">
+                      <Field label="Material (e.g. Cotton)" required>
                         <input
                           value={form.material}
                           onChange={(e) =>
@@ -844,6 +875,7 @@ export default function ProductManagement() {
                           }
                           className={inputCls}
                           placeholder="Cotton"
+                          required
                         />
                       </Field>
                       <Field label="MOQ">
@@ -856,7 +888,7 @@ export default function ProductManagement() {
                           placeholder="1000"
                         />
                       </Field>
-                      <Field label="Price range (optional)">
+                      <Field label="Price range" required>
                         <input
                           value={form.price_range}
                           onChange={(e) =>
@@ -867,9 +899,10 @@ export default function ProductManagement() {
                           }
                           className={inputCls}
                           placeholder="$4.50 - $7.20"
+                          required
                         />
                       </Field>
-                      <Field label="Lead time (days)">
+                      <Field label="Lead time (days)" required>
                         <input
                           value={form.lead_time_days}
                           onChange={(e) =>
@@ -880,6 +913,7 @@ export default function ProductManagement() {
                           }
                           className={inputCls}
                           placeholder="45"
+                          required
                         />
                       </Field>
                     </div>
@@ -888,7 +922,7 @@ export default function ProductManagement() {
                   <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
                     <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
                       <FileText className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                      Description
+                      Description <span className="text-sky-500">*</span>
                     </div>
                     <textarea
                       value={form.description}
@@ -898,6 +932,7 @@ export default function ProductManagement() {
                       rows={5}
                       className={inputCls}
                       placeholder="Add your product description here..."
+                      required
                     />
                     <button
                       type="button"
@@ -944,7 +979,7 @@ export default function ProductManagement() {
                   <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
                     <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
                       <Upload className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                      Product media
+                      Product media <span className="text-sky-500">*</span>
                     </div>
                     <p className="text-sm leading-6 text-slate-500 dark:text-slate-400">
                       Upload images or video files. Pending/rejected media stays

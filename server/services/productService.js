@@ -455,6 +455,23 @@ export async function createProduct(user, payload) {
     throw new Error("Product title is required");
   }
 
+  const requiredFields = {
+    industry: "Industry",
+    category: "Category",
+    material: "Material",
+    price_range: "Price range",
+    lead_time_days: "Lead time (days)",
+    description: "Description",
+  };
+  for (const [key, label] of Object.entries(requiredFields)) {
+    if (!isDraft && !sanitizeString(payload[key] || "", 80)) {
+      throw new Error(`${label} is required`);
+    }
+  }
+  if (!isDraft && (!Array.isArray(payload.image_urls) || payload.image_urls.length === 0)) {
+    throw new Error("At least one product image is required");
+  }
+
   let description = sanitizeString(payload.description || "", 1200);
   const videoUrl = sanitizeString(payload.video_url || "", 260);
 
@@ -707,6 +724,30 @@ export async function updateProductById(actor, productId, patch = {}) {
     patch.status !== undefined
       ? normalizeProductStatus(patch.status, existing.status || "published")
       : normalizeProductStatus(existing.status);
+
+  if (status !== "draft" && existing.status === "draft") {
+    const requiredFields = {
+      industry: { value: patch.industry, label: "Industry" },
+      category: { value: patch.category, label: "Category" },
+      material: { value: patch.material, label: "Material" },
+      price_range: { value: patch.price_range, label: "Price range" },
+      lead_time_days: { value: patch.lead_time_days, label: "Lead time (days)" },
+      description: { value: patch.description, label: "Description" },
+    };
+    for (const [key, field] of Object.entries(requiredFields)) {
+      const val = field.value !== undefined ? field.value : existing[key];
+      if (!sanitizeString(val || "", 80)) {
+        throw new Error(`${field.label} is required`);
+      }
+    }
+    const imageUrls = Array.isArray(patch.image_urls)
+      ? patch.image_urls
+      : existing.image_urls || [];
+    if (!imageUrls.length) {
+      throw new Error("At least one product image is required");
+    }
+  }
+
   const imageCandidates =
     patch.image_urls !== undefined || patch.imageUrls !== undefined
       ? extractImageUrlCandidates(patch.image_urls || patch.imageUrls || [])
