@@ -2,6 +2,34 @@ import { useState, useMemo } from "react";
 import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
 import { apiRequest, getRoleHome, saveSession } from "../../lib/auth";
 
+const POSITIONS = [
+  "Owner",
+  "CEO / Managing Director",
+  "General Manager (GM)",
+  "Manager",
+  "Senior Merchandiser",
+  "Merchandiser",
+  "Assistant Merchandiser",
+  "Production Manager",
+  "Quality Control Manager",
+  "Compliance Officer",
+  "Sourcing Manager",
+  "Supply Chain Manager",
+  "Logistics Coordinator",
+  "Industrial Engineer",
+  "Textile Technologist",
+  "Pattern Master",
+  "Cutting Master",
+  "Supervisor",
+  "Executive",
+  "Procurement Officer",
+  "Designer",
+  "Sample Master",
+  "Finishing Supervisor",
+  "Store In-Charge",
+  "Administrator",
+];
+
 export default function SignupUltra() {
   const { time, date } = useParams();
   const navigate = useNavigate();
@@ -40,6 +68,7 @@ export default function SignupUltra() {
     role: "admin",
     country: "",
     organization: "",
+    position: "",
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -67,7 +96,7 @@ export default function SignupUltra() {
         password: form.password,
         role: form.role,
         company_name: form.organization,
-        profile: { country: form.country },
+        profile: { country: form.country, position: form.position },
       };
 
       const data = await apiRequest("/auth/register", {
@@ -207,6 +236,23 @@ export default function SignupUltra() {
               value={form.organization}
               onChange={(e) => onChange("organization", e.target.value)}
             />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+              Your Position
+            </label>
+            <select
+              className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
+              value={form.position}
+              onChange={(e) => onChange("position", e.target.value)}
+            >
+              <option value="">Select position</option>
+              {POSITIONS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[#0a3d78] leading-relaxed shadow-borderless dark:shadow-borderlessDark dark:bg-[#0a1a33] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">

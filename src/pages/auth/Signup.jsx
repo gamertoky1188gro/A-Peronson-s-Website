@@ -46,6 +46,34 @@ const ACCOUNT_TYPES = [
   { label: "Buyer", value: "B" },
 ];
 
+const POSITIONS = [
+  "Owner",
+  "CEO / Managing Director",
+  "General Manager (GM)",
+  "Manager",
+  "Senior Merchandiser",
+  "Merchandiser",
+  "Assistant Merchandiser",
+  "Production Manager",
+  "Quality Control Manager",
+  "Compliance Officer",
+  "Sourcing Manager",
+  "Supply Chain Manager",
+  "Logistics Coordinator",
+  "Industrial Engineer",
+  "Textile Technologist",
+  "Pattern Master",
+  "Cutting Master",
+  "Supervisor",
+  "Executive",
+  "Procurement Officer",
+  "Designer",
+  "Sample Master",
+  "Finishing Supervisor",
+  "Store In-Charge",
+  "Administrator",
+];
+
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -165,12 +193,15 @@ export default function Signup() {
   const [country, setCountry] = useState("");
   const [countryOpen, setCountryOpen] = useState(false);
   const [organizationName, setOrganizationName] = useState("");
+  const [position, setPosition] = useState("");
+  const [positionOpen, setPositionOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const accountDropdownRef = useRef(null);
   const countryDropdownRef = useRef(null);
+  const positionDropdownRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -185,6 +216,12 @@ export default function Signup() {
         !countryDropdownRef.current.contains(e.target)
       ) {
         setCountryOpen(false);
+      }
+      if (
+        positionDropdownRef.current &&
+        !positionDropdownRef.current.contains(e.target)
+      ) {
+        setPositionOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -221,7 +258,7 @@ export default function Signup() {
         password: password,
         role: ROLE_VALUE_TO_API[accountType.value],
         company_name: organizationName,
-        profile: { country: country },
+        profile: { country: country, position: position },
       };
       const data = await apiRequest("/auth/register", {
         method: "POST",
@@ -580,6 +617,48 @@ export default function Signup() {
                     placeholder="Enter your organization name"
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-slate-500"
                   />
+                </FieldShell>
+
+                <FieldShell label="Your Position">
+                  <div className="relative" ref={positionDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setPositionOpen((v) => !v)}
+                      className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm transition hover:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5"
+                    >
+                      <span className="font-medium text-slate-800 dark:text-slate-100">
+                        {position || "Select your position"}
+                      </span>
+                      <span className="text-slate-500 dark:text-slate-300">
+                        <ChevronDown />
+                      </span>
+                    </button>
+
+                    {positionOpen ? (
+                      <div className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
+                        {POSITIONS.map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              setPosition(item);
+                              setPositionOpen(false);
+                            }}
+                            className={cn(
+                              "flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/5",
+                              position === item
+                                ? "bg-sky-50 dark:bg-white/5"
+                                : "",
+                            )}
+                          >
+                            <span className="font-medium text-slate-800 dark:text-slate-100">
+                              {item}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 </FieldShell>
 
                 <button

@@ -363,6 +363,7 @@ export async function registerUser(payload) {
     messaging_restricted_until: null,
     passkeys: [],
     profile: {
+      position: sanitizeString(payload.profile?.position || "", 80),
       country: sanitizeString(payload.profile?.country || "", 120),
       certifications: Array.isArray(payload.profile?.certifications)
         ? payload.profile.certifications.map((c) => sanitizeString(c, 80))
