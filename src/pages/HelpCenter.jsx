@@ -883,10 +883,10 @@ export default function HelpCenterPage() {
             <section className="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="flex flex-wrap gap-3 lg:justify-end lg:self-center">
-                  <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500/30">
+                  <a href="mailto:gartexhub@gmail.com" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500/30">
                     <Headphones className="h-4 w-4" />
                     Contact support team
-                  </button>
+                  </a>
                 </div>
               </div>
             </section>
