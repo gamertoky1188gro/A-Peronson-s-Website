@@ -246,6 +246,21 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    if (!country) {
+      setLoading(false);
+      setError("Please select your country.");
+      return;
+    }
+    if (!position) {
+      setLoading(false);
+      setError("Please select your position.");
+      return;
+    }
+    if (!organizationName.trim()) {
+      setLoading(false);
+      setError("Please enter your organization name.");
+      return;
+    }
     if (password !== confirmPassword) {
       setLoading(false);
       setError("Passwords do not match.");
@@ -582,6 +597,7 @@ export default function Signup() {
                       onFocus={() => setCountryOpen(true)}
                       placeholder="Type to search countries"
                       className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-slate-500"
+                      required
                     />
                     {countryOpen ? (
                       <div className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
@@ -616,6 +632,7 @@ export default function Signup() {
                     onChange={(e) => setOrganizationName(e.target.value)}
                     placeholder="Enter your organization name"
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-slate-500"
+                    required
                   />
                 </FieldShell>
 

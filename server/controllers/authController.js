@@ -45,6 +45,7 @@ export async function register(req, res) {
     "email",
     "password",
     "role",
+    "company_name",
   ]);
   if (missing.length)
     return res
@@ -54,6 +55,10 @@ export async function register(req, res) {
     return res.status(400).json({ error: "Invalid email" });
   if (!validatePublicRole(req.body.role))
     return res.status(400).json({ error: "Invalid role" });
+  if (!req.body.profile?.country)
+    return res.status(400).json({ error: "Missing field: country" });
+  if (!req.body.profile?.position)
+    return res.status(400).json({ error: "Missing field: position" });
 
   const existing = await findUserByEmail(req.body.email);
   if (existing) return res.status(409).json({ error: "Email already used" });

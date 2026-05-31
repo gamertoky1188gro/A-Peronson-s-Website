@@ -84,6 +84,16 @@ export default function SignupUltra() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    if (!form.position) {
+      setLoading(false);
+      setError("Please select your position.");
+      return;
+    }
+    if (!form.organization.trim()) {
+      setLoading(false);
+      setError("Please enter your organization name.");
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       setLoading(false);
       setError("Passwords do not match.");
@@ -235,6 +245,7 @@ export default function SignupUltra() {
               className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
               value={form.organization}
               onChange={(e) => onChange("organization", e.target.value)}
+              required
             />
           </div>
           <div>
@@ -245,6 +256,7 @@ export default function SignupUltra() {
               className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
               value={form.position}
               onChange={(e) => onChange("position", e.target.value)}
+              required
             >
               <option value="">Select position</option>
               {POSITIONS.map((p) => (
