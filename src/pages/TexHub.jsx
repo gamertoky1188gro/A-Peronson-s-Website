@@ -744,9 +744,7 @@ export default function TexHub() {
                   <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
                     {item.text}
                   </p>
-                  <div className="mt-6 flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300">
-                    Continue <ChevronRight className="h-4 w-4" />
-                  </div>
+
                 </Card>
               );
             })}
