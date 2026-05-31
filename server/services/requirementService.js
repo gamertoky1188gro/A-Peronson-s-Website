@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { readJson, writeJson } from "../utils/jsonStore.js";
-import { sanitizeString } from "../utils/validators.js";
+import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import { logInfo } from "../utils/logger.js";
 import {
   createNotification,
@@ -312,7 +312,7 @@ function normalizeRequirement(buyerId, payload) {
     packaging: sanitizeString(payload.packaging || "", 200),
     compliance_notes: sanitizeString(payload.compliance_notes || "", 400),
     compliance_details: sanitizeString(payload.compliance_details || "", 400),
-    custom_description: sanitizeString(payload.custom_description || "", 1500),
+    custom_description: sanitizeString(payload.custom_description || "", 10000),
     size_range: sanitizeString(
       payload.size_range || payload.size_chart || "",
       120,
@@ -357,6 +357,11 @@ export async function createRequirement(buyerId, payload) {
   requirement.priceBaseMax = normalizedPrice.priceBaseMax;
   requirement.priceNormalizedBase = normalizedPrice.priceBaseMin;
   const plan = await getPlanForUser({ id: buyerId });
+  const maxWords = plan === "premium" ? 1500 : 600;
+  requirement.custom_description = limitWordCount(
+    requirement.custom_description,
+    maxWords,
+  );
   if (plan === "premium") {
     requirement.priority_tier = "priority";
     requirement.priority_until = new Date(
@@ -636,7 +641,7 @@ export async function updateRequirement(requirementId, patch, actor) {
         : previous.compliance_details || "",
     custom_description:
       patch.custom_description !== undefined
-        ? sanitizeString(patch.custom_description, 1500)
+        ? sanitizeString(patch.custom_description, 10000)
         : requirements[idx].custom_description,
     size_range:
       patch.size_range !== undefined
@@ -741,6 +746,12 @@ export async function updateRequirement(requirementId, patch, actor) {
     }
   } catch {
     // silent
+  }
+
+  if (patch.custom_description !== undefined) {
+    const plan = await getPlanForUser(actor);
+    const maxWords = plan === "premium" ? 1500 : 600;
+    next.custom_description = limitWordCount(next.custom_description, maxWords);
   }
 
   requirements[idx] = next;

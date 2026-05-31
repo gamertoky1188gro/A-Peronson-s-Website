@@ -65,12 +65,17 @@ function cleanAgent(user) {
   return safe;
 }
 
+function generateNextMemberId() {
+  return `AGT-${String(Date.now()).slice(-6)}`;
+}
+
 function normalizeAgent(orgOwnerId, payload = {}, current = null) {
   const name = String(payload.name ?? current?.name ?? "").trim().slice(0, 120);
   const username = String(payload.username ?? current?.username ?? "").trim().slice(0, 64);
-  const memberId = String(
+  const rawMemberId = String(
     payload.member_id ?? payload.account_id ?? current?.member_id ?? "",
   ).trim().slice(0, 64);
+  const memberId = rawMemberId || generateNextMemberId();
 
   const role = "agent";
   const rawStatus = String(payload.status ?? current?.status ?? "active").trim().slice(0, 32);

@@ -10,6 +10,17 @@ import {
 
 const MEMBER_API_BASE = "/org/members";
 
+function generateMemberId(existingMembers = []) {
+  const nums = existingMembers
+    .map((m) => {
+      const match = String(m.member_id || "").match(/^AGT-?(\d+)$/i);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .filter((n) => n > 0);
+  const next = nums.length ? Math.max(...nums) + 1 : 1;
+  return `AGT-${String(next).padStart(3, "0")}`;
+}
+
 const DEFAULT_CREATE_FORM = {
   name: "",
   username: "",
@@ -348,7 +359,15 @@ export default function MemberManagement() {
               </div>
               <button
                 type="button"
-                onClick={() => { setError(""); setSuccess(""); setShowCreate(true); }}
+                onClick={() => {
+                  setError("");
+                  setSuccess("");
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    member_id: generateMemberId(members),
+                  }));
+                  setShowCreate(true);
+                }}
                 className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:brightness-110"
               >
                 + Add New Member
@@ -488,13 +507,10 @@ export default function MemberManagement() {
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Unique member ID</span>
-                <input
-                  value={createForm.member_id}
-                  onChange={(e) => setCreateForm({ ...createForm, member_id: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                  placeholder="Enter member ID"
-                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Member ID (auto-generated)</span>
+                <div className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-mono text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                  {createForm.member_id || "AGT-001"}
+                </div>
               </label>
               <label className="space-y-2">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Initial password (optional)</span>

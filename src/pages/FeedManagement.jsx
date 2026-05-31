@@ -1,8 +1,9 @@
 import NeonAtom from "../components/ui/NeonAtom";
+import WordCount from "../components/ui/WordCount";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
-import { getToken, syncUserFromApi } from "../lib/auth";
+import { getToken, syncUserFromApi, getCurrentUser } from "../lib/auth";
 import ReactMarkdown from "react-markdown";
 
 const Icon = {
@@ -527,6 +528,13 @@ export default function FeedManagementPage() {
                       inputBase,
                       "min-h-[220px]",
                     )}
+                  />
+                  <WordCount
+                    text={form.readme}
+                    limit={(() => {
+                      const user = getCurrentUser();
+                      return String(user?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600;
+                    })()}
                   />
                 </Field>
 

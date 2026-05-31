@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { apiRequest, getToken } from "../lib/auth";
+import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import { trackClientEvent } from "../lib/events";
 import NeonAtom from "../components/ui/NeonAtom";
+import WordCount from "../components/ui/WordCount";
 import {
   Plus,
   Upload,
@@ -933,6 +934,13 @@ export default function ProductManagement() {
                       className={inputCls}
                       placeholder="Add your product description here..."
                       required
+                    />
+                    <WordCount
+                      text={form.description}
+                      limit={(() => {
+                        const user = getCurrentUser();
+                        return String(user?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600;
+                      })()}
                     />
                     <button
                       type="button"

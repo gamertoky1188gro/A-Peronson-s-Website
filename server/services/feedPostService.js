@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { readJson, writeJson } from "../utils/jsonStore.js";
-import { sanitizeString } from "../utils/validators.js";
+import { sanitizeString, limitWordCount } from "../utils/validators.js";
+import { getPlanForUser } from "./entitlementService.js";
 
 const FILE = "feed_posts.json";
 const STATUSES = new Set(["draft", "published"]);
@@ -233,6 +234,12 @@ export async function createFeedPost(actor, payload = {}) {
   const rows = await readJson(FILE);
   const list = Array.isArray(rows) ? rows : [];
   const next = normalizeFeedPost(ownerId, payload);
+  const plan = await getPlanForUser(actor);
+  const maxWords = plan === "premium" ? 1500 : 600;
+  next.description_markdown = limitWordCount(
+    next.description_markdown,
+    maxWords,
+  );
   await writeJson(FILE, [next, ...list]);
   return next;
 }
@@ -257,6 +264,14 @@ export async function updateFeedPost(actor, postId, payload = {}) {
   }
 
   const updated = normalizeFeedPost(actor.id, payload, current);
+  if (payload.description_markdown !== undefined || payload.description !== undefined) {
+    const plan = await getPlanForUser(actor);
+    const maxWords = plan === "premium" ? 1500 : 600;
+    updated.description_markdown = limitWordCount(
+      updated.description_markdown,
+      maxWords,
+    );
+  }
   list[idx] = updated;
   await writeJson(FILE, list);
   return updated;

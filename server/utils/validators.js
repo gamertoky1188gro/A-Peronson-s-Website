@@ -60,3 +60,12 @@ export function isPositiveNumberLike(value) {
   const n = Number(value);
   return Number.isFinite(n) && n > 0;
 }
+
+export function limitWordCount(text, maxWords) {
+  if (typeof text !== "string") return "";
+  const trimmed = text.trim();
+  if (!trimmed) return "";
+  const words = trimmed.split(/\s+/);
+  if (words.length <= maxWords) return trimmed;
+  return words.slice(0, maxWords).join(" ");
+}

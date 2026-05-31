@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { readJson, writeJson } from "../utils/jsonStore.js";
-import { sanitizeString } from "../utils/validators.js";
+import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import prisma from "../utils/prisma.js";
 import { trackEvent } from "./eventTrackingService.js";
 import {
@@ -472,7 +472,12 @@ export async function createProduct(user, payload) {
     throw new Error("At least one product image is required");
   }
 
-  let description = sanitizeString(payload.description || "", 1200);
+  const plan = await getPlanForUser(user);
+  const maxWords = plan === "premium" ? 1500 : 600;
+  let description = limitWordCount(
+    sanitizeString(payload.description || "", 10000),
+    maxWords,
+  );
   const videoUrl = sanitizeString(payload.video_url || "", 260);
 
   await enforceProductLimits({
@@ -696,8 +701,13 @@ export async function updateProductById(actor, productId, patch = {}) {
       : existing.title;
   let nextDescription =
     patch.description !== undefined
-      ? sanitizeString(patch.description || "", 1200)
+      ? sanitizeString(patch.description || "", 10000)
       : existing.description;
+  if (patch.description !== undefined) {
+    const plan = await getPlanForUser(actor);
+    const maxWords = plan === "premium" ? 1500 : 600;
+    nextDescription = limitWordCount(nextDescription, maxWords);
+  }
   const nextVideoUrl =
     patch.video_url !== undefined
       ? sanitizeString(patch.video_url || "", 260)

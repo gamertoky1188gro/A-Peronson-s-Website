@@ -1,4 +1,5 @@
 import NeonAtom from "../components/ui/NeonAtom";
+import WordCount from "../components/ui/WordCount";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -1273,6 +1274,7 @@ export default function BuyerRequestManagement() {
                           </Field>
                           <Field label="Style description">
                             <TextArea rows={4} value={form.styleDescription} onChange={(e) => setForm({ ...form, styleDescription: e.target.value })} placeholder="Premium structured jacket..." />
+                            <WordCount text={form.styleDescription} limit={(() => { const u = getCurrentUser(); return String(u?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600; })()} />
                           </Field>
                           <Field label="Tech pack required">
                             <Input value={form.techPackRequired} onChange={(e) => setForm({ ...form, techPackRequired: e.target.value })} placeholder="Yes / No" />
@@ -1569,6 +1571,7 @@ export default function BuyerRequestManagement() {
                                     onChange={(e) => setForm({ ...form, customDescription: e.target.value })}
                                     placeholder="Use this for extra notes..."
                                   />
+                                  <WordCount text={form.customDescription} limit={(() => { const u = getCurrentUser(); return String(u?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600; })()} />
                                 </Field>
                               </div>
                             </div>
@@ -1812,6 +1815,7 @@ export default function BuyerRequestManagement() {
                                     value={editForm.customDescription}
                                     onChange={(e) => setEditForm({ ...editForm, customDescription: e.target.value })}
                                   />
+                                  <WordCount text={editForm.customDescription} limit={(() => { const u = getCurrentUser(); return String(u?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600; })()} />
                                 </Field>
                                 <Field
                                   label="Messaging access"

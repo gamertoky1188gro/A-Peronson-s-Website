@@ -321,7 +321,7 @@ export default function VerificationPage() {
       const updatedDocs = {
         ...(verification?.documents || {}),
         optional_licenses: [...optionalLicenses, nextValue],
-        ...(role === "buyer"
+        ...(role === "buyer" && buyerCountry
           ? {
               buyer_country: buyerCountry,
               buyer_region: normalizeBuyerRegionFromCountry(buyerCountry),
@@ -333,6 +333,7 @@ export default function VerificationPage() {
         token,
         body: { documents: updatedDocs },
       });
+      if (updated?.error) throw new Error(updated.error);
       setVerification(updated);
       setFeedback("Optional license saved.");
     } catch (err) {
