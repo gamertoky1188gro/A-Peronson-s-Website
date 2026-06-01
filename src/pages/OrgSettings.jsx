@@ -1833,35 +1833,15 @@ export default function OrgSettings() {
                 subtitle="Manage how your data is used and shared."
               >
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900 dark:text-white">
-                        Show email on profile
-                      </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Display your email address publicly
-                      </div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-                      defaultChecked
-                    />
-                  </div>
-                  <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900 dark:text-white">
-                        Show phone on profile
-                      </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Display your phone number publicly
-                      </div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-                      defaultChecked
-                    />
+                  <div className="rounded-2xl border border-slate-200 bg-amber-50 p-4 dark:border-slate-700 dark:bg-amber-500/10">
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                      Contact info is private
+                    </p>
+                    <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                      Email and phone number are never shown on your public
+                      profile. All communication happens through the platform
+                      chat system to ensure security and traceability.
+                    </p>
                   </div>
                   <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
                     <div>

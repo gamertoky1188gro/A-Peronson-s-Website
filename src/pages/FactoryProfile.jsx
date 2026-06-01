@@ -91,8 +91,12 @@ export default function FactoryProfile() {
   };
   const isPremium =
     isPremiumFromApi ||
-    String(user?.subscription_status || "").toLowerCase() === "premium";
-  const brandProfile = user?.profile || {};
+    String(user?.subscription_status || "").toLowerCase() === "premium" ||
+    profile?.effective_plan === "premium";
+  const isSelfOrAdmin = viewerPerms.is_self || viewerPerms.is_admin;
+  const brandProfile = isSelfOrAdmin
+    ? (profile?.profile_private || user?.profile || {})
+    : {};
   const hasBrandKit = Boolean(
     brandProfile.brand_name ||
     brandProfile.brand_logo_url ||

@@ -3,6 +3,7 @@ import {
   getVerification,
   getVerificationPublicSummary,
 } from "./verificationService.js";
+import { getPlanForUser } from "./entitlementService.js";
 import { sanitizeString } from "../utils/validators.js";
 import { readJson } from "../utils/jsonStore.js";
 import { listProducts } from "./productService.js";
@@ -43,6 +44,22 @@ function cleanUserPublic(user) {
       has_export_license: Boolean(profile.export_license),
     },
   };
+}
+
+const BRAND_FIELDS = [
+  "brand_name", "brand_logo_url", "brand_tagline", "brand_website",
+  "brand_cover_url", "brand_color", "brand_accent",
+  "account_manager_name", "account_manager_email", "account_manager_phone",
+];
+
+function extendProfileForOwner(profile, user) {
+  const src = user.profile || {};
+  for (const field of BRAND_FIELDS) {
+    if (src[field]) {
+      profile[field] = src[field];
+    }
+  }
+  return profile;
 }
 
 function connectionSnapshot(connections, viewerId, targetId) {
@@ -113,6 +130,18 @@ export async function getProfileOverview(viewerId, profileUserId) {
     ]);
 
   const safeUser = cleanUserPublic(user);
+
+  const effectivePlan = await getPlanForUser(user);
+
+  if (effectivePlan === "premium" && user.role === "agent" && !safeUser.verified) {
+    safeUser.verified = true;
+  }
+
+  let extendedProfile = null;
+  if (viewerId === profileUserId || isAdmin) {
+    extendedProfile = extendProfileForOwner({}, user);
+  }
+
   const relationship =
     viewerId === profileUserId
       ? { following: false, friend_status: "self" }
@@ -141,6 +170,7 @@ export async function getProfileOverview(viewerId, profileUserId) {
 
   return {
     user: safeUser,
+    effective_plan: effectivePlan,
     rating_key: `user:${profileUserId}`,
     relationship,
     verification_summary,
@@ -149,6 +179,7 @@ export async function getProfileOverview(viewerId, profileUserId) {
       is_self: viewerId === profileUserId,
       is_admin: isAdmin,
     },
+    ...(extendedProfile ? { profile_private: extendedProfile } : {}),
   };
 }
 

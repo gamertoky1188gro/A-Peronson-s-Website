@@ -1,5 +1,9 @@
 import { getSubscription } from "./subscriptionService.js";
+import { getAdminConfig } from "./adminConfigService.js";
 import { forbiddenError } from "../utils/permissions.js";
+import prisma from "../utils/prisma.js";
+
+const DEFAULT_FREE_MEMBER_LIMIT = 10;
 
 const PREMIUM_FEATURES_BY_ROLE = {
   buyer: [
@@ -42,6 +46,17 @@ const PREMIUM_FEATURES_BY_ROLE = {
     "buyer_conversion_insights",
     "unlimited_partner_accept",
   ],
+  agent: [
+    "custom_branding",
+    "dedicated_account_manager",
+    "profile_boost",
+    "product_boost",
+    "advanced_search_filters",
+    "advanced_analytics",
+    "multi_agent_management",
+    "team_access_management",
+    "lead_distribution",
+  ],
   buying_house: [
     "profile_boost",
     "product_boost",
@@ -75,6 +90,7 @@ function normalizeRole(role) {
   if (raw === "buying_house" || raw === "buying house") return "buying_house";
   if (raw === "factory") return "factory";
   if (raw === "buyer") return "buyer";
+  if (raw === "agent") return "agent";
   return raw;
 }
 
@@ -82,9 +98,33 @@ export async function getPlanForUser(user) {
   if (!user) return "free";
   const sub = await getSubscription(user.id);
   if (sub?.plan === "premium") return "premium";
-  return String(user?.subscription_status || "").toLowerCase() === "premium"
-    ? "premium"
-    : "free";
+  if (String(user?.subscription_status || "").toLowerCase() === "premium")
+    return "premium";
+
+  if (user.role === "agent" && user.org_owner_id) {
+    const orgOwner = await prisma.user.findUnique({
+      where: { id: user.org_owner_id },
+    });
+    if (orgOwner) {
+      const ownerPlan = await getPlanForUser(orgOwner);
+      if (ownerPlan === "premium") return "premium";
+
+      const config = await getAdminConfig();
+      const freeLimit = Number(
+        config?.plan_limits?.free?.agent_limit || DEFAULT_FREE_MEMBER_LIMIT,
+      );
+      const activeCount = await prisma.user.count({
+        where: {
+          role: "agent",
+          org_owner_id: user.org_owner_id,
+          status: "active",
+        },
+      });
+      if (activeCount <= freeLimit) return "premium";
+    }
+  }
+
+  return "free";
 }
 
 export async function isPremiumUser(user) {
