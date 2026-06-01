@@ -912,7 +912,7 @@ export default function MainFeed() {
                   />
                 </div>
               </div>
-            </section>
+            </motion.section>
 
             {/* Tabs & Filters */}
             <section className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5">
