@@ -987,7 +987,6 @@ export default function ContractVaultPage() {
                       </div>
                     </div>
                   </SectionCard>
-                </div>
               </div>
                 </ScrollReveal>
 
@@ -1083,8 +1082,9 @@ export default function ContractVaultPage() {
                     <SummaryRow step="Archive" done={false} />
                   </div>
                 </SectionCard>
-              </div>
                 </ScrollReveal>
+              </div>
+            </div>
             </main>
           </div>
         </div>
