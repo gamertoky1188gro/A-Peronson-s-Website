@@ -9,6 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import MarkdownReadme from "./MarkdownReadme";
 
 function requestStatusBadgeClass(status = "") {
@@ -246,12 +247,19 @@ export default function FeedItemCard({
                     preload="metadata"
                   />
                 ) : (
-                  <img
-                    className="h-44 w-full object-cover"
-                    src={entry.url}
-                    alt={entry.alt || item.title || "Feed media"}
-                    loading="lazy"
-                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 1.08 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <img
+                      className="h-44 w-full object-cover"
+                      src={entry.url}
+                      alt={entry.alt || item.title || "Feed media"}
+                      loading="lazy"
+                    />
+                  </motion.div>
                 )}
               </div>
             ))}

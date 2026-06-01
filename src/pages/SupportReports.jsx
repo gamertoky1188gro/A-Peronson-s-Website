@@ -9,6 +9,7 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
   apiRequest,
   API_BASE,
@@ -70,6 +71,11 @@ export default function SupportReports() {
   const [tickets, setTickets] = useState([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const blob1Y = useSpring(useTransform(scrollY, [0, 600], [0, -40]), { stiffness: 80, damping: 20, restDelta: 0.001 });
+  const blob2Y = useSpring(useTransform(scrollY, [0, 600], [0, -70]), { stiffness: 80, damping: 20, restDelta: 0.001 });
+  const blob3Y = useSpring(useTransform(scrollY, [0, 600], [0, -50]), { stiffness: 80, damping: 20, restDelta: 0.001 });
 
   const theme = useMemo(() => {
     return darkMode ? "bg-slate-950 text-white" : "bg-sky-50 text-slate-900";
@@ -182,9 +188,9 @@ export default function SupportReports() {
   return (
     <div className={`min-h-screen ${theme} transition-colors duration-300`}>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 left-[-6rem] h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
-        <div className="absolute top-40 right-[-6rem] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
+        <motion.div style={{ y: reduceMotion ? 0 : blob1Y }} className="absolute -top-24 left-[-6rem] h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
+        <motion.div style={{ y: reduceMotion ? 0 : blob2Y }} className="absolute top-40 right-[-6rem] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
+        <motion.div style={{ y: reduceMotion ? 0 : blob3Y }} className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

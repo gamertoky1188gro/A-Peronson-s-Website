@@ -17,7 +17,7 @@
     - "Signature draw" mark hover (CSS animation) to reinforce legal/contract context.
 */
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 const easePremium = [0.16, 1, 0.3, 1];
 const Motion = motion;
 
@@ -51,19 +51,28 @@ function SignatureMark({ className = "" }) {
   );
 }
 
-function LegalCard({ children, className = "", index = 0, id }) {
+function LegalCard({ children, className = "", id }) {
   const reduceMotion = useReducedMotion();
+
+  if (reduceMotion) {
+    return <section id={id} className={[
+        "rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out",
+        "bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]",
+        "dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </section>;
+  }
 
   return (
     <motion.section
       id={id}
-      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.55,
-        ease: easePremium,
-        delay: reduceMotion ? 0 : index * 0.1,
-      }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.55, ease: easePremium }}
       className={[
         "rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out",
         "bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]",
@@ -78,6 +87,8 @@ function LegalCard({ children, className = "", index = 0, id }) {
 
 export default function Terms() {
   const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const weaveY = useSpring(useTransform(scrollY, [0, 800], [0, -15]), { stiffness: 80, damping: 20, restDelta: 0.001 });
   const lastUpdated = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
@@ -85,11 +96,13 @@ export default function Terms() {
   });
 
   return (
-    <div className="min-h-screen legal-weave bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12">
+    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12">
+      <motion.div style={{ y: reduceMotion ? 0 : weaveY }} className="fixed inset-0 -z-10 legal-weave pointer-events-none" />
       <div className="mx-auto max-w-6xl">
         <motion.header
           initial={reduceMotion ? false : { opacity: 0, y: -10 }}
-          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={reduceMotion ? undefined : { once: true, margin: "-60px" }}
           transition={{ duration: 0.5, ease: easePremium }}
           className="mb-8"
         >
@@ -122,7 +135,6 @@ export default function Terms() {
 
         <div className="grid grid-cols-12 gap-6">
           <LegalCard
-            index={0}
             className="col-span-12 md:col-span-6"
             id="purpose"
           >
@@ -148,7 +160,6 @@ export default function Terms() {
           </LegalCard>
 
           <LegalCard
-            index={1}
             className="col-span-12 md:col-span-6"
             id="account-policy"
           >
@@ -175,7 +186,6 @@ export default function Terms() {
           </LegalCard>
 
           <LegalCard
-            index={2}
             className={[
               "col-span-12",
               "!bg-rose-50 !text-[#0f172a] !ring-1 !ring-rose-200/70 !shadow-[0_12px_40px_rgba(244,63,94,0.12)]",
@@ -295,7 +305,6 @@ export default function Terms() {
             return (
               <LegalCard
                 key={section.id}
-                index={3 + sectionIndex}
                 className={[
                   "col-span-12 md:col-span-6",
                   isStitch
@@ -328,7 +337,6 @@ export default function Terms() {
           })}
 
           <LegalCard
-            index={8}
             className="col-span-12 bg-amber-50 text-amber-950 dark:bg-[rgba(120,53,15,0.10)] dark:text-amber-50 dark:ring-1 dark:ring-amber-500/20 shadow-borderless dark:shadow-borderlessDark"
             id="liability"
           >
@@ -350,7 +358,7 @@ export default function Terms() {
             </div>
           </LegalCard>
 
-          <LegalCard index={9} className="col-span-12" id="suspension">
+          <LegalCard className="col-span-12" id="suspension">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 10
@@ -378,7 +386,6 @@ export default function Terms() {
           </LegalCard>
 
           <LegalCard
-            index={10}
             className="col-span-12 md:col-span-6"
             id="change-policy"
           >
@@ -392,7 +399,6 @@ export default function Terms() {
           </LegalCard>
 
           <LegalCard
-            index={11}
             className="col-span-12 md:col-span-6"
             id="consent"
           >
@@ -407,12 +413,9 @@ export default function Terms() {
 
           <motion.footer
             initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.55,
-              ease: easePremium,
-              delay: reduceMotion ? 0 : 12 * 0.1,
-            }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={reduceMotion ? undefined : { once: true, margin: "-60px" }}
+            transition={{ duration: 0.55, ease: easePremium }}
             className="col-span-12 text-center"
           >
             <div className="rounded-2xl p-6 bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">

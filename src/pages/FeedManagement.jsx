@@ -1,5 +1,6 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import WordCount from "../components/ui/WordCount";
+import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
@@ -706,11 +707,19 @@ export default function FeedManagementPage() {
                                   </div>
                                 </>
                               ) : (
-                                <img
-                                  src={media.url}
-                                  alt={media.name}
-                                  className="h-full w-full object-cover"
-                                />
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 1.06 }}
+                                  whileInView={{ opacity: 1, scale: 1 }}
+                                  viewport={{ once: true, margin: "-40px" }}
+                                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                  className="h-full w-full"
+                                >
+                                  <img
+                                    src={media.url}
+                                    alt={media.name}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </motion.div>
                               )}
                               <button
                                 type="button"

@@ -13,15 +13,17 @@ import { Link, useParams } from "react-router-dom";
 import { Sparkles, ArrowUpRight } from "lucide-react";
 import { apiRequest, getToken } from "../lib/auth";
 import { trackClientEvent } from "../lib/events";
+import CountUp from "../components/CountUp";
 
 function StatCard({ label, value }) {
+  const isNumeric = typeof value === "number" && !Number.isNaN(value);
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
       <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
         {label}
       </p>
       <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">
-        {value}
+        {isNumeric ? <CountUp value={value} /> : value}
       </p>
     </div>
   );

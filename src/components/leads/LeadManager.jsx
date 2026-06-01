@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth";
 import NeonAtom from "../ui/NeonAtom";
@@ -413,11 +414,19 @@ export default function LeadManager({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       {avatarUrl ? (
-                        <img
-                          src={avatarUrl}
-                          alt={label}
-                          className="h-8 w-8 rounded-full object-cover"
-                        />
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                          className="h-8 w-8 shrink-0"
+                        >
+                          <img
+                            src={avatarUrl}
+                            alt={label}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        </motion.div>
                       ) : (
                         <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200">
                           {String(label).slice(0, 2).toUpperCase()}
@@ -470,11 +479,19 @@ export default function LeadManager({
                   </p>
                   <div className="mt-2 flex items-center gap-3">
                     {selectedCounterparty?.profile?.profile_image ? (
-                      <img
-                        src={selectedCounterparty.profile.profile_image}
-                        alt={selectedCounterparty?.name}
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                        className="h-10 w-10 shrink-0"
+                      >
+                        <img
+                          src={selectedCounterparty.profile.profile_image}
+                          alt={selectedCounterparty?.name}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      </motion.div>
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
                         {String(

@@ -72,6 +72,7 @@ import {
 } from "../lib/notificationsRealtime";
 import { useTheme } from "../lib/ThemeProvider";
 import NeonAtom from "./ui/NeonAtom";
+import useScrollDirection from "../hooks/useScrollDirection";
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
@@ -552,6 +553,15 @@ export default function NavBar() {
   const [actionStatus, setActionStatus] = useState("");
   const [actionBusyKey, setActionBusyKey] = useState("");
 
+  const direction = useScrollDirection();
+  const reduceMotion = useReducedMotion();
+  const navTarget = reduceMotion ? 0 : direction === "down" ? -120 : 0;
+  const navY = useSpring(navTarget, { stiffness: 120, damping: 24, restDelta: 0.001 });
+
+  useEffect(() => {
+    navY.set(navTarget);
+  }, [navTarget, navY]);
+
   const location = useLocation();
   const navigate = useNavigate();
   const user = getCurrentUser();
@@ -889,7 +899,10 @@ export default function NavBar() {
   }, [mobileOpen]);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/65 backdrop-blur-2xl dark:bg-slate-950/55">
+    <Motion.nav
+      style={{ y: navY }}
+      className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/65 backdrop-blur-2xl dark:bg-slate-950/55"
+    >
       <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-20 flex-nowrap items-center justify-between gap-1 sm:gap-3 py-3">
           <div className="flex min-w-0 flex-shrink items-center gap-1 md:gap-4">
@@ -1377,6 +1390,7 @@ export default function NavBar() {
           </Motion.div>
         </Motion.div>
       ) : null}
-    </nav>
+    </Motion.nav>
   );
 }
+

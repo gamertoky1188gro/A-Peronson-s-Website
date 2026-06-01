@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import { trackClientEvent } from "../lib/events";
@@ -1034,8 +1035,11 @@ export default function ProductManagement() {
                             {mediaGallery.length > 0 && (
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {mediaGallery.map((entry, idx) => (
-                                  <div
+                                  <motion.div
                                     key={idx}
+                                    initial={{ opacity: 0, scale: 0.92 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                                     className="relative h-16 w-16 rounded-lg overflow-hidden border border-slate-200 dark:border-white/10"
                                   >
                                     <img
@@ -1046,7 +1050,7 @@ export default function ProductManagement() {
                                     <div className="absolute bottom-0 left-0 right-0 bg-black/50">
                                       {getStatusBadge(entry.status)}
                                     </div>
-                                  </div>
+                                  </motion.div>
                                 ))}
                               </div>
                             )}

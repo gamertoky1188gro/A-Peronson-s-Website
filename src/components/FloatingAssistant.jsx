@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { motion, useReducedMotion, useSpring } from "framer-motion";
 import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
 import BotLogo from "./ui/BotLogo";
 import MarkdownMessage from "./chat/MarkdownMessage";
 import NeonAtom from "./ui/NeonAtom";
+import useScrollDirection from "../hooks/useScrollDirection";
 
 function getUserId() {
   const user = getCurrentUser();
@@ -62,6 +64,12 @@ export default function FloatingAssistant() {
   const userId = getUserId();
   const location = useLocation();
   const orbMode = location.pathname === "/help";
+  const scrollDir = useScrollDirection();
+  const reduceMotion = useReducedMotion();
+  const buttonVisible = open || reduceMotion || scrollDir !== "down";
+  const buttonOpacity = useSpring(buttonVisible ? 1 : 0, {
+    stiffness: 120, damping: 24, restDelta: 0.001,
+  });
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -332,7 +340,10 @@ export default function FloatingAssistant() {
 
   return (
     <>
-      <div className="fixed right-6 bottom-6 z-50">
+      <motion.div
+        className="fixed right-6 bottom-6 z-50"
+        style={{ opacity: buttonOpacity }}
+      >
         <button
           type="button"
           onClick={() => setOpen(!open)}
@@ -366,7 +377,7 @@ export default function FloatingAssistant() {
             </svg>
           )}
         </button>
-      </div>
+      </motion.div>
 
       <div
         className={`fixed top-0 right-0 h-full w-full md:w-[420px] z-50 transform transition-all duration-300 ease-out flex flex-col ${

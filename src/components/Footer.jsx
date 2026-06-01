@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { getCurrentUser } from "../lib/auth";
+import ScrollReveal from "./ScrollReveal";
 
 export default function Footer() {
   const user = getCurrentUser();
 
   if (!user) {
     return (
-      <footer className="shadow-dividerT dark:shadow-dividerTDark bg-white py-8 dark:bg-slate-950">
+      <ScrollReveal as="footer" className="shadow-dividerT dark:shadow-dividerTDark bg-white py-8 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center gap-4 text-center">
             <div className="flex items-center gap-2">
@@ -30,12 +31,12 @@ export default function Footer() {
             </p>
           </div>
         </div>
-      </footer>
+      </ScrollReveal>
     );
   }
 
   return (
-    <footer className="shadow-dividerT dark:shadow-dividerTDark bg-white pt-12 pb-8 dark:bg-slate-950">
+    <ScrollReveal as="footer" className="shadow-dividerT dark:shadow-dividerTDark bg-white pt-12 pb-8 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Company Identity */}
@@ -186,6 +187,6 @@ export default function Footer() {
           </p>
         </div>
       </div>
-    </footer>
+    </ScrollReveal>
   );
 }

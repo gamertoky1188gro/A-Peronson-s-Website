@@ -21,7 +21,7 @@
 */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { usePremiumCheck } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
@@ -78,6 +78,10 @@ export default function FactoryProfile() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [profileBoost, setProfileBoost] = useState(null);
   const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const coverParallax = useSpring(useTransform(scrollY, [0, 400], [0, 60]), {
+    stiffness: 80, damping: 20, restDelta: 0.001,
+  });
 
   const user = profile?.user || null;
   const verification = profile?.verification_summary || null;
@@ -296,10 +300,11 @@ export default function FactoryProfile() {
       <div className="relative">
         <div className="h-32 sm:h-40 overflow-hidden rounded-t-2xl bg-gtBlue">
           {user.profile?.cover_image_url ? (
-            <img
+            <motion.img
               src={user.profile.cover_image_url}
               alt="Cover"
               className="h-full w-full object-cover"
+              style={{ y: reduceMotion ? 0 : coverParallax }}
             />
           ) : null}
         </div>

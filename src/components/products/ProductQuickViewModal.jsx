@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth";
@@ -171,23 +172,35 @@ export default function ProductQuickViewModal({
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
             {coverUrl ? (
-              <img
-                src={coverUrl}
-                alt="Product cover"
-                className="h-40 w-full rounded-xl object-cover mb-4"
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <img
+                  src={coverUrl}
+                  alt="Product cover"
+                  className="h-40 w-full rounded-xl object-cover mb-4"
+                />
+              </motion.div>
             ) : (
               <div className="h-40 w-full rounded-xl bg-slate-200 mb-4" />
             )}
             {galleryUrls.length > 1 ? (
               <div className="grid grid-cols-4 gap-2 mb-4">
-                {galleryUrls.slice(0, 4).map((url) => (
-                  <img
+                {galleryUrls.slice(0, 4).map((url, i) => (
+                  <motion.div
                     key={url}
-                    src={url}
-                    alt="Product thumbnail"
-                    className="h-12 w-full rounded-lg object-cover"
-                  />
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: 0.05 * i, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <img
+                      src={url}
+                      alt="Product thumbnail"
+                      className="h-12 w-full rounded-lg object-cover"
+                    />
+                  </motion.div>
                 ))}
               </div>
             ) : null}

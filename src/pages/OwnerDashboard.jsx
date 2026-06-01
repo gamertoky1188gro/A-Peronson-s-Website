@@ -5,6 +5,7 @@ import { useTheme } from "../lib/ThemeProvider";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import LeadManager from "../components/leads/LeadManager";
 import { apiRequest, getToken, syncUserFromApi } from "../lib/auth";
+import CountUp from "../components/CountUp";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -118,6 +119,7 @@ function SectionCard({ title, subtitle, children, className = "", action }) {
 }
 
 function StatCard({ label, value, sub, accent = "from-sky-500 to-cyan-400" }) {
+  const isNumeric = typeof value === "number" && !Number.isNaN(value);
   return (
     <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
       <div
@@ -129,7 +131,7 @@ function StatCard({ label, value, sub, accent = "from-sky-500 to-cyan-400" }) {
       <div className="mt-3 flex items-end justify-between gap-3">
         <div>
           <div className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
-            {value}
+            {isNumeric ? <CountUp value={value} /> : value}
           </div>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {sub}

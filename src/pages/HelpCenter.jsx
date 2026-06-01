@@ -27,8 +27,10 @@
   Special:
     - FloatingAssistant switches to "Orb" styling only on this route.
 */
+import ScrollReveal from "../components/ScrollReveal";
 import NeonAtom from "../components/ui/NeonAtom";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
   Search,
   Sun,
@@ -197,6 +199,9 @@ export default function HelpCenterPage() {
   const { user: secureUser, loading: secureLoading } = useSecureUser();
   const token = getToken();
   const userRole = secureUser?.role || user?.role;
+  const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const headerGradientY = useTransform(scrollY, [0, 400], [0, -20]);
 
   useEffect(() => {
     async function fetchFaqs() {
@@ -291,6 +296,28 @@ export default function HelpCenterPage() {
   };
 
   const isAdmin = userRole === "admin" || userRole === "owner";
+  const [activeSection, setActiveSection] = useState("quick-start");
+  const sectionIds = quickLinks.map((l) => l.id);
+  const observerRef = useRef(null);
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -70% 0px" },
+    );
+
+    const els = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+    els.forEach((el) => observerRef.current.observe(el));
+    return () => observerRef.current.disconnect();
+  }, []);
 
   if (pageLoading) {
     return <NeonAtom fill />;
@@ -301,7 +328,7 @@ export default function HelpCenterPage() {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="mb-6 overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/70 shadow-[0_24px_120px_rgba(15,23,42,0.1)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
           <div className="relative px-6 py-6 sm:px-8 sm:py-8">
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.16),transparent_40%,rgba(59,130,246,0.08))]" />
+            <motion.div style={{ y: reduceMotion ? 0 : headerGradientY }} className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.16),transparent_40%,rgba(59,130,246,0.08))]" />
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-sky-500/10 px-4 py-2 text-xs font-semibold tracking-[0.24em] text-sky-700 uppercase dark:border-sky-400/20 dark:text-sky-200">
@@ -392,11 +419,19 @@ export default function HelpCenterPage() {
                   <button
                     key={id}
                     onClick={() => jumpTo(id)}
-                    className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-sky-500/10 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                    className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm transition ${
+                      activeSection === id
+                        ? "bg-sky-500/15 text-sky-700 dark:text-sky-200"
+                        : "text-slate-700 hover:bg-sky-500/10 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                    }`}
                   >
-                    <Icon className="h-4 w-4 text-sky-500 transition group-hover:scale-110" />
+                    <Icon className={`h-4 w-4 transition group-hover:scale-110 ${
+                      activeSection === id ? "text-sky-600" : "text-sky-500"
+                    }`} />
                     <span className="flex-1">{label}</span>
-                    <ChevronRight className="h-4 w-4 text-slate-400" />
+                    <ChevronRight className={`h-4 w-4 transition ${
+                      activeSection === id ? "translate-x-0.5 text-sky-500" : "text-slate-400"
+                    }`} />
                   </button>
                 ))}
               </div>
@@ -413,14 +448,14 @@ export default function HelpCenterPage() {
               </div>
             )}
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="quick-start"
               icon={Sparkles}
               title="1. Quick Start Guide"
               subtitle="Fast setup for buyers, factories, and buying houses."
               accent="from-sky-400/18 to-cyan-400/10"
             >
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-3">
                 {[
                   {
                     n: "Step 1",
@@ -455,7 +490,7 @@ export default function HelpCenterPage() {
                 ].map((item) => (
                   <div
                     key={item.n}
-                    className="rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
+                    className="min-w-[260px] snap-start md:min-w-0 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
                   >
                     <div className="mb-3 flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
@@ -477,8 +512,9 @@ export default function HelpCenterPage() {
                 ))}
               </div>
             </HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="account-types"
               icon={Users}
               title="2. Account Types"
@@ -553,8 +589,9 @@ export default function HelpCenterPage() {
                 </div>
               </div>
             </HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="verification"
               icon={BadgeCheck}
               title="3. Verification Process"
@@ -583,8 +620,9 @@ export default function HelpCenterPage() {
                 its credibility.
               </div>
             </HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="messaging"
               icon={MessagesSquare}
               title="4. Messaging & Conversation Rules"
@@ -662,8 +700,9 @@ export default function HelpCenterPage() {
                 </button>
               </div>
             </HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="subscription"
               icon={ShieldCheck}
               title="5. Subscription Plans"
@@ -696,8 +735,9 @@ export default function HelpCenterPage() {
                 </div>
               </div>
             </HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="calls"
               icon={PhoneCall}
               title="6. Video & Audio Calls"
@@ -727,8 +767,9 @@ export default function HelpCenterPage() {
                 />
               </div>
             </HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="contracts"
               icon={FileText}
               title="7. Contracts & Legal Vault"
@@ -767,8 +808,9 @@ export default function HelpCenterPage() {
                 </div>
               </div>
             </HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="security"
               icon={Shield}
               title="8. Security & Data Protection"
@@ -798,16 +840,18 @@ export default function HelpCenterPage() {
                 />
               </div>
             </HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="assistant"
               icon={Bot}
               title="9. Floating AI Assistant"
               subtitle="The assistant helps users understand settings, navigate dashboards, access help articles, and connect to support. It does not handle negotiations."
               accent="from-cyan-400/18 to-sky-400/10"
             ></HelpSection>
+          </ScrollReveal>
 
-            <HelpSection
+            <ScrollReveal><HelpSection
               id="faq"
               icon={Info}
               title="10. Frequently Asked Questions (FAQ)"
@@ -879,8 +923,9 @@ export default function HelpCenterPage() {
                 </div>
               )}
             </HelpSection>
+          </ScrollReveal>
 
-            <section className="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
+            <ScrollReveal><section className="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="flex flex-wrap gap-3 lg:justify-end lg:self-center">
                   <a href="mailto:gartexhub@gmail.com" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500/30">
@@ -889,7 +934,7 @@ export default function HelpCenterPage() {
                   </a>
                 </div>
               </div>
-            </section>
+            </section></ScrollReveal>
           </main>
         </div>
       </div>

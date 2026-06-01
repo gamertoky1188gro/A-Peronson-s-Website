@@ -18,23 +18,33 @@
     - This page does not fetch data; it is static content.
 */
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 const easePremium = [0.16, 1, 0.3, 1];
 const Motion = motion;
 
-function LegalCard({ children, className = "", index = 0, id }) {
+function LegalCard({ children, className = "", id }) {
   const reduceMotion = useReducedMotion();
+
+  if (reduceMotion) {
+    return <section id={id} className={[
+        "rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out",
+        "bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]",
+        "dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5",
+        className,
+      ].join(" ")}
+    >
+      {children}
+    </section>;
+  }
 
   return (
     <motion.section
       id={id}
-      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.55,
-        ease: easePremium,
-        delay: reduceMotion ? 0 : index * 0.1,
-      }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.55, ease: easePremium }}
       className={[
         "rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out",
         "bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]",
@@ -47,11 +57,15 @@ function LegalCard({ children, className = "", index = 0, id }) {
   );
 }
 
-function TocLink({ href, label }) {
+function TocLink({ href, label, active }) {
   return (
     <a
       href={href}
-      className="rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 hover:text-indigo-700 bg-black/[0.03] hover:bg-black/[0.05] dark:text-slate-200 dark:hover:text-white dark:bg-white/5 dark:hover:bg-white/10 transition"
+      className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide transition ${
+        active
+          ? "bg-indigo-500/15 text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-200"
+          : "text-slate-700 hover:text-indigo-700 bg-black/[0.03] hover:bg-black/[0.05] dark:text-slate-200 dark:hover:text-white dark:bg-white/5 dark:hover:bg-white/10"
+      }`}
     >
       {label}
     </a>
@@ -60,14 +74,42 @@ function TocLink({ href, label }) {
 
 export default function Privacy() {
   const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const weaveY = useSpring(useTransform(scrollY, [0, 800], [0, -15]), { stiffness: 80, damping: 20, restDelta: 0.001 });
   const lastUpdated = "16 March 2026";
+  const sectionIds = ["collect", "use", "fraud", "sharing", "storage", "contracts", "security", "rights", "contact"];
+  const [activeSection, setActiveSection] = useState("");
+  const sectionRefs = useRef({});
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -70% 0px" },
+    );
+    for (const id of sectionIds) {
+      const el = document.getElementById(id);
+      if (el) {
+        sectionRefs.current[id] = el;
+        observer.observe(el);
+      }
+    }
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="min-h-screen legal-weave bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12">
+    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12">
+      <motion.div style={{ y: reduceMotion ? 0 : weaveY }} className="fixed inset-0 -z-10 legal-weave pointer-events-none" />
       <div className="mx-auto max-w-6xl">
         <motion.header
           initial={reduceMotion ? false : { opacity: 0, y: -10 }}
-          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={reduceMotion ? undefined : { once: true, margin: "-60px" }}
           transition={{ duration: 0.5, ease: easePremium }}
           className="mb-5"
         >
@@ -107,21 +149,21 @@ export default function Privacy() {
         <div className="sticky top-[72px] z-40 mb-6">
           <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-wrap items-center gap-2">
-              <TocLink href="#collect" label="1. Collect" />
-              <TocLink href="#use" label="2. Use" />
-              <TocLink href="#fraud" label="3. Fraud" />
-              <TocLink href="#sharing" label="4. Sharing" />
-              <TocLink href="#storage" label="5. Storage" />
-              <TocLink href="#contracts" label="6. Contracts" />
-              <TocLink href="#security" label="7. Security" />
-              <TocLink href="#rights" label="8. Rights" />
-              <TocLink href="#contact" label="13. Contact" />
+              <TocLink href="#collect" label="1. Collect" active={activeSection === "collect"} />
+              <TocLink href="#use" label="2. Use" active={activeSection === "use"} />
+              <TocLink href="#fraud" label="3. Fraud" active={activeSection === "fraud"} />
+              <TocLink href="#sharing" label="4. Sharing" active={activeSection === "sharing"} />
+              <TocLink href="#storage" label="5. Storage" active={activeSection === "storage"} />
+              <TocLink href="#contracts" label="6. Contracts" active={activeSection === "contracts"} />
+              <TocLink href="#security" label="7. Security" active={activeSection === "security"} />
+              <TocLink href="#rights" label="8. Rights" active={activeSection === "rights"} />
+              <TocLink href="#contact" label="13. Contact" active={activeSection === "contact"} />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-12 gap-6">
-          <LegalCard index={0} className="col-span-12" id="collect">
+          <LegalCard className="col-span-12" id="collect">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
@@ -208,7 +250,7 @@ export default function Privacy() {
             </div>
           </LegalCard>
 
-          <LegalCard index={1} className="col-span-12" id="use">
+          <LegalCard className="col-span-12" id="use">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
@@ -240,7 +282,6 @@ export default function Privacy() {
           </LegalCard>
 
           <LegalCard
-            index={2}
             className="col-span-12 dark:bg-[#0b1220] dark:text-white dark:ring-1 dark:ring-white/10"
             id="fraud"
           >
@@ -326,7 +367,7 @@ export default function Privacy() {
           ].map((item, idx) => (
             <LegalCard
               key={item.id}
-              index={3 + idx}
+                
               id={item.anchor}
               className="col-span-12 md:col-span-6"
             >
@@ -340,7 +381,6 @@ export default function Privacy() {
           ))}
 
           <LegalCard
-            index={8}
             className="col-span-12 dark:bg-[#0b1220] dark:text-white"
             id="contact"
           >
@@ -359,12 +399,9 @@ export default function Privacy() {
 
           <motion.footer
             initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.55,
-              ease: easePremium,
-              delay: reduceMotion ? 0 : 9 * 0.1,
-            }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={reduceMotion ? undefined : { once: true, margin: "-60px" }}
+            transition={{ duration: 0.55, ease: easePremium }}
             className="col-span-12 text-center"
           >
             <div className="rounded-2xl p-6 bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">

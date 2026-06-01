@@ -19,7 +19,7 @@
 
   Theme: Merged with user's new sky-blue theme while preserving all functionality
 */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest, getToken } from "../lib/auth";
 import usePageMeta from "../lib/usePageMeta";
@@ -28,9 +28,12 @@ import {
   motion,
   useMotionValue,
   useReducedMotion,
+  useScroll,
   useSpring,
+  useTransform,
 } from "framer-motion";
 import NeonAtom from "../components/ui/NeonAtom";
+import ScrollReveal from "../components/ScrollReveal";
 import {
   ArrowRight,
   BadgeCheck,
@@ -51,6 +54,8 @@ import {
 const Motion = motion;
 
 function SectionTitle({ eyebrow, title, text }) {
+  const reduceMotion = useReducedMotion();
+  const words = String(title || "").split(" ");
   return (
     <div className="max-w-3xl">
       <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
@@ -58,7 +63,22 @@ function SectionTitle({ eyebrow, title, text }) {
         {eyebrow}
       </div>
       <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
-        {title}
+        {reduceMotion ? title : (
+          <span className="inline-flex flex-wrap gap-x-[0.25em]">
+            {words.map((word, i) => (
+              <motion.span
+                key={i}
+                className="inline-block"
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.4, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {word}
+              </motion.span>
+            ))}
+          </span>
+        )}
       </h2>
       <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base">
         {text}
@@ -547,20 +567,69 @@ export default function TexHub() {
     };
   }, [bento, mode]);
 
+  const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const blob1Y = useTransform(scrollY, [0, 800], [0, -60]);
+  const blob2Y = useTransform(scrollY, [0, 800], [0, -100]);
+  const blob3Y = useTransform(scrollY, [0, 800], [0, -80]);
+  const blob1Spring = useSpring(blob1Y, { stiffness: 80, damping: 20, restDelta: 0.001 });
+  const blob2Spring = useSpring(blob2Y, { stiffness: 80, damping: 20, restDelta: 0.001 });
+  const blob3Spring = useSpring(blob3Y, { stiffness: 80, damping: 20, restDelta: 0.001 });
+
+  const sectionIds = ["why", "workflow", "platform", "trust"];
+  const sectionLabels = ["Why", "Workflow", "Platform", "Trust"];
+  const [activeSection, setActiveSection] = useState("");
+  const sectionObserver = useRef(null);
+
+  useEffect(() => {
+    sectionObserver.current = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-40% 0px -40% 0px" },
+    );
+    for (const id of sectionIds) {
+      const el = document.getElementById(id);
+      if (el) sectionObserver.current.observe(el);
+    }
+    return () => sectionObserver.current?.disconnect();
+  }, []);
+
   if (_loading) {
     return <NeonAtom fill size={64} text="Loading..." />;
   }
 
   return (
     <div className="relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white">
+      {!reduceMotion && (
+        <nav className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 space-y-3 lg:block" aria-label="Section navigation">
+          {sectionIds.map((id, i) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
+              className={`block h-2 w-2 rounded-full transition-all duration-300 ${
+                activeSection === id
+                  ? "h-3 w-3 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]"
+                  : "bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-400"
+              }`}
+              aria-label={sectionLabels[i]}
+            />
+          ))}
+        </nav>
+      )}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-sky-400/20 blur-3xl dark:bg-sky-500/15" />
-        <div className="absolute right-[-80px] top-[260px] h-[360px] w-[360px] rounded-full bg-blue-500/20 blur-3xl dark:bg-blue-500/10" />
-        <div className="absolute left-[-120px] top-[760px] h-[280px] w-[280px] rounded-full bg-cyan-400/15 blur-3xl dark:bg-cyan-400/10" />
+        <motion.div style={{ y: reduceMotion ? 0 : blob1Spring }} className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-sky-400/20 blur-3xl dark:bg-sky-500/15" />
+        <motion.div style={{ y: reduceMotion ? 0 : blob2Spring }} className="absolute right-[-80px] top-[260px] h-[360px] w-[360px] rounded-full bg-blue-500/20 blur-3xl dark:bg-blue-500/10" />
+        <motion.div style={{ y: reduceMotion ? 0 : blob3Spring }} className="absolute left-[-120px] top-[760px] h-[280px] w-[280px] rounded-full bg-cyan-400/15 blur-3xl dark:bg-cyan-400/10" />
       </div>
 
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8">
-        <section className="grid items-center gap-8 lg:grid-cols-[1.25fr_0.95fr]">
+        <ScrollReveal as="section" className="grid items-center gap-8 lg:grid-cols-[1.25fr_0.95fr]">
           <div>
             <div className="flex flex-wrap gap-2">
               <Pill>Bangladesh-centric</Pill>
@@ -698,9 +767,9 @@ export default function TexHub() {
               </div>
             </Card>
           </div>
-        </section>
+        </ScrollReveal>
 
-        <section id="why" className="mt-20">
+        <ScrollReveal as="section" id="why" className="mt-20">
           <SectionTitle
             eyebrow="Why GarTexHub"
             title="A sourcing workflow network built only for garments and textiles."
@@ -719,19 +788,19 @@ export default function TexHub() {
               </Card>
             ))}
           </div>
-        </section>
+        </ScrollReveal>
 
-        <section id="workflow" className="mt-20">
+        <ScrollReveal as="section" id="workflow" className="mt-20">
           <SectionTitle
             eyebrow="How GarTexHub works"
             title="A simple flow that stays structured end-to-end."
             text="From the first request to the final agreement, every step is organized to keep sourcing calm, clear, and fast."
           />
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+          <div className="mt-8 flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-3">
             {workflowSteps.map((item) => {
               const Icon = workflowIconMap[item.icon] || ClipboardList;
               return (
-                <Card key={item.title} className="p-6">
+                <Card key={item.title} className="min-w-[280px] snap-start lg:min-w-0 p-6">
                   <div className="flex items-center justify-between">
                     <div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
                       {item.step}
@@ -749,9 +818,9 @@ export default function TexHub() {
               );
             })}
           </div>
-        </section>
+        </ScrollReveal>
 
-        <section id="platform" className="mt-20">
+        <ScrollReveal as="section" id="platform" className="mt-20">
           <SectionTitle
             eyebrow="Platform features"
             title="Borderless surfaces, clean hierarchy, and strong trust indicators."
@@ -777,9 +846,9 @@ export default function TexHub() {
               </Card>
             ))}
           </div>
-        </section>
+        </ScrollReveal>
 
-        <section className="mt-20 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+        <ScrollReveal as="section" className="mt-20 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
           <Card className="p-6" id="trust">
             <SectionTitle
               eyebrow="Trust"
@@ -868,9 +937,9 @@ export default function TexHub() {
               </div>
             </div>
           </Card>
-        </section>
+        </ScrollReveal>
 
-        <section className="mt-20">
+        <ScrollReveal as="section" className="mt-20">
           <SectionTitle
             eyebrow="Built for growing buying houses"
             title="Enterprise control, dedicated analytics, and organization-level workflow."
@@ -969,9 +1038,9 @@ export default function TexHub() {
               </div>
             </Card>
           </div>
-        </section>
+        </ScrollReveal>
 
-        <section className="mt-20">
+        <ScrollReveal as="section" className="mt-20">
           <SectionTitle
             eyebrow="Audience"
             title="Clear surfaces and structured workflows for every role in the sourcing chain."
@@ -998,10 +1067,10 @@ export default function TexHub() {
               </Card>
             ))}
           </div>
-        </section>
+        </ScrollReveal>
 
         {marketingSections.length ? (
-          <section className="mt-20">
+          <ScrollReveal as="section" className="mt-20">
             <SectionTitle
               eyebrow="More"
               title="Additional features and capabilities."
@@ -1043,10 +1112,10 @@ export default function TexHub() {
                 </BentoMotion>
               ))}
             </div>
-          </section>
+          </ScrollReveal>
         ) : null}
 
-        <section className="mt-20 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500 to-blue-800 p-8 text-white shadow-2xl shadow-sky-500/20 md:p-10">
+        <ScrollReveal as="section" className="mt-20 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500 to-blue-800 p-8 text-white shadow-2xl shadow-sky-500/20 md:p-10">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
@@ -1076,7 +1145,7 @@ export default function TexHub() {
               </div>
             </div>
           </div>
-        </section>
+        </ScrollReveal>
 
         {loadError ? (
           <p className="mt-8 text-center text-xs text-amber-700 dark:text-amber-300">

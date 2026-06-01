@@ -10,6 +10,7 @@ import {
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import FloatingAssistant from "./components/FloatingAssistant";
+import ScrollProgressBar from "./components/ScrollProgressBar";
 import NeonAtom from "./components/ui/NeonAtom";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
@@ -463,7 +464,9 @@ function AppLayout() {
   }, []);
 
   return (
-    <div className="app-shell flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100" style={{ zoom: hideChrome ? 1 : 0.9 }}>
+    <>
+      {!hideChrome ? <ScrollProgressBar /> : null}
+      <div className="app-shell flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100" style={{ zoom: hideChrome ? 1 : 0.9 }}>
       {!hideChrome ? <NavBar /> : null}
       <main
         className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220]"
@@ -479,6 +482,7 @@ function AppLayout() {
       {!hideChrome ? <Footer /> : null}
       {!hideChrome ? <FloatingAssistant /> : null}
     </div>
+    </>
   );
 }
 

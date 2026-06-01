@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import LeadManager from "../components/leads/LeadManager";
 import { apiRequest, getToken, syncUserFromApi } from "../lib/auth";
+import CountUp from "../components/CountUp";
 import {
   Bell,
   Bot,
@@ -29,34 +30,39 @@ import {
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
-const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => (
-  <div
-    className={cn(
-      "rounded-2xl border p-4 shadow-sm backdrop-blur-xl transition-all",
-      accent
-        ? "border-sky-500/30 bg-gradient-to-br from-sky-500/15 to-cyan-400/10"
-        : "border-slate-200/70 bg-white/80 dark:border-slate-800/70 dark:bg-slate-950/60"
-    )}
-  >
-    <div className="flex items-start justify-between gap-4">
-      <div>
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
-        <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{value}</p>
-        {sublabel ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sublabel}</p> : null}
-      </div>
-      <div
-        className={cn(
-          "flex h-11 w-11 items-center justify-center rounded-2xl border",
-          accent
-            ? "border-sky-500/25 bg-sky-500/15 text-sky-500"
-            : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-        )}
-      >
-        <Icon className="h-5 w-5" />
+const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
+  const isNumeric = typeof value === "number" && !Number.isNaN(value);
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border p-4 shadow-sm backdrop-blur-xl transition-all",
+        accent
+          ? "border-sky-500/30 bg-gradient-to-br from-sky-500/15 to-cyan-400/10"
+          : "border-slate-200/70 bg-white/80 dark:border-slate-800/70 dark:bg-slate-950/60"
+      )}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            {isNumeric ? <CountUp value={value} /> : value}
+          </p>
+          {sublabel ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sublabel}</p> : null}
+        </div>
+        <div
+          className={cn(
+            "flex h-11 w-11 items-center justify-center rounded-2xl border",
+            accent
+              ? "border-sky-500/25 bg-sky-500/15 text-sky-500"
+              : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const SectionTitle = ({ title, subtitle, right }) => (
   <div className="mb-5 flex items-end justify-between gap-4">

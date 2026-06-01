@@ -24,7 +24,7 @@
 */
 import { useEffect, useMemo, useState } from "react";
 import { Check, FileText, ShieldCheck } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { apiRequest } from "../lib/auth";
 import NeonAtom from "../components/ui/NeonAtom";
 import MagneticButton from "../components/ui/MagneticButton";
@@ -71,19 +71,17 @@ const Skeleton = ({ className = "" }) => (
   <NeonAtom size={24} className={className} />
 );
 
-function MotionItem({ index, className = "", children }) {
+function MotionItem({ className = "", children }) {
   const reduceMotion = useReducedMotion();
   if (reduceMotion) return <div className={className}>{children}</div>;
+
   return (
     <motion.div
       className={className}
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.5,
-        ease: [0.16, 1, 0.3, 1],
-        delay: index * 0.05,
-      }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
@@ -126,6 +124,15 @@ export default function About() {
   const [about, setAbout] = useState(fallbackAbout);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+
+  const { scrollY } = useScroll();
+  const reduceMotion = useReducedMotion();
+  const leftParallax = useSpring(useTransform(scrollY, [0, 600], [0, -30]), {
+    stiffness: 60, damping: 20, restDelta: 0.001,
+  });
+  const rightParallax = useSpring(useTransform(scrollY, [0, 600], [0, -60]), {
+    stiffness: 60, damping: 20, restDelta: 0.001,
+  });
 
   useEffect(() => {
     let alive = true;
@@ -183,8 +190,11 @@ export default function About() {
   return (
     <div className="weave-bg relative bg-[#F8FAFC] text-[#1E293B] dark:bg-[#0F172A] dark:text-[#F1F5F9]">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <MotionItem index={0} className="lg:col-span-8">
+        <motion.div
+          className="grid grid-cols-1 gap-6 lg:grid-cols-12"
+          style={{ y: reduceMotion ? 0 : leftParallax }}
+        >
+          <MotionItem className="lg:col-span-8">
             <SpotlightCard
               className={[
                 "rounded-xl p-8",
@@ -196,20 +206,38 @@ export default function About() {
                 "dark:hover:translate-y-0 dark:hover:shadow-none",
               ].join(" ")}
             >
-              <h1 className="text-4xl font-extrabold tracking-tight text-[#1E293B] dark:text-[#F1F5F9] sm:text-5xl">
+              <motion.h1
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="text-4xl font-extrabold tracking-tight text-[#1E293B] dark:text-[#F1F5F9] sm:text-5xl"
+              >
                 About GarTexHub - Show notifications
-              </h1>
-              <p className="mt-3 text-lg italic text-[#475569] dark:text-slate-300">
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-3 text-lg italic text-[#475569] dark:text-slate-300"
+              >
                 A professional B2B platform built exclusively for the Garments
                 and Textile industry.
-              </p>
-              <p className="mt-5 max-w-3xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-300">
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-5 max-w-3xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-300"
+              >
                 GarTexHub is a professional B2B platform built exclusively for
                 the Garments and Textile industry. Our goal is to create a
                 structured, transparent, and trust-driven environment where
                 international buyers, factories, and buying houses can connect
                 with confidence.
-              </p>
+              </motion.p>
 
               <div className="mt-7 flex flex-wrap gap-3">
                 <MagneticButton
@@ -228,7 +256,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={1} className="lg:col-span-4">
+          <MotionItem className="lg:col-span-4">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -307,7 +335,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={2} className="lg:col-span-12">
+          <MotionItem className="lg:col-span-12">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -335,7 +363,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={3} className="lg:col-span-4">
+          <MotionItem className="lg:col-span-4">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -357,7 +385,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={4} className="lg:col-span-4">
+          <MotionItem className="lg:col-span-4">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -379,7 +407,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={5} className="lg:col-span-4 lg:row-span-2">
+          <MotionItem className="lg:col-span-4 lg:row-span-2">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -422,7 +450,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={6} className="lg:col-span-8">
+          <MotionItem className="lg:col-span-8">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -458,7 +486,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={7} className="lg:col-span-7">
+          <MotionItem className="lg:col-span-7">
             <SpotlightCard
               className={[
                 "needle-area rounded-xl p-7",
@@ -534,7 +562,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={8} className="lg:col-span-5">
+          <MotionItem className="lg:col-span-5">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -568,7 +596,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={9} className="lg:col-span-6">
+          <MotionItem className="lg:col-span-6">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -591,7 +619,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={10} className="lg:col-span-6">
+          <MotionItem className="lg:col-span-6">
             <SpotlightCard
               className={[
                 "rounded-xl p-7",
@@ -617,7 +645,7 @@ export default function About() {
             </SpotlightCard>
           </MotionItem>
 
-          <MotionItem index={11} className="lg:col-span-12">
+          <MotionItem className="lg:col-span-12">
             <SpotlightCard
               className={[
                 "rounded-xl p-8",
@@ -636,8 +664,10 @@ export default function About() {
               </p>
             </SpotlightCard>
           </MotionItem>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
 }
+
+

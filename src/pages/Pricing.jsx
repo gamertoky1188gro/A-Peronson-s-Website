@@ -19,11 +19,13 @@
 */
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { Check } from "lucide-react";
 import NeonAtom from "../components/ui/NeonAtom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import usePageMeta from "../lib/usePageMeta";
 import { useSecureUser } from "../hooks/useSecureUser";
+import ScrollReveal from "../components/ScrollReveal";
 
 function planKeyForUserRole(role) {
   const normalized = String(role || "").toLowerCase();
@@ -230,6 +232,8 @@ const _statCards = [
 ];
 
 function SectionTitle({ eyebrow, title, subtitle }) {
+  const reduceMotion = useReducedMotion();
+  const words = String(title || "").split(" ");
   return (
     <div className="mx-auto max-w-3xl text-center">
       <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 shadow-sm backdrop-blur dark:text-sky-200">
@@ -237,7 +241,22 @@ function SectionTitle({ eyebrow, title, subtitle }) {
         {eyebrow}
       </div>
       <h2 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-        {title}
+        {reduceMotion ? title : (
+          <span className="inline-flex flex-wrap justify-center gap-x-[0.25em]">
+            {words.map((word, i) => (
+              <motion.span
+                key={i}
+                className="inline-block"
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.4, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {word}
+              </motion.span>
+            ))}
+          </span>
+        )}
       </h2>
       <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
         {subtitle}
@@ -605,12 +624,22 @@ export default function PricingPage() {
     ? roleSections.filter((section) => section.key === activePlanKey)
     : roleSections;
 
+  const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const bg1Y = useSpring(useTransform(scrollY, [0, 600], [0, -30]), { stiffness: 80, damping: 20, restDelta: 0.001 });
+  const bg2Y = useSpring(useTransform(scrollY, [0, 600], [0, -50]), { stiffness: 80, damping: 20, restDelta: 0.001 });
+  const bg3Y = useSpring(useTransform(scrollY, [0, 600], [0, -20]), { stiffness: 80, damping: 20, restDelta: 0.001 });
+
   return (
     <div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
-        <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.16),transparent_30%),radial-gradient(circle_at_bottom,rgba(14,165,233,0.12),transparent_28%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_30%),radial-gradient(circle_at_bottom,rgba(14,165,233,0.1),transparent_28%)]" />
+        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+          <motion.div style={{ y: reduceMotion ? 0 : bg1Y }} className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.14),transparent_34%)]" />
+          <motion.div style={{ y: reduceMotion ? 0 : bg2Y }} className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.16),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_30%)]" />
+          <motion.div style={{ y: reduceMotion ? 0 : bg3Y }} className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(14,165,233,0.12),transparent_28%)] dark:bg-[radial-gradient(circle_at_bottom,rgba(14,165,233,0.1),transparent_28%)]" />
+        </div>
 
         <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <ScrollReveal as="section" className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-sky-200">
                 <span>✔</span>
@@ -668,9 +697,9 @@ export default function PricingPage() {
               loading={loading}
               loadError={loadError}
             />
-          </section>
+          </ScrollReveal>
 
-          <section id="plans" className="mt-20 scroll-mt-24">
+          <ScrollReveal as="section" id="plans" className="mt-20 scroll-mt-24">
             <SectionTitle
               eyebrow="Simple, transparent pricing"
               title="Choose the surface you need today — upgrade when your team scales."
@@ -720,9 +749,9 @@ export default function PricingPage() {
                 );
               })}
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="mt-20 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
+          <ScrollReveal as="section" className="mt-20 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
             <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]">
               <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
                 Why enterprise matters
@@ -752,9 +781,9 @@ export default function PricingPage() {
               loading={loading}
               loadError={loadError}
             />
-          </section>
+          </ScrollReveal>
 
-          <section className="mt-20">
+          <ScrollReveal as="section" className="mt-20">
             <SectionTitle
               eyebrow="Premium feature deep dive"
               title="A role-specific roundup of what the Premium plan unlocks."
@@ -773,9 +802,9 @@ export default function PricingPage() {
                 </div>
               ))}
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="mt-20">
+          <ScrollReveal as="section" className="mt-20">
             <SectionTitle
               eyebrow="Analytics snapshot"
               title="Decision-ready metrics without spreadsheet UI."
@@ -788,9 +817,9 @@ export default function PricingPage() {
                 loadError={loadError}
               />
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="mt-20">
+          <ScrollReveal as="section" className="mt-20">
             <SectionTitle
               eyebrow="Comparison"
               title="Feature comparison"
@@ -799,9 +828,9 @@ export default function PricingPage() {
             <div className="mt-10">
               <ComparisonTable comparisonRows={comparisonRows} />
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="mt-20">
+          <ScrollReveal as="section" className="mt-20">
             <SectionTitle
               eyebrow="FAQ"
               title="Short answers, no sales noise."
@@ -812,9 +841,9 @@ export default function PricingPage() {
                 <FAQItem key={item.q} q={item.q} a={item.a} />
               ))}
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="mt-20 rounded-[2rem] border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-white to-cyan-500/10 p-8 shadow-[0_24px_80px_rgba(14,165,233,0.12)] dark:from-sky-500/10 dark:via-slate-950 dark:to-cyan-500/10">
+          <ScrollReveal as="section" className="mt-20 rounded-[2rem] border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-white to-cyan-500/10 p-8 shadow-[0_24px_80px_rgba(14,165,233,0.12)] dark:from-sky-500/10 dark:via-slate-950 dark:to-cyan-500/10">
             <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-sky-200">
@@ -865,7 +894,7 @@ export default function PricingPage() {
                 )}
               </div>
             </div>
-          </section>
+          </ScrollReveal>
         </main>
     </div>
   );

@@ -5,7 +5,7 @@
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import useLocalStorageState from "../hooks/useLocalStorageState";
 import {
   apiRequest,
@@ -438,6 +438,13 @@ export default function MainFeed() {
   const highlightKey = searchParams.get("item") || "";
   const sentinelRef = useRef(null);
   const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const heroScale = useSpring(useTransform(scrollY, [0, 200], [1, 0.95]), {
+    stiffness: 80, damping: 20, restDelta: 0.001,
+  });
+  const bgParallax = useSpring(useTransform(scrollY, [0, 600], [0, -40]), {
+    stiffness: 80, damping: 20, restDelta: 0.001,
+  });
 
   const canExpressInterest = useMemo(() => {
     const role = user?.role || "";
@@ -753,7 +760,11 @@ export default function MainFeed() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)] dark:text-white">
+      <motion.div
+        style={{ y: reduceMotion ? 0 : bgParallax }}
+        className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"
+      />
+      <div className="min-h-screen text-slate-900 transition-colors dark:text-white">
         <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 py-4 md:px-6 lg:h-screen lg:flex-row lg:overflow-hidden lg:p-6">
           {/* ====== SIDEBAR ====== */}
           <aside className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:w-[320px] lg:overflow-y-auto">
@@ -875,7 +886,10 @@ export default function MainFeed() {
           {/* ====== MAIN CONTENT ====== */}
           <main className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0">
             {/* Hero Section */}
-            <section className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6">
+            <motion.section
+              className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6"
+              style={{ scale: reduceMotion ? 1 : heroScale }}
+            >
               <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:w-[540px]">
                   <StatCard
