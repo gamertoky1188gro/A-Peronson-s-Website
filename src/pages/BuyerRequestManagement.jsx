@@ -1644,9 +1644,88 @@ export default function BuyerRequestManagement() {
                           >
                             Next <ArrowRight className="h-4 w-4" />
                           </button>
-                  )}
-                </>
-                ) : null}
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Pill className="bg-sky-500/15 text-sky-300">Open Buyer Requests</Pill>
+                      <Pill className="bg-cyan-500/15 text-cyan-300">Assign to agents</Pill>
+                      <Pill className={`bg-white/5 ${dark ? "text-slate-300" : "text-slate-600"}`}>Manual refresh only</Pill>
+                    </div>
+
+                    <div className={`rounded-[26px] border p-5 ${panel}`}>
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-lg font-semibold">Lead queue</h3>
+                          <p className={`text-sm ${soft}`}>Use Assign to route a request to a specific agent.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={loadRequests}
+                          className="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition dark:border-white/10 dark:bg-white/5"
+                        >
+                          <RefreshCw className="h-4 w-4" /> Refresh
+                        </button>
+                      </div>
+
+                      {!myRequests.length ? (
+                        <div className={`text-sm ${soft}`}>No open requests.</div>
+                      ) : (
+                        <div className="overflow-hidden rounded-[22px] border border-white/10">
+                          <table className="min-w-full divide-y divide-white/10 text-left text-sm">
+                            <thead className="bg-white/5 text-slate-300">
+                              <tr>
+                                <th className="px-4 py-3 font-medium">Title</th>
+                                <th className="px-4 py-3 font-medium">Status</th>
+                                <th className="px-4 py-3 font-medium">Qty</th>
+                                <th className="px-4 py-3 font-medium">Target</th>
+                                <th className="px-4 py-3 font-medium">Delivery</th>
+                                <th className="px-4 py-3 font-medium">Assign</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/10">
+                              {myRequests.map((r) => (
+                                <tr key={r.id} className="hover:bg-white/5">
+                                  <td className="px-4 py-4">
+                                    <div className="font-medium">{r.title || r.category || "Buyer Request"}</div>
+                                    <div className="mt-1 text-xs text-slate-400">
+                                      Buyer: {String(r.buyer_id || "").slice(0, 8)}...
+                                      {r.ai_summary ? ` - ${r.ai_summary}` : ""}
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4">
+                                    <span className={`${badge} ${requestStatusBadge(r.status)}`}>
+                                      {formatRequestStatus(r.status)}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-4">{r.quantity || "--"}</td>
+                                  <td className="px-4 py-4">{r.target_market || "--"}</td>
+                                  <td className="px-4 py-4">{r.delivery_timeline || r.timeline_days || "--"}</td>
+                                  <td className="px-4 py-4">
+                                    <Select
+                                      value={r.assigned_agent_id || ""}
+                                      onChange={(e) => assignRequest(r.id, e.target.value)}
+                                    >
+                                      <option value="">Unassigned</option>
+                                      {agents.map((a) => (
+                                        <option key={a.id} value={a.id}>
+                                          {a.name} ({a.member_id})
+                                        </option>
+                                      ))}
+                                    </Select>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               </ScrollReveal>
             </div>
