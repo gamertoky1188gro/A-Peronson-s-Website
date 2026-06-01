@@ -64,13 +64,13 @@ export default function FloatingAssistant() {
   const userId = getUserId();
   const location = useLocation();
   const orbMode = location.pathname === "/help";
+  const [open, setOpen] = useState(false);
   const scrollDir = useScrollDirection();
   const reduceMotion = useReducedMotion();
   const buttonVisible = open || reduceMotion || scrollDir !== "down";
   const buttonOpacity = useSpring(buttonVisible ? 1 : 0, {
     stiffness: 120, damping: 24, restDelta: 0.001,
   });
-  const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [title, setTitle] = useState(null);
