@@ -685,16 +685,6 @@ export default function ChatInterface() {
     loadInbox();
   }, [loadInbox]);
 
-  useEffect(() => {
-    if (pageLoading && !loading && !secureLoading) {
-      if (!activeThread?.matchId) {
-        setPageLoading(false);
-      } else if (messagesByThread[activeThread.matchId]) {
-        setPageLoading(false);
-      }
-    }
-  }, [pageLoading, loading, secureLoading, activeThread, messagesByThread]);
-
   const filteredPriorityInbox = useMemo(() => {
     if (!query.trim()) return priorityInbox;
     const search = query.toLowerCase();
@@ -723,6 +713,16 @@ export default function ChatInterface() {
     (thread) => thread.id === activeThreadId,
   );
   activeThreadMatchIdRef.current = activeThread?.matchId || "";
+
+  useEffect(() => {
+    if (pageLoading && !loading && !secureLoading) {
+      if (!activeThread?.matchId) {
+        setPageLoading(false);
+      } else if (messagesByThread[activeThread.matchId]) {
+        setPageLoading(false);
+      }
+    }
+  }, [pageLoading, loading, secureLoading, activeThread, messagesByThread]);
 
   useEffect(() => {
     const token = getToken();
