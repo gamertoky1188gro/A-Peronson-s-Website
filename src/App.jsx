@@ -12,6 +12,7 @@ import Footer from "./components/Footer";
 import FloatingAssistant from "./components/FloatingAssistant";
 import ScrollProgressBar from "./components/ScrollProgressBar";
 import NeonAtom from "./components/ui/NeonAtom";
+import LenisProvider from "./components/LenisProvider";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
 
@@ -354,6 +355,28 @@ function AppLayout() {
     location.pathname === "/chat" || location.pathname === "/call";
   const isAdminRoute = location.pathname.startsWith("/admin");
   const hideChrome = isImmersiveRoute || isAdminRoute;
+  const content = (
+    <>
+      {!hideChrome ? <ScrollProgressBar /> : null}
+      <div className="app-shell flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100" style={{ zoom: hideChrome ? 1 : 0.9 }}>
+      {!hideChrome ? <NavBar /> : null}
+      <main
+        className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220]"
+      >
+        <Suspense fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            <NeonAtom size={48} />
+          </div>
+        }>
+          <AppRoutes />
+        </Suspense>
+      </main>
+      {!hideChrome ? <Footer /> : null}
+      {!hideChrome ? <FloatingAssistant /> : null}
+    </div>
+    </>
+  );
+
   const navigationRef = useRef({ path: "", startedAt: 0 });
   const sessionRef = useRef({ startedAt: 0, ended: false });
 
@@ -464,25 +487,11 @@ function AppLayout() {
   }, []);
 
   return (
-    <>
-      {!hideChrome ? <ScrollProgressBar /> : null}
-      <div className="app-shell flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100" style={{ zoom: hideChrome ? 1 : 0.9 }}>
-      {!hideChrome ? <NavBar /> : null}
-      <main
-        className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220]"
-      >
-        <Suspense fallback={
-          <div className="flex min-h-screen items-center justify-center">
-            <NeonAtom size={48} />
-          </div>
-        }>
-          <AppRoutes />
-        </Suspense>
-      </main>
-      {!hideChrome ? <Footer /> : null}
-      {!hideChrome ? <FloatingAssistant /> : null}
-    </div>
-    </>
+    hideChrome ? content : (
+      <LenisProvider>
+        {content}
+      </LenisProvider>
+    )
   );
 }
 

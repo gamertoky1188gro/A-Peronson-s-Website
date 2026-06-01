@@ -29,6 +29,7 @@ import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel";
 import NeonAtom from "../components/ui/NeonAtom";
+import HorizontalScrollGallery from "../components/HorizontalScrollGallery";
 
 const Motion = motion;
 
@@ -674,12 +675,12 @@ export default function FactoryProfile() {
 
               {activeTab === "products" ? (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {products.map((p) => (
-                      <div
-                        key={p.id}
-                        className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4"
-                      >
+                    <HorizontalScrollGallery>
+                      {products.map((p) => (
+                        <div
+                          key={p.id}
+                          className="min-w-[280px] max-w-[320px] snap-start shrink-0 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4"
+                        >
                         {p.cover_image_public_url ? (
                           <img
                             src={p.cover_image_public_url}
@@ -707,7 +708,7 @@ export default function FactoryProfile() {
                         ) : null}
                       </div>
                     ))}
-                  </div>
+                    </HorizontalScrollGallery>
                   {loadingProducts ? (
                     <NeonAtom size={40} text="Loading products..." />
                   ) : null}

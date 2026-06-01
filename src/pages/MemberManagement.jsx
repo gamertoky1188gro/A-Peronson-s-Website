@@ -1,6 +1,7 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import AccessDeniedState from "../components/AccessDeniedState";
+import ScrollReveal from "../components/ScrollReveal";
 import {
   apiRequest,
   getCurrentUser,
@@ -398,6 +399,7 @@ export default function MemberManagement() {
             </div>
           ) : null}
 
+          <ScrollReveal as="section">
           <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
@@ -460,6 +462,7 @@ export default function MemberManagement() {
               </table>
             </div>
           </div>
+          </ScrollReveal>
         </div>
       </div>
 

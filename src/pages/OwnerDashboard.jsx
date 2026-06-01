@@ -6,6 +6,9 @@ import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import LeadManager from "../components/leads/LeadManager";
 import { apiRequest, getToken, syncUserFromApi } from "../lib/auth";
 import CountUp from "../components/CountUp";
+import ScrollReveal from "../components/ScrollReveal";
+import ScaleIn from "../components/ScaleIn";
+import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -131,7 +134,7 @@ function StatCard({ label, value, sub, accent = "from-sky-500 to-cyan-400" }) {
       <div className="mt-3 flex items-end justify-between gap-3">
         <div>
           <div className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
-            {isNumeric ? <CountUp value={value} /> : value}
+            {isNumeric ? <ScaleIn><CountUp value={value} /></ScaleIn> : value}
           </div>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {sub}
@@ -440,33 +443,33 @@ export default function OwnerDashboard() {
 
               {active === "home" && !loading && (
                 <div className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <StatCard
+                  <ScrollReveal as="section"><StaggerContainer className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <StaggerItem><StatCard
                       label="Requests"
                       value={totals.buyer_requests ?? 0}
                       sub={`${totals.open_buyer_requests ?? 0} open buyer requests`}
-                    />
-                    <StatCard
+                    /></StaggerItem>
+                    <StaggerItem><StatCard
                       label="Chats"
                       value={totals.chats ?? 0}
                       sub={`${totals.messages ?? 0} total messages`}
                       accent="from-cyan-500 to-sky-400"
-                    />
-                    <StatCard
+                    /></StaggerItem>
+                    <StaggerItem><StatCard
                       label="Partners"
                       value={totals.partner_network ?? 0}
                       sub={`${totals.factories ?? 0} connected factories`}
                       accent="from-blue-500 to-sky-400"
-                    />
-                    <StatCard
+                    /></StaggerItem>
+                    <StaggerItem><StatCard
                       label="Contracts"
                       value={totals.contracts ?? 0}
                       sub={`${totals.documents ?? 0} documents tracked`}
                       accent="from-sky-600 to-cyan-500"
-                    />
-                  </div>
+                    /></StaggerItem>
+                  </StaggerContainer></ScrollReveal>
 
-                  <div className="grid gap-6 xl:grid-cols-3">
+                  <ScrollReveal as="section"><div className="grid gap-6 xl:grid-cols-3">
                     <SectionCard
                       title="Quick Actions"
                       subtitle="Jump to the most common operational screens."
@@ -533,9 +536,9 @@ export default function OwnerDashboard() {
                         )}
                       </div>
                     </SectionCard>
-                  </div>
+                  </div></ScrollReveal>
 
-                  <div className="grid gap-6 xl:grid-cols-3">
+                  <ScrollReveal as="section"><div className="grid gap-6 xl:grid-cols-3">
                     <SectionCard
                       title="Platform Stats"
                       subtitle="Key totals across the workspace."
@@ -626,13 +629,13 @@ export default function OwnerDashboard() {
                         </div>
                       </div>
                     </SectionCard>
-                  </div>
+                  </div></ScrollReveal>
                 </div>
               )}
 
               {active === "requests" && !loading && (
                 <div className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <ScrollReveal as="section"><div className="grid gap-4 md:grid-cols-3">
                     <StatCard
                       label="Total Requests"
                       value={totals.buyer_requests ?? 0}
@@ -648,9 +651,8 @@ export default function OwnerDashboard() {
                       label="Assigned"
                       value={totals.assigned_requests ?? 0}
                       sub="Handled by the team"
-                      accent="from-blue-500 to-sky-400"
                     />
-                  </div>
+                  </div></ScrollReveal>
 
                   <SectionCard
                     title="All Buyer Requests"
@@ -704,7 +706,7 @@ export default function OwnerDashboard() {
 
               {active === "chats" && !loading && (
                 <div className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <ScrollReveal as="section"><div className="grid gap-4 md:grid-cols-3">
                     <StatCard
                       label="Active Chats"
                       value={totals.chats ?? 0}
@@ -720,9 +722,8 @@ export default function OwnerDashboard() {
                       label="Unread"
                       value={totals.unread_messages ?? 0}
                       sub="Needs attention"
-                      accent="from-blue-500 to-sky-400"
                     />
-                  </div>
+                  </div></ScrollReveal>
 
                   <SectionCard
                     title="Conversations"
@@ -757,7 +758,7 @@ export default function OwnerDashboard() {
 
               {active === "network" && !loading && (
                 <div className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <ScrollReveal as="section"><div className="grid gap-4 md:grid-cols-3">
                     <StatCard
                       label="Connected"
                       value={totals.partner_network ?? 0}
@@ -773,9 +774,8 @@ export default function OwnerDashboard() {
                       label="Factories"
                       value={totals.factories ?? 0}
                       sub="Production capacity"
-                      accent="from-blue-500 to-sky-400"
                     />
-                  </div>
+                  </div></ScrollReveal>
 
                   <SectionCard
                     title="Partner Network"
@@ -985,7 +985,7 @@ export default function OwnerDashboard() {
 
               {active === "contracts" && !loading && (
                 <div className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <ScrollReveal as="section"><div className="grid gap-4 md:grid-cols-2">
                     <StatCard
                       label="Active Contracts"
                       value={totals.contracts ?? 0}
@@ -995,9 +995,8 @@ export default function OwnerDashboard() {
                       label="Documents"
                       value={totals.documents ?? 0}
                       sub="Stored in vault"
-                      accent="from-cyan-500 to-sky-400"
                     />
-                  </div>
+                  </div></ScrollReveal>
 
                   <SectionCard
                     title="Contracts Vault"

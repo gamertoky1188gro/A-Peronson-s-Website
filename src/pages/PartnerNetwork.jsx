@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import NeonAtom from "../components/ui/NeonAtom";
+import ScrollReveal from "../components/ScrollReveal";
+import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import {
   AlertCircle,
   ArrowRightLeft,
@@ -279,6 +281,7 @@ export default function PartnerNetwork() {
 
         <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
           <div className="space-y-6">
+            <ScrollReveal as="section">
             <Card>
               <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
                 <ArrowRightLeft className="h-4 w-4 text-sky-500" />
@@ -312,7 +315,9 @@ export default function PartnerNetwork() {
                 </div>
               </div>
             </Card>
+            </ScrollReveal>
 
+            <ScrollReveal as="section">
             <Card>
               <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
                 <Search className="h-4 w-4 text-sky-500" />
@@ -336,7 +341,9 @@ export default function PartnerNetwork() {
                 </div>
               </div>
             </Card>
+            </ScrollReveal>
 
+            <ScrollReveal as="section">
             <Card className="bg-gradient-to-br from-sky-500/10 via-blue-500/5 to-transparent dark:from-sky-500/15 dark:via-blue-500/10">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
                 <Shield className="h-4 w-4 text-sky-500" />
@@ -359,9 +366,11 @@ export default function PartnerNetwork() {
                 </div>
               </div>
             </Card>
+            </ScrollReveal>
           </div>
 
           <div className="space-y-6">
+            <ScrollReveal as="section">
             <Card>
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-wrap gap-2">
@@ -382,6 +391,7 @@ export default function PartnerNetwork() {
                 </div>
               </div>
             </Card>
+            </ScrollReveal>
 
             {error && (
               <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
@@ -392,7 +402,7 @@ export default function PartnerNetwork() {
               </div>
             )}
 
-            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            <StaggerContainer className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
               {filteredRows.length > 0
                 ? filteredRows.map((row) => {
                     const counterparty = row.counterparty || {};
@@ -411,8 +421,8 @@ export default function PartnerNetwork() {
                         : `/buying-house/${counterparty.id}`;
 
                     return (
+                      <StaggerItem key={row.id}>
                       <Card
-                        key={row.id}
                         className="group relative overflow-hidden"
                       >
                         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400" />
@@ -494,6 +504,7 @@ export default function PartnerNetwork() {
                           )}
                         </div>
                       </Card>
+                      </StaggerItem>
                     );
                   })
                 : !loading && (
@@ -513,8 +524,9 @@ export default function PartnerNetwork() {
                       </div>
                     </Card>
                   )}
-            </div>
+            </StaggerContainer>
 
+            <ScrollReveal as="section">
             <Card>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -530,6 +542,7 @@ export default function PartnerNetwork() {
                 </div>
               </div>
             </Card>
+            </ScrollReveal>
           </div>
         </div>
       </div>

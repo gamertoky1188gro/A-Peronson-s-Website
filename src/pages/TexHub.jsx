@@ -50,6 +50,10 @@ import {
   Stars,
   Users2,
 } from "lucide-react";
+import TextColorReveal from "../components/TextColorReveal";
+import ScrollVelocityText from "../components/ScrollVelocityText";
+import CardStack from "../components/CardStack";
+import StickySection from "../components/StickySection";
 
 const Motion = motion;
 
@@ -58,10 +62,12 @@ function SectionTitle({ eyebrow, title, text }) {
   const words = String(title || "").split(" ");
   return (
     <div className="max-w-3xl">
-      <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
-        <Stars className="h-3.5 w-3.5" />
-        {eyebrow}
-      </div>
+      <ScrollVelocityText>
+        <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+          <Stars className="h-3.5 w-3.5" />
+          {eyebrow}
+        </div>
+      </ScrollVelocityText>
       <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
         {reduceMotion ? title : (
           <span className="inline-flex flex-wrap gap-x-[0.25em]">
@@ -775,19 +781,21 @@ export default function TexHub() {
             title="A sourcing workflow network built only for garments and textiles."
             text="Low noise, structured requests, and trust by design. Designed to strengthen business workflow, increase transparency, improve efficiency, and build trust."
           />
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {whyCards.map((card) => (
-              <Card key={card.title} className="p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
-                  <CheckCircle2 className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">{card.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  {card.text}
-                </p>
-              </Card>
-            ))}
-          </div>
+          <CardStack>
+            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {whyCards.map((card) => (
+                <Card key={card.title} className="p-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-semibold">{card.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    {card.text}
+                  </p>
+                </Card>
+              ))}
+            </div>
+          </CardStack>
         </ScrollReveal>
 
         <ScrollReveal as="section" id="workflow" className="mt-20">
@@ -803,7 +811,9 @@ export default function TexHub() {
                 <Card key={item.title} className="min-w-[280px] snap-start lg:min-w-0 p-6">
                   <div className="flex items-center justify-between">
                     <div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
-                      {item.step}
+                      <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(99,102,241)">
+                        {item.step}
+                      </TextColorReveal>
                     </div>
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-100">
                       <Icon className="h-5 w-5" />
@@ -855,19 +865,21 @@ export default function TexHub() {
               title="Verified and documented by design."
               text="GarTexHub increases trust with organization-based verification, controlled communication flow, and secure contract records."
             />
-            <div className="mt-6 space-y-3">
-              {trustPoints.map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5"
-                >
-                  <ShieldCheck className="h-5 w-5 text-sky-500" />
-                  <div className="text-sm text-slate-700 dark:text-slate-200">
-                    {item}
+            <StickySection top={120}>
+              <div className="mt-6 space-y-3">
+                {trustPoints.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5"
+                  >
+                    <ShieldCheck className="h-5 w-5 text-sky-500" />
+                    <div className="text-sm text-slate-700 dark:text-slate-200">
+                      {item}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </StickySection>
           </Card>
 
           <Card className="overflow-hidden p-0">
@@ -1051,7 +1063,7 @@ export default function TexHub() {
               <Card key={item.title} className="p-6">
                 <h3 className="text-xl font-semibold">{item.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  {item.text}
+                  <TextColorReveal>{item.text}</TextColorReveal>
                 </p>
                 <div className="mt-5 space-y-3">
                   {item.points.map((point) => (

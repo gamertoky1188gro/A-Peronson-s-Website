@@ -24,6 +24,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import NeonAtom from "../components/ui/NeonAtom";
+import ScrollReveal from "../components/ScrollReveal";
+import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import {
   Bell,
   Factory,
@@ -498,6 +500,7 @@ export default function NotificationsCenter() {
 
           <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="space-y-6">
+              <ScrollReveal as="section">
               <section
                 className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
               >
@@ -522,7 +525,7 @@ export default function NotificationsCenter() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <StaggerContainer className="space-y-3">
                     {loading ? (
                     <NeonAtom fill size={64} />
                   ) : error ? (
@@ -534,8 +537,8 @@ export default function NotificationsCenter() {
                     />
                   ) : (
                     filteredItems.map((item) => (
+                      <StaggerItem key={item.id}>
                       <NotificationCard
-                        key={item.id}
                         item={item}
                         theme={theme}
                         user={user}
@@ -555,12 +558,15 @@ export default function NotificationsCenter() {
                           )
                         }
                       />
+                      </StaggerItem>
                     ))
                   )}
-                </div>
+                </StaggerContainer>
               </section>
+              </ScrollReveal>
 
               {tab === "viewed" && (
+                <ScrollReveal as="section">
                 <section
                   className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
                 >
@@ -626,10 +632,12 @@ export default function NotificationsCenter() {
                     </div>
                   )}
                 </section>
+                </ScrollReveal>
               )}
             </div>
 
             <aside className="space-y-6">
+              <ScrollReveal as="section">
               <section
                 className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
               >
@@ -693,7 +701,9 @@ export default function NotificationsCenter() {
                   )}
                 </div>
               </section>
+              </ScrollReveal>
 
+              <ScrollReveal as="section">
               <section
                 className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
               >
@@ -713,7 +723,9 @@ export default function NotificationsCenter() {
                   />
                 </div>
               </section>
+              </ScrollReveal>
 
+              <ScrollReveal as="section">
               <section
                 className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
               >
@@ -728,6 +740,7 @@ export default function NotificationsCenter() {
                   <ApiChip method="GET" path="/products/views/me" />
                 </div>
               </section>
+              </ScrollReveal>
             </aside>
           </div>
         </div>

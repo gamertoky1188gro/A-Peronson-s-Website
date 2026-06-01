@@ -28,6 +28,7 @@ import {
   Users,
 } from "lucide-react";
 import NeonAtom from "../components/ui/NeonAtom";
+import ScrollReveal from "../components/ScrollReveal";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -457,7 +458,7 @@ export default function Insights() {
             </div>
           </div>
 
-          <div className="relative mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <ScrollReveal as="section"><div className="relative mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             {(topMetrics.length
               ? topMetrics
               : [
@@ -503,16 +504,16 @@ export default function Insights() {
                   hint={m.hint || "Top metric"}
                 />
               ))}
-          </div>
+          </div></ScrollReveal>
 
-          <div className="relative mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <ScrollReveal as="section"><div className="relative mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <StatCard icon={Users} label="Total Buyer Requests" value={formatNumber(totals.buyer_requests ?? 0)} hint="Requests" subtle />
             <StatCard icon={Activity} label="Active Chats" value={formatNumber(totals.chats ?? 0)} hint="Chats" subtle />
             <StatCard icon={Link2} label="Connected Partners" value={formatNumber(totals.partner_network ?? 0)} hint="Partners" subtle />
             <StatCard icon={FileText} label="Contracts / Documents" value={`${formatNumber(totals.contracts ?? 0)} / ${formatNumber(totals.documents ?? 0)}`} hint="Docs" subtle />
-          </div>
+          </div></ScrollReveal>
 
-          <div className="relative mt-7 grid gap-4 xl:grid-cols-4">
+          <ScrollReveal as="section"><div className="relative mt-7 grid gap-4 xl:grid-cols-4">
             <StatCard icon={Eye} label="Total Page Views" value={formatNumber(interactionSummary.total_page_views ?? 0)} hint="Views" subtle />
             <StatCard icon={MousePointerClick} label="Total Clicks" value={formatNumber(interactionSummary.total_clicks ?? 0)} hint="Clicks" subtle />
             <StatCard icon={TrendingUp} label="Avg Session Duration" value={formatDuration(interactionSummary.avg_session_duration_seconds ?? 0)} hint="Seconds" subtle />
@@ -539,9 +540,9 @@ export default function Insights() {
                 )}
               </div>
             </div>
-          </div>
+          </div></ScrollReveal>
 
-          <div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+          <ScrollReveal as="section"><div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
             <SectionHeader
               icon={Crown}
               title="Analytics Panel"
@@ -706,9 +707,9 @@ export default function Insights() {
                 </div>
               </div>
             )}
-          </div>
+          </div></ScrollReveal>
 
-          <div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+          <ScrollReveal as="section"><div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
             <SectionHeader icon={Radar} title="Premium Insights" right={<Badge tone={premiumInsights ? "green" : "amber"}>{premiumRole || "premium"}</Badge>} />
 
             {!premiumInsights ? (
@@ -886,9 +887,9 @@ export default function Insights() {
                 ) : null}
               </div>
             )}
-          </div>
+          </div></ScrollReveal>
 
-          {companyAnalytics ? (
+          <ScrollReveal as="section">{companyAnalytics ? (
             <div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
               <SectionHeader
                 icon={Building2}
@@ -951,9 +952,9 @@ export default function Insights() {
                 />
               </div>
             </div>
-          ) : null}
+          ) : null}</ScrollReveal>
 
-          {platformAnalytics ? (
+          <ScrollReveal as="section">{platformAnalytics ? (
             <div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
               <SectionHeader icon={Globe2} title="Platform Analytics" right={<Badge tone="default">Privacy-aware</Badge>} />
 
@@ -1079,7 +1080,7 @@ export default function Insights() {
                 />
               </div>
             </div>
-          ) : null}
+          ) : null}</ScrollReveal>
         </div>
       </div>
     </div>

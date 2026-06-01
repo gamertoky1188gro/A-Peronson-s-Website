@@ -9,6 +9,7 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import ScrollReveal from "../components/ScrollReveal";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
   apiRequest,
@@ -283,6 +284,7 @@ export default function SupportReports() {
         )}
 
         <main className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
+          <ScrollReveal as="section">
           <section
             className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}
           >
@@ -538,8 +540,10 @@ export default function SupportReports() {
               </button>
             </form>
           </section>
+          </ScrollReveal>
 
           <aside className="space-y-6">
+            <ScrollReveal as="section">
             <section
               className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}
             >
@@ -633,7 +637,9 @@ export default function SupportReports() {
                 </div>
               )}
             </section>
+            </ScrollReveal>
 
+            <ScrollReveal as="section">
             <section
               className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}
             >
@@ -686,7 +692,9 @@ export default function SupportReports() {
                 ))}
               </div>
             </section>
+            </ScrollReveal>
 
+            <ScrollReveal as="section">
             <section
               className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}
             >
@@ -707,6 +715,7 @@ export default function SupportReports() {
                 </div>
               </div>
             </section>
+            </ScrollReveal>
           </aside>
         </main>
       </div>

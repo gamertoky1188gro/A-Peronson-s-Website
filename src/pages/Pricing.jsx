@@ -26,6 +26,8 @@ import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import usePageMeta from "../lib/usePageMeta";
 import { useSecureUser } from "../hooks/useSecureUser";
 import ScrollReveal from "../components/ScrollReveal";
+import StickySection from "../components/StickySection";
+import TextColorReveal from "../components/TextColorReveal";
 
 function planKeyForUserRole(role) {
   const normalized = String(role || "").toLowerCase();
@@ -238,11 +240,11 @@ function SectionTitle({ eyebrow, title, subtitle }) {
     <div className="mx-auto max-w-3xl text-center">
       <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 shadow-sm backdrop-blur dark:text-sky-200">
         <span>✨</span>
-        {eyebrow}
+        <TextColorReveal>{eyebrow}</TextColorReveal>
       </div>
       <h2 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-        {reduceMotion ? title : (
-          <span className="inline-flex flex-wrap justify-center gap-x-[0.25em]">
+        {reduceMotion ? <TextColorReveal as="span">{title}</TextColorReveal> : (
+          <TextColorReveal as="span" className="inline-flex flex-wrap justify-center gap-x-[0.25em]">
             {words.map((word, i) => (
               <motion.span
                 key={i}
@@ -255,7 +257,7 @@ function SectionTitle({ eyebrow, title, subtitle }) {
                 {word}
               </motion.span>
             ))}
-          </span>
+          </TextColorReveal>
         )}
       </h2>
       <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
@@ -424,7 +426,7 @@ function ComparisonTable({ comparisonRows = [] }) {
     <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]">
       <div className="border-b border-slate-200/80 px-6 py-4 dark:border-white/10">
         <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
-          Feature comparison
+          <TextColorReveal>Feature comparison</TextColorReveal>
         </h3>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Horizontal lines only. Clear, audit-ready differences.
@@ -432,13 +434,13 @@ function ComparisonTable({ comparisonRows = [] }) {
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50/80 text-slate-600 dark:bg-white/5 dark:text-slate-300">
+          <StickySection as="thead" top={100} className="bg-slate-50/80 text-slate-600 dark:bg-white/5 dark:text-slate-300">
             <tr>
               <th className="px-6 py-4 font-medium">Feature</th>
               <th className="px-6 py-4 font-medium">Free</th>
               <th className="px-6 py-4 font-medium">Premium</th>
             </tr>
-          </thead>
+          </StickySection>
           <tbody className="divide-y divide-slate-200/80 dark:divide-white/10">
             {comparisonRows.map(([feature, free, premium]) => (
               <tr key={feature} className="text-slate-700 dark:text-slate-200">

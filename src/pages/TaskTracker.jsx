@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronRight, ChevronDown, Check, X } from "lucide-react";
 import tasksData from "../tasks.json";
 import NeonAtom from "../components/ui/NeonAtom";
+import ScrollReveal from "../components/ScrollReveal";
 
 function TreeNode({ task, onToggle, depth = 0 }) {
   const [isOpen, setIsOpen] = useState(depth < 2);
@@ -244,6 +245,7 @@ export default function TaskTracker() {
           ))}
         </div>
 
+        <ScrollReveal as="section">
         <div className="space-y-2">
           {filteredTasks.map((task) => (
             <div
@@ -314,6 +316,7 @@ export default function TaskTracker() {
             </div>
           ))}
         </div>
+        </ScrollReveal>
       </div>
     </div>
   );

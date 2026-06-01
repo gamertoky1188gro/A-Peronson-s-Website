@@ -29,6 +29,8 @@ import { apiRequest } from "../lib/auth";
 import NeonAtom from "../components/ui/NeonAtom";
 import MagneticButton from "../components/ui/MagneticButton";
 import SpotlightCard from "../components/ui/SpotlightCard";
+import TextColorReveal from "../components/TextColorReveal";
+import ParallaxBackground from "../components/ParallaxBackground";
 
 const Motion = motion;
 
@@ -189,6 +191,7 @@ export default function About() {
 
   return (
     <div className="weave-bg relative bg-[#F8FAFC] text-[#1E293B] dark:bg-[#0F172A] dark:text-[#F1F5F9]">
+      <ParallaxBackground />
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <motion.div
           className="grid grid-cols-1 gap-6 lg:grid-cols-12"
@@ -378,9 +381,11 @@ export default function About() {
                 Mission
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                To simplify international garment sourcing by building a secure
-                digital infrastructure that prioritizes credibility,
-                transparency, and efficiency.
+                <TextColorReveal>
+                  To simplify international garment sourcing by building a secure
+                  digital infrastructure that prioritizes credibility,
+                  transparency, and efficiency.
+                </TextColorReveal>
               </p>
             </SpotlightCard>
           </MotionItem>
@@ -400,9 +405,11 @@ export default function About() {
                 Vision
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                To become a trusted digital bridge between global buyers and
-                garment manufacturers, reducing negotiation friction and
-                strengthening international trade relationships.
+                <TextColorReveal>
+                  To become a trusted digital bridge between global buyers and
+                  garment manufacturers, reducing negotiation friction and
+                  strengthening international trade relationships.
+                </TextColorReveal>
               </p>
             </SpotlightCard>
           </MotionItem>

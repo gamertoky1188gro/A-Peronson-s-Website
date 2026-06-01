@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { apiRequest, getToken } from "../lib/auth";
 import NeonAtom from "../components/ui/NeonAtom";
+import ScrollReveal from "../components/ScrollReveal";
 import { CheckCircle2, MessageSquareText, ShieldCheck, Star, Sparkles, UserRound } from "lucide-react";
 
 const STAR_OPTIONS = [1, 2, 3, 4, 5];
@@ -180,6 +181,7 @@ export default function RatingFeedback() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)] dark:text-white">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <ScrollReveal as="section">
         <div className="mb-6 rounded-[2rem] border border-sky-500/15 bg-white/75 p-6 shadow-[0_10px_40px_rgba(56,189,248,0.08)] backdrop-blur-xl dark:bg-slate-950/70">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl space-y-3">
@@ -196,6 +198,7 @@ export default function RatingFeedback() {
             </div>
           </div>
         </div>
+        </ScrollReveal>
 
         {feedback ? (
           <div className="mb-5 rounded-2xl border border-emerald-500/20 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
@@ -215,6 +218,7 @@ export default function RatingFeedback() {
           </div>
         ) : null}
 
+        <ScrollReveal as="section">
         <div className="space-y-5">
           {items.map((row) => {
             const targetId = String(row.profile_key || "").replace(/^user:/, "");
@@ -358,6 +362,7 @@ export default function RatingFeedback() {
             );
           })}
         </div>
+        </ScrollReveal>
       </div>
     </div>
   );

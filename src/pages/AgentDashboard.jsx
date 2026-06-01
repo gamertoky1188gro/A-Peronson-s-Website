@@ -5,6 +5,9 @@ import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import LeadManager from "../components/leads/LeadManager";
 import { apiRequest, getToken, syncUserFromApi } from "../lib/auth";
 import CountUp from "../components/CountUp";
+import ScrollReveal from "../components/ScrollReveal";
+import ScaleIn from "../components/ScaleIn";
+import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import {
   Bell,
   Bot,
@@ -45,7 +48,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
         <div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {isNumeric ? <CountUp value={value} /> : value}
+            {isNumeric ? <ScaleIn><CountUp value={value} /></ScaleIn> : value}
           </p>
           {sublabel ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sublabel}</p> : null}
         </div>
@@ -290,7 +293,7 @@ export default function AgentDashboard() {
         </aside>
 
         <main className="flex-1 p-4 md:p-6 xl:p-8">
-          <div className="mb-6 rounded-3xl border border-sky-500/20 bg-white/75 p-5 shadow-lg shadow-sky-500/5 backdrop-blur-xl dark:bg-slate-950/55">
+          <ScrollReveal as="section"><div className="mb-6 rounded-3xl border border-sky-500/20 bg-white/75 p-5 shadow-lg shadow-sky-500/5 backdrop-blur-xl dark:bg-slate-950/55">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <div className="flex items-center gap-2 text-sm text-sky-600 dark:text-sky-300">
@@ -306,14 +309,14 @@ export default function AgentDashboard() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-[460px]">
-                <StatCard icon={Users2} label="Buyer requests" value={totals.buyer_requests ?? 0} />
-                <StatCard icon={Gauge} label="Open requests" value={totals.open_buyer_requests ?? 0} accent />
-                <StatCard icon={Factory} label="Factories" value={totals.partner_network ?? 0} />
-                <StatCard icon={Bell} label="Messages" value={totals.messages ?? 0} />
-              </div>
+              <StaggerContainer className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-[460px]">
+                <StaggerItem><StatCard icon={Users2} label="Buyer requests" value={totals.buyer_requests ?? 0} /></StaggerItem>
+                <StaggerItem><StatCard icon={Gauge} label="Open requests" value={totals.open_buyer_requests ?? 0} accent /></StaggerItem>
+                <StaggerItem><StatCard icon={Factory} label="Factories" value={totals.partner_network ?? 0} /></StaggerItem>
+                <StaggerItem><StatCard icon={Bell} label="Messages" value={totals.messages ?? 0} /></StaggerItem>
+              </StaggerContainer>
             </div>
-          </div>
+          </div></ScrollReveal>
 
           {loading ? (
             <div className="mb-5 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm dark:border-slate-800 dark:bg-slate-950/60">
@@ -326,7 +329,7 @@ export default function AgentDashboard() {
             </div>
           ) : null}
 
-          <div className="grid gap-6 xl:grid-cols-[1.55fr_1fr]">
+          <ScrollReveal as="section"><div className="grid gap-6 xl:grid-cols-[1.55fr_1fr]">
             <section className="space-y-6">
               <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
                 <SectionTitle
@@ -353,28 +356,28 @@ export default function AgentDashboard() {
                 />
 
                 {activeTab === "requests" ? (
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <StatCard icon={FileText} label="Buyer Requests" value={totals.buyer_requests ?? 0} />
-                    <StatCard icon={Gauge} label="Open Requests" value={totals.open_buyer_requests ?? 0} accent />
-                    <StatCard icon={Landmark} label="Contracts / Docs" value={`${totals.contracts ?? 0} / ${totals.documents ?? 0}`} />
-                  </div>
+                  <StaggerContainer className="grid gap-4 md:grid-cols-3">
+                    <StaggerItem><StatCard icon={FileText} label="Buyer Requests" value={totals.buyer_requests ?? 0} /></StaggerItem>
+                    <StaggerItem><StatCard icon={Gauge} label="Open Requests" value={totals.open_buyer_requests ?? 0} accent /></StaggerItem>
+                    <StaggerItem><StatCard icon={Landmark} label="Contracts / Docs" value={`${totals.contracts ?? 0} / ${totals.documents ?? 0}`} /></StaggerItem>
+                  </StaggerContainer>
                 ) : null}
 
                 {activeTab === "chats" ? (
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <StatCard icon={MessageSquareText} label="Active chat threads" value={totals.chats ?? 0} />
-                    <StatCard icon={Bell} label="Messages exchanged" value={totals.messages ?? 0} accent />
-                    <StatCard icon={Factory} label="Partner factories connected" value={totals.partner_network ?? 0} />
-                  </div>
+                  <StaggerContainer className="grid gap-4 md:grid-cols-3">
+                    <StaggerItem><StatCard icon={MessageSquareText} label="Active chat threads" value={totals.chats ?? 0} /></StaggerItem>
+                    <StaggerItem><StatCard icon={Bell} label="Messages exchanged" value={totals.messages ?? 0} accent /></StaggerItem>
+                    <StaggerItem><StatCard icon={Factory} label="Partner factories connected" value={totals.partner_network ?? 0} /></StaggerItem>
+                  </StaggerContainer>
                 ) : null}
 
                 {activeTab === "leads" ? (
                   <div className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <StatCard icon={Users2} label="Queue ownership" value={`${queueSummary.queue.length} leads`} accent />
-                      <StatCard icon={AlertTriangle} label="Escalations pending" value={queueSummary?.escalations?.filter((item) => !item.resolved_at).length || 0} />
-                      <StatCard icon={RefreshCcw} label="My workload rows" value={queueSummary?.workload?.length || 0} />
-                    </div>
+                    <StaggerContainer className="grid gap-4 md:grid-cols-3">
+                      <StaggerItem><StatCard icon={Users2} label="Queue ownership" value={`${queueSummary.queue.length} leads`} accent /></StaggerItem>
+                      <StaggerItem><StatCard icon={AlertTriangle} label="Escalations pending" value={queueSummary?.escalations?.filter((item) => !item.resolved_at).length || 0} /></StaggerItem>
+                      <StaggerItem><StatCard icon={RefreshCcw} label="My workload rows" value={queueSummary?.workload?.length || 0} /></StaggerItem>
+                    </StaggerContainer>
 
                     <div className="flex flex-wrap items-center gap-3">
                       <button
@@ -399,12 +402,12 @@ export default function AgentDashboard() {
                 ) : null}
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard icon={CheckCircle2} label="Contracts" value={totals.contracts ?? 0} />
-                <StatCard icon={FileText} label="Documents" value={totals.documents ?? 0} />
-                <StatCard icon={Users2} label="Chats" value={totals.chats ?? 0} />
-                <StatCard icon={Factory} label="Connected factories" value={totals.partner_network ?? 0} accent />
-              </div>
+              <ScrollReveal as="section"><StaggerContainer className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <StaggerItem><StatCard icon={CheckCircle2} label="Contracts" value={totals.contracts ?? 0} /></StaggerItem>
+                <StaggerItem><StatCard icon={FileText} label="Documents" value={totals.documents ?? 0} /></StaggerItem>
+                <StaggerItem><StatCard icon={Users2} label="Chats" value={totals.chats ?? 0} /></StaggerItem>
+                <StaggerItem><StatCard icon={Factory} label="Connected factories" value={totals.partner_network ?? 0} accent /></StaggerItem>
+              </StaggerContainer></ScrollReveal>
             </section>
 
             <aside className="space-y-6">
@@ -509,7 +512,7 @@ export default function AgentDashboard() {
 
 
             </aside>
-          </div>
+          </div></ScrollReveal>
         </main>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
+import ScrollReveal from "../components/ScrollReveal";
+import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import { useTheme } from "../lib/ThemeProvider";
 import { trackClientEvent } from "../lib/events";
 import NeonAtom from "../components/ui/NeonAtom";
@@ -652,19 +654,21 @@ export default function ProductManagement() {
               </div>
             </div>
 
-            <div className="mb-6 grid gap-4 md:grid-cols-3">
-              <Stat
-                icon={LayoutGrid}
-                label="Published"
-                value={stats.published}
-              />
-              <Stat icon={Clock3} label="Drafts" value={stats.drafts} />
-              <Stat
-                icon={BadgeCheck}
-                label="Approved media"
-                value={stats.approved}
-              />
-            </div>
+            <ScrollReveal as="section">
+              <div className="mb-6 grid gap-4 md:grid-cols-3">
+                <Stat
+                  icon={LayoutGrid}
+                  label="Published"
+                  value={stats.published}
+                />
+                <Stat icon={Clock3} label="Drafts" value={stats.drafts} />
+                <Stat
+                  icon={BadgeCheck}
+                  label="Approved media"
+                  value={stats.approved}
+                />
+              </div>
+            </ScrollReveal>
 
             <div className="mb-6 rounded-3xl border border-sky-200 bg-white p-5 shadow-sm dark:border-sky-400/15 dark:bg-white/5 dark:shadow-2xl dark:shadow-sky-950/20 dark:backdrop-blur">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -713,8 +717,9 @@ export default function ProductManagement() {
                 </p>
               </div>
             ) : (
-              <div className="grid gap-4">
+              <StaggerContainer className="grid gap-4">
                 {items.map((product) => (
+                  <StaggerItem key={product.id}>
                   <article
                     key={product.id}
                     className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-sky-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 dark:hover:border-sky-400/20 dark:hover:bg-white/[0.08]"
@@ -804,8 +809,9 @@ export default function ProductManagement() {
                       </div>
                     </div>
                   </article>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerContainer>
             )}
           </main>
         </div>

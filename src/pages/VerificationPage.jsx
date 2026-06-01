@@ -24,6 +24,7 @@
 */
 import NeonAtom from "../components/ui/NeonAtom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ScrollReveal from "../components/ScrollReveal";
 import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import {
@@ -585,6 +586,7 @@ export default function VerificationPage() {
               </div>
             )}
 
+            <ScrollReveal as="section">
             <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -644,6 +646,7 @@ export default function VerificationPage() {
                 ))}
               </div>
             </div>
+            </ScrollReveal>
 
             <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

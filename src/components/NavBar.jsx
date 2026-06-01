@@ -54,6 +54,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  AnimatePresence,
   motion as Motion,
   useMotionValue,
   useReducedMotion,
@@ -73,6 +74,7 @@ import {
 import { useTheme } from "../lib/ThemeProvider";
 import NeonAtom from "./ui/NeonAtom";
 import useScrollDirection from "../hooks/useScrollDirection";
+import SlideIn from "./SlideIn";
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
@@ -933,7 +935,7 @@ export default function NavBar() {
               </span>
             </Link>
 
-            <div className="hidden min-w-0 flex-shrink items-center gap-1 md:flex">
+            <SlideIn direction="down" as="div" className="hidden min-w-0 flex-shrink items-center gap-1 md:flex">
               {!user
                 ? publicLinks.map(({ to, label }, idx) => (
                     <Motion.div
@@ -976,7 +978,7 @@ export default function NavBar() {
                       />
                     </Motion.div>
                   ))}
-            </div>
+            </SlideIn>
           </div>
 
           <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
@@ -1199,7 +1201,8 @@ export default function NavBar() {
         </div>
       </div>
 
-      {mobileOpen ? (
+      <AnimatePresence>
+        {mobileOpen && (
         <Motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -1389,7 +1392,8 @@ export default function NavBar() {
             </div>
           </Motion.div>
         </Motion.div>
-      ) : null}
+      )}
+      </AnimatePresence>
     </Motion.nav>
   );
 }

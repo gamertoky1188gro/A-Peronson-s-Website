@@ -6,6 +6,7 @@ import BotLogo from "./ui/BotLogo";
 import MarkdownMessage from "./chat/MarkdownMessage";
 import NeonAtom from "./ui/NeonAtom";
 import useScrollDirection from "../hooks/useScrollDirection";
+import SlideIn from "./SlideIn";
 
 function getUserId() {
   const user = getCurrentUser();
@@ -379,6 +380,7 @@ export default function FloatingAssistant() {
         </button>
       </motion.div>
 
+      <SlideIn direction="up" distance={30} as="div">
       <div
         className={`fixed top-0 right-0 h-full w-full md:w-[420px] z-50 transform transition-all duration-300 ease-out flex flex-col ${
           open ? "translate-x-0" : "translate-x-full"
@@ -558,6 +560,7 @@ export default function FloatingAssistant() {
           </div>
         </div>
       </div>
+      </SlideIn>
     </>
   );
 }

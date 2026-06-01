@@ -18,6 +18,7 @@
 */
 
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import TextColorReveal from "../components/TextColorReveal";
 const easePremium = [0.16, 1, 0.3, 1];
 const Motion = motion;
 
@@ -142,7 +143,7 @@ export default function Terms() {
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-indigo-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
               </span>
-              Purpose of the Platform
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">Purpose of the Platform</TextColorReveal>
             </h2>
             <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
               {[
@@ -167,7 +168,7 @@ export default function Terms() {
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-indigo-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
               </span>
-              Account Policy
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">Account Policy</TextColorReveal>
             </h2>
             <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
               {[
@@ -197,7 +198,7 @@ export default function Terms() {
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100 text-rose-800 shadow-borderless dark:shadow-borderlessDark dark:bg-white/10 dark:text-white text-sm">
                 3
               </span>
-              User Conduct
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">User Conduct</TextColorReveal>
             </h2>
             <p className="mb-4 font-semibold text-rose-950/80 dark:text-white/80">
               The following activities are strictly prohibited and will be
@@ -313,12 +314,12 @@ export default function Terms() {
                 ].join(" ")}
                 id={`section-${section.id}`}
               >
-                <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
-                    {section.id}
-                  </span>
-                  {section.title}
-                </h2>
+                  <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
+                      {section.id}
+                    </span>
+                    <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">{section.title}</TextColorReveal>
+                  </h2>
                 <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {section.points.map((p, idx) => (
                     <li key={idx} className="flex items-start gap-3">
@@ -342,7 +343,7 @@ export default function Terms() {
           >
             <h2 className="text-lg md:text-xl font-bold tracking-tight mb-3 flex items-center gap-2 text-amber-950 dark:text-white">
               <span className="text-amber-600 dark:text-amber-400">⚠</span>
-              9. Liability
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">9. Liability</TextColorReveal>
             </h2>
             <div className="space-y-3 text-sm md:text-base leading-relaxed">
               <p>
@@ -363,7 +364,7 @@ export default function Terms() {
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 10
               </span>
-              Account Suspension or Cancellation
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">Account Suspension or Cancellation</TextColorReveal>
             </h2>
             <div className="space-y-4 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
               <p>
@@ -390,7 +391,7 @@ export default function Terms() {
             id="change-policy"
           >
             <h3 className="text-lg font-bold tracking-tight text-[#0f172a] dark:text-white mb-2">
-              11. Change Policy
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">11. Change Policy</TextColorReveal>
             </h3>
             <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
               These Terms will be updated as needed. Users will be notified of
@@ -403,7 +404,7 @@ export default function Terms() {
             id="consent"
           >
             <h3 className="text-lg font-bold tracking-tight text-[#0f172a] dark:text-white mb-2">
-              12. Consent
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">12. Consent</TextColorReveal>
             </h3>
             <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
               By creating an account or using the Platform, you agree to be

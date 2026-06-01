@@ -9,6 +9,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import AccessDeniedState from "../components/AccessDeniedState";
 import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
+import ScrollReveal from "../components/ScrollReveal";
+import CardStack from "../components/CardStack";
+import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 
 const TIMELINE = [
   "Discovered",
@@ -579,6 +582,7 @@ export default function ContractVaultPage() {
       <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.22),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_24%),linear-gradient(180deg,#f8fbff_0%,#eef7ff_40%,#eaf3ff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_25%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.12),_transparent_22%),linear-gradient(180deg,#020617_0%,#07111f_45%,#08111b_100%)] dark:text-white">
         <div className="mx-auto max-w-[1600px] px-4 py-4 md:px-6 lg:px-8">
           <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+            <CardStack>
             <aside className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-950/70 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]">
               <div className="flex items-center justify-between">
                 <div>
@@ -618,6 +622,7 @@ export default function ContractVaultPage() {
                 <NavItem icon={icons.refresh} label="Refresh" />
               </div>
 
+              <ScrollReveal as="section">
               <div className="mt-6 rounded-2xl border border-sky-500/15 bg-sky-500/5 p-4 dark:border-sky-400/20 dark:bg-sky-400/10">
                 <div className="flex items-center gap-2 text-sm font-semibold text-sky-700 dark:text-sky-200">
                   <icons.search className="h-4 w-4" />
@@ -635,7 +640,9 @@ export default function ContractVaultPage() {
                   </span>
                 </div>
               </div>
+              </ScrollReveal>
 
+              <ScrollReveal as="section">
               <div className="mt-6 flex flex-wrap gap-2">
                 {["All", "Draft", "Pending", "Signed", "Archived"].map(
                   (item) => (
@@ -654,11 +661,12 @@ export default function ContractVaultPage() {
                   ),
                 )}
               </div>
+              </ScrollReveal>
 
-              <div className="mt-6 space-y-3">
+              <StaggerContainer className="mt-6 space-y-3">
                 {filtered.map((c) => (
+                  <StaggerItem key={c.id}>
                   <button
-                    key={c.id}
                     onClick={() => setSelectedId(c.id)}
                     className={cn(
                       "w-full rounded-3xl border p-4 text-left transition hover:-translate-y-0.5",
@@ -692,12 +700,15 @@ export default function ContractVaultPage() {
                       <MetaChip label="Factory" value={c.factorySign} />
                     </div>
                   </button>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerContainer>
             </aside>
+            </CardStack>
 
             <main className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
               <div className="space-y-4">
+                <ScrollReveal as="section">
                 <SectionCard
                   title={contract.id}
                   subtitle={`${contract.status} · ${contract.title}`}
@@ -848,7 +859,9 @@ export default function ContractVaultPage() {
                     </div>
                   </div>
                 </SectionCard>
+                </ScrollReveal>
 
+                <ScrollReveal as="section">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <SectionCard
                     title="Banking references (optional)"
@@ -976,8 +989,10 @@ export default function ContractVaultPage() {
                   </SectionCard>
                 </div>
               </div>
+                </ScrollReveal>
 
               <div className="space-y-4">
+                <ScrollReveal as="section">
                 <SectionCard
                   title="Contract Snapshot"
                   subtitle="Focused, premium, and ready for review"
@@ -1069,6 +1084,7 @@ export default function ContractVaultPage() {
                   </div>
                 </SectionCard>
               </div>
+                </ScrollReveal>
             </main>
           </div>
         </div>

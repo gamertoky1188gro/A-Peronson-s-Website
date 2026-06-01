@@ -20,6 +20,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import TextColorReveal from "../components/TextColorReveal";
 const easePremium = [0.16, 1, 0.3, 1];
 const Motion = motion;
 
@@ -168,7 +169,7 @@ export default function Privacy() {
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
               </span>
-              Information We Collect
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">Information We Collect</TextColorReveal>
             </h2>
 
             <div className="grid grid-cols-12 gap-4">
@@ -255,7 +256,7 @@ export default function Privacy() {
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
               </span>
-              How We Use Your Information
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">How We Use Your Information</TextColorReveal>
             </h2>
 
             <div className="rounded-2xl p-5 bg-black/[0.02] shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:ring-1 dark:ring-white/10">
@@ -286,7 +287,7 @@ export default function Privacy() {
             id="fraud"
           >
             <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white">
-              3. Fraud Prevention Measures
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">3. Fraud Prevention Measures</TextColorReveal>
             </h2>
             <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4">
               <span className="font-bold text-rose-700 dark:text-rose-300">
@@ -372,7 +373,7 @@ export default function Privacy() {
               className="col-span-12 md:col-span-6"
             >
               <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-3">
-                {item.id}. {item.title}
+                <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">{item.id}. {item.title}</TextColorReveal>
               </h2>
               <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                 {item.text}
@@ -385,7 +386,7 @@ export default function Privacy() {
             id="contact"
           >
             <h2 className="text-xl font-bold mb-4 text-[#0f172a] dark:text-white">
-              13. Contact Information
+              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">13. Contact Information</TextColorReveal>
             </h2>
             <div className="space-y-1">
               <p className="text-slate-500 dark:text-white/60 text-sm">
