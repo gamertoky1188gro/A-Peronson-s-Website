@@ -1645,7 +1645,8 @@ export default function BuyerRequestManagement() {
                             Next <ArrowRight className="h-4 w-4" />
                           </button>
                   )}
-                )}
+                </>
+                ) : null}
               </div>
               </ScrollReveal>
             </div>
