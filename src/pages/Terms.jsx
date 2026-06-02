@@ -1,432 +1,383 @@
-/*
-  Route: /terms
-  Access: Public
+import { useState, useEffect, useRef, useMemo } from "react";
+import {
+  ShieldCheck,
+  Scale,
+  FileSignature,
+  CircleAlert,
+  LockKeyhole,
+  MessageSquareQuote,
+  RadioTower,
+  Star,
+  BadgeInfo,
+  Sparkles,
+  ChevronRight,
+} from "lucide-react";
 
-  Public Pages:
-    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
-  Protected Pages (login required):
-    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
-    /notifications, /chat, /call, /verification, /verification-center
+const sections = [
+  {
+    id: "purpose",
+    index: "01",
+    icon: Scale,
+    title: "Purpose of the Platform",
+    bullets: [
+      "To establish direct and professional connections between international buyers and Garments/Textile Factories",
+      "To ensure business matching based on Buyer Request and Company Product",
+      "To manage digital contracts, communication and verification processes in a controlled manner",
+      "The platform will be operated as a controlled business environment.",
+    ],
+  },
+  {
+    id: "account-policy",
+    index: "02",
+    icon: ShieldCheck,
+    title: "Account Policy",
+    bullets: [
+      "It is mandatory to open an account only for legitimate business purposes.",
+      "Accurate, true and up-to-date information must be provided.",
+      "Providing incorrect, false or misleading information will result in administrative action.",
+      "The owner will create and manage a certain number of IDs in the Buying House Enterprise account.",
+      "Each user is responsible for the security of their login information.",
+    ],
+  },
+  {
+    id: "conduct",
+    index: "03",
+    icon: CircleAlert,
+    title: "User Conduct",
+    bullets: [
+      "Posting fake orders or misleading Buyer Requests",
+      "Fraudulent or misleading communications",
+      "Inducing unsafe transactions outside the platform",
+      "Uploading copyright-infringing content",
+      "Promoting illegal or prohibited products",
+      "Posting obscene, immoral, or offensive content",
+      "Uploading videos with excessive musical instruments",
+      "Using copyrighted music",
+      "All media content must be published in a professional and business-like manner.",
+    ],
+    alert: "Sharing any external contact information (phone, email, WhatsApp, Telegram, Facebook, Instagram, or similar) is strictly forbidden on GarTexHub. Violations will result in account restrictions and may lead to permanent termination.",
+  },
+  {
+    id: "communication",
+    index: "04",
+    icon: MessageSquareQuote,
+    title: "Buyer Request and Communication Policy",
+    bullets: [
+      "Buyer Requests must be clear, specific, and business-like.",
+      "Messages from verified users will be displayed on a priority basis.",
+      "Other messages will be stored as requests and displayed in a controlled manner.",
+      "Spam and irrelevant communications will be controlled.",
+      "The platform will monitor and control communications.",
+    ],
+  },
+  {
+    id: "contracts",
+    index: "05",
+    icon: FileSignature,
+    title: "Digital Agreements and Signatures",
+    bullets: [
+      "Digital signatures executed on the platform will be considered legally binding.",
+      "A PDF copy of each agreement will be provided to both parties.",
+      "A copy will be stored in the company system as legal evidence if necessary.",
+    ],
+    signatureMark: true,
+  },
+  {
+    id: "calls",
+    index: "06",
+    icon: RadioTower,
+    title: "Call and Chat Policy",
+    bullets: [
+      "Video and audio calls made through the platform will be recorded.",
+      "All recordings will be stored only with the company.",
+      "Recordings will not be provided directly to any party, except as required by law.",
+      "Records will only be used for dispute resolution, security and legal purposes.",
+    ],
+  },
+  {
+    id: "ratings",
+    index: "07",
+    icon: Star,
+    title: "Ratings and Transparency",
+    bullets: [
+      "Ratings will be provided by the platform upon successful order completion.",
+      "User performance and behavior will directly impact visibility.",
+      "Providing artificial or manipulated ratings will result in administrative action.",
+    ],
+  },
+  {
+    id: "subscription",
+    index: "08",
+    icon: Sparkles,
+    title: "Subscription and Enterprise Benefits",
+    bullets: [
+      "Buying House and Enterprise accounts will have enhanced management benefits.",
+      "Certain advanced features will be enabled through upgrades.",
+      "Subscription policies will apply where applicable.",
+    ],
+  },
+  {
+    id: "liability",
+    index: "09",
+    icon: LockKeyhole,
+    title: "Liability",
+    bullets: [
+      "The platform provides connectivity between Buyers and Sellers.",
+      "Strong and effective security measures have been implemented to prevent fraud.",
+      "If the user violates policies, verification processes or security instructions and suffers losses, the user will bear the responsibility himself.",
+    ],
+  },
+  {
+    id: "suspension",
+    index: "10",
+    icon: CircleAlert,
+    title: "Account Suspension or Cancellation",
+    bullets: [
+      "Violation of terms.",
+      "Fraudulent activity.",
+      "Providing false information.",
+      "Behavior that damages reputation.",
+    ],
+    process: [
+      "The user will be notified before closing the account.",
+      "A warning will be given if necessary.",
+      "In case of repeated or serious violations, the account will be permanently closed.",
+    ],
+  },
+  {
+    id: "change-policy",
+    index: "11",
+    icon: BadgeInfo,
+    title: "Change Policy",
+    bullets: [
+      "These Terms will be updated as needed.",
+      "Users will be notified of any significant changes via notification.",
+    ],
+  },
+  {
+    id: "consent",
+    index: "12",
+    icon: ShieldCheck,
+    title: "Consent",
+    bullets: [
+      "By creating an account or using the Platform, you agree to be bound by all provisions of these Terms and Conditions.",
+    ],
+  },
+];
 
-  Primary responsibilities:
-    - Render Terms & Conditions content in a readable, scannable layout.
-    - Use an "Industrial Digital" visual language: paper-like studio (light) + command center (dark).
-
-  Micro-interactions:
-    - Staggered section reveal (Framer Motion).
-    - "Signature draw" mark hover (CSS animation) to reinforce legal/contract context.
-*/
-
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
-import TextColorReveal from "../components/TextColorReveal";
-const easePremium = [0.16, 1, 0.3, 1];
-const Motion = motion;
-
-function SignatureMark({ className = "" }) {
+function SignatureMark() {
   return (
-    <div
-      className={[
-        "signature-draw inline-flex items-center justify-center rounded-xl px-3 py-2",
-        "bg-black/[0.02] dark:bg-white/5 text-[#0f172a] dark:text-white",
-        className,
-      ].join(" ")}
+    <svg
+      viewBox="0 0 420 180"
+      className="absolute inset-0 h-full w-full opacity-20"
       aria-hidden="true"
+      fill="none"
     >
-      <svg
-        width="120"
-        height="28"
-        viewBox="0 0 240 56"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M14 40c10-16 18-24 26-24 12 0 2 30 16 30 12 0 8-36 26-36 18 0 6 36 26 36 16 0 10-26 26-26 14 0 6 22 20 22 14 0 8-18 20-18 12 0 8 16 20 16 10 0 16-10 20-16 4-6 8-12 18-12 10 0 18 10 24 22"
-          stroke="currentColor"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.9"
-        />
-      </svg>
-    </div>
+      <path
+        d="M18 116c28-34 44-54 62-58 16-4 28 2 39 16 10 14 14 31 26 39 16 10 31-2 47-21 20-24 36-55 63-55 21 0 34 15 41 37 7 21 5 50 18 55 14 5 27-15 41-43 13-27 24-48 45-48 17 0 29 11 39 24"
+        className="stroke-sky-500"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M41 139c37-7 58-19 83-39 18-15 40-38 62-39 18-1 27 10 34 27 7 16 9 35 25 40 18 6 37-11 56-33 16-18 31-36 51-39 18-3 29 4 43 19"
+        className="stroke-cyan-300"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="362" cy="38" r="9" className="fill-sky-400" />
+    </svg>
   );
 }
 
-function LegalCard({ children, className = "", id }) {
-  const reduceMotion = useReducedMotion();
-
-  if (reduceMotion) {
-    return <section id={id} className={[
-        "rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out",
-        "bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]",
-        "dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5",
-        className,
-      ].join(" ")}
-    >
-      {children}
-    </section>;
-  }
+function SectionCard({ section, index, visible }) {
+  const Icon = section.icon;
 
   return (
-    <motion.section
-      id={id}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.55, ease: easePremium }}
+    <article
+      id={section.id}
       className={[
-        "rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out",
-        "bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]",
-        "dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5",
-        className,
+        "group relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/85 p-6 shadow-[0_20px_80px_-40px_rgba(2,132,199,0.35)] backdrop-blur-xl transition-all duration-700 ease-out dark:border-slate-800/80 dark:bg-slate-950/70",
+        visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
       ].join(" ")}
+      style={{ transitionDelay: `${Math.min(index * 90, 720)}ms` }}
     >
-      {children}
-    </motion.section>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.14),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.10),transparent_38%)]" />
+      <div className="relative flex items-start gap-4">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/20 dark:border-sky-900/50">
+          <Icon className="h-7 w-7" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/70 dark:text-sky-300">
+              {section.index}
+            </span>
+            <span className="text-xs font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+              Legal Section
+            </span>
+          </div>
+
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{section.title}</h2>
+
+          <div className="mt-5 space-y-3 text-[15px] leading-7 text-slate-600 dark:text-slate-300">
+            {section.bullets.map((bullet) => (
+              <div key={bullet} className="flex gap-3 rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 dark:border-slate-800/70 dark:bg-slate-900/50">
+                <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-sky-500" />
+                <p>{bullet}</p>
+              </div>
+            ))}
+          </div>
+
+          {section.alert ? (
+            <div className="mt-5 rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-4 text-[15px] leading-7 text-amber-950 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100">
+              <strong className="block text-amber-900 dark:text-amber-200">Strict policy: No third-party contact sharing</strong>
+              {section.alert}
+            </div>
+          ) : null}
+
+          {section.process ? (
+            <div className="mt-5 rounded-2xl border border-sky-200 bg-sky-50/80 p-4 dark:border-sky-900/60 dark:bg-sky-950/20">
+              <div className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-300">
+                Process
+              </div>
+              <div className="space-y-2 text-[15px] leading-7 text-slate-700 dark:text-slate-200">
+                {section.process.map((line) => (
+                  <div key={line} className="flex gap-3">
+                    <span className="mt-2 h-2 w-2 rounded-full bg-sky-500" />
+                    <p>{line}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {section.signatureMark ? (
+        <div className="relative mt-6 overflow-hidden rounded-3xl border border-sky-200/80 bg-gradient-to-br from-sky-50 via-cyan-50 to-white p-5 dark:border-sky-900/60 dark:from-sky-950/50 dark:via-cyan-950/30 dark:to-slate-950">
+          <SignatureMark />
+        </div>
+      ) : null}
+    </article>
   );
 }
 
 export default function Terms() {
-  const reduceMotion = useReducedMotion();
-  const { scrollY } = useScroll();
-  const weaveY = useSpring(useTransform(scrollY, [0, 800], [0, -15]), { stiffness: 80, damping: 20, restDelta: 0.001 });
-  const lastUpdated = new Date().toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const [visible, setVisible] = useState(() => sections.map((_, i) => i < 2));
+  const refs = useRef([]);
+
+  const lastUpdated = useMemo(() => {
+    const d = new Date();
+    return d.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setVisible((prev) => {
+          const next = [...prev];
+          for (const entry of entries) {
+            const index = refs.current.findIndex((node) => node === entry.target);
+            if (index !== -1 && entry.isIntersecting) next[index] = true;
+          }
+          return next;
+        });
+      },
+      {
+        root: null,
+        threshold: 0.18,
+        rootMargin: "-80px 0px -70% 0px",
+      }
+    );
+
+    refs.current.forEach((node) => node && observer.observe(node));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12">
-      <motion.div style={{ y: reduceMotion ? 0 : weaveY }} className="fixed inset-0 -z-10 legal-weave pointer-events-none" />
-      <div className="mx-auto max-w-6xl">
-        <motion.header
-          initial={reduceMotion ? false : { opacity: 0, y: -10 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={reduceMotion ? undefined : { once: true, margin: "-60px" }}
-          transition={{ duration: 0.5, ease: easePremium }}
-          className="mb-8"
-        >
-          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md shadow-borderless dark:shadow-borderlessDark shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-indigo-50 text-indigo-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-indigo-200 dark:ring-1 dark:ring-white/10">
-                  Legal Agreement
-                </div>
-                <h1 className="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white">
-                  Terms & Conditions
-                </h1>
-                <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  Last Updated:{" "}
-                  <span className="text-[#0f172a] dark:text-slate-100">
-                    {lastUpdated}
-                  </span>
-                </p>
+    <main className="min-h-screen bg-[#f3f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
+      <div className="absolute inset-x-0 top-0 -z-0 h-[520px] bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.22),transparent_40%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.20),transparent_36%),linear-gradient(to_bottom,rgba(255,255,255,0.8),transparent)] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.24),transparent_38%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_34%),linear-gradient(to_bottom,rgba(7,17,31,1),rgba(7,17,31,0))]" />
+
+      <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        <section className="relative overflow-hidden rounded-[2rem] border border-sky-200/70 bg-white/75 px-6 py-8 shadow-[0_30px_100px_-50px_rgba(2,132,199,0.5)] backdrop-blur-xl dark:border-sky-900/60 dark:bg-slate-950/70 sm:px-8 lg:px-10">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(125,211,252,0.16),transparent_28%)]" />
+
+          <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/70 dark:text-sky-300">
+                <Scale className="h-4 w-4" />
+                Legal Agreement
               </div>
-              <div className="max-w-xl text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                This platform is an international B2B Garments and Textiles
-                Marketplace, where Buyer, Factory and Buying House connect for
-                professional business purposes. By creating or using an account
-                on the platform, you agree to the following terms and
-                conditions.
+
+              <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
+                Terms & Conditions
+              </h1>
+
+              <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
+                This platform is an international B2B Garments and Textiles Marketplace, where Buyer, Factory and Buying House connect for professional business purposes. By creating or using an account on the platform, you agree to the following terms and conditions.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:w-[410px] lg:grid-cols-1">
+              <div className="rounded-2xl border border-sky-200/70 bg-white/80 p-5 shadow-sm dark:border-sky-900/60 dark:bg-slate-900/50">
+                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                  Platform
+                </div>
+                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">GarTexHub Professional Network</div>
+                <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Public route: /terms</div>
+              </div>
+
+              <div className="rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50 to-cyan-50 p-5 shadow-sm dark:border-sky-900/60 dark:from-sky-950/40 dark:to-cyan-950/20">
+                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                  Last Updated
+                </div>
+                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{lastUpdated}</div>
+                <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Dynamically generated on render.</div>
               </div>
             </div>
           </div>
-        </motion.header>
+        </section>
 
-        <div className="grid grid-cols-12 gap-6">
-          <LegalCard
-            className="col-span-12 md:col-span-6"
-            id="purpose"
-          >
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-indigo-200 dark:ring-1 dark:ring-white/10 text-sm">
-                1
-              </span>
-              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">Purpose of the Platform</TextColorReveal>
-            </h2>
-            <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-              {[
-                "To establish direct and professional connections between international buyers and Garments/Textile Factories",
-                "To ensure business matching based on Buyer Request and Company Product",
-                "To manage digital contracts, communication and verification processes in a controlled manner",
-                "The platform will be operated as a controlled business environment.",
-              ].map((item, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0"></span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </LegalCard>
-
-          <LegalCard
-            className="col-span-12 md:col-span-6"
-            id="account-policy"
-          >
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-indigo-200 dark:ring-1 dark:ring-white/10 text-sm">
-                2
-              </span>
-              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">Account Policy</TextColorReveal>
-            </h2>
-            <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-              {[
-                "It is mandatory to open an account only for legitimate business purposes.",
-                "Accurate, true and up-to-date information must be provided.",
-                "Providing incorrect, false or misleading information will result in administrative action.",
-                "The owner will create and manage a certain number of IDs in the Buying House Enterprise account.",
-                "Each user is responsible for the security of their login information.",
-              ].map((item, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0"></span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </LegalCard>
-
-          <LegalCard
-            className={[
-              "col-span-12",
-              "!bg-rose-50 !text-[#0f172a] !ring-1 !ring-rose-200/70 !shadow-[0_12px_40px_rgba(244,63,94,0.12)]",
-              "dark:!bg-[#0b1220] dark:!text-white dark:ring-1 dark:ring-white/10 dark:ring-1 dark:ring-white/10 dark:shadow-none",
-            ].join(" ")}
-            id="conduct"
-          >
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-3 flex items-center gap-3 text-[#0f172a] dark:text-white">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100 text-rose-800 shadow-borderless dark:shadow-borderlessDark dark:bg-white/10 dark:text-white text-sm">
-                3
-              </span>
-              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">User Conduct</TextColorReveal>
-            </h2>
-            <p className="mb-4 font-semibold text-rose-950/80 dark:text-white/80">
-              The following activities are strictly prohibited and will be
-              subject to action:
-            </p>
-            <ul className="grid md:grid-cols-2 gap-x-8 gap-y-3 text-slate-800 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
-              {[
-                "Posting fake orders or misleading Buyer Requests",
-                "Fraudulent or misleading communications",
-                "Inducing unsafe transactions outside the platform",
-                "Uploading copyright-infringing content",
-                "Promoting illegal or prohibited products",
-                "Posting obscene, immoral, or offensive content",
-                "Uploading videos with excessive musical instruments",
-                "Using copyrighted music",
-              ].map((item, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <span className="mt-1 bg-rose-100 p-1 rounded-full dark:bg-white/10">
-                    <svg
-                      className="w-2.5 h-2.5 text-rose-700 dark:text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        d="M6 18L18 6M6 6l12 12"
-                      ></path>
-                    </svg>
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 text-sm italic text-slate-600 dark:text-white/80">
-              All media content must be published in a professional and
-              business-like manner.
-            </p>
-            <div className="mt-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-rose-50 p-4 text-sm text-rose-900 shadow-[0_8px_30px_rgba(244,63,94,0.12)] dark:bg-rose-500/10 dark:text-rose-100">
-              <p className="font-bold uppercase tracking-wide">
-                Strict policy: No third-party contact sharing
-              </p>
-              <p className="mt-2 leading-relaxed">
-                Sharing any external contact information (phone, email,
-                WhatsApp, Telegram, Facebook, Instagram, or similar) is strictly
-                forbidden on GarTexHub. Violations will result in account
-                restrictions and may lead to permanent termination.
-              </p>
-            </div>
-          </LegalCard>
-
+        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            {
-              id: 4,
-              title: "Buyer Request and Communication Policy",
-              points: [
-                "Buyer Requests must be clear, specific, and business-like.",
-                "Messages from verified users will be displayed on a priority basis.",
-                "Other messages will be stored as requests and displayed in a controlled manner.",
-                "Spam and irrelevant communications will be controlled.",
-                "The platform will monitor and control communications.",
-              ],
-            },
-            {
-              id: 5,
-              title: "Digital Agreements and Signatures",
-              points: [
-                "Digital signatures executed on the platform will be considered legally binding.",
-                "A PDF copy of each agreement will be provided to both parties.",
-                "A copy will be stored in the company system as legal evidence if necessary.",
-              ],
-            },
-            {
-              id: 6,
-              title: "Call and Chat Policy",
-              points: [
-                "Video and audio calls made through the platform will be recorded.",
-                "All recordings will be stored only with the company.",
-                "Recordings will not be provided directly to any party, except as required by law.",
-                "Records will only be used for dispute resolution, security and legal purposes.",
-              ],
-            },
-            {
-              id: 7,
-              title: "Ratings and Transparency",
-              points: [
-                "Ratings will be provided by the platform upon successful order completion.",
-                "User performance and behavior will directly impact visibility.",
-                "Providing artificial or manipulated ratings will result in administrative action.",
-              ],
-            },
-            {
-              id: 8,
-              title: "Subscription and Enterprise Benefits",
-              points: [
-                "Buying House and Enterprise accounts will have enhanced management benefits.",
-                "Certain advanced features will be enabled through upgrades.",
-                "Subscription policies will apply where applicable.",
-              ],
-            },
-          ].map((section, sectionIndex) => {
-            const isStitch = section.id === 5;
-            return (
-              <LegalCard
-                key={section.id}
-                className={[
-                  "col-span-12 md:col-span-6",
-                  isStitch
-                    ? "ring-1 ring-slate-200/70 dark:ring-1 dark:ring-white/10 outline outline-1 outline-dashed outline-slate-200/80 dark:outline-white/10"
-                    : "",
-                ].join(" ")}
-                id={`section-${section.id}`}
-              >
-                  <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-                    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
-                      {section.id}
-                    </span>
-                    <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">{section.title}</TextColorReveal>
-                  </h2>
-                <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {section.points.map((p, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <span className="mt-2 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-500 shrink-0"></span>
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-                {isStitch ? (
-                  <div className="mt-6 flex justify-end">
-                    <SignatureMark />
-                  </div>
-                ) : null}
-              </LegalCard>
-            );
-          })}
-
-          <LegalCard
-            className="col-span-12 bg-amber-50 text-amber-950 dark:bg-[rgba(120,53,15,0.10)] dark:text-amber-50 dark:ring-1 dark:ring-amber-500/20 shadow-borderless dark:shadow-borderlessDark"
-            id="liability"
-          >
-            <h2 className="text-lg md:text-xl font-bold tracking-tight mb-3 flex items-center gap-2 text-amber-950 dark:text-white">
-              <span className="text-amber-600 dark:text-amber-400">⚠</span>
-              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">9. Liability</TextColorReveal>
-            </h2>
-            <div className="space-y-3 text-sm md:text-base leading-relaxed">
-              <p>
-                The platform provides connectivity between Buyers and Sellers.
-                Strong and effective security measures have been implemented to
-                prevent fraud.
-              </p>
-              <p className="font-semibold text-amber-800 dark:text-amber-200">
-                If the user violates policies, verification processes or
-                security instructions and suffers losses, the user will bear the
-                responsibility himself.
-              </p>
+            ["Public Access", "No authentication required"],
+            ["Business Use", "Legitimate B2B activity only"],
+            ["Security", "Encrypted and controlled environment"],
+            ["Evidence", "PDF copies and recordings retained"],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-3xl border border-slate-200/80 bg-white/75 p-5 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/60">
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">{label}</div>
+              <div className="mt-2 text-base font-medium text-slate-800 dark:text-slate-100">{value}</div>
             </div>
-          </LegalCard>
+          ))}
+        </section>
 
-          <LegalCard className="col-span-12" id="suspension">
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
-                10
-              </span>
-              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">Account Suspension or Cancellation</TextColorReveal>
-            </h2>
-            <div className="space-y-4 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-              <p>
-                Accounts will be suspended or canceled in cases of:{" "}
-                <strong>
-                  Violation of terms, Fraudulent activity, Providing false
-                  information,
-                </strong>{" "}
-                or <strong>Behavior that damages reputation</strong>.
-              </p>
-              <ul className="list-disc ml-5 space-y-1 text-sm md:text-base">
-                <li>The user will be notified before closing the account.</li>
-                <li>A warning will be given if necessary.</li>
-                <li>
-                  In case of repeated or serious violations, the account will be
-                  permanently closed.
-                </li>
-              </ul>
+        <section className="mt-10 space-y-5">
+          {sections.map((section, index) => (
+            <div
+              key={section.id}
+              ref={(node) => {
+                refs.current[index] = node;
+              }}
+            >
+              <SectionCard section={section} index={index} visible={visible[index] ?? false} />
             </div>
-          </LegalCard>
+          ))}
+        </section>
 
-          <LegalCard
-            className="col-span-12 md:col-span-6"
-            id="change-policy"
-          >
-            <h3 className="text-lg font-bold tracking-tight text-[#0f172a] dark:text-white mb-2">
-              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">11. Change Policy</TextColorReveal>
-            </h3>
-            <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-              These Terms will be updated as needed. Users will be notified of
-              any significant changes via notification.
-            </p>
-          </LegalCard>
-
-          <LegalCard
-            className="col-span-12 md:col-span-6"
-            id="consent"
-          >
-            <h3 className="text-lg font-bold tracking-tight text-[#0f172a] dark:text-white mb-2">
-              <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(100,116,139)">12. Consent</TextColorReveal>
-            </h3>
-            <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-              By creating an account or using the Platform, you agree to be
-              bound by all provisions of these Terms and Conditions.
-            </p>
-          </LegalCard>
-
-          <motion.footer
-            initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            viewport={reduceMotion ? undefined : { once: true, margin: "-60px" }}
-            transition={{ duration: 0.55, ease: easePremium }}
-            className="col-span-12 text-center"
-          >
-            <div className="rounded-2xl p-6 bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                © 2026 GarTexHub Professional Network. All Rights Reserved.
-              </p>
-            </div>
-          </motion.footer>
-        </div>
+        <footer className="mt-10 rounded-[2rem] border border-sky-200/70 bg-white/75 px-6 py-6 text-center shadow-sm backdrop-blur dark:border-sky-900/60 dark:bg-slate-950/60 sm:px-8">
+          <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">
+            &copy; 2026 GarTexHub Professional Network. All Rights Reserved.
+          </p>
+        </footer>
       </div>
-    </div>
+    </main>
   );
 }
