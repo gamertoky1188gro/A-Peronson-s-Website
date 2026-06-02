@@ -1,35 +1,37 @@
-/*
-  Route: /access-denied
-  Access: Public (shown after an auth/role gate denies access)
-
-  Public Pages:
-    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
-  Protected Pages (login required):
-    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
-    /notifications, /chat, /call, /verification, /verification-center
-
-  Purpose:
-    - Display a friendly "you can't access this" screen after ProtectedRoute rejects a role.
-    - Echo the route that was attempted via react-router `location.state.from` (set by the router guard).
-
-  Notes:
-    - Tailwind-only styling (no legacy App.css utilities).
-    - This page does not call any API.
-*/
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Lock,
   LogIn,
   Sparkles,
-  ArrowRight,
   ShieldAlert,
   SunMedium,
   MoonStar,
   Home,
+  ChevronRight,
 } from "lucide-react";
 import { getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
+
+function formatRouteLabel(fromValue) {
+  if (!fromValue) return "this page";
+  if (typeof fromValue === "string") return fromValue;
+  if (typeof fromValue === "object") {
+    return fromValue.pathname || fromValue.path || "this page";
+  }
+  return "this page";
+}
+
+function InfoItem({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/50">
+      <p className="text-xs font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</p>
+    </div>
+  );
+}
 
 export default function AccessDenied() {
   const { theme, toggleTheme } = useTheme();
@@ -37,9 +39,11 @@ export default function AccessDenied() {
   const location = useLocation();
   const navigate = useNavigate();
   const isLoggedIn = Boolean(getToken());
+  const attemptedRoute = formatRouteLabel(location.state?.from);
+  const hasHistory = typeof window !== "undefined" && window.history.length > 1;
 
   const handleBack = () => {
-    if (window.history.length > 1) {
+    if (hasHistory) {
       navigate(-1);
       return;
     }
@@ -47,48 +51,53 @@ export default function AccessDenied() {
   };
 
   return (
-    <div>
-      <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-slate-950 dark:text-slate-50">
-        {/* Background accents */}
-        <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden">
-          <div className="absolute left-1/2 top-[-12rem] h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-sky-400/20 blur-3xl dark:bg-blue-500/20" />
-          <div className="absolute right-[-8rem] top-[18%] h-[22rem] w-[22rem] rounded-full bg-blue-500/15 blur-3xl dark:bg-cyan-400/10" />
-          <div className="absolute bottom-[-10rem] left-[-8rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/20 blur-3xl dark:bg-sky-500/10" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.14),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.10),transparent_28%)] dark:bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.10),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_28%)]" />
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#06111f] dark:text-slate-100">
+      <div className="pointer-events-none absolute inset-0 -z-0">
+        <div className="absolute left-1/2 top-[-8rem] h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-sky-300/30 blur-3xl dark:bg-sky-500/15" />
+        <div className="absolute right-[-6rem] top-24 h-72 w-72 rounded-full bg-blue-300/25 blur-3xl dark:bg-blue-500/10" />
+        <div className="absolute bottom-[-8rem] left-[-6rem] h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl dark:bg-cyan-500/10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_40%),radial-gradient(circle_at_right,rgba(59,130,246,0.12),transparent_35%)] dark:bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.12),transparent_40%),radial-gradient(circle_at_right,rgba(59,130,246,0.08),transparent_35%)]" />
+      </div>
 
-        <main className="relative z-10 mx-auto flex min-h-screen max-w-6xl items-center px-4 py-10 sm:px-6 lg:px-8">
-          <div className="grid w-full items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
-            {/* Left side */}
-            <section className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-sky-700 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-white/5 dark:text-sky-300">
-                <Sparkles className="h-4 w-4" />
-                Restricted access
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-sky-600 dark:text-sky-300">
-                  <ShieldAlert className="h-7 w-7" />
-                  <span className="text-sm font-semibold uppercase tracking-[0.28em]">
-                    Access denied
-                  </span>
-                </div>
-
-                <h1 className="max-w-xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid w-full gap-6 lg:grid-cols-[1.5fr_0.9fr] lg:gap-8">
+          <section className="overflow-hidden rounded-[2rem] border border-white/60 bg-white/75 shadow-[0_24px_90px_rgba(2,8,23,0.10)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_24px_90px_rgba(0,0,0,0.35)]">
+            <div className="border-b border-slate-200/70 px-6 py-5 dark:border-slate-800">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold tracking-wide text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-200">
+                  <Lock className="h-3.5 w-3.5" />
+                  Restricted access
+                </span>
+                <span className="text-xs font-medium uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
                   Access denied
-                </h1>
+                </span>
+              </div>
+            </div>
 
-                <p className="max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
-                  You do not have permission to access{" "}
-                  <strong>{location.state?.from || "this page"}</strong>.
-                </p>
+            <div className="px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-500 shadow-lg shadow-sky-500/20">
+                  <ShieldAlert className="h-7 w-7 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold uppercase tracking-[0.26em] text-sky-600 dark:text-sky-300">
+                    Access denied
+                  </p>
+                  <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
+                    Access denied
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
+                    You do not have permission to access{" "}
+                    <span className="font-semibold text-slate-900 dark:text-white">{attemptedRoute}</span>.
+                  </p>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-50 dark:bg-white dark:text-slate-950 dark:shadow-black/20 dark:hover:bg-slate-200 dark:focus:ring-offset-slate-950"
                   onClick={handleBack}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back
@@ -97,110 +106,99 @@ export default function AccessDenied() {
                 {isLoggedIn ? (
                   <Link
                     to="/feed"
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white/80 px-5 py-3.5 text-sm font-semibold text-sky-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-50 dark:border-sky-500/20 dark:bg-white/5 dark:text-sky-200 dark:hover:border-sky-400/30 dark:hover:bg-white/10 dark:focus:ring-offset-slate-950"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-700 transition hover:-translate-y-0.5 hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-200 dark:hover:bg-sky-400/15"
                   >
-                    <Home className="h-4 w-4" />
                     Go to Feed
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 ) : (
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white/80 px-5 py-3.5 text-sm font-semibold text-sky-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-50 dark:border-sky-500/20 dark:bg-white/5 dark:text-sky-200 dark:hover:border-sky-400/30 dark:hover:bg-white/10 dark:focus:ring-offset-slate-950"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-700 transition hover:-translate-y-0.5 hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-200 dark:hover:bg-sky-400/15"
                   >
                     <LogIn className="h-4 w-4" />
                     Login with another account
                   </Link>
                 )}
-              </div>
 
-              <div className="flex flex-wrap gap-3 pt-2">
                 <Link
                   to="/feed"
-                  className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-sky-400/30 dark:hover:text-sky-300"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200 dark:hover:border-sky-400/30 dark:hover:text-sky-200"
                 >
                   Go to Feed
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </div>
-            </section>
 
-            {/* Right side card */}
-            <aside className="relative">
-              <div className="absolute inset-0 -z-10 translate-x-4 translate-y-4 rounded-[2rem] bg-sky-500/10 blur-2xl dark:bg-cyan-400/10" />
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <InfoItem label="Account" value="Restricted" />
+                <InfoItem label="Status" value="No access" />
+                <InfoItem label="Action" value="Switch login" />
+                <InfoItem label="Route" value={location.state?.from ? attemptedRoute : "Unknown"} />
+              </div>
+            </div>
+          </section>
 
-              <div className="rounded-[2rem] border border-white/60 bg-white/80 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.10)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/70 dark:shadow-black/25 sm:p-8">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="inline-flex rounded-2xl bg-sky-100 p-3 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
-                      <Lock className="h-6 w-6" />
-                    </div>
-                    <h2 className="mt-4 text-2xl font-semibold tracking-tight">
-                      Permission required
-                    </h2>
-                    <p className="mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
-                      This area is protected for authorized users only. Switch
-                      accounts or return to the feed to continue browsing.
-                    </p>
-                  </div>
+          <aside className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-white/75 p-6 shadow-[0_24px_90px_rgba(2,8,23,0.10)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_24px_90px_rgba(0,0,0,0.35)] sm:p-8 lg:self-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-200">
+              Secure area
+            </div>
 
-                  <div className="hidden rounded-2xl border border-sky-200/70 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300 md:block">
-                    Secure area
-                  </div>
+            <h2 className="mt-5 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Permission required
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+              This area is protected for authorized users only. Switch accounts or return to the feed to continue browsing.
+            </p>
+
+            <div className="mt-6 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+              <p className="text-sm font-medium leading-7 text-slate-700 dark:text-slate-200">
+                Try signing in with the correct organization account or return to the feed to explore public content.
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/50">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
+                  <ShieldAlert className="h-5 w-5" />
                 </div>
-
-                <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                  {[
-                    { label: "Account", value: "Restricted" },
-                    { label: "Status", value: "No access" },
-                    { label: "Action", value: "Switch login" },
-                    {
-                      label: "Route",
-                      value: location.state?.from || "Unknown",
-                    },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/5"
-                    >
-                      <div className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
-                        {item.label}
-                      </div>
-                      <div className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
-                        {item.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-8 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 p-[1px] shadow-lg shadow-sky-500/10">
-                  <div className="rounded-[1.15rem] bg-white px-5 py-4 dark:bg-slate-950">
-                    <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-                      Try signing in with the correct organization account or
-                      return to the feed to explore public content.
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Session</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{isLoggedIn ? "Logged in" : "Guest"}</p>
                 </div>
               </div>
-            </aside>
-          </div>
-        </main>
 
-        {/* Floating theme toggle */}
-        <button
-          onClick={toggleTheme}
-          className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-lg shadow-slate-200/60 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-xl dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 dark:shadow-black/30"
-        >
-          {isDark ? (
-            <>
-              <SunMedium className="h-4 w-4 text-amber-500" /> Light mode
-            </>
-          ) : (
-            <>
-              <MoonStar className="h-4 w-4 text-sky-500" /> Dark mode
-            </>
-          )}
-        </button>
-      </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/50">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
+                  <Home className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Secondary route</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">/feed</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="fixed bottom-5 right-5 z-20 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-800 shadow-[0_16px_40px_rgba(2,8,23,0.14)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:shadow-[0_20px_50px_rgba(2,8,23,0.18)] focus:outline-none focus:ring-2 focus:ring-sky-400 dark:border-white/10 dark:bg-slate-950/80 dark:text-slate-100"
+        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        {isDark ? (
+          <>
+            <SunMedium className="h-4 w-4" />
+            Light mode
+          </>
+        ) : (
+          <>
+            <MoonStar className="h-4 w-4" />
+            Dark mode
+          </>
+        )}
+      </button>
     </div>
   );
 }

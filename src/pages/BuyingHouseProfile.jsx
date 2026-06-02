@@ -28,11 +28,49 @@ import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel";
 import NeonAtom from "../components/ui/NeonAtom";
+import {
+  BadgeCheck,
+  Building2,
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronDown,
+  CircleDashed,
+  ClipboardList,
+  Clock3,
+  Edit3,
+  ExternalLink,
+  Eye,
+  Globe2,
+  Handshake,
+  Heart,
+  Image as ImageIcon,
+  Landmark,
+  Loader2,
+  Mail,
+  MapPin,
+  MessageSquare,
+  MoonStar,
+  Network,
+  Package,
+  Phone,
+  RefreshCcw,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  SunMedium,
+  Trash2,
+  User2,
+  Users,
+  X,
+  Plus,
+  Rocket,
+} from "lucide-react";
 
 const Motion = motion;
 
 function roleToRoute(role, id) {
-  // Safety redirect helper: ensures we land on the correct profile route for a given role.
   if (!id) return "/feed";
   if (role === "buyer") return `/buyer/${encodeURIComponent(id)}`;
   if (role === "buying_house") return `/buying-house/${encodeURIComponent(id)}`;
@@ -47,6 +85,175 @@ function isBoostActive(boost) {
   const endsAt = new Date(boost.ends_at).getTime();
   if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt)) return false;
   return now >= startsAt && now <= endsAt;
+}
+
+function Pill({ children, tone = "default", title }) {
+  const tones = {
+    default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+    success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+    info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
+    warning: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+    premium: "bg-gradient-to-r from-sky-500 to-cyan-500 text-white",
+    danger: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
+  };
+  return (
+    <span title={title} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}>
+      {children}
+    </span>
+  );
+}
+
+function Metric({ label, value, helper }) {
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
+      <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+      {helper ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
+    </div>
+  );
+}
+
+function AvatarFallback({ name, imageUrl }) {
+  const initials = (n) => {
+    if (!n) return "?";
+    return n.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
+  };
+  return (
+    <div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
+      <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
+        {imageUrl ? (
+          <img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
+        ) : (
+          initials(name)
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SoftCard({ children, className = "" }) {
+  return (
+    <div className={`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({ icon: Icon, title, subtitle, action }) {
+  return (
+    <div className="mb-4 flex items-start justify-between gap-3">
+      <div>
+        <div className="flex items-center gap-2">
+          {Icon ? <Icon className="h-4 w-4 text-sky-500" /> : null}
+          <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">{title}</h3>
+        </div>
+        {subtitle ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p> : null}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function StatCard({ icon: Icon, label, value, caption }) {
+  return (
+    <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
+        {Icon ? <Icon className="h-4 w-4" /> : null}
+        <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{label}</span>
+      </div>
+      <div className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+      {caption ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{caption}</div> : null}
+    </div>
+  );
+}
+
+function InfoTile({ label, value, icon: Icon }) {
+  return (
+    <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+      <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+        {Icon ? <Icon size={14} className="text-sky-500" /> : null}
+        <span>{label}</span>
+      </div>
+      <div className="text-sm font-semibold text-slate-900 dark:text-white">{value ?? "—"}</div>
+    </div>
+  );
+}
+
+function ActionButton({ children, icon: Icon, onClick, variant = "primary", disabled, loading }) {
+  const styles = {
+    primary: "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200",
+    soft: "bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-950/60",
+    ghost: "bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
+    premium: "bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 text-white shadow-lg shadow-sky-500/20 hover:brightness-110",
+    danger: "bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50",
+  };
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sky-400/50 disabled:cursor-not-allowed disabled:opacity-60 ${styles[variant]}`}
+    >
+      {loading ? <Loader2 size={16} className="animate-spin" /> : Icon ? <Icon size={16} /> : null}
+      <span>{children}</span>
+    </button>
+  );
+}
+
+function EmptyState({ icon: Icon, title, description, action }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300/80 bg-slate-50/70 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-900/40">
+      {Icon ? <Icon size={28} className="mb-3 text-sky-500" /> : null}
+      <div className="text-base font-semibold text-slate-900 dark:text-white">{title}</div>
+      {description ? <div className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">{description}</div> : null}
+      {action ? <div className="mt-5">{action}</div> : null}
+    </div>
+  );
+}
+
+function BadgeList({ items = [] }) {
+  if (!items.length) return <span className="text-sm text-slate-500 dark:text-slate-400">—</span>;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => <Pill key={item} tone="info">{item}</Pill>)}
+    </div>
+  );
+}
+
+function TimelineItem({ item, index }) {
+  const color = item.kind === "success" ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300" : item.kind === "warn" ? "border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300" : item.kind === "danger" ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300" : "border-sky-400 bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300";
+  return (
+    <div className="relative flex gap-4">
+      <div className="flex flex-col items-center">
+        <div className={`mt-1 flex h-10 w-10 items-center justify-center rounded-2xl border text-xs font-semibold ${color}`}>{index + 1}</div>
+        <div className="h-full w-px bg-slate-200 dark:bg-slate-800" />
+      </div>
+      <div className="pb-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="font-semibold text-slate-900 dark:text-white">{item.title}</div>
+          <Pill tone={item.kind === "success" ? "success" : item.kind === "warn" ? "warning" : item.kind === "danger" ? "danger" : "info"}>{item.type || "Update"}</Pill>
+        </div>
+        <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{item.description}</div>
+        <div className="mt-2 text-xs text-slate-400 dark:text-slate-500">{item.time || ""}</div>
+      </div>
+    </div>
+  );
+}
+
+function Lightbox({ open, image, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose?.();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <button className="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" onClick={onClose}><X size={18} /></button>
+        <img src={image} alt="Product preview" className="max-h-[92vh] w-full object-contain" />
+      </div>
+    </div>
+  );
 }
 
 export default function BuyingHouseProfile() {
@@ -72,6 +279,9 @@ export default function BuyingHouseProfile() {
 
   const [partnerNetwork, setPartnerNetwork] = useState(null);
   const [loadingNetwork, setLoadingNetwork] = useState(false);
+  const [partnerRequestLoading, setPartnerRequestLoading] = useState(false);
+  const [searchProducts, setSearchProducts] = useState("");
+  const [lightbox, setLightbox] = useState({ open: false, image: "" });
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
   const coverParallax = useSpring(useTransform(scrollY, [0, 400], [0, 60]), {
@@ -173,7 +383,6 @@ export default function BuyingHouseProfile() {
         setProductsCursor(reset ? 10 : cursor + 10);
         setProductsNext(data?.next_cursor ?? null);
       } catch {
-        // ignore
       } finally {
         setLoadingProducts(false);
       }
@@ -251,7 +460,6 @@ export default function BuyingHouseProfile() {
           : prev,
       );
     } catch {
-      // ignore
     }
   }
 
@@ -268,7 +476,6 @@ export default function BuyingHouseProfile() {
           : prev,
       );
     } catch {
-      // ignore
     }
   }
 
@@ -302,673 +509,449 @@ export default function BuyingHouseProfile() {
     }
   }
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">
-        Loading profile...
-      </div>
-    );
-  if (error)
-    return (
-      <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">
-        {error}
-      </div>
-    );
-  if (!user)
-    return (
-      <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">
-        Profile not found.
-      </div>
-    );
-
   const canRequestPartner =
     viewer &&
     ["factory", "buying_house", "admin"].includes(viewer.role) &&
     !viewerPerms.is_self;
 
-  return (
-    <div className="min-h- screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
-      <div className="relative">
-        <div className="h-32 sm:h-40 overflow-hidden rounded-t-2xl bg-gtBlue">
-          {user.profile?.cover_image_url ? (
-            <motion.img
-              src={user.profile.cover_image_url}
-              alt="Cover"
-              className="h-full w-full object-cover"
-              style={{ y: reduceMotion ? 0 : coverParallax }}
-            />
-          ) : null}
-        </div>
-        <div className="sm:absolute sm:-bottom-12 sm:left-6">
-          <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-4 border-white dark:border-slate-900 bg-white overflow-hidden shadow- md">
-            {user.profile?.profile_image ? (
-              <img
-                src={user.profile.profile_image}
-                alt={user.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-gtBlue flex items-center justify-center">
-                <span className="text-2xl font-bold text-white">
-                  {user.name?.charAt(0) || "B"}
-                </span>
-              </div>
-            )}
+  if (loading)
+    return (
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.12),transparent_30%),linear-gradient(180deg,#eff9ff_0%,#ffffff_35%,#f8fbff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.14),transparent_35%),linear-gradient(180deg,#050816_0%,#07111f_40%,#020617_100%)] dark:text-white">
+        <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-10">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-8 text-center shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+            <Loader2 className="mx-auto animate-spin text-sky-500" size={28} />
+            <div className="mt-4 text-lg font-semibold">Loading buying house profile...</div>
+            <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Fetching profile, ratings, and certifications.</div>
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
-        <aside className="col-span-12 lg:col-span-4 space-y-4">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
+    );
+  if (error)
+    return (
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.12),transparent_30%),linear-gradient(180deg,#eff9ff_0%,#ffffff_35%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.14),transparent_35%),linear-gradient(180deg,#050816_0%,#07111f_40%,#020617_100%)] p-6 text-rose-700 dark:text-rose-200">
+        {error}
+      </div>
+    );
+  if (!user)
+    return (
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.12),transparent_30%),linear-gradient(180deg,#eff9ff_0%,#ffffff_35%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.14),transparent_35%),linear-gradient(180deg,#050816_0%,#07111f_40%,#020617_100%)] p-6 text-slate-700 dark:text-slate-200">
+        Profile not found.
+      </div>
+    );
+
+  const displayName = user?.name || "Buying House";
+  const country = user?.profile?.country || "—";
+  const industry = user?.profile?.industry || "Garments & Textile";
+  const organization = user?.profile?.organization_name || user?.profile?.organization || user?.name || "—";
+  const avg = ratingSummary?.aggregate?.average_score ?? 0;
+  const totalRatings = ratingSummary?.aggregate?.total_count ?? 0;
+  const partnerTotal = partnerNetwork?.total_connected ?? profile?.counts?.connected_factories ?? 0;
+  const requestsCount = profile?.counts?.requests ?? 0;
+  const coverImage = user?.profile?.cover_image_url;
+  const avatarImage = user?.profile?.profile_image;
+  const capacity = user?.profile?.sourcing_capacity || "—";
+  const companiesWorked = user?.profile?.companies_worked_with || [];
+
+  const filteredProducts = useMemo(() => {
+    const q = searchProducts.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter((p) => {
+      const hay = [p.title, p.category, p.description, p.status].filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }, [products, searchProducts]);
+
+  const badges = [
+    user?.verified ? { label: "Verified", icon: ShieldCheck, tone: "info" } : null,
+    isCertified ? { label: "Certified", icon: BadgeCheck, tone: "success" } : null,
+    isPremium ? { label: "Premium Reach", icon: Sparkles, tone: "premium", title: "Boosted visibility enabled for Premium" } : null,
+    isBoosted ? { label: "Boosted", icon: Rocket, tone: "success" } : null,
+  ].filter(Boolean);
+
+  const timeline = profile?.crm_timeline || profile?.timeline || [];
+
+  return (
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.12),transparent_30%),linear-gradient(180deg,#eff9ff_0%,#ffffff_35%,#f8fbff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.14),transparent_35%),linear-gradient(180deg,#050816_0%,#07111f_40%,#020617_100%)] dark:text-white">
+      <Lightbox open={lightbox.open} image={lightbox.image} onClose={() => setLightbox({ open: false, image: "" })} />
+
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300"
           >
-            <div className="flex items-center gap-3">
-              {user.profile?.profile_image ? (
-                <img
-                  src={user.profile.profile_image}
-                  alt={user.name}
-                  className="h-14 w-14 rounded-2xl object-cover"
-                />
-              ) : (
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
-              )}
-              <div className="min-w-0">
-                <p className="text-lg font-bold text-slate-900 truncate">
-                  {user.name}
-                </p>
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-                  <span className="uppercase">Buying House</span>
-                  {user.profile?.country ? (
-                    <span>- {user.profile.country}</span>
+            <ChevronLeft className="h-4 w-4" /> Back
+          </button>
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <Sparkles size={13} /> Enterprise buying-house profile
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/90 shadow-[0_20px_60px_-25px_rgba(2,132,199,0.35)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+          <div className="relative">
+            <div className="h-56 w-full bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600 sm:h-64">
+              {coverImage ? <img src={coverImage} alt="Cover" className="h-full w-full object-cover opacity-80 mix-blend-overlay" /> : null}
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent" />
+            <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-4 sm:left-6 sm:right-6">
+              <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
+                <Building2 size={13} /> Buying House
+              </div>
+              <div className="flex items-center gap-2">
+                {user?.verified ? <Pill tone="success">Verified</Pill> : <Pill tone="warning">Unverified</Pill>}
+                {isPremium ? <Pill tone="premium">Premium</Pill> : null}
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                  <AvatarFallback name={displayName} imageUrl={avatarImage} />
+                  <div className="pb-1">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{displayName}</h1>
+                      {user?.verified ? <BadgeCheck className="text-sky-300" size={22} /> : null}
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-100/90">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur"><User2 size={13} /> Buying House</span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur"><MapPin size={13} /> {country}</span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur"><Star size={13} /> {avg ? `${avg.toFixed(1)} / 5` : "No rating"}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <ActionButton icon={Phone} variant="soft" onClick={contact}>Contact</ActionButton>
+                  <ActionButton icon={Heart} variant="ghost" onClick={follow}>{relationship.following ? "Following" : "Follow"}</ActionButton>
+                  <ActionButton icon={Handshake} variant="primary" onClick={connect}>{relationship.friend_status === "friends" ? "Connected" : relationship.friend_status === "requested" ? "Requested" : "Connect"}</ActionButton>
+                  {canRequestPartner ? (
+                    <ActionButton icon={Plus} variant="premium" onClick={requestPartner} loading={partnerRequestLoading}>Request partner network connection</ActionButton>
                   ) : null}
-                  {user.verified ? (
-                    <span className="font-bold text-[#0A66C2]">Verified</span>
-                  ) : null}
-                  {isCertified ? (
-                    <span className="font-bold text-emerald-600">
-                      Certified
-                    </span>
-                  ) : null}
-                  {isPremium ? (
-                    <span
-                      title="Boosted visibility enabled for Premium"
-                      className="font-bold text-blue-600"
-                    >
-                      Premium Reach
-                    </span>
-                  ) : null}
-                  {isBoosted ? (
-                    <span className="font-bold text-emerald-600">Boosted</span>
-                  ) : null}
+                  {notice ? <p className="text-xs text-sky-600">{notice}</p> : null}
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                onClick={contact}
-                className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]"
-              >
-                Contact
-              </button>
-              <button
-                onClick={follow}
-                className="flex-1 rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                {relationship.following ? "Following" : "Follow"}
-              </button>
-              <button
-                onClick={connect}
-                className="flex-1 rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                {relationship.friend_status === "friends"
-                  ? "Connected"
-                  : relationship.friend_status === "requested"
-                    ? "Requested"
-                    : "Connect"}
-              </button>
-            </div>
+          <div className="grid gap-6 p-4 lg:grid-cols-[1.7fr_0.95fr] lg:p-6">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/60">
+                <div className="flex flex-wrap gap-2">
+                  {["overview", "partner", "products", "work", "reviews"].map((key) => {
+                    const label = key === "overview" ? "Overview" : key === "partner" ? "Partner network" : key === "products" ? "Products" : key === "work" ? "Work history" : "Reviews";
+                    const active = activeTab === key;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setActiveTab(key)}
+                        className={`rounded-2xl px-4 py-2.5 text-sm font-medium transition-all ${active ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-500/20" : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"}`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-            {canRequestPartner ? (
-              <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={requestPartner}
-                  className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                >
-                  Request partner network connection
-                </button>
-                {notice ? (
-                  <p className="mt-2 text-[11px] text-slate-600">{notice}</p>
-                ) : null}
-              </div>
-            ) : null}
+              {error ? (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-200">{error}</div>
+              ) : null}
 
-            <div className="mt-4 grid grid-cols-1 gap-3">
-              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
-                <p className="text-[11px] text-slate-500">Industry</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {user.profile?.industry || "Garments & Textile"}
-                </p>
-              </div>
-              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
-                <p className="text-[11px] text-slate-500">Organization</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {user.profile?.organization_name ||
-                    user.profile?.organization ||
-                    user.name}
-                </p>
-              </div>
-              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
-                <p className="text-[11px] text-slate-500">Rating</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {ratingSummary?.aggregate?.average_score ?? "0.0"} / 5
-                </p>
-                <p className="text-[11px] text-slate-600">
-                  {ratingSummary?.aggregate?.total_count ?? 0} reviews
-                </p>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3">
-                <p className="text-[11px] text-slate-500">Partner factories</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {profile?.counts?.connected_factories ?? "--"}
-                </p>
-              </div>
-              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3">
-                <p className="text-[11px] text-slate-500">Requests</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {profile?.counts?.requests ?? 0}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          <VerificationPanel summary={verification} />
-          {certification ? (
-            <div className="mt-4 rounded-xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-              <p className="text-[11px] text-slate-500">
-                Order Completion Certification
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                {certification.status || "pending"}
-              </p>
-              <p className="text-[11px] text-slate-600">
-                Signed contracts: {certification.signed_contracts ?? 0}
-              </p>
-            </div>
-          ) : null}
-        </aside>
-
-        <main className="col-span-12 lg:col-span-8 space-y-4">
-          <CrmSummaryPanel targetId={user.id} />
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.45,
-              ease: [0.16, 1, 0.3, 1],
-              delay: 0.05,
-            }}
-            className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
-          >
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 shadow-dividerB dark:shadow-dividerBDark dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
-              {["overview", "partner", "products", "work", "reviews"].map(
-                (tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => setActiveTab(tab)}
-                    className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
-                      activeTab === tab
-                        ? "bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35"
-                        : "bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8"
-                    }`}
-                  >
-                    {activeTab === tab ? (
-                      <motion.span
-                        layoutId="profile-tab"
-                        className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
-                        transition={{
-                          type: "spring",
-                          stiffness: 420,
-                          damping: 34,
-                        }}
-                      />
-                    ) : null}
-                    {tab === "overview"
-                      ? "Overview"
-                      : tab === "partner"
-                        ? "Partner Network"
-                        : tab === "products"
-                          ? "Products"
-                          : tab === "work"
-                            ? "Work History"
-                            : "Reviews"}
-                  </button>
-                ),
-              )}
-            </div>
-
-            <div className="p-4">
               {activeTab === "overview" ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      About
-                    </p>
-                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                      {user.profile?.about || "No description added yet."}
-                    </p>
-                  </div>
+                <div className="space-y-5">
+                  <SoftCard>
+                    <SectionTitle icon={Eye} title="About" subtitle="Business overview and positioning." />
+                    <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{user?.profile?.about || "No description added yet."}</p>
+                  </SoftCard>
 
                   {hasBrandKit ? (
-                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        Brand Kit
-                      </p>
-                      <div className="mt-3 flex items-center gap-3">
-                        {brandProfile.brand_logo_url ? (
-                          <img
-                            src={brandProfile.brand_logo_url}
-                            alt="Brand logo"
-                            className="h-12 w-12 rounded-xl object-cover"
-                          />
-                        ) : (
-                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
-                            {brandProfile.brand_name || user.name}
+                    <SoftCard>
+                      <SectionTitle icon={Eye} title="Brand Kit" subtitle="Visual identity assets." />
+                      <div className="rounded-2xl border border-dashed border-slate-300/80 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-900/40">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-500/20">
+                            {brandProfile.brand_logo_url ? <img src={brandProfile.brand_logo_url} alt="Brand" className="h-full w-full object-cover rounded-2xl" /> : <Sparkles size={18} />}
                           </div>
-                          {brandProfile.brand_tagline ? (
-                            <div className="text-xs text-slate-600 dark:text-slate-300">
-                              {brandProfile.brand_tagline}
-                            </div>
-                          ) : null}
-                          {brandProfile.brand_website ? (
-                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                              {brandProfile.brand_website}
-                            </div>
-                          ) : null}
+                          <div>
+                            <div className="font-semibold text-slate-900 dark:text-white">{brandProfile.brand_name || displayName}</div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">{brandProfile.brand_tagline || "Premium brand presentation"}</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </SoftCard>
                   ) : null}
 
                   {isPremium && hasAccountManager ? (
-                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        Dedicated Account Manager
-                      </p>
-                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-                        {brandProfile.account_manager_name ||
-                          "Assigned manager"}
+                    <SoftCard>
+                      <SectionTitle icon={Users} title="Account manager" subtitle="Relationship ownership." />
+                      <div className="flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-lg font-semibold text-white">
+                          {brandProfile.account_manager_name?.charAt(0) || "?"}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">{brandProfile.account_manager_name || "Unassigned"}</div>
+                          <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{brandProfile.account_manager_email || "No manager email available"}</div>
+                        </div>
                       </div>
-                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        {brandProfile.account_manager_email ||
-                          brandProfile.account_manager_phone ||
-                          ""}
-                      </div>
-                    </div>
+                    </SoftCard>
                   ) : null}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Industry
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {user.profile?.industry || "Garments & Textile"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Organization
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {user.profile?.organization_name ||
-                          user.profile?.organization ||
-                          user.name}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Rating
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {ratingSummary?.aggregate?.average_score ?? "0.0"} / 5
-                      </p>
-                      <p className="text-[11px] text-slate-600">
-                        {ratingSummary?.aggregate?.total_count ?? 0} reviews
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Country
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {user.profile?.country || "--"}
-                      </p>
-                    </div>
+
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <InfoTile label="Industry" value={industry} icon={Globe2} />
+                    <InfoTile label="Organization" value={organization} icon={Building2} />
+                    <InfoTile label="Rating" value={avg ? `${avg.toFixed(1)} / 5` : "—"} icon={Star} />
+                    <InfoTile label="Country" value={country} icon={MapPin} />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Certifications
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {(user.profile?.certifications || []).join(", ") ||
-                          "--"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Capacity
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {user.profile?.sourcing_capacity || "--"}
-                      </p>
-                    </div>
+
+                  <SoftCard>
+                    <SectionTitle icon={BadgeCheck} title="Certifications" subtitle="Compliance and commercial credentials." />
+                    <BadgeList items={user?.profile?.certifications || []} />
+                  </SoftCard>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <InfoTile label="Sourcing capacity" value={capacity} icon={ClipboardList} />
+                    <InfoTile label="Order completion" value={certification?.status || "—"} icon={BadgeCheck} />
                   </div>
-                  {(user.profile?.companies_worked_with || []).length > 0 && (
-                    <div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">
-                        Companies Worked With
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {(user.profile?.companies_worked_with || []).map(
-                          (company, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10"
-                            >
-                              {company.logo ? (
-                                <img
-                                  src={company.logo}
-                                  alt={company.name}
-                                  className="h-10 w-10 rounded-lg object-cover"
-                                />
-                              ) : (
-                                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
-                              )}
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
-                                  {company.name}
-                                </p>
-                                {company.location && (
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    {company.location}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ),
-                        )}
+
+                  <SoftCard>
+                    <SectionTitle icon={Building2} title="Companies worked with" subtitle="Selected partners and references." />
+                    {companiesWorked.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {companiesWorked.map((company, idx) => (
+                          <Pill key={idx} tone={idx % 3 === 0 ? "info" : idx % 3 === 1 ? "success" : "default"}>{company.name || company}</Pill>
+                        ))}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No companies listed yet.</p>
+                    )}
+                  </SoftCard>
                 </div>
               ) : null}
 
               {activeTab === "partner" ? (
-                <div className="space-y-3">
-                  {loadingNetwork ? (
-                    <div className="text-sm text-slate-600">
-                      Loading partner network...
-                    </div>
-                  ) : null}
-                  {!loadingNetwork && partnerNetwork ? (
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
-                      <p className="text-sm font-bold text-slate-900">
-                        Connected factories
-                      </p>
-                      <p className="mt-1 text-sm text-slate-700">
-                        Total: {partnerNetwork.total_connected ?? 0}
-                      </p>
-                      {Array.isArray(partnerNetwork.factories) ? (
-                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {partnerNetwork.factories.map((f) => (
-                            <div
-                              key={f.id}
-                              className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 flex items-center justify-between"
-                            >
-                              <span className="text-xs font-semibold text-slate-800">
-                                {f.name}
-                              </span>
-                              {f.verified ? (
-                                <span className="text-xs font-bold text-[#0A66C2]">
-                                  Verified
-                                </span>
-                              ) : (
-                                <span className="text-xs text-slate-500">
-                                  --
-                                </span>
-                              )}
+                <div className="space-y-4">
+                  <SoftCard>
+                    <SectionTitle icon={Network} title="Connected factories" subtitle={`Total: ${partnerTotal}`} />
+                    {loadingNetwork ? (
+                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400"><Loader2 size={16} className="animate-spin" /> Loading partner network...</div>
+                    ) : partnerNetwork && profile?.partner_network_private && !(viewerPerms.is_self || viewerPerms.is_admin) ? (
+                      <div className="rounded-2xl border border-dashed border-slate-300/80 bg-slate-50/60 p-5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300">
+                        Factory list is private; only the organization owner/admin can see it.
+                      </div>
+                    ) : partnerNetwork?.factories?.length > 0 ? (
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {partnerNetwork.factories.map((factory) => (
+                          <div key={factory.id || factory.name} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <div className="font-semibold text-slate-900 dark:text-white">{factory.name || "Factory"}</div>
+                                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{factory.country || "Factory partner"}</div>
+                              </div>
+                              {factory.verified ? <Pill tone="success">Verified</Pill> : <span className="text-sm text-slate-400">--</span>}
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-[11px] text-slate-600">
-                          Factory list is private; only the organization
-                          owner/admin can see it.
-                        </p>
-                      )}
-                    </div>
-                  ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState icon={Network} title="No connected factories yet." description="Partner network data will appear once connections are established." />
+                    )}
+                  </SoftCard>
                 </div>
               ) : null}
 
               {activeTab === "products" ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {products.map((p) => (
-                      <div
-                        key={p.id}
-                        className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4"
-                      >
-                        {p.cover_image_public_url ? (
-                          <img
-                            src={p.cover_image_public_url}
-                            alt={p.title || "Product"}
-                            className="h-32 w-full rounded-xl object-cover mb-3"
-                          />
-                        ) : null}
-                        <p className="text-sm font-bold text-slate-900">
-                          {p.title || "Product"}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-600">
-                          {p.category || "--"} - MOQ {p.moq || "--"} - Lead time{" "}
-                          {p.lead_time_days || "--"}
-                        </p>
-                        <p className="mt-2 text-sm text-slate-700 line-clamp-3">
-                          {p.description || ""}
-                        </p>
-                        <p className="mt-2 text-[11px] text-slate-500">
-                          Status: {String(p.status || "published")}
-                        </p>
+                <div className="space-y-4">
+                  <SoftCard
+                    title="Products"
+                    subtitle="Deferred loading; products load only when this tab is active"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950">
+                          <Search size={16} className="text-slate-400" />
+                          <input value={searchProducts} onChange={(e) => setSearchProducts(e.target.value)} placeholder="Search products" className="w-48 bg-transparent text-sm outline-none placeholder:text-slate-400 dark:text-slate-100" />
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                  {loadingProducts ? (
-                    <NeonAtom size={40} text="Loading products..." />
-                  ) : null}
-                  {productsNext !== null && !loadingProducts ? (
-                    <button
-                      type="button"
-                      onClick={() => loadProducts({ reset: false })}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                    >
-                      Load more
-                    </button>
-                  ) : null}
-                  {!products.length && !loadingProducts ? (
-                    <div className="text-sm text-slate-600">
-                      No products found.
+                      {loadingProducts && products.length === 0 ? (
+                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400"><Loader2 size={16} className="animate-spin" /> Loading products...</div>
+                      ) : filteredProducts.length > 0 ? (
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                          {filteredProducts.map((product) => (
+                            <div key={product.id || product.title} className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                              <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-100 via-cyan-50 to-blue-100 dark:from-sky-950/50 dark:via-cyan-950/40 dark:to-blue-950/40">
+                                {product.cover_image_public_url ? (
+                                  <img src={product.cover_image_public_url} alt={product.title || "Product"} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" onClick={() => setLightbox({ open: true, image: product.cover_image_public_url })} />
+                                ) : (
+                                  <div className="flex h-full items-center justify-center text-sky-400"><ImageIcon size={40} /></div>
+                                )}
+                                <div className="absolute left-3 top-3">
+                                  <Pill tone={product.status === "active" ? "success" : product.status === "draft" ? "warning" : "default"}>{product.status || "Listed"}</Pill>
+                                </div>
+                              </div>
+                              <div className="space-y-3 p-4">
+                                <div>
+                                  <div className="text-base font-semibold text-slate-900 dark:text-white">{product.title || "Untitled product"}</div>
+                                  <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">{product.category || "Category"}</div>
+                                </div>
+                                <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+                                  <span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900">MOQ: {product.moq || "--"}</span>
+                                  <span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900">Lead time: {product.lead_time_days || "--"}</span>
+                                </div>
+                                <p className="text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-3">{product.description || "No description available."}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <EmptyState icon={Package} title="No products found." description="This buying house has not published product listings yet, or the current filters returned no results." />
+                      )}
+                      <div className="flex items-center justify-center">
+                        {productsNext !== null && !loadingProducts ? (
+                          <button onClick={() => loadProducts({ reset: false })} className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300">Load more <ChevronDown className="h-4 w-4" /></button>
+                        ) : null}
+                      </div>
                     </div>
-                  ) : null}
+                  </SoftCard>
                 </div>
               ) : null}
 
-              {activeTab === "reviews" ? (
-                <div className="space-y-3">
-                  <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
-                    <p className="text-sm font-bold text-slate-900">
-                      Rating summary
-                    </p>
-                    <p className="mt-1 text-sm text-slate-700">
-                      {ratingSummary?.aggregate?.average_score ?? "0.0"} / 5 -{" "}
-                      {ratingSummary?.aggregate?.total_count ?? 0} reviews -{" "}
-                      {ratingSummary?.aggregate?.reliability?.confidence ||
-                        "low"}{" "}
-                      confidence
-                    </p>
-                  </div>
-                  <div className="rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 ring-1 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/30">
-                    <p className="font-semibold">Review Policy</p>
-                    <p className="mt-1">
-                      Reviews can only be edited or deleted by the person who
-                      wrote them. Profile owners cannot delete reviews to
-                      maintain transparency and trust.
-                    </p>
-                  </div>
-                  {(ratingSummary?.recent_reviews || []).map((r) => {
-                    const canEdit =
-                      viewer?.id &&
-                      String(viewer.id) === String(r.from_user_id || "");
-                    return (
-                      <div
-                        key={r.id}
-                        className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4"
-                      >
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">
-                              {r.score} / 5
-                            </p>
-                            <p className="mt-1 text-sm text-slate-700">
-                              {r.comment || "No comment provided."}
-                            </p>
-                          </div>
-                          {canEdit ? (
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50"
-                                onClick={async () => {
-                                  const nextScore = Number(
-                                    window.prompt(
-                                      "Update score (1-5)",
-                                      r.score,
-                                    ),
-                                  );
-                                  if (!Number.isFinite(nextScore)) return;
-                                  const nextComment =
-                                    window.prompt(
-                                      "Update comment",
-                                      r.comment || "",
-                                    ) || "";
-                                  try {
-                                    await apiRequest(`/ratings/${r.id}`, {
-                                      method: "PATCH",
-                                      token,
-                                      body: {
-                                        score: nextScore,
-                                        comment: nextComment,
-                                      },
-                                    });
-                                    await loadRatings();
-                                  } catch {
-                                    // ignore
-                                  }
-                                }}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
-                                onClick={async () => {
-                                  if (!window.confirm("Delete this review?"))
-                                    return;
-                                  try {
-                                    await apiRequest(`/ratings/${r.id}`, {
-                                      method: "DELETE",
-                                      token,
-                                    });
-                                    await loadRatings();
-                                  } catch {
-                                    // ignore
-                                  }
-                                }}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {!ratingSummary?.recent_reviews?.length ? (
-                    <div className="text-sm text-slate-600">
-                      No reviews yet.
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
               {activeTab === "work" ? (
-                <div className="space-y-4">
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                    Work History
-                  </p>
-                  {(user.profile?.companies_worked_with || []).length > 0 ? (
+                <SoftCard>
+                  <SectionTitle icon={ClipboardList} title="Work history" subtitle="Commercial and operational history." />
+                  {companiesWorked.length > 0 ? (
                     <div className="space-y-3">
-                      {(user.profile.companies_worked_with || []).map(
-                        (company, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-3 rounded-2xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10"
-                          >
-                            {company.logo ? (
-                              <img
-                                src={company.logo}
-                                alt={company.name}
-                                className="h-12 w-12 rounded-xl object-cover"
-                              />
-                            ) : (
-                              <div className="h-12 w-12 rounded-xl bg-gtBlue flex items-center justify-center">
-                                <span className="text-lg font-bold text-white">
-                                  {company.name?.charAt(0) || "?"}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
-                                {company.name}
-                              </p>
-                              <p className="text-xs text-slate-600 dark:text-slate-400">
-                                {company.role || "Partner"} -{" "}
-                                {company.period || "Ongoing"}
-                              </p>
+                      {companiesWorked.map((company, idx) => (
+                        <div key={idx} className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10">
+                              {company.logo ? <img src={company.logo} alt={company.name || "Company"} className="h-full w-full object-cover" /> : <Building2 className="h-5 w-5 text-sky-500" />}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{company.name || "Untitled company"}</div>
+                              <div className="truncate text-xs text-slate-500 dark:text-slate-400">{company.role || "Partner"}</div>
                             </div>
                           </div>
-                        ),
-                      )}
+                          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400"><CalendarDays className="h-4 w-4" /> {company.period || "Ongoing"}</div>
+                        </div>
+                      ))}
                     </div>
                   ) : (
-                    <div className="rounded-2xl bg-white/60 p-4 text-sm text-slate-600 dark:text-slate-300 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      No work history added yet.
-                    </div>
+                    <EmptyState icon={CalendarDays} title="No work history yet." description="Historical milestones and projects will appear here when available." />
                   )}
+                </SoftCard>
+              ) : null}
+
+              {activeTab === "reviews" ? (
+                <div className="space-y-4">
+                  <SoftCard>
+                    <SectionTitle icon={Star} title="Rating summary" subtitle="Average score and review volume." />
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Metric label="Average rating" value={`${avg.toFixed(1)} / 5`} />
+                      <Metric label="Reviews" value={totalRatings} />
+                      <Metric label="Confidence" value={ratingSummary?.aggregate?.reliability?.confidence || "low"} helper="Aggregate reliability" />
+                    </div>
+                    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+                      <strong>Review policy:</strong> Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.
+                    </div>
+                  </SoftCard>
+                  <SoftCard>
+                    <SectionTitle icon={MessageSquare} title="Recent reviews" subtitle="Public feedback from past collaborations." />
+                    {(ratingSummary?.recent_reviews || []).length > 0 ? (
+                      <div className="space-y-3">
+                        {(ratingSummary.recent_reviews || []).map((review) => {
+                          const isAuthor = String(review.from_user_id) === String(user?.id);
+                          return (
+                            <div key={review.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Pill tone="warning"><Star className="h-3.5 w-3.5" /> {Number(review.score || 0).toFixed(1)}</Pill>
+                                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{review.reviewer_name || "Anonymous"}</div>
+                                  </div>
+                                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">{review.comment || "No comment provided."}</p>
+                                  <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">{review.created_at ? new Date(review.created_at).toLocaleDateString() : ""}</div>
+                                </div>
+                                {isAuthor ? (
+                                  <div className="flex items-center gap-2">
+                                    <button type="button" className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
+                                      onClick={async () => {
+                                        const score = window.prompt("Update rating (1-5)", String(review.score || "5"));
+                                        if (!score) return;
+                                        const comment = window.prompt("Update review comment", review.comment || "");
+                                        try { await apiRequest(`/ratings/${review.id}`, { method: "PATCH", token, body: { score: Number(score), comment: comment ?? "" } }); await loadRatings(); } catch {}
+                                      }}
+                                    ><Edit3 className="h-4 w-4" /> Edit</button>
+                                    <button type="button" className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300"
+                                      onClick={async () => {
+                                        if (!window.confirm("Delete this review?")) return;
+                                        try { await apiRequest(`/ratings/${review.id}`, { method: "DELETE", token }); await loadRatings(); } catch {}
+                                      }}
+                                    ><Trash2 className="h-4 w-4" /> Delete</button>
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <EmptyState icon={MessageSquare} title="No reviews yet." description="This profile has not received any public reviews." />
+                    )}
+                  </SoftCard>
                 </div>
               ) : null}
+
+              <SoftCard>
+                <SectionTitle icon={ClipboardList} title="CRM timeline" subtitle="Shared component for relationship tracking." />
+                {timeline.length > 0 ? (
+                  <div className="space-y-1">
+                    {timeline.map((item, idx) => <TimelineItem key={item.id || idx} item={item} index={idx} />)}
+                  </div>
+                ) : (
+                  <EmptyState icon={ClipboardList} title="No CRM timeline entries yet." description="Tracking notes, outreach, and relationship events will be displayed here." />
+                )}
+              </SoftCard>
+
+              <CrmSummaryPanel targetId={user.id} />
             </div>
-          </motion.div>
-        </main>
+
+            <aside className="space-y-4">
+              <SoftCard>
+                <SectionTitle icon={Building2} title="Profile snapshot" subtitle="Trust and commercial indicators." />
+                <div className="grid grid-cols-1 gap-3">
+                  <InfoTile label="Industry" value={industry} icon={Globe2} />
+                  <InfoTile label="Organization" value={organization} icon={Building2} />
+                  <InfoTile label="Rating" value={avg ? `${avg.toFixed(1)} / 5` : "—"} icon={Star} />
+                  <InfoTile label="Partner factories" value={partnerTotal} icon={Network} />
+                  <InfoTile label="Requests" value={requestsCount} icon={Handshake} />
+                </div>
+              </SoftCard>
+
+              <SoftCard>
+                <SectionTitle icon={ShieldCheck} title="Verification panel" subtitle="Shared trust component." />
+                <VerificationPanel summary={verification} />
+              </SoftCard>
+
+              <SoftCard>
+                <SectionTitle icon={BadgeCheck} title="Order completion certification" subtitle="Shared pattern for order delivery confidence." />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                    <ShieldCheck className="text-sky-500" size={18} />
+                    <div>
+                      <div className="text-sm font-semibold text-slate-900 dark:text-white">Verified profile status</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">{certification?.status || "Unknown"}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                    <BadgeCheck className="text-emerald-500" size={18} />
+                    <div>
+                      <div className="text-sm font-semibold text-slate-900 dark:text-white">Signed contracts</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">{certification?.signed_contracts ?? 0}</div>
+                    </div>
+                  </div>
+                </div>
+              </SoftCard>
+            </aside>
+          </div>
+        </div>
       </div>
     </div>
   );

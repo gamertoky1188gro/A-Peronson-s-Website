@@ -18,11 +18,6 @@
     - GET /api/profiles/:id
     - GET /api/ratings/profiles/user::id (public ratings summary)
     - GET /api/profiles/:id/requests?cursor=...
-
-  Major UI/UX patterns:
-    - Industrial-tech surfaces: white cards + subtle borders (light), ringed slate cards (dark).
-    - layoutId animated tab indicator.
-    - Tactile CTA feedback (active:scale-95).
 */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
@@ -35,11 +30,36 @@ import VerificationPanel from "../components/profile/VerificationPanel";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel";
 import JourneyTimeline from "../components/JourneyTimeline";
 import NeonAtom from "../components/ui/NeonAtom";
+import {
+  BadgeCheck,
+  Building2,
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  CircleDashed,
+  ClipboardList,
+  Clock3,
+  Edit3,
+  ExternalLink,
+  Eye,
+  Heart,
+  Mail,
+  MapPin,
+  MessageSquare,
+  ShieldCheck,
+  Star,
+  Trash2,
+  Users,
+  Sparkles,
+  Rocket,
+  UserRound,
+  BriefcaseBusiness,
+  Building,
+} from "lucide-react";
 
 const Motion = motion;
 
 function roleToRoute(role, id) {
-  // Safety: if a user opens a profile id that is not a buyer, redirect to the correct role route.
   if (!id) return "/feed";
   if (role === "buyer") return `/buyer/${encodeURIComponent(id)}`;
   if (role === "buying_house") return `/buying-house/${encodeURIComponent(id)}`;
@@ -54,6 +74,73 @@ function isBoostActive(boost) {
   const endsAt = new Date(boost.ends_at).getTime();
   if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt)) return false;
   return now >= startsAt && now <= endsAt;
+}
+
+function Pill({ children, tone = "default", title }) {
+  const tones = {
+    default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+    success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+    info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
+    warning: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+    premium: "bg-gradient-to-r from-sky-500 to-cyan-500 text-white",
+    danger: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
+  };
+  return (
+    <span title={title} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}>
+      {children}
+    </span>
+  );
+}
+
+function Metric({ label, value, helper }) {
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
+      <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+      {helper ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
+    </div>
+  );
+}
+
+function AvatarFallback({ name, imageUrl }) {
+  const initials = (n) => {
+    if (!n) return "?";
+    return n.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
+  };
+  return (
+    <div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
+      <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
+        {imageUrl ? (
+          <img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
+        ) : (
+          initials(name)
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SoftCard({ children, className = "" }) {
+  return (
+    <div className={`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({ icon: Icon, title, subtitle, action }) {
+  return (
+    <div className="mb-4 flex items-start justify-between gap-3">
+      <div>
+        <div className="flex items-center gap-2">
+          {Icon ? <Icon className="h-4 w-4 text-sky-500" /> : null}
+          <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">{title}</h3>
+        </div>
+        {subtitle ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p> : null}
+      </div>
+      {action}
+    </div>
+  );
 }
 
 export default function BuyerProfile() {
@@ -181,7 +268,6 @@ export default function BuyerProfile() {
         setRequestsCursor(reset ? 10 : cursor + 10);
         setRequestsNext(data?.next_cursor ?? null);
       } catch {
-        // keep current list
       } finally {
         setLoadingRequests(false);
       }
@@ -237,7 +323,6 @@ export default function BuyerProfile() {
           : prev,
       );
     } catch {
-      // ignore
     }
   }
 
@@ -254,7 +339,6 @@ export default function BuyerProfile() {
           : prev,
       );
     } catch {
-      // ignore
     }
   }
 
@@ -275,649 +359,473 @@ export default function BuyerProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200">
         Loading profile...
       </div>
     );
   }
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200">
         {error}
       </div>
     );
   }
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200">
         Profile not found.
       </div>
     );
   }
 
+  const displayName = user?.name || "Buyer profile";
+  const country = user?.profile?.country || "—";
+  const industry = user?.profile?.industry || "Garments & Textile";
+  const organization = user?.profile?.organization_name || user?.profile?.organization || user?.name || "—";
+  const avg = ratingSummary?.aggregate?.average_score ?? 0;
+  const totalRatings = ratingSummary?.aggregate?.total_count ?? 0;
+  const totalRequests = profile?.counts?.requests ?? 0;
+  const joinedYear = user?.created_at ? new Date(user.created_at).getFullYear() : "—";
+
+  const badges = [
+    user?.verified ? { label: "Verified", icon: ShieldCheck, tone: "info" } : null,
+    isCertified ? { label: "Certified", icon: BadgeCheck, tone: "success" } : null,
+    isPremium ? { label: "Premium Reach", icon: Sparkles, tone: "premium", title: "Boosted visibility enabled for Premium" } : null,
+    isBoosted ? { label: "Boosted", icon: Rocket, tone: "success" } : null,
+  ].filter(Boolean);
+
+  const coverImage = user?.profile?.cover_image_url;
+  const avatarImage = user?.profile?.profile_image;
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
-      <div className="relative">
-        <div className="h-32 sm:h-40 overflow-hidden rounded-t-2xl bg-gradient-to-r from-[#0A66C2] to-[#2E8BFF]">
-          {user.profile?.cover_image_url ? (
-            <motion.img
-              src={user.profile.cover_image_url}
-              alt="Cover"
-              className="h-full w-full object-cover"
-              style={{ y: reduceMotion ? 0 : coverParallax }}
-            />
-          ) : null}
-        </div>
-        <div className="sm:absolute sm:-bottom-12 sm:left-6">
-          <div className="relative">
-            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-4 border-white dark:border-slate-900 bg-white overflow-hidden shadow-md">
-              {user.profile?.profile_image ? (
-                <img
-                  src={user.profile.profile_image}
-                  alt={user.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
-                    {user.name?.charAt(0) || "U"}
-                  </span>
-                </div>
-              )}
-            </div>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300"
+          >
+            <ChevronLeft className="h-4 w-4" /> Back
+          </button>
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <ShieldCheck className="h-3.5 w-3.5" /> Role: <span className="font-medium text-slate-700 dark:text-slate-200">buyer</span>
           </div>
         </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
-        <aside className="col-span-12 lg:col-span-4 space-y-4">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
-          >
-            <div className="min-w-0 pl-24 sm:pl-0">
-              <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
-                {user.name}
-              </p>
-              <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                <span className="uppercase">Buyer</span>
-                {user.profile?.country ? (
-                  <span>- {user.profile.country}</span>
-                ) : null}
-                {user.verified ? (
-                  <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
-                    Verified
-                  </span>
-                ) : null}
-                {isCertified ? (
-                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
-                    Certified
-                  </span>
-                ) : null}
-                {isPremium ? (
-                  <span
-                    title="Boosted visibility enabled for Premium"
-                    className="inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200"
-                  >
-                    Premium Reach
-                  </span>
-                ) : null}
-                {isBoosted ? (
-                  <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200">
-                    Boosted
-                  </span>
-                ) : null}
-              </div>
-            </div>
 
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={contact}
-                className="flex-1 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-gtBlueHover active:scale-95"
-              >
-                Contact
-              </button>
-              <button
-                onClick={follow}
-                className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
-              >
-                {relationship.following ? "Following" : "Follow"}
-              </button>
-              <button
-                onClick={connect}
-                className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
-              >
-                {relationship.friend_status === "friends"
-                  ? "Connected"
-                  : relationship.friend_status === "requested"
-                    ? "Requested"
-                    : "Connect"}
-              </button>
-            </div>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.55fr_0.85fr]">
+          <div className="space-y-6">
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+              animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_100px_rgba(14,165,233,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70"
+            >
+              <div className="relative h-[280px] overflow-hidden sm:h-[340px]">
+                {coverImage ? (
+                  <motion.img
+                    src={coverImage}
+                    alt="Cover"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    style={{ y: reduceMotion ? 0 : coverParallax }}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.35),transparent_25%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.22),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(14,165,233,0.3))]" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                    <div className="flex items-end gap-4">
+                      <div className="-mb-10 sm:-mb-12">
+                        <AvatarFallback name={displayName} imageUrl={avatarImage} />
+                      </div>
+                      <div className="pb-1 text-white">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{displayName}</h1>
+                          <Pill tone="info">Buyer</Pill>
+                          {country !== "—" ? (
+                            <Pill tone="info"><MapPin className="h-3.5 w-3.5" /> {country}</Pill>
+                          ) : null}
+                        </div>
+                        <p className="mt-1 text-sm text-slate-200/90">{organization}</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {badges.map((badge) => (
+                            <Pill key={badge.label} tone={badge.tone} title={badge.title}>
+                              {badge.label}
+                            </Pill>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 pb-1">
+                      <button
+                        onClick={contact}
+                        className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
+                      >
+                        <Mail className="h-4 w-4" /> Contact
+                      </button>
+                      <button
+                        onClick={follow}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
+                      >
+                        <Heart className={`h-4 w-4 ${relationship.following ? "fill-white" : ""}`} /> {relationship.following ? "Following" : "Follow"}
+                      </button>
+                      <button
+                        onClick={connect}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
+                      >
+                        <Users className="h-4 w-4" /> {relationship.friend_status === "friends" ? "Connected" : relationship.friend_status === "requested" ? "Requested" : "Connect"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-3">
-              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Industry</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {user.profile?.industry || "Garments & Textile"}
-                </p>
+              <div className="grid gap-4 p-5 pt-12 sm:grid-cols-2 lg:grid-cols-4 lg:pt-14">
+                <Metric label="Trust" value={<span className="inline-flex items-center gap-2">{user?.verified ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <CircleDashed className="h-4 w-4 text-slate-400" />} {user?.verified ? "Verified" : "Unverified"}</span>} helper="Identity signal" />
+                <Metric label="Rating" value={<span className="inline-flex items-center gap-1"><Star className="h-4 w-4 text-amber-500" /> {avg.toFixed(1)} / 5</span>} helper={`${totalRatings} reviews`} />
+                <Metric label="Requests" value={`${totalRequests} request${totalRequests === 1 ? "" : "s"}`} helper="Posted on the platform" />
+                <Metric label="Joined" value={joinedYear} helper={profile?.effective_plan ? `Plan: ${profile.effective_plan}` : "Account age"} />
               </div>
-              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Organization</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {user.profile?.organization_name ||
-                    user.profile?.organization ||
-                    user.name}
-                </p>
-              </div>
-              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Rating</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {ratingSummary?.aggregate?.average_score ?? "0.0"} / 5
-                </p>
-                <p className="text-[11px] text-slate-600">
-                  {ratingSummary?.aggregate?.total_count ?? 0} reviews
-                </p>
-              </div>
-              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Certifications</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {(user.profile?.certifications || []).join(", ") || "--"}
-                </p>
-              </div>
-              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Capacity</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {user.profile?.sourcing_capacity ||
-                    user.profile?.monthly_capacity ||
-                    user.profile?.annual_capacity ||
-                    user.profile?.capacity ||
-                    "--"}
-                </p>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Requests</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {profile?.counts?.requests ?? 0}
-                </p>
-                <p className="text-[11px] text-slate-600">Total posted</p>
-              </div>
-              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Joined</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {user.created_at
-                    ? new Date(user.created_at).getFullYear()
-                    : "--"}
-                </p>
-                <p className="text-[11px] text-slate-600">Year</p>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          <VerificationPanel summary={verification} />
-          {certification ? (
-            <div className="mt-4 rounded-xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-              <p className="text-[11px] text-slate-500">
-                Order Completion Certification
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                {certification.status || "pending"}
-              </p>
-              <p className="text-[11px] text-slate-600">
-                Signed contracts: {certification.signed_contracts ?? 0}
-              </p>
-            </div>
-          ) : null}
-        </aside>
+            <SoftCard>
+              <div className="flex flex-wrap gap-2">
+                {["overview", "requests", "work", "reviews"].map((tab) => {
+                  const active = activeTab === tab;
+                  const label = tab === "overview" ? "Overview" : tab === "work" ? "Work History" : tab === "requests" ? "Requests" : "Reviews";
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${active ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </SoftCard>
 
-        <main className="col-span-12 lg:col-span-8 space-y-4">
-          <CrmSummaryPanel targetId={user.id} />
-          <JourneyTimeline
-            title="Journey Timeline"
-            matchId={
-              journeyParams.get("match_id") ||
-              journeyParams.get("journey_match_id") ||
-              ""
-            }
-            contractId={journeyParams.get("contract_id") || ""}
-            requirementId={journeyParams.get("requirement_id") || ""}
-          />
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.45,
-              ease: [0.16, 1, 0.3, 1],
-              delay: 0.05,
-            }}
-            className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
-          >
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 shadow-dividerB dark:shadow-dividerBDark dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
-              {["overview", "requests", "work", "reviews"].map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
-                    activeTab === tab
-                      ? "bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35"
-                      : "bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8"
-                  }`}
-                >
-                  {activeTab === tab ? (
-                    <motion.span
-                      layoutId="profile-tab"
-                      className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
-                      transition={{
-                        type: "spring",
-                        stiffness: 420,
-                        damping: 34,
-                      }}
-                    />
-                  ) : null}
-                  {tab === "overview"
-                    ? "Overview"
-                    : tab === "work"
-                      ? "Work History"
-                      : "Reviews"}
-                </button>
-              ))}
-            </div>
-
-            <div className="p-4">
+            <AnimatePresence mode="wait">
               {activeTab === "overview" ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      About
+                <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <SoftCard>
+                    <SectionTitle icon={Eye} title="About" subtitle="Buyer profile summary and positioning." />
+                    <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+                      {user?.profile?.about || "No description added yet."}
                     </p>
-                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                      {user.profile?.about || "No description added yet."}
-                    </p>
+                  </SoftCard>
+
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <SoftCard>
+                      <SectionTitle icon={ClipboardList} title="Core Profile" subtitle="Quick facts and profile metadata." />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Metric label="Country" value={user?.profile?.country || "—"} />
+                        <Metric label="Certifications" value={(user?.profile?.certifications || []).join(", ") || "—"} />
+                        <Metric label="Active Since" value={user?.profile?.active_since || new Date().getFullYear()} />
+                        <Metric label="Role" value="Buyer" />
+                      </div>
+                    </SoftCard>
+
+                    <SoftCard>
+                      <SectionTitle icon={BriefcaseBusiness} title="Trust Indicators" subtitle="Verification and commercial status." />
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                          <div>
+                            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Verification Panel</div>
+                            <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Status and credibility snapshot.</div>
+                          </div>
+                          <Pill tone={certification?.status === "certified" ? "success" : "default"}>{certification?.status || "Unknown"}</Pill>
+                        </div>
+                        <Metric label="Signed contracts" value={certification?.signed_contracts ?? 0} />
+                        <Metric label="Premium status" value={isPremium ? "Enabled" : "Standard"} helper={isBoosted ? "Boosted visibility active" : "No active profile boost"} />
+                      </div>
+                    </SoftCard>
                   </div>
 
                   {hasBrandKit ? (
-                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        Brand Kit
-                      </p>
-                      <div className="mt-3 flex items-center gap-3">
-                        {brandProfile.brand_logo_url ? (
-                          <img
-                            src={brandProfile.brand_logo_url}
-                            alt="Brand logo"
-                            className="h-12 w-12 rounded-xl object-cover"
-                          />
-                        ) : (
-                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
-                        )}
+                    <SoftCard>
+                      <SectionTitle icon={Eye} title="Brand Kit" subtitle="Visible only to self or admins." />
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
+                          {brandProfile.brand_logo_url ? (
+                            <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-full w-full object-cover" />
+                          ) : (
+                            <Building className="h-5 w-5 text-sky-500" />
+                          )}
+                        </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
-                            {brandProfile.brand_name || user.name}
-                          </div>
-                          {brandProfile.brand_tagline ? (
-                            <div className="text-xs text-slate-600 dark:text-slate-300">
-                              {brandProfile.brand_tagline}
-                            </div>
-                          ) : null}
-                          {brandProfile.brand_website ? (
-                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                              {brandProfile.brand_website}
-                            </div>
-                          ) : null}
+                          <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{brandProfile.brand_name || user?.name}</div>
+                          {brandProfile.brand_tagline ? <div className="text-xs text-slate-500 dark:text-slate-400">{brandProfile.brand_tagline}</div> : null}
+                          {brandProfile.brand_website ? <div className="text-xs text-slate-500 dark:text-slate-400">{brandProfile.brand_website}</div> : null}
                         </div>
                       </div>
-                    </div>
+                    </SoftCard>
                   ) : null}
 
                   {isPremium && hasAccountManager ? (
-                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        Dedicated Account Manager
-                      </p>
-                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-                        {brandProfile.account_manager_name ||
-                          "Assigned manager"}
+                    <SoftCard>
+                      <SectionTitle icon={Users} title="Dedicated Account Manager" subtitle="Premium support contact." />
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <Metric label="Name" value={brandProfile.account_manager_name || "Assigned manager"} />
+                        <Metric label="Email" value={brandProfile.account_manager_email || "—"} />
+                        <Metric label="Phone" value={brandProfile.account_manager_phone || "—"} />
                       </div>
-                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        {brandProfile.account_manager_email ||
-                          brandProfile.account_manager_phone ||
-                          ""}
-                      </div>
-                    </div>
+                    </SoftCard>
                   ) : null}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Country
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {user.profile?.country || "--"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Certifications
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {(user.profile?.certifications || []).join(", ") ||
-                          "--"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Active Since
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {user.profile?.active_since || new Date().getFullYear()}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Role
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        Buyer
-                      </p>
-                    </div>
-                  </div>
-
-                  {(user.profile?.companies_worked_with || []).length > 0 && (
-                    <div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">
-                        Companies Worked With
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {(user.profile?.companies_worked_with || []).map(
-                          (company, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10"
-                            >
+                  <SoftCard>
+                    <SectionTitle icon={Building} title="Companies Worked With" subtitle="Selected brand and organizational history." />
+                    {(user?.profile?.companies_worked_with || []).length > 0 ? (
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {(user.profile.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
                               {company.logo ? (
-                                <img
-                                  src={company.logo}
-                                  alt={company.name}
-                                  className="h-10 w-10 rounded-lg object-cover"
-                                />
+                                <img src={company.logo} alt={company.name || "Company"} className="h-full w-full object-cover" />
                               ) : (
-                                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
+                                <Building2 className="h-5 w-5 text-sky-500" />
                               )}
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
-                                  {company.name}
-                                </p>
-                                {company.location && (
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    {company.location}
-                                  </p>
-                                )}
-                              </div>
                             </div>
-                          ),
-                        )}
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{company.name || "Untitled company"}</div>
+                              {company.location ? <div className="truncate text-xs text-slate-500 dark:text-slate-400">{company.location}</div> : null}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No companies listed yet.</p>
+                    )}
+                  </SoftCard>
+                </motion.div>
               ) : null}
 
               {activeTab === "requests" ? (
-                <div className="space-y-3">
-                  {viewerPerms.is_self || viewerPerms.is_admin ? (
-                    <>
-                      {requests.map((r) => (
-                        <div
-                          key={r.id}
-                          className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4 dark:bg-slate-900/50"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1">
-                              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                                {r.category || "Request"}
-                              </p>
-                              <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                                {r.custom_description || ""}
-                              </p>
-                              <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2">
-                                <div>
-                                  Quantity:{" "}
-                                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                                    {r.quantity || "-"}
-                                  </span>
+                <motion.div key="requests" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <SoftCard>
+                    <SectionTitle icon={ClipboardList} title="Requests" subtitle="Buyer sourcing demand and procurement details." action={<Pill tone="info">{totalRequests} request{totalRequests === 1 ? "" : "s"}</Pill>} />
+                    {viewerPerms.is_self || viewerPerms.is_admin ? (
+                      <>
+                        <div className="space-y-3">
+                          {requests.map((r) => (
+                            <div key={r.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.category || "Request"}</div>
+                                    <Pill tone={r.status === "active" ? "success" : r.status === "pending" ? "warning" : "default"}>{r.status || "Unknown"}</Pill>
+                                  </div>
+                                  <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ""}</p>
                                 </div>
-                                <div>
-                                  Timeline:{" "}
-                                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                                    {r.timeline_days || "-"} days
-                                  </span>
-                                </div>
-                                <div>
-                                  Material:{" "}
-                                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                                    {r.material || "-"}
-                                  </span>
-                                </div>
-                                <div>
-                                  Status:{" "}
-                                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                                    {r.status || "-"}
-                                  </span>
-                                </div>
+                                <button onClick={contact} className="inline-flex shrink-0 items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300">
+                                  <MessageSquare className="h-4 w-4" /> Contact
+                                </button>
+                              </div>
+                              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                <Metric label="Quantity" value={r.quantity || "-"} />
+                                <Metric label="Timeline" value={r.timeline_days || "-"} helper="days" />
+                                <Metric label="Material" value={r.material || "-"} />
+                                <Metric label="Status" value={r.status || "-"} />
                               </div>
                             </div>
-                            <div className="shrink-0">
-                              <button
-                                onClick={contact}
-                                className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition"
-                              >
-                                Contact
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {loadingRequests ? (
-                        <NeonAtom size={40} text="Loading requests..." />
-                      ) : null}
-                      {requestsNext !== null && !loadingRequests ? (
-                        <button
-                          type="button"
-                          onClick={() => loadRequests({ reset: false })}
-                          className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
-                        >
-                          Load more
-                        </button>
-                      ) : null}
-                      {!requests.length && !loadingRequests ? (
-                        <div className="text-sm text-slate-600 dark:text-slate-300">
-                          No requests found.
-                        </div>
-                      ) : null}
-                    </>
-                  ) : (
-                    <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
-                      <p className="font-semibold">
-                        Request details are private
-                      </p>
-                      <p className="mt-2">
-                        Only the buyer can view detailed request information to
-                        protect business privacy.
-                      </p>
-                      <p className="mt-3 text-xs">
-                        Total requests posted:{" "}
-                        <span className="font-bold">
-                          {profile?.counts?.requests || 0}
-                        </span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ) : null}
-
-              {activeTab === "work" ? (
-                <div className="space-y-4">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    Work History &amp; Portfolio
-                  </p>
-                  {(user.profile?.companies_worked_with || []).length > 0 ? (
-                    <div className="space-y-3">
-                      {(user.profile.companies_worked_with || []).map(
-                        (company, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-3 rounded-2xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10"
-                          >
-                            {company.logo ? (
-                              <img
-                                src={company.logo}
-                                alt={company.name}
-                                className="h-12 w-12 rounded-xl object-cover"
-                              />
-                            ) : (
-                              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] flex items-center justify-center">
-                                <span className="text-lg font-bold text-white">
-                                  {company.name?.charAt(0) || "?"}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
-                                {company.name}
-                              </p>
-                              <p className="text-xs text-slate-600 dark:text-slate-400">
-                                {company.role || "Partner"} -{" "}
-                                {company.period || "Ongoing"}
-                              </p>
-                            </div>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl bg-white/60 p-4 text-sm text-slate-600 dark:text-slate-300 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      No work history added yet.
-                    </div>
-                  )}
-                </div>
-              ) : null}
-
-              {activeTab === "reviews" ? (
-                <div className="space-y-3">
-                  <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                      Rating summary
-                    </p>
-                    <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                      {ratingSummary?.aggregate?.average_score ?? "0.0"} / 5 -{" "}
-                      {ratingSummary?.aggregate?.total_count ?? 0} reviews -{" "}
-                      {ratingSummary?.aggregate?.reliability?.confidence ||
-                        "low"}{" "}
-                      confidence
-                    </p>
-                  </div>
-                  <div className="rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 ring-1 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/30">
-                    <p className="font-semibold">Review Policy</p>
-                    <p className="mt-1">
-                      Reviews can only be edited or deleted by the person who
-                      wrote them. Profile owners cannot delete reviews to
-                      maintain transparency and trust.
-                    </p>
-                  </div>
-                  {(ratingSummary?.recent_reviews || []).map((r) => {
-                    const canEdit =
-                      currentUser?.id &&
-                      String(currentUser.id) === String(r.from_user_id || "");
-                    return (
-                      <div
-                        key={r.id}
-                        className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                              {r.score}* -- {r.reviewer_name || "Anonymous"}
-                            </p>
-                            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                              {r.comment || "No comment provided."}
-                            </p>
-                            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                              {r.created_at
-                                ? new Date(r.created_at).toLocaleDateString()
-                                : ""}
-                            </p>
-                          </div>
-                          {canEdit ? (
-                            <div className="flex flex-col gap-2">
+                          ))}
+                          {loadingRequests ? (
+                            <NeonAtom size={40} text="Loading requests..." />
+                          ) : null}
+                          {requestsNext !== null && !loadingRequests ? (
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="text-sm text-slate-500 dark:text-slate-400">Cursor-based pagination, limit 10.</div>
                               <button
                                 type="button"
-                                className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
-                                onClick={async () => {
-                                  const score = window.prompt(
-                                    "Update rating (1-5)",
-                                    String(r.score || "5"),
-                                  );
-                                  if (!score) return;
-                                  const comment = window.prompt(
-                                    "Update review comment",
-                                    r.comment || "",
-                                  );
-                                  try {
-                                    await apiRequest(`/ratings/${r.id}`, {
-                                      method: "PATCH",
-                                      token,
-                                      body: {
-                                        score: Number(score),
-                                        comment: comment ?? "",
-                                      },
-                                    });
-                                    await loadRatings();
-                                  } catch {
-                                    // ignore
-                                  }
-                                }}
+                                onClick={() => loadRequests({ reset: false })}
+                                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
                               >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
-                                onClick={async () => {
-                                  if (!window.confirm("Delete this review?"))
-                                    return;
-                                  try {
-                                    await apiRequest(`/ratings/${r.id}`, {
-                                      method: "DELETE",
-                                      token,
-                                    });
-                                    await loadRatings();
-                                  } catch {
-                                    // ignore
-                                  }
-                                }}
-                              >
-                                Delete
+                                Load more
                               </button>
                             </div>
                           ) : null}
+                          {!requests.length && !loadingRequests ? (
+                            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
+                              No requests found.
+                            </div>
+                          ) : null}
                         </div>
+                      </>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Request details are private</div>
+                          <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                            Only the buyer can view detailed request information to protect business privacy.
+                          </p>
+                        </div>
+                        <Metric label="Total requests posted" value={`${totalRequests} request${totalRequests === 1 ? "" : "s"}`} />
                       </div>
-                    );
-                  })}
-                  {!ratingSummary?.recent_reviews?.length ? (
-                    <div className="text-sm text-slate-600 dark:text-slate-300">
-                      No reviews yet.
-                    </div>
-                  ) : null}
-                </div>
+                    )}
+                  </SoftCard>
+                </motion.div>
               ) : null}
-            </div>
-          </motion.div>
-        </main>
+
+              {activeTab === "work" ? (
+                <motion.div key="work" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <SoftCard>
+                    <SectionTitle icon={BriefcaseBusiness} title="Work History & Portfolio" subtitle="Previously worked companies and engagement history." />
+                    {(user?.profile?.companies_worked_with || []).length > 0 ? (
+                      <div className="space-y-3">
+                        {(user.profile.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10">
+                                {company.logo ? (
+                                  <img src={company.logo} alt={company.name || "Company"} className="h-full w-full object-cover" />
+                                ) : (
+                                  <Building2 className="h-5 w-5 text-sky-500" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{company.name || "Untitled company"}</div>
+                                <div className="truncate text-xs text-slate-500 dark:text-slate-400">{company.role || "Role not specified"}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                              <CalendarDays className="h-4 w-4" /> {company.period || company.location || "Period not specified"}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
+                        No work history added yet.
+                      </div>
+                    )}
+                  </SoftCard>
+                </motion.div>
+              ) : null}
+
+              {activeTab === "reviews" ? (
+                <motion.div key="reviews" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  <SoftCard>
+                    <SectionTitle icon={Star} title="Rating summary" subtitle="Public reviews and confidence scoring." />
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Metric label="Average score" value={`${avg.toFixed(1)} / 5`} />
+                      <Metric label="Total reviews" value={totalRatings} />
+                      <Metric label="Confidence" value={ratingSummary?.aggregate?.reliability?.confidence || "low"} helper="Aggregate reliability" />
+                    </div>
+                  </SoftCard>
+
+                  <div className="rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100">
+                    <strong className="font-semibold">Review Policy:</strong> Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.
+                  </div>
+
+                  <SoftCard>
+                    <SectionTitle icon={MessageSquare} title="Recent reviews" subtitle="Public feedback from past collaborations." />
+                    {(ratingSummary?.recent_reviews || []).length > 0 ? (
+                      <div className="space-y-3">
+                        {(ratingSummary.recent_reviews || []).map((review) => {
+                          const canEdit = currentUser?.id && String(currentUser.id) === String(review.from_user_id || "");
+                          return (
+                            <div key={review.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Pill tone="warning"><Star className="h-3.5 w-3.5" /> {Number(review.score || 0).toFixed(1)}</Pill>
+                                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{review.reviewer_name || "Anonymous"}</div>
+                                  </div>
+                                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">{review.comment || "No comment provided."}</p>
+                                  <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                    {review.created_at ? new Date(review.created_at).toLocaleDateString() : ""}
+                                  </div>
+                                </div>
+                                {canEdit ? (
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
+                                      onClick={async () => {
+                                        const score = window.prompt("Update rating (1-5)", String(review.score || "5"));
+                                        if (!score) return;
+                                        const comment = window.prompt("Update review comment", review.comment || "");
+                                        try {
+                                          await apiRequest(`/ratings/${review.id}`, {
+                                            method: "PATCH",
+                                            token,
+                                            body: { score: Number(score), comment: comment ?? "" },
+                                          });
+                                          await loadRatings();
+                                        } catch {}
+                                      }}
+                                    >
+                                      <Edit3 className="h-4 w-4" /> Edit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300"
+                                      onClick={async () => {
+                                        if (!window.confirm("Delete this review?")) return;
+                                        try {
+                                          await apiRequest(`/ratings/${review.id}`, { method: "DELETE", token });
+                                          await loadRatings();
+                                        } catch {}
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" /> Delete
+                                    </button>
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
+                        No reviews yet.
+                      </div>
+                    )}
+                  </SoftCard>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+
+            <JourneyTimeline
+              title="Journey Timeline"
+              matchId={
+                journeyParams.get("match_id") ||
+                journeyParams.get("journey_match_id") ||
+                ""
+              }
+              contractId={journeyParams.get("contract_id") || ""}
+              requirementId={journeyParams.get("requirement_id") || ""}
+            />
+
+            <CrmSummaryPanel targetId={user.id} />
+          </div>
+
+          <div className="space-y-6 xl:sticky xl:top-6 xl:h-fit">
+            <SoftCard>
+              <SectionTitle icon={ShieldCheck} title="Verification Panel" subtitle="Shared trust and compliance component." />
+              <VerificationPanel summary={verification} />
+            </SoftCard>
+
+            {certification ? (
+              <SoftCard>
+                <SectionTitle icon={BadgeCheck} title="Order Completion Certification" subtitle="Signed contract record." />
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                    <div>
+                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Status</div>
+                      <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Certification status</div>
+                    </div>
+                    <Pill tone={certification.status === "certified" ? "success" : "default"}>{certification.status || "pending"}</Pill>
+                  </div>
+                  <Metric label="Signed contracts" value={certification.signed_contracts ?? 0} />
+                </div>
+              </SoftCard>
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );

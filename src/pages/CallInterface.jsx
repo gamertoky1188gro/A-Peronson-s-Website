@@ -1,50 +1,41 @@
-/*
-  Route: /call
-  Access: Protected (login required)
-  Allowed roles: buyer, buying_house, factory, owner, admin, agent
-
-  Public Pages:
-    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
-  Protected Pages (login required):
-    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
-    /notifications, /chat, /call, /verification, /verification-center
-
-  Primary responsibilities:
-    - Provide video/audio call UI and call controls (mic/cam, participants, share links).
-    - Enforce any call-related permissions and safety cues (recording / identity / dispute context).
-
-  Key API endpoints (high level):
-    - POST /api/calls (create) / GET /api/calls/:id (status) (depending on server)
-    - Any signaling endpoints if implemented (or WebRTC signaling via WS)
-
-  Notes:
-    - AppLayout hides NavBar/Footer for /call (immersive route).
-*/
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  ChevronLeft,
+  ArrowLeft,
+  Camera,
+  CameraOff,
+  CheckCircle2,
+  ChevronDown,
   Copy,
-  RefreshCw,
-  ShieldAlert,
-  MessageSquare,
+  Ellipsis,
+  Maximize,
   Mic,
   MicOff,
-  Video,
-  VideoOff,
+  MessageSquare,
   PhoneOff,
-  Volume2,
-  VolumeX,
-  Maximize,
+  RefreshCw,
   Send,
   Smile,
-  MoreHorizontal,
+  Speaker,
+  SpeakerOff,
+  SunMoon,
+  Video,
+  VideoOff,
+  X,
+  CircleDot,
+  Circle,
+  Loader2,
+  ShieldAlert,
+  AlertTriangle,
+  Clock3,
+  Radio,
+  WifiOff,
+  ChevronUp,
 } from "lucide-react";
 import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { trackClientEvent } from "../lib/events";
 import MarkdownMessage from "../components/chat/MarkdownMessage";
 import JourneyTimeline from "../components/JourneyTimeline";
-import NeonAtom from "../components/ui/NeonAtom";
 
 const WS_BASE = (() => {
   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
@@ -66,31 +57,131 @@ const ICE_SERVERS = (() => {
 })();
 
 const QUICK_EMOJIS = [
-  "😀",
-  "😁",
-  "😂",
-  "🤣",
-  "😊",
-  "😍",
-  "😎",
-  "🤝",
-  "👍",
-  "👎",
-  "🙏",
-  "👏",
-  "🎉",
-  "🔥",
-  "💯",
-  "✅",
-  "⚡",
-  "💡",
-  "📝",
-  "📎",
-  "🧠",
-  "🚀",
-  "❤️",
-  "✨",
+  "😀", "😁", "😂", "🤣", "😊", "😍", "😎", "🤝",
+  "👍", "👎", "🙏", "👏", "🎉", "🔥", "💯", "✅",
+  "⚡", "💡", "📝", "📎", "🧠", "🚀", "❤️", "✨",
 ];
+
+function cx(...parts) {
+  return parts.filter(Boolean).join(" ");
+}
+
+function Badge({ tone = "neutral", children, className = "" }) {
+  const tones = {
+    neutral: "bg-slate-900/80 text-slate-100 ring-white/10 dark:bg-slate-950/80",
+    emerald: "bg-emerald-500/15 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300",
+    rose: "bg-rose-500/15 text-rose-700 ring-rose-500/20 dark:text-rose-300",
+    amber: "bg-amber-500/15 text-amber-700 ring-amber-500/20 dark:text-amber-300",
+    sky: "bg-sky-500/15 text-sky-700 ring-sky-500/20 dark:text-sky-300",
+    blue: "bg-blue-500/15 text-blue-700 ring-blue-500/20 dark:text-blue-300",
+    violet: "bg-violet-500/15 text-violet-700 ring-violet-500/20 dark:text-violet-300",
+  };
+  return (
+    <span className={cx("inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1", tones[tone], className)}>
+      {children}
+    </span>
+  );
+}
+
+function IconButton({ icon: Icon, label, active = false, onClick, className = "", disabled = false, tone = "default", badge }) {
+  const toneClasses = {
+    default: "bg-white/8 hover:bg-white/12 text-white ring-white/10 dark:bg-slate-950/70 dark:text-slate-100",
+    primary: "bg-sky-500/15 hover:bg-sky-500/20 text-sky-200 ring-sky-400/20",
+    danger: "bg-rose-500/15 hover:bg-rose-500/20 text-rose-200 ring-rose-400/20",
+    muted: "bg-slate-500/15 hover:bg-slate-500/20 text-slate-200 ring-slate-400/20",
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className={cx(
+        "relative inline-flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400/60 disabled:cursor-not-allowed disabled:opacity-50",
+        toneClasses[tone],
+        active && "scale-[1.02] shadow-lg shadow-sky-500/10",
+        className,
+      )}
+    >
+      <Icon className="h-5 w-5" />
+      {badge ? (
+        <span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white shadow">{badge}</span>
+      ) : null}
+    </button>
+  );
+}
+
+function MiniStat({ label, value, icon: Icon }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/8 p-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/60">
+      <div className="flex items-center gap-3">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-sky-500/15 text-sky-200 ring-1 ring-sky-400/20 dark:text-sky-300">
+          <Icon className="h-4 w-4" />
+        </div>
+        <div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
+          <div className="text-sm font-semibold text-slate-900 dark:text-white">{value}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ToastStack({ toasts, onDismiss }) {
+  return (
+    <div className="pointer-events-none fixed right-4 top-4 z-[80] flex w-[min(92vw,380px)] flex-col gap-3">
+      {toasts.map((toast) => (
+        <div
+          key={toast.id}
+          className={cx(
+            "pointer-events-auto rounded-2xl border p-4 shadow-2xl backdrop-blur-xl transition-all",
+            toast.type === "error" && "border-rose-500/20 bg-rose-500/12 text-rose-50",
+            toast.type === "success" && "border-emerald-500/20 bg-emerald-500/12 text-emerald-50",
+            toast.type === "info" && "border-slate-500/20 bg-slate-950/85 text-white",
+          )}
+        >
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5">
+              {toast.type === "error" ? <AlertTriangle className="h-5 w-5" /> : toast.type === "success" ? <CheckCircle2 className="h-5 w-5" /> : <CircleDot className="h-5 w-5" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold">{toast.title}</div>
+              <div className="mt-1 text-sm opacity-90">{toast.message}</div>
+            </div>
+            <button onClick={() => onDismiss(toast.id)} className="rounded-lg p-1 opacity-70 hover:bg-white/10 hover:opacity-100">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MediaGate({ gate, onAction, onDismiss }) {
+  if (!gate) return null;
+  return (
+    <div className="absolute inset-0 z-30 grid place-items-center bg-slate-950/70 p-4 backdrop-blur-md">
+      <div className="w-full max-w-lg rounded-[2rem] border border-white/10 bg-white/90 p-6 shadow-2xl dark:bg-slate-950/90">
+        <div className="flex items-start gap-4">
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-sky-500/15 text-sky-600 ring-1 ring-sky-500/20 dark:text-sky-300">
+            <ShieldAlert className="h-7 w-7" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{gate.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{gate.message}</p>
+            {gate.detail ? <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{gate.detail}</p> : null}
+          </div>
+        </div>
+        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+          <button onClick={onDismiss} className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5">Dismiss</button>
+          <button onClick={onAction} className="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20">{gate.actionLabel || "Try again"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CallInterface() {
   const [searchParams] = useSearchParams();
@@ -123,7 +214,8 @@ export default function CallInterface() {
   const [hasLocalStream, setHasLocalStream] = useState(false);
   const [isRequestingMedia, setIsRequestingMedia] = useState(false);
   const [mediaGate, setMediaGate] = useState(null);
-  const [recordingState, setRecordingState] = useState("idle"); // idle | recording | uploading | available | failed
+  const [recordingState, setRecordingState] = useState("idle");
+  const [toastQueue, setToastQueue] = useState([]);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -156,9 +248,6 @@ export default function CallInterface() {
   const chatInitializedRef = useRef(false);
   const mountedRef = useRef(true);
   const redirectedRef = useRef(false);
-
-  // Call recording (project.md requirement): record the call room locally and upload after ending.
-  // MVP approach: canvas-composited video (remote + local PIP) + mixed audio (local + remote).
   const recorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
   const recordingCleanupRef = useRef(null);
@@ -187,6 +276,7 @@ export default function CallInterface() {
     remoteParticipant?.email ||
     callDetails?.title ||
     "Participant";
+  const recordingLabel = recordingState === "recording" ? "REC" : recordingState === "uploading" ? "Uploading" : recordingState === "available" ? "Saved" : recordingState === "failed" ? "Failed" : "Idle";
 
   const userMap = useMemo(() => {
     const map = new Map();
@@ -217,51 +307,22 @@ export default function CallInterface() {
       ["checking"].includes(rtcIceState);
 
     if (!wsOnline) {
-      return {
-        label: wsStatus === "connecting" ? "Connecting" : "Offline",
-        pillClass:
-          "bg-slate-500/10 text-slate-700 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10",
-        dotClass:
-          wsStatus === "connecting"
-            ? "bg-amber-500 animate-pulse"
-            : "bg-slate-400",
-      };
+      if (wsStatus === "connecting") return { tone: "amber", label: "Connecting", pulse: true };
+      return { tone: "neutral", label: "Offline", pulse: false };
     }
-
-    if (rtcFailed) {
-      return {
-        label: "Connection issue",
-        pillClass:
-          "bg-rose-500/10 text-rose-700 ring-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/25",
-        dotClass: "bg-rose-500",
-      };
-    }
-
-    if (rtcConnected) {
-      return {
-        label: "Live",
-        pillClass:
-          "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/25",
-        dotClass: "bg-emerald-500 animate-pulse",
-      };
-    }
-
-    if (rtcConnecting) {
-      return {
-        label: "Connecting",
-        pillClass:
-          "bg-amber-500/10 text-amber-800 ring-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/25",
-        dotClass: "bg-amber-500 animate-pulse",
-      };
-    }
-
-    return {
-      label: "Waiting",
-      pillClass:
-        "bg-slate-500/10 text-slate-700 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10",
-      dotClass: "bg-slate-400",
-    };
+    if (rtcFailed) return { tone: "rose", label: "Connection issue", pulse: false };
+    if (rtcConnected) return { tone: "emerald", label: "Live", pulse: true };
+    if (rtcConnecting) return { tone: "amber", label: "Connecting", pulse: true };
+    return { tone: "sky", label: "Waiting", pulse: false };
   }, [rtcConnectionState, rtcIceState, wsStatus]);
+
+  const showToast = useCallback((type, title, message) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setToastQueue((prev) => [...prev, { id, type, title, message }]);
+    window.setTimeout(() => {
+      setToastQueue((prev) => prev.filter((t) => t.id !== id));
+    }, 2200);
+  }, []);
 
   const formatMessageTime = (iso) => {
     if (!iso) return "";
@@ -286,7 +347,7 @@ export default function CallInterface() {
       return {
         title: "Camera/microphone blocked",
         message:
-          "Allow Camera + Microphone for this site (browser lock icon → Site settings), then click “Try again”.",
+          "Allow Camera + Microphone for this site (browser lock icon → Site settings), then click \"Try again\".",
         actionLabel: "Try again",
       };
     }
@@ -295,7 +356,7 @@ export default function CallInterface() {
       return {
         title: "No camera/microphone found",
         message:
-          "Connect a camera/microphone (or enable it in OS settings), then click “Try again”.",
+          "Connect a camera/microphone (or enable it in OS settings), then click \"Try again\".",
         actionLabel: "Try again",
       };
     }
@@ -304,7 +365,7 @@ export default function CallInterface() {
       return {
         title: "Camera/microphone is busy",
         message:
-          "Close other apps using your camera/microphone (Zoom/Meet/etc.), then click “Try again”.",
+          "Close other apps using your camera/microphone (Zoom/Meet/etc.), then click \"Try again\".",
         actionLabel: "Try again",
       };
     }
@@ -1043,7 +1104,7 @@ export default function CallInterface() {
             setMediaGate({
               title: "Enable camera & microphone",
               message:
-                "Click “Allow access” to let this page use your camera/microphone for the call.",
+                "Click \"Allow access\" to let this page use your camera/microphone for the call.",
               actionLabel: "Allow access",
             });
             setHasLocalStream(false);
@@ -1153,7 +1214,7 @@ export default function CallInterface() {
               if (!mediaGateRef.current && mountedRef.current) {
                 setMediaGate({
                   title: "Enable camera & microphone",
-                  message: "Click “Allow access” to start the call.",
+                  message: "Click \"Allow access\" to start the call.",
                   actionLabel: "Allow access",
                 });
               }
@@ -1223,7 +1284,7 @@ export default function CallInterface() {
               if (!mediaGateRef.current && mountedRef.current) {
                 setMediaGate({
                   title: "Enable camera & microphone",
-                  message: "Click “Allow access” to answer the call.",
+                  message: "Click \"Allow access\" to answer the call.",
                   actionLabel: "Allow access",
                 });
               }
@@ -1450,7 +1511,6 @@ export default function CallInterface() {
     if (!localStream || !remoteStream) return;
 
     try {
-      // --- Build a composited video track via canvas (remote full + local PIP) ---
       const canvas = document.createElement("canvas");
       canvas.width = 1280;
       canvas.height = 720;
@@ -1458,14 +1518,12 @@ export default function CallInterface() {
       if (!ctx) throw new Error("Canvas recording context not available");
 
       const drawFrame = () => {
-        // Background.
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const remoteVideo = remoteVideoRef.current;
         const localVideo = localVideoRef.current;
 
-        // Draw remote full-screen when available; otherwise draw local.
         const canDrawRemote = remoteVideo && remoteVideo.readyState >= 2;
         const canDrawLocal = localVideo && localVideo.readyState >= 2;
 
@@ -1475,7 +1533,6 @@ export default function CallInterface() {
           ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
         }
 
-        // Local picture-in-picture overlay (bottom-right).
         if (canDrawLocal && canDrawRemote) {
           const pad = 22;
           const pipW = Math.round(canvas.width * 0.28);
@@ -1497,7 +1554,6 @@ export default function CallInterface() {
           window.requestAnimationFrame(drawFrame);
       };
 
-      // --- Mix audio tracks into a single track ---
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const dest = audioCtx.createMediaStreamDestination();
 
@@ -1544,7 +1600,6 @@ export default function CallInterface() {
         setRecordingState("failed");
       };
 
-      // Store a cleanup object so we can stop raf + close audio context later.
       recordingCleanupRef.current = {
         raf: null,
         stop: () => {
@@ -1610,7 +1665,6 @@ export default function CallInterface() {
     const mimeType = recorder.mimeType || "video/webm";
     const blob = new Blob(chunks, { type: mimeType });
 
-    // Reset refs before upload so UI is not stuck if upload fails.
     recorderRef.current = null;
     recordingChunksRef.current = [];
 
@@ -1644,7 +1698,6 @@ export default function CallInterface() {
   }, [callId]);
 
   useEffect(() => {
-    // Auto-start call recording when the call is connected (mandatory call recording requirement).
     if (recordingState !== "idle") return;
     if (rtcConnectionState !== "connected") return;
     if (!hasLocalStream || !hasRemoteStream) return;
@@ -1691,7 +1744,6 @@ export default function CallInterface() {
       });
     }
 
-    // Stop recording and upload before leaving the call room.
     try {
       await stopRecordingAndUpload();
     } catch {
@@ -1736,466 +1788,325 @@ export default function CallInterface() {
     }
   };
 
+  const conn = connectionBadge;
+
   return (
-    <div className="relative isolate flex h-screen w-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 font-sans text-slate-900 dark:from-[#050816] dark:via-slate-950/10 dark:to-[#120726] dark:text-slate-100">
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl motion-safe:animate-[callFloat_14s_ease-in-out_infinite] dark:bg-cyan-400/10" />
-        <div
-          className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10"
-          style={{ animationDelay: "-6s" }}
-        />
-        <div
-          className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10"
-          style={{ animationDelay: "-12s" }}
-        />
-      </div>
-      {toast ? (
-        <div className="pointer-events-none fixed left-1/2 top-[76px] z-[70] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 px-2">
-          <div
-            className={`rounded-2xl px-4 py-2 text-center text-sm font-semibold shadow-lg ring-1 backdrop-blur-xl${toast.tone === "error" ? "bg-rose-500/15 text-rose-100 ring-rose-500/25" : toast.tone === "success" ? "bg-emerald-500/15 text-emerald-50 ring-emerald-500/25" : "bg-slate-950/75 text-white ring-white/10"}`}
-          >
-            {toast.message}
-          </div>
-        </div>
-      ) : null}
-      {/* Top Header */}
-      <header className="flex h-16 items-center justify-between gap-4 shadow-dividerB dark:shadow-dividerBDark bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/40 sm:px-6">
-        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="group flex h-9 w-9 items-center justify-center rounded-xl bg-white/80 text-slate-600 shadow-sm ring-1 ring-slate-200/60 transition hover:bg-white hover:text-slate-900 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
-            title="Back"
-          >
-            <ChevronLeft
-              size={18}
-              className="transition-transform group-hover:-translate-x-0.5"
-            />
-          </button>
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold tracking-tight text-slate-900 dark:text-white sm:text-base">
-              Call with{" "}
-              <span className="text-slate-600 dark:text-slate-300">
-                “{remoteName}”
-              </span>
-            </div>
-            <div className="hidden truncate text-xs text-slate-500 dark:text-slate-300/80 sm:block">
-              {statusMessage || "Preparing call..."}
-            </div>
-          </div>
+    <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.30),transparent_28%),radial-gradient(circle_at_top_right,rgba(37,99,235,0.22),transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#e7f1ff_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.20),transparent_28%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_45%,#0b1728_100%)] dark:text-white">
+      <ToastStack toasts={toastQueue} onDismiss={(id) => setToastQueue((prev) => prev.filter((t) => t.id !== id))} />
+
+      <div ref={stageRef} className="relative flex min-h-screen flex-col">
+        <div className="pointer-events-none absolute inset-0 opacity-70">
+          <div className="absolute left-[-10%] top-[-10%] h-72 w-72 rounded-full bg-sky-400/20 blur-3xl dark:bg-sky-500/10" />
+          <div className="absolute right-[-8%] top-[12%] h-80 w-80 rounded-full bg-blue-500/20 blur-3xl dark:bg-blue-500/10" />
+          <div className="absolute bottom-[-18%] left-[22%] h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl dark:bg-cyan-400/10" />
         </div>
 
-        <div className="flex flex-none items-center gap-2">
-          <span
-            className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex${connectionBadge.pillClass}`}
-          >
-            <NeonAtom size={12} />
-            {connectionBadge.label}
-          </span>
-          {recordingState !== "idle" ? (
-            <span className="hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 sm:inline-flex">
-              <NeonAtom size={16} />
-              {recordingState === "recording"
-                ? "REC"
-                : recordingState === "uploading"
-                  ? "Uploading"
-                  : recordingState === "available"
-                    ? "Saved"
-                    : "Failed"}
-            </span>
-          ) : null}
-          <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-bold tabular-nums text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
-            {timer}
-          </span>
-        </div>
-      </header>
-
-      {/* Main Layout Content */}
-      <div className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6 lg:flex-row">
-        {/* Left Side: Video Feed Area */}
-        <div className="relative flex min-h-[520px] flex-1 flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10">
-          <div
-            ref={stageRef}
-            className="relative flex-1 overflow-hidden rounded-[24px] bg-slate-950"
-          >
-            {/* Remote Participant Label */}
-            <div className="absolute left-5 top-5 z-20 flex items-center gap-2 rounded-full bg-black/35 px-3 py-2 text-xs font-semibold text-white backdrop-blur-md ring-1 ring-white/10">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold">
-                {(remoteName || "U").slice(0, 1).toUpperCase()}
-              </div>
-              <div className="max-w-[220px] truncate">{remoteName}</div>
-            </div>
-
-            {/* Remote Video (Main) */}
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              muted={isSpeakerMuted}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/50" />
-            {!hasRemoteStream && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-white/80">
-                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 text-3xl font-bold ring-1 ring-white/10">
-                  {(remoteName || "U").slice(0, 1).toUpperCase()}
-                </div>
-                <div className="text-base font-semibold">{remoteName}</div>
-                <div className="max-w-xs text-center text-xs text-white/60">
-                  {statusMessage || "Waiting to connect..."}
-                </div>
-              </div>
-            )}
-
-            {mediaGate && !hasLocalStream && (
-              <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
-                <div className="w-full max-w-md rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white/10 p-6 text-center text-white backdrop-blur-md">
-                  <div className="text-lg font-semibold">{mediaGate.title}</div>
-                  <div className="mt-2 text-sm text-white/80">
-                    {mediaGate.message}
-                  </div>
-                  <div className="mt-5 flex items-center justify-center gap-3">
-                    {mediaGate.actionLabel ? (
-                      <button
-                        type="button"
-                        onClick={() => ensureLocalStream().catch(() => {})}
-                        disabled={isRequestingMedia}
-                        className="rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-60"
-                      >
-                        {isRequestingMedia
-                          ? "Requesting..."
-                          : mediaGate.actionLabel}
-                      </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => setMediaGate(null)}
-                      className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Local Video (PiP) */}
-            <div
-              className={`absolute right-5 top-5 z-30 aspect-video w-40 overflow-hidden rounded-2xl bg-black/80 ring-1${isSpeaking ? "ring-cyan-300/70" : "ring-white/20"}shadow-2xl shadow-black/40 sm:w-56`}
-              style={
-                isSpeaking
-                  ? {
-                      boxShadow:
-                        "0 22px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(34,211,238,0.35), 0 0 34px rgba(34,211,238,0.25)",
-                    }
-                  : undefined
-              }
-            >
-              <video
-                ref={localVideoRef}
-                autoPlay
-                playsInline
-                muted
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute bottom-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur">
-                {localName}
-              </div>
-            </div>
-
-            {/* Floating Call Controls */}
-            <div className="absolute bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-black/35 p-2 backdrop-blur-xl ring-1 ring-white/10 shadow-lg">
+        <header className="relative z-20 border-b border-white/12 bg-white/45 backdrop-blur-xl dark:bg-slate-950/50">
+          <div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+            <div className="flex min-w-0 items-center gap-3">
               <button
                 type="button"
-                onClick={() => setIsChatOpen((prev) => !prev)}
-                className={`relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isChatOpen ? "bg-sky-500/90 hover:bg-sky-500" : "bg-white/10 hover:bg-white/15"}`}
-                title={isChatOpen ? "Hide chat" : "Show chat"}
+                onClick={() => navigate(-1)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-slate-800 ring-1 ring-white/10 hover:bg-white/15 dark:text-white"
               >
-                <MessageSquare size={20} />
-                {unreadChatCount > 0 ? (
-                  <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white ring-2 ring-black/40">
-                    {unreadChatCount > 99 ? "99+" : unreadChatCount}
-                  </span>
-                ) : null}
+                <ArrowLeft className="h-5 w-5" />
               </button>
-              <button
-                type="button"
-                onClick={toggleSpeaker}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isSpeakerMuted ? "bg-amber-500/90 hover:bg-amber-500" : "bg-white/10 hover:bg-white/15"}`}
-                title={isSpeakerMuted ? "Unmute speaker" : "Mute speaker"}
-              >
-                {isSpeakerMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-              </button>
-              <button
-                type="button"
-                onClick={toggleMute}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isMuted ? "bg-rose-500 hover:bg-rose-600" : "bg-white/10 hover:bg-white/15"}`}
-                title={isMuted ? "Unmute mic" : "Mute mic"}
-                aria-pressed={!isMuted}
-                style={
-                  !isMuted && micLevel > 0.02
-                    ? {
-                        boxShadow: `0 0 ${10 + micLevel * 26}px rgba(34,211,238,${0.18 + micLevel * 0.35})`,
-                      }
-                    : undefined
-                }
-              >
-                {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-              </button>
-              <button
-                type="button"
-                onClick={endCall}
-                className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-500 text-white transition-all hover:bg-rose-600 active:scale-95"
-                title="End call"
-              >
-                <PhoneOff size={20} />
-              </button>
-              <button
-                type="button"
-                onClick={toggleCamera}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${!isCameraOn ? "bg-rose-500 hover:bg-rose-600" : "bg-white/10 hover:bg-white/15"}`}
-                title={!isCameraOn ? "Turn camera on" : "Turn camera off"}
-              >
-                {!isCameraOn ? <VideoOff size={20} /> : <Video size={20} />}
-              </button>
-              <button
-                type="button"
-                onClick={toggleFullscreen}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isFullscreen ? "bg-white/20" : "bg-white/10 hover:bg-white/15"}`}
-                title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-              >
-                <Maximize size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Transcription Bar */}
-          <div className="flex items-center gap-3 shadow-dividerT dark:shadow-dividerTDark bg-white/70 px-4 py-3 backdrop-blur-xl dark:bg-white/5 sm:px-6">
-            <div
-              className="flex items-end gap-1.5 text-sky-600 dark:text-cyan-300"
-              aria-hidden="true"
-            >
-              {[0.28, 0.44, 0.72, 0.44, 0.28].map((base, index) => (
-                <span
-                  key={index}
-                  className="h-5 w-1.5 rounded-full bg-current transition-transform duration-150 will-change-transform"
-                  style={{
-                    transformOrigin: "bottom",
-                    transform: `scaleY(${Math.max(0.18, base + micLevel * 0.9)})`,
-                  }}
-                />
-              ))}
-            </div>
-            <p className="min-w-0 flex-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
-              {statusMessage ||
-                callDetails?.context?.notes ||
-                "Live call in progress."}
-            </p>
-          </div>
-        </div>
-
-        {/* Right Side: Chat Sidebar */}
-        {isChatOpen ? (
-          <aside className="flex w-full flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10 lg:w-[380px]">
-            <div className="flex h-14 items-center justify-between gap-3 shadow-dividerB dark:shadow-dividerBDark bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5">
               <div className="min-w-0">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">
-                  Chat
-                </h2>
-                <p className="truncate text-[11px] text-slate-500 dark:text-slate-300/70">
-                  {remoteName}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="truncate text-lg font-extrabold tracking-tight sm:text-xl">Live Call</h1>
+                  <Badge tone={conn.tone} className="gap-1.5">
+                    <span className={cx("h-2 w-2 rounded-full bg-current", conn.pulse && "animate-pulse")} />
+                    {conn.label}
+                  </Badge>
+                  <Badge tone={recordingState === "recording" ? "rose" : recordingState === "uploading" ? "amber" : recordingState === "available" ? "emerald" : recordingState === "failed" ? "rose" : "neutral"}>
+                    <Radio className="h-3.5 w-3.5" /> {recordingLabel}
+                  </Badge>
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{timer}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="truncate">{statusMessage}</span>
+                </div>
               </div>
-              <div
-                ref={morePopoverRef}
-                className="relative flex items-center gap-2"
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsEmojiOpen((prev) => !prev)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-slate-800 ring-1 ring-white/10 hover:bg-white/15 dark:text-white lg:hidden"
+                title="Emoji"
               >
-                <span
-                  className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex${isChatLive ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200" : "bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300"}`}
-                >
-                  <NeonAtom size={16} />
-                  {isChatLive ? "Live" : "Syncing"}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMoreOpen((prev) => !prev);
-                    setIsEmojiOpen(false);
-                  }}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200"
-                  title="More"
-                >
-                  <MoreHorizontal size={20} />
-                </button>
+                <Smile className="h-5 w-5" />
+              </button>
+              <Badge tone={conn.tone}>
+                {conn.label}
+              </Badge>
+            </div>
+          </div>
+        </header>
 
-                {isMoreOpen ? (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl bg-white/90 p-2 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        copyCallLink();
-                        setIsMoreOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
-                    >
-                      <Copy size={16} className="opacity-80" />
-                      Copy call link
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        requestMediaPermissions();
-                        setIsMoreOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
-                    >
-                      <ShieldAlert size={16} className="opacity-80" />
-                      Request permissions
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        reconnectCall();
-                        pushToast("Reconnecting call...", "info");
-                        setIsMoreOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
-                    >
-                      <RefreshCw size={16} className="opacity-80" />
-                      Reconnect
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsChatOpen(false);
-                        setIsMoreOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
-                    >
-                      <MessageSquare size={16} className="opacity-80" />
-                      Hide chat
-                    </button>
+        <main className="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <section className={cx("flex min-w-0 flex-1 flex-col gap-4", isChatOpen ? "lg:pr-0" : "")}>
+            <div className="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
+              <div className="rounded-[2rem] border border-white/12 bg-white/40 p-4 shadow-[0_25px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:bg-slate-950/50">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">{remoteName}</h2>
+                      <Badge tone="sky">{localName}</Badge>
+                      {isSpeaking ? <Badge tone="emerald">Speaking</Badge> : <Badge tone="neutral">Listening</Badge>}
+                    </div>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">{statusMessage || "Live call in progress."}</p>
                   </div>
-                ) : null}
-              </div>
-            </div>
-            <div className="shadow-dividerB dark:shadow-dividerBDark bg-white/30 p-3 dark:bg-white/5">
-              <JourneyTimeline
-                title="Journey Timeline"
-                matchId={effectiveMatchId || ""}
-              />
-            </div>
+                  <div className="flex items-center gap-2">
+                    <MiniStat label="Mic level" value={`${Math.round(micLevel * 100)}%`} icon={Mic} />
+                    <MiniStat label="Participants" value={String(Math.max(1, participants.length || 0))} icon={MessageSquare} />
+                  </div>
+                </div>
 
-            <div
-              ref={chatScrollRef}
-              className="flex-1 overflow-y-auto bg-slate-50/60 p-5 space-y-6 dark:bg-black/20 scrollbar-hide"
-            >
-              {sortedChatMessages.length > 0 ? (
-                sortedChatMessages.map((msg) => {
-                  const isOwn = msg.sender_id === user?.id;
-                  const sender = userMap.get(msg.sender_id);
-                  const senderName =
-                    msg.sender_name || sender?.name || sender?.email || "User";
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex flex-col${isOwn ? "items-end" : "items-start"}`}
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        {!isOwn && (
-                          <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold">
-                            {senderName[0] || "U"}
+                <div className="mt-4 grid gap-4 xl:grid-cols-[1.6fr_0.9fr]">
+                  <div className="relative overflow-hidden rounded-[2rem] border border-white/12 bg-slate-950 shadow-2xl shadow-slate-950/20">
+                    <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
+                      <Badge tone="sky">{statusMessage || "Live call in progress."}</Badge>
+                      {recordingState === "recording" ? <Badge tone="rose">REC</Badge> : null}
+                    </div>
+                    <div className="absolute right-4 top-4 z-10 flex gap-2">
+                      <IconButton icon={isFullscreen ? ChevronDown : Maximize} label={isFullscreen ? "Exit fullscreen" : "Fullscreen"} onClick={toggleFullscreen} tone="default" />
+                    </div>
+
+                    <div className="relative aspect-[16/10] w-full bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950">
+                      <video ref={remoteVideoRef} autoPlay playsInline muted={isSpeakerMuted} className="absolute inset-0 h-full w-full object-cover" />
+
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-4 text-white">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-lg font-bold">{remoteName}</span>
+                              <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium backdrop-blur">{rtcConnectionState}</span>
+                            </div>
+                            <div className="mt-1 max-w-2xl text-sm text-white/80">
+                              {statusMessage || "Call is ready."}
+                            </div>
                           </div>
-                        )}
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                          {senderName}
-                        </span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-400/80">
-                          {formatMessageTime(msg.timestamp)}
-                        </span>
+                          <div className="flex items-center gap-2 text-white/80">
+                            <div className="flex h-9 items-end gap-1 rounded-2xl bg-white/10 px-3 py-2 ring-1 ring-white/10">
+                              {[0, 1, 2, 3, 4].map((i) => {
+                                const active = micLevel * 5 > i;
+                                return <span key={i} className={cx("w-1.5 rounded-full bg-sky-300 transition-all", active ? "h-4" : "h-2 opacity-40")} />;
+                              })}
+                            </div>
+                            <span className="text-xs">Mic</span>
+                          </div>
+                        </div>
                       </div>
-                      <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm${
-                          isOwn
-                            ? "bg-blue-600 text-white rounded-tr-none"
-                            : "bg-white/80 text-slate-800 ring-1 ring-slate-200/60 rounded-tl-none dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        }`}
-                      >
-                        <MarkdownMessage text={msg.message || ""} />
+
+                      {mediaGate && !hasLocalStream ? (
+                        <MediaGate
+                          gate={mediaGate}
+                          onAction={async () => {
+                            if (!mediaGate) return;
+                            if (mediaGate.actionLabel === "Dismiss") {
+                              setMediaGate(null);
+                              return;
+                            }
+                            setMediaGate(null);
+                            await ensureLocalStream();
+                          }}
+                          onDismiss={() => setMediaGate(null)}
+                        />
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4">
+                    <div className="rounded-[2rem] border border-white/12 bg-white/70 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/55">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Call controls</h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Mic, camera, speaker, screen.</p>
+                        </div>
+                        <Badge tone={isCameraOn ? "emerald" : "amber"}>{isCameraOn ? "Camera on" : "Camera off"}</Badge>
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 xl:grid-cols-3">
+                        <IconButton icon={PhoneOff} label="End call" onClick={endCall} tone="danger" className="col-span-2 sm:col-span-2 xl:col-span-3 w-full" />
+                        <IconButton icon={isMuted ? MicOff : Mic} label={isMuted ? "Unmute mic" : "Mute mic"} onClick={toggleMute} active={!isMuted} tone="default" />
+                        <IconButton icon={isSpeakerMuted ? SpeakerOff : Speaker} label={isSpeakerMuted ? "Unmute speaker" : "Mute speaker"} onClick={toggleSpeaker} active={!isSpeakerMuted} tone="default" />
+                        <IconButton icon={isCameraOn ? Camera : CameraOff} label={isCameraOn ? "Camera off" : "Camera on"} onClick={toggleCamera} active={isCameraOn} tone="default" />
+                        <IconButton icon={MessageSquare} label={isChatOpen ? "Hide chat" : "Show chat"} onClick={() => setIsChatOpen((v) => !v)} badge={!isChatOpen && unreadChatCount ? (unreadChatCount > 99 ? "99+" : String(unreadChatCount)) : null} tone="primary" />
+                        <IconButton icon={Ellipsis} label="More menu" onClick={() => setIsMoreOpen((prev) => !prev)} tone="default" />
+                      </div>
+
+                      <div className="mt-4 grid gap-3 md:grid-cols-3">
+                        <MiniStat label="Connection" value={conn.label} icon={conn.pulse ? Loader2 : WifiOff} />
+                        <MiniStat label="Chat" value={effectiveMatchId ? "Ready" : "Unavailable"} icon={MessageSquare} />
+                        <MiniStat label="Recording" value={recordingLabel} icon={Radio} />
                       </div>
                     </div>
-                  );
-                })
-              ) : (
-                <div className="text-sm text-slate-400">No messages yet.</div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
 
-            <div className="shadow-dividerT dark:shadow-dividerTDark p-4">
-              <div className="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
-                <div ref={emojiPopoverRef} className="relative ml-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEmojiOpen((prev) => !prev);
-                      setIsMoreOpen(false);
-                    }}
-                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200${isEmojiOpen ? "bg-slate-100 dark:bg-white/10" : ""}`}
-                    title="Emoji"
-                  >
-                    <Smile size={20} />
-                  </button>
-
-                  {isEmojiOpen ? (
-                    <div className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
-                      <div className="grid grid-cols-8 gap-1">
-                        {QUICK_EMOJIS.map((emoji) => (
-                          <button
-                            key={emoji}
-                            type="button"
-                            onClick={() => {
-                              setChatDraft((prev) => `${prev}${emoji}`);
-                              setIsEmojiOpen(false);
-                              chatInputRef.current?.focus?.();
-                            }}
-                            className="flex h-8 w-8 items-center justify-center rounded-xl text-lg transition hover:bg-slate-100 dark:hover:bg-white/10"
-                            title={`Insert ${emoji}`}
-                          >
-                            {emoji}
-                          </button>
+                    <div className="rounded-[2rem] border border-white/12 bg-white/70 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/55">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Status</h3>
+                      <div className="mt-2 rounded-2xl border border-white/10 bg-white/60 p-3 text-sm text-slate-700 dark:bg-white/5 dark:text-slate-200">
+                        {statusMessage || "Live call in progress."}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {["😀","🤝","🙏","👏","🎉","🔥","💯","✅","⚡","💡","📝","📎","🧠","🚀","❤️","✨"].map((emoji) => (
+                          <button key={emoji} type="button" onClick={() => {
+                            setChatDraft((prev) => `${prev}${emoji}`);
+                            if (chatInputRef.current) chatInputRef.current.focus();
+                          }} className="rounded-xl border border-white/10 bg-white/70 px-3 py-2 text-base hover:bg-sky-50 dark:bg-white/5 dark:hover:bg-white/10">{emoji}</button>
                         ))}
                       </div>
-                      <div className="mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-300/70">
-                        Press Esc to close.
-                      </div>
                     </div>
-                  ) : null}
+
+                    <div className="rounded-[2rem] border border-white/12 bg-white/40 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/50">
+                      <JourneyTimeline
+                        title="Journey Timeline"
+                        matchId={effectiveMatchId || ""}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <input
-                  ref={chatInputRef}
-                  type="text"
-                  placeholder="Type here..."
-                  className="flex-1 bg-transparent px-1 text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400/70"
-                  value={chatDraft}
-                  onChange={(e) => setChatDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") sendChatMessage();
-                  }}
-                  onFocus={() => setIsEmojiOpen(false)}
-                />
-                <button
-                  type="button"
-                  onClick={sendChatMessage}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md transition hover:bg-blue-700 active:scale-95"
-                  title="Send"
-                >
-                  <Send size={16} />
-                </button>
+              </div>
+
+              <div className="grid gap-4">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                  <MiniStat label="Call ID" value={callId || "\u2014"} icon={Circle} />
+                  <MiniStat label="Match ID" value={effectiveMatchId || "\u2014"} icon={CircleDot} />
+                  <MiniStat label="Remote" value={remoteName} icon={CheckCircle2} />
+                  <MiniStat label="Local" value={localName} icon={CheckCircle2} />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                  <MiniStat label="WebSocket" value={wsStatus === "online" ? "Online" : wsStatus} icon={WifiOff} />
+                  <MiniStat label="RTC" value={rtcConnectionState} icon={Radio} />
+                  <MiniStat label="Unread" value={unreadChatCount > 99 ? "99+" : String(unreadChatCount)} icon={MessageSquare} />
+                  <MiniStat label="Mic level" value={`${Math.round(micLevel * 100)}%`} icon={Mic} />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside className={cx(
+            "fixed inset-y-0 right-0 z-30 w-full max-w-[420px] border-l border-white/12 bg-white/80 shadow-2xl backdrop-blur-2xl transition-transform duration-300 dark:bg-slate-950/85 lg:static lg:z-auto lg:translate-x-0 lg:rounded-[2rem] lg:border lg:border-white/12",
+            isChatOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0",
+          )}>
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Chat</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{effectiveMatchId ? "Connected to the call room" : "Waiting for match id"}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge tone={effectiveMatchId ? "emerald" : "rose"}>{effectiveMatchId ? "Live" : "Closed"}</Badge>
+                  <button onClick={() => setIsChatOpen(false)} className="rounded-xl border border-white/10 bg-white/60 p-2 text-slate-700 hover:bg-white/90 dark:bg-white/5 dark:text-slate-200 lg:hidden"><X className="h-4 w-4" /></button>
+                </div>
+              </div>
+
+              <div ref={chatScrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+                {sortedChatMessages.length > 0 ? (
+                  sortedChatMessages.map((msg) => {
+                    const isOwn = msg.sender_id === user?.id;
+                    const sender = userMap.get(msg.sender_id);
+                    const senderName = msg.sender_name || sender?.name || sender?.email || "User";
+                    return (
+                      <div key={msg.id || Math.random()} className={cx("max-w-[88%] rounded-2xl px-4 py-3 shadow-sm", isOwn ? "ml-auto bg-gradient-to-r from-sky-500 to-blue-500 text-white" : "bg-white/70 text-slate-800 dark:bg-white/8 dark:text-slate-100")}>
+                        <div className="flex items-center justify-between gap-3 text-[11px] font-semibold opacity-80">
+                          <span>{isOwn ? "You" : senderName}</span>
+                          <span>{formatMessageTime(msg.timestamp)}</span>
+                        </div>
+                        <div className="mt-1 whitespace-pre-wrap text-sm leading-6">
+                          <MarkdownMessage text={msg.message || ""} />
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-white/40 p-5 text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                    No messages yet.
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <div className="border-t border-white/10 p-4">
+                <div className="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
+                  <div ref={emojiPopoverRef} className="relative ml-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEmojiOpen((prev) => !prev);
+                        setIsMoreOpen(false);
+                      }}
+                      className={cx("flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200", isEmojiOpen ? "bg-slate-100 dark:bg-white/10" : "")}
+                      title="Emoji"
+                    >
+                      <Smile size={20} />
+                    </button>
+
+                    {isEmojiOpen ? (
+                      <div className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
+                        <div className="grid grid-cols-8 gap-1">
+                          {QUICK_EMOJIS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => {
+                                setChatDraft((prev) => `${prev}${emoji}`);
+                                setIsEmojiOpen(false);
+                                chatInputRef.current?.focus?.();
+                              }}
+                              className="flex h-8 w-8 items-center justify-center rounded-xl text-lg transition hover:bg-slate-100 dark:hover:bg-white/10"
+                              title={`Insert ${emoji}`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-300/70">
+                          Press Esc to close.
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  <input
+                    ref={chatInputRef}
+                    type="text"
+                    placeholder="Type here..."
+                    className="flex-1 bg-transparent px-1 text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400/70"
+                    value={chatDraft}
+                    onChange={(e) => setChatDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") sendChatMessage();
+                    }}
+                    onFocus={() => setIsEmojiOpen(false)}
+                  />
+                  <button
+                    type="button"
+                    onClick={sendChatMessage}
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-600 hover:to-blue-600 active:scale-95"
+                    title="Send"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
               </div>
             </div>
           </aside>
-        ) : null}
+        </main>
+
+        <div className="fixed bottom-4 left-4 z-40 flex flex-wrap gap-2" data-more-menu>
+          <div className="relative">
+            {isMoreOpen ? (
+              <div className="absolute bottom-14 left-0 w-72 overflow-hidden rounded-3xl border border-white/12 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:bg-slate-950/95">
+                <button onClick={() => { copyCallLink(); setIsMoreOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"><Copy className="h-4 w-4" /> Copy call link</button>
+                <button onClick={() => { requestMediaPermissions(); setIsMoreOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"><Camera className="h-4 w-4" /> Request permissions</button>
+                <button onClick={() => { reconnectCall(); setIsMoreOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"><RefreshCw className="h-4 w-4" /> Reconnect</button>
+                <button onClick={() => { setIsChatOpen(false); setIsMoreOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"><MessageSquare className="h-4 w-4" /> Hide chat</button>
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );
