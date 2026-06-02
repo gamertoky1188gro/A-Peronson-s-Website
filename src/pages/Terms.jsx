@@ -292,8 +292,8 @@ export default function Terms() {
       },
       {
         root: null,
-        threshold: 0.18,
-        rootMargin: "-80px 0px -70% 0px",
+        threshold: 0.08,
+        rootMargin: "-80px 0px -10% 0px",
       }
     );
 
