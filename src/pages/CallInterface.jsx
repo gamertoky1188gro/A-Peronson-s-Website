@@ -16,8 +16,8 @@ import {
   RefreshCw,
   Send,
   Smile,
-  Speaker,
-  SpeakerOff,
+  Volume2,
+  VolumeX,
   SunMoon,
   Video,
   VideoOff,
@@ -1932,7 +1932,7 @@ export default function CallInterface() {
                       <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 xl:grid-cols-3">
                         <IconButton icon={PhoneOff} label="End call" onClick={endCall} tone="danger" className="col-span-2 sm:col-span-2 xl:col-span-3 w-full" />
                         <IconButton icon={isMuted ? MicOff : Mic} label={isMuted ? "Unmute mic" : "Mute mic"} onClick={toggleMute} active={!isMuted} tone="default" />
-                        <IconButton icon={isSpeakerMuted ? SpeakerOff : Speaker} label={isSpeakerMuted ? "Unmute speaker" : "Mute speaker"} onClick={toggleSpeaker} active={!isSpeakerMuted} tone="default" />
+                        <IconButton icon={isSpeakerMuted ? VolumeX : Volume2} label={isSpeakerMuted ? "Unmute speaker" : "Mute speaker"} onClick={toggleSpeaker} active={!isSpeakerMuted} tone="default" />
                         <IconButton icon={isCameraOn ? Camera : CameraOff} label={isCameraOn ? "Camera off" : "Camera on"} onClick={toggleCamera} active={isCameraOn} tone="default" />
                         <IconButton icon={MessageSquare} label={isChatOpen ? "Hide chat" : "Show chat"} onClick={() => setIsChatOpen((v) => !v)} badge={!isChatOpen && unreadChatCount ? (unreadChatCount > 99 ? "99+" : String(unreadChatCount)) : null} tone="primary" />
                         <IconButton icon={Ellipsis} label="More menu" onClick={() => setIsMoreOpen((prev) => !prev)} tone="default" />
