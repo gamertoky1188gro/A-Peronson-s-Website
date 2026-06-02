@@ -21,7 +21,7 @@
 */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform, useDragControls, AnimatePresence } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { usePremiumCheck } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
@@ -30,6 +30,7 @@ import VerificationPanel from "../components/profile/VerificationPanel";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel";
 import NeonAtom from "../components/ui/NeonAtom";
 import HorizontalScrollGallery from "../components/HorizontalScrollGallery";
+import HoverCard from "../components/HoverCard";
 
 const Motion = motion;
 
@@ -79,6 +80,9 @@ export default function FactoryProfile() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [profileBoost, setProfileBoost] = useState(null);
   const reduceMotion = useReducedMotion();
+  const dragControls = useDragControls();
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [showGallery, setShowGallery] = useState(false);
   const { scrollY } = useScroll();
   const coverParallax = useSpring(useTransform(scrollY, [0, 400], [0, 60]), {
     stiffness: 80, damping: 20, restDelta: 0.001,
@@ -676,17 +680,25 @@ export default function FactoryProfile() {
               {activeTab === "products" ? (
                 <div className="space-y-3">
                     <HorizontalScrollGallery>
-                      {products.map((p) => (
-                        <div
+                      {products.map((p, idx) => (
+                        <HoverCard
                           key={p.id}
                           className="min-w-[280px] max-w-[320px] snap-start shrink-0 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4"
                         >
                         {p.cover_image_public_url ? (
-                          <img
-                            src={p.cover_image_public_url}
-                            alt={p.title || "Product"}
-                            className="h-32 w-full rounded-xl object-cover mb-3"
-                          />
+                          <AnimatePresence mode="wait">
+                            <motion.img
+                              key={idx}
+                              src={p.cover_image_public_url}
+                              alt={p.title || "Product"}
+                              className="h-32 w-full rounded-xl object-cover mb-3 cursor-pointer"
+                              onClick={() => { setGalleryIndex(idx); setShowGallery(true); }}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                            />
+                          </AnimatePresence>
                         ) : null}
                         <p className="text-sm font-bold text-slate-900">
                           {p.title || "Product"}
@@ -706,7 +718,7 @@ export default function FactoryProfile() {
                             Video available
                           </p>
                         ) : null}
-                      </div>
+                      </HoverCard>
                     ))}
                     </HorizontalScrollGallery>
                   {loadingProducts ? (
@@ -726,6 +738,73 @@ export default function FactoryProfile() {
                       No products found.
                     </div>
                   ) : null}
+                </div>
+              ) : null}
+
+              {showGallery && products.length > 0 ? (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowGallery(false)}>
+                  <div className="relative w-full max-w-4xl mx-4" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => setShowGallery(false)}
+                      className="absolute -top-10 right-0 z-10 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+                      aria-label="Close gallery"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[2]">
+                        <path d="M6 6l12 12M6 18L18 6" />
+                      </svg>
+                    </button>
+                    <div className="overflow-hidden rounded-2xl" style={{ touchAction: "pan-y" }}>
+                      <motion.div
+                        drag="x"
+                        dragControls={dragControls}
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.15}
+                        onDragEnd={(_, info) => {
+                          const threshold = 80;
+                          if (info.offset.x < -threshold && galleryIndex < products.length - 1) {
+                            setGalleryIndex((i) => i + 1);
+                          } else if (info.offset.x > threshold && galleryIndex > 0) {
+                            setGalleryIndex((i) => i - 1);
+                          }
+                        }}
+                        animate={{ x: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        style={{ touchAction: "none" }}
+                      >
+                        <AnimatePresence mode="wait">
+                          <motion.img
+                            key={galleryIndex}
+                            src={products[galleryIndex]?.cover_image_public_url}
+                            alt={products[galleryIndex]?.title || "Product"}
+                            className="w-full max-h-[70vh] object-contain bg-black/40"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </AnimatePresence>
+                      </motion.div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-center gap-3 text-white">
+                      <button
+                        onClick={() => setGalleryIndex((i) => Math.max(0, i - 1))}
+                        disabled={galleryIndex === 0}
+                        className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20 disabled:opacity-40"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-sm">
+                        {galleryIndex + 1} / {products.length}
+                      </span>
+                      <button
+                        onClick={() => setGalleryIndex((i) => Math.min(products.length - 1, i + 1))}
+                        disabled={galleryIndex === products.length - 1}
+                        className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20 disabled:opacity-40"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ) : null}
 

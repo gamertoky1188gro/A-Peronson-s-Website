@@ -29,6 +29,7 @@
 */
 import ScrollReveal from "../components/ScrollReveal";
 import NeonAtom from "../components/ui/NeonAtom";
+import AnimatedAccordion from "../components/AnimatedAccordion";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
@@ -414,10 +415,26 @@ export default function HelpCenterPage() {
                 <TerminalSquare className="h-4 w-4 text-sky-500" />
                 Quick navigation
               </div>
-              <div className="space-y-1.5">
+              <motion.div
+                className="space-y-1.5"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+                  },
+                }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-40px" }}
+              >
                 {quickLinks.map(({ id, label, icon: Icon }) => (
-                  <button
+                  <motion.button
                     key={id}
+                    variants={{
+                      hidden: { opacity: 0, x: -12 },
+                      visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+                    }}
                     onClick={() => jumpTo(id)}
                     className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm transition ${
                       activeSection === id
@@ -432,9 +449,9 @@ export default function HelpCenterPage() {
                     <ChevronRight className={`h-4 w-4 transition ${
                       activeSection === id ? "translate-x-0.5 text-sky-500" : "text-slate-400"
                     }`} />
-                  </button>
+                  </motion.button>
                 ))}
-              </div>
+              </motion.div>
             </nav>
           </aside>
 
@@ -871,27 +888,37 @@ export default function HelpCenterPage() {
               </div>
               <div className="space-y-3">
                 {filteredFaq.length > 0 ? (
-                  filteredFaq.map((item, idx) => (
-                    <details
-                      key={item.q || item.question || idx}
-                      className="group rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
-                    >
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left">
-                        <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                          Q: {item.q || item.question}
-                        </div>
-                        <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-90" />
-                      </summary>
-                      <div className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                        A: {item.a || item.answer}
-                      </div>
-                      {item.keywords && (
-                        <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                          Keywords: {item.keywords}
-                        </div>
-                      )}
-                    </details>
-                  ))
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.05, delayChildren: 0.1 },
+                      },
+                    }}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-40px" }}
+                  >
+                    <AnimatedAccordion
+                      items={filteredFaq.map((item, idx) => ({
+                        id: item.q || item.question || String(idx),
+                        title: "Q: " + (item.q || item.question),
+                        content: (
+                          <>
+                            <div className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                              A: {item.a || item.answer}
+                            </div>
+                            {item.keywords && (
+                              <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                Keywords: {item.keywords}
+                              </div>
+                            )}
+                          </>
+                        ),
+                      }))}
+                    />
+                  </motion.div>
                 ) : (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
                     No FAQ matches found.

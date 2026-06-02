@@ -25,6 +25,7 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ScrollReveal from "../components/ScrollReveal";
+import WordleInput from "../components/WordleInput";
 import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import {
@@ -699,6 +700,28 @@ export default function VerificationPage() {
                     No optional licenses yet.
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold">Verification code</h3>
+                  <p className={`mt-1 text-sm ${softText}`}>
+                    Enter the 6-digit code sent to your email on file.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <WordleInput
+                  maxLength={6}
+                  onChange={(val) => {
+                    if (val.length === 6) {
+                      setFeedback("Code accepted. Verification in progress.");
+                    }
+                  }}
+                  placeholder="●"
+                />
               </div>
             </div>
           </section>

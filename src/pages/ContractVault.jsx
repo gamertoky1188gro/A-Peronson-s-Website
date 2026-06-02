@@ -667,6 +667,7 @@ export default function ContractVaultPage() {
                 {filtered.map((c) => (
                   <StaggerItem key={c.id}>
                   <button
+                    layout
                     onClick={() => setSelectedId(c.id)}
                     className={cn(
                       "w-full rounded-3xl border p-4 text-left transition hover:-translate-y-0.5",

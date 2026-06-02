@@ -28,6 +28,7 @@
     - Optional premium-locked overlays for advanced filters.
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import NeonAtom from "../components/ui/NeonAtom";
@@ -66,6 +67,7 @@ import {
   DEFAULT_CORE_FILTER_KEYS,
   validateCoreFilterRenderKeys,
 } from "./searchFiltersConfig";
+import MasonryGrid from "../components/MasonryGrid";
 
 const CATEGORY_OPTIONS = [
   { key: "all", label: "All categories" },
@@ -239,6 +241,7 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState("all");
+  const [searchFocused, setSearchFocused] = useState(false);
   const [filters, setFilters] = useState(initialFilters);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [roleSeatText, setRoleSeatText] = useState("");
@@ -932,10 +935,15 @@ export default function SearchResults() {
       }
       return (
         <div className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-2">
+          <AnimatePresence mode="popLayout">
+            <MasonryGrid columnCount={2} gap={4}>
             {items.map((item) => (
-              <article
+              <motion.article
                 key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -1042,9 +1050,10 @@ export default function SearchResults() {
                     <MessageSquareMore className="h-4 w-4" /> Discuss
                   </button>
                 </div>
-              </article>
+              </motion.article>
             ))}
-          </div>
+            </MasonryGrid>
+          </AnimatePresence>
         </div>
       );
     }
@@ -1082,10 +1091,15 @@ export default function SearchResults() {
         );
       }
       return (
-        <div className="grid gap-4 xl:grid-cols-2">
+        <AnimatePresence mode="popLayout">
+          <MasonryGrid columnCount={2} gap={4}>
           {items.map((item) => (
-            <article
+            <motion.article
               key={item.id}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
             >
               <div className="flex items-start justify-between gap-3">
@@ -1157,9 +1171,10 @@ export default function SearchResults() {
                   <Share2 className="h-4 w-4" /> Share
                 </button>
               </div>
-            </article>
+            </motion.article>
           ))}
-        </div>
+          </MasonryGrid>
+        </AnimatePresence>
       );
     }
 
@@ -1272,13 +1287,19 @@ export default function SearchResults() {
               </div>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto]">
-                <div className="relative">
+                <motion.div
+                  className="relative"
+                  animate={{ width: searchFocused ? '104%' : '100%' }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                >
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                     <Search className="h-5 w-5" />
                   </div>
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setSearchFocused(false)}
                     placeholder="Search requests, factories, products..."
                     className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-28 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
                   />
@@ -1288,7 +1309,7 @@ export default function SearchResults() {
                   >
                     {isMac ? "⌘K" : "Ctrl K"}
                   </button>
-                </div>
+                </motion.div>
                 <button
                   onClick={executeSearch}
                   disabled={loading}
@@ -1317,6 +1338,10 @@ export default function SearchResults() {
                       ? filters.allCategories
                       : filters.selectedCategories.includes(cat.key);
                   return (
+                    <motion.div
+                      layout
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    >
                     <button
                       key={cat.key}
                       onClick={() => toggleCategory(cat.key)}
@@ -1329,6 +1354,7 @@ export default function SearchResults() {
                         </span>
                       ) : null}
                     </button>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -1907,11 +1933,29 @@ export default function SearchResults() {
               </div>
 
               <div className="mt-5">
-                {loading ? (
-                  <NeonAtom fill size={64} />
-                ) : (
-                  <ResultCards />
-                )}
+                <AnimatePresence mode="wait">
+                  {loading ? (
+                    <motion.div
+                      key="loading"
+                      initial={{ clipPath: 'inset(0 100% 0 0)' }}
+                      animate={{ clipPath: 'inset(0 0 0 0)' }}
+                      exit={{ clipPath: 'inset(0 0 0 100%)' }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    >
+                      <NeonAtom fill size={64} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key={activeTab}
+                      initial={{ clipPath: 'inset(0 100% 0 0)' }}
+                      animate={{ clipPath: 'inset(0 0 0 0)' }}
+                      exit={{ clipPath: 'inset(0 0 0 100%)' }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    >
+                      <ResultCards />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </section>
           </main>

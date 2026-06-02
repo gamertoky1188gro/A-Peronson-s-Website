@@ -8,6 +8,7 @@ import CountUp from "../components/CountUp";
 import ScrollReveal from "../components/ScrollReveal";
 import ScaleIn from "../components/ScaleIn";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
+import HoverCard from "../components/HoverCard";
 import {
   Bell,
   Bot,
@@ -36,7 +37,7 @@ const cn = (...classes) => classes.filter(Boolean).join(" ");
 const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
   const isNumeric = typeof value === "number" && !Number.isNaN(value);
   return (
-    <div
+    <HoverCard
       className={cn(
         "rounded-2xl border p-4 shadow-sm backdrop-blur-xl transition-all",
         accent
@@ -63,7 +64,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
           <Icon className="h-5 w-5" />
         </div>
       </div>
-    </div>
+    </HoverCard>
   );
 };
 

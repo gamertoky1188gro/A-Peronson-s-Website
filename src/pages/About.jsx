@@ -31,6 +31,7 @@ import MagneticButton from "../components/ui/MagneticButton";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import TextColorReveal from "../components/TextColorReveal";
 import ParallaxBackground from "../components/ParallaxBackground";
+import GooBlobs from "../components/GooBlobs";
 
 const Motion = motion;
 
@@ -89,6 +90,22 @@ function MotionItem({ className = "", children }) {
     </motion.div>
   );
 }
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.15 },
+  },
+};
+const staggerItem = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+  },
+};
 
 function VerifiedBadge({ label = "Verified" }) {
   return (
@@ -192,6 +209,28 @@ export default function About() {
   return (
     <div className="weave-bg relative bg-[#F8FAFC] text-[#1E293B] dark:bg-[#0F172A] dark:text-[#F1F5F9]">
       <ParallaxBackground />
+      <GooBlobs />
+      <motion.div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background: "conic-gradient(from 0deg, rgba(14,165,233,0.10), rgba(99,102,241,0.06), rgba(6,182,212,0.08), rgba(14,165,233,0.10))",
+        }}
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{ mixBlendMode: "overlay" }}
+        animate={{ opacity: [0.02, 0.06, 0.02] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <svg className="h-full w-full">
+          <filter id="noise-filter-about">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#noise-filter-about)" />
+        </svg>
+      </motion.div>
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <motion.div
           className="grid grid-cols-1 gap-6 lg:grid-cols-12"
@@ -295,42 +334,50 @@ export default function About() {
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key="stats"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="grid gap-3"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      {[
-                        {
-                          label: "Verified factories",
-                          value: String(about.stats.verifiedFactories),
-                        },
-                        {
-                          label: "Countries covered",
-                          value: String(about.stats.countriesCovered),
-                        },
-                        {
-                          label: "Docs verified",
-                          value: String(about.stats.docsVerified),
-                        },
-                        {
-                          label: "Avg. response SLA",
-                          value: about.stats.avgResponseSla,
-                        },
-                      ].map((item) => (
-                        <div
-                          key={item.label}
-                          className="flex items-center justify-between rounded-lg bg-slate-900/4 px-4 py-3 dark:bg-white/5"
-                        >
-                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#64748B] dark:text-slate-300">
-                            {item.label}
-                          </p>
-                          <p className="text-lg font-extrabold tracking-tight text-[#1E293B] dark:text-white">
-                            {item.value}
-                          </p>
-                        </div>
-                      ))}
+                      <motion.div
+                        className="grid gap-3"
+                        variants={staggerContainer}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-40px" }}
+                      >
+                        {[
+                          {
+                            label: "Verified factories",
+                            value: String(about.stats.verifiedFactories),
+                          },
+                          {
+                            label: "Countries covered",
+                            value: String(about.stats.countriesCovered),
+                          },
+                          {
+                            label: "Docs verified",
+                            value: String(about.stats.docsVerified),
+                          },
+                          {
+                            label: "Avg. response SLA",
+                            value: about.stats.avgResponseSla,
+                          },
+                        ].map((item) => (
+                          <motion.div
+                            key={item.label}
+                            variants={staggerItem}
+                            className="flex items-center justify-between rounded-lg bg-slate-900/4 px-4 py-3 dark:bg-white/5"
+                          >
+                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#64748B] dark:text-slate-300">
+                              {item.label}
+                            </p>
+                            <p className="text-lg font-extrabold tracking-tight text-[#1E293B] dark:text-white">
+                              {item.value}
+                            </p>
+                          </motion.div>
+                        ))}
+                      </motion.div>
                     </motion.div>
                   </AnimatePresence>
                 )}
@@ -532,36 +579,44 @@ export default function About() {
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key="docs"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="grid gap-3"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      {(about.documents || []).map((doc) => (
-                        <div
-                          key={doc.name}
-                          className={[
-                            "group flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3",
-                            "bg-[#FFFFFF] shadow-[0_10px_26px_rgba(15,23,42,0.08)]",
-                            "transition duration-300 ease-out",
-                            "hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(15,23,42,0.12)]",
-                            "dark:bg-white/5 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/7",
-                          ].join(" ")}
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-[#1E293B] dark:text-white">
-                              {doc.name}
-                            </p>
-                            <p className="mt-1 text-xs text-[#64748B] dark:text-slate-300">
-                              Updated {doc.updatedAt}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <StatusChip status={doc.status} />
-                          </div>
-                        </div>
-                      ))}
+                      <motion.div
+                        className="grid gap-3"
+                        variants={staggerContainer}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-40px" }}
+                      >
+                        {(about.documents || []).map((doc) => (
+                          <motion.div
+                            key={doc.name}
+                            variants={staggerItem}
+                            className={[
+                              "group flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3",
+                              "bg-[#FFFFFF] shadow-[0_10px_26px_rgba(15,23,42,0.08)]",
+                              "transition duration-300 ease-out",
+                              "hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(15,23,42,0.12)]",
+                              "dark:bg-white/5 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/7",
+                            ].join(" ")}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-[#1E293B] dark:text-white">
+                                {doc.name}
+                              </p>
+                              <p className="mt-1 text-xs text-[#64748B] dark:text-slate-300">
+                                Updated {doc.updatedAt}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <StatusChip status={doc.status} />
+                            </div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
                     </motion.div>
                   </AnimatePresence>
                 )}

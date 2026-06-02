@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, AnimatePresence, Reorder } from "framer-motion";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import ScrollReveal from "../components/ScrollReveal";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
+import FlipCard from "../components/FlipCard";
 import { useTheme } from "../lib/ThemeProvider";
 import { trackClientEvent } from "../lib/events";
 import NeonAtom from "../components/ui/NeonAtom";
@@ -601,6 +602,16 @@ export default function ProductManagement() {
     }
   }
 
+  function handleGalleryReorder(reordered) {
+    setMediaGallery(reordered);
+    const reorderedPaths = reordered.map((e) => e.source_path).filter(Boolean);
+    setForm((f) => ({
+      ...f,
+      image_urls: reorderedPaths,
+      cover_image_url: f.cover_image_url || reorderedPaths[0] || "",
+    }));
+  }
+
   const isEditing = editing?.id !== null;
   const inputCls =
     "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400/40 dark:focus:ring-sky-400/15";
@@ -720,95 +731,92 @@ export default function ProductManagement() {
               <StaggerContainer className="grid gap-4">
                 {items.map((product) => (
                   <StaggerItem key={product.id}>
-                  <article
-                    key={product.id}
-                    className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-sky-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 dark:hover:border-sky-400/20 dark:hover:bg-white/[0.08]"
-                  >
-                    <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                          <Badge
-                            tone={
-                              product.status === "published" ? "green" : "slate"
-                            }
-                          >
-                            Status: {product.status}
-                          </Badge>
-                          <Badge tone="blue">
-                            Video: {product.video_review_status || "approved"}
-                          </Badge>
-                          <Badge tone="blue">
-                            Content:{" "}
-                            {product.content_review_status || "approved"}
-                          </Badge>
-                        </div>
+                  <FlipCard
+                    flipOn="click"
+                    front={
+                      <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
+                        <div className="flex flex-col gap-4 h-full">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge
+                              tone={
+                                product.status === "published" ? "green" : "slate"
+                              }
+                            >
+                              Status: {product.status}
+                            </Badge>
+                            <Badge tone="blue">
+                              Video: {product.video_review_status || "approved"}
+                            </Badge>
+                            <Badge tone="blue">
+                              Content:{" "}
+                              {product.content_review_status || "approved"}
+                            </Badge>
+                          </div>
 
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h2 className="truncate text-2xl font-semibold text-slate-900 dark:text-white">
-                            {product.title || product.name}
-                          </h2>
-                          <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                            MOQ {product.moq || "--"} · Lead{" "}
-                            {product.lead_time_days || "--"}
+                          <div>
+                            <h2 className="truncate text-2xl font-semibold text-slate-900 dark:text-white">
+                              {product.title || product.name}
+                            </h2>
+                            <div className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                              MOQ {product.moq || "--"} · Lead{" "}
+                              {product.lead_time_days || "--"}
+                            </div>
+                          </div>
+
+                          <p className="flex-1 text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-4">
+                            {product.description}
+                          </p>
+
+                          <div className="text-xs text-slate-400 dark:text-slate-500">
+                            Click to flip for details
                           </div>
                         </div>
+                      </article>
+                    }
+                    back={
+                      <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
+                        <div className="flex flex-col gap-4 h-full">
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {[
+                              { label: "Industry", value: product.industry || "—" },
+                              { label: "Category", value: product.category || "—" },
+                              { label: "Material", value: product.material || "—" },
+                              { label: "Media", value: `${Array.isArray(product.image_urls) ? product.image_urls.length : 0} files` },
+                            ].map((item) => (
+                              <div
+                                key={item.label}
+                                className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-900/50"
+                              >
+                                <div className="text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
+                                  {item.label}
+                                </div>
+                                <div className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+                                  {item.value}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
 
-                        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                          {[
-                            {
-                              label: "Industry",
-                              value: product.industry || "—",
-                            },
-                            {
-                              label: "Category",
-                              value: product.category || "—",
-                            },
-                            {
-                              label: "Material",
-                              value: product.material || "—",
-                            },
-                            {
-                              label: "Media",
-                              value: `${Array.isArray(product.image_urls) ? product.image_urls.length : 0} files`,
-                            },
-                          ].map((item) => (
-                            <div
-                              key={item.label}
-                              className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-900/50"
+                          <div className="mt-auto flex flex-wrap gap-3">
+                            <button
+                              onClick={() => openEdit(product)}
+                              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                             >
-                              <div className="text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
-                                {item.label}
-                              </div>
-                              <div className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                                {item.value}
-                              </div>
-                            </div>
-                          ))}
+                              <Pencil className="h-4 w-4" />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => remove(product.id)}
+                              className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </button>
+                          </div>
                         </div>
-
-                        <p className="mt-4 max-w-4xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                          {product.description}
-                        </p>
-                      </div>
-
-                      <div className="flex shrink-0 flex-wrap gap-3 xl:justify-end">
-                        <button
-                          onClick={() => openEdit(product)}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                        >
-                          <Pencil className="h-4 w-4" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => remove(product.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </article>
+                      </article>
+                    }
+                  />
                   </StaggerItem>
                 ))}
               </StaggerContainer>
@@ -1039,26 +1047,37 @@ export default function ProductManagement() {
                               className="hidden"
                             />
                             {mediaGallery.length > 0 && (
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                {mediaGallery.map((entry, idx) => (
-                                  <motion.div
-                                    key={idx}
-                                    initial={{ opacity: 0, scale: 0.92 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                                    className="relative h-16 w-16 rounded-lg overflow-hidden border border-slate-200 dark:border-white/10"
-                                  >
-                                    <img
-                                      src={entry.url}
-                                      alt=""
-                                      className="h-full w-full object-cover"
-                                    />
-                                    <div className="absolute bottom-0 left-0 right-0 bg-black/50">
-                                      {getStatusBadge(entry.status)}
-                                    </div>
-                                  </motion.div>
-                                ))}
-                              </div>
+                              <AnimatePresence mode="popLayout">
+                                <Reorder.Group
+                                  axis="x"
+                                  values={mediaGallery}
+                                  onReorder={handleGalleryReorder}
+                                  className="mt-3 flex flex-wrap gap-2"
+                                >
+                                  {mediaGallery.map((entry) => (
+                                    <Reorder.Item
+                                      key={entry.document_id || entry.url}
+                                      value={entry}
+                                      as="div"
+                                      className="relative h-16 w-16 rounded-lg overflow-hidden border border-slate-200 cursor-grab active:cursor-grabbing dark:border-white/10"
+                                    >
+                                      <motion.img
+                                        src={entry.url}
+                                        alt=""
+                                        className="h-full w-full object-cover pointer-events-none"
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.92 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.85 }}
+                                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                                      />
+                                      <div className="absolute bottom-0 left-0 right-0 bg-black/50">
+                                        {getStatusBadge(entry.status)}
+                                      </div>
+                                    </Reorder.Item>
+                                  ))}
+                                </Reorder.Group>
+                              </AnimatePresence>
                             )}
                           </div>
                           <div

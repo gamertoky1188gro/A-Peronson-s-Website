@@ -34,7 +34,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import ProductQuickViewModal from "../components/products/ProductQuickViewModal";
@@ -536,7 +536,8 @@ export default function NotificationsCenter() {
                       description="Try changing the tab or turning off the unread-only filter."
                     />
                   ) : (
-                    filteredItems.map((item) => (
+                    <AnimatePresence mode="popLayout">
+                    {filteredItems.map((item) => (
                       <StaggerItem key={item.id}>
                       <NotificationCard
                         item={item}
@@ -559,12 +560,14 @@ export default function NotificationsCenter() {
                         }
                       />
                       </StaggerItem>
-                    ))
+                    ))}
+                    </AnimatePresence>
                   )}
                 </StaggerContainer>
               </section>
               </ScrollReveal>
 
+              <AnimatePresence mode="wait">
               {tab === "viewed" && (
                 <ScrollReveal as="section">
                 <section
@@ -634,6 +637,7 @@ export default function NotificationsCenter() {
                 </section>
                 </ScrollReveal>
               )}
+              </AnimatePresence>
             </div>
 
             <aside className="space-y-6">
@@ -940,7 +944,8 @@ function NotificationCard({
       : "border-sky-100 bg-white/80";
 
   return (
-    <div
+    <motion.div
+      layout
       className={cn(
         "group rounded-3xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl",
         borderClass,
@@ -1015,13 +1020,14 @@ function NotificationCard({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function ViewedCard({ product, theme, onQuickView }) {
   return (
-    <div
+    <motion.div
+      layout
       className={cn(
         "rounded-3xl border p-4",
         theme === "dark"
@@ -1077,7 +1083,7 @@ function ViewedCard({ product, theme, onQuickView }) {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

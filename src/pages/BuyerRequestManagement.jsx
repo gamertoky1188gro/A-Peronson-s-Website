@@ -1,6 +1,7 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import WordCount from "../components/ui/WordCount";
 import ScrollReveal from "../components/ScrollReveal";
+import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -1788,11 +1789,19 @@ export default function BuyerRequestManagement() {
                     <div className={`text-sm ${soft}`}>No requests yet.</div>
                   ) : (
                     <div className="grid gap-4">
+                      <AnimatePresence>
                       {myRequests.map((r) => {
                         const attachments = attachmentsByRequest[r.id] || [];
                         const selectedType = attachmentTypeByRequest[r.id] || "tech_pack";
                         return (
-                          <div key={r.id} className={`rounded-[24px] border p-5 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}>
+                          <motion.div
+                            key={r.id}
+                            layout
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                            className={`rounded-[24px] border p-5 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}>
                             {editingId === r.id ? (
                               <div className="space-y-3">
                                 <Field label="Title">
@@ -2010,9 +2019,10 @@ export default function BuyerRequestManagement() {
                                 </div>
                               </div>
                             ) : null}
-                          </div>
+                          </motion.div>
                         );
                       })}
+                    </AnimatePresence>
                     </div>
                   )}
                 </div>

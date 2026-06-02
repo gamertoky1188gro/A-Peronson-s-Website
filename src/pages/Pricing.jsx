@@ -19,7 +19,7 @@
 */
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { Check } from "lucide-react";
 import NeonAtom from "../components/ui/NeonAtom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
@@ -28,6 +28,8 @@ import { useSecureUser } from "../hooks/useSecureUser";
 import ScrollReveal from "../components/ScrollReveal";
 import StickySection from "../components/StickySection";
 import TextColorReveal from "../components/TextColorReveal";
+import HoverCard from "../components/HoverCard";
+import FlipCard from "../components/FlipCard";
 
 function planKeyForUserRole(role) {
   const normalized = String(role || "").toLowerCase();
@@ -302,69 +304,102 @@ function PlanCard({
   icon,
   isLoggedIn,
   userRole,
+  flip = false,
 }) {
   const IconComponent = icon;
-  return (
-    <div
+  const reduceMotion = useReducedMotion();
+  const shouldFlip = flip && !reduceMotion;
+
+  const baseCardClasses =
+    "relative overflow-hidden rounded-3xl border shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)] " +
+    (highlighted
+      ? "border-sky-500/30 bg-gradient-to-b from-sky-50 via-white to-white dark:from-sky-950/60 dark:via-slate-950 dark:to-slate-950"
+      : "border-slate-200/80 bg-white/85 dark:border-white/10 dark:bg-white/5");
+
+  const cardClasses = shouldFlip
+    ? `${baseCardClasses} min-h-[440px]`
+    : `${baseCardClasses} p-6`;
+
+  const headerSection = (
+    <>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-200">
+            {role}
+          </div>
+          <h3 className="mt-4 text-2xl font-semibold text-slate-900 dark:text-white">
+            {title}
+          </h3>
+          <p className="mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
+            {description}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-sky-500/10 bg-sky-500/10 p-3 text-sky-700 dark:text-sky-200">
+          <span className="text-2xl">{IconComponent}</span>
+        </div>
+      </div>
+      <div className="mt-6 flex items-end gap-2">
+        <div className="text-5xl font-semibold tracking-tight text-slate-900 dark:text-white">
+          {price}
+        </div>
+        <div className="pb-2 text-sm text-slate-500 dark:text-slate-400">
+          per month
+        </div>
+      </div>
+    </>
+  );
+
+  const featuresSection = (
+    <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5">
+      <FeatureList items={features} accent={highlighted} />
+    </div>
+  );
+
+  const buttonSection = (
+    <Link
+      to={isLoggedIn ? "/feed" : "/signup"}
       className={
-        "relative overflow-hidden rounded-3xl border p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)] " +
+        "group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-300 " +
         (highlighted
-          ? "border-sky-500/30 bg-gradient-to-b from-sky-50 via-white to-white dark:from-sky-950/60 dark:via-slate-950 dark:to-slate-950"
-          : "border-slate-200/80 bg-white/85 dark:border-white/10 dark:bg-white/5")
+          ? "bg-slate-900 text-white shadow-lg shadow-slate-950/15 hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+          : "border border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200")
       }
     >
+      {isLoggedIn ? "Go to Dashboard" : buttonLabel}
+      <span className="h-4 w-4 transition-transform group-hover:translate-x-0.5">
+        →
+      </span>
+    </Link>
+  );
+
+  return (
+    <HoverCard className={cardClasses}>
       {highlighted && (
         <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-400/20 blur-3xl" />
       )}
-      <div className="relative z-10 flex h-full flex-col">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-200">
-              {role}
+      {shouldFlip ? (
+        <FlipCard
+          front={
+            <div className="flex h-full flex-col p-6">
+              {headerSection}
             </div>
-            <h3 className="mt-4 text-2xl font-semibold text-slate-900 dark:text-white">
-              {title}
-            </h3>
-            <p className="mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
-              {description}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-sky-500/10 bg-sky-500/10 p-3 text-sky-700 dark:text-sky-200">
-            <span className="text-2xl">{IconComponent}</span>
-          </div>
+          }
+          back={
+            <div className="flex h-full flex-col justify-between p-6">
+              {featuresSection}
+              <div className="mt-6">{buttonSection}</div>
+            </div>
+          }
+          flipOn="hover"
+        />
+      ) : (
+        <div className="relative z-10 flex h-full flex-col p-0">
+          {headerSection}
+          <div className="mt-6">{featuresSection}</div>
+          <div className="mt-6">{buttonSection}</div>
         </div>
-
-        <div className="mt-6 flex items-end gap-2">
-          <div className="text-5xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {price}
-          </div>
-          <div className="pb-2 text-sm text-slate-500 dark:text-slate-400">
-            per month
-          </div>
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5">
-          <FeatureList items={features} accent={highlighted} />
-        </div>
-
-        <div className="mt-6">
-          <Link
-            to={isLoggedIn ? "/feed" : "/signup"}
-            className={
-              "group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-300 " +
-              (highlighted
-                ? "bg-slate-900 text-white shadow-lg shadow-slate-950/15 hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-                : "border border-slate-200 bg-white text-slate-900 shadow-sm hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200")
-            }
-          >
-            {isLoggedIn ? "Go to Dashboard" : buttonLabel}
-            <span className="h-4 w-4 transition-transform group-hover:translate-x-0.5">
-              →
-            </span>
-          </Link>
-        </div>
-      </div>
-    </div>
+      )}
+    </HoverCard>
   );
 }
 
@@ -434,7 +469,7 @@ function ComparisonTable({ comparisonRows = [] }) {
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <StickySection as="thead" top={100} className="bg-slate-50/80 text-slate-600 dark:bg-white/5 dark:text-slate-300">
+          <StickySection as="thead" top={100} parallaxSpeed={16} className="bg-slate-50/80 text-slate-600 dark:bg-white/5 dark:text-slate-300">
             <tr>
               <th className="px-6 py-4 font-medium">Feature</th>
               <th className="px-6 py-4 font-medium">Free</th>
@@ -443,7 +478,12 @@ function ComparisonTable({ comparisonRows = [] }) {
           </StickySection>
           <tbody className="divide-y divide-slate-200/80 dark:divide-white/10">
             {comparisonRows.map(([feature, free, premium]) => (
-              <tr key={feature} className="text-slate-700 dark:text-slate-200">
+              <motion.tr
+                key={feature}
+                layout
+                className="text-slate-700 dark:text-slate-200"
+                transition={{ type: "spring", stiffness: 200, damping: 25 }}
+              >
                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                   {feature}
                 </td>
@@ -463,7 +503,7 @@ function ComparisonTable({ comparisonRows = [] }) {
                     />
                   )}
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
@@ -631,6 +671,18 @@ export default function PricingPage() {
   const bg1Y = useSpring(useTransform(scrollY, [0, 600], [0, -30]), { stiffness: 80, damping: 20, restDelta: 0.001 });
   const bg2Y = useSpring(useTransform(scrollY, [0, 600], [0, -50]), { stiffness: 80, damping: 20, restDelta: 0.001 });
   const bg3Y = useSpring(useTransform(scrollY, [0, 600], [0, -20]), { stiffness: 80, damping: 20, restDelta: 0.001 });
+  const gradientAngle = useMotionValue(135);
+  const gradientBg = useTransform(gradientAngle, (angle) =>
+    `linear-gradient(${angle.toFixed(1)}deg, rgba(14,165,233,0.12), rgba(255,255,255,0.9), rgba(6,182,212,0.08))`
+  );
+  useEffect(() => {
+    if (reduceMotion) return;
+    let running = true;
+    const id = setInterval(() => {
+      if (running) gradientAngle.set((gradientAngle.get() + 0.4) % 360);
+    }, 40);
+    return () => { running = false; clearInterval(id); };
+  }, [reduceMotion]);
 
   return (
     <div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
@@ -735,6 +787,7 @@ export default function PricingPage() {
                             : "👥"
                       }
                       isLoggedIn={isLoggedIn}
+                      flip
                     />
                     <PlanCard
                       title={`${section.title} Premium`}
@@ -746,6 +799,7 @@ export default function PricingPage() {
                       highlighted
                       icon="✨"
                       isLoggedIn={isLoggedIn}
+                      flip
                     />
                   </React.Fragment>
                 );
@@ -845,8 +899,12 @@ export default function PricingPage() {
             </div>
           </ScrollReveal>
 
-          <ScrollReveal as="section" className="mt-20 rounded-[2rem] border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-white to-cyan-500/10 p-8 shadow-[0_24px_80px_rgba(14,165,233,0.12)] dark:from-sky-500/10 dark:via-slate-950 dark:to-cyan-500/10">
-            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+          <ScrollReveal as="section" className="relative overflow-hidden mt-20 rounded-[2rem] border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-white to-cyan-500/10 p-8 shadow-[0_24px_80px_rgba(14,165,233,0.12)] dark:from-sky-500/10 dark:via-slate-950 dark:to-cyan-500/10">
+            <motion.div
+              className="pointer-events-none absolute inset-0"
+              style={{ background: reduceMotion ? undefined : gradientBg }}
+            />
+            <div className="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-sky-200">
                   <span>🛡️</span>

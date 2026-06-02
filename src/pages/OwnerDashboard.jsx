@@ -9,6 +9,7 @@ import CountUp from "../components/CountUp";
 import ScrollReveal from "../components/ScrollReveal";
 import ScaleIn from "../components/ScaleIn";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
+import HoverCard from "../components/HoverCard";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -124,7 +125,7 @@ function SectionCard({ title, subtitle, children, className = "", action }) {
 function StatCard({ label, value, sub, accent = "from-sky-500 to-cyan-400" }) {
   const isNumeric = typeof value === "number" && !Number.isNaN(value);
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
+    <HoverCard className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
       <div
         className={cn("absolute inset-x-0 top-0 h-1 bg-gradient-to-r", accent)}
       />
@@ -149,7 +150,7 @@ function StatCard({ label, value, sub, accent = "from-sky-500 to-cyan-400" }) {
           <SparkIcon className="h-5 w-5" />
         </div>
       </div>
-    </div>
+    </HoverCard>
   );
 }
 

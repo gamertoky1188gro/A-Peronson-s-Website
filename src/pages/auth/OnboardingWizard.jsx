@@ -15,6 +15,7 @@
       re-prompt until onboarding_completed is true.
 */
 import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import BackButton from "../../components/ui/BackButton";
 import ProfileImageUpload from "../../components/ui/ProfileImageUpload";
 import { useNavigate } from "react-router-dom";
@@ -167,88 +168,98 @@ export default function OnboardingWizard() {
     <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-500 ease-in-out dark:bg-[#020617] dark:text-slate-100">
       <div className="mx-auto w-full max-w-3xl">
         <div className="rounded-2xl bg-[#ffffff] p-8 shadow-[0_12px_40px_rgba(2,6,23,0.08)] ring-1 ring-slate-200/60 transition-colors duration-500 ease-in-out dark:bg-slate-900/50 dark:shadow-none dark:ring-slate-800">
-          {step === 1 ? (
-            <>
-              <StepHeader
-                step={1}
-                title="Add your profile image"
-                subtitle="Optional. You can paste a URL or upload an image."
-              />
-              <ProfileImageUpload
-                value={profileImage}
-                onChange={setProfileImage}
-                label="Profile Image"
-              />
-            </>
-          ) : null}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 60 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -60 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {step === 1 ? (
+                <>
+                  <StepHeader
+                    step={1}
+                    title="Add your profile image"
+                    subtitle="Optional. You can paste a URL or upload an image."
+                  />
+                  <ProfileImageUpload
+                    value={profileImage}
+                    onChange={setProfileImage}
+                    label="Profile Image"
+                  />
+                </>
+              ) : null}
 
-          {step === 2 ? (
-            <>
-              <StepHeader
-                step={2}
-                title="Confirm your organization"
-                subtitle="Use the official name used in documents."
-              />
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Organization name
-              </label>
-              <input
-                value={organizationName}
-                onChange={(e) => setOrganizationName(e.target.value)}
-                placeholder="Your company / buying house name"
-                className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
-              />
-              <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                Account role:{" "}
-                <span className="font-semibold text-slate-700 dark:text-slate-200">
-                  {String(user?.role || "").replace("_", " ")}
-                </span>
-              </div>
-              <label className="mt-4 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Description / Bio
-              </label>
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell us about your organization..."
-                rows={3}
-                className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224] resize-none"
-              />
-            </>
-          ) : null}
+              {step === 2 ? (
+                <>
+                  <StepHeader
+                    step={2}
+                    title="Confirm your organization"
+                    subtitle="Use the official name used in documents."
+                  />
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Organization name
+                  </label>
+                  <input
+                    value={organizationName}
+                    onChange={(e) => setOrganizationName(e.target.value)}
+                    placeholder="Your company / buying house name"
+                    className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
+                  />
+                  <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                    Account role:{" "}
+                    <span className="font-semibold text-slate-700 dark:text-slate-200">
+                      {String(user?.role || "").replace("_", " ")}
+                    </span>
+                  </div>
+                  <label className="mt-4 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Description / Bio
+                  </label>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell us about your organization..."
+                    rows={3}
+                    className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224] resize-none"
+                  />
+                </>
+              ) : null}
 
-          {step === 3 ? (
-            <>
-              <StepHeader
-                step={3}
-                title="Select categories"
-                subtitle="Pick a few categories you work with."
-              />
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {DEFAULT_CATEGORIES.map((cat) => {
-                  const active = categories.includes(cat);
-                  return (
-                    <button
-                      type="button"
-                      key={cat}
-                      onClick={() => toggleCategory(cat)}
-                      className={[
-                        "rounded-xl px-3 py-2 text-xs font-semibold transition",
-                        active
-                          ? "bg-gtBlue text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]"
-                          : "bg-slate-50 text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10",
-                      ].join(" ")}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                You can change these later in Organization Settings.
-              </p>
-            </>
-          ) : null}
+              {step === 3 ? (
+                <>
+                  <StepHeader
+                    step={3}
+                    title="Select categories"
+                    subtitle="Pick a few categories you work with."
+                  />
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {DEFAULT_CATEGORIES.map((cat) => {
+                      const active = categories.includes(cat);
+                      return (
+                        <button
+                          type="button"
+                          key={cat}
+                          onClick={() => toggleCategory(cat)}
+                          className={[
+                            "rounded-xl px-3 py-2 text-xs font-semibold transition",
+                            active
+                              ? "bg-gtBlue text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]"
+                              : "bg-slate-50 text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10",
+                          ].join(" ")}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                    You can change these later in Organization Settings.
+                  </p>
+                </>
+              ) : null}
+            </motion.div>
+          </AnimatePresence>
 
           {error ? (
             <div className="mt-5 rounded-xl bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">

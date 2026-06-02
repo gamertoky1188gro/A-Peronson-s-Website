@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
 import { apiRequest, getRoleHome, saveSession } from "../../lib/auth";
 
@@ -138,10 +139,15 @@ export default function SignupUltra() {
           directly.
         </p>
 
-        <form
-          className="mt-6 grid md:grid-cols-2 gap-4"
-          onSubmit={handleSubmit}
-        >
+        <AnimatePresence mode="wait">
+          <motion.form
+            key="signup-form"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-6 grid md:grid-cols-2 gap-4"
+            onSubmit={handleSubmit}
+          >
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
               Full Name
@@ -291,7 +297,8 @@ export default function SignupUltra() {
               {loading ? "INITIALIZING ACCOUNT..." : "PROVISION ACCOUNT"}
             </button>
           </div>
-        </form>
+        </motion.form>
+        </AnimatePresence>
       </div>
     </div>
   );

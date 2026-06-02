@@ -331,9 +331,9 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
   return (
     <div className="group relative flex items-center justify-center">
       <Motion.div
-        whileHover={reduceMotion ? undefined : { scale: 1.08, y: -1 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.98, y: 0 }}
-        transition={{ type: "spring", stiffness: 520, damping: 28 }}
+        whileHover={reduceMotion ? undefined : { scale: 1.3 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
       >
         <Link
           to={to}
@@ -353,9 +353,13 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
           <span className="relative z-10 inline-flex">
             {IconComponent && <IconComponent className="h-5 w-5" />}
             {badgeCount > 0 ? (
-              <span className="absolute right-0 top-0 rounded-full bg-cyan-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+              <Motion.span
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute right-0 top-0 rounded-full bg-cyan-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm"
+              >
                 {badgeCount > 99 ? "99+" : badgeCount}
-              </span>
+              </Motion.span>
             ) : null}
           </span>
         </Link>
@@ -900,6 +904,15 @@ export default function NavBar() {
     };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    const html = document.documentElement;
+    html.style.transition = "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease";
+    const timer = setTimeout(() => {
+      html.style.transition = "";
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [theme]);
+
   return (
     <Motion.nav
       style={{ y: navY }}
@@ -1211,9 +1224,9 @@ export default function NavBar() {
         >
           <Motion.div
             ref={mobileMenuRef}
-            initial={{ y: -18, opacity: 0, scale: 0.99 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: -18, opacity: 0, scale: 0.99 }}
+            initial={{ x: "-100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "-100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="mx-auto mt-16 w-[min(92vw,28rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-white/85 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-2xl dark:bg-slate-950/90"
           >
@@ -1315,9 +1328,13 @@ export default function NavBar() {
                                 {item.badge &&
                                   item.to === "/notifications" &&
                                   unreadCount > 0 && (
-                                    <span className="rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                    <Motion.span
+                                      animate={{ scale: [1, 1.15, 1] }}
+                                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                                      className="rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-semibold text-white"
+                                    >
                                       {unreadCount > 99 ? "99+" : unreadCount}
-                                    </span>
+                                    </Motion.span>
                                   )}
                                 <ChevronRight className="h-4 w-4 opacity-40" />
                               </Link>

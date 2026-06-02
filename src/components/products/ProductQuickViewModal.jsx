@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth";
 import { recordLeadSource } from "../../lib/leadSource";
+import AnimatedModal from "../AnimatedModal";
 
 function roleToProfileRoute(role, id) {
   if (!id) return "/feed";
@@ -26,6 +27,7 @@ export default function ProductQuickViewModal({
   const viewRecordedRef = useRef({ productId: "", recorded: false });
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const productId = item?.product?.id || item?.id || "";
   const companyId =
@@ -59,6 +61,7 @@ export default function ProductQuickViewModal({
 
   useEffect(() => {
     if (!open || !productId) return;
+    setCurrentImageIndex(0);
     const state = viewRecordedRef.current;
     if (state.productId !== productId) {
       viewRecordedRef.current = { productId, recorded: false };
@@ -133,15 +136,20 @@ export default function ProductQuickViewModal({
     ? roleToProfileRoute(author.role, author.id)
     : "";
 
+  const allImages = coverUrl ? [coverUrl, ...galleryUrls.filter((u) => u !== coverUrl)] : galleryUrls;
+  const currentImage = allImages[currentImageIndex] || "";
+
+  function nextImage() {
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  }
+
+  function prevImage() {
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  }
+
   return (
-    <div className="fixed inset-0 z-50">
-      <button
-        type="button"
-        aria-label="Close quick view"
-        onClick={handleClose}
-        className="absolute inset-0 bg-black/40"
-      />
-      <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-2xl shadow-borderless dark:shadow-borderlessDark overflow-hidden">
+    <AnimatedModal open={open} onClose={handleClose} className="w-[92vw] max-w-2xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-950 rounded-2xl">
         <header className="flex items-center justify-between gap-3 px-5 py-4 shadow-dividerB dark:shadow-dividerBDark">
           <div className="min-w-0">
             <p className="text-sm font-bold text-slate-900 truncate">
@@ -171,36 +179,67 @@ export default function ProductQuickViewModal({
 
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
-            {coverUrl ? (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <img
-                  src={coverUrl}
-                  alt="Product cover"
-                  className="h-40 w-full rounded-xl object-cover mb-4"
-                />
-              </motion.div>
+            {allImages.length > 0 ? (
+              <div className="relative mb-4">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentImageIndex}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.x < -50) nextImage();
+                      if (info.offset.x > 50) prevImage();
+                    }}
+                    initial={{ opacity: 0, x: 60 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -60 }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-40 w-full rounded-xl overflow-hidden"
+                  >
+                    <img
+                      src={currentImage}
+                      alt="Product"
+                      className="h-full w-full object-cover pointer-events-none"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+                {allImages.length > 1 ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={prevImage}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={nextImage}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">
+                      {currentImageIndex + 1} / {allImages.length}
+                    </div>
+                  </>
+                ) : null}
+              </div>
             ) : (
               <div className="h-40 w-full rounded-xl bg-slate-200 mb-4" />
             )}
-            {galleryUrls.length > 1 ? (
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                {galleryUrls.slice(0, 4).map((url, i) => (
-                  <motion.div
+            {allImages.length > 1 ? (
+              <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                {allImages.map((url, i) => (
+                  <button
                     key={url}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: 0.05 * i, ease: [0.16, 1, 0.3, 1] }}
+                    type="button"
+                    onClick={() => setCurrentImageIndex(i)}
+                    className={`shrink-0 h-10 w-10 rounded-lg overflow-hidden border-2 transition ${i === currentImageIndex ? "border-sky-500" : "border-transparent opacity-60 hover:opacity-100"}`}
                   >
-                    <img
-                      src={url}
-                      alt="Product thumbnail"
-                      className="h-12 w-full rounded-lg object-cover"
-                    />
-                  </motion.div>
+                    <img src={url} alt="" className="h-full w-full object-cover" />
+                  </button>
                 ))}
               </div>
             ) : null}
@@ -304,6 +343,6 @@ export default function ProductQuickViewModal({
           </div>
         </footer>
       </div>
-    </div>
+    </AnimatedModal>
   );
 }

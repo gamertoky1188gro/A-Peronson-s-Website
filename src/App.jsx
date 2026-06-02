@@ -7,12 +7,15 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
+import { motion } from "framer-motion";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import FloatingAssistant from "./components/FloatingAssistant";
 import ScrollProgressBar from "./components/ScrollProgressBar";
 import NeonAtom from "./components/ui/NeonAtom";
 import LenisProvider from "./components/LenisProvider";
+import { ToastProvider } from "./components/ToastContainer";
+import ScrollToTop from "./components/ScrollToTop";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
 
@@ -117,8 +120,9 @@ function ProtectedRoute({ children, roles }) {
 }
 
 function AppRoutes() {
+  const location = useLocation();
   return (
-    <Routes>
+    <Routes location={location} key={location.pathname}>
       <Route path="/" element={<TexHub />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/about" element={<About />} />
@@ -368,7 +372,14 @@ function AppLayout() {
             <NeonAtom size={48} />
           </div>
         }>
-          <AppRoutes />
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <AppRoutes />
+          </motion.div>
         </Suspense>
       </main>
       {!hideChrome ? <Footer /> : null}
@@ -498,7 +509,10 @@ function AppLayout() {
 function App() {
   return (
     <BrowserRouter>
-      <AppLayout />
+      <ToastProvider>
+        <AppLayout />
+        <ScrollToTop />
+      </ToastProvider>
     </BrowserRouter>
   );
 }

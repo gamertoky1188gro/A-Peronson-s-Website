@@ -1,6 +1,6 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import WordCount from "../components/ui/WordCount";
-import { motion } from "framer-motion";
+import { motion, Reorder } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
@@ -920,10 +920,10 @@ export default function FeedManagementPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <Reorder.Group axis="y" values={posts} onReorder={setPosts} className="space-y-4">
                     {posts.map((post) => (
+                      <Reorder.Item key={post.id} value={post}>
                       <article
-                        key={post.id}
                         className={cn(
                           "rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-xl",
                           theme === "dark"
@@ -974,8 +974,9 @@ export default function FeedManagementPage() {
                           <div className="text-sky-400/90">Published</div>
                         </div>
                       </article>
+                      </Reorder.Item>
                     ))}
-                  </div>
+                  </Reorder.Group>
                 )}
               </div>
             </section>
