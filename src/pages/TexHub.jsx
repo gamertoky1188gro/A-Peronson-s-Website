@@ -1153,7 +1153,7 @@ export default function TexHub() {
                       </MagneticLinkButton>
                 </>
               )}
-            </motion.div>
+            </div>
               </div>
             </Card>
           </div>
