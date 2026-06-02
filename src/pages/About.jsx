@@ -469,18 +469,14 @@ export default function About() {
                 </h2>
                 <div className="mt-3 space-y-4">
                   <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                    <TextColorReveal>
                       To simplify international garment sourcing by building a
                       secure digital infrastructure that prioritizes credibility,
                       transparency, and efficiency.
-                    </TextColorReveal>
                   </p>
                   <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                    <TextColorReveal>
                       To become a trusted digital bridge between global buyers
                       and garment manufacturers, reducing negotiation friction
                       and strengthening international trade relationships.
-                    </TextColorReveal>
                   </p>
                 </div>
               </div>
