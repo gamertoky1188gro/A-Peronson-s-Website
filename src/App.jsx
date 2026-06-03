@@ -383,7 +383,7 @@ function AppLayout() {
           </motion.div>
         </Suspense>
       </main>
-      {!hideChrome ? <Footer /> : null}
+      {!hideChrome && location.pathname !== "/feed" ? <Footer /> : null}
       {!hideChrome ? <FloatingAssistant /> : null}
     </div>
     </div>
