@@ -759,15 +759,15 @@ export default function MainFeed() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
+    <div className="flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
       <motion.div
         style={{ y: reduceMotion ? 0 : bgParallax }}
         className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"
       />
-      <div className="min-h-screen text-slate-900 transition-colors dark:text-white">
-        <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 py-4 md:px-6 lg:h-screen lg:flex-row lg:overflow-hidden lg:p-6">
+      <div className="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
+        <div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6">
           {/* ====== SIDEBAR ====== */}
-          <aside className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:w-[320px] lg:overflow-y-auto">
+          <aside className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto">
             {/* Header */}
             <div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
               <div className="flex items-center justify-between">
