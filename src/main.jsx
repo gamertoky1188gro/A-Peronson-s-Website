@@ -5,7 +5,6 @@ import "lenis/dist/lenis.css";
 import { ThemeProvider } from "./lib/ThemeProvider.jsx";
 import App from "./App.jsx";
 
-// Ensure no horizontal overflow at the viewport level
 const preventHorizontalOverflow = () => {
   document.documentElement.style.overflowX = "hidden";
   document.body.style.overflowX = "hidden";
@@ -13,9 +12,11 @@ const preventHorizontalOverflow = () => {
   if (root) root.style.overflowX = "hidden";
 };
 preventHorizontalOverflow();
-// Re-apply after Lenis might override it
+// Re-apply after any library (Lenis, etc.) might override it
 const ro = new ResizeObserver(preventHorizontalOverflow);
 ro.observe(document.documentElement);
+// Also re-apply after React mounts and Lenis initializes
+setTimeout(preventHorizontalOverflow, 500);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
