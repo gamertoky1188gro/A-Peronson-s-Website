@@ -1675,7 +1675,7 @@ export default function BuyerRequestManagement() {
                       {!myRequests.length ? (
                         <div className={`text-sm ${soft}`}>No open requests.</div>
                       ) : (
-                        <div className="overflow-hidden rounded-[22px] border border-white/10">
+                        <div className="overflow-x-auto rounded-[22px] border border-white/10">
                           <table className="min-w-full divide-y divide-white/10 text-left text-sm">
                             <thead className="bg-white/5 text-slate-300">
                               <tr>

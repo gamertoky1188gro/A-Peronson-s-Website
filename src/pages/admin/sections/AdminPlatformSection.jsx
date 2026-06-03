@@ -113,7 +113,7 @@ export function AdminPlatformSection({
           {/* Users Table */}
           <div
             className={cn(
-              "rounded-2xl border overflow-hidden",
+              "rounded-2xl border overflow-x-auto",
               adminDark ? "border-white/10" : "border-slate-200",
             )}
           >

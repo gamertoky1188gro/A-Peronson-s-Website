@@ -309,7 +309,7 @@ export default function OwnerDashboard() {
   return (
     <div className={theme === "dark" ? "dark" : ""}>
       <div className="min-h-screen w-full bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100">
-        <div className="flex min-h-screen w-full max-w-none">
+        <div className="flex min-h-screen w-full max-w-none overflow-x-hidden">
           <aside
             className={cn(
               "fixed inset-y-0 left-0 z-40 w-80 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:sticky lg:top-0 lg:translate-x-0",

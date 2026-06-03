@@ -999,7 +999,7 @@ export default function NavBar() {
               {searchExpanded ? (
                 <div
                   className={cn(
-                    "relative flex w-[400px] items-center rounded-full border border-white/10 bg-white/65 px-3 py-2 backdrop-blur-xl shadow-[0_20px_45px_rgba(14,165,233,0.12)] transition-[width,box-shadow] duration-300",
+                    "relative flex w-[400px] max-w-[calc(100vw-2rem)] items-center rounded-full border border-white/10 bg-white/65 px-3 py-2 backdrop-blur-xl shadow-[0_20px_45px_rgba(14,165,233,0.12)] transition-[width,box-shadow] duration-300",
                     "dark:bg-slate-950/70"
                   )}
                 >

@@ -1146,7 +1146,7 @@ export default function AttachmentPreviewModal({
                     </div>
                   )}
 
-                  <div className="max-h-[70vh] overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40">
+                  <div className="max-h-[70vh] overflow-x-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40">
                     <table className="min-w-full text-[12px] text-slate-100 shadow-borderless dark:shadow-borderlessDark">
                       <tbody>
                         {(spreadsheetState.rows || []).map((row, rowIndex) => (
