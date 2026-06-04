@@ -2,7 +2,6 @@ import crypto from "crypto";
 import prisma from "../utils/prisma.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import { getPlanForUser } from "./entitlementService.js";
-import { categorizeFeedPost, moderateImage } from "./mediaModerationService.js";
 const STATUSES = new Set(["draft", "published"]);
 const MEDIA_TYPES = new Set(["image", "video"]);
 
