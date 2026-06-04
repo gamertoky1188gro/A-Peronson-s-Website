@@ -865,21 +865,8 @@ async function buildPlatformAnalyticsSnapshot(governance) {
   const usersById = new Map(
     (Array.isArray(users) ? users : []).map((u) => [String(u.id), u]),
   );
-  const retentionMs =
-    Math.max(1, Number(governance.retention_days || 365)) * 24 * 60 * 60 * 1000;
-  const retentionCutoff = Date.now() - retentionMs;
-  const requirementsRows = (
-    Array.isArray(requirements) ? requirements : []
-  ).filter((row) => {
-    const createdAt = new Date(row?.created_at || "").getTime();
-    return Number.isFinite(createdAt) && createdAt >= retentionCutoff;
-  });
-  const eventRows = (Array.isArray(events) ? events : []).filter((row) => {
-    const createdAt = new Date(row?.created_at || "").getTime();
-    return Number.isFinite(createdAt) && createdAt >= retentionCutoff;
-  });
 
-  return { usersById, requirementsRows, eventRows };
+  return { usersById, requirementsRows: requirements, eventRows: events };
 }
 
 function buildRawPlatformReport(requirementsRows, eventRows, usersById) {
