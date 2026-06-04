@@ -143,15 +143,30 @@ function splitCommaList(value) {
     .filter(Boolean);
 }
 
-function formatDate(value) {
+function timeAgo(value) {
   if (!value) return "Just now";
+  const now = Date.now();
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  const diff = now - d.getTime();
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
+  const months = Math.floor(days / 30);
+  if (seconds < 10) return "Just now";
+  if (seconds < 60) return `${seconds} seconds ago`;
+  if (minutes === 1) return "1 minute ago";
+  if (minutes < 60) return `${minutes} minutes ago`;
+  if (hours === 1) return "1 hour ago";
+  if (hours < 24) return `${hours} hours ago`;
+  if (days === 1) return "1 day ago";
+  if (days < 7) return `${days} days ago`;
+  if (weeks === 1) return "1 week ago";
+  if (weeks < 5) return `${weeks} weeks ago`;
+  if (months === 1) return "1 month ago";
+  return `${months} months ago`;
 }
 
 function cn(...classes) {
@@ -969,7 +984,7 @@ export default function FeedManagementPage() {
                             )}
                           >
                             <span className="h-2 w-2 rounded-full bg-sky-400" />
-                            Created {formatDate(post.createdAt)}
+                            Created {timeAgo(post.createdAt)}
                           </div>
                           <div className="text-sky-400/90">Published</div>
                         </div>

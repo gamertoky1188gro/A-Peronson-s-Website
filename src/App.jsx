@@ -359,7 +359,17 @@ function AppLayout() {
     location.pathname === "/chat" || location.pathname === "/call";
   const isAdminRoute = location.pathname.startsWith("/admin");
   const hideChrome = isImmersiveRoute || isAdminRoute;
-  const content = (
+  const content = isAdminRoute ? (
+    <>
+      <Suspense fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <NeonAtom size={48} />
+        </div>
+      }>
+        <AppRoutes />
+      </Suspense>
+    </>
+  ) : (
     <>
       {!hideChrome ? <ScrollProgressBar /> : null}
       <div className="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
