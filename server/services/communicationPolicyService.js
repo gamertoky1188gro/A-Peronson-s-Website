@@ -1,17 +1,6 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
-
-const MESSAGE_FILE = "messages.json";
-const LIMITS_FILE = "communication_limits.json";
-const QUEUE_FILE = "message_queue_items.json";
-const LOGS_FILE = "message_policy_logs.json";
-const REPUTATION_FILE = "sender_reputation.json";
-const METRICS_FILE = "policy_metrics.json";
-
-const LEGACY_LIMITS_FILE = "communication_policy_configs.json";
-const LEGACY_QUEUE_FILE = "message_queue.json";
-const LEGACY_LOGS_FILE = "message_policy_decisions.json";
 
 const DEFAULT_GLOBAL_CONFIG = {
   id: "global",
@@ -278,26 +267,107 @@ function rejectionReason(action, reason, retryAfterSeconds = 0) {
   return "";
 }
 
+function limitToPolicyConfigData(row) {
+  const mc = row?.message_caps || {};
+  const pm = row?.priority_multipliers || {};
+  const st = row?.spam_thresholds || {};
+  return {
+    id: row.id || "global",
+    scope: row.scope || "global",
+    org_id: row.org_id || null,
+    max_outreach_per_window: Number(mc.outbound_per_window) || 12,
+    outreach_window_minutes: Number(mc.window_minutes) || 15,
+    cooldown_seconds: Number(mc.cooldown_seconds) || 30,
+    premium_boost: pm.premium
+      ? Math.round((Number(pm.premium) - 1) * 100)
+      : 20,
+    verified_boost: pm.verified
+      ? Math.round((Number(pm.verified) - 1) * 100)
+      : 30,
+    keyword_risk_threshold_soft: Number(st.queue) || 0.45,
+    keyword_risk_threshold_hard: Number(st.hard_block) || 0.75,
+    updated_by: row.updated_by || null,
+    updated_at: row.updated_at ? new Date(row.updated_at) : new Date(),
+  };
+}
+
+async function writeConfigRows(rows) {
+  for (const row of rows) {
+    const now = new Date();
+    await prisma.communicationLimit.upsert({
+      where: { id: row.id || "global" },
+      create: {
+        id: row.id || "global",
+        scope: row.scope || "global",
+        org_id: row.org_id || null,
+        message_caps: row.message_caps || DEFAULT_GLOBAL_CONFIG.message_caps,
+        priority_multipliers:
+          row.priority_multipliers || DEFAULT_GLOBAL_CONFIG.priority_multipliers,
+        strictness_mode: row.strictness_mode || "balanced",
+        spam_thresholds:
+          row.spam_thresholds || DEFAULT_GLOBAL_CONFIG.spam_thresholds,
+        updated_by: row.updated_by || null,
+        updated_at: now,
+      },
+      update: {
+        scope: row.scope || "global",
+        org_id: row.org_id || null,
+        message_caps: row.message_caps || undefined,
+        priority_multipliers: row.priority_multipliers || undefined,
+        strictness_mode: row.strictness_mode || undefined,
+        spam_thresholds: row.spam_thresholds || undefined,
+        updated_by: row.updated_by || null,
+        updated_at: now,
+      },
+    });
+
+    const legacyData = limitToPolicyConfigData(row);
+    await prisma.communicationPolicyConfig.upsert({
+      where: { id: row.id || "global" },
+      create: legacyData,
+      update: { ...legacyData, updated_at: now },
+    });
+  }
+}
+
 async function ensureDefaultConfigRows() {
   const [current, legacy] = await Promise.all([
-    readJson(LIMITS_FILE),
-    readJson(LEGACY_LIMITS_FILE),
+    prisma.communicationLimit.findMany(),
+    prisma.communicationPolicyConfig.findMany(),
   ]);
+
   const rows =
-    Array.isArray(current) && current.length > 0
+    current.length > 0
       ? current
-      : Array.isArray(legacy)
-        ? legacy
+      : legacy.length > 0
+        ? legacy.map((l) => ({
+            id: l.id,
+            scope: l.scope,
+            org_id: l.org_id,
+            message_caps: {
+              outbound_per_window: l.max_outreach_per_window,
+              window_minutes: l.outreach_window_minutes,
+              cooldown_seconds: l.cooldown_seconds,
+            },
+            priority_multipliers: {
+              premium: 1 + (l.premium_boost || 20) / 100,
+              verified: 1 + (l.verified_boost || 30) / 100,
+            },
+            strictness_mode: "balanced",
+            spam_thresholds: {
+              queue: l.keyword_risk_threshold_soft ?? 0.45,
+              hard_block: l.keyword_risk_threshold_hard ?? 0.75,
+            },
+            updated_by: l.updated_by,
+            updated_at: l.updated_at?.toISOString(),
+          }))
         : [];
 
   if (!rows.some((row) => row?.id === "global")) {
     rows.push({ ...DEFAULT_GLOBAL_CONFIG, updated_at: toIso() });
   }
 
-  await Promise.all([
-    writeJson(LIMITS_FILE, rows),
-    writeJson(LEGACY_LIMITS_FILE, rows),
-  ]);
+  await writeConfigRows(rows);
 
   return rows;
 }
@@ -405,47 +475,14 @@ export async function evaluateMessagePolicy({
   type = "text",
   orgId = "",
 }) {
-  const [
-    messages,
-    configsRaw,
-    queueRowsRaw,
-    legacyQueueRaw,
-    logRowsRaw,
-    legacyLogsRaw,
-    reputationRowsRaw,
-    metricsRaw,
-  ] = await Promise.all([
-    readJson(MESSAGE_FILE),
+  const [messages, configRows, reputationRows] = await Promise.all([
+    prisma.message.findMany(),
     ensureDefaultConfigRows(),
-    readJson(QUEUE_FILE),
-    readJson(LEGACY_QUEUE_FILE),
-    readJson(LOGS_FILE),
-    readJson(LEGACY_LOGS_FILE),
-    readJson(REPUTATION_FILE),
-    readJson(METRICS_FILE),
+    prisma.senderReputation.findMany(),
   ]);
 
-  const configMap = buildConfigMap(configsRaw);
+  const configMap = buildConfigMap(configRows);
   const config = resolvePolicyConfig(configMap, orgId);
-  const queueRows =
-    Array.isArray(queueRowsRaw) && queueRowsRaw.length
-      ? queueRowsRaw
-      : Array.isArray(legacyQueueRaw)
-        ? legacyQueueRaw
-        : [];
-  const logRows =
-    Array.isArray(logRowsRaw) && logRowsRaw.length
-      ? logRowsRaw
-      : Array.isArray(legacyLogsRaw)
-        ? legacyLogsRaw
-        : [];
-  const reputationRows = Array.isArray(reputationRowsRaw)
-    ? reputationRowsRaw
-    : [];
-  const metrics =
-    metricsRaw && typeof metricsRaw === "object" && !Array.isArray(metricsRaw)
-      ? metricsRaw
-      : {};
 
   const senderId = String(sender?.id || "");
   const nowIso = toIso();
@@ -511,12 +548,6 @@ export async function evaluateMessagePolicy({
     updated_at: nowIso,
   };
 
-  logRows.push(logRow);
-  addMetric(metrics, "total_inbound_outbound_evaluated");
-  addMetric(metrics, contract.action);
-  if (contract.action === "hard_block" || contract.action === "soft_block")
-    addMetric(metrics, "blocked_total");
-
   let queue = null;
   if (contract.action === "queue") {
     queue = {
@@ -536,8 +567,113 @@ export async function evaluateMessagePolicy({
       created_at: nowIso,
       updated_at: nowIso,
     };
-    queueRows.push(queue);
-    addMetric(metrics, "queued_total");
+  }
+
+  const promises = [];
+
+  promises.push(
+    prisma.messagePolicyLog.create({
+      data: {
+        id: logRow.id,
+        queue_id: logRow.queue_id,
+        sender_id: logRow.sender_id,
+        org_id: logRow.org_id,
+        match_id: logRow.match_id,
+        action: logRow.action,
+        reason: logRow.reason,
+        reputation_score: logRow.reputation_score,
+        spam_score: logRow.spam_score,
+        frequency_count: logRow.frequency_count,
+        first_response_priority: logRow.first_response_priority,
+        queue_rank: logRow.queue_rank,
+        queue_score: logRow.queue_score,
+        queue_priority_label: logRow.queue_priority_label,
+        premium_verified_priority_score: logRow.premium_verified_priority_score,
+        retry_after_seconds: logRow.retry_after_seconds,
+        moderation_flag: logRow.moderation_flag,
+        false_positive: logRow.false_positive,
+        reviewer_id: logRow.reviewer_id,
+        reviewer_notes: logRow.reviewer_notes,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    }),
+  );
+
+  // Also write to legacy message_policy_decisions
+  promises.push(
+    prisma.messagePolicyDecision.create({
+      data: {
+        id: logRow.id,
+        queue_id: logRow.queue_id,
+        sender_id: logRow.sender_id,
+        org_id: logRow.org_id,
+        match_id: logRow.match_id,
+        action: logRow.action,
+        reason: logRow.reason,
+        trust_score: logRow.reputation_score,
+        keyword_risk_score: logRow.spam_score,
+        frequency_count: logRow.frequency_count,
+        first_response_priority: logRow.first_response_priority,
+        queue_rank: logRow.queue_rank,
+        queue_score: logRow.queue_score,
+        queue_priority_label: logRow.queue_priority_label,
+        retry_after_seconds: logRow.retry_after_seconds,
+        requires_human_review: Boolean(logRow.moderation_flag),
+        false_positive: logRow.false_positive,
+        reviewer_id: logRow.reviewer_id,
+        reviewer_notes: logRow.reviewer_notes,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    }),
+  );
+
+  if (queue) {
+    promises.push(
+      prisma.messageQueueItem.create({
+        data: {
+          id: queue.id,
+          message_id: queue.message_id,
+          match_id: queue.match_id,
+          sender_id: queue.sender_id,
+          org_id: queue.org_id,
+          queue_status: queue.queue_status,
+          queue_rank: queue.queue_rank,
+          queue_score: queue.queue_score,
+          queue_priority_label: queue.queue_priority_label,
+          policy_reason: queue.policy_reason,
+          retry_after_seconds: queue.retry_after_seconds,
+          requires_human_review: queue.requires_human_review,
+          metadata: queue.metadata,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      }),
+    );
+
+    // Also write to legacy message_queue
+    promises.push(
+      prisma.messageQueue.create({
+        data: {
+          id: queue.id,
+          message_id: queue.message_id,
+          match_id: queue.match_id,
+          sender_id: queue.sender_id,
+          org_id: queue.org_id,
+          queue_status: queue.queue_status,
+          queue_rank: queue.queue_rank,
+          queue_score: queue.queue_score,
+          queue_priority_label: queue.queue_priority_label,
+          policy_reason: queue.policy_reason,
+          retry_after_seconds: queue.retry_after_seconds,
+          requires_human_review: queue.requires_human_review,
+          metadata: queue.metadata,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      }),
+    );
   }
 
   if (reputationIdx >= 0) {
@@ -547,24 +683,66 @@ export async function evaluateMessagePolicy({
         : contract.action === "soft_block"
           ? -1.5
           : 0.2;
-    reputationRows[reputationIdx] = {
-      ...reputationRows[reputationIdx],
-      trust_score: Math.max(
-        0,
-        Math.min(100, Number((reputationScore + delta).toFixed(2))),
-      ),
-      spam_reports:
-        contract.action === "hard_block"
-          ? Number(reputationRows[reputationIdx].spam_reports || 0) + 1
-          : Number(reputationRows[reputationIdx].spam_reports || 0),
-      positive_interactions:
-        contract.action === "allow"
-          ? Number(reputationRows[reputationIdx].positive_interactions || 0) + 1
-          : Number(reputationRows[reputationIdx].positive_interactions || 0),
-      updated_at: nowIso,
-    };
+    const updatedTrustScore = Math.max(
+      0,
+      Math.min(100, Number((reputationScore + delta).toFixed(2))),
+    );
+    const updatedSpamReports =
+      contract.action === "hard_block"
+        ? Number(reputationRows[reputationIdx].spam_reports || 0) + 1
+        : Number(reputationRows[reputationIdx].spam_reports || 0);
+    const updatedPositiveInteractions =
+      contract.action === "allow"
+        ? Number(reputationRows[reputationIdx].positive_interactions || 0) + 1
+        : Number(reputationRows[reputationIdx].positive_interactions || 0);
+
+    promises.push(
+      prisma.senderReputation.update({
+        where: { id: reputationRows[reputationIdx].id },
+        data: {
+          trust_score: updatedTrustScore,
+          spam_reports: updatedSpamReports,
+          positive_interactions: updatedPositiveInteractions,
+          updated_at: new Date(),
+        },
+      }),
+    );
   } else {
-    reputationRows.push(reputation);
+    promises.push(
+      prisma.senderReputation.create({
+        data: {
+          id: reputation.id,
+          sender_id: reputation.sender_id,
+          trust_score: reputation.trust_score,
+          spam_reports: reputation.spam_reports,
+          positive_interactions: reputation.positive_interactions,
+          updated_at: new Date(),
+        },
+      }),
+    );
+  }
+
+  // Read and update metrics from AppState
+  const metricsKey = "policy_metrics";
+  let metrics = {};
+  try {
+    const metricsRecord = await prisma.appState.findUnique({
+      where: { key: metricsKey },
+    });
+    if (metricsRecord?.data) {
+      metrics = metricsRecord.data;
+    }
+  } catch {
+    metrics = {};
+  }
+
+  addMetric(metrics, "total_inbound_outbound_evaluated");
+  addMetric(metrics, contract.action);
+  if (contract.action === "hard_block" || contract.action === "soft_block")
+    addMetric(metrics, "blocked_total");
+
+  if (contract.action === "queue") {
+    addMetric(metrics, "queued_total");
   }
 
   const blockedTotal = Number(metrics.blocked_total || 0);
@@ -586,14 +764,15 @@ export async function evaluateMessagePolicy({
     ? Number((falsePositives / spamActions).toFixed(4))
     : 0;
 
-  await Promise.all([
-    writeJson(QUEUE_FILE, queueRows),
-    writeJson(LEGACY_QUEUE_FILE, queueRows),
-    writeJson(LOGS_FILE, logRows),
-    writeJson(LEGACY_LOGS_FILE, logRows),
-    writeJson(REPUTATION_FILE, reputationRows),
-    writeJson(METRICS_FILE, metrics),
-  ]);
+  promises.push(
+    prisma.appState.upsert({
+      where: { key: metricsKey },
+      create: { key: metricsKey, data: metrics, updated_at: new Date() },
+      update: { data: metrics, updated_at: new Date() },
+    }),
+  );
+
+  await Promise.all(promises);
 
   return {
     action: contract.action,
@@ -616,66 +795,83 @@ export async function evaluateMessagePolicy({
 
 export async function attachMessageToQueue(queueId, messageId) {
   if (!queueId || !messageId) return;
-  const queueRows = await readJson(QUEUE_FILE);
-  const nextRows = Array.isArray(queueRows) ? queueRows : [];
-  const idx = nextRows.findIndex(
-    (row) => String(row.id || "") === String(queueId),
-  );
-  if (idx < 0) return;
-  nextRows[idx] = {
-    ...nextRows[idx],
-    message_id: String(messageId),
-    queue_status: "sent",
-    updated_at: toIso(),
-  };
-  const metrics = await readJson(METRICS_FILE);
-  const nextMetrics =
-    metrics && typeof metrics === "object" && !Array.isArray(metrics)
-      ? metrics
-      : {};
-  addMetric(nextMetrics, "sent_from_queue");
-  const queuedTotal = Number(nextMetrics.queued_total || 0);
-  const sentFromQueue = Number(nextMetrics.sent_from_queue || 0);
-  nextMetrics.queued_to_sent_conversion = queuedTotal
+  const queueItem = await prisma.messageQueueItem.findUnique({
+    where: { id: String(queueId) },
+  });
+  if (!queueItem) return;
+
+  await Promise.all([
+    prisma.messageQueueItem.update({
+      where: { id: String(queueId) },
+      data: {
+        message_id: String(messageId),
+        queue_status: "sent",
+        updated_at: new Date(),
+      },
+    }),
+    prisma.messageQueue.update({
+      where: { id: String(queueId) },
+      data: {
+        message_id: String(messageId),
+        queue_status: "sent",
+        updated_at: new Date(),
+      },
+    }),
+  ]);
+
+  // Update metrics in AppState
+  const metricsKey = "policy_metrics";
+  let metrics = {};
+  try {
+    const metricsRecord = await prisma.appState.findUnique({
+      where: { key: metricsKey },
+    });
+    if (metricsRecord?.data) {
+      metrics = metricsRecord.data;
+    }
+  } catch {
+    metrics = {};
+  }
+
+  addMetric(metrics, "sent_from_queue");
+  const queuedTotal = Number(metrics.queued_total || 0);
+  const sentFromQueue = Number(metrics.sent_from_queue || 0);
+  metrics.queued_to_sent_conversion = queuedTotal
     ? Number((sentFromQueue / queuedTotal).toFixed(4))
     : 0;
 
-  await Promise.all([
-    writeJson(QUEUE_FILE, nextRows),
-    writeJson(LEGACY_QUEUE_FILE, nextRows),
-    writeJson(METRICS_FILE, nextMetrics),
-  ]);
+  await prisma.appState.upsert({
+    where: { key: metricsKey },
+    create: { key: metricsKey, data: metrics, updated_at: new Date() },
+    update: { data: metrics, updated_at: new Date() },
+  });
 }
 
 export async function listPolicyFalsePositiveCandidates() {
-  const logs = await readJson(LOGS_FILE);
-  const rows = Array.isArray(logs) ? logs : [];
-  return rows
-    .filter((row) =>
-      ["hard_block", "queue", "soft_block"].includes(String(row.action || "")),
-    )
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    )
-    .slice(0, 250);
+  const logs = await prisma.messagePolicyLog.findMany({
+    where: {
+      action: { in: ["hard_block", "queue", "soft_block"] },
+    },
+    orderBy: { created_at: "desc" },
+    take: 250,
+  });
+  return logs;
 }
 
 export async function listMessageQueueItems({ status = "" } = {}) {
-  const rows = await readJson(QUEUE_FILE);
-  const queueRows = Array.isArray(rows) ? rows : [];
   const normalized = String(status || "")
     .trim()
     .toLowerCase();
-  const filtered = normalized
-    ? queueRows.filter(
-        (row) => String(row.queue_status || "").toLowerCase() === normalized,
-      )
-    : queueRows;
-  return filtered.sort((a, b) => {
-    const scoreDelta = Number(b.queue_score || 0) - Number(a.queue_score || 0);
-    if (scoreDelta !== 0) return scoreDelta;
-    return String(a.created_at || "").localeCompare(String(b.created_at || ""));
+
+  const where = normalized
+    ? { queue_status: { equals: normalized } }
+    : {};
+
+  const queueRows = await prisma.messageQueueItem.findMany({
+    where,
+    orderBy: [{ queue_score: "desc" }, { created_at: "asc" }],
   });
+  return queueRows;
 }
 
 export async function markPolicyDecisionFalsePositive(
@@ -683,32 +879,55 @@ export async function markPolicyDecisionFalsePositive(
   reviewerId,
   notes = "",
 ) {
-  const logs = await readJson(LOGS_FILE);
-  const next = Array.isArray(logs) ? logs : [];
-  const idx = next.findIndex(
-    (row) => String(row.id || "") === String(decisionId || ""),
-  );
-  if (idx < 0) return null;
-  next[idx] = {
-    ...next[idx],
-    false_positive: true,
-    reviewer_id: sanitizeString(String(reviewerId || ""), 120) || null,
-    reviewer_notes: sanitizeString(String(notes || ""), 400) || null,
-    updated_at: toIso(),
-  };
-  const metrics = await readJson(METRICS_FILE);
-  const nextMetrics =
-    metrics && typeof metrics === "object" && !Array.isArray(metrics)
-      ? metrics
-      : {};
-  addMetric(nextMetrics, "false_positive_total");
+  const log = await prisma.messagePolicyLog.findUnique({
+    where: { id: String(decisionId || "") },
+  });
+  if (!log) return null;
 
-  await Promise.all([
-    writeJson(LOGS_FILE, next),
-    writeJson(LEGACY_LOGS_FILE, next),
-    writeJson(METRICS_FILE, nextMetrics),
+  const [updatedLog] = await Promise.all([
+    prisma.messagePolicyLog.update({
+      where: { id: String(decisionId || "") },
+      data: {
+        false_positive: true,
+        reviewer_id: sanitizeString(String(reviewerId || ""), 120) || null,
+        reviewer_notes: sanitizeString(String(notes || ""), 400) || null,
+        updated_at: new Date(),
+      },
+    }),
+    prisma.messagePolicyDecision.update({
+      where: { id: String(decisionId || "") },
+      data: {
+        false_positive: true,
+        reviewer_id: sanitizeString(String(reviewerId || ""), 120) || null,
+        reviewer_notes: sanitizeString(String(notes || ""), 400) || null,
+        updated_at: new Date(),
+      },
+    }),
   ]);
-  return next[idx];
+
+  // Update metrics in AppState
+  const metricsKey = "policy_metrics";
+  let metrics = {};
+  try {
+    const metricsRecord = await prisma.appState.findUnique({
+      where: { key: metricsKey },
+    });
+    if (metricsRecord?.data) {
+      metrics = metricsRecord.data;
+    }
+  } catch {
+    metrics = {};
+  }
+
+  addMetric(metrics, "false_positive_total");
+
+  await prisma.appState.upsert({
+    where: { key: metricsKey },
+    create: { key: metricsKey, data: metrics, updated_at: new Date() },
+    update: { data: metrics, updated_at: new Date() },
+  });
+
+  return updatedLog;
 }
 
 export async function adjustSenderReputation(
@@ -717,68 +936,71 @@ export async function adjustSenderReputation(
   actorId = "",
   notes = "",
 ) {
-  const rows = await readJson(REPUTATION_FILE);
-  const next = Array.isArray(rows) ? rows : [];
   const safeSenderId = sanitizeString(String(senderId || ""), 120);
   if (!safeSenderId) return null;
 
-  const idx = next.findIndex(
-    (row) => String(row.sender_id || "") === safeSenderId,
-  );
-  const now = toIso();
-  if (idx < 0) {
-    next.push({
-      id: crypto.randomUUID(),
-      sender_id: safeSenderId,
-      trust_score: Math.max(0, Math.min(100, Number(50 + delta))),
-      spam_reports: 0,
-      positive_interactions: 0,
-      adjusted_by: sanitizeString(String(actorId || ""), 120) || null,
-      adjustment_notes: sanitizeString(String(notes || ""), 400) || null,
-      updated_at: now,
+  const existing = await prisma.senderReputation.findUnique({
+    where: { sender_id: safeSenderId },
+  });
+
+  const now = new Date();
+  if (!existing) {
+    await prisma.senderReputation.create({
+      data: {
+        id: crypto.randomUUID(),
+        sender_id: safeSenderId,
+        trust_score: Math.max(0, Math.min(100, Number(50 + delta))),
+        spam_reports: 0,
+        positive_interactions: 0,
+        updated_at: now,
+      },
     });
   } else {
-    const current = Number(next[idx].trust_score || 50);
-    next[idx] = {
-      ...next[idx],
-      trust_score: Math.max(
-        0,
-        Math.min(100, Number((current + Number(delta || 0)).toFixed(2))),
-      ),
-      adjusted_by: sanitizeString(String(actorId || ""), 120) || null,
-      adjustment_notes: sanitizeString(String(notes || ""), 400) || null,
-      updated_at: now,
-    };
+    const current = Number(existing.trust_score || 50);
+    await prisma.senderReputation.update({
+      where: { id: existing.id },
+      data: {
+        trust_score: Math.max(
+          0,
+          Math.min(100, Number((current + Number(delta || 0)).toFixed(2))),
+        ),
+        updated_at: now,
+      },
+    });
   }
 
-  await writeJson(REPUTATION_FILE, next);
-  return (
-    next.find((row) => String(row.sender_id || "") === safeSenderId) || null
-  );
+  return prisma.senderReputation.findUnique({
+    where: { sender_id: safeSenderId },
+  });
 }
 
 export async function getWeeklyDecisionQualityReport() {
-  const [logs, metrics] = await Promise.all([
-    readJson(LOGS_FILE),
-    readJson(METRICS_FILE),
-  ]);
-  const rows = Array.isArray(logs) ? logs : [];
-  const since = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const weekly = rows.filter(
-    (row) => new Date(row.created_at || 0).getTime() >= since,
-  );
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const byAction = weekly.reduce((acc, row) => {
+  const [logs, metricsRecord] = await Promise.all([
+    prisma.messagePolicyLog.findMany({
+      where: { created_at: { gte: since } },
+    }),
+    prisma.appState.findUnique({ where: { key: "policy_metrics" } }),
+  ]);
+
+  const rows = logs || [];
+  const metrics =
+    metricsRecord?.data && typeof metricsRecord.data === "object"
+      ? metricsRecord.data
+      : {};
+
+  const byAction = rows.reduce((acc, row) => {
     const key = String(row.action || "unknown");
     acc[key] = Number(acc[key] || 0) + 1;
     return acc;
   }, {});
-  const falsePositives = weekly.filter((row) => row.false_positive).length;
-  const reviewed = weekly.filter(
+  const falsePositives = rows.filter((row) => row.false_positive).length;
+  const reviewed = rows.filter(
     (row) => row.reviewer_id || row.false_positive,
   ).length;
 
-  const responseQualityByRole = weekly.reduce((acc, row) => {
+  const responseQualityByRole = rows.reduce((acc, row) => {
     const role = String(row.sender_role || "unknown");
     const base = Number(acc[role] || 0);
     const bonus =
@@ -791,18 +1013,15 @@ export async function getWeeklyDecisionQualityReport() {
     window: "7d",
     generated_at: toIso(),
     totals: {
-      decisions: weekly.length,
+      decisions: rows.length,
       false_positives: falsePositives,
       reviewed,
-      false_positive_rate: weekly.length
-        ? Number((falsePositives / weekly.length).toFixed(4))
+      false_positive_rate: rows.length
+        ? Number((falsePositives / rows.length).toFixed(4))
         : 0,
     },
     by_action: byAction,
-    policy_metrics:
-      metrics && typeof metrics === "object" && !Array.isArray(metrics)
-        ? metrics
-        : {},
+    policy_metrics: metrics,
     response_quality_score_by_role: responseQualityByRole,
   };
 }
@@ -820,7 +1039,6 @@ export async function upsertCommunicationPolicyConfig({
   actor_id = "",
 }) {
   const safeScope = scope === "org" ? "org" : "global";
-  const rows = await ensureDefaultConfigRows();
   const id =
     safeScope === "global"
       ? "global"
@@ -831,12 +1049,15 @@ export async function upsertCommunicationPolicyConfig({
     throw err;
   }
 
+  // Read current rows from communication_limits
+  const rows = await prisma.communicationLimit.findMany();
   const idx = rows.findIndex((row) => String(row.id || "") === id);
   const base =
     safeScope === "global"
       ? DEFAULT_GLOBAL_CONFIG
       : { ...DEFAULT_GLOBAL_CONFIG, scope: "org", org_id };
-  const nextRow = normalizeConfig({
+
+  const mergedConfig = {
     ...(idx >= 0 ? rows[idx] : base),
     ...config,
     id,
@@ -844,14 +1065,24 @@ export async function upsertCommunicationPolicyConfig({
     org_id: safeScope === "org" ? org_id : null,
     updated_by: sanitizeString(String(actor_id || ""), 120) || null,
     updated_at: toIso(),
-  });
+  };
 
-  if (idx >= 0) rows[idx] = nextRow;
-  else rows.push(nextRow);
+  // Normalize the merged config to ensure nested structure
+  const nextRow = normalizeConfig(mergedConfig);
 
-  await Promise.all([
-    writeJson(LIMITS_FILE, rows),
-    writeJson(LEGACY_LIMITS_FILE, rows),
-  ]);
-  return nextRow;
+  // Convert to CommunicationLimit shape if needed
+  const limitRow = {
+    id: nextRow.id,
+    scope: nextRow.scope,
+    org_id: nextRow.org_id,
+    message_caps: nextRow.message_caps,
+    priority_multipliers: nextRow.priority_multipliers,
+    strictness_mode: nextRow.strictness_mode,
+    spam_thresholds: nextRow.spam_thresholds,
+    updated_by: nextRow.updated_by,
+    updated_at: nextRow.updated_at ? new Date(nextRow.updated_at) : new Date(),
+  };
+
+  await writeConfigRows([limitRow]);
+  return limitRow;
 }

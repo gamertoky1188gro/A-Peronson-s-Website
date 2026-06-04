@@ -76,7 +76,7 @@ import {
   setUserOffline,
   touchUser,
 } from "./services/presenceService.js";
-import { readJson } from "./utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import {
   consumePendingInvites,
   enqueuePendingInvites,
@@ -776,9 +776,7 @@ wsServer.on("connection", (socket, req) => {
         ? payload.participant_ids.map((id) => String(id))
         : [];
       if (!participantIds.length) return;
-      const users = await readJson("users.json");
-      const caller =
-        users.find((u) => String(u.id) === String(tokenUser.id)) || null;
+      const caller = await prisma.user.findUnique({ where: { id: tokenUser.id } });
       const callerPayload = caller
         ? {
             id: caller.id,

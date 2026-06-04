@@ -1,3 +1,4 @@
+import prisma from "../utils/prisma.js";
 import { findUserById } from "./userService.js";
 import {
   getVerification,
@@ -5,13 +6,7 @@ import {
 } from "./verificationService.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { sanitizeString } from "../utils/validators.js";
-import { readJson } from "../utils/jsonStore.js";
 import { listProducts } from "./productService.js";
-
-const CONNECTION_FILE = "user_connections.json";
-const REQUIREMENTS_FILE = "requirements.json";
-const PRODUCTS_FILE = "company_products.json";
-const PARTNER_REQUESTS_FILE = "partner_requests.json";
 
 function cleanUserPublic(user) {
   if (!user) return null;
@@ -123,10 +118,10 @@ export async function getProfileOverview(viewerId, profileUserId) {
 
   const [connections, requirements, products, partnerRequests] =
     await Promise.all([
-      readJson(CONNECTION_FILE),
-      readJson(REQUIREMENTS_FILE),
-      readJson(PRODUCTS_FILE),
-      readJson(PARTNER_REQUESTS_FILE),
+      prisma.userConnection.findMany(),
+      prisma.requirement.findMany(),
+      prisma.product.findMany(),
+      prisma.partnerRequest.findMany(),
     ]);
 
   const safeUser = cleanUserPublic(user);
@@ -192,18 +187,23 @@ export async function getProfileRequestsPage(
   if (!user) return "not_found";
   if (user.role !== "buyer") return "invalid_role";
 
-  const requirements = await readJson(REQUIREMENTS_FILE);
-  const all = requirements
-    .filter((r) => r.buyer_id === profileUserId)
-    .sort(sortNewest);
-  const pageItems = all.slice(cursor, cursor + limit);
-  const nextCursor = cursor + limit < all.length ? cursor + limit : null;
+  const [all, total] = await Promise.all([
+    prisma.requirement.findMany({
+      where: { buyer_id: profileUserId },
+      orderBy: { created_at: "desc" },
+      skip: cursor,
+      take: limit,
+    }),
+    prisma.requirement.count({ where: { buyer_id: profileUserId } }),
+  ]);
+
+  const nextCursor = cursor + limit < total ? cursor + limit : null;
 
   return {
-    items: pageItems,
+    items: all,
     cursor,
     next_cursor: nextCursor,
-    total: all.length,
+    total,
   };
 }
 
@@ -244,17 +244,20 @@ export async function getProfilePartnerNetworkSummary(viewerId, profileUserId) {
   if (user.role !== "buying_house") return "invalid_role";
 
   const [requests, users] = await Promise.all([
-    readJson(PARTNER_REQUESTS_FILE),
-    readJson("users.json"),
+    prisma.partnerRequest.findMany({
+      where: {
+        status: "connected",
+        OR: [
+          { requester_id: profileUserId },
+          { target_id: profileUserId },
+        ],
+      },
+    }),
+    prisma.user.findMany(),
   ]);
   const usersById = new Map(users.map((u) => [u.id, u]));
 
-  const connected = requests.filter(
-    (r) =>
-      r.status === "connected" &&
-      (r.requester_id === profileUserId || r.target_id === profileUserId),
-  );
-  const factories = connected
+  const factories = requests
     .map((r) =>
       r.requester_id === profileUserId ? r.target_id : r.requester_id,
     )

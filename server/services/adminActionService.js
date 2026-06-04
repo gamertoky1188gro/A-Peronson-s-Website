@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { readJson, updateJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import {
@@ -192,23 +192,22 @@ async function updateCouponsByKey({ codeOrId, patch }) {
     throw err;
   }
 
-  let updated = null;
-  await updateJson("coupon_codes.json", (rows) => {
-    const nextRows = Array.isArray(rows) ? rows : [];
-    const idx = nextRows.findIndex(
-      (row) =>
-        String(row.id || "").toUpperCase() === key ||
-        String(row.code || "").toUpperCase() === key,
-    );
-    if (idx < 0) {
-      const err = new Error("Coupon not found");
-      err.status = 404;
-      throw err;
-    }
-    const current = nextRows[idx];
-    updated = { ...current, ...patch, updated_at: new Date().toISOString() };
-    nextRows[idx] = updated;
-    return nextRows;
+  const existing = await prisma.couponCode.findFirst({
+    where: {
+      OR: [
+        { id: key },
+        { code: { equals: key, mode: "insensitive" } },
+      ],
+    },
+  });
+  if (!existing) {
+    const err = new Error("Coupon not found");
+    err.status = 404;
+    throw err;
+  }
+  const updated = await prisma.couponCode.update({
+    where: { id: existing.id },
+    data: patch,
   });
   return updated;
 }
@@ -238,29 +237,18 @@ async function removePartnerListEntry(listKey, entryId) {
 }
 
 async function updateMessages(messageId, patch) {
-  let updated = null;
-  await updateJson("messages.json", (rows) => {
-    const nextRows = Array.isArray(rows) ? rows : [];
-    const idx = nextRows.findIndex(
-      (row) => String(row.id) === String(messageId),
-    );
-    if (idx < 0) {
-      const err = new Error("Message not found");
-      err.status = 404;
-      throw err;
-    }
-    updated = { ...nextRows[idx], ...patch };
-    nextRows[idx] = updated;
-    return nextRows;
+  const existing = await prisma.message.findUnique({
+    where: { id: String(messageId) },
   });
-  return updated;
-}
-
-async function updateUsersBulk(updater) {
-  const users = await readJson("users.json");
-  const next = Array.isArray(users) ? users.map((user) => updater(user)) : [];
-  await writeJson("users.json", next);
-  return next;
+  if (!existing) {
+    const err = new Error("Message not found");
+    err.status = 404;
+    throw err;
+  }
+  return prisma.message.update({
+    where: { id: String(messageId) },
+    data: patch,
+  });
 }
 
 async function broadcastNotification({
@@ -389,19 +377,11 @@ export async function performAdminAction(action, payload = {}, actor) {
       throw err;
     }
     await ensureUserExists(toOwner);
-    let moved = 0;
-    await updateUsersBulk((user) => {
-      if (String(user.org_owner_id || "") === fromOwner) {
-        moved += 1;
-        return {
-          ...user,
-          org_owner_id: toOwner,
-          updated_at: new Date().toISOString(),
-        };
-      }
-      return user;
+    const result = await prisma.user.updateMany({
+      where: { org_owner_id: fromOwner },
+      data: { org_owner_id: toOwner, updated_at: new Date() },
     });
-    return { ok: true, moved, from_owner_id: fromOwner, to_owner_id: toOwner };
+    return { ok: true, moved: result.count, from_owner_id: fromOwner, to_owner_id: toOwner };
   }
 
   if (name === "org.merge") {
@@ -414,34 +394,27 @@ export async function performAdminAction(action, payload = {}, actor) {
       throw err;
     }
     await ensureUserExists(target);
-    let moved = 0;
-    await updateUsersBulk((user) => {
-      if (String(user.org_owner_id || "") === source) {
-        moved += 1;
-        return {
-          ...user,
-          org_owner_id: target,
-          updated_at: new Date().toISOString(),
-        };
-      }
-      if (String(user.id) === source && archiveSource) {
+    const moveResult = await prisma.user.updateMany({
+      where: { org_owner_id: source },
+      data: { org_owner_id: target, updated_at: new Date() },
+    });
+    if (archiveSource) {
+      const sourceUser = await prisma.user.findUnique({ where: { id: source } });
+      if (sourceUser) {
         const profile = {
-          ...(user.profile || {}),
+          ...(sourceUser.profile || {}),
           org_merged_into: target,
           org_merged_at: new Date().toISOString(),
         };
-        return {
-          ...user,
-          status: "inactive",
-          profile,
-          updated_at: new Date().toISOString(),
-        };
+        await prisma.user.update({
+          where: { id: source },
+          data: { status: "inactive", profile, updated_at: new Date() },
+        });
       }
-      return user;
-    });
+    }
     return {
       ok: true,
-      moved,
+      moved: moveResult.count,
       source_owner_id: source,
       target_owner_id: target,
     };
@@ -459,24 +432,16 @@ export async function performAdminAction(action, payload = {}, actor) {
       throw err;
     }
     await ensureUserExists(newOwnerId);
-    let moved = 0;
-    await updateUsersBulk((user) => {
-      if (
-        memberIds.includes(String(user.id)) &&
-        String(user.org_owner_id || "") === orgOwnerId
-      ) {
-        moved += 1;
-        return {
-          ...user,
-          org_owner_id: newOwnerId,
-          updated_at: new Date().toISOString(),
-        };
-      }
-      return user;
+    const splitResult = await prisma.user.updateMany({
+      where: {
+        id: { in: memberIds },
+        org_owner_id: orgOwnerId,
+      },
+      data: { org_owner_id: newOwnerId, updated_at: new Date() },
     });
     return {
       ok: true,
-      moved,
+      moved: splitResult.count,
       org_owner_id: orgOwnerId,
       new_owner_id: newOwnerId,
     };
@@ -796,9 +761,11 @@ export async function performAdminAction(action, payload = {}, actor) {
   }
 
   if (name === "verification.revoke_expired") {
-    const before = await readJson("verification.json");
+    const before = await prisma.verification.findMany({
+      where: { verified: true },
+    });
     const updated = await revokeExpiredVerifications();
-    const revokedIds = (Array.isArray(before) ? before : [])
+    const revokedIds = before
       .filter(
         (rec) =>
           rec.verified &&
@@ -863,25 +830,24 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400;
       throw err;
     }
-    let updatedRecord = null;
-    await updateJson("verification.json", (rows) => {
-      const next = Array.isArray(rows) ? rows : [];
-      const idx = next.findIndex(
-        (row) => String(row.user_id) === String(userId),
-      );
-      if (idx < 0) {
-        const err = new Error("Verification record not found");
-        err.status = 404;
-        throw err;
-      }
-      updatedRecord = {
-        ...next[idx],
-        fraud_flag: true,
-        fraud_reason: reason,
-        updated_at: new Date().toISOString(),
-      };
-      next[idx] = updatedRecord;
-      return next;
+    const existing = await prisma.verification.findUnique({
+      where: { user_id: String(userId) },
+    });
+    if (!existing) {
+      const err = new Error("Verification record not found");
+      err.status = 404;
+      throw err;
+    }
+    const updatedRecord = await prisma.verification.update({
+      where: { user_id: String(userId) },
+      data: {
+        credibility: {
+          ...(existing.credibility || {}),
+          fraud_flag: true,
+          fraud_reason: reason,
+        },
+        updated_at: new Date(),
+      },
     });
     await appendLocalRecord("verification_badge_audit.json", {
       user_id: userId,
@@ -900,25 +866,21 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400;
       throw err;
     }
-    let updatedRecord = null;
-    await updateJson("verification.json", (rows) => {
-      const next = Array.isArray(rows) ? rows : [];
-      const idx = next.findIndex(
-        (row) => String(row.user_id) === String(userId),
-      );
-      if (idx < 0) {
-        const err = new Error("Verification record not found");
-        err.status = 404;
-        throw err;
-      }
-      updatedRecord = {
-        ...next[idx],
+    const existing = await prisma.verification.findUnique({
+      where: { user_id: String(userId) },
+    });
+    if (!existing) {
+      const err = new Error("Verification record not found");
+      err.status = 404;
+      throw err;
+    }
+    const updatedRecord = await prisma.verification.update({
+      where: { user_id: String(userId) },
+      data: {
         verified: false,
         review_status: "revoked",
-        updated_at: new Date().toISOString(),
-      };
-      next[idx] = updatedRecord;
-      return next;
+        updated_at: new Date(),
+      },
     });
     await setUserVerification(userId, false);
     await appendLocalRecord("verification_badge_audit.json", {
@@ -1124,11 +1086,7 @@ export async function performAdminAction(action, payload = {}, actor) {
       amount_usd: amount,
       created_at: new Date().toISOString(),
     };
-    await updateJson("coupon_redemptions.json", (rows) => {
-      const next = Array.isArray(rows) ? rows : [];
-      next.push(redemption);
-      return next;
-    });
+    await prisma.couponRedemption.create({ data: redemption });
     return { ok: true, redemption };
   }
 
@@ -1263,22 +1221,17 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400;
       throw err;
     }
-    let updatedRow = null;
-    await updateJson("partner_requests.json", (rows) => {
-      const next = Array.isArray(rows) ? rows : [];
-      const idx = next.findIndex((row) => String(row.id) === requestId);
-      if (idx < 0) {
-        const err = new Error("Partner request not found");
-        err.status = 404;
-        throw err;
-      }
-      updatedRow = {
-        ...next[idx],
-        status: "connected",
-        updated_at: new Date().toISOString(),
-      };
-      next[idx] = updatedRow;
-      return next;
+    const existing = await prisma.partnerRequest.findUnique({
+      where: { id: requestId },
+    });
+    if (!existing) {
+      const err = new Error("Partner request not found");
+      err.status = 404;
+      throw err;
+    }
+    const updatedRow = await prisma.partnerRequest.update({
+      where: { id: requestId },
+      data: { status: "connected", updated_at: new Date() },
     });
     return { ok: true, request: updatedRow };
   }
@@ -1565,10 +1518,9 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400;
       throw err;
     }
-    const calls = await readJson("call_sessions.json");
-    const call = Array.isArray(calls)
-      ? calls.find((row) => String(row.id) === String(callId))
-      : null;
+    const call = await prisma.callSession.findUnique({
+      where: { id: String(callId) },
+    });
     if (!call) {
       const err = new Error("Call not found");
       err.status = 404;
@@ -1610,22 +1562,23 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400;
       throw err;
     }
-    let updated = null;
-    await updateJson("call_sessions.json", (rows) => {
-      const next = Array.isArray(rows) ? rows : [];
-      const idx = next.findIndex((row) => String(row.id) === String(callId));
-      if (idx < 0) {
-        const err = new Error("Call not found");
-        err.status = 404;
-        throw err;
-      }
-      updated = {
-        ...next[idx],
-        proof_required: true,
-        proof_enforced_at: new Date().toISOString(),
-      };
-      next[idx] = updated;
-      return next;
+    const call = await prisma.callSession.findUnique({
+      where: { id: String(callId) },
+    });
+    if (!call) {
+      const err = new Error("Call not found");
+      err.status = 404;
+      throw err;
+    }
+    const updated = await prisma.callSession.update({
+      where: { id: String(callId) },
+      data: {
+        context: {
+          ...(call.context || {}),
+          proof_required: true,
+          proof_enforced_at: new Date().toISOString(),
+        },
+      },
     });
     return { ok: true, call: updated };
   }
@@ -1641,10 +1594,9 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400;
       throw err;
     }
-    const messages = await readJson("messages.json");
-    const target = Array.isArray(messages)
-      ? messages.find((m) => String(m.id) === String(messageId))
-      : null;
+    const target = await prisma.message.findUnique({
+      where: { id: String(messageId) },
+    });
     if (!target) {
       const err = new Error("Message not found");
       err.status = 404;
@@ -1725,8 +1677,7 @@ export async function performAdminAction(action, payload = {}, actor) {
   }
 
   if (name === "message.spam.scan") {
-    const messages = await readJson("messages.json");
-    const rows = Array.isArray(messages) ? messages : [];
+    const rows = await prisma.message.findMany();
     let flagged = 0;
     for (const msg of rows) {
       const scan = scanPolicyText(msg.message || "");
@@ -1762,33 +1713,21 @@ export async function performAdminAction(action, payload = {}, actor) {
   }
 
   if (name === "content.bulk_approve") {
-    const docs = await readJson("documents.json");
-    const products = await readJson("company_products.json");
-    const nextDocs = Array.isArray(docs)
-      ? docs.map((doc) =>
-          String(doc.moderation_status || "").toLowerCase() === "pending_review"
-            ? { ...doc, moderation_status: "approved" }
-            : doc,
-        )
-      : [];
-    const nextProducts = Array.isArray(products)
-      ? products.map((product) =>
-          String(product.video_review_status || "").toLowerCase() !==
-            "approved" && product.video_url
-            ? {
-                ...product,
-                video_review_status: "approved",
-                video_restricted: false,
-              }
-            : product,
-        )
-      : [];
-    await writeJson("documents.json", nextDocs);
-    await writeJson("company_products.json", nextProducts);
+    const docsResult = await prisma.document.updateMany({
+      where: { moderation_status: "pending_review" },
+      data: { moderation_status: "approved" },
+    });
+    const productResult = await prisma.product.updateMany({
+      where: {
+        video_url: { not: null },
+        video_review_status: { not: "approved" },
+      },
+      data: { video_review_status: "approved", video_restricted: false },
+    });
     return {
       ok: true,
-      documents: nextDocs.length,
-      products: nextProducts.length,
+      documents: docsResult.count,
+      products: productResult.count,
     };
   }
 
@@ -1901,32 +1840,36 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400;
       throw err;
     }
-    const users = await readJson("users.json");
-    const rows = Array.isArray(users) ? users : [];
-    const idx = rows.findIndex((u) => String(u.id) === String(userId));
-    if (idx < 0) {
+    const user = await prisma.user.findUnique({
+      where: { id: String(userId) },
+    });
+    if (!user) {
       const err = new Error("User not found");
       err.status = 404;
       throw err;
     }
-    const profile = { ...(rows[idx].profile || {}) };
-    profile.account_manager_id =
-      sanitizeString(String(payload.account_manager_id || ""), 120) || null;
-    profile.account_manager_name = sanitizeString(
-      String(payload.account_manager_name || ""),
-      120,
-    );
-    profile.account_manager_email = sanitizeString(
-      String(payload.account_manager_email || ""),
-      160,
-    );
-    profile.account_manager_phone = sanitizeString(
-      String(payload.account_manager_phone || ""),
-      60,
-    );
-    rows[idx] = { ...rows[idx], profile };
-    await writeJson("users.json", rows);
-    return { ok: true, user_id: rows[idx].id, profile };
+    const profile = {
+      ...(user.profile || {}),
+      account_manager_id:
+        sanitizeString(String(payload.account_manager_id || ""), 120) || null,
+      account_manager_name: sanitizeString(
+        String(payload.account_manager_name || ""),
+        120,
+      ),
+      account_manager_email: sanitizeString(
+        String(payload.account_manager_email || ""),
+        160,
+      ),
+      account_manager_phone: sanitizeString(
+        String(payload.account_manager_phone || ""),
+        60,
+      ),
+    };
+    await prisma.user.update({
+      where: { id: String(userId) },
+      data: { profile },
+    });
+    return { ok: true, user_id: userId, profile };
   }
 
   if (name === "order.certification.approve") {

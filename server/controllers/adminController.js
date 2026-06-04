@@ -1,4 +1,3 @@
-import { readJson, writeJson } from "../utils/jsonStore.js";
 import path from "path";
 import fs from "fs";
 import { sanitizeString } from "../utils/validators.js";
@@ -26,17 +25,17 @@ function toPublicFileUrl(filePath = "") {
 }
 
 export async function verificationAudit(req, res) {
-  const verification = await readJson("verification.json");
+  const verification = await prisma.verification.findMany();
   return res.json(verification);
 }
 
 export async function subscriptionsAudit(req, res) {
-  const subscriptions = await readJson("subscriptions.json");
+  const subscriptions = await prisma.subscription.findMany();
   return res.json(subscriptions);
 }
 
 export async function usersAudit(req, res) {
-  const users = await readJson("users.json");
+  const users = await prisma.user.findMany();
   return res.json(
     users.map((user) => {
       const safe = { ...user };
@@ -47,58 +46,51 @@ export async function usersAudit(req, res) {
 }
 
 export async function violationsAudit(req, res) {
-  const violations = await readJson("violations.json");
-  const sorted = Array.isArray(violations)
-    ? violations.sort((a, b) =>
-        String(b.created_at || "").localeCompare(String(a.created_at || "")),
-      )
-    : [];
-  return res.json(sorted);
+  const violations = await prisma.policyViolation.findMany({
+    orderBy: { created_at: "desc" },
+  });
+  return res.json(violations);
 }
 
 export async function pendingVideos(req, res) {
-  const products = await readJson("company_products.json");
-  const items = Array.isArray(products) ? products : [];
-  const pending = items
-    .filter((p) => {
-      const status = String(p.video_review_status || "").toLowerCase();
-      return Boolean(p.video_url) && status !== "approved";
-    })
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
+  const items = await prisma.product.findMany({
+    where: {
+      video_url: { not: null },
+      video_review_status: { not: "approved" },
+    },
+    orderBy: { created_at: "desc" },
+  });
 
-  return res.json({ items: pending });
+  return res.json({ items });
 }
 
 export async function approveVideo(req, res) {
   const productId = sanitizeString(String(req.params.productId || ""), 120);
-  const products = await readJson("company_products.json");
-  const items = Array.isArray(products) ? products : [];
-  const idx = items.findIndex((p) => String(p.id) === productId);
-  if (idx < 0) return res.status(404).json({ error: "Product not found" });
+  const product = await prisma.product.findUnique({ where: { id: productId } });
+  if (!product) return res.status(404).json({ error: "Product not found" });
 
-  items[idx] = {
-    ...items[idx],
-    video_review_status: "approved",
-    video_restricted: false,
-    video_reviewed_at: new Date().toISOString(),
-    video_review_reason: "",
-  };
-  await writeJson("company_products.json", items);
+  const updated = await prisma.product.update({
+    where: { id: productId },
+    data: {
+      video_review_status: "approved",
+      video_restricted: false,
+      video_reviewed_at: new Date(),
+      video_review_reason: "",
+    },
+  });
 
-  const companyId = String(items[idx].company_id || "").trim();
+  const companyId = String(updated.company_id || "").trim();
   if (companyId) {
     await createNotification(companyId, {
       type: "video_review_approved",
       entity_type: "company_product",
-      entity_id: items[idx].id,
-      message: `Your video was approved: "${items[idx].title || "Product"}"`,
-      meta: { product_id: items[idx].id },
+      entity_id: updated.id,
+      message: `Your video was approved: "${updated.title || "Product"}"`,
+      meta: { product_id: updated.id },
     });
   }
 
-  return res.json({ ok: true, item: items[idx] });
+  return res.json({ ok: true, item: updated });
 }
 
 export async function rejectVideo(req, res) {
@@ -107,50 +99,34 @@ export async function rejectVideo(req, res) {
     String(req.body?.reason || "Rejected by moderator"),
     240,
   );
-  const products = await readJson("company_products.json");
-  const items = Array.isArray(products) ? products : [];
-  const idx = items.findIndex((p) => String(p.id) === productId);
-  if (idx < 0) return res.status(404).json({ error: "Product not found" });
+  const product = await prisma.product.findUnique({ where: { id: productId } });
+  if (!product) return res.status(404).json({ error: "Product not found" });
 
-  items[idx] = {
-    ...items[idx],
-    video_review_status: "rejected",
-    video_restricted: true,
-    video_reviewed_at: new Date().toISOString(),
-    video_review_reason: reason,
-  };
-  await writeJson("company_products.json", items);
+  const updated = await prisma.product.update({
+    where: { id: productId },
+    data: {
+      video_review_status: "rejected",
+      video_restricted: true,
+      video_reviewed_at: new Date(),
+      video_review_reason: reason,
+    },
+  });
 
-  const companyId = String(items[idx].company_id || "").trim();
+  const companyId = String(updated.company_id || "").trim();
   if (companyId) {
     await createNotification(companyId, {
       type: "video_review_rejected",
       entity_type: "company_product",
-      entity_id: items[idx].id,
-      message: `Your video was rejected: "${items[idx].title || "Product"}". Reason: ${reason}`,
-      meta: { product_id: items[idx].id, reason },
+      entity_id: updated.id,
+      message: `Your video was rejected: "${updated.title || "Product"}". Reason: ${reason}`,
+      meta: { product_id: updated.id, reason },
     });
   }
 
-  return res.json({ ok: true, item: items[idx] });
+  return res.json({ ok: true, item: updated });
 }
 
 export async function pendingDocuments(req, res) {
-  const docs = await readJson("documents.json");
-  const items = Array.isArray(docs) ? docs : [];
-  const pending = items
-    .filter(
-      (d) =>
-        String(d.moderation_status || "").toLowerCase() === "pending_review",
-    )
-    .map((d) => ({
-      ...d,
-      public_url: toPublicFileUrl(d.file_path || d.url || ""),
-    }))
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
-
   try {
     const dbPending = await prisma.document.findMany({
       where: {
@@ -159,7 +135,7 @@ export async function pendingDocuments(req, res) {
       orderBy: { created_at: "desc" },
       take: 100,
     });
-    const dbItems = dbPending.map((d) => ({
+    const items = dbPending.map((d) => ({
       id: d.id,
       uploaded_by: d.uploaded_by,
       entity_type: d.entity_type,
@@ -181,47 +157,33 @@ export async function pendingDocuments(req, res) {
       created_at: d.created_at ? d.created_at.toISOString() : null,
       public_url: toPublicFileUrl(d.file_path || ""),
     }));
-    const allPending = [...pending, ...dbItems].sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
-    return res.json({ items: allPending });
+    return res.json({ items });
   } catch (err) {
     console.error("Error fetching DB pending docs:", err);
-    return res.json({ items: pending });
+    return res.json({ items: [] });
   }
 }
 
 export async function approveDocument(req, res) {
   const docId = sanitizeString(String(req.params.documentId || ""), 120);
-  const docs = await readJson("documents.json");
-  const items = Array.isArray(docs) ? docs : [];
-  const idx = items.findIndex((d) => String(d.id) === docId);
-  if (idx >= 0) {
-    items[idx] = {
-      ...items[idx],
-      moderation_status: "approved",
-    };
-    await writeJson("documents.json", items);
-  }
-
+  let item;
   try {
-    await prisma.document.update({
+    item = await prisma.document.update({
       where: { id: docId },
       data: { moderation_status: "approved" },
     });
   } catch (_err) {
-    // AI disabled, swallow error
+    return res.status(404).json({ error: "Document not found" });
   }
 
-  const item = idx >= 0 ? items[idx] : null;
-  const ownerId = String(item?.uploaded_by || item?.entity_id || "").trim();
+  const ownerId = String(item.uploaded_by || item.entity_id || "").trim();
   if (ownerId) {
     await createNotification(ownerId, {
       type: "media_review_approved",
-      entity_type: item?.entity_type || "document",
-      entity_id: item?.entity_id || docId,
+      entity_type: item.entity_type || "document",
+      entity_id: item.entity_id || docId,
       message: "Your uploaded document was approved by moderation.",
-      meta: { document_id: item?.id || docId },
+      meta: { document_id: item.id || docId },
     });
   }
 
@@ -234,55 +196,38 @@ export async function rejectDocument(req, res) {
     String(req.body?.reason || "Rejected by moderator"),
     240,
   );
-  const docs = await readJson("documents.json");
-  const items = Array.isArray(docs) ? docs : [];
-  const idx = items.findIndex((d) => String(d.id) === docId);
 
-  let oldFlags = [];
-  let item = null;
-  if (idx >= 0) {
-    oldFlags = Array.isArray(items[idx].moderation_flags)
-      ? items[idx].moderation_flags
-      : [];
-    items[idx] = {
-      ...items[idx],
-      moderation_status: "rejected",
-      moderation_flags: [...oldFlags, `rejected:${reason}`],
-    };
-    await writeJson("documents.json", items);
-    item = items[idx];
-  }
-
+  let item;
   try {
     const existing = await prisma.document.findUnique({ where: { id: docId } });
-    if (existing) {
-      await prisma.document.update({
-        where: { id: docId },
-        data: {
-          moderation_status: "rejected",
-          moderation_flags: [
-            ...(existing.moderation_flags || []),
-            `rejected:${reason}`,
-          ],
-        },
-      });
-    }
+    if (!existing) return res.status(404).json({ error: "Document not found" });
+
+    item = await prisma.document.update({
+      where: { id: docId },
+      data: {
+        moderation_status: "rejected",
+        moderation_flags: [
+          ...(existing.moderation_flags || []),
+          `rejected:${reason}`,
+        ],
+      },
+    });
   } catch (_err) {
-    // AI disabled, swallow error
+    return res.status(404).json({ error: "Document not found" });
   }
 
-  const ownerId = String(item?.uploaded_by || item?.entity_id || "").trim();
+  const ownerId = String(item.uploaded_by || item.entity_id || "").trim();
   if (ownerId) {
     await createNotification(ownerId, {
       type: "media_review_rejected",
-      entity_type: items[idx].entity_type || "document",
-      entity_id: items[idx].entity_id || items[idx].id,
+      entity_type: item.entity_type || "document",
+      entity_id: item.entity_id || item.id,
       message: `Your uploaded document was rejected by moderation. Reason: ${reason}`,
-      meta: { document_id: items[idx].id, reason },
+      meta: { document_id: item.id, reason },
     });
   }
 
-  return res.json({ ok: true, item: items[idx] });
+  return res.json({ ok: true, item });
 }
 
 export async function reanalyzeDocument(req, res) {
@@ -462,30 +407,34 @@ export async function listSupportTicketsAdminController(req, res) {
 export async function assignAccountManager(req, res) {
   const userId = sanitizeString(String(req.body?.user_id || ""), 120);
   if (!userId) return res.status(400).json({ error: "user_id is required" });
-  const users = await readJson("users.json");
-  const rows = Array.isArray(users) ? users : [];
-  const idx = rows.findIndex((u) => String(u.id) === userId);
-  if (idx < 0) return res.status(404).json({ error: "User not found" });
 
-  const profile = { ...(rows[idx].profile || {}) };
-  profile.account_manager_id =
-    sanitizeString(String(req.body?.account_manager_id || ""), 120) || null;
-  profile.account_manager_name = sanitizeString(
-    String(req.body?.account_manager_name || ""),
-    120,
-  );
-  profile.account_manager_email = sanitizeString(
-    String(req.body?.account_manager_email || ""),
-    160,
-  );
-  profile.account_manager_phone = sanitizeString(
-    String(req.body?.account_manager_phone || ""),
-    60,
-  );
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return res.status(404).json({ error: "User not found" });
 
-  rows[idx] = { ...rows[idx], profile };
-  await writeJson("users.json", rows);
-  return res.json({ ok: true, user_id: rows[idx].id, profile });
+  const profile = {
+    ...(user.profile || {}),
+    account_manager_id:
+      sanitizeString(String(req.body?.account_manager_id || ""), 120) || null,
+    account_manager_name: sanitizeString(
+      String(req.body?.account_manager_name || ""),
+      120,
+    ),
+    account_manager_email: sanitizeString(
+      String(req.body?.account_manager_email || ""),
+      160,
+    ),
+    account_manager_phone: sanitizeString(
+      String(req.body?.account_manager_phone || ""),
+      60,
+    ),
+  };
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { profile },
+  });
+
+  return res.json({ ok: true, user_id: userId, profile });
 }
 
 // E-sign webhook failure admin helpers

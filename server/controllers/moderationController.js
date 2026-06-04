@@ -1,4 +1,4 @@
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { createNotification } from "../services/notificationService.js";
 import { getAdminConfig } from "../services/adminConfigService.js";
@@ -26,8 +26,8 @@ export async function listModerationProducts(req, res) {
   const offset = Math.max(0, Number(req.query?.offset || 0));
 
   const [products, users] = await Promise.all([
-    readJson("company_products.json"),
-    readJson("users.json"),
+    prisma.product.findMany(),
+    prisma.user.findMany(),
   ]);
 
   const rows = Array.isArray(products) ? products : [];
@@ -59,27 +59,24 @@ export async function updateModerationProduct(req, res) {
   const nextStatus = resolveReviewStatus(nextStatusRaw);
   const reason = sanitizeString(String(req.body?.reason || ""), 240);
 
-  const products = await readJson("company_products.json");
-  const rows = Array.isArray(products) ? products : [];
-  const idx = rows.findIndex((p) => String(p.id) === String(productId));
-  if (idx < 0) return res.status(404).json({ error: "Product not found" });
+  const product = await prisma.product.findUnique({ where: { id: productId } });
+  if (!product) return res.status(404).json({ error: "Product not found" });
 
-  const current = rows[idx];
-  rows[idx] = {
-    ...current,
-    content_review_status: nextStatus,
-    content_review_reason:
-      nextStatus === "rejected"
-        ? reason ||
-          current.content_review_reason ||
-          "Content standards violation."
-        : "",
-    content_reviewed_at: new Date().toISOString(),
-    content_reviewed_by: sanitizeString(String(req.user?.id || "admin"), 120),
-    updated_at: new Date().toISOString(),
-  };
-
-  await writeJson("company_products.json", rows);
+  const updated = await prisma.product.update({
+    where: { id: productId },
+    data: {
+      content_review_status: nextStatus,
+      content_review_reason:
+        nextStatus === "rejected"
+          ? reason ||
+            product.content_review_reason ||
+            "Content standards violation."
+          : "",
+      content_reviewed_at: new Date(),
+      content_reviewed_by: sanitizeString(String(req.user?.id || "admin"), 120),
+      updated_at: new Date(),
+    },
+  });
 
   const config = await getAdminConfig();
   const fixTip =
@@ -87,20 +84,20 @@ export async function updateModerationProduct(req, res) {
   const notifyMessage =
     nextStatus === "approved"
       ? "Your product was approved after review."
-      : `Your product was rejected: ${rows[idx].content_review_reason || "Content standards violation."} ${fixTip}`.trim();
+      : `Your product was rejected: ${updated.content_review_reason || "Content standards violation."} ${fixTip}`.trim();
 
-  if (rows[idx].company_id) {
-    await createNotification(rows[idx].company_id, {
+  if (updated.company_id) {
+    await createNotification(updated.company_id, {
       type: "product_content_review",
       entity_type: "company_product",
-      entity_id: rows[idx].id,
+      entity_id: updated.id,
       message: notifyMessage,
       meta: {
         review_status: nextStatus,
-        reason: rows[idx].content_review_reason,
+        reason: updated.content_review_reason,
       },
     });
   }
 
-  return res.json({ ok: true, item: rows[idx] });
+  return res.json({ ok: true, item: updated });
 }

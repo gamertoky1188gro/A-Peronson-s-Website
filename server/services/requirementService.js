@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import { logInfo } from "../utils/logger.js";
 import {
@@ -19,8 +19,6 @@ import {
   normalizePriceRange,
 } from "./currencyService.js";
 import { getBuyerRequestSubmissionErrors } from "../../shared/requirementValidation.js";
-
-const FILE = "requirements.json";
 
 function buildRequirementSummary(requirement) {
   if (!requirement) return "";
@@ -340,7 +338,6 @@ function normalizeRequirement(buyerId, payload) {
 }
 
 export async function createRequirement(buyerId, payload) {
-  const requirements = await readJson(FILE);
   const requirement = normalizeRequirement(buyerId, payload);
   const baseCurrency = await getBaseCurrency();
   const originalPrice = extractOriginalPrice(payload);
@@ -375,8 +372,7 @@ export async function createRequirement(buyerId, payload) {
   // Trust & safety (project.md): auto-remove outside-contact sharing or obscene text.
   // We moderate the free-text fields that are most likely to contain contact details.
   try {
-    const users = await readJson("users.json");
-    const actor = users.find((u) => String(u.id) === String(buyerId)) || null;
+    const actor = await prisma.user.findUnique({ where: { id: buyerId } });
     if (actor) {
       const moderated = await moderateTextOrRedact({
         actor,
@@ -392,11 +388,9 @@ export async function createRequirement(buyerId, payload) {
     // silent: never block creation due to moderation pipeline failures
   }
 
-  requirements.push(requirement);
-  await writeJson(FILE, requirements);
+  await prisma.requirement.create({ data: requirement });
   try {
-    const users = await readJson("users.json");
-    const author = users.find((u) => String(u.id) === String(buyerId)) || null;
+    const author = await prisma.user.findUnique({ where: { id: buyerId } });
     await indexRequirement(requirement, {
       ...(author || {}),
       ...(author?.profile || {}),
@@ -408,12 +402,11 @@ export async function createRequirement(buyerId, payload) {
   if (!isDraft) {
     await emitNotificationsForEntity("buyer_request", requirement);
     try {
-      const users = await readJson("users.json");
-      const targets = users.filter((u) => {
-        const role = String(u.role || "").toLowerCase();
-        return (
-          Boolean(u.verified) && (role === "factory" || role === "buying_house")
-        );
+      const targets = await prisma.user.findMany({
+        where: {
+          verified: true,
+          role: { in: ["factory", "buying_house"] },
+        },
       });
       await Promise.all(
         targets.map((target) =>
@@ -444,27 +437,22 @@ export async function createRequirement(buyerId, payload) {
 }
 
 export async function listRequirements(filters = {}) {
-  const requirements = await readJson(FILE);
-  return requirements.filter((r) => {
-    if (filters.buyerId && r.buyer_id !== filters.buyerId) return false;
-    if (filters.status && r.status !== filters.status) return false;
-    return true;
-  });
+  const where = {};
+  if (filters.buyerId) where.buyer_id = filters.buyerId;
+  if (filters.status) where.status = filters.status;
+  return prisma.requirement.findMany({ where });
 }
 
 export async function getRequirementById(id) {
-  const requirements = await readJson(FILE);
-  return requirements.find((r) => r.id === id);
+  return prisma.requirement.findUnique({ where: { id } });
 }
 
 export async function updateRequirement(requirementId, patch, actor) {
-  const requirements = await readJson(FILE);
-  const idx = requirements.findIndex((r) => r.id === requirementId);
-  if (idx < 0) return null;
-  if (actor.role === "buyer" && requirements[idx].buyer_id !== actor.id)
+  const existing = await prisma.requirement.findUnique({ where: { id: requirementId } });
+  if (!existing) return null;
+  if (actor.role === "buyer" && existing.buyer_id !== actor.id)
     return "forbidden";
 
-  const previous = requirements[idx];
   const actorRole = String(actor?.role || "").toLowerCase();
   const canAssign =
     actorRole === "buying_house" ||
@@ -477,7 +465,7 @@ export async function updateRequirement(requirementId, patch, actor) {
       : undefined;
   const assignmentChanged =
     requestedAssignedAgentId !== undefined &&
-    requestedAssignedAgentId !== String(previous.assigned_agent_id || "");
+    requestedAssignedAgentId !== String(existing.assigned_agent_id || "");
   if (assignmentChanged && !canAssign) return "forbidden";
 
   const nextRequestType =
@@ -485,14 +473,14 @@ export async function updateRequirement(requirementId, patch, actor) {
       ? sanitizeString(
           patch.request_type ||
             patch.requestType ||
-            previous.request_type ||
+            existing.request_type ||
             "garments",
           40,
         ).toLowerCase() === "textile"
         ? "textile"
         : "garments"
       : sanitizeString(
-            previous.request_type || "garments",
+            existing.request_type || "garments",
             40,
           ).toLowerCase() === "textile"
         ? "textile"
@@ -500,190 +488,190 @@ export async function updateRequirement(requirementId, patch, actor) {
   const mergedSpecs =
     patch.specs !== undefined
       ? normalizeSpecs(patch.specs, nextRequestType)
-      : normalizeSpecs({ ...previous.specs, ...patch }, nextRequestType);
+      : normalizeSpecs({ ...existing.specs, ...patch }, nextRequestType);
   const mergedCustomFields =
     patch.custom_fields !== undefined || patch.customFields !== undefined
       ? normalizeCustomFields(patch.custom_fields || patch.customFields || [])
-      : normalizeCustomFields(previous.custom_fields || []);
+      : normalizeCustomFields(existing.custom_fields || []);
 
   const next = {
-    ...previous,
+    ...existing,
     title:
       patch.title !== undefined
         ? sanitizeString(patch.title, 160)
-        : previous.title || "",
+        : existing.title || "",
     request_type: nextRequestType,
     verified_only:
       patch.verified_only !== undefined
         ? Boolean(patch.verified_only)
-        : Boolean(previous.verified_only),
+        : Boolean(existing.verified_only),
     specs: mergedSpecs,
     custom_fields: mergedCustomFields,
     quote_deadline:
       patch.quote_deadline !== undefined
         ? normalizeDate(patch.quote_deadline)
-        : (previous.quote_deadline ?? null),
+        : (existing.quote_deadline ?? null),
     expires_at:
       patch.expires_at !== undefined
         ? normalizeDate(patch.expires_at)
-        : (previous.expires_at ?? null),
+        : (existing.expires_at ?? null),
     max_suppliers:
       patch.max_suppliers !== undefined
         ? patch.max_suppliers === null || patch.max_suppliers === ""
           ? null
           : Number(patch.max_suppliers)
-        : (previous.max_suppliers ?? null),
+        : (existing.max_suppliers ?? null),
     product:
       patch.product !== undefined
         ? sanitizeString(patch.product, 120)
-        : previous.product || "",
+        : existing.product || "",
     category:
       patch.category !== undefined
         ? sanitizeString(patch.category, 120)
-        : requirements[idx].category,
+        : existing.category,
     industry:
       patch.industry !== undefined
         ? sanitizeString(patch.industry, 80)
-        : previous.industry || "",
+        : existing.industry || "",
     target_market:
       patch.target_market !== undefined
         ? sanitizeString(patch.target_market, 80)
-        : previous.target_market || "",
+        : existing.target_market || "",
     quantity:
       patch.quantity !== undefined
         ? sanitizeString(patch.quantity, 40)
-        : requirements[idx].quantity,
+        : existing.quantity,
     price_range:
       patch.price_range !== undefined
         ? sanitizeString(patch.price_range, 80)
-        : requirements[idx].price_range,
+        : existing.price_range,
     material:
       patch.material !== undefined
         ? sanitizeString(patch.material, 120)
-        : requirements[idx].material,
+        : existing.material,
     moq:
       patch.moq !== undefined
         ? sanitizeString(patch.moq, 40)
-        : previous.moq || "",
+        : existing.moq || "",
     fabric_gsm:
       patch.fabric_gsm !== undefined
         ? sanitizeString(patch.fabric_gsm, 40)
-        : previous.fabric_gsm || "",
+        : existing.fabric_gsm || "",
     timeline_days:
       patch.timeline_days !== undefined
         ? sanitizeString(patch.timeline_days, 40)
-        : requirements[idx].timeline_days,
+        : existing.timeline_days,
     delivery_timeline:
       patch.delivery_timeline !== undefined
         ? sanitizeString(patch.delivery_timeline, 80)
-        : previous.delivery_timeline || "",
+        : existing.delivery_timeline || "",
     certifications_required:
       patch.certifications_required !== undefined
         ? Array.isArray(patch.certifications_required)
           ? patch.certifications_required.map((c) => sanitizeString(c, 80))
           : []
-        : requirements[idx].certifications_required,
+        : existing.certifications_required,
     shipping_terms:
       patch.shipping_terms !== undefined
         ? sanitizeString(patch.shipping_terms, 120)
-        : requirements[idx].shipping_terms,
+        : existing.shipping_terms,
     incoterms:
       patch.incoterms !== undefined
         ? sanitizeString(patch.incoterms, 80)
-        : previous.incoterms || "",
+        : existing.incoterms || "",
     payment_terms:
       patch.payment_terms !== undefined
         ? sanitizeString(patch.payment_terms, 120)
-        : previous.payment_terms || "",
+        : existing.payment_terms || "",
     document_ready:
       patch.document_ready !== undefined
         ? sanitizeString(patch.document_ready, 80)
-        : previous.document_ready || "",
+        : existing.document_ready || "",
     audit_date:
       patch.audit_date !== undefined
         ? sanitizeString(patch.audit_date, 80)
-        : previous.audit_date || "",
+        : existing.audit_date || "",
     language_support:
       patch.language_support !== undefined
         ? sanitizeString(patch.language_support, 120)
-        : previous.language_support || "",
+        : existing.language_support || "",
     capacity_min:
       patch.capacity_min !== undefined
         ? sanitizeString(patch.capacity_min, 80)
-        : previous.capacity_min || "",
+        : existing.capacity_min || "",
     trims_wash:
       patch.trims_wash !== undefined
         ? sanitizeString(patch.trims_wash, 200)
-        : previous.trims_wash || "",
+        : existing.trims_wash || "",
     sample_timeline:
       patch.sample_timeline !== undefined
         ? sanitizeString(patch.sample_timeline, 120)
-        : previous.sample_timeline || "",
+        : existing.sample_timeline || "",
     sample_available:
       patch.sample_available !== undefined
         ? sanitizeString(patch.sample_available, 40)
-        : previous.sample_available || "",
+        : existing.sample_available || "",
     sample_lead_time_days:
       patch.sample_lead_time_days !== undefined
         ? sanitizeString(patch.sample_lead_time_days, 40)
-        : previous.sample_lead_time_days || "",
+        : existing.sample_lead_time_days || "",
     packaging:
       patch.packaging !== undefined
         ? sanitizeString(patch.packaging, 200)
-        : previous.packaging || "",
+        : existing.packaging || "",
     compliance_notes:
       patch.compliance_notes !== undefined
         ? sanitizeString(patch.compliance_notes, 400)
-        : previous.compliance_notes || "",
+        : existing.compliance_notes || "",
     compliance_details:
       patch.compliance_details !== undefined
         ? sanitizeString(patch.compliance_details, 400)
-        : previous.compliance_details || "",
+        : existing.compliance_details || "",
     custom_description:
       patch.custom_description !== undefined
         ? sanitizeString(patch.custom_description, 10000)
-        : requirements[idx].custom_description,
+        : existing.custom_description,
     size_range:
       patch.size_range !== undefined
         ? sanitizeString(patch.size_range, 120)
-        : previous.size_range || "",
+        : existing.size_range || "",
     color_pantone:
       patch.color_pantone !== undefined
         ? sanitizeString(patch.color_pantone, 120)
-        : previous.color_pantone || "",
+        : existing.color_pantone || "",
     customization_capabilities:
       patch.customization_capabilities !== undefined
         ? sanitizeString(patch.customization_capabilities, 240)
-        : previous.customization_capabilities || "",
+        : existing.customization_capabilities || "",
     techpack_accepted:
       patch.techpack_accepted !== undefined
         ? Boolean(patch.techpack_accepted)
-        : Boolean(previous.techpack_accepted),
+        : Boolean(existing.techpack_accepted),
     status:
       patch.status !== undefined
         ? sanitizeString(patch.status, 20)
-        : requirements[idx].status,
+        : existing.status,
     assigned_agent_id: assignmentChanged
       ? requestedAssignedAgentId
-      : sanitizeString(previous.assigned_agent_id || "", 120),
+      : sanitizeString(existing.assigned_agent_id || "", 120),
     assigned_at: assignmentChanged
       ? new Date().toISOString()
-      : sanitizeString(previous.assigned_at || "", 40),
+      : sanitizeString(existing.assigned_at || "", 40),
     assigned_by: assignmentChanged
       ? sanitizeString(actor.id || "", 120)
-      : sanitizeString(previous.assigned_by || "", 120),
+      : sanitizeString(existing.assigned_by || "", 120),
     priority_tier:
       patch.priority_tier !== undefined
         ? sanitizeString(patch.priority_tier || "", 40)
-        : previous.priority_tier || "",
+        : existing.priority_tier || "",
     priority_until:
       patch.priority_until !== undefined
         ? normalizeDate(patch.priority_until)
-        : previous.priority_until || null,
+        : existing.priority_until || null,
     match_id:
       patch.match_id !== undefined
         ? sanitizeString(patch.match_id || "", 240)
-        : previous.match_id,
+        : existing.match_id,
   };
 
   const baseCurrency = await getBaseCurrency();
@@ -691,19 +679,19 @@ export async function updateRequirement(requirementId, patch, actor) {
     priceOriginalMin:
       patch.priceOriginalMin !== undefined
         ? patch.priceOriginalMin
-        : previous.priceOriginalMin,
+        : existing.priceOriginalMin,
     priceOriginalMax:
       patch.priceOriginalMax !== undefined
         ? patch.priceOriginalMax
-        : previous.priceOriginalMax,
+        : existing.priceOriginalMax,
     priceOriginal:
       patch.priceOriginal !== undefined
         ? patch.priceOriginal
-        : previous.priceOriginal,
+        : existing.priceOriginal,
     currency:
       patch.currency !== undefined
         ? patch.currency
-        : previous.currency || previous.currencyOriginal,
+        : existing.currency || existing.currencyOriginal,
     price_range: next.price_range,
   });
   const normalizedPrice = await normalizePriceRange({
@@ -754,12 +742,9 @@ export async function updateRequirement(requirementId, patch, actor) {
     next.custom_description = limitWordCount(next.custom_description, maxWords);
   }
 
-  requirements[idx] = next;
-  await writeJson(FILE, requirements);
+  await prisma.requirement.update({ where: { id: requirementId }, data: next });
   try {
-    const users = await readJson("users.json");
-    const author =
-      users.find((u) => String(u.id) === String(next.buyer_id)) || actor;
+    const author = await prisma.user.findUnique({ where: { id: next.buyer_id } });
     await indexRequirement(next, {
       ...(author || {}),
       ...(author?.profile || {}),
@@ -773,7 +758,7 @@ export async function updateRequirement(requirementId, patch, actor) {
 
   const normalizedStatus = String(next.status || "").toLowerCase();
   const statusTransitioned =
-    normalizedStatus !== String(previous.status || "").toLowerCase();
+    normalizedStatus !== String(existing.status || "").toLowerCase();
   if (
     statusTransitioned &&
     ["deal_completed", "closed", "fulfilled", "completed"].includes(
@@ -794,13 +779,11 @@ export async function updateRequirement(requirementId, patch, actor) {
 }
 
 export async function removeRequirement(requirementId, actor) {
-  const requirements = await readJson(FILE);
-  const target = requirements.find((r) => r.id === requirementId);
+  const target = await prisma.requirement.findUnique({ where: { id: requirementId } });
   if (!target) return false;
   if (actor.role === "buyer" && target.buyer_id !== actor.id)
     return "forbidden";
-  const next = requirements.filter((r) => r.id !== requirementId);
-  await writeJson(FILE, next);
+  await prisma.requirement.delete({ where: { id: requirementId } });
   try {
     await deleteRequirementIndex(requirementId);
   } catch {

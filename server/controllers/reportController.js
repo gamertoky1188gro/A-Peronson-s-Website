@@ -1,6 +1,6 @@
 import { createReport } from "../services/reportService.js";
-import { readJson } from "../utils/jsonStore.js";
 import { sanitizeString } from "../utils/validators.js";
+import prisma from "../utils/prisma.js";
 
 function isOwnerOrAdmin(user) {
   return ["owner", "admin"].includes(String(user?.role || "").toLowerCase());
@@ -41,10 +41,10 @@ export async function createProductAppealReportController(req, res) {
       .status(400)
       .json({ error: "product_id and reason are required" });
 
-  const products = await readJson("company_products.json");
-  const product = (Array.isArray(products) ? products : []).find(
-    (p) => String(p.id) === String(productId),
-  );
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { id: true, company_id: true, title: true, content_review_status: true },
+  });
   if (!product) return res.status(404).json({ error: "Product not found" });
   if (!canAppealProduct(req.user, product))
     return res.status(403).json({ error: "Forbidden" });

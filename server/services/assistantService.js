@@ -25,15 +25,13 @@ async function findFreePort(startPort = 4096, maxAttempts = 100) {
   }
   return startPort;
 }
-import { readJson, updateJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString, unescapeHtml } from "../utils/validators.js";
 import { logError, logInfo } from "../utils/logger.js";
 import { updateLocalJson } from "../utils/localStore.js";
 import { saveOpencodeConfig, saveSessionMeta, deleteSessionMeta, loadSessionMeta } from "../utils/sessionStore.js";
 
-const FILE = "assistant_knowledge.json";
-const RULES_FILE = "assistant_rules.json";
-const CONFIG_FILE = "assistant_config.json";
+const KNOWLEDGE_MODEL = "assistantKnowledge";
 const KNOWLEDGE_TYPES = {
   FAQ: "faq",
   FACT: "fact",
@@ -271,7 +269,8 @@ If uncertain whether information is sensitive:
 Your purpose is to HELP users use GarTexHub safely — not expose how GarTexHub works internally.`;
 async function loadAssistantConfig() {
   try {
-    const data = await readJson(CONFIG_FILE);
+    const row = await prisma.appState.findUnique({ where: { key: "assistant_config" } });
+    const data = row?.data || {};
     return {
       systemPrompt: data.systemPrompt || DEFAULT_SYSTEM_PROMPT,
       codeContextEnabled: data.codeContextEnabled !== false,
@@ -316,7 +315,8 @@ async function loadAssistantConfig() {
 
 async function loadAssistantRules() {
   try {
-    const data = await readJson(RULES_FILE);
+    const row = await prisma.appState.findUnique({ where: { key: "assistant_rules" } });
+    const data = row?.data || {};
     return {
       globalRules: data.globalRules || [],
       smallTalkRules: data.smallTalkRules || [],
@@ -1487,13 +1487,11 @@ async function generateDynamicAnswer(
 }
 
 export async function listKnowledge(orgId) {
-  const rows = await readJson(FILE);
-  return rows
-    .filter((row) => row.org_id === orgId)
-    .sort((a, b) =>
-      String(b.updated_at || "").localeCompare(String(a.updated_at || "")),
-    )
-    .map(mapKnowledgeRow);
+  const rows = await prisma.assistantKnowledge.findMany({
+    where: { org_id: String(orgId) },
+    orderBy: { updated_at: "desc" },
+  });
+  return rows.map(mapKnowledgeRow);
 }
 
 export async function createKnowledgeEntry(orgId, payload) {
@@ -1512,10 +1510,10 @@ export async function createKnowledgeEntry(orgId, payload) {
     throw error;
   }
 
-  const now = new Date().toISOString();
+  const now = new Date();
   const entry = {
     id: crypto.randomUUID(),
-    org_id: orgId,
+    org_id: String(orgId),
     type,
     question,
     answer,
@@ -1524,78 +1522,69 @@ export async function createKnowledgeEntry(orgId, payload) {
     updated_at: now,
   };
 
-  await updateJson(FILE, (rows) => {
-    rows.push(entry);
-    return rows;
-  });
+  await prisma.assistantKnowledge.create({ data: entry });
   return mapKnowledgeRow(entry);
 }
 
 export async function updateKnowledgeEntry(orgId, entryId, payload) {
-  let updated = null;
-  await updateJson(FILE, (rows) => {
-    const index = rows.findIndex(
-      (row) => row.id === entryId && row.org_id === orgId,
-    );
-    if (index < 0) {
-      const error = new Error("Knowledge entry not found");
-      error.status = 404;
-      throw error;
-    }
+  const existing = await prisma.assistantKnowledge.findFirst({
+    where: { id: String(entryId), org_id: String(orgId) },
+  });
+  if (!existing) {
+    const error = new Error("Knowledge entry not found");
+    error.status = 404;
+    throw error;
+  }
 
-    const current = rows[index];
-    const type =
-      payload?.type === undefined
-        ? normalizeType(current.type)
-        : normalizeType(payload.type);
-    const question =
-      payload?.question === undefined
-        ? current.question
-        : sanitizeString(payload.question, 280);
-    const answer =
-      payload?.answer === undefined
-        ? current.answer
-        : sanitizeString(payload.answer, 1200);
-    const keywords =
-      payload?.keywords === undefined
-        ? current.keywords
-        : Array.isArray(payload.keywords)
-          ? payload.keywords
-              .map((k) => sanitizeString(k, 80).toLowerCase())
-              .filter(Boolean)
-          : [];
+  const type =
+    payload?.type === undefined
+      ? normalizeType(existing.type)
+      : normalizeType(payload.type);
+  const question =
+    payload?.question === undefined
+      ? existing.question
+      : sanitizeString(payload.question, 280);
+  const answer =
+    payload?.answer === undefined
+      ? existing.answer
+      : sanitizeString(payload.answer, 1200);
+  const keywords =
+    payload?.keywords === undefined
+      ? existing.keywords
+      : Array.isArray(payload.keywords)
+        ? payload.keywords
+            .map((k) => sanitizeString(k, 80).toLowerCase())
+            .filter(Boolean)
+        : [];
 
-    if (!question || !answer) {
-      const error = new Error("question and answer are required");
-      error.status = 400;
-      throw error;
-    }
+  if (!question || !answer) {
+    const error = new Error("question and answer are required");
+    error.status = 400;
+    throw error;
+  }
 
-    updated = {
-      ...current,
+  const updated = await prisma.assistantKnowledge.update({
+    where: { id: existing.id },
+    data: {
       type,
       question,
       answer,
       keywords,
-      updated_at: new Date().toISOString(),
-    };
-    rows[index] = updated;
-    return rows;
+      updated_at: new Date(),
+    },
   });
-
   return mapKnowledgeRow(updated);
 }
 
 export async function deleteKnowledgeEntry(orgId, entryId) {
-  let deleted = false;
-  await updateJson(FILE, (rows) => {
-    const next = rows.filter(
-      (row) => !(row.id === entryId && row.org_id === orgId),
-    );
-    deleted = next.length !== rows.length;
-    return next;
-  });
-  return deleted;
+  try {
+    await prisma.assistantKnowledge.delete({
+      where: { id: String(entryId) },
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function listAssistantRules() {
@@ -1603,11 +1592,24 @@ export async function listAssistantRules() {
 }
 
 export async function updateAssistantRules(globalRules, smallTalkRules) {
-  await updateJson(RULES_FILE, () => ({
-    globalRules: Array.isArray(globalRules) ? globalRules : [],
-    smallTalkRules: Array.isArray(smallTalkRules) ? smallTalkRules : [],
-    updated_at: new Date().toISOString(),
-  }));
+  await prisma.appState.upsert({
+    where: { key: "assistant_rules" },
+    create: {
+      key: "assistant_rules",
+      data: {
+        globalRules: Array.isArray(globalRules) ? globalRules : [],
+        smallTalkRules: Array.isArray(smallTalkRules) ? smallTalkRules : [],
+      },
+      updated_at: new Date(),
+    },
+    update: {
+      data: {
+        globalRules: Array.isArray(globalRules) ? globalRules : [],
+        smallTalkRules: Array.isArray(smallTalkRules) ? smallTalkRules : [],
+      },
+      updated_at: new Date(),
+    },
+  });
   return await loadAssistantRules();
 }
 
@@ -1632,10 +1634,18 @@ export async function updateAssistantConfig(payload) {
           .filter(Boolean)
       : current.codeContextKeywords,
   };
-  await updateJson(CONFIG_FILE, () => ({
-    ...updated,
-    updated_at: new Date().toISOString(),
-  }));
+  await prisma.appState.upsert({
+    where: { key: "assistant_config" },
+    create: {
+      key: "assistant_config",
+      data: { ...updated },
+      updated_at: new Date(),
+    },
+    update: {
+      data: { ...updated },
+      updated_at: new Date(),
+    },
+  });
   return updated;
 }
 
@@ -1663,10 +1673,18 @@ export async function addAssistantRule(type, payload) {
     throw error;
   }
 
-  await updateJson(RULES_FILE, () => ({
-    ...rules,
-    updated_at: new Date().toISOString(),
-  }));
+  await prisma.appState.upsert({
+    where: { key: "assistant_rules" },
+    create: {
+      key: "assistant_rules",
+      data: { ...rules },
+      updated_at: new Date(),
+    },
+    update: {
+      data: { ...rules },
+      updated_at: new Date(),
+    },
+  });
 
   return rule;
 }
@@ -1690,10 +1708,18 @@ export async function removeAssistantRule(type, ruleId) {
   }
 
   if (deleted) {
-    await updateJson(RULES_FILE, () => ({
-      ...rules,
-      updated_at: new Date().toISOString(),
-    }));
+    await prisma.appState.upsert({
+      where: { key: "assistant_rules" },
+      create: {
+        key: "assistant_rules",
+        data: { ...rules },
+        updated_at: new Date(),
+      },
+      update: {
+        data: { ...rules },
+        updated_at: new Date(),
+      },
+    });
   }
 
   return deleted;

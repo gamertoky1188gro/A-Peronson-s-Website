@@ -25,7 +25,7 @@ import {
   markPolicyDecisionFalsePositive,
   upsertCommunicationPolicyConfig,
 } from "../services/communicationPolicyService.js";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 
 export async function sendMessage(req, res) {
   const allowed = await canAccessMatch(req.params.matchId, req.user.id);
@@ -198,8 +198,10 @@ export async function inbox(req, res) {
     const myMatches = await listMatchesForFactory(req.user.id);
     matchIds = myMatches.map((m) => `${m.requirement_id}:${m.factory_id}`);
   } else if (req.user.role === "buyer") {
-    const requirements = await readJson("requirements.json");
-    const mine = requirements.filter((r) => r.buyer_id === req.user.id);
+    const mine = await prisma.requirement.findMany({
+      where: { buyer_id: req.user.id },
+      select: { id: true },
+    });
     const all = [];
     for (const r of mine) {
       const mr = await listMatchesForRequirement(r.id);

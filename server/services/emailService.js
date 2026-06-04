@@ -1,10 +1,8 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { logError, logInfo } from "../utils/logger.js";
 import { getAdminConfig } from "./adminConfigService.js";
-
-const OUTBOX_FILE = "email_outbox.json";
 
 function isConfigured(value) {
   return Boolean(String(value || "").trim());
@@ -74,10 +72,7 @@ function normalizeRecipients(to) {
 }
 
 async function queueEmail(entry) {
-  const rows = await readJson(OUTBOX_FILE);
-  const nextRows = Array.isArray(rows) ? rows : [];
-  nextRows.push(entry);
-  await writeJson(OUTBOX_FILE, nextRows);
+  await prisma.emailOutbox.create({ data: entry });
 }
 
 export async function sendEmail({ to, subject, text, html }) {

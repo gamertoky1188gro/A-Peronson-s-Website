@@ -1,10 +1,7 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { createNotification } from "./notificationService.js";
-
-const USERS_FILE = "users.json";
-const VIOLATIONS_FILE = "violations.json";
 
 const EMAIL_REGEX = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
 const URL_REGEX = /(https?:\/\/|www\.)\S+/i;
@@ -297,57 +294,53 @@ export async function recordPolicyViolation({
   const actorId = sanitizeString(String(actor_id || ""), 120);
   if (!actorId) return null;
 
-  const users = await readJson(USERS_FILE);
-  const idx = users.findIndex((u) => String(u.id) === actorId);
-  if (idx < 0) return null;
+  const user = await prisma.user.findUnique({ where: { id: actorId } });
+  if (!user) return null;
 
-  const user = users[idx];
   const prevStrikes = Number(user.policy_strikes || 0);
   const strikes = Math.max(0, prevStrikes) + 1;
   const penalty = penaltyForStrike(strikes);
   const nextRestrictionUntil = penalty.restrict_hours
     ? restrictionUntil(penalty.restrict_hours)
-    : "";
+    : null;
 
-  // Keep the longest restriction window if multiple violations happen close together.
-  const currentUntil = String(user.messaging_restricted_until || "").trim();
+  const currentUntil = user.messaging_restricted_until;
   const keepUntil = (() => {
     if (!currentUntil) return nextRestrictionUntil;
     if (!nextRestrictionUntil) return currentUntil;
     return new Date(nextRestrictionUntil).getTime() >
       new Date(currentUntil).getTime()
-      ? nextRestrictionUntil
+      ? new Date(nextRestrictionUntil)
       : currentUntil;
   })();
 
-  users[idx] = {
-    ...user,
-    policy_strikes: strikes,
-    messaging_restricted_until: keepUntil,
-    status: penalty.ban ? "banned" : user.status || "active",
-    policy_updated_at: new Date().toISOString(),
-  };
+  await prisma.user.update({
+    where: { id: actorId },
+    data: {
+      policy_strikes: strikes,
+      messaging_restricted_until: keepUntil || null,
+      status: penalty.ban ? "banned" : user.status || "active",
+      policy_updated_at: new Date(),
+    },
+  });
 
-  await writeJson(USERS_FILE, users);
-
-  const violations = await readJson(VIOLATIONS_FILE);
-  const row = {
-    id: crypto.randomUUID(),
-    actor_id: actorId,
-    kind: sanitizeString(String(kind || ""), 60),
-    reason: sanitizeString(String(reason || ""), 120),
-    entity_type: sanitizeString(String(entity_type || ""), 60),
-    entity_id: sanitizeString(String(entity_id || ""), 160),
-    snippet: sanitizeString(String(content || ""), 240),
-    strikes,
-    action: penalty.action,
-    restrict_hours: penalty.restrict_hours,
-    messaging_restricted_until: keepUntil,
-    meta: metadata && typeof metadata === "object" ? metadata : {},
-    created_at: new Date().toISOString(),
-  };
-  violations.push(row);
-  await writeJson(VIOLATIONS_FILE, violations);
+  const row = await prisma.policyViolation.create({
+    data: {
+      id: crypto.randomUUID(),
+      actor_id: actorId,
+      kind: sanitizeString(String(kind || ""), 60),
+      reason: sanitizeString(String(reason || ""), 120),
+      entity_type: sanitizeString(String(entity_type || ""), 60),
+      entity_id: sanitizeString(String(entity_id || ""), 160),
+      snippet: sanitizeString(String(content || ""), 240),
+      strikes,
+      action: penalty.action,
+      restrict_hours: penalty.restrict_hours,
+      messaging_restricted_until: keepUntil || null,
+      meta: metadata && typeof metadata === "object" ? metadata : {},
+      created_at: new Date(),
+    },
+  });
 
   const guidance =
     "Sharing phone numbers, emails, WhatsApp/Telegram, social links, or outside contact methods is not allowed on GarTexHub. Use the built-in chat/call system.";

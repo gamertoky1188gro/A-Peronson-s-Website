@@ -1,6 +1,6 @@
 import { listRequirements } from "./requirementService.js";
 import { listProducts } from "./productService.js";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { trackEvent } from "./eventTrackingService.js";
 import { logInfo } from "../utils/logger.js";
 import { getOrderCertificationMap } from "./orderCertificationService.js";
@@ -400,11 +400,12 @@ export async function getCombinedFeed({
     type === "requests" || type === "products"
       ? []
       : await listFeedPosts({ status: "published" });
-  const users = await readJson("users.json");
-  const orderCertMap = await getOrderCertificationMap();
-  const socialInteractions = await readJson("social_interactions.json");
-  const boosts = await readJson("boosts.json");
-  const ratingsStore = await readJson("ratings.json");
+  const [users, socialInteractions, boosts, ratingsStore] = await Promise.all([
+    prisma.user.findMany(),
+    prisma.socialInteraction.findMany(),
+    prisma.boost.findMany(),
+    prisma.rating.findMany(),
+  ]);
   const paidBoostByUser = buildPaidBoostMap(
     Array.isArray(boosts) ? boosts : [],
   );

@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { isCrmSqlEnabled, readLegacyJson } from "../utils/crmFallbackStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import { forbiddenError, isAgent } from "../utils/permissions.js";
@@ -40,7 +40,18 @@ const DEFAULT_POLICY = {
 };
 
 async function readStore(fileName) {
-  if (USE_SQL_CRM) return readJson(fileName);
+  if (USE_SQL_CRM) {
+    switch (fileName) {
+      case "org_ops_policies.json": return prisma.orgOpsPolicy.findMany();
+      case "leads.json": return prisma.lead.findMany();
+      case "users.json": return prisma.user.findMany();
+      case "lead_sla_timers.json": return prisma.leadSlaTimer.findMany();
+      case "lead_escalations.json": return prisma.leadEscalation.findMany();
+      case "agent_workloads.json": return prisma.agentWorkload.findMany();
+      case "lead_assignments.json": return prisma.leadAssignment.findMany();
+      default: return prisma.lead.findMany();
+    }
+  }
   return readLegacyJson(fileName);
 }
 
@@ -161,23 +172,25 @@ function normalizePolicyInput(payload = {}) {
 }
 
 async function ensurePolicy(orgOwnerId) {
-  const rows = await readStore(POLICY_FILE);
-  const existing = rows.find(
-    (row) => String(row.org_owner_id || "") === String(orgOwnerId),
-  );
+  const existing = await prisma.orgOpsPolicy.findFirst({
+    where: { org_owner_id: String(orgOwnerId) },
+  });
   if (existing) return existing;
 
-  const now = new Date().toISOString();
-  const created = {
-    id: crypto.randomUUID(),
-    org_owner_id: orgOwnerId,
-    round_robin_index: 0,
-    active: true,
-    ...DEFAULT_POLICY,
-    created_at: now,
-    updated_at: now,
-  };
-  await writeJson(POLICY_FILE, [...rows, created]);
+  const created = await prisma.orgOpsPolicy.create({
+    data: {
+      id: crypto.randomUUID(),
+      org_owner_id: String(orgOwnerId),
+      round_robin_index: 0,
+      active: true,
+      assignment_strategy: DEFAULT_POLICY.assignment_strategy,
+      sla_targets: DEFAULT_POLICY.sla_targets,
+      escalation_rules: DEFAULT_POLICY.escalation_rules,
+      workload_caps: DEFAULT_POLICY.workload_caps,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+  });
   return created;
 }
 
@@ -191,31 +204,32 @@ export async function updateOpsPolicies(actor, payload = {}) {
   const orgOwnerId = actorOrgOwnerId(actor);
   if (!orgOwnerId) throw forbiddenError();
 
-  const rows = await readStore(POLICY_FILE);
   const policyInput = normalizePolicyInput(payload);
-  const now = new Date().toISOString();
-  const idx = rows.findIndex(
-    (row) => String(row.org_owner_id || "") === String(orgOwnerId),
-  );
-  const nextPolicy = {
-    ...(idx >= 0
-      ? rows[idx]
-      : {
+  const existing = await prisma.orgOpsPolicy.findFirst({
+    where: { org_owner_id: String(orgOwnerId) },
+  });
+  const now = new Date();
+
+  const nextPolicy = existing
+    ? await prisma.orgOpsPolicy.update({
+        where: { id: existing.id },
+        data: {
+          ...policyInput,
+          updated_at: now,
+        },
+      })
+    : await prisma.orgOpsPolicy.create({
+        data: {
           id: crypto.randomUUID(),
-          org_owner_id: orgOwnerId,
-          created_at: now,
+          org_owner_id: String(orgOwnerId),
           round_robin_index: 0,
           active: true,
-        }),
-    ...policyInput,
-    updated_at: now,
-  };
+          ...policyInput,
+          created_at: now,
+          updated_at: now,
+        },
+      });
 
-  const nextRows =
-    idx >= 0
-      ? rows.map((row, rowIdx) => (rowIdx === idx ? nextPolicy : row))
-      : [...rows, nextPolicy];
-  await writeJson(POLICY_FILE, nextRows);
   return nextPolicy;
 }
 
@@ -234,30 +248,24 @@ function computeAgentCap(policy, agentId) {
 }
 
 async function persistWorkloads({ orgOwnerId, agents, leads, policy }) {
-  const rows = await readStore(WORKLOAD_FILE);
-  const now = new Date().toISOString();
-  const nextRows = rows.filter(
-    (row) => String(row.org_owner_id || "") !== String(orgOwnerId),
-  );
-
-  agents.forEach((agent) => {
-    const current = rows.find(
-      (row) =>
-        String(row.org_owner_id || "") === String(orgOwnerId) &&
-        String(row.agent_id || "") === String(agent.id),
-    );
-    nextRows.push({
-      id: current?.id || crypto.randomUUID(),
-      org_owner_id: orgOwnerId,
-      agent_id: String(agent.id),
-      active_leads: computeAgentLoad(leads, agent.id),
-      capped_max_leads: computeAgentCap(policy, String(agent.id)),
-      last_assigned_at: current?.last_assigned_at || null,
-      updated_at: now,
-    });
+  await prisma.agentWorkload.deleteMany({
+    where: { org_owner_id: String(orgOwnerId) },
   });
 
-  await writeJson(WORKLOAD_FILE, nextRows);
+  const now = new Date();
+  const data = agents.map((agent) => ({
+    id: crypto.randomUUID(),
+    org_owner_id: String(orgOwnerId),
+    agent_id: String(agent.id),
+    active_leads: computeAgentLoad(leads, agent.id),
+    capped_max_leads: computeAgentCap(policy, String(agent.id)),
+    last_assigned_at: null,
+    updated_at: now,
+  }));
+
+  if (data.length) {
+    await prisma.agentWorkload.createMany({ data });
+  }
 }
 
 async function chooseAssignee({ policy, orgOwnerId, lead, leads, users }) {
@@ -332,29 +340,45 @@ async function upsertSlaTimer(lead, policy) {
   );
   const baseDate = new Date(lead?.updated_at || lead?.created_at || Date.now());
   const deadlineAt = new Date(baseDate.getTime() + targetMinutes * 60000);
-  const rows = await readStore(SLA_FILE);
-  const existingIdx = rows.findIndex(
-    (row) =>
-      String(row.lead_id || "") === String(lead.id) &&
-      String(row.stage || "") === leadStatus,
-  );
-  const now = new Date().toISOString();
-  const next = {
-    ...(existingIdx >= 0
-      ? rows[existingIdx]
-      : { id: crypto.randomUUID(), lead_id: lead.id, created_at: now }),
+  const existing = await prisma.leadSlaTimer.findFirst({
+    where: {
+      lead_id: String(lead.id),
+      stage: leadStatus,
+    },
+  });
+  const now = new Date();
+  const slaId = existing?.id || crypto.randomUUID();
+
+  await prisma.leadSlaTimer.upsert({
+    where: { id: slaId },
+    create: {
+      id: slaId,
+      lead_id: String(lead.id),
+      org_owner_id: lead.org_owner_id,
+      stage: leadStatus,
+      target_minutes: targetMinutes,
+      deadline_at: deadlineAt,
+      created_at: now,
+      updated_at: now,
+    },
+    update: {
+      org_owner_id: lead.org_owner_id,
+      stage: leadStatus,
+      target_minutes: targetMinutes,
+      deadline_at: deadlineAt,
+      updated_at: now,
+    },
+  });
+  return {
+    id: slaId,
+    lead_id: String(lead.id),
     org_owner_id: lead.org_owner_id,
     stage: leadStatus,
     target_minutes: targetMinutes,
     deadline_at: deadlineAt.toISOString(),
-    updated_at: now,
+    updated_at: now.toISOString(),
+    created_at: (existing?.created_at || now).toISOString(),
   };
-  const nextRows =
-    existingIdx >= 0
-      ? rows.map((row, idx) => (idx === existingIdx ? next : row))
-      : [...rows, next];
-  await writeJson(SLA_FILE, nextRows);
-  return next;
 }
 
 export async function applyLeadOpsOnCreateOrUpdate({
@@ -396,34 +420,28 @@ export async function applyLeadOpsOnCreateOrUpdate({
         },
         allowUnknownTypes: true,
       });
-      const assignments = await readStore(ASSIGNMENTS_FILE);
-      assignments.push({
-        id: crypto.randomUUID(),
-        lead_id: changed.id,
-        org_owner_id: orgOwnerId,
-        assigned_by: String(actor?.id || orgOwnerId),
-        assigned_to: picked.agentId,
-        previous_assignee: "",
-        reason: "policy_auto_assignment",
-        assigned_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
+      await prisma.leadAssignment.create({
+        data: {
+          id: crypto.randomUUID(),
+          lead_id: changed.id,
+          org_owner_id: orgOwnerId,
+          assigned_by: String(actor?.id || orgOwnerId),
+          assigned_to: picked.agentId,
+          previous_assignee: "",
+          reason: "policy_auto_assignment",
+          assigned_at: new Date(),
+          created_at: new Date(),
+        },
       });
-      await writeJson(ASSIGNMENTS_FILE, assignments);
 
       if (picked.nextRoundRobinIndex !== undefined) {
-        const policies = await readStore(POLICY_FILE);
-        await writeJson(
-          POLICY_FILE,
-          policies.map((row) =>
-            String(row.id || "") === String(policy.id)
-              ? {
-                  ...row,
-                  round_robin_index: picked.nextRoundRobinIndex,
-                  updated_at: new Date().toISOString(),
-                }
-              : row,
-          ),
-        );
+        await prisma.orgOpsPolicy.update({
+          where: { id: String(policy.id) },
+          data: {
+            round_robin_index: picked.nextRoundRobinIndex,
+            updated_at: new Date(),
+          },
+        });
       }
     }
   }
@@ -503,7 +521,7 @@ export async function evaluateAndEscalateLeadIfBreached({ actor, lead }) {
     ? `time_breach_stage_${breachedTimer.timer.stage}`
     : `risk_breach_score_${riskScore}`;
 
-  const now = new Date().toISOString();
+  const now = new Date();
   const escalation = {
     id: crypto.randomUUID(),
     lead_id: String(lead.id),
@@ -517,17 +535,18 @@ export async function evaluateAndEscalateLeadIfBreached({ actor, lead }) {
     updated_at: now,
   };
 
-  await writeJson(ESCALATIONS_FILE, [...escalations, escalation]);
+  await prisma.leadEscalation.create({
+    data: escalation,
+  });
 
   if (breachedTimer?.timer?.id) {
-    await writeJson(
-      SLA_FILE,
-      timers.map((row) =>
-        String(row.id || "") === String(breachedTimer.timer.id)
-          ? { ...row, breached_at: row.breached_at || now, updated_at: now }
-          : row,
-      ),
-    );
+    await prisma.leadSlaTimer.update({
+      where: { id: String(breachedTimer.timer.id) },
+      data: {
+        breached_at: new Date(),
+        updated_at: new Date(),
+      },
+    });
   }
 
   await trackEvent({
@@ -563,39 +582,36 @@ export async function listEscalations(actor) {
   const orgOwnerId = actorOrgOwnerId(actor);
   if (!orgOwnerId) throw forbiddenError();
 
-  const rows = await readStore(ESCALATIONS_FILE);
-  return rows
-    .filter((row) => String(row.org_owner_id || "") === String(orgOwnerId))
-    .sort((a, b) =>
-      String(b.triggered_at || b.created_at || "").localeCompare(
-        String(a.triggered_at || a.created_at || ""),
-      ),
-    );
+  const rows = await prisma.leadEscalation.findMany({
+    where: { org_owner_id: String(orgOwnerId) },
+    orderBy: { triggered_at: "desc" },
+  });
+  return rows;
 }
 
 export async function resolveEscalation(actor, leadId, resolutionNote = "") {
   const orgOwnerId = actorOrgOwnerId(actor);
   if (!orgOwnerId) throw forbiddenError();
 
-  const rows = await readStore(ESCALATIONS_FILE);
-  const idx = rows.findIndex(
-    (row) =>
-      String(row.org_owner_id || "") === String(orgOwnerId) &&
-      String(row.lead_id || "") === String(leadId) &&
-      !row.resolved_at,
-  );
-  if (idx < 0) return null;
+  const escalation = await prisma.leadEscalation.findFirst({
+    where: {
+      org_owner_id: String(orgOwnerId),
+      lead_id: String(leadId),
+      resolved_at: null,
+    },
+  });
+  if (!escalation) return null;
 
-  const now = new Date().toISOString();
-  const updated = {
-    ...rows[idx],
-    resolved_at: now,
-    resolved_by: String(actor?.id || ""),
-    resolution_note: sanitizeString(String(resolutionNote || "resolved"), 300),
-    updated_at: now,
-  };
-  const nextRows = rows.map((row, rowIdx) => (rowIdx === idx ? updated : row));
-  await writeJson(ESCALATIONS_FILE, nextRows);
+  const now = new Date();
+  const updated = await prisma.leadEscalation.update({
+    where: { id: escalation.id },
+    data: {
+      resolved_at: now,
+      resolved_by: String(actor?.id || ""),
+      resolution_note: sanitizeString(String(resolutionNote || "resolved"), 300),
+      updated_at: now,
+    },
+  });
 
   await trackEvent({
     type: "lead_escalation_resolved",
@@ -636,7 +652,7 @@ export async function getWorkload(actor) {
     ),
     policy,
   });
-  const refreshedRows = await readStore(WORKLOAD_FILE);
+  const refreshedRows = await prisma.agentWorkload.findMany();
 
   return refreshedRows
     .filter((row) => String(row.org_owner_id || "") === String(orgOwnerId))

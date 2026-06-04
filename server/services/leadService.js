@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
 import prisma from "../utils/prisma.js";
 import { isCrmSqlEnabled, readLegacyJson } from "../utils/crmFallbackStore.js";
 import { sanitizeString } from "../utils/validators.js";
@@ -25,7 +24,15 @@ const USE_SQL_CRM = isCrmSqlEnabled();
 
 async function readStore(fileName) {
   if (USE_SQL_CRM) {
-    return readJson(fileName);
+    switch (fileName) {
+      case "leads.json": return prisma.lead.findMany();
+      case "lead_notes.json": return prisma.leadNote.findMany();
+      case "lead_reminders.json": return prisma.leadReminder.findMany();
+      case "lead_assignments.json": return prisma.leadAssignment.findMany();
+      case "users.json": return prisma.user.findMany();
+      case "requirements.json": return prisma.requirement.findMany();
+      default: return [];
+    }
   }
   return readLegacyJson(fileName);
 }
@@ -65,7 +72,6 @@ function parseFriendMatchId(matchId = "") {
 }
 
 function parseMarketplaceMatchId(matchId = "") {
-  // Marketplace threads use the format `${requirementId}:${factoryOrSupplierId}`.
   const parts = String(matchId).split(":");
   if (parts.length !== 2) return null;
   const requirementId = sanitizeString(parts[0], 120);
@@ -76,15 +82,11 @@ function parseMarketplaceMatchId(matchId = "") {
 
 async function resolveBuyerId(requirementId) {
   if (!requirementId) return "";
-  const requirements = await readStore(REQUIREMENTS_FILE);
-  const requirement =
-    requirements.find(
-      (row) => String(row?.id || "") === String(requirementId),
-    ) || null;
-  return sanitizeString(
-    requirement?.buyer_id || requirement?.buyerId || "",
-    120,
-  );
+  const requirement = await prisma.requirement.findFirst({
+    where: { id: String(requirementId) },
+    select: { buyer_id: true },
+  });
+  return sanitizeString(requirement?.buyer_id || "", 120);
 }
 
 function actorOrgOwnerId(actor) {
@@ -139,7 +141,6 @@ function ensureLeadWriteAccess(actor, lead) {
     throw forbiddenError();
 
   if (isAgent(actor)) {
-    // Agents can only update/annotate their assigned leads.
     if (String(lead.assigned_agent_id || "") !== String(actor.id || ""))
       throw forbiddenError();
     return;
@@ -192,12 +193,10 @@ export async function upsertLeadFromMessage({
 
   const orgTargets = new Map();
 
-  // If an agent sends a message, it should become a lead for their owning org.
   if (sender?.role === "agent" && sender.org_owner_id) {
     orgTargets.set(sender.org_owner_id, { assigned_agent_id: sender.id });
   }
 
-  // Marketplace supplier side (factory/buying_house account id in match id).
   const supplierUser = supplierId ? usersById.get(supplierId) : null;
   if (
     supplierUser &&
@@ -208,7 +207,6 @@ export async function upsertLeadFromMessage({
     orgTargets.set(supplierUser.id, orgTargets.get(supplierUser.id) || {});
   }
 
-  // If buyer side is an org (rare), allow CRM for that org too.
   const buyerUser = buyerId ? usersById.get(buyerId) : null;
   if (
     buyerUser &&
@@ -219,7 +217,6 @@ export async function upsertLeadFromMessage({
     orgTargets.set(buyerUser.id, orgTargets.get(buyerUser.id) || {});
   }
 
-  // Friend threads: create lead for any org-like participant (factory/buying_house) or agent owner.
   if (Array.isArray(friendPair)) {
     friendPair.forEach((id) => {
       const u = usersById.get(id);
@@ -364,7 +361,26 @@ export async function upsertLeadFromMessage({
     }
   }
 
-  await writeJson(LEADS_FILE, leads);
+  await prisma.lead.createMany({
+    data: leads.filter((l) => !l._persisted).map((l) => ({
+      id: l.id,
+      org_owner_id: l.org_owner_id,
+      match_id: l.match_id,
+      counterparty_id: l.counterparty_id || null,
+      source: l.source || null,
+      status: l.status || "new",
+      assigned_agent_id: l.assigned_agent_id || null,
+      created_at: new Date(l.created_at),
+      updated_at: new Date(l.updated_at),
+      last_interaction_at: l.last_interaction_at ? new Date(l.last_interaction_at) : null,
+      source_type: l.source_type || null,
+      source_id: l.source_id || null,
+      source_label: l.source_label || null,
+      conversion_at: l.conversion_at ? new Date(l.conversion_at) : null,
+    })),
+    skipDuplicates: true,
+  });
+
   await Promise.all(
     updated.map((lead) =>
       evaluateAndEscalateLeadIfBreached({
@@ -390,31 +406,21 @@ export async function markLeadConvertedFromContract({
   const safeContract = sanitizeString(String(contractId || ""), 120);
   if (!safeBuyer || !safeFactory || !safeContract) return [];
 
-  const leads = await readStore(LEADS_FILE);
-  let touched = false;
-  const now = new Date().toISOString();
-  const updated = [];
-
-  const next = leads.map((lead) => {
-    const orgId = String(lead.org_owner_id || "");
-    const counterparty = String(lead.counterparty_id || "");
-    const shouldMatch =
-      (orgId === safeFactory && counterparty === safeBuyer) ||
-      (orgId === safeBuyer && counterparty === safeFactory);
-    if (!shouldMatch) return lead;
-    if (lead.conversion_at) return lead;
-    const row = {
-      ...lead,
-      conversion_at: now,
-      updated_at: now,
-    };
-    touched = true;
-    updated.push(row);
-    return row;
+  const updated = await prisma.lead.updateMany({
+    where: {
+      OR: [
+        { org_owner_id: safeFactory, counterparty_id: safeBuyer },
+        { org_owner_id: safeBuyer, counterparty_id: safeFactory },
+      ],
+      conversion_at: null,
+    },
+    data: {
+      conversion_at: new Date(),
+      updated_at: new Date(),
+    },
   });
 
-  if (touched) {
-    await writeJson(LEADS_FILE, next);
+  if (updated.count > 0) {
     await trackEvent({
       type: "lead_converted",
       actor_id: safeFactory || safeBuyer,
@@ -423,392 +429,205 @@ export async function markLeadConvertedFromContract({
     });
   }
 
-  return updated;
+  const leads = await prisma.lead.findMany({
+    where: {
+      OR: [
+        { org_owner_id: safeFactory, counterparty_id: safeBuyer },
+        { org_owner_id: safeBuyer, counterparty_id: safeFactory },
+      ],
+      conversion_at: { not: null },
+    },
+  });
+  return leads;
 }
 
 export async function listLeads(actor) {
-  if (USE_SQL_CRM) {
-    if (isOwnerOrAdmin(actor)) {
-      return prisma.lead.findMany({ orderBy: { updated_at: "desc" } });
-    }
-    const orgId = actorOrgOwnerId(actor);
-    if (isAgent(actor)) {
-      return prisma.lead.findMany({
-        where: {
-          org_owner_id: orgId,
-          assigned_agent_id: String(actor.id || ""),
-        },
-        orderBy: { updated_at: "desc" },
-      });
-    }
+  if (isOwnerOrAdmin(actor)) {
+    return prisma.lead.findMany({ orderBy: { updated_at: "desc" } });
+  }
+  const orgId = actorOrgOwnerId(actor);
+  if (!orgId) return [];
+  if (isAgent(actor)) {
     return prisma.lead.findMany({
-      where: { org_owner_id: orgId },
+      where: {
+        org_owner_id: orgId,
+        assigned_agent_id: String(actor.id || ""),
+      },
       orderBy: { updated_at: "desc" },
     });
   }
-
-  const leads = await readStore(LEADS_FILE);
-  if (isOwnerOrAdmin(actor))
-    return leads.sort((a, b) =>
-      String(b.updated_at || "").localeCompare(String(a.updated_at || "")),
-    );
-
-  const orgId = actorOrgOwnerId(actor);
-  const filtered = leads.filter(
-    (lead) => String(lead.org_owner_id || "") === orgId,
-  );
-
-  if (isAgent(actor)) {
-    return filtered
-      .filter(
-        (lead) =>
-          String(lead.assigned_agent_id || "") === String(actor.id || ""),
-      )
-      .sort((a, b) =>
-        String(b.updated_at || "").localeCompare(String(a.updated_at || "")),
-      );
-  }
-
-  return filtered.sort((a, b) =>
-    String(b.updated_at || "").localeCompare(String(a.updated_at || "")),
-  );
+  return prisma.lead.findMany({
+    where: { org_owner_id: orgId },
+    orderBy: { updated_at: "desc" },
+  });
 }
 
 export async function getLeadById(actor, leadId) {
   const id = sanitizeString(String(leadId || ""), 120);
-  if (USE_SQL_CRM) {
-    const actorOrgId = actorOrgOwnerId(actor);
-    const lead = await prisma.lead.findFirst({
-      where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
-    });
-    if (!lead) return null;
-    ensureLeadAccess(actor, lead);
-    const [notes, reminders] = await Promise.all([
-      prisma.leadNote.findMany({
-        where: { lead_id: id },
-        orderBy: { created_at: "desc" },
-      }),
-      prisma.leadReminder.findMany({
-        where: { lead_id: id },
-        orderBy: { remind_at: "asc" },
-      }),
-    ]);
-    return { ...lead, notes, reminders };
-  }
-
-  const leads = await readStore(LEADS_FILE);
-  const lead = leads.find((row) => String(row.id) === id) || null;
+  const actorOrgId = actorOrgOwnerId(actor);
+  const lead = await prisma.lead.findFirst({
+    where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+  });
   if (!lead) return null;
   ensureLeadAccess(actor, lead);
-
   const [notes, reminders] = await Promise.all([
-    readJson(NOTES_FILE),
-    readJson(REMINDERS_FILE),
+    prisma.leadNote.findMany({
+      where: { lead_id: id },
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.leadReminder.findMany({
+      where: { lead_id: id },
+      orderBy: { remind_at: "asc" },
+    }),
   ]);
-  return {
-    ...lead,
-    notes: notes
-      .filter((n) => String(n.lead_id || "") === id)
-      .sort((a, b) =>
-        String(b.created_at || "").localeCompare(String(a.created_at || "")),
-      ),
-    reminders: reminders
-      .filter((r) => String(r.lead_id || "") === id)
-      .sort((a, b) =>
-        String(a.remind_at || "").localeCompare(String(b.remind_at || "")),
-      ),
-  };
+  return { ...lead, notes, reminders };
 }
 
 export async function getLeadByMatch(actor, matchId) {
   const id = sanitizeString(String(matchId || ""), 160);
   if (!id) return null;
-  if (USE_SQL_CRM) {
-    const actorOrgId = actorOrgOwnerId(actor);
-    const lead = await prisma.lead.findFirst({
-      where: isOwnerOrAdmin(actor)
-        ? { match_id: id }
-        : { match_id: id, org_owner_id: actorOrgId },
-    });
-    if (!lead) return null;
-    ensureLeadAccess(actor, lead);
-    const [notes, reminders] = await Promise.all([
-      prisma.leadNote.findMany({
-        where: { lead_id: String(lead.id) },
-        orderBy: { created_at: "desc" },
-      }),
-      prisma.leadReminder.findMany({
-        where: { lead_id: String(lead.id) },
-        orderBy: { remind_at: "asc" },
-      }),
-    ]);
-    return { ...lead, notes, reminders };
-  }
-
-  const leads = await readStore(LEADS_FILE);
-  const lead = leads.find((row) => String(row.match_id || "") === id) || null;
+  const actorOrgId = actorOrgOwnerId(actor);
+  const lead = await prisma.lead.findFirst({
+    where: isOwnerOrAdmin(actor)
+      ? { match_id: id }
+      : { match_id: id, org_owner_id: actorOrgId },
+  });
   if (!lead) return null;
   ensureLeadAccess(actor, lead);
-
   const [notes, reminders] = await Promise.all([
-    readJson(NOTES_FILE),
-    readJson(REMINDERS_FILE),
+    prisma.leadNote.findMany({
+      where: { lead_id: String(lead.id) },
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.leadReminder.findMany({
+      where: { lead_id: String(lead.id) },
+      orderBy: { remind_at: "asc" },
+    }),
   ]);
-  return {
-    ...lead,
-    notes: notes
-      .filter((n) => String(n.lead_id || "") === String(lead.id))
-      .sort((a, b) =>
-        String(b.created_at || "").localeCompare(String(a.created_at || "")),
-      ),
-    reminders: reminders
-      .filter((r) => String(r.lead_id || "") === String(lead.id))
-      .sort((a, b) =>
-        String(a.remind_at || "").localeCompare(String(b.remind_at || "")),
-      ),
-  };
+  return { ...lead, notes, reminders };
 }
 
 export async function updateLead(actor, leadId, patch = {}) {
   const id = sanitizeString(String(leadId || ""), 120);
-  if (USE_SQL_CRM) {
-    const actorOrgId = actorOrgOwnerId(actor);
-    const current = await prisma.lead.findFirst({
-      where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+  const actorOrgId = actorOrgOwnerId(actor);
+  const current = await prisma.lead.findFirst({
+    where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+  });
+  if (!current) return null;
+  ensureLeadWriteAccess(actor, current);
+
+  const assignedAgentId =
+    patch.assigned_agent_id !== undefined
+      ? sanitizeString(String(patch.assigned_agent_id || ""), 120) || null
+      : current.assigned_agent_id;
+  if (!isAgent(actor) && assignedAgentId) {
+    const assignedAgent = await prisma.user.findFirst({
+      where: {
+        id: assignedAgentId,
+        role: "agent",
+        org_owner_id: current.org_owner_id,
+      },
     });
-    if (!current) return null;
-    ensureLeadWriteAccess(actor, current);
+    if (!assignedAgent) throw forbiddenError();
+  }
 
-    const assignedAgentId =
-      patch.assigned_agent_id !== undefined
-        ? sanitizeString(String(patch.assigned_agent_id || ""), 120) || null
-        : current.assigned_agent_id;
-    if (!isAgent(actor) && assignedAgentId) {
-      const assignedAgent = await prisma.user.findFirst({
-        where: {
-          id: assignedAgentId,
-          role: "agent",
-          org_owner_id: current.org_owner_id,
-        },
-      });
-      if (!assignedAgent) throw forbiddenError();
-    }
-
-    let updated = await prisma.lead.update({
+  let updated = await prisma.lead.update({
+    where: { id },
+    data: {
+      status:
+        patch.status !== undefined
+          ? normalizeStatus(patch.status, current.status || "new")
+          : current.status,
+      ...(isAgent(actor) ? {} : { assigned_agent_id: assignedAgentId }),
+      updated_at: new Date(),
+    },
+  });
+  const opsLead = await applyLeadOpsOnCreateOrUpdate({
+    actor,
+    lead: updated,
+    trigger: "update",
+  });
+  if (
+    String(updated.assigned_agent_id || "") !==
+    String(opsLead.assigned_agent_id || "")
+  ) {
+    updated = await prisma.lead.update({
       where: { id },
       data: {
-        status:
-          patch.status !== undefined
-            ? normalizeStatus(patch.status, current.status || "new")
-            : current.status,
-        ...(isAgent(actor) ? {} : { assigned_agent_id: assignedAgentId }),
+        assigned_agent_id: opsLead.assigned_agent_id || null,
         updated_at: new Date(),
       },
     });
-    const opsLead = await applyLeadOpsOnCreateOrUpdate({
-      actor,
-      lead: updated,
-      trigger: "update",
-    });
-    if (
-      String(updated.assigned_agent_id || "") !==
-      String(opsLead.assigned_agent_id || "")
-    ) {
-      updated = await prisma.lead.update({
-        where: { id },
-        data: {
-          assigned_agent_id: opsLead.assigned_agent_id || null,
-          updated_at: new Date(),
-        },
-      });
-    } else {
-      updated = opsLead;
-    }
-    if (
-      !isAgent(actor) &&
-      patch.assigned_agent_id !== undefined &&
-      String(current.assigned_agent_id || "") !==
-        String(updated.assigned_agent_id || "")
-    ) {
-      const now = new Date();
-      await prisma.leadAssignment.create({
-        data: {
-          id: crypto.randomUUID(),
-          lead_id: updated.id,
-          org_owner_id: updated.org_owner_id,
-          assigned_by: String(actor.id || ""),
-          assigned_to: updated.assigned_agent_id || null,
-          previous_assignee: current.assigned_agent_id || null,
-          reason:
-            sanitizeString(
-              String(patch.assignment_reason || "manual_assignment"),
-              180,
-            ) || "manual_assignment",
-          assigned_at: now,
-          created_at: now,
-        },
-      });
-      await trackEvent({
-        type: "lead_reassigned",
-        actor_id: String(actor.id || ""),
-        entity_id: updated.id,
-        entityType: "lead",
-        metadata: {
-          org_owner_id: updated.org_owner_id,
-          assigned_to: updated.assigned_agent_id || "",
-        },
-        allowUnknownTypes: true,
-      });
-    }
-    await evaluateAndEscalateLeadIfBreached({ actor, lead: updated });
-    return updated;
+  } else {
+    updated = opsLead;
   }
-
-  const leads = await readStore(LEADS_FILE);
-  const idx = leads.findIndex((row) => String(row.id) === id);
-  if (idx < 0) return null;
-
-  const current = leads[idx];
-  ensureLeadWriteAccess(actor, current);
-
-  let next = {
-    ...current,
-    status:
-      patch.status !== undefined
-        ? normalizeStatus(patch.status, current.status)
-        : current.status,
-    // Main accounts can assign leads to an agent; agents cannot reassign.
-    ...(isAgent(actor)
-      ? {}
-      : {
-          assigned_agent_id:
-            patch.assigned_agent_id !== undefined
-              ? sanitizeString(String(patch.assigned_agent_id || ""), 120)
-              : current.assigned_agent_id,
-        }),
-    updated_at: new Date().toISOString(),
-  };
-  next = await applyLeadOpsOnCreateOrUpdate({
-    actor,
-    lead: next,
-    trigger: "update",
-  });
-
-  leads[idx] = next;
-  await writeJson(LEADS_FILE, leads);
   if (
     !isAgent(actor) &&
     patch.assigned_agent_id !== undefined &&
     String(current.assigned_agent_id || "") !==
-      String(next.assigned_agent_id || "")
+      String(updated.assigned_agent_id || "")
   ) {
-    const assignments = await readStore(ASSIGNMENTS_FILE);
-    assignments.push({
-      id: crypto.randomUUID(),
-      lead_id: next.id,
-      org_owner_id: next.org_owner_id,
-      assigned_by: String(actor.id || ""),
-      assigned_to: next.assigned_agent_id || "",
-      previous_assignee: current.assigned_agent_id || "",
-      reason:
-        sanitizeString(
-          String(patch.assignment_reason || "manual_assignment"),
-          180,
-        ) || "manual_assignment",
-      assigned_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
+    const now = new Date();
+    await prisma.leadAssignment.create({
+      data: {
+        id: crypto.randomUUID(),
+        lead_id: updated.id,
+        org_owner_id: updated.org_owner_id,
+        assigned_by: String(actor.id || ""),
+        assigned_to: updated.assigned_agent_id || null,
+        previous_assignee: current.assigned_agent_id || null,
+        reason:
+          sanitizeString(
+            String(patch.assignment_reason || "manual_assignment"),
+            180,
+          ) || "manual_assignment",
+        assigned_at: now,
+        created_at: now,
+      },
     });
-    await writeJson(ASSIGNMENTS_FILE, assignments);
     await trackEvent({
       type: "lead_reassigned",
       actor_id: String(actor.id || ""),
-      entity_id: next.id,
+      entity_id: updated.id,
       entityType: "lead",
       metadata: {
-        org_owner_id: next.org_owner_id,
-        assigned_to: next.assigned_agent_id || "",
+        org_owner_id: updated.org_owner_id,
+        assigned_to: updated.assigned_agent_id || "",
       },
       allowUnknownTypes: true,
     });
   }
-  await evaluateAndEscalateLeadIfBreached({ actor, lead: next });
-  return next;
+  await evaluateAndEscalateLeadIfBreached({ actor, lead: updated });
+  return updated;
 }
 
 export async function addLeadNote(actor, leadId, noteText) {
   const id = sanitizeString(String(leadId || ""), 120);
-  if (USE_SQL_CRM) {
-    const actorOrgId = actorOrgOwnerId(actor);
-    const lead = await prisma.lead.findFirst({
-      where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
-    });
-    if (!lead) return null;
-    ensureLeadWriteAccess(actor, lead);
-
-    return prisma.leadNote.create({
-      data: {
-        id: crypto.randomUUID(),
-        lead_id: id,
-        org_owner_id: lead.org_owner_id,
-        author_id: String(actor.id || ""),
-        note: sanitizeString(String(noteText || ""), 1600),
-        created_at: new Date(),
-      },
-    });
-  }
-
-  const leads = await readStore(LEADS_FILE);
-  const lead = leads.find((row) => String(row.id) === id) || null;
+  const actorOrgId = actorOrgOwnerId(actor);
+  const lead = await prisma.lead.findFirst({
+    where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+  });
   if (!lead) return null;
   ensureLeadWriteAccess(actor, lead);
 
-  const notes = await readStore(NOTES_FILE);
-  const row = {
-    id: crypto.randomUUID(),
-    lead_id: id,
-    org_owner_id: lead.org_owner_id,
-    author_id: String(actor.id || ""),
-    note: sanitizeString(String(noteText || ""), 1600),
-    created_at: new Date().toISOString(),
-  };
-  notes.push(row);
-  await writeJson(NOTES_FILE, notes);
-  return row;
+  return prisma.leadNote.create({
+    data: {
+      id: crypto.randomUUID(),
+      lead_id: id,
+      org_owner_id: lead.org_owner_id,
+      author_id: String(actor.id || ""),
+      note: sanitizeString(String(noteText || ""), 1600),
+      created_at: new Date(),
+    },
+  });
 }
 
 export async function addLeadReminder(actor, leadId, payload = {}) {
   const id = sanitizeString(String(leadId || ""), 120);
-  if (USE_SQL_CRM) {
-    const actorOrgId = actorOrgOwnerId(actor);
-    const lead = await prisma.lead.findFirst({
-      where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
-    });
-    if (!lead) return null;
-    ensureLeadWriteAccess(actor, lead);
-
-    const remindAtRaw = payload?.remind_at
-      ? new Date(payload.remind_at)
-      : new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const remindAt = Number.isNaN(remindAtRaw.getTime())
-      ? new Date(Date.now() + 24 * 60 * 60 * 1000)
-      : remindAtRaw;
-
-    return prisma.leadReminder.create({
-      data: {
-        id: crypto.randomUUID(),
-        lead_id: id,
-        org_owner_id: lead.org_owner_id,
-        created_by: String(actor.id || ""),
-        remind_at: remindAt,
-        message: sanitizeString(String(payload?.message || "Follow up"), 240),
-        done: false,
-        created_at: new Date(),
-      },
-    });
-  }
-
-  const leads = await readStore(LEADS_FILE);
-  const lead = leads.find((row) => String(row.id) === id) || null;
+  const actorOrgId = actorOrgOwnerId(actor);
+  const lead = await prisma.lead.findFirst({
+    where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+  });
   if (!lead) return null;
   ensureLeadWriteAccess(actor, lead);
 
@@ -816,23 +635,21 @@ export async function addLeadReminder(actor, leadId, payload = {}) {
     ? new Date(payload.remind_at)
     : new Date(Date.now() + 24 * 60 * 60 * 1000);
   const remindAt = Number.isNaN(remindAtRaw.getTime())
-    ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    : remindAtRaw.toISOString();
+    ? new Date(Date.now() + 24 * 60 * 60 * 1000)
+    : remindAtRaw;
 
-  const reminders = await readStore(REMINDERS_FILE);
-  const row = {
-    id: crypto.randomUUID(),
-    lead_id: id,
-    org_owner_id: lead.org_owner_id,
-    created_by: String(actor.id || ""),
-    remind_at: remindAt,
-    message: sanitizeString(String(payload?.message || "Follow up"), 240),
-    done: false,
-    created_at: new Date().toISOString(),
-  };
-  reminders.push(row);
-  await writeJson(REMINDERS_FILE, reminders);
-  return row;
+  return prisma.leadReminder.create({
+    data: {
+      id: crypto.randomUUID(),
+      lead_id: id,
+      org_owner_id: lead.org_owner_id,
+      created_by: String(actor.id || ""),
+      remind_at: remindAt,
+      message: sanitizeString(String(payload?.message || "Follow up"), 240),
+      done: false,
+      created_at: new Date(),
+    },
+  });
 }
 
 export async function addLeadNoteForMatch({
@@ -847,25 +664,22 @@ export async function addLeadNoteForMatch({
   const safeAuthor = sanitizeString(String(authorId || "system"), 120);
   if (!safeMatchId || !safeOrgId || !safeNote) return null;
 
-  const leads = await readStore(LEADS_FILE);
-  const lead =
-    leads.find(
-      (row) =>
-        String(row.match_id || "") === safeMatchId &&
-        String(row.org_owner_id || "") === safeOrgId,
-    ) || null;
+  const lead = await prisma.lead.findFirst({
+    where: {
+      match_id: safeMatchId,
+      org_owner_id: safeOrgId,
+    },
+  });
   if (!lead) return null;
 
-  const notes = await readStore(NOTES_FILE);
-  const row = {
-    id: crypto.randomUUID(),
-    lead_id: lead.id,
-    org_owner_id: lead.org_owner_id,
-    author_id: safeAuthor || lead.org_owner_id,
-    note: safeNote,
-    created_at: new Date().toISOString(),
-  };
-  notes.push(row);
-  await writeJson(NOTES_FILE, notes);
-  return row;
+  return prisma.leadNote.create({
+    data: {
+      id: crypto.randomUUID(),
+      lead_id: lead.id,
+      org_owner_id: lead.org_owner_id,
+      author_id: safeAuthor || lead.org_owner_id,
+      note: safeNote,
+      created_at: new Date(),
+    },
+  });
 }

@@ -1,9 +1,8 @@
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 import { sanitizeString } from "../utils/validators.js";
 
 const STORE_FILE = "order_certifications.json";
-const CONTRACTS_FILE = "documents.json";
 
 function nowIso() {
   return new Date().toISOString();
@@ -118,21 +117,16 @@ export async function getOrderCertification(userId) {
 export async function getOrderCertificationSummary(userId) {
   const id = sanitizeString(String(userId || ""), 120);
   if (!id) return null;
-  const [record, docs] = await Promise.all([
+  const [record, signedContracts] = await Promise.all([
     getOrderCertification(id),
-    readJson(CONTRACTS_FILE),
+    prisma.document.count({
+      where: {
+        entity_type: "contract",
+        lifecycle_status: "signed",
+        OR: [{ buyer_id: id }, { factory_id: id }],
+      },
+    }),
   ]);
-
-  const contracts = Array.isArray(docs) ? docs : [];
-  const signedContracts = contracts.filter((doc) => {
-    if (String(doc.entity_type || "").toLowerCase() !== "contract")
-      return false;
-    if (String(doc.lifecycle_status || "").toLowerCase() !== "signed")
-      return false;
-    return (
-      String(doc.buyer_id || "") === id || String(doc.factory_id || "") === id
-    );
-  }).length;
 
   return {
     user_id: id,

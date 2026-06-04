@@ -1,7 +1,5 @@
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
-
-const CONNECTION_FILE = "user_connections.json";
 
 export function buildFriendMatchId(userA, userB) {
   const ids = [
@@ -18,12 +16,14 @@ export async function listFriendConnectionsForUser(userId) {
   const actorId = sanitizeString(String(userId || ""), 120);
   if (!actorId) return [];
 
-  const rows = await readJson(CONNECTION_FILE);
+  const rows = await prisma.userConnection.findMany({
+    where: {
+      OR: [{ requester_id: actorId }, { receiver_id: actorId }],
+      type: { in: ["friend", "friend_request"] },
+    },
+  });
+
   return rows
-    .filter(
-      (row) => row.requester_id === actorId || row.receiver_id === actorId,
-    )
-    .filter((row) => row.type === "friend" || row.type === "friend_request")
     .map((row) => {
       const otherUserId =
         row.requester_id === actorId ? row.receiver_id : row.requester_id;
@@ -49,23 +49,25 @@ export async function hasFriendRelationship(
   { includePending = false } = {},
 ) {
   if (!userA || !userB || userA === userB) return false;
-  const rows = await readJson(CONNECTION_FILE);
 
-  return rows.some((row) => {
-    const samePair =
-      (row.requester_id === userA && row.receiver_id === userB) ||
-      (row.requester_id === userB && row.receiver_id === userA);
-
-    if (!samePair) return false;
-
-    const status = String(row.status || "").toLowerCase();
-    if (row.type === "friend" && ["active", "accepted"].includes(status))
-      return true;
-    if (isLegacyFriendActive(row)) return true;
-    if (includePending && row.type === "friend_request" && status === "pending")
-      return true;
-    return false;
+  const row = await prisma.userConnection.findFirst({
+    where: {
+      OR: [
+        { requester_id: userA, receiver_id: userB },
+        { requester_id: userB, receiver_id: userA },
+      ],
+    },
   });
+
+  if (!row) return false;
+
+  const status = String(row.status || "").toLowerCase();
+  if (row.type === "friend" && ["active", "accepted"].includes(status))
+    return true;
+  if (isLegacyFriendActive(row)) return true;
+  if (includePending && row.type === "friend_request" && status === "pending")
+    return true;
+  return false;
 }
 
 export async function isFriendConnected(userA, userB) {

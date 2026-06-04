@@ -14,7 +14,7 @@ import {
   getQuotaSnapshot,
   getUserPlan,
 } from "../services/searchAccessService.js";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { handleControllerError } from "../utils/permissions.js";
 import { ensureEntitlement } from "../services/entitlementService.js";
 import {
@@ -355,7 +355,7 @@ export async function browseRequirements(req, res) {
   ).catch(() => null);
   const [all, users] = await Promise.all([
     listRequirements({}),
-    readJson("users.json"),
+    prisma.user.findMany(),
   ]);
   const usersById = new Map(users.map((u) => [u.id, u]));
   const viewerPlan = await getUserPlan(req.user.id);
@@ -524,7 +524,9 @@ export async function searchRequirements(req, res) {
     }
   }
 
+  const sort = String(req.query.sort || "relevance").trim().toLowerCase();
   const q = String(req.query.q || "").trim();
+  const field = String(req.query.field || "").trim().toLowerCase();
   const searchTokens = buildSearchTokens(q);
   const wantedIndustry = String(req.query.industry || "")
     .trim()
@@ -603,6 +605,9 @@ export async function searchRequirements(req, res) {
       if (n !== null) roleSeatsMap[String(roleRaw).toLowerCase()] = n;
     }
   }
+  const wantedSeason = String(req.query.season || "").trim().toLowerCase();
+  const wantedMachinery = parseList(req.query.machinery);
+  const wantedStockStatus = String(req.query.stockStatus || "").trim().toLowerCase();
   const distanceKm = parseNumber(req.query.distanceKm);
   const locationLat = parseCoordinate(req.query.locationLat);
   const locationLng = parseCoordinate(req.query.locationLng);
@@ -723,10 +728,23 @@ export async function searchRequirements(req, res) {
     });
   }
 
-  const all = await listRequirements({});
+  const where = {};
+  if (wantedCategories.length) where.category = { in: wantedCategories };
+  if (wantedIndustry) where.industry = wantedIndustry;
+  if (q) {
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { category: { contains: q, mode: "insensitive" } },
+      { material: { contains: q, mode: "insensitive" } },
+      { product: { contains: q, mode: "insensitive" } },
+      { custom_description: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  const all = await prisma.requirement.findMany({ where, orderBy: { created_at: "desc" } });
+  const buyerIds = [...new Set(all.map((r) => r.buyer_id))];
   const [users, messages, orderCertMap] = await Promise.all([
-    readJson("users.json"),
-    readJson("messages.json"),
+    buyerIds.length ? prisma.user.findMany({ where: { id: { in: buyerIds } } }) : [],
+    prisma.message.findMany({ take: 0 }),
     getOrderCertificationMap(),
   ]);
   const usersById = new Map(users.map((u) => [u.id, u]));
@@ -812,11 +830,21 @@ export async function searchRequirements(req, res) {
       }
       if (priorityOnly && !r.priority_active) return false;
       if (searchTokens.length) {
-        const searchText = normalizeSearchText(
-          `${r.category} ${r.product} ${r.material} ${r.custom_description} ${r.title} ${r.color_pantone || ""} ${r.size_range || ""}`,
-        );
-        const hit = searchTokens.every((token) => searchText.includes(token));
-        if (!hit) return false;
+        if (field === "buyer") {
+          const nameText = normalizeSearchText(r.author?.name || "");
+          const hit = searchTokens.every((token) => nameText.includes(token));
+          if (!hit) return false;
+        } else if (field === "company") {
+          const companyText = normalizeSearchText(r.author?.name || r.author?.company_name || "");
+          const hit = searchTokens.every((token) => companyText.includes(token));
+          if (!hit) return false;
+        } else {
+          const searchText = normalizeSearchText(
+            `${r.category} ${r.product} ${r.material} ${r.custom_description} ${r.title} ${r.color_pantone || ""} ${r.size_range || ""}`,
+          );
+          const hit = searchTokens.every((token) => searchText.includes(token));
+          if (!hit) return false;
+        }
       }
       if (wantedCategories.length > 0) {
         const categoryValue = String(
@@ -1040,11 +1068,46 @@ export async function searchRequirements(req, res) {
           return false;
         }
       }
+      if (wantedSeason) {
+        const season = String(r.season || "").toLowerCase();
+        if (season !== wantedSeason) return false;
+      }
+      if (wantedMachinery.length > 0) {
+        const machinery = String(r.machinery || r.equipment || "").toLowerCase();
+        const hit = wantedMachinery.some((m) => machinery.includes(m));
+        if (!hit) return false;
+      }
+      if (wantedStockStatus) {
+        const status = String(r.stock_status || r.availability || "").toLowerCase();
+        if (status !== wantedStockStatus) return false;
+      }
       return true;
     });
 
   const items = results
     .sort((a, b) => {
+      if (sort === "newest") {
+        const aCreated = new Date(a.created_at || "").getTime();
+        const bCreated = new Date(b.created_at || "").getTime();
+        if (Number.isFinite(aCreated) && Number.isFinite(bCreated))
+          return bCreated - aCreated;
+        return 0;
+      }
+      if (sort === "price_asc") {
+        const aPrice = Number(a.priceBaseMin || a.priceNormalizedBase || 0);
+        const bPrice = Number(b.priceBaseMin || b.priceNormalizedBase || 0);
+        return aPrice - bPrice;
+      }
+      if (sort === "price_desc") {
+        const aPrice = Number(a.priceBaseMin || a.priceNormalizedBase || 0);
+        const bPrice = Number(b.priceBaseMin || b.priceNormalizedBase || 0);
+        return bPrice - aPrice;
+      }
+      if (sort === "moq_asc") {
+        const aMoq = Number(a.moq || a.quantity || 0);
+        const bMoq = Number(b.moq || b.quantity || 0);
+        return aMoq - bMoq;
+      }
       if (a.priority_score !== b.priority_score)
         return b.priority_score - a.priority_score;
       if (viewerPremium) {

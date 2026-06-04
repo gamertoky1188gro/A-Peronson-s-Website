@@ -60,6 +60,19 @@ import {
   Building2,
   LayoutGrid,
   PackageSearch,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  ImagePlus,
+  ArrowLeftRight,
+  TrendingUp,
+  Shirt,
+  Wrench,
+  PackageCheck,
+  ScanSearch,
+  UserSearch,
+  ListRestart,
 } from "lucide-react";
 import { apiRequest } from "../lib/auth";
 import {
@@ -68,6 +81,35 @@ import {
   validateCoreFilterRenderKeys,
 } from "./searchFiltersConfig";
 import MasonryGrid from "../components/MasonryGrid";
+
+const SORT_OPTIONS = [
+  { key: "relevance", label: "Relevance" },
+  { key: "newest", label: "Newest first" },
+  { key: "price_asc", label: "Price: Low to high" },
+  { key: "price_desc", label: "Price: High to low" },
+  { key: "moq_asc", label: "MOQ: Low to high" },
+];
+
+const SEASON_OPTIONS = [
+  "Any season",
+  "Spring",
+  "Summer",
+  "Fall",
+  "Winter",
+  "Spring 2025",
+  "Summer 2025",
+  "Fall 2025",
+  "Winter 2025",
+  "Spring 2026",
+  "Summer 2026",
+];
+
+const STOCK_STATUS_OPTIONS = [
+  { key: "", label: "Any availability" },
+  { key: "in_stock", label: "In stock" },
+  { key: "made_to_order", label: "Made to order" },
+  { key: "sample_only", label: "Sample only" },
+];
 
 const CATEGORY_OPTIONS = [
   { key: "all", label: "All categories" },
@@ -140,6 +182,9 @@ const initialFilters = {
   requestType: "all",
   allCategories: true,
   selectedCategories: [],
+  season: "Any season",
+  machinery: "",
+  stockStatus: "",
 };
 
 function pillClass(active) {
@@ -248,6 +293,20 @@ export default function SearchResults() {
   const [colorText, setColorText] = useState("PMS 185C");
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [alertsQuota, setAlertsQuota] = useState(0);
+  const [sortBy, setSortBy] = useState("relevance");
+  const [cursor, setCursor] = useState(0);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [totalResults, setTotalResults] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [refineQuery, setRefineQuery] = useState("");
+  const [searchField, setSearchField] = useState("all");
+  const [imageSearchFile, setImageSearchFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [shortlist, setShortlist] = useState([]);
+  const [showShortlist, setShowShortlist] = useState(false);
+  const [trendingSearches, setTrendingSearches] = useState([]);
   const [toasts, setToasts] = useState([]);
   const [recentViews, setRecentViews] = useState([]);
   const [expandedMore, setExpandedMore] = useState(false);
@@ -297,7 +356,37 @@ export default function SearchResults() {
     const params = new URLSearchParams(window.location.search);
     const q = params.get("q");
     if (q) setQuery(q);
+    const sortParam = params.get("sort");
+    if (sortParam) setSortBy(sortParam);
+    const cursorParam = params.get("cursor");
+    if (cursorParam) setCursor(Number(cursorParam));
   }, []);
+
+  const suggestionDebounce = useRef(null);
+  useEffect(() => {
+    if (suggestionDebounce.current) clearTimeout(suggestionDebounce.current);
+    if (!query.trim() || query.trim().length < 2) {
+      setSuggestions([]);
+      setSuggestionsOpen(false);
+      return;
+    }
+    suggestionDebounce.current = setTimeout(async () => {
+      try {
+        const data = await apiRequest(`/search/suggestions?q=${encodeURIComponent(query.trim())}`, { token });
+        if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
+          setSuggestions(data.suggestions);
+        } else {
+          const filtered = trendingSearches.filter((t) => t.toLowerCase().includes(query.toLowerCase()));
+          setSuggestions(filtered.slice(0, 5));
+        }
+        setSuggestionsOpen(true);
+      } catch {
+        const filtered = trendingSearches.filter((t) => t.toLowerCase().includes(query.toLowerCase()));
+        setSuggestions(filtered.slice(0, 5));
+        setSuggestionsOpen(true);
+      }
+    }, 250);
+  }, [query, token, trendingSearches]);
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -343,6 +432,21 @@ export default function SearchResults() {
       }
     }
     fetchRecentViews();
+  }, [token]);
+
+  useEffect(() => {
+    async function fetchTrending() {
+      try {
+        if (!token) return;
+        const data = await apiRequest("/search/trending", { token });
+        if (Array.isArray(data?.trending)) {
+          setTrendingSearches(data.trending.slice(0, 8));
+        }
+      } catch {
+        // fallback static list already set
+      }
+    }
+    fetchTrending();
   }, [token]);
 
   useEffect(() => {
@@ -420,6 +524,68 @@ export default function SearchResults() {
     }
     fetchFilterOptions();
   }, [token]);
+
+  const filteredRequests = useMemo(() => {
+    if (!refineQuery.trim()) return requests;
+    const q = refineQuery.toLowerCase();
+    return requests.filter(
+      (r) =>
+        (r.title || "").toLowerCase().includes(q) ||
+        (r.description || "").toLowerCase().includes(q) ||
+        (r.category || "").toLowerCase().includes(q) ||
+        (r.material || "").toLowerCase().includes(q),
+    );
+  }, [requests, refineQuery]);
+
+  const filteredCompanies = useMemo(() => {
+    if (!refineQuery.trim()) return companies;
+    const q = refineQuery.toLowerCase();
+    return companies.filter(
+      (c) =>
+        (c.name || "").toLowerCase().includes(q) ||
+        (c.title || "").toLowerCase().includes(q) ||
+        (c.description || "").toLowerCase().includes(q) ||
+        (c.category || "").toLowerCase().includes(q),
+    );
+  }, [companies, refineQuery]);
+
+  function toggleShortlist(id, type) {
+    const key = `${type}:${id}`;
+    setShortlist((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    );
+  }
+
+  function isShortlisted(id, type) {
+    return shortlist.includes(`${type}:${id}`);
+  }
+
+  function exportCSV() {
+    const allItems = [
+      ...filteredRequests.map((r) => ({ type: "Buyer Request", title: r.title || r.name || "Untitled", category: r.category || "", country: r.author?.country || r.country || "", material: r.material || "", moq: r.moq || r.quantity || "", price: r.price_range || "" })),
+      ...filteredCompanies.map((c) => ({ type: "Company", title: c.name || c.title || "Untitled", category: c.category || "", country: c.author?.country || c.country || "", material: c.material || "", moq: c.moq || "", price: c.price_range || "" })),
+    ];
+    const headers = Object.keys(allItems[0] || {});
+    const csv = [headers.join(","), ...allItems.map((row) => headers.map((h) => `"${String(row[h] || "").replace(/"/g, '""')}"`).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `search_results_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast("Exported", `Downloaded ${allItems.length} results as CSV`, "success");
+  }
+
+  function handleImageSearch(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageSearchFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result);
+    reader.readAsDataURL(file);
+    addToast("Image selected", `${file.name} ready for visual search. Click search to find similar items.`, "success");
+  }
 
   const addToast = useCallback((title, message, kind = "success") => {
     const id = Math.random().toString(36).slice(2, 10);
@@ -561,8 +727,33 @@ export default function SearchResults() {
     });
   }
 
+  const buildSearchParams = useCallback((cursorVal = 0) => {
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    if (!filters.allCategories)
+      params.set("category", filters.selectedCategories.join(","));
+    if (filters.industry !== "Any") params.set("industry", filters.industry);
+    if (filters.country) params.set("country", filters.country);
+    if (filters.incoterms.length)
+      params.set("incoterms", filters.incoterms.join(","));
+    if (filters.companyType.length)
+      params.set("orgType", filters.companyType.join(","));
+    if (filters.location) params.set("location", filters.location);
+    if (filters.verifiedOnly) params.set("verifiedOnly", "true");
+    if (sortBy !== "relevance") params.set("sort", sortBy);
+    if (cursorVal > 0) params.set("cursor", String(cursorVal));
+    if (filters.season && filters.season !== "Any season") params.set("season", filters.season);
+    if (filters.machinery) params.set("machinery", filters.machinery);
+    if (filters.stockStatus) params.set("stockStatus", filters.stockStatus);
+    if (searchField === "buyer") params.set("field", "buyer");
+    if (searchField === "company") params.set("field", "company");
+    return params;
+  }, [query, filters, sortBy, searchField]);
+
   const executeSearch = useCallback(async () => {
     setLoading(true);
+    setCursor(0);
+    setNextCursor(null);
     addToast(
       "Searching",
       "Applying your query and selected filters...",
@@ -570,18 +761,23 @@ export default function SearchResults() {
     );
 
     try {
-      const params = new URLSearchParams();
-      if (query.trim()) params.set("q", query.trim());
-      if (!filters.allCategories)
-        params.set("category", filters.selectedCategories.join(","));
-      if (filters.industry !== "Any") params.set("industry", filters.industry);
-      if (filters.country) params.set("country", filters.country);
-      if (filters.incoterms.length)
-        params.set("incoterms", filters.incoterms.join(","));
-      if (filters.companyType.length)
-        params.set("orgType", filters.companyType.join(","));
-      if (filters.location) params.set("location", filters.location);
-      if (filters.verifiedOnly) params.set("verifiedOnly", "true");
+      const params = buildSearchParams(0);
+
+      if (imageSearchFile) {
+        const formData = new FormData();
+        formData.append("file", imageSearchFile);
+        try {
+          const imgRes = await apiRequest("/search/image", { token, method: "POST", body: formData });
+          if (imgRes?.file?.url) {
+            params.set("imageUrl", imgRes.file.url);
+            addToast("Visual search", `Image uploaded: ${imgRes.file.originalname}. Matching by tags and colors.`, "success");
+          }
+        } catch {
+          addToast("Image upload failed", "Continuing with text search only", "error");
+        }
+        setImageSearchFile(null);
+        setImagePreview(null);
+      }
 
       const [reqRes, prodRes] = await Promise.all([
         apiRequest(`/requirements/search?${params.toString()}`, { token }),
@@ -590,6 +786,7 @@ export default function SearchResults() {
 
       setRequests(Array.isArray(reqRes?.items) ? reqRes.items : []);
       setCompanies(Array.isArray(prodRes?.items) ? prodRes.items : []);
+      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || null);
 
       const reqTotal = Number.isFinite(Number(reqRes?.total))
         ? Number(reqRes.total)
@@ -597,10 +794,12 @@ export default function SearchResults() {
       const prodTotal = Number.isFinite(Number(prodRes?.total))
         ? Number(prodRes.total)
         : prodRes?.items?.length || 0;
+      const total = reqTotal + prodTotal;
+      setTotalResults(total);
       setEstimatedCounts({
         buyerRequests: reqTotal,
         companies: prodTotal,
-        total: reqTotal + prodTotal,
+        total,
       });
 
       const nextParams = new URLSearchParams(params);
@@ -615,7 +814,27 @@ export default function SearchResults() {
     } finally {
       setLoading(false);
     }
-  }, [query, filters, token, activeTab, setSearchParams, addToast]);
+  }, [query, filters, token, activeTab, setSearchParams, addToast, buildSearchParams, imageSearchFile]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || nextCursor === null) return;
+    setLoadingMore(true);
+    try {
+      const params = buildSearchParams(nextCursor);
+      const [reqRes, prodRes] = await Promise.all([
+        apiRequest(`/requirements/search?${params.toString()}`, { token }),
+        apiRequest(`/products/search?${params.toString()}`, { token }),
+      ]);
+      setRequests((prev) => [...prev, ...(Array.isArray(reqRes?.items) ? reqRes.items : [])]);
+      setCompanies((prev) => [...prev, ...(Array.isArray(prodRes?.items) ? prodRes.items : [])]);
+      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || null);
+      setCursor(nextCursor);
+    } catch {
+      addToast("Load more failed", "Unable to load additional results", "error");
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, nextCursor, buildSearchParams, token, addToast]);
 
   useEffect(() => {
     executeSearchRef.current = executeSearch;
@@ -720,6 +939,12 @@ export default function SearchResults() {
     setLocationSuggestions([]);
     setRoleSeatText("");
     setColorText("PMS 185C");
+    setRefineQuery("");
+    setSortBy("relevance");
+    setCursor(0);
+    setNextCursor(null);
+    setImageSearchFile(null);
+    setImagePreview(null);
   }
 
   function setLocationFromSuggestion(item) {
@@ -902,7 +1127,7 @@ export default function SearchResults() {
 
   const ResultCards = () => {
     if (activeTab === "requests" || activeTab === "all") {
-      const items = requests;
+      const items = filteredRequests;
       if (items.length === 0 && !loading) {
         return (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
@@ -947,7 +1172,13 @@ export default function SearchResults() {
                 className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  <div className="flex items-start gap-2">
+                    <button
+                      onClick={() => toggleShortlist(item.id, "buyer")}
+                      className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+                    >
+                      <ArrowLeftRight className="h-3.5 w-3.5" />
+                    </button>
                     <Link
                       to={`/buyer/${item.id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
@@ -1059,7 +1290,7 @@ export default function SearchResults() {
     }
 
     if (activeTab === "companies") {
-      const items = companies;
+      const items = filteredCompanies;
       if (items.length === 0 && !loading) {
         return (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
@@ -1102,14 +1333,20 @@ export default function SearchResults() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <Link
-                    to={`/factory/${item.id}`}
-                    className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                  >
-                    {item.name || item.title || "Untitled Company"}
-                  </Link>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-2">
+                    <button
+                      onClick={() => toggleShortlist(item.id, "company")}
+                      className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "company") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+                    >
+                      <ArrowLeftRight className="h-3.5 w-3.5" />
+                    </button>
+                    <Link
+                      to={`/factory/${item.id}`}
+                      className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                    >
+                      {item.name || item.title || "Untitled Company"}
+                    </Link>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <span>{item.location || item.country || "N/A"}</span>
                     {item.type && (
@@ -1286,38 +1523,77 @@ export default function SearchResults() {
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto]">
+                  <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
                 <motion.div
                   className="relative"
                   animate={{ width: searchFocused ? '104%' : '100%' }}
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 >
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <Search className="h-5 w-5" />
+                    {searchField === "all" ? <Search className="h-5 w-5" /> : <UserSearch className="h-5 w-5" />}
                   </div>
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => setSearchFocused(false)}
-                    placeholder="Search requests, factories, products..."
-                    className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-28 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
+                    onFocus={() => { setSearchFocused(true); setSuggestionsOpen(true); }}
+                    onBlur={() => { setTimeout(() => setSuggestionsOpen(false), 200); setSearchFocused(false); }}
+                    placeholder={searchField === "buyer" ? "Search by buyer name..." : searchField === "company" ? "Search by company name..." : "Search requests, factories, products..."}
+                    className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-36 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
                   />
-                  <button
-                    onClick={() => setSearchModalOpen(true)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300"
-                  >
-                    {isMac ? "⌘K" : "Ctrl K"}
-                  </button>
+                  {suggestionsOpen && suggestions.length > 0 && (
+                    <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
+                      {suggestions.map((s) => (
+                        <button
+                          key={s}
+                          onMouseDown={() => { setQuery(s); setSuggestionsOpen(false); }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
+                        >
+                          <Search className="h-4 w-4 text-slate-400 shrink-0" />
+                          <span className="text-slate-700 dark:text-slate-200">{s}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">
+                    <button
+                      onClick={() => setSearchField((f) => f === "all" ? "buyer" : f === "buyer" ? "company" : "all")}
+                      className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300 hover:border-sky-300"
+                      title={`Search: ${searchField === "all" ? "All fields" : searchField === "buyer" ? "Buyer names" : "Company names"}`}
+                    >
+                      <UserSearch className="h-3.5 w-3.5 inline mr-1" />
+                      {searchField === "all" ? "All" : searchField === "buyer" ? "Buyer" : "Company"}
+                    </button>
+                    <button
+                      onClick={() => setSearchModalOpen(true)}
+                      className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300"
+                    >
+                      {isMac ? "⌘K" : "Ctrl K"}
+                    </button>
+                  </div>
                 </motion.div>
-                <button
-                  onClick={executeSearch}
-                  disabled={loading}
-                  className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  <Search className="h-5 w-5" />{" "}
-                  {loading ? <NeonAtom size={20} /> : "Search"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700">
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img src={imagePreview} alt="search" className="h-8 w-8 rounded-lg object-cover" />
+                        <button onClick={(e) => { e.preventDefault(); setImageSearchFile(null); setImagePreview(null); }} className="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <ImagePlus className="h-5 w-5" />
+                    )}
+                    <input type="file" accept="image/*" onChange={handleImageSearch} className="hidden" />
+                  </label>
+                  <button
+                    onClick={executeSearch}
+                    disabled={loading}
+                    className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    <Search className="h-5 w-5" />{" "}
+                    {loading ? <NeonAtom size={20} /> : "Search"}
+                  </button>
+                </div>
               </div>
 
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
@@ -1573,6 +1849,60 @@ export default function SearchResults() {
                             placeholder="Bangladesh, Vietnam, Turkey"
                             className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
                           />
+                        </div>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <Shirt className="h-4 w-4 inline mr-1" /> Season / Collection
+                          </label>
+                          <select
+                            value={filters.season}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                season: e.target.value,
+                              }))
+                            }
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                          >
+                            {SEASON_OPTIONS.map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <Wrench className="h-4 w-4 inline mr-1" /> Machinery / Equipment
+                          </label>
+                          <input
+                            value={filters.machinery}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                machinery: e.target.value,
+                              }))
+                            }
+                            placeholder="e.g. Dyeing, Spinning, Cutting"
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <PackageCheck className="h-4 w-4 inline mr-1" /> Availability
+                          </label>
+                          <select
+                            value={filters.stockStatus}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                stockStatus: e.target.value,
+                              }))
+                            }
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                          >
+                            {STOCK_STATUS_OPTIONS.map((opt) => (
+                              <option key={opt.key} value={opt.key}>{opt.label}</option>
+                            ))}
+                          </select>
                         </div>
                         <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                           <input
@@ -1901,31 +2231,69 @@ export default function SearchResults() {
             )}
 
             <section className="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:flex-wrap lg:justify-between">
                 <div>
                   <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                     Results
                   </h2>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Buyer requests, companies, and marketplace data.
+                    {totalResults > 0 ? `${totalResults} total results` : "Buyer requests, companies, and marketplace data."}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2">
+                    <ArrowUpDown className="h-4 w-4 text-slate-400" />
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200"
+                    >
+                      {SORT_OPTIONS.map((opt) => (
+                        <option key={opt.key} value={opt.key}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="relative flex items-center">
+                    <ScanSearch className="absolute left-3 h-4 w-4 text-slate-400" />
+                    <input
+                      value={refineQuery}
+                      onChange={(e) => setRefineQuery(e.target.value)}
+                      placeholder="Refine results..."
+                      className="w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 py-2 pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-sky-400"
+                    />
+                    {refineQuery && (
+                      <button onClick={() => setRefineQuery("")} className="absolute right-2 text-slate-400 hover:text-slate-600">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    onClick={exportCSV}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+                  >
+                    <Download className="h-4 w-4" /> CSV
+                  </button>
+                  <button
+                    onClick={() => setShowShortlist((v) => !v)}
+                    className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium ${shortlist.length > 0 ? "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300" : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200"} hover:border-sky-300 dark:hover:border-sky-700`}
+                  >
+                    <ArrowLeftRight className="h-4 w-4" /> Compare ({shortlist.length})
+                  </button>
                   <button
                     onClick={() => setViewMode("all")}
-                    className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === "all")}`}
+                    className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "all")}`}
                   >
                     All
                   </button>
                   <button
                     onClick={() => setViewMode("requests")}
-                    className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === "requests")}`}
+                    className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "requests")}`}
                   >
                     Buyer Requests
                   </button>
                   <button
                     onClick={() => setViewMode("companies")}
-                    className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === "companies")}`}
+                    className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "companies")}`}
                   >
                     Companies
                   </button>
@@ -1953,11 +2321,69 @@ export default function SearchResults() {
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                     >
                       <ResultCards />
+                      {!loading && nextCursor !== null && !refineQuery && (
+                        <div className="mt-6 flex justify-center">
+                          <button
+                            onClick={loadMore}
+                            disabled={loadingMore}
+                            className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500 disabled:opacity-60"
+                          >
+                            {loadingMore ? <NeonAtom size={20} /> : <ChevronDown className="h-4 w-4" />}
+                            {loadingMore ? "Loading..." : `Load more (${Math.max(0, totalResults - cursor - (activeTab === "companies" ? filteredCompanies.length : filteredRequests.length))} remaining)`}
+                          </button>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             </section>
+
+            {showShortlist && shortlist.length > 0 && (
+              <section className="rounded-[2rem] border border-sky-200/80 dark:border-sky-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <ArrowLeftRight className="h-5 w-5 text-sky-500" /> Compare ({shortlist.length})
+                  </h2>
+                  <button onClick={() => setShowShortlist(false)} className="text-slate-400 hover:text-slate-600">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {shortlist.map((key) => {
+                    const [type, id] = key.split(":");
+                    const item = type === "buyer"
+                      ? filteredRequests.find((r) => String(r.id) === id)
+                      : filteredCompanies.find((c) => String(c.id) === id);
+                    if (!item) return null;
+                    return (
+                      <div key={key} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="text-xs text-sky-500 font-medium uppercase">{type === "buyer" ? "Buyer Request" : "Company"}</div>
+                            <div className="mt-1 font-medium text-slate-900 dark:text-white">{item.title || item.name || "Untitled"}</div>
+                          </div>
+                          <button onClick={() => toggleShortlist(id, type)} className="text-slate-400 hover:text-red-400">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                        {item.category && <div className="mt-2 text-xs text-slate-500">Category: {item.category}</div>}
+                        {item.country && <div className="text-xs text-slate-500">Country: {item.country}</div>}
+                        {item.moq && <div className="text-xs text-slate-500">MOQ: {item.moq}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <button onClick={exportCSV} className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500">
+                    <Download className="h-4 w-4" /> Export compared
+                  </button>
+                  <button onClick={() => setShortlist([])} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-sm font-medium hover:border-red-300">
+                    Clear all
+                  </button>
+                </div>
+              </section>
+            )}
           </main>
 
           <aside className="space-y-5 xl:sticky xl:top-5 xl:h-[calc(100vh-2.5rem)] xl:overflow-auto xl:pr-1">
@@ -1991,6 +2417,22 @@ export default function SearchResults() {
                 )}
               </div>
             </SectionCard>
+
+            {trendingSearches.length > 0 && (
+              <SectionCard title="Trending Now" icon={TrendingUp}>
+                <div className="flex flex-wrap gap-2">
+                  {trendingSearches.map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => { setQuery(term); executeSearchRef.current?.(); }}
+                      className="rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-sm hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-500/10"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </SectionCard>
+            )}
 
             <SectionCard title="Shortcuts & Actions" icon={WandSparkles}>
               <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">

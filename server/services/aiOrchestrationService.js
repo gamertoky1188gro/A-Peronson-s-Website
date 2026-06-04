@@ -1,4 +1,4 @@
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { detectHallucination } from "../utils/hallucinationDetector.js";
 import { verifyExtraction } from "./aiVerifier.js";
 import { postMessage } from "./messageService.js";
@@ -24,7 +24,6 @@ If a field is unknown, use null or empty string. Return ONLY the JSON object.`;
 
   const response = await callLlama(text, systemPrompt);
   try {
-    // Robust JSON extraction from LLM response
     const match = response?.match(/\{[\s\S]*\}/);
     if (match) {
       const parsed = JSON.parse(match[0]);
@@ -102,7 +101,6 @@ export async function orchestrateRequirementExtraction(
 ) {
   const notes = String(text || "").trim();
 
-  // Use Llama for intelligent extraction
   const extracted = await extractRequirementWithLlama(notes);
 
   const missing_fields = detectMissing(extracted);
@@ -110,7 +108,6 @@ export async function orchestrateRequirementExtraction(
   const halluc = detectHallucination(extracted);
   const verification = await verifyExtraction(extracted, orgOwnerId);
 
-  // Determine thresholds (allow per-org overrides)
   let confidenceThreshold = DEFAULT_CONFIDENCE_THRESHOLD;
   let hallucinationThreshold = DEFAULT_HALLUCINATION_THRESHOLD;
   try {
@@ -189,7 +186,6 @@ export async function validateDraftResponse(
   const halluc = detectHallucination(extracted);
   const verification = await verifyExtraction(extracted);
 
-  // determine effective threshold: explicit threshold > org setting > default
   let effectiveThreshold = Number.isFinite(Number(threshold))
     ? Number(threshold)
     : null;
@@ -250,40 +246,37 @@ export async function validateDraftResponse(
 export async function persistAiMetadataForMatch(matchId, metadata = {}) {
   if (!matchId) return null;
   try {
-    const messages = await readJson("messages.json");
-    messages.push({
-      id: `ai-meta-${Date.now()}`,
-      match_id: matchId,
-      sender_id: "system:ai",
-      message: JSON.stringify({ ai_metadata: metadata }),
-      timestamp: new Date().toISOString(),
-      type: "system",
-      policy_status: "delivered",
+    await prisma.message.create({
+      data: {
+        id: `ai-meta-${Date.now()}`,
+        match_id: matchId,
+        sender_id: "system:ai",
+        message: JSON.stringify({ ai_metadata: metadata }),
+        timestamp: new Date(),
+        type: "system",
+      },
     });
-    await writeJson("messages.json", messages);
   } catch (err) {
-    // ignore write failures
     console.debug(
       "persistAiMetadataForMatch messages write failed",
       err?.message || err,
     );
   }
   try {
-    const leads = await readJson("leads.json");
-    const lead = leads.find(
-      (l) => String(l.match_id || "") === String(matchId || ""),
-    );
+    const lead = await prisma.lead.findFirst({
+      where: { match_id: String(matchId || "") },
+    });
     if (lead) {
-      const notes = await readJson("lead_notes.json");
-      notes.push({
-        id: `ai-note-${Date.now()}`,
-        lead_id: lead.id,
-        org_owner_id: lead.org_owner_id,
-        author_id: "system:ai",
-        note: `AI metadata: ${JSON.stringify(metadata)}`,
-        created_at: new Date().toISOString(),
+      await prisma.leadNote.create({
+        data: {
+          id: `ai-note-${Date.now()}`,
+          lead_id: lead.id,
+          org_owner_id: lead.org_owner_id,
+          author_id: "system:ai",
+          note: `AI metadata: ${JSON.stringify(metadata)}`,
+          created_at: new Date(),
+        },
       });
-      await writeJson("lead_notes.json", notes);
     }
   } catch (err) {
     console.debug(
@@ -307,7 +300,6 @@ export function approveReply({
   extractedRequirements = {},
   allowNumericCommitment = false,
 } = {}) {
-  // Basic safety: disallow empty draft
   const text = String(draft || "").trim();
   if (!text)
     return {
@@ -317,7 +309,6 @@ export function approveReply({
       reason: "Reply blocked: empty draft",
     };
 
-  // If numeric commitments are not allowed, block drafts that contain standalone numbers
   if (!allowNumericCommitment && /\b\d[\d,.]*\b/.test(text)) {
     return {
       approved: false,
@@ -328,7 +319,6 @@ export function approveReply({
     };
   }
 
-  // Very small heuristic: ensure extractedRequirements is an object (keeps variable used)
   const _ = extractedRequirements || {};
   return {
     approved: true,
@@ -339,7 +329,6 @@ export function approveReply({
 }
 
 export async function sendReply({ draft = "", approval = {} } = {}) {
-  // Legacy compatibility: if not approved, require human
   if (!approval?.approved)
     return {
       sent: false,
@@ -347,7 +336,6 @@ export async function sendReply({ draft = "", approval = {} } = {}) {
       message: "Draft not approved.",
     };
 
-  // If a matchId was provided in the approval metadata, attempt to post the reply into the thread
   const matchId = approval?.match_id || approval?.meta?.match_id || null;
   const senderId = approval?.sender_id || "system:ai";
   if (!matchId) {
@@ -359,7 +347,6 @@ export async function sendReply({ draft = "", approval = {} } = {}) {
     };
   }
 
-  // Enforce per-org AI settings where possible
   try {
     const orgOwnerId =
       (await resolveOrgOwnerFromMatch(matchId, senderId)) || "";
@@ -372,10 +359,9 @@ export async function sendReply({ draft = "", approval = {} } = {}) {
       };
     }
 
-    // Basic rate limiting: count system:ai messages in the last hour for this match
-    const messages = await readJson("messages.json");
+    const messages = await prisma.message.findMany();
     const cutoff = Date.now() - 60 * 60 * 1000;
-    const recent = (Array.isArray(messages) ? messages : []).filter(
+    const recent = messages.filter(
       (m) =>
         String(m.sender_id || "") === String(senderId) &&
         new Date(m.timestamp || 0).getTime() >= cutoff,
@@ -390,7 +376,6 @@ export async function sendReply({ draft = "", approval = {} } = {}) {
       };
     }
 
-    // Post message using messageService to ensure consistent metadata
     try {
       const created = await postMessage(
         matchId,
@@ -407,7 +392,6 @@ export async function sendReply({ draft = "", approval = {} } = {}) {
         payload: created,
       };
     } catch (err) {
-      // fallback: persist as ai metadata if post fails
       await persistAiMetadataForMatch(matchId, {
         draft,
         approval,
@@ -420,7 +404,6 @@ export async function sendReply({ draft = "", approval = {} } = {}) {
       };
     }
   } catch (err) {
-    // On unexpected errors, persist metadata and require manual review
     await persistAiMetadataForMatch(matchId, {
       draft,
       approval,

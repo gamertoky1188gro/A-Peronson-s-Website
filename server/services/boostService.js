@@ -1,10 +1,8 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { debitWallet } from "./walletService.js";
 import { trackEvent } from "./eventTrackingService.js";
-
-const FILE = "boosts.json";
 
 const DEFAULTS = {
   durationDays: Number(process.env.BOOST_DEFAULT_DURATION_DAYS || 7),
@@ -52,17 +50,18 @@ function isActiveBoost(boost) {
 
 export async function getActiveBoostMap(scope = "") {
   const normalizedScope = scope ? normalizeScope(scope) : "";
-  const boosts = await readJson(FILE);
-  const rows = Array.isArray(boosts) ? boosts : [];
+  const now = new Date();
+  const where = {
+    status: "active",
+    starts_at: { lte: now },
+    ends_at: { gte: now },
+  };
+  if (normalizedScope) where.scope = normalizedScope;
+
+  const boosts = await prisma.boost.findMany({ where });
   const activeByUser = {};
 
-  rows.forEach((boost) => {
-    if (!isActiveBoost(boost)) return;
-    if (
-      normalizedScope &&
-      String(boost.scope || "").toLowerCase() !== normalizedScope
-    )
-      return;
+  boosts.forEach((boost) => {
     const userId = String(boost.user_id || "");
     if (!userId) return;
     const multiplier = Number(boost.multiplier || 1);
@@ -75,25 +74,24 @@ export async function getActiveBoostMap(scope = "") {
 }
 
 export async function listBoostsForUser(userId) {
-  const boosts = await readJson(FILE);
-  return boosts
-    .filter((b) => String(b.user_id) === String(userId || ""))
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
+  return prisma.boost.findMany({
+    where: { user_id: String(userId) },
+    orderBy: { created_at: "desc" },
+  });
 }
 
 export async function getActiveBoostsForUser(userId, scope = "") {
   const normalizedScope = scope ? normalizeScope(scope) : "";
-  const boosts = await listBoostsForUser(userId);
-  return boosts.filter((b) => {
-    if (
-      normalizedScope &&
-      String(b.scope || "").toLowerCase() !== normalizedScope
-    )
-      return false;
-    return isActiveBoost(b);
-  });
+  const now = new Date();
+  const where = {
+    user_id: String(userId),
+    status: "active",
+    starts_at: { lte: now },
+    ends_at: { gte: now },
+  };
+  if (normalizedScope) where.scope = normalizedScope;
+
+  return prisma.boost.findMany({ where });
 }
 
 export async function getActiveBoostMultiplier(userId, scope = "") {
@@ -109,7 +107,6 @@ export async function getActiveBoostMultiplier(userId, scope = "") {
 }
 
 export async function purchaseBoost(userId, payload = {}) {
-  const boosts = await readJson(FILE);
   const scope = normalizeScope(payload.scope);
   const durationDays = Number(
     payload.duration_days || payload.durationDays || DEFAULTS.durationDays,
@@ -117,12 +114,18 @@ export async function purchaseBoost(userId, payload = {}) {
   const multiplier = normalizeMultiplier(payload.multiplier);
   const priceUsd = normalizePrice(payload.price_usd);
 
-  const hasActive = boosts.some(
-    (b) =>
-      String(b.user_id) === String(userId || "") &&
-      String(b.scope || "").toLowerCase() === scope &&
-      isActiveBoost(b),
-  );
+  const now = new Date();
+  const endsAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+  const hasActive = await prisma.boost.findFirst({
+    where: {
+      user_id: String(userId),
+      scope,
+      status: "active",
+      starts_at: { lte: now },
+      ends_at: { gte: now },
+    },
+  });
   if (hasActive) return "active_exists";
 
   await debitWallet({
@@ -133,22 +136,19 @@ export async function purchaseBoost(userId, payload = {}) {
     metadata: { scope, multiplier, duration_days: durationDays },
   });
 
-  const now = nowIso();
-  const row = {
-    id: crypto.randomUUID(),
-    user_id: String(userId),
-    scope,
-    multiplier,
-    status: "active",
-    starts_at: now,
-    ends_at: addDaysIso(durationDays),
-    price_usd: priceUsd,
-    created_at: now,
-    cancelled_at: null,
-  };
-
-  boosts.push(row);
-  await writeJson(FILE, boosts);
+  const row = await prisma.boost.create({
+    data: {
+      id: crypto.randomUUID(),
+      user_id: String(userId),
+      scope,
+      multiplier,
+      status: "active",
+      starts_at: now,
+      ends_at,
+      price_usd: priceUsd,
+      created_at: now,
+    },
+  });
 
   await trackEvent({
     type: "boost_purchase",
@@ -166,18 +166,17 @@ export async function purchaseBoost(userId, payload = {}) {
 }
 
 export async function cancelBoost(userId, boostId) {
-  const boosts = await readJson(FILE);
-  const idx = boosts.findIndex((b) => String(b.id) === String(boostId || ""));
-  if (idx < 0) return null;
-  if (String(boosts[idx].user_id) !== String(userId || "")) return "forbidden";
+  const boost = await prisma.boost.findUnique({ where: { id: String(boostId) } });
+  if (!boost) return null;
+  if (String(boost.user_id) !== String(userId || "")) return "forbidden";
 
-  const next = {
-    ...boosts[idx],
-    status: "cancelled",
-    cancelled_at: nowIso(),
-  };
-  boosts[idx] = next;
-  await writeJson(FILE, boosts);
+  const next = await prisma.boost.update({
+    where: { id: String(boostId) },
+    data: {
+      status: "cancelled",
+      cancelled_at: new Date(),
+    },
+  });
 
   await trackEvent({
     type: "boost_cancelled",
@@ -190,17 +189,10 @@ export async function cancelBoost(userId, boostId) {
 }
 
 export async function expireBoosts() {
-  const boosts = await readJson(FILE);
-  let changed = false;
-  const now = Date.now();
-  const next = boosts.map((b) => {
-    if (String(b.status || "").toLowerCase() !== "active") return b;
-    const endsAt = new Date(b.ends_at).getTime();
-    if (!Number.isFinite(endsAt) || endsAt >= now) return b;
-    changed = true;
-    return { ...b, status: "expired" };
+  const now = new Date();
+  await prisma.boost.updateMany({
+    where: { status: "active", ends_at: { lt: now } },
+    data: { status: "expired" },
   });
-
-  if (changed) await writeJson(FILE, next);
-  return next;
+  return prisma.boost.findMany();
 }

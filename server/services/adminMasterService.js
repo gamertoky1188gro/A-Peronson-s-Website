@@ -1,4 +1,4 @@
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { readLocalJson } from "../utils/localStore.js";
 import { getAdminConfig } from "./adminConfigService.js";
 import { getAdminAuthConfig } from "./securityService.js";
@@ -517,29 +517,29 @@ export async function getAdminMasterSummary(user) {
     refundLog,
     supportTickets,
   ] = await Promise.all([
-    readJson("users.json"),
-    readJson("verification.json"),
-    readJson("subscriptions.json"),
-    readJson("wallet_history.json"),
-    readJson("coupon_codes.json"),
-    readJson("coupon_redemptions.json"),
-    readJson("partner_requests.json"),
-    readJson("requirements.json"),
-    readJson("matches.json"),
-    readJson("documents.json"),
-    readJson("payment_proofs.json"),
-    readJson("call_sessions.json"),
-    readJson("messages.json"),
-    readJson("violations.json"),
-    readJson("notifications.json"),
-    readJson("search_alerts.json"),
-    readJson("search_usage_counters.json"),
-    readJson("assistant_knowledge.json"),
-    readJson("company_products.json"),
-    readJson("analytics.json"),
+    prisma.user.findMany(),
+    prisma.verification.findMany(),
+    prisma.subscription.findMany(),
+    prisma.walletHistory.findMany(),
+    prisma.couponCode.findMany(),
+    prisma.couponRedemption.findMany(),
+    prisma.partnerRequest.findMany(),
+    prisma.requirement.findMany(),
+    prisma.match.findMany(),
+    prisma.document.findMany(),
+    prisma.paymentProof.findMany(),
+    prisma.callSession.findMany(),
+    prisma.message.findMany(),
+    prisma.policyViolation.findMany(),
+    prisma.notification.findMany(),
+    prisma.searchAlert.findMany(),
+    prisma.searchUsageCounter.findMany(),
+    prisma.assistantKnowledge.findMany(),
+    prisma.product.findMany(),
+    prisma.analyticsEvent.findMany(),
     readLocalJson("subscription_history.json", []),
     readLocalJson("refund_log.json", []),
-    readJson("support_tickets.json"),
+    prisma.supportTicket.findMany(),
   ]);
 
   const userRows = Array.isArray(users) ? users : [];

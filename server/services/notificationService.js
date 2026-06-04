@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import {
   emitNotificationCreated,
@@ -7,14 +6,7 @@ import {
 } from "../realtime/realtimeBus.js";
 import prisma from "../utils/prisma.js";
 
-const ALERTS_FILE = "search_alerts.json";
-const NOTIFICATIONS_FILE = "notifications.json";
-const REQUIREMENTS_FILE = "requirements.json";
-const MESSAGES_FILE = "messages.json";
-const DOCUMENTS_FILE = "documents.json";
-
 export async function createNotification(userId, payload = {}) {
-  const notifications = await readJson(NOTIFICATIONS_FILE);
   const row = {
     id: crypto.randomUUID(),
     user_id: sanitizeString(String(userId || ""), 120),
@@ -24,27 +16,26 @@ export async function createNotification(userId, payload = {}) {
     message: sanitizeString(payload.message || "Notification", 240),
     meta: payload.meta && typeof payload.meta === "object" ? payload.meta : {},
     read: false,
-    created_at: new Date().toISOString(),
+    created_at: new Date(),
   };
-  notifications.push(row);
-  await writeJson(NOTIFICATIONS_FILE, notifications);
+  await prisma.notification.create({ data: row });
   emitNotificationCreated(userId, row);
   return row;
 }
 
 export async function saveSearchAlert(userId, query, filters = {}) {
-  const alerts = await readJson(ALERTS_FILE);
   const normalizedQuery = sanitizeString(query || "", 160).toLowerCase();
   if (!normalizedQuery) return null;
 
-  const existing = alerts.find(
-    (a) => a.user_id === userId && a.query === normalizedQuery,
-  );
+  const existing = await prisma.searchAlert.findFirst({
+    where: { user_id: userId, query: normalizedQuery },
+  });
   if (existing) {
-    existing.filters = filters;
-    existing.updated_at = new Date().toISOString();
-    await writeJson(ALERTS_FILE, alerts);
-    return existing;
+    const updated = await prisma.searchAlert.update({
+      where: { id: existing.id },
+      data: { filters, updated_at: new Date() },
+    });
+    return updated;
   }
 
   const row = {
@@ -52,26 +43,23 @@ export async function saveSearchAlert(userId, query, filters = {}) {
     user_id: userId,
     query: normalizedQuery,
     filters,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    created_at: new Date(),
+    updated_at: new Date(),
   };
-  alerts.push(row);
-  await writeJson(ALERTS_FILE, alerts);
+  await prisma.searchAlert.create({ data: row });
   return row;
 }
 
 export async function listMySearchAlerts(userId) {
-  const alerts = await readJson(ALERTS_FILE);
-  return alerts.filter((a) => a.user_id === userId);
+  return prisma.searchAlert.findMany({ where: { user_id: userId } });
 }
 
 export async function deleteSearchAlertForUser(userId, alertId) {
-  const alerts = await readJson(ALERTS_FILE);
-  const next = alerts.filter(
-    (a) => !(a.user_id === userId && a.id === alertId),
-  );
-  if (next.length === alerts.length) return false;
-  await writeJson(ALERTS_FILE, next);
+  const existing = await prisma.searchAlert.findFirst({
+    where: { id: alertId, user_id: userId },
+  });
+  if (!existing) return false;
+  await prisma.searchAlert.delete({ where: { id: alertId } });
   return true;
 }
 
@@ -123,14 +111,14 @@ function scoreMatch(alert, entityType, entity, payloadText) {
 }
 
 export async function emitNotificationsForEntity(entityType, entity) {
-  const alerts = await readJson(ALERTS_FILE);
-  const notifications = await readJson(NOTIFICATIONS_FILE);
+  const alerts = await prisma.searchAlert.findMany();
   const payloadText = `${entity.title || ""} ${entity.category || ""} ${entity.material || ""} ${entity.description || ""} ${entity.custom_description || ""}`;
 
+  const newNotifications = [];
   for (const alert of alerts) {
     const score = scoreMatch(alert, entityType, entity, payloadText);
     if (score < 50) continue;
-    notifications.push({
+    const row = {
       id: crypto.randomUUID(),
       user_id: alert.user_id,
       type: "smart_search_match",
@@ -139,32 +127,38 @@ export async function emitNotificationsForEntity(entityType, entity) {
       message: `New ${entityType.replace("_", " ")} matches your search: "${alert.query}"`,
       meta: { score },
       read: false,
-      created_at: new Date().toISOString(),
-    });
+      created_at: new Date(),
+    };
+    newNotifications.push(prisma.notification.create({ data: row }));
   }
 
-  await writeJson(NOTIFICATIONS_FILE, notifications);
+  if (newNotifications.length) {
+    await Promise.all(newNotifications);
+  }
 }
 
 export async function listNotifications(userId) {
-  const notifications = await readJson(NOTIFICATIONS_FILE);
-  const list = notifications.filter((n) => n.user_id === userId);
-  const ensured = await ensureMonthlySummary(userId, list, notifications);
+  const notifications = await prisma.notification.findMany({
+    where: { user_id: userId },
+    orderBy: { created_at: "desc" },
+  });
+  const ensured = await ensureMonthlySummary(userId, notifications);
   return ensured
     .filter((n) => n.user_id === userId)
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
 
 export async function markNotificationRead(userId, id) {
-  const notifications = await readJson(NOTIFICATIONS_FILE);
-  const idx = notifications.findIndex(
-    (n) => n.id === id && n.user_id === userId,
-  );
-  if (idx < 0) return null;
-  notifications[idx].read = true;
-  await writeJson(NOTIFICATIONS_FILE, notifications);
+  const existing = await prisma.notification.findFirst({
+    where: { id, user_id: userId },
+  });
+  if (!existing) return null;
+  const updated = await prisma.notification.update({
+    where: { id },
+    data: { read: true },
+  });
   emitNotificationRead(userId, id);
-  return notifications[idx];
+  return updated;
 }
 
 function monthKey(date = new Date()) {
@@ -175,37 +169,26 @@ function monthKey(date = new Date()) {
 async function ensureMonthlySummary(
   userId,
   userNotifications = [],
-  allNotifications = [],
 ) {
   const key = monthKey();
   const already = userNotifications.some(
     (n) => n.type === "monthly_summary" && String(n?.meta?.month || "") === key,
   );
-  if (already) return allNotifications;
-
-  const [requirements, messages, documents] = await Promise.all([
-    readJson(REQUIREMENTS_FILE),
-    readJson(MESSAGES_FILE),
-    readJson(DOCUMENTS_FILE),
-  ]);
+  if (already) return userNotifications;
 
   const monthStart = new Date(`${key}-01T00:00:00.000Z`);
-  const isThisMonth = (iso) => {
-    if (!iso) return false;
-    const ts = new Date(iso).getTime();
-    return Number.isFinite(ts) && ts >= monthStart.getTime();
-  };
 
-  const reqCount = (Array.isArray(requirements) ? requirements : []).filter(
-    (r) => r?.buyer_id === userId && isThisMonth(r.created_at),
-  ).length;
-  const msgCount = (Array.isArray(messages) ? messages : []).filter(
-    (m) => m?.sender_id === userId && isThisMonth(m.timestamp || m.created_at),
-  ).length;
-  const contractCount = (Array.isArray(documents) ? documents : []).filter(
-    (d) =>
-      String(d?.entity_type || "") === "contract" && isThisMonth(d.created_at),
-  ).length;
+  const [reqCount, msgCount, contractCount] = await Promise.all([
+    prisma.requirement.count({
+      where: { buyer_id: userId, created_at: { gte: monthStart } },
+    }),
+    prisma.message.count({
+      where: { sender_id: userId, timestamp: { gte: monthStart } },
+    }),
+    prisma.document.count({
+      where: { entity_type: "contract", created_at: { gte: monthStart } },
+    }),
+  ]);
 
   const summary = {
     id: crypto.randomUUID(),
@@ -221,12 +204,15 @@ async function ensureMonthlySummary(
       contracts: contractCount,
     },
     read: false,
-    created_at: new Date().toISOString(),
+    created_at: new Date(),
   };
 
-  allNotifications.push(summary);
-  await writeJson(NOTIFICATIONS_FILE, allNotifications);
-  return allNotifications;
+  await prisma.notification.create({ data: summary });
+  const all = await prisma.notification.findMany({
+    where: { user_id: userId },
+    orderBy: { created_at: "desc" },
+  });
+  return all;
 }
 
 export async function getNotificationPreferences(userId) {

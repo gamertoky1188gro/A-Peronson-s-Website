@@ -1,11 +1,7 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { trackEvent } from "./eventTrackingService.js";
-
-const FILE = "product_views.json";
-const USERS_FILE = "users.json";
-const PRODUCTS_FILE = "company_products.json";
 
 function toIsoNow() {
   return new Date().toISOString();
@@ -53,40 +49,42 @@ export async function recordView(
   const pid = sanitizeString(String(productId || ""), 120);
   if (!viewerId || !pid) return "not_found";
 
-  const products = await readJson(PRODUCTS_FILE);
-  const product = safeArray(products).find((p) => String(p.id) === pid) || null;
+  const product = await prisma.product.findUnique({ where: { id: pid } });
   if (!product) return "not_found";
 
-  const all = safeArray(await readJson(FILE));
   const now = Date.now();
   const windowMs = Math.max(1, Number(windowMinutes) || 10) * 60 * 1000;
 
-  const existingIndex = all.findIndex(
-    (row) => row.user_id === viewerId && row.product_id === pid,
-  );
-  if (existingIndex >= 0) {
-    const lastAt = new Date(all[existingIndex].viewed_at || 0).getTime();
+  const existing = await prisma.productView.findFirst({
+    where: { user_id: viewerId, product_id: pid },
+  });
+
+  if (existing) {
+    const lastAt = new Date(existing.viewed_at).getTime();
     if (Number.isFinite(lastAt) && now - lastAt < windowMs) {
       return {
         ok: true,
         deduped: true,
-        viewed_at: all[existingIndex].viewed_at,
+        viewed_at: existing.viewed_at,
       };
     }
-    all[existingIndex].viewed_at = toIsoNow();
-    all[existingIndex].updated_at = toIsoNow();
+    await prisma.productView.update({
+      where: { id: existing.id },
+      data: { viewed_at: new Date(), updated_at: new Date() },
+    });
   } else {
-    all.push({
-      id: crypto.randomUUID(),
-      user_id: viewerId,
-      product_id: pid,
-      viewed_at: toIsoNow(),
-      created_at: toIsoNow(),
-      updated_at: toIsoNow(),
+    await prisma.productView.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: viewerId,
+        product_id: pid,
+        viewed_at: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     });
   }
 
-  await writeJson(FILE, all);
   await trackEvent({
     type: "product_viewed",
     actor_id: viewerId,
@@ -113,23 +111,23 @@ export async function listMyProductViews(
   const safeLimit = Math.min(50, Math.max(1, Math.floor(Number(limit || 10))));
 
   const [views, products, users] = await Promise.all([
-    readJson(FILE),
-    readJson(PRODUCTS_FILE),
-    readJson(USERS_FILE),
+    prisma.productView.findMany({
+      where: { user_id: viewerId },
+      orderBy: { viewed_at: "desc" },
+    }),
+    prisma.product.findMany(),
+    prisma.user.findMany(),
   ]);
 
-  const viewsForUser = safeArray(views)
-    .filter((v) => v.user_id === viewerId)
-    .sort(sortNewest);
   const productsById = new Map(
-    safeArray(products).map((p) => [
+    products.map((p) => [
       String(p.id),
       normalizeProductVideoFlags(p),
     ]),
   );
-  const usersById = new Map(safeArray(users).map((u) => [String(u.id), u]));
+  const usersById = new Map(users.map((u) => [String(u.id), u]));
 
-  const pageRows = viewsForUser.slice(safeCursor, safeCursor + safeLimit);
+  const pageRows = views.slice(safeCursor, safeCursor + safeLimit);
   const items = pageRows
     .map((v) => {
       const product = productsById.get(String(v.product_id)) || null;
@@ -159,13 +157,13 @@ export async function listMyProductViews(
     .filter((row) => row.product);
 
   const nextCursor =
-    safeCursor + safeLimit < viewsForUser.length
+    safeCursor + safeLimit < views.length
       ? safeCursor + safeLimit
       : null;
   return {
     cursor: safeCursor,
     next_cursor: nextCursor,
-    total: viewsForUser.length,
+    total: views.length,
     items,
   };
 }

@@ -1,10 +1,10 @@
-import { readJson } from "../utils/jsonStore.js";
 import { readLocalJson } from "../utils/localStore.js";
 import { listContracts } from "../services/documentService.js";
 import { listReports } from "../services/reportService.js";
 import { getAdminConfig } from "../services/adminConfigService.js";
 import { listSubscriptionHistory } from "../services/subscriptionHistoryService.js";
 import { listUsers } from "../services/userService.js";
+import prisma from "../utils/prisma.js";
 
 function sortByDateDesc(rows = [], field = "created_at") {
   return [...rows].sort((a, b) =>
@@ -106,13 +106,11 @@ function parseFilter(raw) {
 }
 
 export async function listSignupsAdmin(req, res) {
-  const [users, subscriptions, verifications] = await Promise.all([
+  const [users, subRows, verificationRows] = await Promise.all([
     listUsers(),
-    readJson("subscriptions.json"),
-    readJson("verification.json"),
+    prisma.subscription.findMany(),
+    prisma.verification.findMany(),
   ]);
-  const subRows = Array.isArray(subscriptions) ? subscriptions : [];
-  const verificationRows = Array.isArray(verifications) ? verifications : [];
   const role = normalizeRole(req.query?.role);
   const status = normalizeRole(req.query?.status);
   const region = normalizeRole(req.query?.region);
@@ -160,14 +158,13 @@ export async function listSignupsAdmin(req, res) {
 
 export async function listStrikeHistoryAdmin(req, res) {
   const [violations, users] = await Promise.all([
-    readJson("violations.json"),
+    prisma.policyViolation.findMany(),
     listUsers(),
   ]);
-  const vRows = Array.isArray(violations) ? violations : [];
   const usersById = new Map(
     (Array.isArray(users) ? users : []).map((u) => [String(u.id), u]),
   );
-  const items = sortByDateDesc(vRows).map((row) => ({
+  const items = sortByDateDesc(violations).map((row) => ({
     ...row,
     user: (() => {
       const user = usersById.get(String(row.actor_id));
@@ -184,12 +181,10 @@ export async function listStrikeHistoryAdmin(req, res) {
 }
 
 export async function listFraudReviewAdmin(req, res) {
-  const [verifications, documents] = await Promise.all([
-    readJson("verification.json"),
-    readJson("documents.json"),
+  const [verificationRows, documentRows] = await Promise.all([
+    prisma.verification.findMany(),
+    prisma.document.findMany(),
   ]);
-  const verificationRows = Array.isArray(verifications) ? verifications : [];
-  const documentRows = Array.isArray(documents) ? documents : [];
   const flagged = verificationRows.filter((row) => Boolean(row.fraud_flag));
   const duplicates = buildDuplicateIndex(verificationRows, [
     "business_registration",
@@ -276,11 +271,10 @@ export async function listOrgOwnershipAdmin(req, res) {
 }
 
 export async function listWalletLedgerAdmin(req, res) {
-  const [history, refunds] = await Promise.all([
-    readJson("wallet_history.json"),
+  const [historyRows, refunds] = await Promise.all([
+    prisma.walletHistory.findMany(),
     readLocalJson("refund_log.json", []),
   ]);
-  const historyRows = Array.isArray(history) ? history : [];
   const refundRows = Array.isArray(refunds) ? refunds : [];
   const ledger = [
     ...historyRows.map((row) => ({
@@ -298,8 +292,7 @@ export async function listWalletLedgerAdmin(req, res) {
 }
 
 export async function listPartnerRequestsAdmin(req, res) {
-  const requests = await readJson("partner_requests.json");
-  const rows = Array.isArray(requests) ? requests : [];
+  const rows = await prisma.partnerRequest.findMany();
   return res.json({ items: sortByDateDesc(rows) });
 }
 
@@ -317,8 +310,7 @@ export async function listDisputesAdmin(req, res) {
 }
 
 export async function listCallsAdmin(req, res) {
-  const calls = await readJson("call_sessions.json");
-  const rows = Array.isArray(calls) ? calls : [];
+  const rows = await prisma.callSession.findMany();
   const items = sortByDateDesc(rows).map((call) => {
     const hasRecording =
       Boolean(call.recording_url) ||
@@ -334,8 +326,7 @@ export async function listCallsAdmin(req, res) {
 }
 
 export async function listPaymentProofsAdmin(req, res) {
-  const proofs = await readJson("payment_proofs.json");
-  const rows = Array.isArray(proofs) ? proofs : [];
+  const rows = await prisma.paymentProof.findMany();
   const items = sortByDateDesc(rows).map((proof) => ({
     ...proof,
     evidence_present: Boolean(
@@ -346,20 +337,17 @@ export async function listPaymentProofsAdmin(req, res) {
 }
 
 export async function listWalletHistoryAdmin(req, res) {
-  const history = await readJson("wallet_history.json");
-  const rows = Array.isArray(history) ? history : [];
+  const rows = await prisma.walletHistory.findMany();
   return res.json({ items: sortByDateDesc(rows) });
 }
 
 export async function listSearchAlertsAdmin(req, res) {
-  const alerts = await readJson("search_alerts.json");
-  const rows = Array.isArray(alerts) ? alerts : [];
+  const rows = await prisma.searchAlert.findMany();
   return res.json({ items: sortByDateDesc(rows) });
 }
 
 export async function listSearchUsageAdmin(req, res) {
-  const usage = await readJson("search_usage_counters.json");
-  const rows = Array.isArray(usage) ? usage : [];
+  const rows = await prisma.searchUsageCounter.findMany();
   const config = await getAdminConfig();
   const threshold = Number(
     config?.search_limits?.abusive_search_threshold || 120,
@@ -372,15 +360,13 @@ export async function listSearchUsageAdmin(req, res) {
 }
 
 export async function listMatchesAdmin(req, res) {
-  const matches = await readJson("matches.json");
-  const rows = Array.isArray(matches) ? matches : [];
+  const rows = await prisma.match.findMany();
   return res.json({ items: rows });
 }
 
 export async function listRequirementsAdmin(req, res) {
-  const requirements = await readJson("requirements.json");
-  const rows = Array.isArray(requirements) ? requirements : [];
-  return res.json({ items: sortByDateDesc(rows) });
+  const rows = await prisma.requirement.findMany({ orderBy: { created_at: "desc" } });
+  return res.json({ items: rows });
 }
 
 export async function listSubscriptionHistoryAdmin(req, res) {
@@ -404,14 +390,11 @@ export async function listRefundsAdmin(req, res) {
 }
 
 export async function listCouponReport(req, res) {
-  const [codes, redemptions, users] = await Promise.all([
-    readJson("coupon_codes.json"),
-    readJson("coupon_redemptions.json"),
-    readJson("users.json"),
+  const [codeRows, redemptionRows, usersRows] = await Promise.all([
+    prisma.couponCode.findMany(),
+    prisma.couponRedemption.findMany(),
+    prisma.user.findMany(),
   ]);
-  const codeRows = Array.isArray(codes) ? codes : [];
-  const redemptionRows = Array.isArray(redemptions) ? redemptions : [];
-  const usersRows = Array.isArray(users) ? users : [];
   const userById = new Map(usersRows.map((u) => [String(u.id), u]));
 
   const byCode = codeRows.map((code) => {
@@ -480,8 +463,7 @@ export async function listCouponReport(req, res) {
 }
 
 export async function listAiAuditLogs(req, res) {
-  const notes = await readJson("lead_notes.json");
-  const rows = Array.isArray(notes) ? notes : [];
+  const rows = await prisma.leadNote.findMany();
   const aiNotes = rows.filter(
     (row) =>
       String(row.note || "").startsWith("AI Summary:") ||

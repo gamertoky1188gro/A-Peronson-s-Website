@@ -4,11 +4,9 @@ import {
   PLAN_FILTER_ACCESS,
   SEARCH_CAPABILITIES,
 } from "../config/searchAccessConfig.js";
+import prisma from "../utils/prisma.js";
 import { getAdminConfig } from "./adminConfigService.js";
 import { getSubscription } from "./subscriptionService.js";
-import { readJson, writeJson } from "../utils/jsonStore.js";
-
-const USAGE_FILE = "search_usage_counters.json";
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
@@ -37,42 +35,46 @@ export function canUseAdvancedFilters(plan) {
   return allowed.includes("advanced");
 }
 
-async function getUsageRows() {
-  return readJson(USAGE_FILE);
-}
-
 async function upsertUsageRow(userId, action, dateKey, incrementBy = 0) {
-  const rows = await getUsageRows();
-  const idx = rows.findIndex(
-    (row) => row.user_id === userId && row.action === action,
-  );
+  const existing = await prisma.searchUsageCounter.findFirst({
+    where: { user_id: userId, action },
+  });
 
-  if (idx >= 0) {
+  if (existing) {
     const nextCount =
-      rows[idx].date === dateKey
-        ? Number(rows[idx].count || 0) + incrementBy
+      existing.date === dateKey
+        ? Number(existing.count || 0) + incrementBy
         : incrementBy;
-    rows[idx] = {
-      ...rows[idx],
-      date: dateKey,
-      count: Math.max(0, nextCount),
-      updated_at: new Date().toISOString(),
-      ...(rows[idx].date !== dateKey
-        ? { reset_at: new Date().toISOString() }
-        : {}),
-    };
-  } else {
-    rows.push({
+    if (existing.date !== dateKey) {
+      return prisma.searchUsageCounter.update({
+        where: { id: existing.id },
+        data: {
+          date: dateKey,
+          count: Math.max(0, nextCount),
+          updated_at: new Date(),
+          reset_at: new Date(),
+        },
+      });
+    }
+    return prisma.searchUsageCounter.update({
+      where: { id: existing.id },
+      data: {
+        date: dateKey,
+        count: Math.max(0, nextCount),
+        updated_at: new Date(),
+      },
+    });
+  }
+
+  return prisma.searchUsageCounter.create({
+    data: {
       user_id: userId,
       action,
       date: dateKey,
       count: Math.max(0, incrementBy),
-      updated_at: new Date().toISOString(),
-    });
-  }
-
-  await writeJson(USAGE_FILE, rows);
-  return rows.find((row) => row.user_id === userId && row.action === action);
+      updated_at: new Date(),
+    },
+  });
 }
 
 export async function getQuotaSnapshot(userId, action, plan) {
@@ -85,10 +87,9 @@ export async function getQuotaSnapshot(userId, action, plan) {
   const dailyLimit =
     configuredSearchDaily > 0 ? configuredSearchDaily : fallbackLimit;
   const today = todayKey();
-  const rows = await getUsageRows();
-  const usage = rows.find(
-    (row) => row.user_id === userId && row.action === action,
-  );
+  const usage = await prisma.searchUsageCounter.findFirst({
+    where: { user_id: userId, action },
+  });
 
   let used = 0;
   if (usage?.date === today) {

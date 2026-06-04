@@ -1,5 +1,5 @@
 import { appendAuditLog } from "../utils/auditStore.js";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import {
   checkAnalyticsAccessPolicy,
   getAnalyticsGovernanceConfig,
@@ -19,7 +19,7 @@ export async function exportAnalytics(req, res) {
         .json({ error: "Export not allowed", reason: decision.reason });
 
     // Read raw analytics payload and apply governance sanitization
-    const raw = await readJson("analytics.json");
+    const raw = await prisma.analyticsEvent.findMany();
 
     const adminConfig = await getAdminConfig();
     const sanitized = sanitizePlatformAnalytics(

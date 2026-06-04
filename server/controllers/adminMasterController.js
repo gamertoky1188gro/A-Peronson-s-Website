@@ -9,7 +9,7 @@ import {
 import { listUsers } from "../services/userService.js";
 import { performAdminAction } from "../services/adminActionService.js";
 import { handleControllerError } from "../utils/permissions.js";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 
 export async function adminMasterOverview(req, res) {
   const summary = await getAdminMasterSummary(req.user);
@@ -164,6 +164,50 @@ function generatePdf(data, dataset, res) {
   });
 }
 
+const DATASET_MODEL_MAP = {
+  users: () => prisma.user.findMany(),
+  requirements: () => prisma.requirement.findMany(),
+  company_products: () => prisma.product.findMany(),
+  messages: () => prisma.message.findMany(),
+  notifications: () => prisma.notification.findMany(),
+  search_alerts: () => prisma.searchAlert.findMany(),
+  documents: () => prisma.document.findMany(),
+  leads: () => prisma.lead.findMany(),
+  feed_posts: () => prisma.feedPost.findMany(),
+  boost: () => prisma.boost.findMany(),
+  matches: () => prisma.match.findMany(),
+  conversation_locks: () => prisma.conversationLock.findMany(),
+  partner_requests: () => prisma.partnerRequest.findMany(),
+  call_sessions: () => prisma.callSession.findMany(),
+  call_recording_views: () => prisma.callRecordingView.findMany(),
+  product_views: () => prisma.productView.findMany(),
+  subscriptions: () => prisma.subscription.findMany(),
+  violations: () => prisma.policyViolation.findMany(),
+  ratings: () => prisma.rating.findMany(),
+  social_interactions: () => prisma.socialInteraction.findMany(),
+  user_connections: () => prisma.userConnection.findMany(),
+  lead_notes: () => prisma.leadNote.findMany(),
+  lead_reminders: () => prisma.leadReminder.findMany(),
+  lead_assignments: () => prisma.leadAssignment.findMany(),
+  lead_sla_timers: () => prisma.leadSlaTimer.findMany(),
+  lead_escalations: () => prisma.leadEscalation.findMany(),
+  agent_workloads: () => prisma.agentWorkload.findMany(),
+  agent_capacity: () => prisma.agentCapacity.findMany(),
+  analytics: () => prisma.analyticsEvent.findMany(),
+  wallet_history: () => prisma.walletHistory.findMany(),
+  coupon_codes: () => prisma.couponCode.findMany(),
+  coupon_redemptions: () => prisma.couponRedemption.findMany(),
+  reports: () => prisma.report.findMany(),
+  org_policies: () => prisma.orgPolicy.findMany(),
+  org_ops_policies: () => prisma.orgOpsPolicy.findMany(),
+  verification: () => prisma.verification.findMany(),
+  payment_proofs: () => prisma.paymentProof.findMany(),
+  support_tickets: () => prisma.supportTicket.findMany(),
+  support_ticket_messages: () => prisma.supportTicketMessage.findMany(),
+  search_usage_counters: () => prisma.searchUsageCounter.findMany(),
+  assistant_knowledge: () => prisma.assistantKnowledge.findMany(),
+};
+
 export async function adminDataExport(req, res) {
   const dataset = String(req.query?.dataset || "").trim();
   const format = String(req.query?.format || "json").toLowerCase();
@@ -188,11 +232,9 @@ export async function adminDataExport(req, res) {
 
     data = { summary, config, users_count: users.length, recent_audit: audit };
   } else {
-    try {
-      data = await readJson(`${dataset}.json`);
-    } catch {
-      return res.status(404).json({ error: "dataset not found" });
-    }
+    const fetcher = DATASET_MODEL_MAP[dataset];
+    if (!fetcher) return res.status(404).json({ error: "dataset not found" });
+    data = await fetcher();
   }
 
   if (format === "csv") {

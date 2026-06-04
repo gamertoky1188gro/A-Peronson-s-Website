@@ -1,9 +1,6 @@
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { trackTransition } from "../utils/metrics.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
-
-const USERS_FILE = "users.json";
-const MATCHES_FILE = "matches.json";
 
 function scoreFactory(requirement, factory) {
   let score = 0;
@@ -36,10 +33,9 @@ function scoreFactory(requirement, factory) {
 }
 
 export async function generateMatchesForRequirement(requirement) {
-  const users = await readJson(USERS_FILE);
-  const factories = users.filter((u) => u.role === "factory");
+  const users = await prisma.user.findMany({ where: { role: "factory" } });
 
-  const ranked = factories
+  const ranked = users
     .map((factory) => ({
       requirement_id: requirement.id,
       factory_id: factory.id,
@@ -49,9 +45,15 @@ export async function generateMatchesForRequirement(requirement) {
     .filter((m) => m.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  const matches = await readJson(MATCHES_FILE);
-  const withoutOld = matches.filter((m) => m.requirement_id !== requirement.id);
-  await writeJson(MATCHES_FILE, [...withoutOld, ...ranked]);
+  await prisma.match.deleteMany({
+    where: { requirement_id: requirement.id },
+  });
+
+  if (ranked.length > 0) {
+    await prisma.match.createMany({
+      data: ranked,
+    });
+  }
 
   if (ranked.length > 0) {
     await recordWorkflowEvent(
@@ -65,32 +67,37 @@ export async function generateMatchesForRequirement(requirement) {
 }
 
 export async function updateMatchStatus(requirementId, factoryId, status) {
-  const matches = await readJson(MATCHES_FILE);
-  const index = matches.findIndex(
-    (m) => m.requirement_id === requirementId && m.factory_id === factoryId,
-  );
-  if (index < 0) return null;
-  const prev = matches[index].status;
-  matches[index].status = status;
-  await writeJson(MATCHES_FILE, matches);
+  const match = await prisma.match.findUnique({
+    where: {
+      requirement_id_factory_id: { requirement_id: requirementId, factory_id: factoryId },
+    },
+  });
+  if (!match) return null;
+  const prev = match.status;
+  const updated = await prisma.match.update({
+    where: {
+      requirement_id_factory_id: { requirement_id: requirementId, factory_id: factoryId },
+    },
+    data: { status },
+  });
   if (status === "accepted") {
     await trackTransition(requirementId, prev, "accepted", {
       factory_id: factoryId,
     });
   }
-  return matches[index];
+  return updated;
 }
 
 export async function listMatchesForRequirement(requirementId) {
-  const matches = await readJson(MATCHES_FILE);
-  return matches
-    .filter((m) => m.requirement_id === requirementId)
-    .sort((a, b) => b.score - a.score);
+  return prisma.match.findMany({
+    where: { requirement_id: requirementId },
+    orderBy: { score: "desc" },
+  });
 }
 
 export async function listMatchesForFactory(factoryId) {
-  const matches = await readJson(MATCHES_FILE);
-  return matches
-    .filter((m) => m.factory_id === factoryId)
-    .sort((a, b) => b.score - a.score);
+  return prisma.match.findMany({
+    where: { factory_id: factoryId },
+    orderBy: { score: "desc" },
+  });
 }

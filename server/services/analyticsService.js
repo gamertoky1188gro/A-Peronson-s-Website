@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { readJson } from "../utils/jsonStore.js";
 import prisma from "../utils/prisma.js";
 import { isCrmSqlEnabled, readLegacyJson } from "../utils/crmFallbackStore.js";
 import { getAdminConfig } from "./adminConfigService.js";
@@ -204,6 +203,7 @@ function computeResponseTimesForOrg(messages = [], orgMemberIds = new Set()) {
 
 export async function getDashboardAnalytics(user) {
   ensureAnalyticsDashboardAccess(user);
+  const days90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
   const [
     events,
@@ -215,14 +215,14 @@ export async function getDashboardAnalytics(user) {
     products,
     ratings,
   ] = await Promise.all([
-    readJson(FILE),
-    readJson("requirements.json"),
-    readJson("messages.json"),
-    readJson("matches.json"),
-    readJson("documents.json"),
-    readJson("users.json"),
-    readJson("company_products.json"),
-    readJson("ratings.json"),
+    prisma.analyticsEvent.findMany({ where: { created_at: { gte: days90 } }, take: 2000 }),
+    prisma.requirement.findMany({ where: { created_at: { gte: days90 } }, take: 500 }),
+    prisma.message.findMany({ take: 1000 }),
+    prisma.match.findMany({ take: 500 }),
+    prisma.document.findMany({ take: 500 }),
+    prisma.user.findMany({ take: 500 }),
+    prisma.product.findMany({ take: 500 }),
+    prisma.rating.findMany({ take: 500 }),
   ]);
 
   const scopedEvents = scopeAnalyticsRecords(user, events, [
@@ -609,6 +609,7 @@ export async function getDashboardAnalytics(user) {
 export async function getCompanyAnalytics(user) {
   ensureAnalyticsDashboardAccess(user);
   const plan = await getPlanForUser(user);
+  const days90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
   const [
     events,
@@ -620,14 +621,14 @@ export async function getCompanyAnalytics(user) {
     leads,
     requirements,
   ] = await Promise.all([
-    readJson(FILE),
-    readJson("company_products.json"),
-    readJson("product_views.json"),
-    readJson("messages.json"),
-    readJson("documents.json"),
-    readJson("users.json"),
-    readJson("leads.json"),
-    readJson("requirements.json"),
+    prisma.analyticsEvent.findMany({ where: { created_at: { gte: days90 } }, take: 2000 }),
+    prisma.product.findMany({ take: 500 }),
+    prisma.productView.findMany({ where: { created_at: { gte: days90 } }, take: 1000 }),
+    prisma.message.findMany({ take: 1000 }),
+    prisma.document.findMany({ take: 500 }),
+    prisma.user.findMany({ take: 500 }),
+    prisma.lead.findMany({ take: 500 }),
+    prisma.requirement.findMany({ where: { created_at: { gte: days90 } }, take: 500 }),
   ]);
 
   const actorRole = String(user?.role || "").toLowerCase();
@@ -852,10 +853,13 @@ function resolvePlatformOrgScopeId(user) {
 }
 
 async function buildPlatformAnalyticsSnapshot(governance) {
+  const retentionMs =
+    Math.max(1, Number(governance.retention_days || 365)) * 24 * 60 * 60 * 1000;
+  const cutoff = new Date(Date.now() - retentionMs);
   const [requirements, users, events] = await Promise.all([
-    readJson("requirements.json"),
-    readJson("users.json"),
-    readJson(FILE),
+    prisma.requirement.findMany({ where: { created_at: { gte: cutoff } }, take: 2000 }),
+    prisma.user.findMany({ take: 1000 }),
+    prisma.analyticsEvent.findMany({ where: { created_at: { gte: cutoff } }, take: 5000 }),
   ]);
 
   const usersById = new Map(
@@ -1355,6 +1359,7 @@ export async function getPlatformAnalyticsAdmin(user, options = {}) {
 export async function getPremiumInsights(user) {
   const plan = await getPlanForUser(user);
   if (plan !== "premium") throw forbiddenError("Premium plan required");
+  const days90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
   const role = String(user?.role || "").toLowerCase();
   const [
@@ -1367,14 +1372,14 @@ export async function getPremiumInsights(user) {
     products,
     productViews,
   ] = await Promise.all([
-    readJson("requirements.json"),
-    readJson("matches.json"),
-    readJson("messages.json"),
-    readJson("documents.json"),
-    readJson("users.json"),
-    readJson("leads.json"),
-    readJson("company_products.json"),
-    readJson("product_views.json"),
+    prisma.requirement.findMany({ where: { created_at: { gte: days90 } }, take: 1000 }),
+    prisma.match.findMany({ take: 500 }),
+    prisma.message.findMany({ take: 1000 }),
+    prisma.document.findMany({ take: 500 }),
+    prisma.user.findMany({ take: 500 }),
+    prisma.lead.findMany({ take: 500 }),
+    prisma.product.findMany({ take: 500 }),
+    prisma.productView.findMany({ where: { created_at: { gte: days90 } }, take: 1000 }),
   ]);
 
   const docs = Array.isArray(documents) ? documents : [];

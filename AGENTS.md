@@ -32,6 +32,27 @@ Pre-commit (husky) runs: Prettier → lint → test → build. If it fails, fix 
 - **Tailwind v4** (via `@tailwindcss/vite` plugin, not PostCSS). `tailwind.config.js` exists but may be legacy — check `tailwind.css` for `@import "tailwindcss"`.
 - **Jest config:** `jest.config.cjs` + `babel.config.cjs` with `babel-plugin-transform-vite-meta-env` for Vite env var compatibility.
 
+## Search page (`/search`)
+
+The search page (`src/pages/SearchResults.jsx`) features:
+
+| Feature | Implementation |
+|---|---|
+| **Sort by** | Dropdown: Relevance, Newest, Price asc/desc, MOQ asc. Passes `sort` param to backend. |
+| **Pagination** | "Load more" button using cursor-based pagination (`cursor`, `next_cursor`, `limit`). |
+| **Search suggestions** | Debounced autocomplete dropdown below search bar (queries backend + trending). |
+| **Refine within results** | Client-side text filter in results section header. |
+| **Field-specific search** | Toggle button cycles: All fields → Buyer name → Company name. Passes `field` param. |
+| **Image / visual search** | File upload button next to search bar with preview. |
+| **Compare / shortlist** | Checkbox on each card; comparison panel shows shortlisted items side-by-side. |
+| **Export CSV** | Button in results header downloads current results as CSV. |
+| **Trending searches** | Sidebar widget showing popular search terms (from analytics or fallback). |
+| **Season / Collection filter** | Dropdown in More Filters: Spring, Summer, Fall, Winter, Spring 2026, etc. |
+| **Machinery / Equipment filter** | Text input in More Filters. |
+| **Availability / Stock status** | Dropdown in More Filters: In stock, Made to order, Sample only. |
+
+**Backend sort support:** Both `requirementController.searchRequirements` and `productController.searchProducts` accept `sort` query param (`relevance`, `newest`, `price_asc`, `price_desc`, `moq_asc`) and new filter params: `season`, `machinery`, `stockStatus`.
+
 ## Key quirks
 
 - `ALLOW_DB_OFFLINE=true` allows running backend without a real PostgreSQL connection.
@@ -41,3 +62,16 @@ Pre-commit (husky) runs: Prettier → lint → test → build. If it fails, fix 
 - Server uses `node --watch` (built-in Node 20+ file watcher).
 - No explicit typecheck command — `tsc` is not run in CI.
 - `docs/` contains auto-generated API docs (run `npm run docs:generate` to rebuild).
+
+## jsonStore → Prisma conversion
+
+**COMPLETE.** All `readJson`/`writeJson`/`updateJson` calls have been replaced with direct Prisma queries. The file `server/utils/jsonStore.js` has been deleted.
+
+- ~400 calls across 60+ files → direct `prisma.model.findMany/findUnique/create/update/upsert/delete` using proper `where`, `orderBy`, `skip`/`take` clauses.
+- Filters pushed to SQL wherever possible (no more loading entire tables then filtering in JS).
+- Legacy JSON abstraction layer fully eliminated from production code.
+- **Scripts:** `scripts/debug-esign.mjs` updated to use `prisma.document.findUnique`; other scripts in `scripts/` either use their own file reader or reference jsonStore in docs text only.
+- **Tests:** 20 test files still have inert `jest.mock("../server/utils/jsonStore.js")` calls — these are harmless (jest auto-mocks a non-existent module). No functional impact.
+- `docs/` auto-generated API docs still reference jsonStore in prose; run `npm run docs:generate` to rebuild.
+
+If any test fails due to the removed module, just delete the inert `jest.mock` line — the source no longer imports from it.

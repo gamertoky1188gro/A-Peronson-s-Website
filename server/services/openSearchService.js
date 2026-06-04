@@ -1,7 +1,7 @@
 import { Client } from "@opensearch-project/opensearch";
 import chalk from "chalk";
 import { getAdminConfig } from "./adminConfigService.js";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { getBaseCurrency, normalizeMoney } from "./currencyService.js";
 
 const CONFIG_TTL_MS = 15000;
@@ -269,11 +269,9 @@ async function buildResponseTimeByOwner() {
   )
     return responseCache.map;
   const [messages, users] = await Promise.all([
-    readJson("messages.json"),
-    readJson("users.json"),
+    prisma.message.findMany(),
+    prisma.user.findMany(),
   ]);
-  const msgRows = Array.isArray(messages) ? messages : [];
-  const userRows = Array.isArray(users) ? users : [];
 
   const ownerByMember = new Map();
   for (const user of userRows) {
@@ -914,16 +912,13 @@ export async function reindexAll({ reset = false } = {}) {
   await ensureIndex(requirementsIndex, requirementMappings());
 
   const [products, requirements, users] = await Promise.all([
-    readJson("company_products.json"),
-    readJson("requirements.json"),
-    readJson("users.json"),
+    prisma.product.findMany(),
+    prisma.requirement.findMany(),
+    prisma.user.findMany(),
   ]);
 
-  const userRows = Array.isArray(users) ? users : [];
-  const usersById = new Map(userRows.map((u) => [String(u.id), u]));
+  const usersById = new Map(users.map((u) => [String(u.id), u]));
   const responseMap = await buildResponseTimeByOwner();
-
-  const productRows = Array.isArray(products) ? products : [];
   if (productRows.length) {
     const ops = [];
     for (const p of productRows) {
@@ -967,12 +962,10 @@ export async function reindexOrg(orgId) {
   await ensureOpenSearchIndices();
 
   const [products, requirements, users] = await Promise.all([
-    readJson("company_products.json"),
-    readJson("requirements.json"),
-    readJson("users.json"),
+    prisma.product.findMany(),
+    prisma.requirement.findMany(),
+    prisma.user.findMany(),
   ]);
-
-  const userRows = Array.isArray(users) ? users : [];
   const usersById = new Map(userRows.map((u) => [String(u.id), u]));
   const owner = usersById.get(String(safeOrgId)) || null;
   const author = owner?.profile ? { ...owner, ...owner.profile } : owner || {};

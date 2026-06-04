@@ -1,13 +1,9 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { canAccessContract } from "../utils/permissions.js";
 import { createNotification } from "./notificationService.js";
 import { trackEvent } from "./eventTrackingService.js";
-
-const FILE = "payment_proofs.json";
-const DOCUMENTS_FILE = "documents.json";
-const USERS_FILE = "users.json";
 
 const BANK_STATUSES = new Set(["pending_check", "received", "not_received"]);
 const LC_STATUSES = new Set(["pending_review", "accepted", "rejected"]);
@@ -68,10 +64,9 @@ function requireFields(payload, fields) {
 }
 
 async function notifyAdmins(message, meta = {}) {
-  const users = await readJson(USERS_FILE);
-  const admins = (Array.isArray(users) ? users : []).filter((u) =>
-    ["owner", "admin"].includes(String(u?.role || "").toLowerCase()),
-  );
+  const admins = await prisma.user.findMany({
+    where: { role: { in: ["owner", "admin"] } },
+  });
   for (const admin of admins) {
     await createNotification(admin.id, {
       type: "payment_proof_review",
@@ -101,8 +96,7 @@ export async function createPaymentProof(actor, payload = {}) {
     throw err;
   }
 
-  const contracts = await readJson(DOCUMENTS_FILE);
-  const contract = getContractById(contracts, contractId);
+  const contract = await prisma.document.findUnique({ where: { id: contractId } });
   if (!contract) {
     const err = new Error("Contract not found");
     err.status = 404;
@@ -168,52 +162,48 @@ export async function createPaymentProof(actor, payload = {}) {
     }
   }
 
-  const proofs = await readJson(FILE);
-  const now = new Date().toISOString();
-  const row = {
-    id: crypto.randomUUID(),
-    contract_id: contractId,
-    type,
-    status: type === "bank_transfer" ? "pending_check" : "pending_review",
-    created_by: actor.id,
-    reviewed_by: null,
-    review_reason: "",
-    transaction_reference: sanitizeString(
-      payload.transaction_reference || "",
-      160,
-    ),
-    bank_name: sanitizeString(payload.bank_name || "", 120),
-    sender_account_name: sanitizeString(payload.sender_account_name || "", 120),
-    receiver_account_name: sanitizeString(
-      payload.receiver_account_name || "",
-      120,
-    ),
-    transaction_date: normalizeDate(payload.transaction_date),
-    amount: Number(payload.amount || 0) || null,
-    currency: sanitizeString(payload.currency || "", 20),
-    lc_number: sanitizeString(payload.lc_number || "", 120),
-    issuing_bank: sanitizeString(payload.issuing_bank || "", 120),
-    advising_bank: sanitizeString(payload.advising_bank || "", 120),
-    applicant_name: sanitizeString(payload.applicant_name || "", 120),
-    beneficiary_name: sanitizeString(payload.beneficiary_name || "", 120),
-    issue_date: normalizeDate(payload.issue_date),
-    expiry_date: normalizeDate(payload.expiry_date),
-    lc_type: normalizeLcType(payload.lc_type || payload.lcType) || null,
-    usance_days: normalizeUsanceDays(
-      payload.usance_days ?? payload.usanceDays ?? payload.usance_tenor,
-    ),
-    document_id: sanitizeString(payload.document_id || "", 120) || null,
-    document_url:
-      sanitizeString(
-        payload.document_url || payload.document_path || "",
-        600,
-      ) || null,
-    created_at: now,
-    updated_at: now,
-  };
-
-  proofs.push(row);
-  await writeJson(FILE, proofs);
+  const now = new Date();
+  const row = await prisma.paymentProof.create({
+    data: {
+      id: crypto.randomUUID(),
+      contract_id: contractId,
+      type,
+      status: type === "bank_transfer" ? "pending_check" : "pending_review",
+      created_by: actor.id,
+      transaction_reference: sanitizeString(
+        payload.transaction_reference || "",
+        160,
+      ),
+      bank_name: sanitizeString(payload.bank_name || "", 120),
+      sender_account_name: sanitizeString(payload.sender_account_name || "", 120),
+      receiver_account_name: sanitizeString(
+        payload.receiver_account_name || "",
+        120,
+      ),
+      transaction_date: normalizeDate(payload.transaction_date),
+      amount: Number(payload.amount || 0) || null,
+      currency: sanitizeString(payload.currency || "", 20),
+      lc_number: sanitizeString(payload.lc_number || "", 120),
+      issuing_bank: sanitizeString(payload.issuing_bank || "", 120),
+      advising_bank: sanitizeString(payload.advising_bank || "", 120),
+      applicant_name: sanitizeString(payload.applicant_name || "", 120),
+      beneficiary_name: sanitizeString(payload.beneficiary_name || "", 120),
+      issue_date: normalizeDate(payload.issue_date),
+      expiry_date: normalizeDate(payload.expiry_date),
+      lc_type: normalizeLcType(payload.lc_type || payload.lcType) || null,
+      usance_days: normalizeUsanceDays(
+        payload.usance_days ?? payload.usanceDays ?? payload.usance_tenor,
+      ),
+      document_id: sanitizeString(payload.document_id || "", 120) || null,
+      document_url:
+        sanitizeString(
+          payload.document_url || payload.document_path || "",
+          600,
+        ) || null,
+      created_at: now,
+      updated_at: now,
+    },
+  });
 
   const counterpartyId =
     String(actor.id || "") === String(contract.buyer_id || "")
@@ -243,8 +233,7 @@ export async function listPaymentProofsByContract(actor, contractId) {
   const id = sanitizeString(contractId || "", 120);
   if (!id) return [];
 
-  const contracts = await readJson(DOCUMENTS_FILE);
-  const contract = getContractById(contracts, id);
+  const contract = await prisma.document.findUnique({ where: { id } });
   if (!contract) return [];
   if (!ensureContractAccess(actor, contract)) {
     const err = new Error("Forbidden");
@@ -252,24 +241,20 @@ export async function listPaymentProofsByContract(actor, contractId) {
     throw err;
   }
 
-  const proofs = await readJson(FILE);
-  return (Array.isArray(proofs) ? proofs : [])
-    .filter((row) => String(row.contract_id || "") === id)
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
+  return prisma.paymentProof.findMany({
+    where: { contract_id: id },
+    orderBy: { created_at: "desc" },
+  });
 }
 
 export async function updatePaymentProof(actor, proofId, payload = {}) {
   const id = sanitizeString(proofId || "", 120);
   if (!id) return null;
 
-  const proofs = await readJson(FILE);
-  const idx = proofs.findIndex((row) => String(row.id || "") === id);
-  if (idx < 0) return null;
+  const proof = await prisma.paymentProof.findUnique({ where: { id } });
+  if (!proof) return null;
 
-  const contracts = await readJson(DOCUMENTS_FILE);
-  const contract = getContractById(contracts, proofs[idx].contract_id);
+  const contract = await prisma.document.findUnique({ where: { id: proof.contract_id } });
   if (!contract) return null;
   if (!ensureContractAccess(actor, contract)) {
     const err = new Error("Forbidden");
@@ -277,7 +262,7 @@ export async function updatePaymentProof(actor, proofId, payload = {}) {
     throw err;
   }
 
-  const type = normalizeType(proofs[idx].type);
+  const type = normalizeType(proof.type);
   const nextStatus = String(payload.status || "")
     .toLowerCase()
     .trim();
@@ -288,17 +273,15 @@ export async function updatePaymentProof(actor, proofId, payload = {}) {
     throw err;
   }
 
-  const now = new Date().toISOString();
-  const next = {
-    ...proofs[idx],
-    status: nextStatus,
-    reviewed_by: actor.id,
-    review_reason: sanitizeString(payload.review_reason || "", 200),
-    updated_at: now,
-  };
-
-  proofs[idx] = next;
-  await writeJson(FILE, proofs);
+  const next = await prisma.paymentProof.update({
+    where: { id },
+    data: {
+      status: nextStatus,
+      reviewed_by: actor.id,
+      review_reason: sanitizeString(payload.review_reason || "", 200),
+      updated_at: new Date(),
+    },
+  });
 
   await trackEvent({
     type: "payment_proof_status_updated",

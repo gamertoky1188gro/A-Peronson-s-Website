@@ -1,4 +1,4 @@
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 
 const DEFAULTS = {
   auto_reply_enabled: false,
@@ -11,12 +11,9 @@ const DEFAULTS = {
 };
 
 export async function getOrgAiSettings(orgOwnerId = "") {
-  const rows = await readJson("org_ai_settings.json");
-  const found = Array.isArray(rows)
-    ? rows.find(
-        (r) => String(r.org_owner_id || "") === String(orgOwnerId || ""),
-      )
-    : null;
+  const found = await prisma.orgAiSetting.findFirst({
+    where: { org_owner_id: String(orgOwnerId || "") },
+  });
   return { ...DEFAULTS, ...(found || {}) };
 }
 

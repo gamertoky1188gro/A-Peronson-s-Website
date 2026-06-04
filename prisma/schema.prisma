@@ -1505,3 +1505,16 @@ model NotificationPreferences {
 
   @@map("notification_preferences")
 }
+
+model EmailOutbox {
+  id         String   @id
+  to         Json
+  subject    String
+  text       String?
+  html       String?
+  created_at DateTime @default(now())
+  status     String   @default("queued")
+  error      String?
+
+  @@map("email_outbox")
+}

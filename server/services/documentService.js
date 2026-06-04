@@ -1,8 +1,8 @@
 import crypto from "crypto";
 import path from "path";
 import fs from "fs/promises";
-import { readJson, writeJson, updateJson } from "../utils/jsonStore.js";
-import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
+import prisma from "../utils/prisma.js";
+
 import { sanitizeString } from "../utils/validators.js";
 import {
   canAccessContract,
@@ -17,9 +17,6 @@ import { ensureCertificationForContract } from "./certificationService.js";
 import { markLeadConvertedFromContract } from "./leadService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
 
-const FILE = "documents.json";
-const CONTRACT_AUDIT_FILE = "contract_audit.json";
-const PAYMENT_PROOFS_FILE = "payment_proofs.json";
 
 const SIGNATURE_STATES = new Set(["pending", "signed"]);
 const ARTIFACT_STATES = new Set(["draft", "generated", "locked", "archived"]);
@@ -308,7 +305,6 @@ export async function saveDocumentMetadata(
   type,
   file,
 ) {
-  const docs = await readJson(FILE);
   ensureAllowed(file);
   const moderation = getMediaModerationResult(file);
   const safeName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
@@ -324,11 +320,10 @@ export async function saveDocumentMetadata(
     type: sanitizeString(type || "other", 60),
     moderation_status: moderation.moderation_status,
     moderation_flags: moderation.flags,
-    created_at: new Date().toISOString(),
+    created_at: new Date(),
   };
 
-  docs.push(doc);
-  await writeJson(FILE, docs);
+  await prisma.document.create({ data: doc });
   if (
     doc.entity_type === "company_product" &&
     String(doc.type || "")
@@ -359,16 +354,16 @@ export async function saveDocumentMetadata(
 }
 
 async function hasAcceptedPaymentProof(contractId) {
-  const proofs = await readJson(PAYMENT_PROOFS_FILE);
-  return (Array.isArray(proofs) ? proofs : []).some((proof) => {
-    if (String(proof.contract_id || "") !== String(contractId || ""))
-      return false;
-    const type = String(proof.type || "").toLowerCase();
-    const status = String(proof.status || "").toLowerCase();
-    if (type === "bank_transfer") return status === "received";
-    if (type === "lc") return status === "accepted";
-    return false;
+  const count = await prisma.paymentProof.count({
+    where: {
+      contract_id: contractId,
+      OR: [
+        { type: "bank_transfer", status: "received" },
+        { type: "lc", status: "accepted" },
+      ],
+    },
   });
+  return count > 0;
 }
 
 async function checkPaymentProof(contractId) {
@@ -382,7 +377,6 @@ export async function registerExternalDocument(
   type,
   url,
 ) {
-  const docs = await readJson(FILE);
   const safeUrl = sanitizeString(String(url || ""), 600);
   if (!safeUrl) throw new Error("Media URL is required");
   ensureAllowedUrl(safeUrl);
@@ -397,11 +391,10 @@ export async function registerExternalDocument(
     type: sanitizeString(type || "image", 60),
     moderation_status: moderation.moderation_status,
     moderation_flags: moderation.flags,
-    created_at: new Date().toISOString(),
+    created_at: new Date(),
   };
 
-  docs.push(doc);
-  await writeJson(FILE, docs);
+  await prisma.document.create({ data: doc });
   if (
     doc.entity_type === "company_product" &&
     String(doc.type || "")
@@ -419,58 +412,49 @@ export async function registerExternalDocument(
 }
 
 export async function listDocuments(entityType, entityId) {
-  const docs = await readJson(FILE);
-  return docs.filter(
-    (d) => d.entity_type === entityType && d.entity_id === entityId,
-  );
+  return prisma.document.findMany({
+    where: { entity_type: entityType, entity_id: entityId },
+  });
 }
 
 export async function deleteDocument(docId, actor) {
-  const docs = await readJson(FILE);
-  const target = docs.find((d) => d.id === docId);
+  const target = await prisma.document.findUnique({ where: { id: docId } });
   if (!target) return false;
   if (!isOwnerOrAdmin(actor) && target.uploaded_by !== actor.id)
     return "forbidden";
 
-  const next = docs.filter((d) => d.id !== docId);
-  await writeJson(FILE, next);
+  await prisma.document.delete({ where: { id: docId } });
   return true;
 }
 
 export async function approveDocument(docId, actor) {
-  const docs = await readJson(FILE);
-  const idx = docs.findIndex((d) => d.id === docId);
-  if (idx < 0) return null;
-  const existing = docs[idx];
+  const existing = await prisma.document.findUnique({ where: { id: docId } });
+  if (!existing) return null;
   if (!isOwnerOrAdmin(actor)) return "forbidden";
 
-  docs[idx] = {
-    ...existing,
-    moderation_status: "approved",
-    moderation_reason: "",
-    moderated_by: actor.id,
-    moderated_at: toIsoNow(),
-  };
-  await writeJson(FILE, docs);
-  return docs[idx];
+  return prisma.document.update({
+    where: { id: docId },
+    data: {
+      moderation_status: "approved",
+      moderation_reason: "",
+      updated_at: new Date(),
+    },
+  });
 }
 
 export async function rejectDocument(docId, actor, reason = "") {
-  const docs = await readJson(FILE);
-  const idx = docs.findIndex((d) => d.id === docId);
-  if (idx < 0) return null;
-  const existing = docs[idx];
+  const existing = await prisma.document.findUnique({ where: { id: docId } });
+  if (!existing) return null;
   if (!isOwnerOrAdmin(actor)) return "forbidden";
 
-  docs[idx] = {
-    ...existing,
-    moderation_status: "rejected",
-    moderation_reason: reason || "Rejected by admin",
-    moderated_by: actor.id,
-    moderated_at: toIsoNow(),
-  };
-  await writeJson(FILE, docs);
-  return docs[idx];
+  return prisma.document.update({
+    where: { id: docId },
+    data: {
+      moderation_status: "rejected",
+      moderation_reason: reason || "Rejected by admin",
+      updated_at: new Date(),
+    },
+  });
 }
 
 export async function createDraftContract(actor, payload = {}) {
@@ -481,7 +465,6 @@ export async function createDraftContract(actor, payload = {}) {
   }
 
   const ownerId = actor.id;
-  const docs = await readJson(FILE);
   const contract = {
     id: crypto.randomUUID(),
     entity_type: "contract",
@@ -503,8 +486,8 @@ export async function createDraftContract(actor, payload = {}) {
     is_draft: true,
     buyer_signature_state: "pending",
     factory_signature_state: "pending",
-    buyer_signed_at: "",
-    factory_signed_at: "",
+    buyer_signed_at: null,
+    factory_signed_at: null,
     artifact: {
       pdf_path: "",
       pdf_hash: "",
@@ -521,12 +504,11 @@ export async function createDraftContract(actor, payload = {}) {
       },
     },
     uploaded_by: ownerId,
-    created_at: toIsoNow(),
-    updated_at: toIsoNow(),
+    created_at: new Date(),
+    updated_at: new Date(),
   };
   contract.lifecycle_status = normalizeContractLifecycle(contract);
-  docs.push(contract);
-  await writeJson(FILE, docs);
+  await prisma.document.create({ data: contract });
   await trackEvent({
     type: "contract_created",
     actor_id: actor.id,
@@ -559,32 +541,16 @@ async function appendContractAudit(contractId, actorId, action, metadata = {}) {
       metadata: metadata || {},
       created_at: new Date().toISOString(),
     };
-    // Use the simple JSON store in test mode to avoid hitting Prisma/DB.
-    if (process.env.NODE_ENV === "test") {
-      await updateJson(CONTRACT_AUDIT_FILE, (existing = []) => {
-        const arr = Array.isArray(existing) ? existing.slice() : [];
-        arr.push(row);
-        return arr;
-      });
-    } else {
-      await updateLocalJson(
-        CONTRACT_AUDIT_FILE,
-        (existing = []) => {
-          const arr = Array.isArray(existing) ? existing.slice() : [];
-          arr.push(row);
-          return arr;
-        },
-        [],
-      );
-    }
+    await prisma.contractAudit.create({ data: row });
   } catch {
     void 0;
   }
 }
 
 export async function listContracts(actor) {
-  const docs = await readJson(FILE);
-  const contracts = docs.filter((d) => d.entity_type === "contract");
+  const contracts = await prisma.document.findMany({
+    where: { entity_type: "contract" },
+  });
   const scoped = scopeRecordsForUser(actor, contracts, {
     idFields: ["uploaded_by", "buyer_id", "factory_id"],
     assignmentFields: ["assigned_agent_id", "agent_id"],
@@ -598,17 +564,12 @@ export async function listContracts(actor) {
 export async function listContractAudit(actor, contractId) {
   const id = sanitizeString(String(contractId || ""), 120);
   if (!id) return null;
-  const docs = await readJson(FILE);
-  const contract =
-    docs.find((d) => d.entity_type === "contract" && String(d.id) === id) ||
-    null;
+  const contract = await prisma.document.findFirst({
+    where: { id, entity_type: "contract" },
+  });
   if (!contract) return null;
   if (!canAccessContract(actor, contract)) return "forbidden";
-  // Use the lightweight JSON store during tests to avoid DB dependency/timeouts.
-  const auditRows =
-    process.env.NODE_ENV === "test"
-      ? await readJson(CONTRACT_AUDIT_FILE)
-      : await readLocalJson(CONTRACT_AUDIT_FILE, []);
+  const auditRows = await prisma.contractAudit.findMany({ where: { contract_id: id } });
   const items = (Array.isArray(auditRows) ? auditRows : [])
     .filter((row) => String(row.contract_id || "") === id)
     .sort((a, b) =>
@@ -619,12 +580,10 @@ export async function listContractAudit(actor, contractId) {
 }
 
 export async function updateContractSignatures(contractId, patch = {}, actor) {
-  const docs = await readJson(FILE);
-  const idx = docs.findIndex(
-    (d) => d.id === contractId && d.entity_type === "contract",
-  );
-  if (idx < 0) return null;
-  const existing = docs[idx];
+  const existing = await prisma.document.findFirst({
+    where: { id: contractId, entity_type: "contract" },
+  });
+  if (!existing) return null;
   if (!canModifyContract(actor, existing)) return "forbidden";
 
   const previousBuyerState = existing.buyer_signature_state;
@@ -661,7 +620,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
       nextFactoryState === "signed"
         ? existing.factory_signed_at || toIsoNow()
         : "",
-    updated_at: toIsoNow(),
+    updated_at: new Date(),
   };
 
   const bothSigned =
@@ -680,8 +639,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   }
 
   next.lifecycle_status = normalizeContractLifecycle(next);
-  docs[idx] = next;
-  await writeJson(FILE, docs);
+  await prisma.document.update({ where: { id: contractId }, data: next });
 
   if (previousBuyerState !== nextBuyerState && nextBuyerState === "signed") {
     await trackEvent({
@@ -738,12 +696,10 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
 }
 
 export async function updateContractArtifact(contractId, patch = {}, actor) {
-  const docs = await readJson(FILE);
-  const idx = docs.findIndex(
-    (d) => d.id === contractId && d.entity_type === "contract",
-  );
-  if (idx < 0) return null;
-  const existing = docs[idx];
+  const existing = await prisma.document.findFirst({
+    where: { id: contractId, entity_type: "contract" },
+  });
+  if (!existing) return null;
   if (!canModifyContract(actor, existing)) return "forbidden";
 
   const previousStatus = existing.artifact?.status || "draft";
@@ -800,8 +756,7 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
   };
 
   next.lifecycle_status = normalizeContractLifecycle(next);
-  docs[idx] = next;
-  await writeJson(FILE, docs);
+  await prisma.document.update({ where: { id: contractId }, data: next });
 
   if (previousStatus !== artifactStatus && artifactStatus === "locked") {
     await trackEvent({

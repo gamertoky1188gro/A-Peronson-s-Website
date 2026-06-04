@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { readLocalJson } from "../utils/localStore.js";
 import { getAdminConfig } from "./adminConfigService.js";
 import { readAuditLog } from "../utils/auditStore.js";
@@ -449,25 +449,25 @@ export async function getAdminCatalog() {
     assistantKnowledge,
     leadNotes,
   ] = await Promise.all([
-    readJson("users.json"),
-    readJson("verification.json"),
-    readJson("subscriptions.json"),
-    readJson("requirements.json"),
-    readJson("matches.json"),
-    readJson("documents.json"),
-    readJson("company_products.json"),
-    readJson("payment_proofs.json"),
-    readJson("call_sessions.json"),
-    readJson("messages.json"),
-    readJson("violations.json"),
-    readJson("reports.json"),
-    readJson("notifications.json"),
-    readJson("analytics.json"),
-    readJson("wallet_history.json"),
-    readJson("coupon_codes.json"),
-    readJson("coupon_redemptions.json"),
-    readJson("assistant_knowledge.json"),
-    readJson("lead_notes.json"),
+    prisma.user.findMany(),
+    prisma.verification.findMany(),
+    prisma.subscription.findMany(),
+    prisma.requirement.findMany(),
+    prisma.match.findMany(),
+    prisma.document.findMany(),
+    prisma.product.findMany(),
+    prisma.paymentProof.findMany(),
+    prisma.callSession.findMany(),
+    prisma.message.findMany(),
+    prisma.policyViolation.findMany(),
+    prisma.report.findMany(),
+    prisma.notification.findMany(),
+    prisma.analyticsEvent.findMany(),
+    prisma.walletHistory.findMany(),
+    prisma.couponCode.findMany(),
+    prisma.couponRedemption.findMany(),
+    prisma.assistantKnowledge.findMany(),
+    prisma.leadNote.findMany(),
   ]);
 
   const [
@@ -546,7 +546,7 @@ export async function getAdminCatalog() {
     ? assistantKnowledge
     : [];
   const notesRows = Array.isArray(leadNotes) ? leadNotes : [];
-  const supportTicketRows = await readJson(SUPPORT_TICKETS_FILE);
+  const supportTicketRows = await prisma.supportTicket.findMany();
   const supportTickets = Array.isArray(supportTicketRows)
     ? supportTicketRows
     : [];
@@ -594,7 +594,7 @@ export async function getAdminCatalog() {
     (c) => String(c.type || "").toLowerCase() === "early_adopter",
   );
 
-  const partnerRequests = await readJson("partner_requests.json");
+  const partnerRequests = await prisma.partnerRequest.findMany();
   const partnerRows = Array.isArray(partnerRequests) ? partnerRequests : [];
   const connectedFactories = partnerRows.filter(
     (row) => row.status === "connected",
@@ -848,8 +848,8 @@ export async function getAdminCatalog() {
         .slice(0, 8),
     },
     search: {
-      alerts: await readJson("search_alerts.json"),
-      usage: await readJson("search_usage_counters.json"),
+      alerts: await prisma.searchAlert.findMany(),
+      usage: await prisma.searchUsageCounter.findMany(),
     },
     ai: {
       knowledge_entries: knowledgeRows,

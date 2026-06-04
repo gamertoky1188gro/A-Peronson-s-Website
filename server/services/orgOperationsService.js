@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { isCrmSqlEnabled, readLegacyJson } from "../utils/crmFallbackStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import {
@@ -33,7 +33,16 @@ const DEFAULT_POLICY = {
 };
 
 async function readStore(fileName) {
-  if (USE_SQL_CRM) return readJson(fileName);
+  if (USE_SQL_CRM) {
+    switch (fileName) {
+      case "org_policies.json": return prisma.orgPolicy.findMany();
+      case "lead_assignments.json": return prisma.leadAssignment.findMany();
+      case "agent_capacity.json": return prisma.agentCapacity.findMany();
+      case "leads.json": return prisma.lead.findMany();
+      case "users.json": return prisma.user.findMany();
+      default: return [];
+    }
+  }
   return readLegacyJson(fileName);
 }
 
@@ -143,29 +152,26 @@ function computeSlaStatus(lead, policy) {
 }
 
 async function ensurePolicy(orgOwnerId) {
-  const policies = await readStore(POLICIES_FILE);
-  const existing = policies.find(
-    (policy) =>
-      String(policy.org_id || policy.org_owner_id || "") ===
-        String(orgOwnerId) &&
-      String(policy.code || "operations") === "operations",
-  );
+  const existing = await prisma.orgPolicy.findFirst({
+    where: { org_id: String(orgOwnerId), code: "operations" },
+  });
   if (existing) return existing;
 
-  const now = new Date().toISOString();
-  const created = {
-    id: crypto.randomUUID(),
-    org_id: orgOwnerId,
-    code: "operations",
-    description: "Org operations policy",
-    config: {},
-    ...DEFAULT_POLICY,
-    active: true,
-    created_at: now,
-    updated_at: now,
-  };
-
-  await writeJson(POLICIES_FILE, [...policies, created]);
+  const created = await prisma.orgPolicy.create({
+    data: {
+      id: crypto.randomUUID(),
+      org_id: String(orgOwnerId),
+      code: "operations",
+      description: "Org operations policy",
+      config: {},
+      assignment_strategy: DEFAULT_POLICY.assignment_strategy,
+      sla_targets: DEFAULT_POLICY.sla_targets,
+      escalation_windows: DEFAULT_POLICY.escalation_windows,
+      active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+  });
   return created;
 }
 
@@ -181,37 +187,32 @@ export async function updateOrgPolicies(actor, payload = {}) {
   const orgOwnerId = actorOrgOwnerId(actor);
   if (!orgOwnerId) throw forbiddenError();
 
-  const policies = await readStore(POLICIES_FILE);
-  const now = new Date().toISOString();
   const input = normalizePolicyInput(payload);
-  const index = policies.findIndex(
-    (policy) =>
-      String(policy.org_id || policy.org_owner_id || "") === orgOwnerId &&
-      String(policy.code || "operations") === "operations",
-  );
+  const existing = await prisma.orgPolicy.findFirst({
+    where: { org_id: String(orgOwnerId), code: "operations" },
+  });
 
-  const next = {
-    ...(index >= 0
-      ? policies[index]
-      : {
+  const next = existing
+    ? await prisma.orgPolicy.update({
+        where: { id: existing.id },
+        data: {
+          ...input,
+          updated_at: new Date(),
+        },
+      })
+    : await prisma.orgPolicy.create({
+        data: {
           id: crypto.randomUUID(),
-          org_id: orgOwnerId,
+          org_id: String(orgOwnerId),
           code: "operations",
           description: "Org operations policy",
           config: {},
+          ...input,
           active: true,
-          created_at: now,
-        }),
-    ...input,
-    updated_at: now,
-  };
-
-  const rows =
-    index >= 0
-      ? policies.map((row, rowIndex) => (rowIndex === index ? next : row))
-      : [...policies, next];
-
-  await writeJson(POLICIES_FILE, rows);
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      });
   return next;
 }
 
@@ -372,24 +373,52 @@ export async function rebalanceOrgQueue(actor, payload = {}) {
   });
 
   if (updatedAssignments.length) {
-    await Promise.all([
-      writeJson(LEADS_FILE, nextLeads),
-      writeJson(ASSIGNMENTS_FILE, [
-        ...(await readStore(ASSIGNMENTS_FILE)),
-        ...updatedAssignments,
-      ]),
-      writeJson(
-        CAPACITY_FILE,
-        agents.map((agent) => ({
-          id: crypto.randomUUID(),
-          org_owner_id: orgOwnerId,
-          agent_id: agent.id,
+    await prisma.lead.updateMany({
+      where: {
+        id: { in: updatedAssignments.map((a) => a.lead_id) },
+        org_owner_id: orgOwnerId,
+      },
+      data: {
+        assigned_agent_id: undefined,
+        updated_at: new Date(),
+      },
+    });
+    for (const assignment of updatedAssignments) {
+      await prisma.leadAssignment.create({ data: assignment });
+    }
+    for (const agent of agents) {
+      await prisma.agentCapacity.upsert({
+        where: {
+          agent_capacity_org_owner_id_agent_id: {
+            org_owner_id: String(orgOwnerId),
+            agent_id: String(agent.id),
+          },
+        },
+        update: {
           max_concurrent_leads: Number(capacityByAgent.get(agent.id) || 10),
           current_load: Number(loadByAgent.get(agent.id) || 0),
-          updated_at: now,
-        })),
-      ),
-    ]);
+          updated_at: new Date(),
+        },
+        create: {
+          id: crypto.randomUUID(),
+          org_owner_id: String(orgOwnerId),
+          agent_id: String(agent.id),
+          max_concurrent_leads: Number(capacityByAgent.get(agent.id) || 10),
+          current_load: Number(loadByAgent.get(agent.id) || 0),
+          updated_at: new Date(),
+        },
+      });
+    }
+
+    for (const assignment of updatedAssignments) {
+      await prisma.lead.update({
+        where: { id: assignment.lead_id },
+        data: {
+          assigned_agent_id: assignment.assigned_to || null,
+          updated_at: new Date(),
+        },
+      });
+    }
 
     await trackEvent({
       type: "queue_rebalanced",
@@ -443,10 +472,13 @@ export async function escalateOrgLead(actor, leadId, payload = {}) {
     escalation_reason: reason,
     updated_at: now,
   };
-  await writeJson(
-    LEADS_FILE,
-    leads.map((lead) => (lead.id === target.id ? escalated : lead)),
-  );
+  await prisma.lead.update({
+    where: { id: target.id },
+    data: {
+      status: "escalated",
+      updated_at: new Date(),
+    },
+  });
 
   const assignmentEvent = {
     id: crypto.randomUUID(),
@@ -456,12 +488,10 @@ export async function escalateOrgLead(actor, leadId, payload = {}) {
     assigned_to: target.assigned_agent_id || "",
     previous_assignee: target.assigned_agent_id || "",
     reason: reason || "lead_escalated",
-    assigned_at: now,
-    created_at: now,
+    assigned_at: new Date(),
+    created_at: new Date(),
   };
-
-  const history = await readStore(ASSIGNMENTS_FILE);
-  await writeJson(ASSIGNMENTS_FILE, [...history, assignmentEvent]);
+  await prisma.leadAssignment.create({ data: assignmentEvent });
 
   const sla = computeSlaStatus(escalated, policy);
   if (sla.status === "breached") {
@@ -509,56 +539,58 @@ export async function escalateOrgLead(actor, leadId, payload = {}) {
 
 export async function listLeadAssignmentHistory(actor) {
   const orgOwnerId = actorOrgOwnerId(actor);
-  const history = await readStore(ASSIGNMENTS_FILE);
-  return history
-    .filter((row) => String(row.org_owner_id || "") === orgOwnerId)
-    .sort((a, b) =>
-      String(b.assigned_at || b.created_at || "").localeCompare(
-        String(a.assigned_at || a.created_at || ""),
-      ),
-    );
+  const history = await prisma.leadAssignment.findMany({
+    where: { org_owner_id: String(orgOwnerId) },
+    orderBy: { assigned_at: "desc" },
+  });
+  return history;
 }
 
 export async function upsertAgentCapacity(actor, payload = {}) {
   if (!canManageLeadAssignments(actor))
     throw forbiddenError("Assignment manager permission required");
   const orgOwnerId = actorOrgOwnerId(actor);
-  const rows = await readStore(CAPACITY_FILE);
   const agentId = sanitizeString(String(payload.agent_id || ""), 120);
   if (!agentId) throw new Error("agent_id is required");
 
-  const now = new Date().toISOString();
-  const index = rows.findIndex(
-    (row) =>
-      String(row.agent_id || "") === agentId &&
-      String(row.org_owner_id || "") === orgOwnerId,
-  );
-  const next = {
-    ...(index >= 0
-      ? rows[index]
-      : {
-          id: crypto.randomUUID(),
-          org_owner_id: orgOwnerId,
-          agent_id: agentId,
-        }),
-    max_concurrent_leads: Math.max(
-      1,
-      Number(
-        payload.max_concurrent_leads || rows[index]?.max_concurrent_leads || 10,
-      ),
-    ),
-    current_load: Math.max(
-      0,
-      Number(payload.current_load ?? rows[index]?.current_load ?? 0),
-    ),
-    updated_at: now,
-  };
+  const existing = await prisma.agentCapacity.findFirst({
+    where: {
+      agent_id: String(agentId),
+      org_owner_id: String(orgOwnerId),
+    },
+  });
 
-  const updatedRows =
-    index >= 0
-      ? rows.map((row, rowIndex) => (rowIndex === index ? next : row))
-      : [...rows, next];
-  await writeJson(CAPACITY_FILE, updatedRows);
+  const next = existing
+    ? await prisma.agentCapacity.update({
+        where: { id: existing.id },
+        data: {
+          max_concurrent_leads: Math.max(
+            1,
+            Number(payload.max_concurrent_leads || existing.max_concurrent_leads || 10),
+          ),
+          current_load: Math.max(
+            0,
+            Number(payload.current_load ?? existing.current_load ?? 0),
+          ),
+          updated_at: new Date(),
+        },
+      })
+    : await prisma.agentCapacity.create({
+        data: {
+          id: crypto.randomUUID(),
+          org_owner_id: String(orgOwnerId),
+          agent_id: String(agentId),
+          max_concurrent_leads: Math.max(
+            1,
+            Number(payload.max_concurrent_leads || 10),
+          ),
+          current_load: Math.max(
+            0,
+            Number(payload.current_load ?? 0),
+          ),
+          updated_at: new Date(),
+        },
+      });
   return next;
 }
 

@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { updateJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import {
   sanitizePlatformAnalytics,
   getAnalyticsGovernanceConfig,
@@ -14,25 +14,30 @@ export async function exportAnalytics(user = {}, rawPayload = {}) {
     mode: "export",
   });
 
-  const auditEntryBase = {
-    id: crypto.randomUUID(),
-    type: "analytics_export",
-    actor_id: sanitizeString(String(user?.id || ""), 120) || null,
-    actor_role: String(user?.role || "").toLowerCase() || null,
-    requested_at: new Date().toISOString(),
-    allowed: Boolean(policy.allowed),
-    governance: { ...governance },
-  };
+  const auditId = crypto.randomUUID();
+  const now = new Date();
 
   // Record an audit entry regardless of outcome
   try {
-    await updateJson("event_logs.json", (existing) => {
-      const arr = Array.isArray(existing) ? existing.slice() : [];
-      arr.push({
-        ...auditEntryBase,
-        payload: policy.allowed ? rawPayload || {} : undefined,
-      });
-      return arr;
+    await prisma.eventLog.create({
+      data: {
+        id: auditId,
+        org_owner_id: sanitizeString(String(user?.id || ""), 120) || "system",
+        actor_id: sanitizeString(String(user?.id || ""), 120) || null,
+        event_type: "analytics_export",
+        entity_type: null,
+        entity_id: null,
+        payload: {
+          type: "analytics_export",
+          actor_role: String(user?.role || "").toLowerCase() || null,
+          requested_at: now.toISOString(),
+          allowed: Boolean(policy.allowed),
+          governance,
+          payload: policy.allowed ? rawPayload || {} : undefined,
+        },
+        occurred_at: now,
+        created_at: now,
+      },
     });
   } catch (e) {
     // best-effort: don't fail export on audit write error
@@ -51,27 +56,29 @@ export async function exportAnalytics(user = {}, rawPayload = {}) {
 
   // Update audit record to include sanitized result and timestamp
   try {
-    await updateJson("event_logs.json", (existing) => {
-      const arr = Array.isArray(existing) ? existing.slice() : [];
-      const idx = arr.findIndex((r) => r.id === auditEntryBase.id);
-      const now = new Date().toISOString();
-      const entry = {
-        ...auditEntryBase,
-        allowed: true,
-        completed_at: now,
-        exported_at: now,
-        result: sanitized.report || sanitized,
-      };
-      if (idx === -1) arr.push(entry);
-      else arr[idx] = entry;
-      return arr;
+    const completedAt = new Date();
+    await prisma.eventLog.update({
+      where: { id: auditId },
+      data: {
+        payload: {
+          type: "analytics_export",
+          actor_role: String(user?.role || "").toLowerCase() || null,
+          requested_at: now.toISOString(),
+          allowed: true,
+          governance,
+          completed_at: completedAt.toISOString(),
+          exported_at: completedAt.toISOString(),
+          result: sanitized.report || sanitized,
+        },
+        occurred_at: completedAt,
+      },
     });
   } catch (e) {
     // swallow
     console.debug("audit finalize failed", e?.message || e);
   }
 
-  return { export_id: auditEntryBase.id, sanitized };
+  return { export_id: auditId, sanitized };
 }
 
 export default { exportAnalytics };

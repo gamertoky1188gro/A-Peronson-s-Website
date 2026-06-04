@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { readJson, updateJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { findUserById, listUsers } from "./userService.js";
 import { recordMilestone } from "./ratingsService.js";
 import { createNotification } from "./notificationService.js";
@@ -14,7 +14,6 @@ import {
   scopeRecordsForUser,
 } from "../utils/permissions.js";
 
-const FILE = "partner_requests.json";
 const ACTIVE_STATUSES = new Set(["pending", "connected"]);
 
 async function isPremium(user) {
@@ -59,7 +58,7 @@ export async function getPartnerNetwork(user, { status } = {}) {
     throw err;
   }
 
-  const [requests, users] = await Promise.all([readJson(FILE), listUsers()]);
+  const [requests, users] = await Promise.all([prisma.partnerRequest.findMany(), listUsers()]);
   const usersById = new Map(users.map((u) => [u.id, u]));
 
   const scoped = scopeRecordsForUser(user, requests, {
@@ -94,7 +93,7 @@ export async function getIncomingPartnerRequests(user) {
     throw err;
   }
 
-  const [requests, users] = await Promise.all([readJson(FILE), listUsers()]);
+  const [requests, users] = await Promise.all([prisma.partnerRequest.findMany(), listUsers()]);
   const usersById = new Map(users.map((u) => [u.id, u]));
   const incoming = requests
     .filter(
@@ -138,43 +137,49 @@ export async function sendPartnerRequest(user, targetAccountId) {
     throw err;
   }
 
-  const now = new Date().toISOString();
   const id = crypto.randomUUID();
   const config = await getAdminConfig();
   const freePartnerLimit = Number(
     config?.plan_limits?.free?.partner_limit || 5,
   );
   const isPremiumUser = await isPremium(user);
+  const now = new Date();
 
-  const created = await updateJson(FILE, (rows) => {
-    const duplicate = rows.find(
-      (r) =>
-        ((r.requester_id === user.id && r.target_id === target.id) ||
-          (r.requester_id === target.id && r.target_id === user.id)) &&
-        (r.status === "pending" || r.status === "connected"),
+  const duplicate = await prisma.partnerRequest.findFirst({
+    where: {
+      OR: [
+        { requester_id: user.id, target_id: target.id },
+        { requester_id: target.id, target_id: user.id },
+      ],
+      status: { in: ["pending", "connected"] },
+    },
+  });
+  if (duplicate) {
+    const err = new Error(
+      "An active partner relationship/request already exists between these accounts",
     );
-    if (duplicate) {
+    err.status = 409;
+    throw err;
+  }
+
+  if (user.role === "buying_house" && !isPremiumUser) {
+    const outgoingCount = await prisma.partnerRequest.count({
+      where: {
+        requester_id: user.id,
+        status: { in: [...ACTIVE_STATUSES] },
+      },
+    });
+    if (outgoingCount >= freePartnerLimit) {
       const err = new Error(
-        "An active partner relationship/request already exists between these accounts",
+        `Upgrade to premium to send more than ${freePartnerLimit} partner requests.`,
       );
-      err.status = 409;
+      err.status = 403;
       throw err;
     }
+  }
 
-    if (user.role === "buying_house" && !isPremiumUser) {
-      const outgoing = rows.filter(
-        (r) => r.requester_id === user.id && ACTIVE_STATUSES.has(r.status),
-      );
-      if (outgoing.length >= freePartnerLimit) {
-        const err = new Error(
-          `Upgrade to premium to send more than ${freePartnerLimit} partner requests.`,
-        );
-        err.status = 403;
-        throw err;
-      }
-    }
-
-    const row = {
+  const row = await prisma.partnerRequest.create({
+    data: {
       id,
       requester_id: user.id,
       requester_role: user.role,
@@ -183,12 +188,8 @@ export async function sendPartnerRequest(user, targetAccountId) {
       status: "pending",
       created_at: now,
       updated_at: now,
-    };
-    rows.push(row);
-    return rows;
+    },
   });
-
-  const row = created.find((r) => r.id === id);
   if (row) {
     // Notify the target factory so they can accept/reject from /notifications.
     await createNotification(target.id, {
@@ -234,7 +235,6 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
   );
   const isPremiumUser = await isPremium(user);
 
-  let updatedRow = null;
   const nextStatus =
     action === "accept"
       ? "connected"
@@ -242,61 +242,56 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
         ? "rejected"
         : "cancelled";
 
-  await updateJson(FILE, (rows) => {
-    const index = rows.findIndex((r) => r.id === requestId);
-    if (index < 0) {
-      const err = new Error("Request not found");
-      err.status = 404;
+  const current = await prisma.partnerRequest.findUnique({ where: { id: requestId } });
+  if (!current) {
+    const err = new Error("Request not found");
+    err.status = 404;
+    throw err;
+  }
+  if (current.status !== "pending") {
+    const err = new Error("Only pending requests can be updated");
+    err.status = 400;
+    throw err;
+  }
+
+  if (
+    action === "accept" &&
+    String(user.role || "").toLowerCase() === "factory" &&
+    !isPremiumUser
+  ) {
+    const existingConnections = await prisma.partnerRequest.count({
+      where: { target_id: user.id, status: "connected" },
+    });
+    if (existingConnections >= freePartnerLimit) {
+      const err = new Error(
+        `Subscribe to premium to accept more than ${freePartnerLimit} partner requests.`,
+      );
+      err.status = 403;
       throw err;
     }
+  }
 
-    const current = rows[index];
-    if (current.status !== "pending") {
-      const err = new Error("Only pending requests can be updated");
-      err.status = 400;
+  if (!isAdmin) {
+    if (action === "cancel" && current.requester_id !== user.id) {
+      const err = new Error("Only requester can cancel this request");
+      err.status = 403;
       throw err;
     }
-
     if (
-      action === "accept" &&
-      String(user.role || "").toLowerCase() === "factory" &&
-      !isPremiumUser
+      (action === "accept" || action === "reject") &&
+      current.target_id !== user.id
     ) {
-      const existingConnections = rows.filter(
-        (r) => r.target_id === user.id && r.status === "connected",
-      ).length;
-      if (existingConnections >= freePartnerLimit) {
-        const err = new Error(
-          `Subscribe to premium to accept more than ${freePartnerLimit} partner requests.`,
-        );
-        err.status = 403;
-        throw err;
-      }
+      const err = new Error(
+        "Only target account can accept/reject this request",
+      );
+      err.status = 403;
+      throw err;
     }
+  }
 
-    if (!isAdmin) {
-      if (action === "cancel" && current.requester_id !== user.id) {
-        const err = new Error("Only requester can cancel this request");
-        err.status = 403;
-        throw err;
-      }
-      if (
-        (action === "accept" || action === "reject") &&
-        current.target_id !== user.id
-      ) {
-        const err = new Error(
-          "Only target account can accept/reject this request",
-        );
-        err.status = 403;
-        throw err;
-      }
-    }
-
-    const now = new Date().toISOString();
-    const next = { ...current, status: nextStatus, updated_at: now };
-    rows[index] = next;
-    updatedRow = next;
-    return rows;
+  const updatedRow = await prisma.partnerRequest.update({
+    where: { id: requestId },
+    data: { status: nextStatus, updated_at: new Date() },
   });
 
   if (updatedRow && nextStatus === "connected") {
@@ -339,52 +334,43 @@ export async function removePartnerConnection(user, connectionId) {
     throw err;
   }
 
-  let removed = null;
-  await updateJson(FILE, (rows) => {
-    const index = rows.findIndex(
-      (row) => String(row.id) === String(connectionId),
-    );
-    if (index < 0) {
-      const err = new Error("Connection not found");
-      err.status = 404;
+  const current = await prisma.partnerRequest.findUnique({ where: { id: connectionId } });
+  if (!current) {
+    const err = new Error("Connection not found");
+    err.status = 404;
+    throw err;
+  }
+  if (String(current.status || "") !== "connected") {
+    const err = new Error("Only connected rows can be removed");
+    err.status = 400;
+    throw err;
+  }
+
+  if (!isOwnerOrAdmin(user)) {
+    const mine =
+      String(current.requester_id || "") === String(user.id) ||
+      String(current.target_id || "") === String(user.id);
+    if (!mine) {
+      const err = new Error(
+        "You can only remove your own partner connections",
+      );
+      err.status = 403;
       throw err;
     }
-    const current = rows[index];
-    if (String(current.status || "") !== "connected") {
-      const err = new Error("Only connected rows can be removed");
-      err.status = 400;
-      throw err;
-    }
+  }
 
-    if (!isOwnerOrAdmin(user)) {
-      const mine =
-        String(current.requester_id || "") === String(user.id) ||
-        String(current.target_id || "") === String(user.id);
-      if (!mine) {
-        const err = new Error(
-          "You can only remove your own partner connections",
-        );
-        err.status = 403;
-        throw err;
-      }
-    }
-
-    removed = {
-      ...current,
+  return prisma.partnerRequest.update({
+    where: { id: connectionId },
+    data: {
       status: "cancelled",
-      disconnected_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    rows[index] = removed;
-    return rows;
+      updated_at: new Date(),
+    },
   });
-
-  return removed;
 }
 
 export async function enforcePartnerFreeTierLimits() {
   const [requests, users, config] = await Promise.all([
-    readJson(FILE),
+    prisma.partnerRequest.findMany(),
     listUsers(),
     getAdminConfig(),
   ]);
@@ -406,13 +392,15 @@ export async function enforcePartnerFreeTierLimits() {
   }, {});
 
   let updated = false;
-  const now = new Date().toISOString();
-  const next = rows.map((row) => {
-    if (row.status !== "connected") return row;
+  const now = new Date();
+  const updates = [];
+
+  for (const row of rows) {
+    if (row.status !== "connected") continue;
     const requester = usersById.get(String(row.requester_id));
     const target = usersById.get(String(row.target_id));
-    const requesterFree = requester && !isPremium(requester);
-    const targetFree = target && !isPremium(target);
+    const requesterFree = requester && !(await isPremium(requester));
+    const targetFree = target && !(await isPremium(target));
     const requesterActive = activeByUser[String(row.requester_id)] || [];
     const targetActive = activeByUser[String(row.target_id)] || [];
     const requesterOver =
@@ -420,15 +408,20 @@ export async function enforcePartnerFreeTierLimits() {
     const targetOver = targetFree && targetActive.length > freePartnerLimit;
     if (requesterOver || targetOver) {
       updated = true;
-      return { ...row, limit_exceeded: true, enforced_at: now };
+      updates.push(
+        prisma.partnerRequest.update({
+          where: { id: row.id },
+          data: {
+            limit_exceeded: true,
+            enforced_at: now,
+          },
+        }),
+      );
     }
-    return row.limit_exceeded
-      ? { ...row, limit_exceeded: false, enforced_at: now }
-      : row;
-  });
+  }
 
-  if (updated) {
-    await updateJson(FILE, () => next);
+  if (updates.length) {
+    await prisma.$transaction(updates);
   }
 
   return { updated, limit: freePartnerLimit };

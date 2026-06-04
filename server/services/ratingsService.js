@@ -1,12 +1,7 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 
-const FILE = "ratings.json";
-const NOTIFICATIONS_FILE = "notifications.json";
-const CALLS_FILE = "call_sessions.json";
-const DOCUMENTS_FILE = "documents.json";
-const MESSAGES_FILE = "messages.json";
 const AUTO_RATING_DAYS = Number(process.env.AUTO_RATING_DAYS || 7);
 const QUALIFICATION_RULES = [
   ["contract_signed", "communication_completed"],
@@ -31,53 +26,24 @@ function safeNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function emptyStore() {
-  return {
-    ratings: [],
-    milestones: [],
-    feedback_requests: [],
-    feedback_events: [],
-  };
-}
-
-async function readStore() {
-  const store = await readJson(FILE);
-  if (!store || typeof store !== "object" || Array.isArray(store))
-    return emptyStore();
-  return {
-    ratings: Array.isArray(store.ratings) ? store.ratings : [],
-    milestones: Array.isArray(store.milestones) ? store.milestones : [],
-    feedback_requests: Array.isArray(store.feedback_requests)
-      ? store.feedback_requests
-      : [],
-    feedback_events: Array.isArray(store.feedback_events)
-      ? store.feedback_events
-      : [],
-  };
-}
-
-async function saveStore(store) {
-  await writeJson(FILE, store);
-}
-
 async function createFeedbackRequestNotification(counterpartyId, profileKey) {
-  const notifications = await readJson(NOTIFICATIONS_FILE);
-  notifications.push({
-    id: crypto.randomUUID(),
-    user_id: counterpartyId,
-    type: "rating_feedback_request",
-    entity_type: "profile",
-    entity_id: profileKey,
-    message:
-      "A completed interaction qualifies for feedback. Please submit a rating.",
-    meta: {
-      profile_key: profileKey,
-      counterparty_id: counterpartyId,
+  await prisma.notification.create({
+    data: {
+      id: crypto.randomUUID(),
+      user_id: counterpartyId,
+      type: "rating_feedback_request",
+      entity_type: "profile",
+      entity_id: profileKey,
+      message:
+        "A completed interaction qualifies for feedback. Please submit a rating.",
+      meta: {
+        profile_key: profileKey,
+        counterparty_id: counterpartyId,
+      },
+      read: false,
+      created_at: new Date(),
     },
-    read: false,
-    created_at: new Date().toISOString(),
   });
-  await writeJson(NOTIFICATIONS_FILE, notifications);
 }
 
 function sortByCreatedAtDesc(rows) {
@@ -308,79 +274,90 @@ export async function recordMilestone({
   if (!normalizedProfile || !normalizedCounterparty || !normalizedMilestone)
     return null;
 
-  const store = await readStore();
-  const now = new Date().toISOString();
-  const existingIndex = store.milestones.findIndex(
-    (row) =>
-      row.profile_key === normalizedProfile &&
-      row.counterparty_id === normalizedCounterparty &&
-      row.interaction_type === normalizedInteractionType &&
-      row.milestone === normalizedMilestone,
-  );
+  const now = new Date();
 
-  if (existingIndex >= 0) {
-    store.milestones[existingIndex] = {
-      ...store.milestones[existingIndex],
-      status: "completed",
-      completed_at: now,
-      updated_at: now,
-      updated_by: actorId,
-    };
-  } else {
-    store.milestones.push({
-      id: crypto.randomUUID(),
+  const existing = await prisma.ratingMilestone.findFirst({
+    where: {
       profile_key: normalizedProfile,
       counterparty_id: normalizedCounterparty,
       interaction_type: normalizedInteractionType,
       milestone: normalizedMilestone,
-      status: "completed",
-      completed_at: now,
-      created_at: now,
-      updated_at: now,
-      updated_by: actorId,
+    },
+  });
+
+  if (existing) {
+    await prisma.ratingMilestone.update({
+      where: { id: existing.id },
+      data: {
+        status: "completed",
+        completed_at: now,
+        updated_at: now,
+        updated_by: actorId,
+      },
+    });
+  } else {
+    await prisma.ratingMilestone.create({
+      data: {
+        id: crypto.randomUUID(),
+        profile_key: normalizedProfile,
+        counterparty_id: normalizedCounterparty,
+        interaction_type: normalizedInteractionType,
+        milestone: normalizedMilestone,
+        status: "completed",
+        completed_at: now,
+        created_at: now,
+        updated_at: now,
+        updated_by: actorId,
+      },
     });
   }
 
-  const completed = store.milestones
-    .filter(
-      (row) =>
-        row.profile_key === normalizedProfile &&
-        row.counterparty_id === normalizedCounterparty &&
-        row.status === "completed",
-    )
-    .map((row) => row.milestone);
-  const qualifies = profileQualifiesForFeedback(completed);
+  const completed = await prisma.ratingMilestone.findMany({
+    where: {
+      profile_key: normalizedProfile,
+      counterparty_id: normalizedCounterparty,
+      status: "completed",
+    },
+  });
+  const completedMilestones = completed.map((row) => row.milestone);
+  const qualifies = profileQualifiesForFeedback(completedMilestones);
 
   let feedbackRequest = null;
   if (qualifies) {
-    const existingRequest = store.feedback_requests.find(
-      (row) =>
-        row.profile_key === normalizedProfile &&
-        row.counterparty_id === normalizedCounterparty &&
-        row.status === "pending",
-    );
+    const existingRequest = await prisma.ratingFeedbackRequest.findFirst({
+      where: {
+        profile_key: normalizedProfile,
+        counterparty_id: normalizedCounterparty,
+        status: "pending",
+      },
+    });
 
     if (!existingRequest) {
-      feedbackRequest = {
-        id: crypto.randomUUID(),
-        profile_key: normalizedProfile,
-        counterparty_id: normalizedCounterparty,
-        interaction_type: normalizedInteractionType,
-        qualification_rules: QUALIFICATION_RULES,
-        status: "pending",
-        triggered_by: actorId,
-        created_at: now,
-      };
-      store.feedback_requests.push(feedbackRequest);
-      store.feedback_events.push({
-        id: crypto.randomUUID(),
-        profile_key: normalizedProfile,
-        counterparty_id: normalizedCounterparty,
-        interaction_type: normalizedInteractionType,
-        event: "feedback_requested",
-        milestone: normalizedMilestone,
-        created_at: now,
+      feedbackRequest = await prisma.ratingFeedbackRequest.create({
+        data: {
+          id: crypto.randomUUID(),
+          profile_key: normalizedProfile,
+          counterparty_id: normalizedCounterparty,
+          interaction_type: normalizedInteractionType,
+          qualification_rules: QUALIFICATION_RULES,
+          status: "pending",
+          triggered_by: actorId,
+          created_at: now,
+        },
       });
+
+      await prisma.ratingFeedbackEvent.create({
+        data: {
+          id: crypto.randomUUID(),
+          profile_key: normalizedProfile,
+          counterparty_id: normalizedCounterparty,
+          interaction_type: normalizedInteractionType,
+          event: "feedback_requested",
+          milestone: normalizedMilestone,
+          created_at: now,
+        },
+      });
+
       await createFeedbackRequestNotification(
         normalizedCounterparty,
         normalizedProfile,
@@ -388,7 +365,6 @@ export async function recordMilestone({
     }
   }
 
-  await saveStore(store);
   return { feedback_request: feedbackRequest, qualifies };
 }
 
@@ -418,61 +394,66 @@ export async function createRating({
     throw err;
   }
 
-  const store = await readStore();
-  const pendingIdx = store.feedback_requests.findIndex(
-    (row) =>
-      row.profile_key === normalizedProfile &&
-      row.counterparty_id === normalizedFrom &&
-      row.status === "pending",
-  );
-  if (pendingIdx >= 0) {
-    store.feedback_requests[pendingIdx].status = "fulfilled";
-    store.feedback_requests[pendingIdx].fulfilled_at = new Date().toISOString();
+  const pendingRequest = await prisma.ratingFeedbackRequest.findFirst({
+    where: {
+      profile_key: normalizedProfile,
+      counterparty_id: normalizedFrom,
+      status: "pending",
+    },
+  });
+
+  if (pendingRequest) {
+    await prisma.ratingFeedbackRequest.update({
+      where: { id: pendingRequest.id },
+      data: {
+        status: "fulfilled",
+        fulfilled_at: new Date(),
+      },
+    });
   }
 
-  const rating = {
-    id: crypto.randomUUID(),
-    profile_key: normalizedProfile,
-    from_user_id: normalizedFrom,
-    interaction_type: normalizedInteractionType,
-    score: numericScore,
-    comment: normalizedComment,
-    reliability_flags: {
-      verified_counterparty: Boolean(reliabilityFlags.verified_counterparty),
-      qualified_milestone_pair: Boolean(
-        reliabilityFlags.qualified_milestone_pair,
-      ),
+  const rating = await prisma.rating.create({
+    data: {
+      id: crypto.randomUUID(),
+      profile_key: normalizedProfile,
+      from_user_id: normalizedFrom,
+      interaction_type: normalizedInteractionType,
+      score: numericScore,
+      comment: normalizedComment,
+      reliability_flags: {
+        verified_counterparty: Boolean(reliabilityFlags.verified_counterparty),
+        qualified_milestone_pair: Boolean(
+          reliabilityFlags.qualified_milestone_pair,
+        ),
+        auto_generated: Boolean(reliabilityFlags.auto_generated),
+      },
       auto_generated: Boolean(reliabilityFlags.auto_generated),
+      created_at: new Date(),
     },
-    auto_generated: Boolean(reliabilityFlags.auto_generated),
-    created_at: new Date().toISOString(),
-  };
+  });
 
-  store.ratings.push(rating);
-  await saveStore(store);
   return rating;
 }
 
 async function autoGenerateRatingsForOverdueRequests() {
-  const store = await readStore();
-  const pending = store.feedback_requests.filter(
-    (row) => row.status === "pending",
-  );
-  if (!pending.length) return store;
+  const pending = await prisma.ratingFeedbackRequest.findMany({
+    where: { status: "pending" },
+  });
+  if (!pending.length) return;
 
   const now = Date.now();
   const cutoffMs = Math.max(1, AUTO_RATING_DAYS) * 24 * 60 * 60 * 1000;
   const overdue = pending.filter((row) => {
-    const ts = new Date(row.created_at || "").getTime();
+    const ts = new Date(row.created_at).getTime();
     if (!Number.isFinite(ts)) return false;
     return now - ts >= cutoffMs;
   });
-  if (!overdue.length) return store;
+  if (!overdue.length) return;
 
   const [calls, documents, messages] = await Promise.all([
-    readJson(CALLS_FILE),
-    readJson(DOCUMENTS_FILE),
-    readJson(MESSAGES_FILE),
+    prisma.callSession.findMany(),
+    prisma.document.findMany(),
+    prisma.message.findMany(),
   ]);
 
   for (const row of overdue) {
@@ -480,14 +461,21 @@ async function autoGenerateRatingsForOverdueRequests() {
     const counterpartyId = sanitizeString(row.counterparty_id, 120);
     if (!profileKey || !counterpartyId) continue;
 
-    const alreadyRated = store.ratings.some(
-      (rating) =>
-        rating.profile_key === profileKey &&
-        String(rating.from_user_id || "") === String(counterpartyId),
-    );
+    const alreadyRated = await prisma.rating.findFirst({
+      where: {
+        profile_key: profileKey,
+        from_user_id: counterpartyId,
+      },
+    });
+
     if (alreadyRated) {
-      row.status = "fulfilled";
-      row.fulfilled_at = row.fulfilled_at || new Date().toISOString();
+      await prisma.ratingFeedbackRequest.update({
+        where: { id: row.id },
+        data: {
+          status: "fulfilled",
+          fulfilled_at: row.fulfilled_at || new Date(),
+        },
+      });
       continue;
     }
 
@@ -516,45 +504,58 @@ async function autoGenerateRatingsForOverdueRequests() {
       : 5;
     const comment = "Auto-rating (no user feedback).";
 
-    store.ratings.push({
-      id: crypto.randomUUID(),
-      profile_key: profileKey,
-      from_user_id: counterpartyId,
-      interaction_type: sanitizeString(row.interaction_type || "deal", 40),
-      score: Math.min(5, Math.max(1, Math.round(score))),
-      comment,
-      reliability_flags: {
-        verified_counterparty: false,
-        qualified_milestone_pair: false,
+    await prisma.rating.create({
+      data: {
+        id: crypto.randomUUID(),
+        profile_key: profileKey,
+        from_user_id: counterpartyId,
+        interaction_type: sanitizeString(row.interaction_type || "deal", 40),
+        score: Math.min(5, Math.max(1, Math.round(score))),
+        comment,
+        reliability_flags: {
+          verified_counterparty: false,
+          qualified_milestone_pair: false,
+          auto_generated: true,
+        },
         auto_generated: true,
+        created_at: new Date(),
       },
-      auto_generated: true,
-      created_at: new Date().toISOString(),
     });
 
-    row.status = "fulfilled";
-    row.fulfilled_at = new Date().toISOString();
-    store.feedback_events.push({
-      id: crypto.randomUUID(),
-      profile_key: profileKey,
-      counterparty_id: counterpartyId,
-      interaction_type: sanitizeString(row.interaction_type || "deal", 40),
-      event: "auto_rating",
-      milestone: "no_user_feedback",
-      created_at: new Date().toISOString(),
+    await prisma.ratingFeedbackRequest.update({
+      where: { id: row.id },
+      data: {
+        status: "fulfilled",
+        fulfilled_at: new Date(),
+      },
+    });
+
+    await prisma.ratingFeedbackEvent.create({
+      data: {
+        id: crypto.randomUUID(),
+        profile_key: profileKey,
+        counterparty_id: counterpartyId,
+        interaction_type: sanitizeString(row.interaction_type || "deal", 40),
+        event: "auto_rating",
+        milestone: "no_user_feedback",
+        created_at: new Date(),
+      },
     });
   }
-
-  await saveStore(store);
-  return store;
 }
 
 export async function getProfileRatingsSummary(profileKey) {
   const normalizedProfile = normalizeProfileKey(profileKey);
-  const store = await readStore();
-  const ratings = sortByCreatedAtDesc(
-    store.ratings.filter((row) => row.profile_key === normalizedProfile),
-  );
+  const [ratings, pendingRequestCount] = await Promise.all([
+    prisma.rating.findMany({
+      where: { profile_key: normalizedProfile },
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.ratingFeedbackRequest.count({
+      where: { profile_key: normalizedProfile, status: "pending" },
+    }),
+  ]);
+
   const recent = ratings.slice(0, RECENT_LIMIT);
   const totalCount = ratings.length;
   const average = totalCount
@@ -585,20 +586,14 @@ export async function getProfileRatingsSummary(profileKey) {
       auto_generated: Boolean(row.auto_generated),
       created_at: row.created_at,
     })),
-    feedback_requests: store.feedback_requests.filter(
-      (row) =>
-        row.profile_key === normalizedProfile && row.status === "pending",
-    ).length,
+    feedback_requests: pendingRequestCount,
   };
 }
 
 export async function updateRating({ ratingId, actorId, score, comment }) {
-  const store = await readStore();
-  const idx = store.ratings.findIndex(
-    (row) => String(row.id) === String(ratingId || ""),
-  );
-  if (idx < 0) return null;
-  if (String(store.ratings[idx].from_user_id) !== String(actorId)) {
+  const rating = await prisma.rating.findUnique({ where: { id: String(ratingId) } });
+  if (!rating) return null;
+  if (String(rating.from_user_id) !== String(actorId)) {
     const err = new Error("Only the reviewer can edit this rating");
     err.status = 403;
     throw err;
@@ -606,43 +601,33 @@ export async function updateRating({ ratingId, actorId, score, comment }) {
 
   const nextScore =
     score === undefined
-      ? store.ratings[idx].score
+      ? rating.score
       : Math.min(
           5,
-          Math.max(
-            1,
-            Math.round(safeNumber(score, store.ratings[idx].score || 0)),
-          ),
+          Math.max(1, Math.round(safeNumber(score, rating.score || 0))),
         );
   const nextComment =
     comment === undefined
-      ? store.ratings[idx].comment
+      ? rating.comment
       : sanitizeString(comment, 500);
 
-  store.ratings[idx] = {
-    ...store.ratings[idx],
-    score: nextScore,
-    comment: nextComment,
-  };
-  await saveStore(store);
-  return store.ratings[idx];
+  return prisma.rating.update({
+    where: { id: String(ratingId) },
+    data: { score: nextScore, comment: nextComment },
+  });
 }
 
 export async function deleteRating({ ratingId, actorId }) {
-  const store = await readStore();
-  const idx = store.ratings.findIndex(
-    (row) => String(row.id) === String(ratingId || ""),
-  );
-  if (idx < 0) return null;
-  if (String(store.ratings[idx].from_user_id) !== String(actorId)) {
+  const rating = await prisma.rating.findUnique({ where: { id: String(ratingId) } });
+  if (!rating) return null;
+  if (String(rating.from_user_id) !== String(actorId)) {
     const err = new Error("Only the reviewer can delete this rating");
     err.status = 403;
     throw err;
   }
 
-  const [removed] = store.ratings.splice(idx, 1);
-  await saveStore(store);
-  return removed;
+  await prisma.rating.delete({ where: { id: String(ratingId) } });
+  return rating;
 }
 
 export async function getRatingsForProfiles(profileKeys = []) {
@@ -690,23 +675,22 @@ export async function listPendingFeedbackRequestsForUser(userId) {
   const normalizedUser = sanitizeString(userId, 120);
   if (!normalizedUser) return [];
 
-  const store = await autoGenerateRatingsForOverdueRequests();
-  const pending = store.feedback_requests
-    .filter(
-      (row) =>
-        row.status === "pending" &&
-        String(row.counterparty_id || "") === normalizedUser,
-    )
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
+  await autoGenerateRatingsForOverdueRequests();
+
+  const pending = await prisma.ratingFeedbackRequest.findMany({
+    where: {
+      counterparty_id: normalizedUser,
+      status: "pending",
+    },
+    orderBy: { created_at: "desc" },
+  });
 
   if (!pending.length) return [];
 
   const [calls, documents, messages] = await Promise.all([
-    readJson(CALLS_FILE),
-    readJson(DOCUMENTS_FILE),
-    readJson(MESSAGES_FILE),
+    prisma.callSession.findMany(),
+    prisma.document.findMany(),
+    prisma.message.findMany(),
   ]);
 
   return pending.map((row) => {

@@ -1,7 +1,5 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "./jsonStore.js";
-
-const FILE = "metrics.json";
+import prisma from "./prisma.js";
 
 export async function trackTransition(
   requirementId,
@@ -9,14 +7,14 @@ export async function trackTransition(
   toStatus,
   context = {},
 ) {
-  const all = await readJson(FILE);
-  all.push({
-    id: crypto.randomUUID(),
-    requirement_id: requirementId,
-    from_status: fromStatus,
-    to_status: toStatus,
-    context,
-    created_at: new Date().toISOString(),
+  await prisma.metricTransition.create({
+    data: {
+      id: crypto.randomUUID(),
+      requirement_id: requirementId,
+      from_status: fromStatus,
+      to_status: toStatus,
+      context,
+      created_at: new Date(),
+    },
   });
-  await writeJson(FILE, all);
 }

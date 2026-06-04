@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import prisma from "../utils/prisma.js";
 import { trackEvent } from "./eventTrackingService.js";
@@ -441,9 +440,9 @@ async function evaluateClothingModeration({
 }
 
 export async function createProduct(user, payload) {
-  const [all, users] = await Promise.all([
-    readJson(FILE),
-    readJson("users.json"),
+  const [users, allProducts] = await Promise.all([
+    prisma.user.findMany(),
+    prisma.product.findMany(),
   ]);
   const { ownerId, ownerRole } = resolveProductOwner(user, users);
   const ownerUser = users.find((u) => String(u.id) === String(ownerId)) || user;
@@ -482,7 +481,7 @@ export async function createProduct(user, payload) {
 
   await enforceProductLimits({
     owner: ownerUser,
-    allProducts: all,
+    allProducts: allProducts,
     nextVideoUrl: videoUrl,
   });
 
@@ -587,8 +586,7 @@ export async function createProduct(user, payload) {
   }
 
   row.description = description;
-  all.push(row);
-  await writeJson(FILE, all);
+  await prisma.product.create({ data: row });
   try {
     await indexProduct(row, {
       ...(ownerUser || {}),
@@ -638,26 +636,22 @@ export async function createProduct(user, payload) {
 }
 
 export async function listProducts(filters = {}) {
-  const [all, documents] = await Promise.all([
-    readJson(FILE),
-    readJson("documents.json"),
-  ]);
+  const documents = await prisma.document.findMany();
   const includeDrafts = Boolean(filters.includeDrafts);
   const viewerId = filters.viewerId || "";
   const viewerRole = filters.viewerRole || "";
   const viewer = viewerId ? { id: viewerId, role: viewerRole } : {};
+
+  const where = {};
+  if (filters.category) {
+    where.category = { equals: filters.category, mode: "insensitive" };
+  }
+  if (filters.companyId) {
+    where.company_id = filters.companyId;
+  }
+
+  const all = await prisma.product.findMany({ where });
   return all
-    .filter(
-      (p) =>
-        !filters.category ||
-        String(p.category || "").toLowerCase() ===
-          String(filters.category).toLowerCase(),
-    )
-    .filter(
-      (p) =>
-        !filters.companyId ||
-        String(p.company_id) === String(filters.companyId),
-    )
     .filter((p) =>
       includeDrafts ? true : normalizeProductStatus(p.status) === "published",
     )
@@ -687,12 +681,11 @@ export async function updateProductById(actor, productId, patch = {}) {
   const id = sanitizeString(String(productId || ""), 120);
   if (!id) return null;
   const [all, documents] = await Promise.all([
-    readJson(FILE),
-    readJson("documents.json"),
+    prisma.product.findMany(),
+    prisma.document.findMany(),
   ]);
-  const idx = all.findIndex((p) => String(p.id) === id);
-  if (idx < 0) return null;
-  const existing = all[idx];
+  const existing = all.find((p) => String(p.id) === id);
+  if (!existing) return null;
   if (!canMutateProduct(actor, existing)) return "forbidden";
 
   const nextTitle =
@@ -713,8 +706,7 @@ export async function updateProductById(actor, productId, patch = {}) {
       ? sanitizeString(patch.video_url || "", 260)
       : existing.video_url;
   const ownerId = String(existing.company_id || "");
-  const users = await readJson("users.json");
-  const ownerRecord = users.find((u) => String(u.id) === ownerId) || actor;
+  const ownerRecord = await prisma.user.findUnique({ where: { id: ownerId } }) || actor;
   const addingVideo =
     !String(existing.video_url || "").trim() &&
     String(nextVideoUrl || "").trim();
@@ -900,8 +892,7 @@ export async function updateProductById(actor, productId, patch = {}) {
   next.priceBaseMax = normalizedPrice.priceBaseMax;
   next.priceNormalizedBase = normalizedPrice.priceBaseMin;
 
-  all[idx] = next;
-  await writeJson(FILE, all);
+  await prisma.product.update({ where: { id }, data: next });
   try {
     await indexProduct(next, {
       ...(ownerRecord || {}),
@@ -973,45 +964,15 @@ export async function removeProduct(actor, productId) {
   const id = sanitizeString(String(productId || ""), 120);
   if (!id) return null;
   try {
-    // Try JSON file first (fallback for some setups)
-    let existing = null;
-    try {
-      const all = await readJson(FILE);
-      existing = all.find((p) => String(p.id) === id);
-    } catch {
-      // JSON read failed, try database directly
-    }
-
-    // If not in JSON, try Prisma database
-    if (!existing) {
-      try {
-        existing = await prisma.product.findUnique({ where: { id } });
-      } catch {
-        // Database might not have the table
-      }
-    }
-
+    const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
       console.error("[deleteProduct] Product not found:", id);
       return null;
     }
 
-    // Check permission
     if (!canMutateProduct(actor, existing)) return "forbidden";
 
-    // Delete from database (Prisma)
-    try {
-      await prisma.product.delete({ where: { id } });
-    } catch {
-      // If Prisma fails, try JSON
-      try {
-        const all = await readJson(FILE);
-        const next = all.filter((p) => String(p.id) !== id);
-        await writeJson(FILE, next);
-      } catch (e) {
-        console.error("[deleteProduct] JSON fallback error:", e.message);
-      }
-    }
+    await prisma.product.delete({ where: { id } });
 
     try {
       await deleteProductIndex(id);

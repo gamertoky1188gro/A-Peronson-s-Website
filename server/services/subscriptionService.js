@@ -1,14 +1,13 @@
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import crypto from "crypto";
+import prisma from "../utils/prisma.js";
 import { recordSubscriptionEvent } from "./subscriptionHistoryService.js";
 
-const FILE = "subscriptions.json";
-
 function nowIso() {
-  return new Date().toISOString();
+  return new Date();
 }
 
 function plusDays(days) {
-  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 }
 
 function diffDaysFromNow(endDate) {
@@ -20,8 +19,7 @@ function diffDaysFromNow(endDate) {
 }
 
 export async function getSubscription(userId) {
-  const subs = await readJson(FILE);
-  return subs.find((s) => s.user_id === userId) || null;
+  return prisma.subscription.findFirst({ where: { user_id: userId } });
 }
 
 export async function upsertSubscription(
@@ -30,23 +28,35 @@ export async function upsertSubscription(
   autoRenew = true,
   meta = {},
 ) {
-  const subs = await readJson(FILE);
-  const idx = subs.findIndex((s) => s.user_id === userId);
-  const previousPlan = idx >= 0 ? subs[idx]?.plan || "" : "";
+  const existing = await prisma.subscription.findFirst({ where: { user_id: userId } });
+  const previousPlan = existing?.plan || "";
   const start = nowIso();
   const end = plan === "premium" ? plusDays(30) : plusDays(3650);
-  const next = {
-    user_id: userId,
-    plan,
-    start_date: start,
-    end_date: end,
-    auto_renew: Boolean(autoRenew),
-  };
 
-  if (idx >= 0) subs[idx] = { ...subs[idx], ...next };
-  else subs.push(next);
+  if (existing) {
+    await prisma.subscription.update({
+      where: { id: existing.id },
+      data: {
+        plan,
+        start_date: start,
+        end_date: end,
+        auto_renew: Boolean(autoRenew),
+      },
+    });
+  } else {
+    await prisma.subscription.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        plan,
+        start_date: start,
+        end_date: end,
+        auto_renew: Boolean(autoRenew),
+      },
+    });
+  }
 
-  await writeJson(FILE, subs);
+  const next = { user_id: userId, plan, start_date: start.toISOString(), end_date: end.toISOString(), auto_renew: Boolean(autoRenew) };
   const action =
     previousPlan && previousPlan !== plan
       ? plan === "premium"
@@ -66,31 +76,42 @@ export async function upsertSubscription(
 }
 
 export async function renewPremiumMonthly(userId, autoRenew = true, meta = {}) {
-  const subs = await readJson(FILE);
-  const idx = subs.findIndex((s) => s.user_id === userId);
-  const current = idx >= 0 ? subs[idx] : null;
-  const previousPlan = current?.plan || "";
+  const existing = await prisma.subscription.findFirst({ where: { user_id: userId } });
+  const previousPlan = existing?.plan || "";
 
-  const currentEndTime = new Date(current?.end_date || "").getTime();
+  const currentEndTime = existing?.end_date
+    ? new Date(existing.end_date).getTime()
+    : NaN;
   const baseTime =
     Number.isFinite(currentEndTime) && currentEndTime > Date.now()
       ? currentEndTime
       : Date.now();
-  const end = new Date(baseTime + 30 * 24 * 60 * 60 * 1000).toISOString();
+  const end = new Date(baseTime + 30 * 24 * 60 * 60 * 1000);
   const start = nowIso();
 
-  const next = {
-    user_id: userId,
-    plan: "premium",
-    start_date: start,
-    end_date: end,
-    auto_renew: Boolean(autoRenew),
-  };
+  if (existing) {
+    await prisma.subscription.update({
+      where: { id: existing.id },
+      data: {
+        plan: "premium",
+        start_date: start,
+        end_date: end,
+        auto_renew: Boolean(autoRenew),
+      },
+    });
+  } else {
+    await prisma.subscription.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        plan: "premium",
+        start_date: start,
+        end_date: end,
+        auto_renew: Boolean(autoRenew),
+      },
+    });
+  }
 
-  if (idx >= 0) subs[idx] = { ...current, ...next };
-  else subs.push(next);
-
-  await writeJson(FILE, subs);
   await recordSubscriptionEvent({
     userId,
     plan: "premium",
@@ -100,7 +121,13 @@ export async function renewPremiumMonthly(userId, autoRenew = true, meta = {}) {
     source: meta?.source || "system",
     note: meta?.note || "",
   });
-  return next;
+  return {
+    user_id: userId,
+    plan: "premium",
+    start_date: start.toISOString(),
+    end_date: end.toISOString(),
+    auto_renew: Boolean(autoRenew),
+  };
 }
 
 export async function getRemainingDays(userId) {

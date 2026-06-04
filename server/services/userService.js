@@ -1,15 +1,12 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { upsertSubscription } from "./subscriptionService.js";
 import { getAdminConfig } from "./adminConfigService.js";
 import { creditWallet, redeemCouponForUser } from "./walletService.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { reindexOrg } from "./openSearchService.js";
-
-const FILE = "users.json";
-const CONNECTION_FILE = "user_connections.json";
 
 const OPENSEARCH_REINDEX_PROFILE_KEYS = new Set([
   "country",
@@ -69,22 +66,17 @@ export function isUserPairInFriendMatch(matchId, userA, userB) {
 
 export async function isFriendConnected(userA, userB) {
   if (!userA || !userB || userA === userB) return false;
-  const rows = await readJson(CONNECTION_FILE);
-  return rows.some((row) => {
-    const samePair =
-      (row.requester_id === userA && row.receiver_id === userB) ||
-      (row.requester_id === userB && row.receiver_id === userA);
-    if (!samePair) return false;
-    const status = String(row.status || "").toLowerCase();
-    if (row.type === "friend" && ["active", "accepted"].includes(status))
-      return true;
-    if (
-      row.type === "friend_request" &&
-      ["active", "accepted"].includes(status)
-    )
-      return true;
-    return false;
+  const count = await prisma.userConnection.count({
+    where: {
+      OR: [
+        { requester_id: userA, receiver_id: userB },
+        { requester_id: userB, receiver_id: userA },
+      ],
+      type: { in: ["friend", "friend_request"] },
+      status: { in: ["active", "accepted"] },
+    },
   });
+  return count > 0;
 }
 
 function connectionSnapshot(connections, viewerId, targetId) {
@@ -142,208 +134,209 @@ function connectionSnapshot(connections, viewerId, targetId) {
 }
 
 export async function listUsers() {
-  const users = await readJson(FILE);
-  let touched = false;
-  users.forEach((user) => {
-    user.profile = { ...(user.profile || {}) };
-    if (!String(user.profile.mfa_setup_code || "").trim()) {
-      user.profile.mfa_setup_code = generateSetupCode("mfa");
-      touched = true;
+  const users = await prisma.user.findMany();
+  const updated = [];
+  for (const user of users) {
+    const profile = { ...(user.profile || {}) };
+    if (!String(profile.mfa_setup_code || "").trim()) {
+      profile.mfa_setup_code = generateSetupCode("mfa");
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { profile },
+      });
     }
-    if (!String(user.profile.stepup_setup_code || "").trim()) {
-      user.profile.stepup_setup_code = generateSetupCode("stepup");
-      touched = true;
+    if (!String(profile.stepup_setup_code || "").trim()) {
+      profile.stepup_setup_code = generateSetupCode("stepup");
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { profile },
+      });
     }
-  });
-  if (touched) {
-    await writeJson(FILE, users);
+    updated.push({ ...user, profile });
   }
-  return users.map(cleanUser);
+  return updated.map(cleanUser);
 }
 
 export async function listUsersByIds(ids = []) {
-  const users = await readJson(FILE);
-  const set = new Set((Array.isArray(ids) ? ids : []).map((id) => String(id)));
-  return users.filter((u) => set.has(String(u.id))).map(cleanUser);
+  const safeIds = (Array.isArray(ids) ? ids : []).map((id) => String(id));
+  if (!safeIds.length) return [];
+  const users = await prisma.user.findMany({
+    where: { id: { in: safeIds } },
+  });
+  return users.map(cleanUser);
 }
 
 export async function listEarlyVerifiedFactories({
   days = 30,
   limit = 20,
 } = {}) {
-  const users = await readJson(FILE);
-  const cutoff = Date.now() - Number(days || 30) * 24 * 60 * 60 * 1000;
-  const rows = users
-    .filter((u) => String(u.role || "").toLowerCase() === "factory")
-    .filter((u) => Boolean(u.verified))
-    .filter((u) => {
-      const ts = new Date(u.updated_at || u.created_at || "").getTime();
-      return Number.isFinite(ts) ? ts >= cutoff : false;
-    })
-    .sort((a, b) =>
-      String(b.updated_at || b.created_at || "").localeCompare(
-        String(a.updated_at || a.created_at || ""),
-      ),
-    )
-    .slice(0, Math.max(1, Math.min(50, Number(limit || 20))))
-    .map(cleanUser);
-
-  return rows;
+  const cutoff = new Date(Date.now() - Number(days || 30) * 24 * 60 * 60 * 1000);
+  const rows = await prisma.user.findMany({
+    where: {
+      role: "factory",
+      verified: true,
+      OR: [
+        { updated_at: { gte: cutoff } },
+        { created_at: { gte: cutoff } },
+      ],
+    },
+    orderBy: { updated_at: "desc" },
+    take: Math.max(1, Math.min(50, Number(limit || 20))),
+  });
+  return rows.map(cleanUser);
 }
 
 export async function searchUsers(viewerId, query) {
-  const users = await readJson(FILE);
-  const connections = await readJson(CONNECTION_FILE);
   const search = sanitizeString(query || "", 120)
     .trim()
     .toLowerCase();
 
-  const matches = users
-    // Agents are internal sub-accounts and should not appear in global user search suggestions.
-    .filter((user) => String(user.role || "").toLowerCase() !== "agent")
-    .filter((user) => {
-      if (!search) return true;
-      return (
-        user.name.toLowerCase().includes(search) ||
-        user.email.toLowerCase().includes(search) ||
-        String(user.role || "")
-          .toLowerCase()
-          .includes(search)
-      );
-    })
-    .slice(0, 12)
-    .map((user) => {
-      const safe = cleanUser(user);
-      const isSelf = user.id === viewerId;
-      const relation = isSelf
-        ? { following: false, friend_status: "self" }
-        : connectionSnapshot(connections, viewerId, user.id);
-      return {
-        id: safe.id,
-        name: safe.name,
-        email: safe.email,
-        role: safe.role,
-        verified: Boolean(safe.verified),
-        is_self: isSelf,
-        ...relation,
-      };
-    });
+  const where = {
+    NOT: { role: "agent" },
+  };
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { role: { contains: search, mode: "insensitive" } },
+    ];
+  }
 
-  return matches;
+  const [users, connections] = await Promise.all([
+    prisma.user.findMany({ where, take: 12 }),
+    prisma.userConnection.findMany(),
+  ]);
+
+  return users.map((user) => {
+    const safe = cleanUser(user);
+    const isSelf = user.id === viewerId;
+    const relation = isSelf
+      ? { following: false, friend_status: "self" }
+      : connectionSnapshot(connections, viewerId, user.id);
+    return {
+      id: safe.id,
+      name: safe.name,
+      email: safe.email,
+      role: safe.role,
+      verified: Boolean(safe.verified),
+      is_self: isSelf,
+      ...relation,
+    };
+  });
 }
 
 export async function followUser(viewerId, targetId) {
-  const rows = await readJson(CONNECTION_FILE);
-  const now = new Date().toISOString();
+  const existing = await prisma.userConnection.findFirst({
+    where: { type: "follow", requester_id: viewerId, receiver_id: targetId },
+  });
 
-  const existingIndex = rows.findIndex(
-    (row) =>
-      row.type === "follow" &&
-      row.requester_id === viewerId &&
-      row.receiver_id === targetId,
-  );
-  if (existingIndex >= 0) {
-    rows[existingIndex] = {
-      ...rows[existingIndex],
-      status: "active",
-      updated_at: now,
-    };
+  if (existing) {
+    await prisma.userConnection.update({
+      where: { id: existing.id },
+      data: { status: "active", updated_at: new Date() },
+    });
   } else {
-    rows.push({
-      id: crypto.randomUUID(),
-      type: "follow",
-      requester_id: viewerId,
-      receiver_id: targetId,
-      status: "active",
-      created_at: now,
-      updated_at: now,
+    await prisma.userConnection.create({
+      data: {
+        id: crypto.randomUUID(),
+        type: "follow",
+        requester_id: viewerId,
+        receiver_id: targetId,
+        status: "active",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     });
   }
 
-  await writeJson(CONNECTION_FILE, rows);
+  const rows = await prisma.userConnection.findMany();
   return connectionSnapshot(rows, viewerId, targetId);
 }
 
 export async function sendFriendRequest(viewerId, targetId) {
-  const rows = await readJson(CONNECTION_FILE);
-  const now = new Date().toISOString();
+  const now = new Date();
 
-  const existingFriendIndex = rows.findIndex(
-    (row) =>
-      row.type === "friend" &&
-      ["active", "accepted"].includes(String(row.status || "").toLowerCase()) &&
-      ((row.requester_id === viewerId && row.receiver_id === targetId) ||
-        (row.requester_id === targetId && row.receiver_id === viewerId)),
-  );
-
-  if (existingFriendIndex >= 0) {
-    return connectionSnapshot(rows, viewerId, targetId);
-  }
-
-  const incomingIndex = rows.findIndex(
-    (row) =>
-      row.type === "friend_request" &&
-      row.requester_id === targetId &&
-      row.receiver_id === viewerId &&
-      row.status === "pending",
-  );
-  if (incomingIndex >= 0) {
-    rows[incomingIndex] = {
-      ...rows[incomingIndex],
+  const existingFriend = await prisma.userConnection.findFirst({
+    where: {
       type: "friend",
-      status: "active",
-      updated_at: now,
-    };
-    await writeJson(CONNECTION_FILE, rows);
+      status: { in: ["active", "accepted"] },
+      OR: [
+        { requester_id: viewerId, receiver_id: targetId },
+        { requester_id: targetId, receiver_id: viewerId },
+      ],
+    },
+  });
+
+  if (existingFriend) {
+    const rows = await prisma.userConnection.findMany();
     return connectionSnapshot(rows, viewerId, targetId);
   }
 
-  const outgoingIndex = rows.findIndex(
-    (row) =>
-      row.type === "friend_request" &&
-      row.requester_id === viewerId &&
-      row.receiver_id === targetId &&
-      row.status === "pending",
-  );
-  if (outgoingIndex < 0) {
-    rows.push({
-      id: crypto.randomUUID(),
+  const incoming = await prisma.userConnection.findFirst({
+    where: {
+      type: "friend_request",
+      requester_id: targetId,
+      receiver_id: viewerId,
+      status: "pending",
+    },
+  });
+
+  if (incoming) {
+    await prisma.userConnection.update({
+      where: { id: incoming.id },
+      data: { type: "friend", status: "active", updated_at: now },
+    });
+    const rows = await prisma.userConnection.findMany();
+    return connectionSnapshot(rows, viewerId, targetId);
+  }
+
+  const outgoing = await prisma.userConnection.findFirst({
+    where: {
       type: "friend_request",
       requester_id: viewerId,
       receiver_id: targetId,
       status: "pending",
-      created_at: now,
-      updated_at: now,
+    },
+  });
+
+  if (!outgoing) {
+    await prisma.userConnection.create({
+      data: {
+        id: crypto.randomUUID(),
+        type: "friend_request",
+        requester_id: viewerId,
+        receiver_id: targetId,
+        status: "pending",
+        created_at: now,
+        updated_at: now,
+      },
     });
-    await writeJson(CONNECTION_FILE, rows);
   }
 
+  const rows = await prisma.userConnection.findMany();
   return connectionSnapshot(rows, viewerId, targetId);
 }
 
 export async function findUserByEmail(email) {
-  const users = await readJson(FILE);
-  return users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  return prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+  });
 }
 
 export async function findUserByMemberId(memberId) {
   const id = sanitizeString(String(memberId || ""), 64).trim();
   if (!id) return null;
-  const users = await readJson(FILE);
-  return users.find(
-    (u) => String(u.member_id || "").toLowerCase() === id.toLowerCase(),
-  );
+  return prisma.user.findFirst({
+    where: { member_id: { equals: id, mode: "insensitive" } },
+  });
 }
 
 export async function findUserById(id) {
-  const users = await readJson(FILE);
-  return users.find((u) => u.id === id);
+  return prisma.user.findUnique({ where: { id } });
 }
 
 export async function registerUser(payload) {
-  const users = await readJson(FILE);
   const hash = await bcrypt.hash(payload.password, 10);
-  const nowIso = new Date().toISOString();
 
   const user = {
     id: crypto.randomUUID(),
@@ -355,13 +348,11 @@ export async function registerUser(payload) {
     verified: false,
     subscription_status:
       payload.subscription_status === "premium" ? "premium" : "free",
-    created_at: nowIso,
+    created_at: new Date(),
     wallet_balance_usd: 0,
     wallet_restricted_usd: 0,
-    // Trust & moderation state (project.md): warnings/restrictions for policy violations.
     policy_strikes: 0,
     messaging_restricted_until: null,
-    passkeys: [],
     profile: {
       position: sanitizeString(payload.profile?.position || "", 80),
       country: sanitizeString(payload.profile?.country || "", 120),
@@ -390,8 +381,7 @@ export async function registerUser(payload) {
     },
   };
 
-  users.push(user);
-  await writeJson(FILE, users);
+  await prisma.user.create({ data: user });
   await upsertSubscription(user.id, user.subscription_status, true, {
     actor_id: user.id,
     source: "system",
@@ -439,11 +429,9 @@ function buildDeletedEmail(userId) {
 }
 
 export async function deleteUserWithPassword(userId, password) {
-  const users = await readJson(FILE);
-  const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) return null;
+  const current = await prisma.user.findUnique({ where: { id: userId } });
+  if (!current) return null;
 
-  const current = users[index];
   const ok = await verifyPassword(current, String(password || ""));
   if (!ok) {
     const err = new Error("Invalid password");
@@ -451,41 +439,41 @@ export async function deleteUserWithPassword(userId, password) {
     throw err;
   }
 
-  const now = new Date().toISOString();
-  users[index] = {
-    ...current,
-    name: "Deleted User",
-    email: buildDeletedEmail(current.id),
-    status: "deleted",
-    verified: false,
-    subscription_status: "free",
-    password_hash: await bcrypt.hash(crypto.randomUUID(), 10),
-    password_reset_at: now,
-    profile: {
-      ...(current.profile || {}),
-      deleted_at: now,
-      delete_reason: "self_delete",
+  const now = new Date();
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: "Deleted User",
+      email: buildDeletedEmail(current.id),
+      status: "deleted",
+      verified: false,
+      subscription_status: "free",
+      password_hash: await bcrypt.hash(crypto.randomUUID(), 10),
+      password_reset_at: now,
+      profile: {
+        ...(current.profile || {}),
+        deleted_at: now.toISOString(),
+        delete_reason: "self_delete",
+      },
     },
-  };
-  await writeJson(FILE, users);
+  });
 
-  const connections = await readJson(CONNECTION_FILE);
-  const filtered = connections.filter(
-    (row) => row.requester_id !== userId && row.receiver_id !== userId,
-  );
-  if (filtered.length !== connections.length) {
-    await writeJson(CONNECTION_FILE, filtered);
-  }
+  await prisma.userConnection.deleteMany({
+    where: {
+      OR: [
+        { requester_id: userId },
+        { receiver_id: userId },
+      ],
+    },
+  });
 
-  return cleanUser(users[index]);
+  return cleanUser(updated);
 }
 
 export async function updateProfile(userId, profilePatch) {
-  const users = await readJson(FILE);
-  const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) return null;
+  const current = await prisma.user.findUnique({ where: { id: userId } });
+  if (!current) return null;
 
-  const current = users[index];
   const plan = await getPlanForUser(current);
   const brandingFields = new Set([
     "brand_logo_url",
@@ -509,12 +497,14 @@ export async function updateProfile(userId, profilePatch) {
     ]);
 
   const nextProfile = {
-    ...current.profile,
+    ...(current.profile || {}),
     ...Object.fromEntries(patchEntries),
   };
 
-  users[index] = { ...current, profile: nextProfile };
-  await writeJson(FILE, users);
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { profile: nextProfile },
+  });
 
   const patchedKeys = new Set(patchEntries.map(([key]) => key));
   const shouldReindex = [...patchedKeys].some((key) =>
@@ -532,16 +522,15 @@ export async function updateProfile(userId, profilePatch) {
     }
   }
 
-  return cleanUser(users[index]);
+  return cleanUser(updated);
 }
 
 export async function setUserVerification(userId, verified) {
-  const users = await readJson(FILE);
-  const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) return null;
-  users[index].verified = Boolean(verified);
-  await writeJson(FILE, users);
-  const updated = users[index];
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { verified: Boolean(verified) },
+  });
+  if (!updated) return null;
   const orgId =
     updated.role === "agent" && updated.org_owner_id
       ? String(updated.org_owner_id)
@@ -551,24 +540,22 @@ export async function setUserVerification(userId, verified) {
   } catch {
     // ignore index failures
   }
-  return cleanUser(users[index]);
+  return cleanUser(updated);
 }
 
 export async function setUserSubscriptionStatus(userId, plan) {
-  const users = await readJson(FILE);
-  const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) return null;
-  users[index].subscription_status = plan === "premium" ? "premium" : "free";
-  await writeJson(FILE, users);
-  return cleanUser(users[index]);
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { subscription_status: plan === "premium" ? "premium" : "free" },
+  });
+  if (!updated) return null;
+  return cleanUser(updated);
 }
 
 export async function adminUpdateUser(userId, patch = {}) {
-  const users = await readJson(FILE);
-  const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) return null;
+  const current = await prisma.user.findUnique({ where: { id: userId } });
+  if (!current) return null;
 
-  const current = users[index];
   const allowedRoles = new Set([
     "buyer",
     "factory",
@@ -598,7 +585,7 @@ export async function adminUpdateUser(userId, patch = {}) {
     patch.messaging_restricted_until === undefined
       ? current.messaging_restricted_until
       : patch.messaging_restricted_until
-        ? new Date(patch.messaging_restricted_until).toISOString()
+        ? new Date(patch.messaging_restricted_until)
         : null;
   const nextOrgOwnerId =
     patch.org_owner_id !== undefined
@@ -670,8 +657,7 @@ export async function adminUpdateUser(userId, patch = {}) {
     );
   }
 
-  const next = {
-    ...current,
+  const data = {
     role: nextRole,
     status: nextStatus,
     verified: nextVerified,
@@ -686,8 +672,7 @@ export async function adminUpdateUser(userId, patch = {}) {
     profile,
   };
 
-  users[index] = next;
-  await writeJson(FILE, users);
+  const next = await prisma.user.update({ where: { id: userId }, data });
 
   const roleChanged =
     String(current.role || "").toLowerCase() !==
@@ -720,43 +705,45 @@ export async function adminUpdateUser(userId, patch = {}) {
 }
 
 export async function adminSetPassword(userId, newPassword) {
-  const users = await readJson(FILE);
-  const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) return null;
+  const existing = await prisma.user.findUnique({ where: { id: userId } });
+  if (!existing) return null;
 
   const hash = await bcrypt.hash(String(newPassword), 10);
-  users[index].password_hash = hash;
-  users[index].password_reset_at = new Date().toISOString();
-  await writeJson(FILE, users);
-  return cleanUser(users[index]);
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { password_hash: hash, password_reset_at: new Date() },
+  });
+  return cleanUser(updated);
 }
 
 export async function adminForceLogout(userId) {
-  const users = await readJson(FILE);
-  const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) return null;
-  users[index].password_reset_at = new Date().toISOString();
-  await writeJson(FILE, users);
-  return cleanUser(users[index]);
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { password_reset_at: new Date() },
+  });
+  if (!updated) return null;
+  return cleanUser(updated);
 }
 
 export async function adminLockMessaging(userId, lockHours = 0) {
-  const users = await readJson(FILE);
-  const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) return null;
+  const existing = await prisma.user.findUnique({ where: { id: userId } });
+  if (!existing) return null;
 
   const hours = Math.max(0, Number(lockHours || 0));
-  users[index].messaging_restricted_until = hours
-    ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
-    : null;
-  await writeJson(FILE, users);
-  return cleanUser(users[index]);
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      messaging_restricted_until: hours
+        ? new Date(Date.now() + hours * 60 * 60 * 1000)
+        : null,
+    },
+  });
+  return cleanUser(updated);
 }
 
 export async function deleteUser(userId) {
-  const users = await readJson(FILE);
-  const next = users.filter((u) => u.id !== userId);
-  if (next.length === users.length) return false;
-  await writeJson(FILE, next);
+  const existing = await prisma.user.findUnique({ where: { id: userId } });
+  if (!existing) return false;
+  await prisma.user.delete({ where: { id: userId } });
   return true;
 }

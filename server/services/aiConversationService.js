@@ -1,13 +1,8 @@
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { assistantReply } from "./assistantService.js";
 import { addLeadNoteForMatch } from "./leadService.js";
 import { getRequirementById } from "./requirementService.js";
-
-const USERS_FILE = "users.json";
-const MESSAGES_FILE = "messages.json";
-const LEADS_FILE = "leads.json";
-const LEAD_NOTES_FILE = "lead_notes.json";
 
 const SUMMARY_PREFIX = "AI Summary:";
 const NEGOTIATION_PREFIX = "AI Negotiation:";
@@ -108,11 +103,11 @@ export async function generateConversationSummary(matchId) {
   if (!safeMatchId) return null;
 
   const [messages, users] = await Promise.all([
-    readJson(MESSAGES_FILE),
-    readJson(USERS_FILE),
+    prisma.message.findMany(),
+    prisma.user.findMany(),
   ]);
 
-  const threadMessages = (Array.isArray(messages) ? messages : []).filter(
+  const threadMessages = messages.filter(
     (m) =>
       String(m.match_id || "") === safeMatchId &&
       String(m.message || "").trim(),
@@ -120,9 +115,7 @@ export async function generateConversationSummary(matchId) {
 
   if (threadMessages.length === 0) return null;
 
-  const usersById = new Map(
-    (Array.isArray(users) ? users : []).map((u) => [String(u.id), u]),
-  );
+  const usersById = new Map(users.map((u) => [String(u.id), u]));
   const marketplace = parseMarketplaceMatchId(safeMatchId);
   const requirement = marketplace
     ? await getRequirementById(marketplace.requirementId)
@@ -183,28 +176,28 @@ function pickLatestNote(notes = [], prefix = "") {
 }
 
 async function shouldAutoSummarize(matchId, orgOwnerId) {
-  const leads = await readJson(LEADS_FILE);
-  const lead = (Array.isArray(leads) ? leads : []).find(
-    (row) =>
-      String(row.match_id || "") === String(matchId || "") &&
-      String(row.org_owner_id || "") === String(orgOwnerId || ""),
-  );
+  const lead = await prisma.lead.findFirst({
+    where: {
+      match_id: String(matchId || ""),
+      org_owner_id: String(orgOwnerId || ""),
+    },
+  });
 
   if (!lead) return false;
 
-  const notes = await readJson(LEAD_NOTES_FILE);
-  const leadNotes = (Array.isArray(notes) ? notes : []).filter(
-    (n) => String(n.lead_id || "") === String(lead.id),
-  );
-  const latest = pickLatestNote(leadNotes, SUMMARY_PREFIX);
+  const notes = await prisma.leadNote.findMany({
+    where: { lead_id: lead.id },
+  });
+
+  const latest = pickLatestNote(notes, SUMMARY_PREFIX);
 
   if (!latest) return true;
 
   const lastSummaryAt = new Date(latest.created_at || 0).getTime();
   if (!Number.isFinite(lastSummaryAt)) return true;
 
-  const messages = await readJson(MESSAGES_FILE);
-  const threadMessages = (Array.isArray(messages) ? messages : []).filter(
+  const messages = await prisma.message.findMany();
+  const threadMessages = messages.filter(
     (m) => String(m.match_id || "") === String(matchId || ""),
   );
 
@@ -243,11 +236,11 @@ export async function generateNegotiationHelper(matchId) {
   if (!safeMatchId) return null;
 
   const [messages, users] = await Promise.all([
-    readJson(MESSAGES_FILE),
-    readJson(USERS_FILE),
+    prisma.message.findMany(),
+    prisma.user.findMany(),
   ]);
 
-  const threadMessages = (Array.isArray(messages) ? messages : []).filter(
+  const threadMessages = messages.filter(
     (m) =>
       String(m.match_id || "") === safeMatchId &&
       String(m.message || "").trim(),
@@ -255,9 +248,7 @@ export async function generateNegotiationHelper(matchId) {
 
   if (threadMessages.length === 0) return null;
 
-  const usersById = new Map(
-    (Array.isArray(users) ? users : []).map((u) => [String(u.id), u]),
-  );
+  const usersById = new Map(users.map((u) => [String(u.id), u]));
   const marketplace = parseMarketplaceMatchId(safeMatchId);
   const requirement = marketplace
     ? await getRequirementById(marketplace.requirementId)
@@ -344,10 +335,8 @@ export async function recordSummaryNote({ matchId, orgOwnerId, summary }) {
 }
 
 export async function resolveOrgOwnerFromMatch(matchId, senderId) {
-  const users = await readJson(USERS_FILE);
-  const usersById = new Map(
-    (Array.isArray(users) ? users : []).map((u) => [String(u.id), u]),
-  );
+  const users = await prisma.user.findMany();
+  const usersById = new Map(users.map((u) => [String(u.id), u]));
   if (senderId) {
     const sender = usersById.get(String(senderId));
     const orgOwnerId = resolveOrgOwnerIdForUser(sender);

@@ -1,13 +1,8 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { recordMilestone } from "./ratingsService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
-
-const FILE = "call_sessions.json";
-const RECORDING_VIEWS_FILE = "call_recording_views.json";
-const MESSAGE_FILE = "messages.json";
-const REQUIREMENT_FILE = "requirements.json";
 const CALL_STATUS = {
   SCHEDULED: "scheduled",
   IN_PROGRESS: "in_progress",
@@ -69,11 +64,9 @@ async function deriveParticipantIds(matchId) {
   const marketplacePair = parseMarketplaceMatchId(matchId);
   if (marketplacePair?.factoryId) {
     ids.add(marketplacePair.factoryId);
-    const requirements = await readJson(REQUIREMENT_FILE);
-    const requirement =
-      requirements.find(
-        (row) => String(row?.id || "") === marketplacePair.requirementId,
-      ) || null;
+    const requirement = await prisma.requirement.findUnique({
+      where: { id: marketplacePair.requirementId },
+    });
     const buyerId = sanitizeString(
       requirement?.buyer_id || requirement?.buyerId,
       120,
@@ -81,13 +74,13 @@ async function deriveParticipantIds(matchId) {
     if (buyerId) ids.add(buyerId);
   }
 
-  const messages = await readJson(MESSAGE_FILE);
-  messages
-    .filter((message) => message?.match_id === matchId)
-    .forEach((message) => {
-      const senderId = sanitizeString(message?.sender_id, 120);
-      if (senderId) ids.add(senderId);
-    });
+  const messages = await prisma.message.findMany({
+    where: { match_id: matchId },
+  });
+  messages.forEach((message) => {
+    const senderId = sanitizeString(message?.sender_id, 120);
+    if (senderId) ids.add(senderId);
+  });
 
   return [...ids];
 }
@@ -97,46 +90,43 @@ function ensureParticipant(call, userId) {
 }
 
 export async function createScheduledCallSession(userId, payload = {}) {
-  const calls = await readJson(FILE);
   const parsedScheduledFor = payload?.scheduled_for
     ? new Date(payload.scheduled_for)
     : new Date();
   const scheduledFor = Number.isNaN(parsedScheduledFor.getTime())
-    ? new Date().toISOString()
-    : parsedScheduledFor.toISOString();
-  const row = {
-    id: crypto.randomUUID(),
-    created_by: userId,
-    match_id: sanitizeString(payload?.match_id, 120),
-    title: sanitizeString(payload?.title || "Scheduled call", 180),
-    scheduled_for: scheduledFor,
-    duration_minutes:
-      Number(payload?.duration_minutes) > 0
-        ? Number(payload.duration_minutes)
-        : 30,
-    participant_ids: normalizeParticipantIds(payload?.participant_ids, userId),
-    status: CALL_STATUS.SCHEDULED,
-    recording_url: "",
-    recording_status: RECORDING_STATUS.PENDING,
-    contract_id: sanitizeString(payload?.contract_id, 120),
-    security_audit_id: sanitizeString(payload?.security_audit_id, 120),
-    context: {
-      chat_thread_id: sanitizeString(
-        payload?.chat_thread_id || payload?.match_id,
-        120,
-      ),
-      notes: sanitizeString(payload?.notes, 400),
-    },
-    created_at: new Date().toISOString(),
-    started_at: null,
-    ended_at: null,
-    audit_trail: [
-      buildAuditEntry("scheduled", userId, { scheduled_for: scheduledFor }),
-    ],
-  };
+    ? new Date()
+    : parsedScheduledFor;
 
-  calls.push(row);
-  await writeJson(FILE, calls);
+  const row = await prisma.callSession.create({
+    data: {
+      id: crypto.randomUUID(),
+      created_by: userId,
+      match_id: sanitizeString(payload?.match_id, 120),
+      title: sanitizeString(payload?.title || "Scheduled call", 180),
+      scheduled_for: scheduledFor,
+      duration_minutes:
+        Number(payload?.duration_minutes) > 0
+          ? Number(payload.duration_minutes)
+          : 30,
+      participant_ids: normalizeParticipantIds(payload?.participant_ids, userId),
+      status: CALL_STATUS.SCHEDULED,
+      recording_status: RECORDING_STATUS.PENDING,
+      contract_id: sanitizeString(payload?.contract_id, 120),
+      security_audit_id: sanitizeString(payload?.security_audit_id, 120),
+      context: {
+        chat_thread_id: sanitizeString(
+          payload?.chat_thread_id || payload?.match_id,
+          120,
+        ),
+        notes: sanitizeString(payload?.notes, 400),
+      },
+      created_at: new Date(),
+      audit_trail: [
+        buildAuditEntry("scheduled", userId, { scheduled_for: scheduledFor.toISOString() }),
+      ],
+    },
+  });
+
   await recordWorkflowEvent(
     "call_scheduled",
     {
@@ -151,26 +141,26 @@ export async function createScheduledCallSession(userId, payload = {}) {
 }
 
 export async function startCallSession(callId, userId) {
-  const calls = await readJson(FILE);
-  const idx = calls.findIndex((call) => call.id === callId);
-  if (idx < 0) return null;
-  const call = calls[idx];
+  const call = await prisma.callSession.findUnique({ where: { id: callId } });
+  if (!call) return null;
   if (!ensureParticipant(call, userId)) return "forbidden";
 
   if (![CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS].includes(call.status))
     return "invalid_transition";
 
-  const next = {
-    ...call,
-    status: CALL_STATUS.IN_PROGRESS,
-    started_at: call.started_at || new Date().toISOString(),
-    audit_trail: [
-      ...(call.audit_trail || []),
-      buildAuditEntry("started", userId),
-    ],
-  };
-  calls[idx] = next;
-  await writeJson(FILE, calls);
+  const auditTrail = [
+    ...(call.audit_trail || []),
+    buildAuditEntry("started", userId),
+  ];
+  const next = await prisma.callSession.update({
+    where: { id: callId },
+    data: {
+      status: CALL_STATUS.IN_PROGRESS,
+      started_at: call.started_at || new Date(),
+      audit_trail: auditTrail,
+    },
+  });
+
   await recordWorkflowEvent(
     "call_joined",
     {
@@ -184,29 +174,29 @@ export async function startCallSession(callId, userId) {
 }
 
 export async function endCallSession(callId, userId, endReason = "") {
-  const calls = await readJson(FILE);
-  const idx = calls.findIndex((call) => call.id === callId);
-  if (idx < 0) return null;
-  const call = calls[idx];
+  const call = await prisma.callSession.findUnique({ where: { id: callId } });
+  if (!call) return null;
   if (!ensureParticipant(call, userId)) return "forbidden";
 
   if (![CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS].includes(call.status))
     return "invalid_transition";
 
   const reason = sanitizeString(endReason || "completed", 120);
-  const next = {
-    ...call,
-    status: CALL_STATUS.ENDED,
-    ended_at: call.ended_at || new Date().toISOString(),
-    recording_status: RECORDING_STATUS.PROCESSING,
-    audit_trail: [
-      ...(call.audit_trail || []),
-      buildAuditEntry("ended", userId, { reason }),
-      buildAuditEntry("recording_processing", userId, { reason: "call_ended" }),
-    ],
-  };
-  calls[idx] = next;
-  await writeJson(FILE, calls);
+  const auditTrail = [
+    ...(call.audit_trail || []),
+    buildAuditEntry("ended", userId, { reason }),
+    buildAuditEntry("recording_processing", userId, { reason: "call_ended" }),
+  ];
+  const next = await prisma.callSession.update({
+    where: { id: callId },
+    data: {
+      status: CALL_STATUS.ENDED,
+      ended_at: call.ended_at || new Date(),
+      recording_status: RECORDING_STATUS.PROCESSING,
+      audit_trail: auditTrail,
+    },
+  });
+
   await recordWorkflowEvent(
     "call_ended",
     {
@@ -220,10 +210,8 @@ export async function endCallSession(callId, userId, endReason = "") {
 }
 
 export async function markRecording(callId, userId, payload = {}) {
-  const calls = await readJson(FILE);
-  const idx = calls.findIndex((call) => call.id === callId);
-  if (idx < 0) return null;
-  const call = calls[idx];
+  const call = await prisma.callSession.findUnique({ where: { id: callId } });
+  if (!call) return null;
   if (!ensureParticipant(call, userId)) return "forbidden";
 
   const recordingStatus = sanitizeString(
@@ -288,15 +276,15 @@ export async function markRecording(callId, userId, payload = {}) {
     );
   }
 
-  const next = {
-    ...call,
-    recording_status: recordingStatus,
-    recording_url: recordingUrl,
-    status: shouldComplete ? CALL_STATUS.COMPLETED : call.status,
-    audit_trail: auditTrail,
-  };
-  calls[idx] = next;
-  await writeJson(FILE, calls);
+  const next = await prisma.callSession.update({
+    where: { id: callId },
+    data: {
+      recording_status: recordingStatus,
+      recording_url: recordingUrl,
+      status: shouldComplete ? CALL_STATUS.COMPLETED : call.status,
+      audit_trail: auditTrail,
+    },
+  });
 
   if (shouldComplete) {
     await recordWorkflowEvent(
@@ -330,31 +318,25 @@ export async function markRecording(callId, userId, payload = {}) {
 }
 
 export async function getCallSession(callId, userId) {
-  const calls = await readJson(FILE);
-  const call = calls.find((item) => item.id === callId);
+  const call = await prisma.callSession.findUnique({ where: { id: callId } });
   if (!call) return null;
   if (!ensureParticipant(call, userId)) return "forbidden";
   return call;
 }
 
 export async function listCallHistory(matchIds = [], userId) {
-  const calls = await readJson(FILE);
+  const calls = await prisma.callSession.findMany({
+    orderBy: { created_at: "desc" },
+  });
   const allowed = calls.filter((call) => ensureParticipant(call, userId));
   if (!Array.isArray(matchIds) || matchIds.length === 0) {
-    return allowed.sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    );
+    return allowed;
   }
 
   const ids = new Set(matchIds);
   return allowed
     .filter(
       (call) => ids.has(call.match_id) || ids.has(call.context?.chat_thread_id),
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
 }
 
@@ -366,16 +348,12 @@ export async function findOrCreateCallSession(userId, payload = {}) {
     throw error;
   }
 
-  const calls = await readJson(FILE);
-  const candidates = calls
-    .filter(
-      (call) => ensureParticipant(call, userId) && call.match_id === matchId,
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.created_at || 0).getTime() -
-        new Date(a.created_at || 0).getTime(),
-    );
+  const calls = await prisma.callSession.findMany({
+    where: { match_id: matchId },
+    orderBy: { created_at: "desc" },
+  });
+
+  const candidates = calls.filter((call) => ensureParticipant(call, userId));
 
   const active = candidates.find((call) =>
     [
@@ -403,16 +381,11 @@ export async function findOrCreateCallSession(userId, payload = {}) {
 export async function listCallsByContract(contractId, userId) {
   const id = sanitizeString(String(contractId || ""), 120);
   if (!id) return [];
-  const calls = await readJson(FILE);
-  return (Array.isArray(calls) ? calls : [])
-    .filter(
-      (call) =>
-        ensureParticipant(call, userId) &&
-        String(call.contract_id || "") === id,
-    )
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
+
+  return prisma.callSession.findMany({
+    where: { contract_id: id },
+    orderBy: { created_at: "desc" },
+  });
 }
 
 export async function getRecordingMetadata(callId, userId) {
@@ -420,18 +393,17 @@ export async function getRecordingMetadata(callId, userId) {
   if (!call) return null;
   if (call === "forbidden") return "forbidden";
 
-  const views = await readJson(RECORDING_VIEWS_FILE);
-  const rows = Array.isArray(views) ? views : [];
-  const viewCount = rows.filter(
-    (v) => String(v.call_id || "") === String(callId || ""),
-  ).length;
+  const viewCount = await prisma.callRecordingView.count({
+    where: { call_id: String(callId) },
+  });
+
   return {
     call_id: call.id,
     match_id: call.match_id || "",
     contract_id: call.contract_id || "",
     recording_status: call.recording_status || "pending",
     recording_url: call.recording_url || "",
-    recording_updated_at: call.recording_updated_at || call.updated_at || "",
+    recording_updated_at: call.created_at?.toISOString() || "",
     views: viewCount,
   };
 }
@@ -441,14 +413,13 @@ export async function markRecordingViewed(callId, userId) {
   if (!call) return null;
   if (call === "forbidden") return "forbidden";
 
-  const views = await readJson(RECORDING_VIEWS_FILE);
-  const rows = Array.isArray(views) ? views : [];
-  rows.push({
-    id: crypto.randomUUID(),
-    call_id: String(callId || ""),
-    viewer_id: String(userId || ""),
-    viewed_at: new Date().toISOString(),
+  await prisma.callRecordingView.create({
+    data: {
+      id: crypto.randomUUID(),
+      call_id: String(callId),
+      viewer_id: String(userId),
+      viewed_at: new Date(),
+    },
   });
-  await writeJson(RECORDING_VIEWS_FILE, rows);
   return { ok: true };
 }

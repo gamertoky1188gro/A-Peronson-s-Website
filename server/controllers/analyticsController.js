@@ -12,7 +12,7 @@ import {
 import { handleControllerError } from "../utils/permissions.js";
 import { findUserById } from "../services/userService.js";
 import { ensureEntitlement } from "../services/entitlementService.js";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { ACTIONS, authorize } from "../services/authorizationService.js";
 
@@ -167,14 +167,11 @@ export async function analyticsViewers(req, res) {
       }
 
       const [events, users] = await Promise.all([
-        readJson("analytics.json"),
-        readJson("users.json"),
+        prisma.analyticsEvent.findMany({ where: { type: "profile_view", entity_id: id } }),
+        prisma.user.findMany(),
       ]);
       const rows = Array.isArray(events) ? events : [];
       const viewers = rows
-        .filter(
-          (e) => e.type === "profile_view" && String(e.entity_id || "") === id,
-        )
         .map((e) => ({
           viewer_id: String(e.actor_id || ""),
           viewed_at: e.created_at,
@@ -215,14 +212,11 @@ export async function analyticsViewers(req, res) {
     }
 
     if (entity === "product") {
-      const [views, products, users] = await Promise.all([
-        readJson("product_views.json"),
-        readJson("company_products.json"),
-        readJson("users.json"),
+      const [views, product, users] = await Promise.all([
+        prisma.productView.findMany(),
+        prisma.product.findUnique({ where: { id } }),
+        prisma.user.findMany(),
       ]);
-      const product = (Array.isArray(products) ? products : []).find(
-        (p) => String(p.id) === id,
-      );
       if (!product) return res.status(404).json({ error: "Product not found" });
 
       if (
@@ -233,7 +227,6 @@ export async function analyticsViewers(req, res) {
       }
 
       const viewers = (Array.isArray(views) ? views : [])
-        .filter((row) => String(row.product_id) === id)
         .sort((a, b) =>
           String(b.viewed_at || "").localeCompare(String(a.viewed_at || "")),
         );

@@ -1,4 +1,3 @@
-import { readJson } from "../utils/jsonStore.js";
 import prisma from "../utils/prisma.js";
 import { isCrmSqlEnabled, readLegacyJson } from "../utils/crmFallbackStore.js";
 import { sanitizeString } from "../utils/validators.js";
@@ -30,7 +29,7 @@ async function readStore(fileName) {
       case "leads.json":
         return prisma.lead.findMany();
       default:
-        return readJson(fileName);
+        return [];
     }
   }
   return readLegacyJson(fileName);

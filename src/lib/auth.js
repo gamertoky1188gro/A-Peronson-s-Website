@@ -132,6 +132,7 @@ export async function apiRequest(
     String(import.meta.env.VITE_REQUEST_DEBUG || "").toLowerCase() === "true";
   const startedAt = debugRequests ? performance.now() : 0;
 
+  const isFormData = body instanceof FormData;
   let res;
   try {
     res = await fetch(`${API_BASE}${path}`, {
@@ -139,11 +140,11 @@ export async function apiRequest(
       cache: "no-store",
       signal,
       headers: {
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers,
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
     });
   } catch (err) {
     if (debugRequests) {

@@ -1,15 +1,10 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { createNotification } from "./notificationService.js";
 import { addLeadNoteForMatch } from "./leadService.js";
 import { getRequirementById, updateRequirement } from "./requirementService.js";
 import { listKnowledge, callLlama } from "./assistantService.js";
-
-const USERS_FILE = "users.json";
-const MESSAGES_FILE = "messages.json";
-const MESSAGE_REQUESTS_FILE = "message_requests.json";
-const LEADS_FILE = "leads.json";
 
 const QUALIFICATION_FIELDS = [
   {
@@ -247,27 +242,23 @@ function extractRequirementPatch(message, requirement) {
 }
 
 function shouldAttemptBot({ requestState, messageCount }) {
-  // project.md: bot should handle the initial/general part of the conversation.
-  // We treat "pending request" threads as eligible, and also very early threads.
   if (requestState?.status === "pending") return true;
   if (Number(messageCount || 0) <= 2) return true;
   return false;
 }
 
 async function findAssignedAgentForMatch(matchId, orgOwnerId) {
-  const leads = await readJson(LEADS_FILE);
-  const lead = Array.isArray(leads)
-    ? leads.find(
-        (l) =>
-          String(l.match_id || "") === String(matchId || "") &&
-          String(l.org_owner_id || "") === String(orgOwnerId || ""),
-      )
-    : null;
+  const lead = await prisma.lead.findFirst({
+    where: {
+      match_id: String(matchId || ""),
+      org_owner_id: String(orgOwnerId || ""),
+    },
+    select: { assigned_agent_id: true },
+  });
   return lead?.assigned_agent_id ? String(lead.assigned_agent_id) : "";
 }
 
 function resolveOrgOwnerForCompany(companyUser) {
-  // Agents belong to an org owner; main accounts are their own org owner.
   const role = String(companyUser?.role || "").toLowerCase();
   if (role === "agent" && companyUser?.org_owner_id)
     return String(companyUser.org_owner_id);
@@ -290,10 +281,9 @@ function sanitizeAutoReply(raw = {}) {
 }
 
 export async function getChatbotSettings(userId) {
-  const users = await readJson(USERS_FILE);
-  const user = Array.isArray(users)
-    ? users.find((u) => String(u.id) === String(userId || ""))
-    : null;
+  const user = await prisma.user.findUnique({
+    where: { id: String(userId || "") },
+  });
   if (!user) return null;
   const autoReply = sanitizeAutoReply(user.profile?.auto_reply || {});
   return {
@@ -309,13 +299,12 @@ export async function getChatbotSettings(userId) {
 }
 
 export async function updateChatbotSettings(userId, payload = {}) {
-  const users = await readJson(USERS_FILE);
-  const idx = Array.isArray(users)
-    ? users.findIndex((u) => String(u.id) === String(userId || ""))
-    : -1;
-  if (idx < 0) return null;
+  const user = await prisma.user.findUnique({
+    where: { id: String(userId || "") },
+  });
+  if (!user) return null;
 
-  const current = users[idx];
+  const current = user;
   const autoReply = sanitizeAutoReply(
     payload.auto_reply ||
       payload.autoReply ||
@@ -342,17 +331,18 @@ export async function updateChatbotSettings(userId, payload = {}) {
     auto_reply: autoReply,
   };
 
-  users[idx] = {
-    ...current,
-    chatbot_enabled: chatbotEnabled,
-    handoff_mode: handoffMode,
-    profile: nextProfile,
-    updated_at: new Date().toISOString(),
-  };
+  await prisma.user.update({
+    where: { id: String(userId || "") },
+    data: {
+      chatbot_enabled: chatbotEnabled,
+      handoff_mode: handoffMode,
+      profile: nextProfile,
+      updated_at: new Date(),
+    },
+  });
 
-  await writeJson(USERS_FILE, users);
   return {
-    user_id: users[idx].id,
+    user_id: userId,
     chatbot_enabled: chatbotEnabled,
     handoff_mode: handoffMode,
     auto_reply: autoReply,
@@ -360,10 +350,9 @@ export async function updateChatbotSettings(userId, payload = {}) {
 }
 
 export async function getChatbotProfileSummary(targetUserId) {
-  const users = await readJson(USERS_FILE);
-  const user = Array.isArray(users)
-    ? users.find((u) => String(u.id) === String(targetUserId || ""))
-    : null;
+  const user = await prisma.user.findUnique({
+    where: { id: String(targetUserId || "") },
+  });
   if (!user) return null;
 
   return {
@@ -432,10 +421,8 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
   if (!matchId || !senderId || !question)
     return { reply: null, reason: "invalid_input" };
 
-  const users = await readJson(USERS_FILE);
-  const usersById = new Map(
-    (Array.isArray(users) ? users : []).map((u) => [String(u.id), u]),
-  );
+  const users = await prisma.user.findMany();
+  const usersById = new Map(users.map((u) => [String(u.id), u]));
 
   const marketplace = parseMarketplaceMatchId(matchId);
   if (!marketplace) return { reply: null, reason: "unsupported_match" };
@@ -459,16 +446,16 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
     return { reply: null, reason: "auto_reply_disabled" };
 
   const [messages, requests] = await Promise.all([
-    readJson(MESSAGES_FILE),
-    readJson(MESSAGE_REQUESTS_FILE),
+    prisma.message.findMany(),
+    prisma.messageRequest.findMany(),
   ]);
 
-  const threadMessages = Array.isArray(messages)
-    ? messages.filter((m) => String(m.match_id || "") === matchId)
-    : [];
-  const requestState = Array.isArray(requests)
-    ? requests.find((r) => String(r.thread_id || "") === matchId)
-    : null;
+  const threadMessages = messages.filter(
+    (m) => String(m.match_id || "") === matchId,
+  );
+  const requestState = requests.find(
+    (r) => String(r.thread_id || "") === matchId,
+  ) || null;
 
   if (
     !shouldAttemptBot({ requestState, messageCount: threadMessages.length })
@@ -521,7 +508,6 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
       buildQualificationQuestion(missingFields);
   }
 
-  // GENERATIVE LLM RESPONSE
   const companyFacts = buildCompanyFacts(companyUser);
   const safeReply = await generateGenerativeBotReply({
     question,
@@ -532,7 +518,6 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
   });
 
   if (!safeReply) {
-    // Handoff logic...
     const orgOwnerId = resolveOrgOwnerForCompany(companyUser);
     const assignedAgentId = await findAssignedAgentForMatch(
       matchId,
@@ -584,8 +569,17 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
     meta: { bot: true },
   };
 
-  const nextMessages = Array.isArray(messages) ? [...messages, entry] : [entry];
-  await writeJson(MESSAGES_FILE, nextMessages);
+  await prisma.message.create({
+    data: {
+      id: entry.id,
+      match_id: entry.match_id,
+      sender_id: entry.sender_id,
+      message: entry.message,
+      type: entry.type,
+      timestamp: new Date(),
+      moderated: entry.moderated,
+    },
+  });
 
   return { reply: entry, reason: "ok" };
 }

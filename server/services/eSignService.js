@@ -1,20 +1,16 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { createProviderSignSession } from "./eSignProvider.js";
 
-const DOCUMENTS_FILE = "documents.json";
-
 export async function createSignSession(contractId, actor) {
-  const docs = await readJson(DOCUMENTS_FILE);
-  const idx = docs.findIndex(
-    (d) => d.entity_type === "contract" && String(d.id) === String(contractId),
-  );
-  if (idx < 0) {
+  const contract = await prisma.document.findFirst({
+    where: { entity_type: "contract", id: String(contractId) },
+  });
+  if (!contract) {
     const err = new Error("Contract not found");
     err.status = 404;
     throw err;
   }
-  const contract = docs[idx];
   const actorId = String(actor?.id || "");
   if (!actorId) {
     const err = new Error("Unauthorized");
@@ -52,64 +48,61 @@ export async function createSignSession(contractId, actor) {
     signingUrl = `${providerBase.replace(/\/+$/, "")}/sign?contract_id=${encodeURIComponent(contractId)}&token=${encodeURIComponent(token)}`;
   }
 
-  contract.artifact = contract.artifact || {};
-  contract.artifact.signing_url = signingUrl;
-  contract.artifact.signing_token = token;
+  const artifact = { ...(contract.artifact || {}) };
+  artifact.signing_url = signingUrl;
+  artifact.signing_token = token;
   if (providerSession && providerSession.session_id)
-    contract.artifact.provider_session_id = providerSession.session_id;
+    artifact.provider_session_id = providerSession.session_id;
   if (providerSession && providerSession.provider_id)
-    contract.artifact.provider_request_id = providerSession.provider_id;
+    artifact.provider_request_id = providerSession.provider_id;
   if (providerSession && providerSession.meta)
-    contract.artifact.provider_meta = providerSession.meta;
-  contract.updated_at = new Date().toISOString();
-  docs[idx] = contract;
-  await writeJson(DOCUMENTS_FILE, docs);
+    artifact.provider_meta = providerSession.meta;
+  await prisma.document.update({
+    where: { id: contract.id },
+    data: { artifact, updated_at: new Date() },
+  });
   return { signing_url: signingUrl, token };
 }
 
 export async function handleSignCallback(contractId, payload = {}) {
-  const docs = await readJson(DOCUMENTS_FILE);
-  const idx = docs.findIndex(
-    (d) => d.entity_type === "contract" && String(d.id) === String(contractId),
-  );
-  if (idx < 0) {
+  const contract = await prisma.document.findFirst({
+    where: { entity_type: "contract", id: String(contractId) },
+  });
+  if (!contract) {
     const err = new Error("Contract not found");
     err.status = 404;
     throw err;
   }
-  const contract = docs[idx];
 
+  const updateData = { updated_at: new Date() };
   if (payload.buyer_signed) {
-    contract.buyer_signature_state = "signed";
-    contract.buyer_signed_at =
-      contract.buyer_signed_at || new Date().toISOString();
+    updateData.buyer_signature_state = "signed";
+    updateData.buyer_signed_at = contract.buyer_signed_at || new Date();
   }
   if (payload.factory_signed) {
-    contract.factory_signature_state = "signed";
-    contract.factory_signed_at =
-      contract.factory_signed_at || new Date().toISOString();
+    updateData.factory_signature_state = "signed";
+    updateData.factory_signed_at = contract.factory_signed_at || new Date();
   }
 
-  contract.updated_at = new Date().toISOString();
-  docs[idx] = contract;
-
-  // If both signed, attempt to generate PDF artifact by delegating to documentService
+  // If both signed, attempt to generate PDF artifact
   try {
     if (
-      contract.buyer_signature_state === "signed" &&
-      contract.factory_signature_state === "signed"
+      (updateData.buyer_signature_state === "signed" || contract.buyer_signature_state === "signed") &&
+      (updateData.factory_signature_state === "signed" || contract.factory_signature_state === "signed")
     ) {
       const { generateContractArtifact } = await import("./documentService.js");
       if (typeof generateContractArtifact === "function") {
         const artifact = await generateContractArtifact(contract);
-        contract.artifact = { ...(contract.artifact || {}), ...artifact };
-        docs[idx] = contract;
+        updateData.artifact = { ...(contract.artifact || {}), ...artifact };
       }
     }
   } catch {
     // swallow generation errors - caller can retry
   }
 
-  await writeJson(DOCUMENTS_FILE, docs);
-  return contract;
+  const updated = await prisma.document.update({
+    where: { id: contract.id },
+    data: updateData,
+  });
+  return updated;
 }

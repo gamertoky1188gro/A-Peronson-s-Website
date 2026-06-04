@@ -1,5 +1,5 @@
-import { readJson } from "../utils/jsonStore.js";
 import { getAdminConfig } from "../services/adminConfigService.js";
+import prisma from "../utils/prisma.js";
 
 export async function systemMeta(req, res) {
   return res.json({
@@ -36,31 +36,28 @@ function titleCase(value) {
 }
 
 export async function systemHome(req, res) {
-  const [users, messages, metrics] = await Promise.all([
-    readJson("users.json"),
-    readJson("messages.json"),
-    readJson("metrics.json"),
+  const [factories, messageCount, metricCount] = await Promise.all([
+    prisma.user.findMany({
+      where: { role: "factory" },
+      select: { id: true, name: true, verified: true },
+      take: 8,
+    }),
+    prisma.message.count(),
+    prisma.metricTransition.count(),
   ]);
 
-  const factories = Array.isArray(users)
-    ? users
-        .filter((u) => u?.role === "factory")
-        .slice(0, 8)
-        .map((u) => ({
-          id: u?.id || null,
-          name: titleCase(asNonEmptyString(u?.name, "Factory")),
-          verified: Boolean(u?.verified),
-        }))
-    : [];
+  const factoriesMapped = factories.map((u) => ({
+    id: u.id || null,
+    name: titleCase(asNonEmptyString(u.name, "Factory")),
+    verified: Boolean(u.verified),
+  }));
 
-  const verifiedFactories = factories.length
-    ? factories
+  const verifiedFactories = factoriesMapped.length
+    ? factoriesMapped
         .slice(0, 3)
         .map((f) => ({ ...f, verified: Boolean(f.verified) }))
     : [];
 
-  const messageCount = Array.isArray(messages) ? messages.length : 0;
-  const metricCount = Array.isArray(metrics) ? metrics.length : 0;
   const analyticsBase = 120 + (messageCount % 30) + Math.min(30, metricCount);
   const verifiedMatches =
     60 +
@@ -344,14 +341,11 @@ export async function systemHome(req, res) {
 }
 
 export async function systemPricing(req, res) {
-  const [messages, metrics, config] = await Promise.all([
-    readJson("messages.json"),
-    readJson("metrics.json"),
+  const [messageCount, metricCount, config] = await Promise.all([
+    prisma.message.count(),
+    prisma.metricTransition.count(),
     getAdminConfig(),
   ]);
-
-  const messageCount = Array.isArray(messages) ? messages.length : 0;
-  const metricCount = Array.isArray(metrics) ? metrics.length : 0;
 
   const completionRate = Math.min(98, 72 + (metricCount % 22));
   const avgCycleDays = Math.max(6, 18 - (messageCount % 9));
@@ -564,20 +558,18 @@ function formatIsoDate(value) {
 }
 
 export async function systemAbout(req, res) {
-  const [users, messages, metrics] = await Promise.all([
-    readJson("users.json"),
-    readJson("messages.json"),
-    readJson("metrics.json"),
+  const [factories, messageCount, metricCount] = await Promise.all([
+    prisma.user.findMany({
+      where: { role: "factory" },
+      select: { verified: true },
+    }),
+    prisma.message.count(),
+    prisma.metricTransition.count(),
   ]);
 
-  const allUsers = Array.isArray(users) ? users : [];
-  const factories = allUsers.filter((u) => u?.role === "factory");
   const verifiedFactories = factories.filter((u) =>
-    Boolean(u?.verified),
+    Boolean(u.verified),
   ).length;
-
-  const messageCount = Array.isArray(messages) ? messages.length : 0;
-  const metricCount = Array.isArray(metrics) ? metrics.length : 0;
 
   const countriesCovered = 18 + (metricCount % 22);
   const avgResponseMinutes = 85 + (messageCount % 120);

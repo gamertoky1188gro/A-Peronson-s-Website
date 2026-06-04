@@ -1,9 +1,5 @@
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
-
-const USERS_FILE = "users.json";
-const PRODUCTS_FILE = "company_products.json";
-const REQUIREMENTS_FILE = "requirements.json";
 
 function slugify(value = "") {
   return String(value || "")
@@ -70,9 +66,9 @@ export async function getIndustrySummary(slug) {
   if (!safeSlug) return null;
 
   const [users, products, requirements] = await Promise.all([
-    readJson(USERS_FILE),
-    readJson(PRODUCTS_FILE),
-    readJson(REQUIREMENTS_FILE),
+    prisma.user.findMany(),
+    prisma.product.findMany(),
+    prisma.requirement.findMany(),
   ]);
 
   const categories = collectCategories(users, products);

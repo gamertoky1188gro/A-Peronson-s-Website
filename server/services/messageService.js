@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { isCrmSqlEnabled, readLegacyJson } from "../utils/crmFallbackStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import { trackTransition } from "../utils/metrics.js";
@@ -26,17 +26,7 @@ import {
 } from "./communicationPolicyService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
 
-const FILE = "messages.json";
-const USERS_FILE = "users.json";
-const MESSAGE_REQUESTS_FILE = "message_requests.json";
-const CONVERSATION_LOCKS_FILE = "conversation_locks.json";
-const MESSAGE_READS_FILE = "message_reads.json";
 const USE_SQL_CRM = isCrmSqlEnabled();
-
-async function readStore(fileName) {
-  if (USE_SQL_CRM) return readJson(fileName);
-  return readLegacyJson(fileName);
-}
 
 function buildUsersById(users = []) {
   return new Map(
@@ -101,14 +91,20 @@ export async function listFriendMatchIdsForUser(userId) {
   const connections = await listFriendConnectionsForUser(userId);
   const ids = new Set(connections.map((row) => row.match_id).filter(Boolean));
 
-  const messages = await readStore(FILE);
-  messages
-    .map((row) => row.match_id)
-    .filter((matchId) => {
-      const pair = parseFriendMatchId(matchId);
-      return Array.isArray(pair) && pair.includes(userId);
-    })
-    .forEach((matchId) => ids.add(matchId));
+  const messages = await prisma.message.findMany({
+    where: {
+      match_id: {
+        startsWith: "friend:",
+      },
+    },
+    select: { match_id: true },
+  });
+  messages.forEach(({ match_id }) => {
+    const pair = parseFriendMatchId(match_id);
+    if (Array.isArray(pair) && pair.includes(userId)) {
+      ids.add(match_id);
+    }
+  });
 
   return [...ids];
 }
@@ -159,8 +155,7 @@ async function enforceConversationLock(matchId, sender) {
   )
     return null;
 
-  const locks = await readStore(CONVERSATION_LOCKS_FILE);
-  const existing = locks.find((lock) => lock.request_id === requestId);
+  const existing = await prisma.conversationLock.findUnique({ where: { request_id: requestId } });
   const allowed = existing
     ? [
         ...new Set([
@@ -183,11 +178,10 @@ async function enforceConversationLock(matchId, sender) {
       lock_type: "agent_claim",
       lock_status: "claimed",
       lock_reason: "agent_claim",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: new Date(),
+      updated_at: new Date(),
     };
-    locks.push(row);
-    await writeJson(CONVERSATION_LOCKS_FILE, locks);
+    await prisma.conversationLock.create({ data: row });
     return row;
   }
 
@@ -315,10 +309,10 @@ export async function postMessage(
   attachment = null,
   options = {},
 ) {
-  const messages = await readStore(FILE);
-  const users = await readStore(USERS_FILE);
+  const messages = await prisma.message.findMany();
+  const users = await prisma.user.findMany();
   const usersById = buildUsersById(users);
-  const messageRequests = await readStore(MESSAGE_REQUESTS_FILE);
+  const messageRequests = await prisma.messageRequest.findMany();
   const safeAttachment = attachment
     ? {
         name: sanitizeString(attachment?.name, 220),
@@ -333,7 +327,7 @@ export async function postMessage(
     match_id: matchId,
     sender_id: senderId,
     message: "",
-    timestamp: new Date().toISOString(),
+    timestamp: new Date(),
     type,
     attachment: safeAttachment && safeAttachment.url ? safeAttachment : null,
     policy_status: "delivered",
@@ -459,22 +453,24 @@ export async function postMessage(
   entry.message = moderation.text;
   entry.moderated = Boolean(moderation.moderated);
   entry.moderation_reason = moderation.reason || "";
-  messages.push(entry);
+  await prisma.message.create({ data: entry });
 
   if (entry.queue_id) {
     await attachMessageToQueue(entry.queue_id, entry.id);
   }
 
   if (!sender?.verified) {
-    upsertRequestState(messageRequests, matchId, {
+    const reqState = upsertRequestState(messageRequests, matchId, {
       status: "pending",
       acted_by: null,
       acted_at: null,
     });
+    await prisma.messageRequest.upsert({
+      where: { thread_id: reqState.thread_id },
+      update: reqState,
+      create: reqState,
+    });
   }
-
-  await writeJson(FILE, messages);
-  await writeJson(MESSAGE_REQUESTS_FILE, messageRequests);
 
   // CRM (project.md): Every inquiry/message becomes a lead for Buying House / Factory org accounts.
   // Best-effort: never block the message if lead upsert fails.
@@ -514,21 +510,23 @@ export async function postMessage(
 }
 
 export async function listMessagesByMatch(matchId) {
-  const messages = await readStore(FILE);
-  const users = await readStore(USERS_FILE);
+  const [messages, users] = await Promise.all([
+    prisma.message.findMany({ where: { match_id: matchId } }),
+    prisma.user.findMany(),
+  ]);
   const usersById = buildUsersById(users);
-  return messages
-    .filter((m) => m.match_id === matchId)
-    .map((message) => enrichMessage(message, usersById));
+  return messages.map((message) => enrichMessage(message, usersById));
 }
 
 export async function tieredInbox(matchIds, currentUserId) {
-  const users = await readStore(USERS_FILE);
+  const [users, messages, messageRequests, conversationLocks, messageReads] = await Promise.all([
+    prisma.user.findMany(),
+    prisma.message.findMany({ where: { match_id: { in: matchIds } } }),
+    prisma.messageRequest.findMany(),
+    prisma.conversationLock.findMany(),
+    prisma.messageRead.findMany(),
+  ]);
   const usersById = buildUsersById(users);
-  const messages = await readStore(FILE);
-  const messageRequests = await readStore(MESSAGE_REQUESTS_FILE);
-  const conversationLocks = await readStore(CONVERSATION_LOCKS_FILE);
-  const messageReads = await readStore(MESSAGE_READS_FILE);
   const lockByRequestId = new Map(
     conversationLocks.map((lock) => [lock.request_id, lock]),
   );
@@ -644,40 +642,44 @@ export async function markThreadRead(matchId, userId) {
     throw err;
   }
 
-  const rows = await readStore(MESSAGE_READS_FILE);
-  const nextRows = Array.isArray(rows) ? rows : [];
-  const now = new Date().toISOString();
-  const idx = nextRows.findIndex(
-    (row) =>
-      String(row.match_id) === safeMatchId &&
-      String(row.user_id) === String(userId),
-  );
+  const now = new Date();
+  const existing = await prisma.messageRead.findFirst({
+    where: { match_id: safeMatchId, user_id: String(userId) },
+  });
 
-  if (idx >= 0) {
-    nextRows[idx] = { ...nextRows[idx], last_read_at: now, updated_at: now };
+  if (existing) {
+    await prisma.messageRead.update({
+      where: { id: existing.id },
+      data: { last_read_at: now, updated_at: now },
+    });
   } else {
-    nextRows.push({
-      id: crypto.randomUUID(),
-      match_id: safeMatchId,
-      user_id: String(userId),
-      last_read_at: now,
-      updated_at: now,
+    await prisma.messageRead.create({
+      data: {
+        id: crypto.randomUUID(),
+        match_id: safeMatchId,
+        user_id: String(userId),
+        last_read_at: now,
+        updated_at: now,
+      },
     });
   }
 
-  await writeJson(MESSAGE_READS_FILE, nextRows);
   return { match_id: safeMatchId, user_id: String(userId), last_read_at: now };
 }
 
 async function updateRequestStatus(threadId, status, actedBy) {
-  const messageRequests = await readStore(MESSAGE_REQUESTS_FILE);
-  const actedAt = new Date().toISOString();
-  const request = upsertRequestState(messageRequests, threadId, {
+  const actedAt = new Date();
+  const request = {
+    thread_id: threadId,
     status,
     acted_by: actedBy,
     acted_at: actedAt,
+  };
+  await prisma.messageRequest.upsert({
+    where: { thread_id: threadId },
+    update: request,
+    create: request,
   });
-  await writeJson(MESSAGE_REQUESTS_FILE, messageRequests);
   return request;
 }
 

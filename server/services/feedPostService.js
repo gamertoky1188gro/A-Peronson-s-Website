@@ -1,9 +1,8 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import { getPlanForUser } from "./entitlementService.js";
-
-const FILE = "feed_posts.json";
+import { categorizeFeedPost, moderateImage } from "./mediaModerationService.js";
 const STATUSES = new Set(["draft", "published"]);
 const MEDIA_TYPES = new Set(["image", "video"]);
 
@@ -208,19 +207,15 @@ export async function listFeedPosts({
   authorId = "",
   includeDrafts = false,
 } = {}) {
-  const rows = await readJson(FILE);
-  const targetStatus = sanitizeString(String(status || ""), 20).toLowerCase();
-  return (Array.isArray(rows) ? rows : [])
-    .filter((row) => {
-      if (authorId && String(row.user_id || "") !== String(authorId))
-        return false;
-      if (includeDrafts) return true;
-      if (!targetStatus) return true;
-      return String(row.status || "").toLowerCase() === targetStatus;
-    })
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
+  const where = {};
+  if (authorId) where.user_id = authorId;
+  if (!includeDrafts) {
+    where.status = sanitizeString(String(status || "published"), 20).toLowerCase();
+  }
+  return prisma.feedPost.findMany({
+    where,
+    orderBy: { created_at: "desc" },
+  });
 }
 
 export async function createFeedPost(actor, payload = {}) {
@@ -231,8 +226,6 @@ export async function createFeedPost(actor, payload = {}) {
     throw err;
   }
 
-  const rows = await readJson(FILE);
-  const list = Array.isArray(rows) ? rows : [];
   const next = normalizeFeedPost(ownerId, payload);
   const plan = await getPlanForUser(actor);
   const maxWords = plan === "premium" ? 1500 : 600;
@@ -240,23 +233,18 @@ export async function createFeedPost(actor, payload = {}) {
     next.description_markdown,
     maxWords,
   );
-  await writeJson(FILE, [next, ...list]);
+  await prisma.feedPost.create({ data: next });
   return next;
 }
 
 export async function updateFeedPost(actor, postId, payload = {}) {
-  const rows = await readJson(FILE);
-  const list = Array.isArray(rows) ? rows : [];
-  const idx = list.findIndex(
-    (row) => String(row.id || "") === String(postId || ""),
-  );
-  if (idx < 0) {
+  const current = await prisma.feedPost.findUnique({ where: { id: String(postId) } });
+  if (!current) {
     const err = new Error("Feed post not found");
     err.status = 404;
     throw err;
   }
 
-  const current = list[idx];
   if (!canManagePost(actor, current)) {
     const err = new Error("Forbidden");
     err.status = 403;
@@ -272,17 +260,12 @@ export async function updateFeedPost(actor, postId, payload = {}) {
       maxWords,
     );
   }
-  list[idx] = updated;
-  await writeJson(FILE, list);
+  await prisma.feedPost.update({ where: { id: String(postId) }, data: updated });
   return updated;
 }
 
 export async function deleteFeedPost(actor, postId) {
-  const rows = await readJson(FILE);
-  const list = Array.isArray(rows) ? rows : [];
-  const target = list.find(
-    (row) => String(row.id || "") === String(postId || ""),
-  );
+  const target = await prisma.feedPost.findUnique({ where: { id: String(postId) } });
   if (!target) {
     const err = new Error("Feed post not found");
     err.status = 404;
@@ -295,8 +278,5 @@ export async function deleteFeedPost(actor, postId) {
     throw err;
   }
 
-  const next = list.filter(
-    (row) => String(row.id || "") !== String(postId || ""),
-  );
-  await writeJson(FILE, next);
+  await prisma.feedPost.delete({ where: { id: String(postId) } });
 }

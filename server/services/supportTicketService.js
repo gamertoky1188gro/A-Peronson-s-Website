@@ -1,22 +1,7 @@
 import crypto from "crypto";
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { getAdminConfig } from "./adminConfigService.js";
-
-const TICKETS_FILE = "support_tickets.json";
-const MESSAGES_FILE = "support_ticket_messages.json";
-
-function nowIso() {
-  return new Date().toISOString();
-}
-
-function minutesFromNow(minutes) {
-  return new Date(Date.now() + minutes * 60 * 1000).toISOString();
-}
-
-function hoursFromNow(hours) {
-  return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
-}
 
 function publicUser(user) {
   if (!user) return null;
@@ -60,65 +45,49 @@ export async function createSupportTicket({
   contactEmail,
   priority,
 }) {
-  const tickets = await readJson(TICKETS_FILE);
-  const rows = Array.isArray(tickets) ? tickets : [];
-  const messages = await readJson(MESSAGES_FILE);
-  const messageRows = Array.isArray(messages) ? messages : [];
-
   const premium =
     String(actor?.subscription_status || "").toLowerCase() === "premium";
   const sla = await getSlaTargets();
-  const now = nowIso();
+  const now = new Date();
   const ticketId = crypto.randomUUID();
   const assignedTo = sanitizeString(
     String(actor?.profile?.account_manager_id || ""),
     120,
   );
 
-  const ticket = {
-    id: ticketId,
-    user_id: sanitizeString(String(actor?.id || ""), 120),
-    subject: sanitizeString(String(subject || "Support ticket"), 160),
-    category: sanitizeString(String(category || "General"), 80),
-    status: "open",
-    priority: normalizePriority(priority, premium),
-    premium_support: premium,
-    page_url: sanitizeString(String(pageUrl || ""), 240),
-    contact_email: sanitizeString(String(contactEmail || ""), 120),
-    assigned_to: assignedTo || null,
-    created_at: now,
-    updated_at: now,
-    last_message_at: now,
-    sla_response_due_at: minutesFromNow(sla.response_minutes),
-    sla_resolution_due_at: hoursFromNow(sla.resolution_hours),
-  };
+  const ticket = await prisma.supportTicket.create({
+    data: {
+      id: ticketId,
+      user_id: sanitizeString(String(actor?.id || ""), 120),
+      subject: sanitizeString(String(subject || "Support ticket"), 160),
+      category: sanitizeString(String(category || "General"), 80),
+      description: sanitizeString(String(description || ""), 1200),
+      status: "open",
+      priority: normalizePriority(priority, premium),
+      assigned_to: assignedTo || null,
+      created_at: now,
+      updated_at: now,
+    },
+  });
 
-  rows.push(ticket);
+  const initialMessage = await prisma.supportTicketMessage.create({
+    data: {
+      id: crypto.randomUUID(),
+      ticket_id: ticketId,
+      sender_id: sanitizeString(String(actor?.id || ""), 120),
+      message: sanitizeString(String(description || ""), 1200),
+      created_at: now,
+    },
+  });
 
-  const initialMessage = {
-    id: crypto.randomUUID(),
-    ticket_id: ticketId,
-    sender_id: sanitizeString(String(actor?.id || ""), 120),
-    sender_role: sanitizeString(String(actor?.role || ""), 40),
-    message: sanitizeString(String(description || ""), 1200),
-    created_at: now,
-  };
-  messageRows.push(initialMessage);
-
-  await writeJson(TICKETS_FILE, rows);
-  await writeJson(MESSAGES_FILE, messageRows);
   return { ticket, initial_message: initialMessage };
 }
 
 export async function listSupportTicketsForUser(userId) {
-  const tickets = await readJson(TICKETS_FILE);
-  const rows = Array.isArray(tickets) ? tickets : [];
-  const userRows = rows
-    .filter((row) => String(row.user_id) === String(userId || ""))
-    .sort((a, b) =>
-      String(b.updated_at || "").localeCompare(String(a.updated_at || "")),
-    );
-  return userRows;
+  return prisma.supportTicket.findMany({
+    where: { user_id: String(userId) },
+    orderBy: { updated_at: "desc" },
+  });
 }
 
 export async function listSupportTicketsAdmin({
@@ -129,112 +98,68 @@ export async function listSupportTicketsAdmin({
   limit = 50,
   offset = 0,
 } = {}) {
-  const tickets = await readJson(TICKETS_FILE);
-  const rows = Array.isArray(tickets) ? tickets : [];
-  const normalizedStatus = status
-    ? sanitizeString(String(status || ""), 40).toLowerCase()
-    : "";
-  const normalizedPriority = priority
-    ? sanitizeString(String(priority || ""), 40).toLowerCase()
-    : "";
-  const normalizedAssigned = assignedTo
-    ? sanitizeString(String(assignedTo || ""), 120)
-    : "";
-  const premiumFlag = premiumOnly === undefined ? null : Boolean(premiumOnly);
+  const where = {};
+  if (status) where.status = sanitizeString(String(status), 40).toLowerCase();
+  if (priority) where.priority = sanitizeString(String(priority), 40).toLowerCase();
+  if (assignedTo) where.assigned_to = sanitizeString(String(assignedTo), 120);
 
-  const filtered = rows.filter((row) => {
-    if (
-      normalizedStatus &&
-      String(row.status || "").toLowerCase() !== normalizedStatus
-    )
-      return false;
-    if (
-      normalizedPriority &&
-      String(row.priority || "").toLowerCase() !== normalizedPriority
-    )
-      return false;
-    if (
-      normalizedAssigned &&
-      String(row.assigned_to || "") !== normalizedAssigned
-    )
-      return false;
-    if (premiumFlag !== null && Boolean(row.premium_support) !== premiumFlag)
-      return false;
-    return true;
-  });
-
-  const sorted = filtered.sort((a, b) =>
-    String(b.updated_at || "").localeCompare(String(a.updated_at || "")),
-  );
   const start = Math.max(0, Number(offset) || 0);
   const max = Math.min(200, Math.max(1, Number(limit) || 50));
-  return sorted.slice(start, start + max);
+
+  return prisma.supportTicket.findMany({
+    where,
+    orderBy: { updated_at: "desc" },
+    skip: start,
+    take: max,
+  });
 }
 
 export async function listSupportTicketMessages(ticketId) {
-  const messages = await readJson(MESSAGES_FILE);
-  const rows = Array.isArray(messages) ? messages : [];
-  return rows
-    .filter((row) => String(row.ticket_id) === String(ticketId || ""))
-    .sort((a, b) =>
-      String(a.created_at || "").localeCompare(String(b.created_at || "")),
-    );
+  return prisma.supportTicketMessage.findMany({
+    where: { ticket_id: String(ticketId) },
+    orderBy: { created_at: "asc" },
+  });
 }
 
 export async function getSupportTicketById(ticketId) {
-  const tickets = await readJson(TICKETS_FILE);
-  const rows = Array.isArray(tickets) ? tickets : [];
-  return rows.find((row) => String(row.id) === String(ticketId || "")) || null;
+  return prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
 }
 
 export async function appendSupportTicketMessage(ticketId, actor, message) {
-  const tickets = await readJson(TICKETS_FILE);
-  const rows = Array.isArray(tickets) ? tickets : [];
-  const idx = rows.findIndex(
-    (row) => String(row.id) === String(ticketId || ""),
-  );
-  if (idx < 0) return null;
-  if (String(rows[idx].user_id) !== String(actor?.id || "")) return "forbidden";
+  const ticket = await prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
+  if (!ticket) return null;
+  if (String(ticket.user_id) !== String(actor?.id || "")) return "forbidden";
 
-  const entry = {
-    id: crypto.randomUUID(),
-    ticket_id: String(ticketId),
-    sender_id: sanitizeString(String(actor?.id || ""), 120),
-    sender_role: sanitizeString(String(actor?.role || ""), 40),
-    message: sanitizeString(String(message || ""), 1200),
-    created_at: nowIso(),
-  };
+  const entry = await prisma.supportTicketMessage.create({
+    data: {
+      id: crypto.randomUUID(),
+      ticket_id: String(ticketId),
+      sender_id: sanitizeString(String(actor?.id || ""), 120),
+      message: sanitizeString(String(message || ""), 1200),
+      created_at: new Date(),
+    },
+  });
 
-  const messages = await readJson(MESSAGES_FILE);
-  const messageRows = Array.isArray(messages) ? messages : [];
-  messageRows.push(entry);
-  rows[idx] = {
-    ...rows[idx],
-    updated_at: entry.created_at,
-    last_message_at: entry.created_at,
-    status: rows[idx].status === "resolved" ? "open" : rows[idx].status,
-  };
+  const nextStatus = ticket.status === "resolved" ? "open" : ticket.status;
+  await prisma.supportTicket.update({
+    where: { id: String(ticketId) },
+    data: { updated_at: entry.created_at, status: nextStatus },
+  });
 
-  await writeJson(MESSAGES_FILE, messageRows);
-  await writeJson(TICKETS_FILE, rows);
   return entry;
 }
 
 export async function adminAssignSupportTicket(ticketId, assigneeId, actorId) {
-  const tickets = await readJson(TICKETS_FILE);
-  const rows = Array.isArray(tickets) ? tickets : [];
-  const idx = rows.findIndex(
-    (row) => String(row.id) === String(ticketId || ""),
-  );
-  if (idx < 0) return null;
-  rows[idx] = {
-    ...rows[idx],
-    assigned_to: sanitizeString(String(assigneeId || ""), 120) || null,
-    updated_at: nowIso(),
-    updated_by: sanitizeString(String(actorId || ""), 120),
-  };
-  await writeJson(TICKETS_FILE, rows);
-  return rows[idx];
+  const ticket = await prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
+  if (!ticket) return null;
+
+  return prisma.supportTicket.update({
+    where: { id: String(ticketId) },
+    data: {
+      assigned_to: sanitizeString(String(assigneeId || ""), 120) || null,
+      updated_at: new Date(),
+    },
+  });
 }
 
 export async function adminUpdateSupportTicket(
@@ -242,46 +167,36 @@ export async function adminUpdateSupportTicket(
   patch = {},
   actorId = "",
 ) {
-  const tickets = await readJson(TICKETS_FILE);
-  const rows = Array.isArray(tickets) ? tickets : [];
-  const idx = rows.findIndex(
-    (row) => String(row.id) === String(ticketId || ""),
-  );
-  if (idx < 0) return null;
+  const ticket = await prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
+  if (!ticket) return null;
 
   const nextStatus = patch.status
     ? sanitizeString(String(patch.status || ""), 40).toLowerCase()
-    : rows[idx].status;
-  const nextPriority = patch.priority
-    ? sanitizeString(String(patch.priority || ""), 40).toLowerCase()
-    : rows[idx].priority;
+    : ticket.status;
 
-  rows[idx] = {
-    ...rows[idx],
-    status: nextStatus || rows[idx].status,
-    priority: nextPriority || rows[idx].priority,
-    resolution_note: patch.resolution_note
-      ? sanitizeString(String(patch.resolution_note || ""), 240)
-      : rows[idx].resolution_note,
-    resolved_at:
-      nextStatus === "resolved" ? nowIso() : rows[idx].resolved_at || "",
-    updated_at: nowIso(),
-    updated_by: sanitizeString(String(actorId || ""), 120),
-  };
-
-  await writeJson(TICKETS_FILE, rows);
-  return rows[idx];
+  return prisma.supportTicket.update({
+    where: { id: String(ticketId) },
+    data: {
+      status: nextStatus || ticket.status,
+      ...(patch.priority
+        ? { priority: sanitizeString(String(patch.priority), 40).toLowerCase() }
+        : {}),
+      ...(nextStatus === "resolved" ? { resolved_at: new Date() } : {}),
+      updated_at: new Date(),
+    },
+  });
 }
 
 export async function buildSupportTicketSummary(ticket) {
   if (!ticket) return ticket;
-  const users = await readJson("users.json");
-  const rows = Array.isArray(users) ? users : [];
-  const user =
-    rows.find((u) => String(u.id) === String(ticket.user_id)) || null;
-  const assignee = ticket.assigned_to
-    ? rows.find((u) => String(u.id) === String(ticket.assigned_to)) || null
-    : null;
+  const [user, assignee] = await Promise.all([
+    ticket.user_id
+      ? prisma.user.findUnique({ where: { id: String(ticket.user_id) } })
+      : null,
+    ticket.assigned_to
+      ? prisma.user.findUnique({ where: { id: String(ticket.assigned_to) } })
+      : null,
+  ]);
   return {
     ...ticket,
     user: publicUser(user),

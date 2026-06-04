@@ -9,7 +9,7 @@ axios.post = async () => ({
 
 import { createDraftContract } from "../server/services/documentService.js";
 import { createSignSession } from "../server/services/eSignService.js";
-import { readJson } from "../server/utils/jsonStore.js";
+import prisma from "../server/utils/prisma.js";
 (async () => {
   const actor = { id: "owner-debug", role: "owner" };
   const draft = await createDraftContract(actor, {
@@ -21,8 +21,7 @@ import { readJson } from "../server/utils/jsonStore.js";
   console.log("draft", draft.id);
   const session = await createSignSession(draft.id, actor);
   console.log("session", session);
-  const docs = await readJson("documents.json");
-  const stored = docs.find((d) => String(d.id) === String(draft.id));
+  const stored = await prisma.document.findUnique({ where: { id: draft.id } });
   console.log("stored.artifact", stored?.artifact);
 })().catch((err) => {
   console.error(err);

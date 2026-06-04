@@ -1,9 +1,7 @@
-import { readJson, writeJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { logInfo } from "../utils/logger.js";
 import { isEuCountry } from "../../shared/config/geo.js";
-
-const FILE = "verification.json";
 
 const BUYER_REGIONS = {
   EU: "EU",
@@ -218,8 +216,7 @@ function toPublicFileUrl(filePath = "") {
 }
 
 export async function getVerification(userId) {
-  const all = await readJson(FILE);
-  return all.find((v) => v.user_id === userId) || null;
+  return prisma.verification.findUnique({ where: { user_id: userId } });
 }
 
 function diffDaysFromNow(endDate) {
@@ -237,46 +234,45 @@ export async function isVerificationSubscriptionValid(userId) {
 }
 
 export async function setVerificationSubscription(userId, endDate) {
-  const all = await readJson(FILE);
-  const idx = all.findIndex((v) => v.user_id === userId);
   const nextEnd = endDate || "";
   const remainingDays = diffDaysFromNow(nextEnd);
   const expiringSoon = remainingDays > 0 && remainingDays <= 7;
 
-  if (idx < 0) {
-    all.push({
-      user_id: userId,
-      role: "",
-      buyer_region: "",
-      documents: emptyDocs(),
-      verified: false,
-      verified_at: "",
+  const existing = await prisma.verification.findUnique({ where: { user_id: userId } });
+
+  if (!existing) {
+    return prisma.verification.create({
+      data: {
+        user_id: userId,
+        role: "",
+        buyer_region: "",
+        documents: emptyDocs(),
+        verified: false,
+        subscription_valid_until: nextEnd,
+        subscription_remaining_days: remainingDays,
+        expiring_soon: expiringSoon,
+        missing_required: [],
+        credibility: buildCredibility([], emptyDocs()),
+        review_status: "pending",
+        review_reason: "",
+      },
+    });
+  }
+
+  const verification_status = existing.verified
+    ? expiringSoon ? "expiring_soon" : "verified_active"
+    : remainingDays > 0 ? "pending_review" : "expired";
+
+  return prisma.verification.update({
+    where: { user_id: userId },
+    data: {
       subscription_valid_until: nextEnd,
       subscription_remaining_days: remainingDays,
       expiring_soon: expiringSoon,
-      missing_required: [],
-      credibility: buildCredibility([], emptyDocs()),
-      review_status: "pending",
-      review_reason: "",
-      reviewed_at: "",
-      updated_at: new Date().toISOString(),
-    });
-  } else {
-    all[idx].subscription_valid_until = nextEnd;
-    all[idx].subscription_remaining_days = remainingDays;
-    all[idx].expiring_soon = expiringSoon;
-    all[idx].verification_status = all[idx].verified
-      ? expiringSoon
-        ? "expiring_soon"
-        : "verified_active"
-      : remainingDays > 0
-        ? "pending_review"
-        : "expired";
-    all[idx].updated_at = new Date().toISOString();
-  }
-
-  await writeJson(FILE, all);
-  return idx < 0 ? all[all.length - 1] : all[idx];
+      verification_status,
+      updated_at: new Date(),
+    },
+  });
 }
 
 function addDaysFrom(baseDate, days = 30) {
@@ -341,9 +337,7 @@ export function getVerificationPublicSummary(user, record) {
 }
 
 export async function upsertVerification(user, documentsPatch) {
-  const all = await readJson(FILE);
-  const idx = all.findIndex((v) => v.user_id === user.id);
-  const existing = idx >= 0 ? all[idx] : null;
+  const existing = await prisma.verification.findUnique({ where: { user_id: user.id } });
 
   const docs = {
     ...(existing?.documents || emptyDocs()),
@@ -377,8 +371,8 @@ export async function upsertVerification(user, documentsPatch) {
     buyer_region: buyerRegion,
     documents: docs,
     verified: shouldKeepApproved,
-    verified_at: shouldKeepApproved ? existing?.verified_at || "" : "",
-    subscription_valid_until: existing?.subscription_valid_until || "",
+    verified_at: shouldKeepApproved ? existing?.verified_at || null : null,
+    subscription_valid_until: existing?.subscription_valid_until || null,
     missing_required,
     credibility,
     review_status: nextReviewStatus,
@@ -386,146 +380,124 @@ export async function upsertVerification(user, documentsPatch) {
       nextReviewStatus === "rejected"
         ? sanitizeString(String(existing?.review_reason || ""), 240)
         : "",
-    reviewed_at: shouldKeepApproved ? existing?.reviewed_at || "" : "",
-    updated_at: new Date().toISOString(),
+    reviewed_at: shouldKeepApproved ? existing?.reviewed_at || null : null,
+    updated_at: new Date(),
   };
 
-  if (idx >= 0) all[idx] = record;
-  else all.push(record);
+  const result = await prisma.verification.upsert({
+    where: { user_id: user.id },
+    update: record,
+    create: record,
+  });
 
-  await writeJson(FILE, all);
   logInfo("Verification documents updated", {
     user_id: user.id,
     buyer_region: buyerRegion,
     missing_required: missing_required.length,
     credibility_score: credibility.score,
   });
-  return record;
+  return result;
 }
 
 export async function adminApproveVerification(userId) {
-  const all = await readJson(FILE);
-  const idx = all.findIndex((v) => v.user_id === userId);
-  if (idx < 0) return null;
+  const existing = await prisma.verification.findUnique({ where: { user_id: userId } });
+  if (!existing) return null;
 
   const validSub = await isVerificationSubscriptionValid(userId);
   if (!validSub) {
-    all[idx].verified = false;
-    all[idx].missing_required = [
-      ...(all[idx].missing_required || []),
-      "premium_subscription_required_for_verification",
-    ];
-    await writeJson(FILE, all);
-    return all[idx];
+    return prisma.verification.update({
+      where: { user_id: userId },
+      data: {
+        verified: false,
+        missing_required: [
+          ...(existing.missing_required || []),
+          "premium_subscription_required_for_verification",
+        ],
+      },
+    });
   }
 
-  if ((all[idx].missing_required || []).length > 0) {
-    all[idx].verified = false;
-    all[idx].review_status = "incomplete";
-    all[idx].review_reason = "missing_required_documents";
-    all[idx].reviewed_at = new Date().toISOString();
-    await writeJson(FILE, all);
-    return all[idx];
+  if ((existing.missing_required || []).length > 0) {
+    return prisma.verification.update({
+      where: { user_id: userId },
+      data: {
+        verified: false,
+        review_status: "incomplete",
+        review_reason: "missing_required_documents",
+        reviewed_at: new Date(),
+      },
+    });
   }
 
-  all[idx].verified = true;
-  all[idx].verified_at = new Date().toISOString();
-  all[idx].review_status = "approved";
-  all[idx].review_reason = "";
-  all[idx].reviewed_at = new Date().toISOString();
-  all[idx].subscription_valid_until = all[idx].subscription_valid_until || "";
-  await writeJson(FILE, all);
   logInfo("Verification approved", { user_id: userId });
-  return all[idx];
+  return prisma.verification.update({
+    where: { user_id: userId },
+    data: {
+      verified: true,
+      verified_at: new Date(),
+      review_status: "approved",
+      review_reason: "",
+      reviewed_at: new Date(),
+      subscription_valid_until: existing.subscription_valid_until || null,
+    },
+  });
 }
 
 export async function adminRejectVerification(userId, reason = "") {
-  const all = await readJson(FILE);
-  const idx = all.findIndex((v) => v.user_id === userId);
-  if (idx < 0) return null;
+  const existing = await prisma.verification.findUnique({ where: { user_id: userId } });
+  if (!existing) return null;
 
-  all[idx].verified = false;
-  all[idx].verified_at = "";
-  all[idx].review_status = "rejected";
-  all[idx].review_reason = sanitizeString(
-    String(reason || "rejected_by_admin"),
-    240,
-  );
-  all[idx].reviewed_at = new Date().toISOString();
-  await writeJson(FILE, all);
   logInfo("Verification rejected", { user_id: userId, reason });
-  return all[idx];
+  return prisma.verification.update({
+    where: { user_id: userId },
+    data: {
+      verified: false,
+      verified_at: null,
+      review_status: "rejected",
+      review_reason: sanitizeString(String(reason || "rejected_by_admin"), 240),
+      reviewed_at: new Date(),
+    },
+  });
 }
 
 export async function revokeExpiredVerifications() {
-  const all = await readJson(FILE);
-  let changed = false;
+  const all = await prisma.verification.findMany({ where: { verified: true } });
+  const now = Date.now();
 
   for (const rec of all) {
-    const active =
-      rec.subscription_valid_until &&
-      new Date(rec.subscription_valid_until).getTime() > Date.now();
-    const remainingDays = rec.subscription_valid_until
-      ? Math.max(
-          0,
-          Math.ceil(
-            (new Date(rec.subscription_valid_until).getTime() - Date.now()) /
-              (24 * 60 * 60 * 1000),
-          ),
-        )
-      : 0;
-    const expiringSoon =
-      rec.verified && remainingDays > 0 && remainingDays <= 7;
-    if (!active && rec.verified) {
-      rec.verified = false;
-      rec.subscription_valid_until = rec.subscription_valid_until || "";
-      rec.review_status = "expired";
-      rec.review_reason = "subscription_expired";
-      rec.reviewed_at = new Date().toISOString();
-      changed = true;
-    }
-    if (rec.subscription_remaining_days !== remainingDays) {
-      rec.subscription_remaining_days = remainingDays;
-      changed = true;
-    }
-    if (rec.expiring_soon !== expiringSoon) {
-      rec.expiring_soon = expiringSoon;
-      changed = true;
-    }
-    const nextStatus = rec.verified
-      ? expiringSoon
-        ? "expiring_soon"
-        : "verified_active"
-      : remainingDays > 0
-        ? "pending_review"
-        : "expired";
-    if (rec.verification_status !== nextStatus) {
-      rec.verification_status = nextStatus;
-      changed = true;
+    const subEnd = rec.subscription_valid_until;
+    if (!subEnd || new Date(subEnd).getTime() <= now) {
+      await prisma.verification.update({
+        where: { user_id: rec.user_id },
+        data: {
+          verified: false,
+          review_status: "expired",
+          review_reason: "subscription_expired",
+          reviewed_at: new Date(),
+          subscription_remaining_days: 0,
+          expiring_soon: false,
+          verification_status: "expired",
+        },
+      });
     }
   }
 
-  if (changed) await writeJson(FILE, all);
-  return all;
+  return prisma.verification.findMany();
 }
 
 export async function listVerificationQueue({ status } = {}) {
   const [all, users, documents] = await Promise.all([
-    readJson(FILE),
-    readJson("users.json"),
-    readJson("documents.json"),
+    prisma.verification.findMany(),
+    prisma.user.findMany(),
+    prisma.document.findMany({
+      where: { entity_type: "verification" },
+    }),
   ]);
 
   const usersById = new Map(users.map((u) => [String(u.id), u]));
   const docsByUser = new Map();
 
-  const verificationDocs = Array.isArray(documents)
-    ? documents.filter(
-        (doc) => String(doc.entity_type || "") === "verification",
-      )
-    : [];
-
-  for (const doc of verificationDocs) {
+  for (const doc of documents) {
     const ownerId = String(doc.entity_id || doc.uploaded_by || "");
     if (!ownerId) continue;
     if (!docsByUser.has(ownerId)) docsByUser.set(ownerId, []);
@@ -539,9 +511,8 @@ export async function listVerificationQueue({ status } = {}) {
   DUPLICATE_FIELDS.forEach((field) => {
     duplicateIndex[field] = new Map();
   });
-  const rows = Array.isArray(all) ? all : [];
 
-  for (const rec of rows) {
+  for (const rec of all) {
     const docs = rec?.documents || {};
     DUPLICATE_FIELDS.forEach((field) => {
       const aliasFields = fieldAliases[field] || [field];
@@ -555,7 +526,7 @@ export async function listVerificationQueue({ status } = {}) {
     });
   }
 
-  const filtered = rows.filter((rec) => {
+  const filtered = all.filter((rec) => {
     const reviewStatus = normalizeReviewStatus(
       rec.review_status,
       rec.verified ? "approved" : "pending",
@@ -617,11 +588,11 @@ export async function listVerificationQueue({ status } = {}) {
 }
 
 export async function listExpiringVerifications(thresholdDays = 7) {
-  const all = await readJson(FILE);
-  const rows = Array.isArray(all) ? all : [];
-  return rows.filter((rec) => {
-    const remaining = Number(rec.subscription_remaining_days || 0);
-    return rec.verified && remaining > 0 && remaining <= thresholdDays;
+  return prisma.verification.findMany({
+    where: {
+      verified: true,
+      subscription_remaining_days: { gt: 0, lte: thresholdDays },
+    },
   });
 }
 
@@ -630,25 +601,26 @@ export async function markVerificationExpiringSoon(
   remainingDays,
   thresholdDays = 7,
 ) {
-  const all = await readJson(FILE);
-  const idx = all.findIndex((v) => v.user_id === userId);
-  if (idx < 0) return null;
+  const existing = await prisma.verification.findUnique({ where: { user_id: userId } });
+  if (!existing) return null;
 
   const nextRemainingDays = Math.max(0, Number(remainingDays) || 0);
   const isExpiringSoon =
-    all[idx].verified &&
+    existing.verified &&
     nextRemainingDays > 0 &&
     nextRemainingDays <= thresholdDays;
 
-  all[idx].subscription_remaining_days = nextRemainingDays;
-  all[idx].expiring_soon = isExpiringSoon;
-  all[idx].verification_status = all[idx].verified
-    ? isExpiringSoon
-      ? "expiring_soon"
-      : "verified_active"
+  const verification_status = existing.verified
+    ? isExpiringSoon ? "expiring_soon" : "verified_active"
     : "expired";
-  all[idx].updated_at = new Date().toISOString();
 
-  await writeJson(FILE, all);
-  return all[idx];
+  return prisma.verification.update({
+    where: { user_id: userId },
+    data: {
+      subscription_remaining_days: nextRemainingDays,
+      expiring_soon: isExpiringSoon,
+      verification_status,
+      updated_at: new Date(),
+    },
+  });
 }

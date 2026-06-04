@@ -1,16 +1,9 @@
 import prisma from "../utils/prisma.js";
-import { readLegacyJson, isCrmSqlEnabled } from "../utils/crmFallbackStore.js";
-import { readJson } from "../utils/jsonStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import { createNotification } from "./notificationService.js";
 import { sendEmail } from "./emailService.js";
 import { trackEvent } from "./eventTrackingService.js";
 import { logError } from "../utils/logger.js";
-
-const REMINDERS_FILE = "lead_reminders.json";
-const LEADS_FILE = "leads.json";
-const USERS_FILE = "users.json";
-// Evaluate CRM mode at runtime inside the sweep to respect test-time env changes.
 
 let sweepActive = false;
 
@@ -35,44 +28,26 @@ export async function runLeadReminderSweep() {
   sweepActive = true;
 
   try {
-    let reminders;
-    let leads;
-    let users;
+    const [reminders, leads, users] = await Promise.all([
+      prisma.leadReminder.findMany(),
+      prisma.lead.findMany(),
+      prisma.user.findMany(),
+    ]);
 
-    const useSql = isCrmSqlEnabled();
-    let reader;
-    if (!useSql) {
-      reader = process.env.NODE_ENV === "test" ? readJson : readLegacyJson;
-    }
-
-    [reminders, leads, users] = useSql
-      ? await Promise.all([
-          prisma.leadReminder.findMany(),
-          prisma.lead.findMany(),
-          prisma.user.findMany(),
-        ])
-      : await Promise.all([
-          reader(REMINDERS_FILE),
-          reader(LEADS_FILE),
-          reader(USERS_FILE),
-        ]);
-
-    const reminderRows = Array.isArray(reminders) ? reminders : [];
-    const leadRows = Array.isArray(leads) ? leads : [];
-    const userRows = Array.isArray(users) ? users : [];
-    const usersById = new Map(userRows.map((u) => [String(u.id), u]));
-    const leadsById = new Map(leadRows.map((l) => [String(l.id), l]));
+    const usersById = new Map(users.map((u) => [String(u.id), u]));
+    const leadsById = new Map(leads.map((l) => [String(l.id), l]));
 
     const now = Date.now();
     let processed = 0;
 
     const sideEffects = [];
+    const updates = [];
 
-    const nextReminders = reminderRows.map((reminder) => {
+    for (const reminder of reminders) {
       const remindAt = new Date(reminder.remind_at || "").getTime();
-      if (!Number.isFinite(remindAt)) return reminder;
-      if (reminder.done) return reminder;
-      if (remindAt > now) return reminder;
+      if (!Number.isFinite(remindAt)) continue;
+      if (reminder.done) continue;
+      if (remindAt > now) continue;
 
       const lead = leadsById.get(String(reminder.lead_id || ""));
       const recipients = [...buildRecipientSet({ reminder, lead })];
@@ -121,29 +96,21 @@ export async function runLeadReminderSweep() {
         }),
       );
 
-      processed += 1;
-      return {
-        ...reminder,
-        done: true,
-        notified_at: new Date().toISOString(),
-        notified_to: recipients,
-      };
-    });
-
-    if (processed > 0 && useSql) {
-      await prisma.$transaction(
-        nextReminders
-          .filter((row) => row?.id)
-          .map((row) =>
-            prisma.leadReminder.update({
-              where: { id: row.id },
-              data: {
-                done: Boolean(row.done),
-                notified_at: row.notified_at ? new Date(row.notified_at) : null,
-              },
-            }),
-          ),
+      updates.push(
+        prisma.leadReminder.update({
+          where: { id: reminder.id },
+          data: {
+            done: true,
+            notified_at: new Date(),
+          },
+        }),
       );
+
+      processed += 1;
+    }
+
+    if (updates.length) {
+      await prisma.$transaction(updates);
     }
 
     if (sideEffects.length) {

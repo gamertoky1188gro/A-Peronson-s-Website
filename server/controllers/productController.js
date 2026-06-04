@@ -13,7 +13,7 @@ import {
   getQuotaSnapshot,
   getUserPlan,
 } from "../services/searchAccessService.js";
-import { readJson } from "../utils/jsonStore.js";
+import prisma from "../utils/prisma.js";
 import {
   listMyProductViews,
   recordView,
@@ -427,7 +427,9 @@ export async function searchProducts(req, res) {
     }
   }
 
+  const sort = String(req.query.sort || "relevance").trim().toLowerCase();
   const q = String(req.query.q || "").trim();
+  const field = String(req.query.field || "").trim().toLowerCase();
   const searchTokens = buildSearchTokens(q);
   const wantedIndustry = String(req.query.industry || "")
     .trim()
@@ -472,6 +474,9 @@ export async function searchProducts(req, res) {
     .trim()
     .toLowerCase();
   const wantedLanguage = parseList(req.query.languageSupport);
+  const wantedSeason = String(req.query.season || "").trim().toLowerCase();
+  const wantedMachinery = parseList(req.query.machinery);
+  const wantedStockStatus = String(req.query.stockStatus || "").trim().toLowerCase();
   const wantedIncoterms = parseList(req.query.incoterms);
   const processes = parseList(req.query.processes);
   const yearsInBusinessMin = parseNumber(req.query.yearsInBusinessMin);
@@ -626,10 +631,22 @@ export async function searchProducts(req, res) {
     });
   }
 
-  const all = await listProducts({});
+  const where = {};
+  if (wantedCategories.length) where.category = { in: wantedCategories };
+  if (wantedIndustry) where.industry = wantedIndustry;
+  if (q) {
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { category: { contains: q, mode: "insensitive" } },
+      { material: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  const all = await prisma.product.findMany({ where, orderBy: { created_at: "desc" } });
+  const companyIds = [...new Set(all.map((p) => p.company_id))];
   const [users, messages, boostMap, orderCertMap] = await Promise.all([
-    readJson("users.json"),
-    readJson("messages.json"),
+    companyIds.length ? prisma.user.findMany({ where: { id: { in: companyIds } } }) : [],
+    prisma.message.findMany({ take: 0 }),
     getActiveBoostMap("feed"),
     getOrderCertificationMap(),
   ]);
@@ -732,11 +749,21 @@ export async function searchProducts(req, res) {
       }
       if (priorityOnly && !p.priority_active) return false;
       if (searchTokens.length) {
-        const searchText = normalizeSearchText(
-          `${p.title} ${p.category} ${p.material} ${p.description} ${p.color_pantone || ""} ${p.size_range || ""}`,
-        );
-        const hit = searchTokens.every((token) => searchText.includes(token));
-        if (!hit) return false;
+        if (field === "buyer") {
+          const nameText = normalizeSearchText(p.author?.name || "");
+          const hit = searchTokens.every((token) => nameText.includes(token));
+          if (!hit) return false;
+        } else if (field === "company") {
+          const companyText = normalizeSearchText(p.author?.name || p.author?.company_name || p.name || "");
+          const hit = searchTokens.every((token) => companyText.includes(token));
+          if (!hit) return false;
+        } else {
+          const searchText = normalizeSearchText(
+            `${p.title} ${p.category} ${p.material} ${p.description} ${p.color_pantone || ""} ${p.size_range || ""}`,
+          );
+          const hit = searchTokens.every((token) => searchText.includes(token));
+          if (!hit) return false;
+        }
       }
       if (wantedCategories.length > 0) {
         const categoryValue = String(p.category || "").toLowerCase();
@@ -957,10 +984,45 @@ export async function searchProducts(req, res) {
           return false;
         }
       }
+      if (wantedSeason) {
+        const season = String(p.season || "").toLowerCase();
+        if (season !== wantedSeason) return false;
+      }
+      if (wantedMachinery.length > 0) {
+        const machinery = String(p.machinery || p.equipment || p.author?.machinery || "").toLowerCase();
+        const hit = wantedMachinery.some((m) => machinery.includes(m));
+        if (!hit) return false;
+      }
+      if (wantedStockStatus) {
+        const status = String(p.stock_status || p.availability || p.author?.stock_status || "").toLowerCase();
+        if (status !== wantedStockStatus) return false;
+      }
       return true;
     });
 
   const sortedResults = results.sort((a, b) => {
+    if (sort === "newest") {
+      const aCreated = new Date(a.created_at || "").getTime();
+      const bCreated = new Date(b.created_at || "").getTime();
+      if (Number.isFinite(aCreated) && Number.isFinite(bCreated))
+        return bCreated - aCreated;
+      return 0;
+    }
+    if (sort === "price_asc") {
+      const aPrice = Number(a.priceBaseMin || a.priceNormalizedBase || 0);
+      const bPrice = Number(b.priceBaseMin || b.priceNormalizedBase || 0);
+      return aPrice - bPrice;
+    }
+    if (sort === "price_desc") {
+      const aPrice = Number(a.priceBaseMin || a.priceNormalizedBase || 0);
+      const bPrice = Number(b.priceBaseMin || b.priceNormalizedBase || 0);
+      return bPrice - aPrice;
+    }
+    if (sort === "moq_asc") {
+      const aMoq = Number(a.moq || 0);
+      const bMoq = Number(b.moq || 0);
+      return aMoq - bMoq;
+    }
     if (a.priority_score !== b.priority_score)
       return b.priority_score - a.priority_score;
     const aCreated = new Date(a.created_at || "").getTime();

@@ -1,5 +1,4 @@
 import prisma from "../utils/prisma.js";
-import { readJson } from "../utils/jsonStore.js";
 
 const DEFAULT_BASE = "USD";
 const DEFAULT_STALE_TOLERANCE_MINUTES = 24 * 60;
@@ -357,8 +356,8 @@ export async function refreshRates() {
   try {
     const base = await getBaseCurrency();
     const [products, requirements] = await Promise.all([
-      readJson("company_products.json"),
-      readJson("requirements.json"),
+      prisma.product.findMany(),
+      prisma.requirement.findMany(),
     ]);
 
     const currencies = new Set([base]);
