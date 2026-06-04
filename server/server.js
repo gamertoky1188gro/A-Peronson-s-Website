@@ -76,7 +76,7 @@ import {
   setUserOffline,
   touchUser,
 } from "./services/presenceService.js";
-import prisma from "../utils/prisma.js";
+import prisma from "./utils/prisma.js";
 import {
   consumePendingInvites,
   enqueuePendingInvites,
