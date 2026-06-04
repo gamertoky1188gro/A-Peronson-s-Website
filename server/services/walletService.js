@@ -195,10 +195,6 @@ function normalizeCouponCode(code = "") {
     .toUpperCase();
 }
 
-function nowIso() {
-  return new Date().toISOString();
-}
-
 function isExpired(expiresAt) {
   if (!expiresAt) return false;
   const ts = new Date(expiresAt).getTime();
