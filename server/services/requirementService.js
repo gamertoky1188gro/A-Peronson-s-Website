@@ -14,6 +14,9 @@ import {
   deleteRequirementIndex,
 } from "./openSearchService.js";
 import {
+  indexRequirement as indexRequirementQdrant,
+} from "./qdrantService.js";
+import {
   extractOriginalPrice,
   getBaseCurrency,
   normalizePriceRange,
@@ -395,6 +398,7 @@ export async function createRequirement(buyerId, payload) {
       ...(author || {}),
       ...(author?.profile || {}),
     });
+    indexRequirementQdrant(requirement, author || {}).catch(() => {});
   } catch {
     // ignore index failures
   }
@@ -749,6 +753,7 @@ export async function updateRequirement(requirementId, patch, actor) {
       ...(author || {}),
       ...(author?.profile || {}),
     });
+    indexRequirementQdrant(next, author || {}).catch(() => {});
   } catch {
     // ignore index failures
   }

@@ -29,6 +29,14 @@ import {
   searchOpenSearch,
 } from "../services/openSearchService.js";
 import {
+  isQdrantConfigured,
+  searchQdrant,
+} from "../services/qdrantService.js";
+import {
+  isRerankerConfigured,
+  rerankIds,
+} from "../services/rerankerService.js";
+import {
   getBaseCurrency,
   normalizeMoney,
 } from "../services/currencyService.js";
@@ -602,7 +610,33 @@ export async function searchProducts(req, res) {
     ? openSearchResult.ids.map(String)
     : [];
   const openSearchIdSet = openSearchIds.length ? new Set(openSearchIds) : null;
-  const engine = openSearchResult?.engine || "fallback_json";
+  const osEngine = openSearchResult?.engine || "fallback_json";
+
+  const qdrantReady = q ? await isQdrantConfigured() : false;
+  const qdrantResult = qdrantReady
+    ? await searchQdrant({
+        type: "products",
+        query: q,
+        cursor,
+        limit,
+        filters: {
+          country: wantedCountry,
+          industry: wantedIndustry,
+          category: wantedCategories,
+        },
+      })
+    : null;
+  const qdrantIds = Array.isArray(qdrantResult?.ids) ? qdrantResult.ids.map(String) : [];
+  const qdrantScoreMap = new Map();
+  if (qdrantIds.length) {
+    qdrantIds.forEach((id, i) => qdrantScoreMap.set(id, qdrantResult.scores[i]));
+  }
+
+  const combinedIds = qdrantIds.length
+    ? [...new Set([...openSearchIds, ...qdrantIds])]
+    : openSearchIds;
+  const combinedIdSet = combinedIds.length ? new Set(combinedIds) : null;
+  const engine = osEngine === "opensearch" && combinedIdSet ? "opensearch" : qdrantResult?.engine || osEngine;
 
   if (estimateOnly && engine === "opensearch") {
     const resolvedFacets = openSearchResult?.facets
@@ -789,8 +823,8 @@ export async function searchProducts(req, res) {
       };
     })
     .filter((p) => {
-      if (openSearchIdSet) {
-        if (!openSearchIdSet.has(String(p.id))) return false;
+      if (combinedIdSet) {
+        if (!combinedIdSet.has(String(p.id))) return false;
         if (priorityOnly && !p.priority_active) return false;
         return true;
       }
@@ -1080,24 +1114,34 @@ export async function searchProducts(req, res) {
   });
 
   const orderedResults = (() => {
-    if (!openSearchIdSet) return sortedResults;
+    if (!combinedIdSet && !qdrantScoreMap.size) return sortedResults;
+
+    if (qdrantScoreMap.size && !combinedIdSet) {
+      return [...sortedResults].sort((a, b) => (qdrantScoreMap.get(b.id) || 0) - (qdrantScoreMap.get(a.id) || 0));
+    }
+
     const byId = new Map(sortedResults.map((row) => [String(row.id), row]));
-    return openSearchIds.map((id) => byId.get(String(id))).filter(Boolean);
+    return combinedIds.map((id) => byId.get(String(id))).filter(Boolean);
   })();
 
+  const useReranker = q && orderedResults.length > 1 ? await isRerankerConfigured() : false;
+  const rerankedResults = useReranker
+    ? await rerankIds(q, orderedResults)
+    : orderedResults;
+
   const totalMatched =
-    engine === "opensearch"
+    engine === "opensearch" && !useReranker
       ? Number(openSearchResult?.total || 0)
-      : orderedResults.length;
+      : rerankedResults.length;
   const pagedItems =
-    engine === "opensearch"
-      ? orderedResults
-      : orderedResults.slice(cursor, cursor + limit);
+    engine === "opensearch" && !useReranker
+      ? rerankedResults
+      : rerankedResults.slice(cursor, cursor + limit);
   const nextCursor = estimateOnly
     ? null
-    : engine === "opensearch"
-      ? cursor + openSearchIds.length < totalMatched
-        ? cursor + openSearchIds.length
+    : engine === "opensearch" && !useReranker
+      ? cursor + combinedIds.length < totalMatched
+        ? cursor + combinedIds.length
         : null
       : cursor + pagedItems.length < totalMatched
         ? cursor + pagedItems.length

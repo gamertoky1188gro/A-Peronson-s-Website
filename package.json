@@ -27,7 +27,11 @@
     "ci:smoke": "node scripts/ci/smoke-search.mjs",
     "ci:full": "npm run ci:reindex && npm test && npm run ci:smoke",
     "worker:lead-reminders": "node server/workers/leadRemindersWorker.js",
-    "prepare": "husky install || true"
+    "prepare": "husky install || true",
+    "dev:services": "docker compose up -d ollama qdrant",
+    "dev:models": "bash scripts/pull-ollama-models.sh",
+    "dev:all": "npm run dev:services && npm run dev:models && npm run dev:full",
+    "local": "docker compose up -d ollama qdrant && bash scripts/pull-ollama-models.sh && concurrently \"npm run server\" \"npm run dev -- --host 0.0.0.0\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
@@ -74,7 +78,8 @@
     "tar": "^7.5.9",
     "unzipper": "^0.12.3",
     "ws": "^8.19.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@qdrant/qdrant-js": "^1.18.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

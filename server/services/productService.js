@@ -11,6 +11,7 @@ import { isAgent, isOwnerOrAdmin } from "../utils/permissions.js";
 import { getAdminConfig } from "./adminConfigService.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { indexProduct, deleteProductIndex } from "./openSearchService.js";
+import { indexProduct as indexProductQdrant } from "./qdrantService.js";
 import {
   extractOriginalPrice,
   getBaseCurrency,
@@ -632,6 +633,9 @@ export async function createProduct(user, payload) {
   }
 
   const viewer = isAgent(user) ? { id: ownerId, role: ownerRole } : user;
+
+  indexProductQdrant(row, { ...(user?.profile || {}), id: ownerId, ...user }).catch(() => {});
+
   return presentProduct(row, [], viewer);
 }
 
@@ -898,6 +902,7 @@ export async function updateProductById(actor, productId, patch = {}) {
       ...(ownerRecord || {}),
       ...(ownerRecord?.profile || {}),
     });
+    await indexProductQdrant(next, ownerRecord || {}).catch(() => {});
   } catch {
     // ignore index failures
   }

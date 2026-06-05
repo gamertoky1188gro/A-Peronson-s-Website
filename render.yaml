@@ -79,5 +79,29 @@ services:
       # Optional: Add Redis for caching at scale (e.g., redis://...)
       # - key: REDIS_URL
       #   value: "redis://your-redis-host:6379"
+      - key: AI_SEARCH_ENABLED
+        value: "true"
+      - key: QDRANT_URL
+        value: http://127.0.0.1:6333
+      - key: QDRANT_API_KEY
+        value: ""
+      - key: EMBEDDING_PROVIDER
+        value: huggingface
+      - key: EMBEDDING_URL
+        value: https://api-inference.huggingface.co/models/BAAI/bge-m3
+      - key: EMBEDDING_API_KEY
+        value: ""
+      - key: EMBEDDING_MODEL
+        value: BAAI/bge-m3
+      - key: EMBEDDING_DIMENSION
+        value: "1024"
+      - key: RERANKER_PROVIDER
+        value: huggingface
+      - key: RERANKER_URL
+        value: https://api-inference.huggingface.co/models/BAAI/bge-reranker-v2-m3
+      - key: RERANKER_API_KEY
+        value: ""
+      - key: RERANKER_MODEL
+        value: BAAI/bge-reranker-v2-m3
     buildCommand: npm install --include=dev && npm install -g opencode-ai && npm run build && npx prisma migrate deploy && npm run db:generate && npm run ci:reindex
     startCommand: SKIP_BUILD=true ./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=10000
