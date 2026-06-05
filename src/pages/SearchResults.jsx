@@ -74,6 +74,7 @@ import {
   UserSearch,
   ListRestart,
   Crown,
+  FileText,
 } from "lucide-react";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import {
@@ -329,11 +330,13 @@ export default function SearchResults() {
   const [estimatedCounts, setEstimatedCounts] = useState({
     buyerRequests: 0,
     companies: 0,
+    feedPosts: 0,
     total: 0,
   });
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [requests, setRequests] = useState([]);
   const [companies, setCompanies] = useState([]);
+  const [feedPosts, setFeedPosts] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const pageLoadCountRef = useRef(0);
   const [filterOptions, setFilterOptions] = useState({
@@ -564,6 +567,17 @@ export default function SearchResults() {
         (c.category || "").toLowerCase().includes(q),
     );
   }, [companies, refineQuery]);
+
+  const filteredFeedPosts = useMemo(() => {
+    if (!refineQuery.trim()) return feedPosts;
+    const q = refineQuery.toLowerCase();
+    return feedPosts.filter(
+      (p) =>
+        (p.title || "").toLowerCase().includes(q) ||
+        (p.description_markdown || "").toLowerCase().includes(q) ||
+        (p.caption || "").toLowerCase().includes(q),
+    );
+  }, [feedPosts, refineQuery]);
 
   function toggleShortlist(id, type) {
     const key = `${type}:${id}`;
@@ -799,14 +813,16 @@ export default function SearchResults() {
         setImagePreview(null);
       }
 
-      const [reqRes, prodRes] = await Promise.all([
+      const [reqRes, prodRes, feedRes] = await Promise.all([
         apiRequest(`/requirements/search?${params.toString()}`, { token }),
         apiRequest(`/products/search?${params.toString()}`, { token }),
+        apiRequest(`/feed/search?${params.toString()}`, { token }),
       ]);
 
       setRequests(Array.isArray(reqRes?.items) ? reqRes.items : []);
       setCompanies(Array.isArray(prodRes?.items) ? prodRes.items : []);
-      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || null);
+      setFeedPosts(Array.isArray(feedRes?.items) ? feedRes.items : []);
+      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || null);
 
       const reqTotal = Number.isFinite(Number(reqRes?.total))
         ? Number(reqRes.total)
@@ -814,11 +830,15 @@ export default function SearchResults() {
       const prodTotal = Number.isFinite(Number(prodRes?.total))
         ? Number(prodRes.total)
         : prodRes?.items?.length || 0;
-      const total = reqTotal + prodTotal;
+      const feedTotal = Number.isFinite(Number(feedRes?.total))
+        ? Number(feedRes.total)
+        : feedRes?.items?.length || 0;
+      const total = reqTotal + prodTotal + feedTotal;
       setTotalResults(total);
       setEstimatedCounts({
         buyerRequests: reqTotal,
         companies: prodTotal,
+        feedPosts: feedTotal,
         total,
       });
 
@@ -841,13 +861,15 @@ export default function SearchResults() {
     setLoadingMore(true);
     try {
       const params = buildSearchParams(nextCursor);
-      const [reqRes, prodRes] = await Promise.all([
+      const [reqRes, prodRes, feedRes] = await Promise.all([
         apiRequest(`/requirements/search?${params.toString()}`, { token }),
         apiRequest(`/products/search?${params.toString()}`, { token }),
+        apiRequest(`/feed/search?${params.toString()}`, { token }),
       ]);
       setRequests((prev) => [...prev, ...(Array.isArray(reqRes?.items) ? reqRes.items : [])]);
       setCompanies((prev) => [...prev, ...(Array.isArray(prodRes?.items) ? prodRes.items : [])]);
-      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || null);
+      setFeedPosts((prev) => [...prev, ...(Array.isArray(feedRes?.items) ? feedRes.items : [])]);
+      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || null);
       setCursor(nextCursor);
     } catch {
       addToast("Load more failed", "Unable to load additional results", "error");
@@ -1105,6 +1127,7 @@ export default function SearchResults() {
           label: `Buyer Requests (${estimatedCounts.buyerRequests})`,
         },
         { key: "companies", label: `Companies (${estimatedCounts.companies})` },
+        { key: "feed", label: `Feed Posts (${estimatedCounts.feedPosts})` },
       ].map((tab) => (
         <button
           key={tab.key}
@@ -1435,6 +1458,63 @@ export default function SearchResults() {
       );
     }
 
+    if (activeTab === "feed") {
+      const items = filteredFeedPosts;
+      if (items.length === 0 && !loading) {
+        return (
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+            <FileText className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+            <p className="text-lg font-medium text-slate-900 dark:text-white">
+              No feed posts found
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Try adjusting your search or filters
+            </p>
+          </div>
+        );
+      }
+      return (
+        <AnimatePresence mode="popLayout">
+          <MasonryGrid columnCount={2} gap={4}>
+          {items.map((item) => (
+            <motion.article
+              key={item.id}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <Link
+                  to={`/profile/${item.user_id}`}
+                  className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                >
+                  {item.title || "Untitled Post"}
+                </Link>
+              </div>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-3">
+                {item.description_markdown || item.caption || ""}
+              </p>
+              {item.hashtags && Array.isArray(item.hashtags) && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {item.hashtags.map((tag) => (
+                    <span key={tag} className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="mt-4 text-xs text-slate-400">
+                {new Date(item.created_at).toLocaleDateString()}
+              </div>
+            </motion.article>
+          ))}
+          </MasonryGrid>
+        </AnimatePresence>
+      );
+    }
+
     return null;
   };
 
@@ -1534,6 +1614,14 @@ export default function SearchResults() {
                   </div>
                   <div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
                     <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Feed
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+                      {fmtNumber(estimatedCounts.feedPosts)}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
                       Alerts left
                     </div>
                     <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
@@ -1622,7 +1710,7 @@ export default function SearchResults() {
                   <Badge tone="blue">
                     {loading
                       ? <NeonAtom size={20} />
-                      : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies (${fmtNumber(estimatedCounts.total)} total)`}
+                      : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies · ${fmtNumber(estimatedCounts.feedPosts)} feed posts (${fmtNumber(estimatedCounts.total)} total)`}
                   </Badge>
                 </div>
               </div>

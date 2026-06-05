@@ -8,6 +8,7 @@ import {
   patchFeedPost,
   postFeedPost,
   removeFeedPost,
+  searchFeedPostsController,
 } from "../controllers/feedPostController.js";
 import { uploadFeedMedia } from "../controllers/feedUploadController.js";
 
@@ -29,6 +30,7 @@ const upload = multer({
 });
 
 router.get("/posts/mine", requireAuth, getMyFeedPosts);
+router.get("/search", requireAuth, searchFeedPostsController);
 router.post(
   "/posts/upload",
   requireAuth,

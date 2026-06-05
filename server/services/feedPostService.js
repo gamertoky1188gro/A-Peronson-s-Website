@@ -217,6 +217,35 @@ export async function listFeedPosts({
   });
 }
 
+export async function searchFeedPosts({ query = "", cursor = 0, limit = 20 } = {}) {
+  const where = { status: "published" };
+  if (query.trim()) {
+    const q = query.trim();
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { description_markdown: { contains: q, mode: "insensitive" } },
+      { caption: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  const [items, total] = await Promise.all([
+    prisma.feedPost.findMany({
+      where,
+      orderBy: { created_at: "desc" },
+      skip: cursor,
+      take: limit + 1,
+    }),
+    prisma.feedPost.count({ where }),
+  ]);
+  const hasMore = items.length > limit;
+  if (hasMore) items.pop();
+  return {
+    items,
+    total,
+    cursor: cursor + items.length,
+    next_cursor: hasMore ? cursor + items.length : null,
+  };
+}
+
 export async function createFeedPost(actor, payload = {}) {
   const ownerId = String(actor?.id || "");
   if (!ownerId) {

@@ -2,6 +2,7 @@ import {
   createFeedPost,
   deleteFeedPost,
   listFeedPosts,
+  searchFeedPosts,
   updateFeedPost,
 } from "../services/feedPostService.js";
 import { handleControllerError } from "../utils/permissions.js";
@@ -14,6 +15,20 @@ export async function getMyFeedPosts(req, res) {
       status: "",
     });
     return res.json(rows);
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+}
+
+export async function searchFeedPostsController(req, res) {
+  try {
+    const { q, cursor, limit } = req.query;
+    const result = await searchFeedPosts({
+      query: q || "",
+      cursor: Number.isFinite(Number(cursor)) ? Math.max(0, Math.floor(Number(cursor))) : 0,
+      limit: Math.min(50, Math.max(1, Number(limit) || 20)),
+    });
+    return res.json(result);
   } catch (error) {
     return handleControllerError(res, error);
   }
