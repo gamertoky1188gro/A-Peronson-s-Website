@@ -400,11 +400,12 @@ export async function getCombinedFeed({
     type === "requests" || type === "products"
       ? []
       : await listFeedPosts({ status: "published" });
-  const [users, socialInteractions, boosts, ratingsStore] = await Promise.all([
+  const [users, socialInteractions, boosts, ratingsStore, orderCertMap] = await Promise.all([
     prisma.user.findMany(),
     prisma.socialInteraction.findMany(),
     prisma.boost.findMany(),
     prisma.rating.findMany(),
+    getOrderCertificationMap(),
   ]);
   const paidBoostByUser = buildPaidBoostMap(
     Array.isArray(boosts) ? boosts : [],
