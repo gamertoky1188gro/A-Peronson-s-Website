@@ -70,6 +70,7 @@ import {
   Shirt,
   Wrench,
   PackageCheck,
+  SearchX,
   ScanSearch,
   UserSearch,
   ListRestart,
@@ -1348,7 +1349,7 @@ export default function SearchResults() {
         </div>
       );
     }
-    if (activeTab === "requests" || activeTab === "all") {
+    if (activeTab === "requests") {
       const items = filteredRequests;
       if (items.length === 0 && !loading) {
         return (
@@ -1515,6 +1516,144 @@ export default function SearchResults() {
             ))}
             </MasonryGrid>
           </AnimatePresence>
+        </div>
+      );
+    }
+
+    if (activeTab === "all") {
+      const hasAny = filteredRequests.length || filteredCompanies.length || filteredFeedPosts.length;
+      if (!hasAny && !loading) {
+        return (
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+            <SearchX className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+            <p className="text-lg font-medium text-slate-900 dark:text-white">
+              No results found
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Try adjusting your search or filters
+            </p>
+          </div>
+        );
+      }
+      return (
+        <div className="space-y-8">
+          {filteredRequests.length > 0 && (
+            <section>
+              <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+                Buyer Requests ({filteredRequests.length})
+              </h3>
+              <AnimatePresence mode="popLayout">
+                <MasonryGrid columnCount={2} gap={4}>
+                  {filteredRequests.map((item) => (
+                    <motion.article
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-2">
+                          <button
+                            onClick={() => toggleShortlist(item.id, "buyer")}
+                            className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+                          >
+                            <ArrowLeftRight className="h-3.5 w-3.5" />
+                          </button>
+                          <Link
+                            to={`/buyer/${item.id}`}
+                            className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                            dangerouslySetInnerHTML={{
+                              __html: highlightText(item.title || item.name || "Untitled Request", query),
+                            }}
+                          />
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                            <span>{item.location || item.country || "N/A"}</span>
+                            {item.category && (
+                              <>
+                                <span>•</span>
+                                <span dangerouslySetInnerHTML={{ __html: highlightText(item.category, query) }} />
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {item.description && (
+                        <p className="mt-4 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300"
+                          dangerouslySetInnerHTML={{ __html: highlightText(item.description, query) }}
+                        />
+                      )}
+                    </motion.article>
+                  ))}
+                </MasonryGrid>
+              </AnimatePresence>
+            </section>
+          )}
+
+          {filteredCompanies.length > 0 && (
+            <section>
+              <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+                Companies ({filteredCompanies.length})
+              </h3>
+              <AnimatePresence mode="popLayout">
+                <MasonryGrid columnCount={2} gap={4}>
+                  {filteredCompanies.map((item) => (
+                    <motion.article
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+                    >
+                      <div className="flex items-start gap-2">
+                        <Link
+                          to={`/factory/${item.id}`}
+                          className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                          dangerouslySetInnerHTML={{
+                            __html: highlightText(item.name || item.title || "Untitled Company", query),
+                          }}
+                        />
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                          <span>{item.location || item.country || "N/A"}</span>
+                        </div>
+                      </div>
+                    </motion.article>
+                  ))}
+                </MasonryGrid>
+              </AnimatePresence>
+            </section>
+          )}
+
+          {filteredFeedPosts.length > 0 && (
+            <section>
+              <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+                Feed Posts ({filteredFeedPosts.length})
+              </h3>
+              <AnimatePresence mode="popLayout">
+                <MasonryGrid columnCount={2} gap={4}>
+                  {filteredFeedPosts.map((item) => (
+                    <motion.article
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+                    >
+                      <p className="font-semibold text-slate-900 dark:text-white"
+                        dangerouslySetInnerHTML={{ __html: highlightText(item.title || item.content || "Untitled Post", query) }}
+                      />
+                      <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-300"
+                        dangerouslySetInnerHTML={{ __html: highlightText(item.content || "", query) }}
+                      />
+                    </motion.article>
+                  ))}
+                </MasonryGrid>
+              </AnimatePresence>
+            </section>
+          )}
         </div>
       );
     }
