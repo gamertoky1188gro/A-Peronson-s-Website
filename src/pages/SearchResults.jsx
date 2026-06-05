@@ -74,7 +74,7 @@ import {
   UserSearch,
   ListRestart,
 } from "lucide-react";
-import { apiRequest } from "../lib/auth";
+import { apiRequest, getToken } from "../lib/auth";
 import {
   ADVANCED_FILTER_KEYS,
   DEFAULT_CORE_FILTER_KEYS,
@@ -274,10 +274,7 @@ function ToastStack({ toasts, onDismiss }) {
 
 export default function SearchResults() {
   const [, setSearchParams] = useSearchParams();
-  const token = useMemo(() => {
-    const raw = localStorage.getItem("sessionToken");
-    return raw || null;
-  }, []);
+  const token = useMemo(() => getToken(), []);
 
   const { theme, toggleTheme } = useTheme();
   const dark = theme === "dark";
