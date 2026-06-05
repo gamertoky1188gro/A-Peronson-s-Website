@@ -1667,11 +1667,28 @@ const filteredUsers = useMemo(() => {
                       className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
                     >
                       <p className="font-semibold text-slate-900 dark:text-white"
-                        dangerouslySetInnerHTML={{ __html: highlightText(item.title || item.content || "Untitled Post", query) }}
+                        dangerouslySetInnerHTML={{ __html: highlightText(item.title || "Untitled Post", query) }}
                       />
-                      <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-300"
-                        dangerouslySetInnerHTML={{ __html: highlightText(item.content || "", query) }}
-                      />
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                        {item.author_name && (
+                          <span className="truncate">{item.author_name}</span>
+                        )}
+                        {item.category && (
+                          <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+                            {item.category}
+                          </span>
+                        )}
+                      </div>
+                      {item.caption && (
+                        <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-300"
+                          dangerouslySetInnerHTML={{ __html: highlightText(item.caption, query) }}
+                        />
+                      )}
+                      {item.description_markdown && (
+                        <div className="mt-2 max-h-20 overflow-hidden text-xs leading-relaxed text-slate-500 dark:text-slate-400"
+                          dangerouslySetInnerHTML={{ __html: highlightText(item.description_markdown.slice(0, 200), query) }}
+                        />
+                      )}
                     </motion.article>
                   ))}
                 </MasonryGrid>
@@ -1888,20 +1905,38 @@ const filteredUsers = useMemo(() => {
               className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
             >
               <div className="flex items-start justify-between gap-3">
-                <Link
-                  to={`/profile/${item.user_id}`}
-                  className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                  dangerouslySetInnerHTML={{
-                    __html: highlightText(item.title || "Untitled Post", query),
-                  }}
-                />
+                <div className="min-w-0 flex-1">
+                  <Link
+                    to={`/profile/${item.user_id}`}
+                    className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightText(item.title || "Untitled Post", query),
+                    }}
+                  />
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    {item.author_name && (
+                      <Link to={`/profile/${item.author_id || item.user_id}`} className="hover:text-sky-600 dark:hover:text-sky-400">
+                        {item.author_name}
+                      </Link>
+                    )}
+                    {item.category && (
+                      <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+                        {item.category}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <p
-                className="mt-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-3"
-                dangerouslySetInnerHTML={{
-                  __html: highlightText(item.description_markdown || item.caption || "", query),
-                }}
-              />
+              {item.caption && (
+                <p className="mt-3 line-clamp-2 text-sm text-slate-600 dark:text-slate-300"
+                  dangerouslySetInnerHTML={{ __html: highlightText(item.caption, query) }}
+                />
+              )}
+              {item.description_markdown && (
+                <div className="mt-3 max-h-24 overflow-hidden text-xs leading-relaxed text-slate-500 dark:text-slate-400"
+                  dangerouslySetInnerHTML={{ __html: highlightText(item.description_markdown.slice(0, 300), query) }}
+                />
+              )}
               {item.hashtags && Array.isArray(item.hashtags) && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {item.hashtags.map((tag) => (

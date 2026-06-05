@@ -227,7 +227,7 @@ export async function searchFeedPosts({ query = "", cursor = 0, limit = 20 } = {
       { caption: { contains: q, mode: "insensitive" } },
     ];
   }
-  const [items, total] = await Promise.all([
+  const [rows, total] = await Promise.all([
     prisma.feedPost.findMany({
       where,
       orderBy: { created_at: "desc" },
@@ -236,8 +236,23 @@ export async function searchFeedPosts({ query = "", cursor = 0, limit = 20 } = {
     }),
     prisma.feedPost.count({ where }),
   ]);
-  const hasMore = items.length > limit;
-  if (hasMore) items.pop();
+  const hasMore = rows.length > limit;
+  if (hasMore) rows.pop();
+
+  const userIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))];
+  const users = userIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, name: true },
+      })
+    : [];
+  const userMap = new Map(users.map((u) => [u.id, u.name]));
+
+  const items = rows.map((r) => ({
+    ...r,
+    author_name: userMap.get(r.user_id) || "",
+    author_id: r.user_id,
+  }));
   return {
     items,
     total,
