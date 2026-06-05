@@ -73,8 +73,9 @@ import {
   ScanSearch,
   UserSearch,
   ListRestart,
+  Crown,
 } from "lucide-react";
-import { apiRequest, getToken } from "../lib/auth";
+import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import {
   ADVANCED_FILTER_KEYS,
   DEFAULT_CORE_FILTER_KEYS,
@@ -211,6 +212,22 @@ function SectionCard({ title, icon: Icon, children, className = "" }) {
   );
 }
 
+function PlanGate({ premium, children }) {
+  if (premium) return children;
+  return (
+    <div className="group relative">
+      <div className="pointer-events-none opacity-40 blur-[0.5px]">
+        {children}
+      </div>
+      <div className="invisible group-hover:visible absolute inset-0 flex items-center justify-center">
+        <div className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-sky-500/25">
+          <Crown className="h-3.5 w-3.5" /> Premium feature
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Badge({ children, tone = "default" }) {
   const tones = {
     default:
@@ -275,6 +292,8 @@ function ToastStack({ toasts, onDismiss }) {
 export default function SearchResults() {
   const [, setSearchParams] = useSearchParams();
   const token = useMemo(() => getToken(), []);
+  const currentUser = useMemo(() => getCurrentUser(), []);
+  const isPremium = String(currentUser?.subscription_status || "").toLowerCase() === "premium";
 
   const { theme, toggleTheme } = useTheme();
   const dark = theme === "dark";
@@ -1847,6 +1866,7 @@ export default function SearchResults() {
                             className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
                           />
                         </div>
+                        <PlanGate premium={isPremium}>
                         <div>
                           <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             <Shirt className="h-4 w-4 inline mr-1" /> Season / Collection
@@ -1866,6 +1886,8 @@ export default function SearchResults() {
                             ))}
                           </select>
                         </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
                         <div>
                           <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             <Wrench className="h-4 w-4 inline mr-1" /> Machinery / Equipment
@@ -1882,6 +1904,8 @@ export default function SearchResults() {
                             className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
                           />
                         </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
                         <div>
                           <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                             <PackageCheck className="h-4 w-4 inline mr-1" /> Availability
@@ -1901,6 +1925,7 @@ export default function SearchResults() {
                             ))}
                           </select>
                         </div>
+                        </PlanGate>
                         <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                           <input
                             type="checkbox"
