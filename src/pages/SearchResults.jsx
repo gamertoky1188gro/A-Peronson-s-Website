@@ -1345,13 +1345,13 @@ const filteredUsers = useMemo(() => {
     if (totalResults === 0 && query && !loading) {
       return (
         <div className="space-y-4">
-          <div className="rounded-3xl border p-6 text-center">
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 text-center">
             <p className="text-lg font-medium">No results for &ldquo;{query}&rdquo;</p>
             <p className="mt-1 text-sm text-slate-500">Try these categories instead:</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {["Fabrics", "Yarn", "Garments", "Accessories", "Home Textile"].map(cat => (
                 <button key={cat} onClick={() => setFilters(f => ({ ...f, selectedCategories: [cat], allCategories: false }))}
-                  className="rounded-full border px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10">
+                  className="rounded-full border border-slate-200/80 dark:border-slate-700 px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10">
                   {cat}
                 </button>
               ))}
