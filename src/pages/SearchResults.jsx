@@ -1666,18 +1666,31 @@ const filteredUsers = useMemo(() => {
                       exit={{ opacity: 0, scale: 0.95 }}
                       className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
                     >
-                      <p className="font-semibold text-slate-900 dark:text-white"
-                        dangerouslySetInnerHTML={{ __html: highlightText(item.title || "Untitled Post", query) }}
-                      />
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                        {item.author_name && (
-                          <span className="truncate">{item.author_name}</span>
-                        )}
-                        {item.category && (
-                          <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
-                            {item.category}
-                          </span>
-                        )}
+                      <div className="flex items-start gap-3">
+                        <Link to={`/profile/${item.user_id}`} className="shrink-0">
+                          {item.author_avatar ? (
+                            <img src={item.author_avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
+                              {(item.author_name || "U").charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-slate-900 dark:text-white"
+                            dangerouslySetInnerHTML={{ __html: highlightText(item.title || "Untitled Post", query) }}
+                          />
+                          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                            {item.author_name && (
+                              <span className="truncate">{item.author_name}</span>
+                            )}
+                            {item.category && (
+                              <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+                                {item.category}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       {item.caption && (
                         <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-300"
@@ -1904,7 +1917,16 @@ const filteredUsers = useMemo(() => {
               exit={{ opacity: 0, scale: 0.95 }}
               className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <Link to={`/profile/${item.user_id}`} className="shrink-0">
+                  {item.author_avatar ? (
+                    <img src={item.author_avatar} alt="" className="h-9 w-9 rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
+                      {(item.author_name || "U").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </Link>
                 <div className="min-w-0 flex-1">
                   <Link
                     to={`/profile/${item.user_id}`}
