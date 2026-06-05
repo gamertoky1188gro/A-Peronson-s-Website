@@ -75,6 +75,7 @@ import {
   ListRestart,
   Crown,
   FileText,
+  Clock,
 } from "lucide-react";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import {
@@ -111,6 +112,17 @@ const STOCK_STATUS_OPTIONS = [
   { key: "in_stock", label: "In stock" },
   { key: "made_to_order", label: "Made to order" },
   { key: "sample_only", label: "Sample only" },
+];
+
+const CERTIFICATION_OPTIONS = [
+  "ISO 9001",
+  "ISO 14001",
+  "OEKO-TEX",
+  "GOTS",
+  "BSCI",
+  "SEDEX",
+  "GRS",
+  "RCS",
 ];
 
 const CATEGORY_OPTIONS = [
@@ -187,7 +199,19 @@ const initialFilters = {
   season: "Any season",
   machinery: "",
   stockStatus: "",
+  postedAfter: "",
+  postedBefore: "",
+  distanceKm: "",
 };
+
+function highlightText(text, query) {
+  if (!text || !query?.trim()) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(
+    new RegExp(`(${escaped})`, 'gi'),
+    '<strong class="text-sky-600 dark:text-sky-400">$1</strong>',
+  );
+}
 
 function pillClass(active) {
   return active
@@ -324,6 +348,16 @@ export default function SearchResults() {
   const [shortlist, setShortlist] = useState([]);
   const [showShortlist, setShowShortlist] = useState(false);
   const [trendingSearches, setTrendingSearches] = useState([]);
+  const [relatedSearches, setRelatedSearches] = useState([]);
+  const [history, setHistory] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("search_history") || "[]");
+    } catch {
+      return [];
+    }
+  });
+  const [spellingSuggestion, setSpellingSuggestion] = useState(null);
+  const [savedSearchAlerts, setSavedSearchAlerts] = useState([]);
   const [toasts, setToasts] = useState([]);
   const [recentViews, setRecentViews] = useState([]);
   const [expandedMore, setExpandedMore] = useState(false);
@@ -544,6 +578,22 @@ export default function SearchResults() {
     fetchFilterOptions();
   }, [token]);
 
+  const fetchSavedAlerts = useCallback(async () => {
+    try {
+      if (!token) return;
+      const data = await apiRequest("/search/alerts", { token });
+      if (Array.isArray(data?.alerts)) {
+        setSavedSearchAlerts(data.alerts);
+      }
+    } catch {
+      // ignore
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchSavedAlerts();
+  }, [fetchSavedAlerts]);
+
   const filteredRequests = useMemo(() => {
     if (!refineQuery.trim()) return requests;
     const q = refineQuery.toLowerCase();
@@ -567,6 +617,11 @@ export default function SearchResults() {
         (c.category || "").toLowerCase().includes(q),
     );
   }, [companies, refineQuery]);
+
+  const isSearchAlreadySaved = useMemo(() => {
+    const q = query.trim();
+    return savedSearchAlerts.some((alert) => alert.query === q);
+  }, [savedSearchAlerts, query]);
 
   const filteredFeedPosts = useMemo(() => {
     if (!refineQuery.trim()) return feedPosts;
@@ -781,6 +836,16 @@ export default function SearchResults() {
     }
     if (searchField === "buyer") params.set("field", "buyer");
     if (searchField === "company") params.set("field", "company");
+    if (filters.postedAfter) params.set("postedAfter", filters.postedAfter);
+    if (filters.postedBefore) params.set("postedBefore", filters.postedBefore);
+    if (filters.distanceKm) params.set("distanceKm", filters.distanceKm);
+    if (filters.locationCoords) {
+      params.set("locationLat", filters.locationCoords.lat);
+      params.set("locationLng", filters.locationCoords.lng);
+    }
+    if (filters.certifications?.length) {
+      params.set("certifications", filters.certifications.join(","));
+    }
     return params;
   }, [query, filters, sortBy, searchField]);
 
@@ -788,6 +853,8 @@ export default function SearchResults() {
     setLoading(true);
     setCursor(0);
     setNextCursor(null);
+    setSpellingSuggestion(null);
+    setRelatedSearches([]);
     addToast(
       "Searching",
       "Applying your query and selected filters...",
@@ -845,6 +912,45 @@ export default function SearchResults() {
       const nextParams = new URLSearchParams(params);
       nextParams.set("tab", activeTab);
       setSearchParams(nextParams, { replace: true });
+
+      if (query.trim()) {
+        const newHistory = [
+          { query: query.trim(), timestamp: Date.now() },
+          ...history.filter((h) => h.query !== query.trim()),
+        ].slice(0, 20);
+        localStorage.setItem("search_history", JSON.stringify(newHistory));
+        setHistory(newHistory);
+      }
+
+      setSpellingSuggestion(null);
+      if (total === 0 && query.trim()) {
+        try {
+          const spRes = await apiRequest(
+            `/search/spelling?q=${encodeURIComponent(query.trim())}`,
+            { token },
+          );
+          if (
+            spRes?.suggestion &&
+            spRes.suggestion.toLowerCase() !== query.trim().toLowerCase()
+          ) {
+            setSpellingSuggestion(spRes.suggestion);
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+
+      try {
+        const trendRes = await apiRequest(
+          `/search/trending?q=${encodeURIComponent(query.trim())}`,
+          { token },
+        );
+        if (Array.isArray(trendRes?.related)) {
+          setRelatedSearches(trendRes.related.slice(0, 8));
+        }
+      } catch {
+        /* ignore */
+      }
     } catch (err) {
       addToast(
         "Search failed",
@@ -854,7 +960,7 @@ export default function SearchResults() {
     } finally {
       setLoading(false);
     }
-  }, [query, filters, token, activeTab, setSearchParams, addToast, buildSearchParams, imageSearchFile]);
+  }, [query, filters, token, activeTab, setSearchParams, addToast, buildSearchParams, imageSearchFile, history]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || nextCursor === null) return;
@@ -918,17 +1024,16 @@ export default function SearchResults() {
       const remaining = Math.max(0, alertsQuota - 1);
       setAlertsQuota(remaining);
       addToast(
-        "Search saved",
-        `Remaining alert quota today: ${remaining}`,
+        "Alert saved",
+        "You'll be notified when new matches appear",
         "success",
       );
+      await fetchSavedAlerts();
     } catch {
-      const remaining = Math.max(0, alertsQuota - 1);
-      setAlertsQuota(remaining);
       addToast(
-        "Search saved",
-        `Remaining alert quota today: ${remaining}`,
-        "success",
+        "Failed",
+        "Could not save alert",
+        "error",
       );
     }
   }
@@ -1225,15 +1330,20 @@ export default function SearchResults() {
                     <Link
                       to={`/buyer/${item.id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                    >
-                      {item.title || item.name || "Untitled Request"}
-                    </Link>
+                      dangerouslySetInnerHTML={{
+                        __html: highlightText(item.title || item.name || "Untitled Request", query),
+                      }}
+                    />
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                       <span>{item.location || item.country || "N/A"}</span>
                       {item.category && (
                         <>
                           <span>•</span>
-                          <span>{item.category}</span>
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: highlightText(item.category, query),
+                            }}
+                          />
                         </>
                       )}
                     </div>
@@ -1275,9 +1385,12 @@ export default function SearchResults() {
                 )}
 
                 {item.description && (
-                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    {item.description}
-                  </p>
+                  <p
+                    className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightText(item.description, query),
+                    }}
+                  />
                 )}
 
                 {(item.quantity || item.targetPrice) && (
@@ -1387,15 +1500,20 @@ export default function SearchResults() {
                     <Link
                       to={`/factory/${item.id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                    >
-                      {item.name || item.title || "Untitled Company"}
-                    </Link>
+                      dangerouslySetInnerHTML={{
+                        __html: highlightText(item.name || item.title || "Untitled Company", query),
+                      }}
+                    />
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <span>{item.location || item.country || "N/A"}</span>
                     {item.type && (
                       <>
                         <span>•</span>
-                        <span>{item.type}</span>
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: highlightText(item.type, query),
+                          }}
+                        />
                       </>
                     )}
                   </div>
@@ -1489,13 +1607,17 @@ export default function SearchResults() {
                 <Link
                   to={`/profile/${item.user_id}`}
                   className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                >
-                  {item.title || "Untitled Post"}
-                </Link>
+                  dangerouslySetInnerHTML={{
+                    __html: highlightText(item.title || "Untitled Post", query),
+                  }}
+                />
               </div>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-3">
-                {item.description_markdown || item.caption || ""}
-              </p>
+              <p
+                className="mt-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-3"
+                dangerouslySetInnerHTML={{
+                  __html: highlightText(item.description_markdown || item.caption || "", query),
+                }}
+              />
               {item.hashtags && Array.isArray(item.hashtags) && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {item.hashtags.map((tag) => (
@@ -1564,9 +1686,10 @@ export default function SearchResults() {
                       </button>
                       <button
                         onClick={saveSearch}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+                        disabled={isSearchAlreadySaved}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <Save className="h-4 w-4" /> Save search
+                        <Save className="h-4 w-4" /> {isSearchAlreadySaved ? "Already saved" : "Save search"}
                       </button>
                       <button
                         onClick={shareSearch}
@@ -1644,7 +1767,7 @@ export default function SearchResults() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => { setSearchFocused(true); setSuggestionsOpen(true); }}
-                    onBlur={() => { setTimeout(() => setSuggestionsOpen(false), 200); setSearchFocused(false); }}
+                    onBlur={() => { setTimeout(() => { setSuggestionsOpen(false); setSearchFocused(false); }, 200); }}
                     placeholder={searchField === "buyer" ? "Search by buyer name..." : searchField === "company" ? "Search by company name..." : "Search requests, factories, products..."}
                     className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-36 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
                   />
@@ -1658,6 +1781,23 @@ export default function SearchResults() {
                         >
                           <Search className="h-4 w-4 text-slate-400 shrink-0" />
                           <span className="text-slate-700 dark:text-slate-200">{s}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {searchFocused && !query.trim() && history.length > 0 && (
+                    <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
+                      <div className="px-4 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 border-b border-slate-200/70 dark:border-slate-800">
+                        Recent searches
+                      </div>
+                      {history.map((h) => (
+                        <button
+                          key={h.timestamp}
+                          onMouseDown={() => { setQuery(h.query); setSuggestionsOpen(false); }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
+                        >
+                          <Clock className="h-4 w-4 text-slate-400 shrink-0" />
+                          <span className="text-slate-700 dark:text-slate-200">{h.query}</span>
                         </button>
                       ))}
                     </div>
@@ -1797,7 +1937,7 @@ export default function SearchResults() {
                         <span>MOQ range</span>
                         <span>
                           {fmtNumber(filters.moqMin)} -{" "}
-                          {fmtNumber(filters.moqMax)}
+                          {fmtNumber(filters.moqMax)} pcs
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -1817,7 +1957,8 @@ export default function SearchResults() {
                         <input
                           type="range"
                           min="0"
-                          max="5000"
+                          max="100000"
+                          step="100"
                           value={filters.moqMin}
                           onChange={(e) =>
                             setFilters((f) => ({
@@ -1833,7 +1974,8 @@ export default function SearchResults() {
                         <input
                           type="range"
                           min="0"
-                          max="5000"
+                          max="100000"
+                          step="100"
                           value={filters.moqMax}
                           onChange={(e) =>
                             setFilters((f) => ({
@@ -1853,8 +1995,7 @@ export default function SearchResults() {
                       <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span>Price per unit</span>
                         <span>
-                          {filters.currency} {filters.priceMin} -{" "}
-                          {filters.priceMax}
+                          ${filters.priceMin} - ${filters.priceMax}
                         </span>
                       </div>
                       <div className="grid grid-cols-[110px_1fr] gap-3">
@@ -1876,8 +2017,8 @@ export default function SearchResults() {
                           <input
                             type="range"
                             min="0"
-                            max="20"
-                            step="0.25"
+                            max="100"
+                            step="1"
                             value={filters.priceMin}
                             onChange={(e) =>
                               setFilters((f) => ({
@@ -1893,8 +2034,8 @@ export default function SearchResults() {
                           <input
                             type="range"
                             min="0"
-                            max="20"
-                            step="0.25"
+                            max="100"
+                            step="1"
                             value={filters.priceMax}
                             onChange={(e) =>
                               setFilters((f) => ({
@@ -2016,6 +2157,54 @@ export default function SearchResults() {
                               <option key={opt.key} value={opt.key}>{opt.label}</option>
                             ))}
                           </select>
+                        </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Posted after
+                          </label>
+                          <input
+                            type="date"
+                            value={filters.postedAfter}
+                            onChange={(e) =>
+                              setFilters((f) => ({ ...f, postedAfter: e.target.value }))
+                            }
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                          />
+                        </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Posted before
+                          </label>
+                          <input
+                            type="date"
+                            value={filters.postedBefore}
+                            onChange={(e) =>
+                              setFilters((f) => ({ ...f, postedBefore: e.target.value }))
+                            }
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                          />
+                        </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Certifications
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {CERTIFICATION_OPTIONS.map((cert) => (
+                              <button
+                                key={cert}
+                                onClick={() => toggleArrayFilter("certifications", cert)}
+                                className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(cert))}`}
+                              >
+                                {cert}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                         </PlanGate>
                         <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
@@ -2197,6 +2386,24 @@ export default function SearchResults() {
                     >
                       <LocateFixed className="h-4 w-4" /> Use current location
                     </button>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Distance radius (km)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="500"
+                        step="1"
+                        value={filters.distanceKm}
+                        onChange={(e) =>
+                          setFilters((f) => ({ ...f, distanceKm: e.target.value }))
+                        }
+                        placeholder="Radius in km"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                      />
+                    </div>
 
                     <div>
                       <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -2414,6 +2621,24 @@ export default function SearchResults() {
                 </div>
               </div>
 
+              {spellingSuggestion && !loading && (
+                <div className="mt-4 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 px-5 py-3 text-sm">
+                  <span className="text-slate-700 dark:text-slate-300">
+                    Did you mean{" "}
+                    <button
+                      onClick={() => {
+                        setQuery(spellingSuggestion);
+                        setSpellingSuggestion(null);
+                      }}
+                      className="font-semibold text-sky-600 dark:text-sky-400 underline hover:no-underline"
+                    >
+                      {spellingSuggestion}
+                    </button>
+                    ?
+                  </span>
+                </div>
+              )}
+
               <div className="mt-5">
                 <AnimatePresence mode="wait">
                   {loading ? (
@@ -2475,13 +2700,25 @@ export default function SearchResults() {
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="text-xs text-sky-500 font-medium uppercase">{type === "buyer" ? "Buyer Request" : "Company"}</div>
-                            <div className="mt-1 font-medium text-slate-900 dark:text-white">{item.title || item.name || "Untitled"}</div>
+                            <div
+                              className="mt-1 font-medium text-slate-900 dark:text-white"
+                              dangerouslySetInnerHTML={{
+                                __html: highlightText(item.title || item.name || "Untitled", query),
+                              }}
+                            />
                           </div>
                           <button onClick={() => toggleShortlist(id, type)} className="text-slate-400 hover:text-red-400">
                             <X className="h-4 w-4" />
                           </button>
                         </div>
-                        {item.category && <div className="mt-2 text-xs text-slate-500">Category: {item.category}</div>}
+                        {item.category && (
+                          <div
+                            className="mt-2 text-xs text-slate-500"
+                            dangerouslySetInnerHTML={{
+                              __html: highlightText(item.category, query),
+                            }}
+                          />
+                        )}
                         {item.country && <div className="text-xs text-slate-500">Country: {item.country}</div>}
                         {item.moq && <div className="text-xs text-slate-500">MOQ: {item.moq}</div>}
                       </div>
@@ -2514,12 +2751,18 @@ export default function SearchResults() {
                         <Camera className="h-5 w-5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium text-slate-900 dark:text-white">
-                          {item.title || item.name}
-                        </div>
-                        <div className="truncate text-xs text-slate-500 dark:text-slate-400">
-                          {item.subtitle || item.description}
-                        </div>
+                        <div
+                          className="truncate text-sm font-medium text-slate-900 dark:text-white"
+                          dangerouslySetInnerHTML={{
+                            __html: highlightText(item.title || item.name, query),
+                          }}
+                        />
+                        <div
+                          className="truncate text-xs text-slate-500 dark:text-slate-400"
+                          dangerouslySetInnerHTML={{
+                            __html: highlightText(item.subtitle || item.description, query),
+                          }}
+                        />
                       </div>
                       <ArrowUpRight className="h-4 w-4 text-slate-400" />
                     </Link>
@@ -2536,6 +2779,21 @@ export default function SearchResults() {
               <SectionCard title="Trending Now" icon={TrendingUp}>
                 <div className="flex flex-wrap gap-2">
                   {trendingSearches.map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => { setQuery(term); executeSearchRef.current?.(); }}
+                      className="rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-sm hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-500/10"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </SectionCard>
+            )}
+            {relatedSearches.length > 0 && (
+              <SectionCard title="Related Searches" icon={Search}>
+                <div className="flex flex-wrap gap-2">
+                  {relatedSearches.map((term) => (
                     <button
                       key={term}
                       onClick={() => { setQuery(term); executeSearchRef.current?.(); }}

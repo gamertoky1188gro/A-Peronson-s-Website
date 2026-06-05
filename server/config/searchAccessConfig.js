@@ -10,6 +10,8 @@ export const FILTER_TIERS = {
     "country",
     "leadTimeMax",
     "orgType",
+    "postedAfter",
+    "postedBefore",
   ],
   // Advanced filters (project.md): premium gating applies here.
   advanced: [

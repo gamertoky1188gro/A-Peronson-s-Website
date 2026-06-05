@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import multer from "multer";
 import path from "path";
 import prisma from "../utils/prisma.js";
@@ -59,8 +60,100 @@ export function uploadSearchImage(req, res) {
   });
 }
 
+function levenshteinDistance(a, b) {
+  const m = a.length;
+  const n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+export async function spellingSuggestions(req, res) {
+  try {
+    const q = String(req.query.q || "").trim().toLowerCase();
+    if (!q || q.length < 2) {
+      return res.json({ suggestion: null });
+    }
+    const [products, requirements] = await Promise.all([
+      prisma.product.findMany({ select: { title: true }, take: 200 }),
+      prisma.requirement.findMany({ select: { title: true }, take: 200 }),
+    ]);
+    const allTitles = [
+      ...new Set([
+        ...products.map((p) => (p.title || "").toLowerCase()),
+        ...requirements.map((r) => (r.title || "").toLowerCase()),
+      ]),
+    ].filter(Boolean);
+    for (const title of allTitles) {
+      const distance = levenshteinDistance(q, title);
+      if (distance > 0 && distance <= 2) {
+        return res.json({ suggestion: title });
+      }
+    }
+    return res.json({ suggestion: null });
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+}
+
+export async function searchHistoryCreate(req, res) {
+  try {
+    const query = String(req.body?.query || req.body?.q || "").trim();
+    const filters = req.body?.filters || {};
+    if (!query) {
+      return res.status(400).json({ error: "Query is required" });
+    }
+    await prisma.eventLog.create({
+      data: {
+        id: crypto.randomUUID(),
+        org_owner_id: req.user.id,
+        actor_id: req.user.id,
+        entity_id: req.user.id,
+        type: "search_run",
+        metadata: { query, filters },
+        occurred_at: new Date(),
+      },
+    });
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+}
+
+export async function searchHistoryList(req, res) {
+  try {
+    const rows = await prisma.eventLog.findMany({
+      where: { type: "search_run", entity_id: req.user.id },
+      orderBy: { created_at: "desc" },
+      take: 20,
+    });
+    const seen = new Set();
+    const history = [];
+    for (const row of rows) {
+      const meta = (row.metadata || {});
+      const query = String(meta.query || "").trim();
+      if (query && !seen.has(query)) {
+        seen.add(query);
+        history.push({ query, filters: meta.filters || {}, searched_at: row.created_at });
+      }
+    }
+    return res.json(history);
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+}
+
 export async function trendingSearches(req, res) {
   try {
+    const currentQ = String(req.query.q || "").trim().toLowerCase();
     const searchEvents = await prisma.eventLog.findMany({
       where: { type: "search_run" },
       select: { metadata: true },
@@ -78,23 +171,33 @@ export async function trendingSearches(req, res) {
       return res.json({
         trending: fallback.length ? fallback : ["Wovens", "Knits", "Denim", "T-shirts", "Home Textiles", "Organic Cotton", "PPE", "Sustainable"],
         source: "fallback",
+        ...(currentQ ? { related: [] } : {}),
       });
     }
     const queryCounts = {};
     const categoryCounts = {};
+    const relatedCounts = {};
+    const currentQWords = currentQ ? currentQ.split(/\s+/).filter(Boolean) : [];
     searchEvents.forEach((e) => {
       const meta = (e.metadata || {});
       const q = String(meta.query || meta.q || "").trim().toLowerCase();
       const cat = String(meta.category_primary || meta.category || "").trim();
       if (q && q.length > 1) queryCounts[q] = (queryCounts[q] || 0) + 1;
       if (cat) categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+      if (currentQWords.length && q) {
+        const sharesWord = currentQWords.some((w) => q.includes(w));
+        if (sharesWord && q !== currentQ) relatedCounts[q] = (relatedCounts[q] || 0) + 1;
+      }
     });
     const topQueries = Object.entries(queryCounts)
       .sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label]) => label);
     const topCategories = Object.entries(categoryCounts)
       .sort((a, b) => b[1] - a[1]).slice(0, 4).map(([label]) => label);
     const trending = [...new Set([...topQueries, ...topCategories])].slice(0, 10);
-    return res.json({ trending, source: "events" });
+    const related = currentQWords.length
+      ? Object.entries(relatedCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label]) => label)
+      : undefined;
+    return res.json({ trending, source: "events", ...(related ? { related } : {}) });
   } catch (error) {
     return handleControllerError(res, error);
   }

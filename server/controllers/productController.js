@@ -642,6 +642,21 @@ export async function searchProducts(req, res) {
       { description: { contains: q, mode: "insensitive" } },
     ];
   }
+  if (wantedCertifications.length) {
+    where.certifications = { hasSome: wantedCertifications };
+  }
+  const postedAfter = req.query.postedAfter ? new Date(req.query.postedAfter) : null;
+  const postedBefore = req.query.postedBefore ? new Date(req.query.postedBefore) : null;
+  if (postedAfter || postedBefore) {
+    where.created_at = {};
+    if (postedAfter) where.created_at.gte = postedAfter;
+    if (postedBefore) where.created_at.lte = postedBefore;
+  }
+  if (distanceFilterActive) {
+    const offset = distanceKm / 111;
+    where.location_lat = { gte: locationLat - offset, lte: locationLat + offset };
+    where.location_lng = { gte: locationLng - offset, lte: locationLng + offset };
+  }
   const all = await prisma.product.findMany({ where, orderBy: { created_at: "desc" } });
   const companyIds = [...new Set(all.map((p) => p.company_id))];
   const [users, messages, boostMap, orderCertMap] = await Promise.all([

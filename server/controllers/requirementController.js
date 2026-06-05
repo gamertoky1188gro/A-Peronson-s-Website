@@ -740,6 +740,21 @@ export async function searchRequirements(req, res) {
       { custom_description: { contains: q, mode: "insensitive" } },
     ];
   }
+  if (wantedCertifications.length) {
+    where.certifications_required = { hasSome: wantedCertifications };
+  }
+  const postedAfter = req.query.postedAfter ? new Date(req.query.postedAfter) : null;
+  const postedBefore = req.query.postedBefore ? new Date(req.query.postedBefore) : null;
+  if (postedAfter || postedBefore) {
+    where.created_at = {};
+    if (postedAfter) where.created_at.gte = postedAfter;
+    if (postedBefore) where.created_at.lte = postedBefore;
+  }
+  if (distanceFilterActive) {
+    const offset = distanceKm / 111;
+    where.location_lat = { gte: locationLat - offset, lte: locationLat + offset };
+    where.location_lng = { gte: locationLng - offset, lte: locationLng + offset };
+  }
   const all = await prisma.requirement.findMany({ where, orderBy: { created_at: "desc" } });
   const buyerIds = [...new Set(all.map((r) => r.buyer_id))];
   const [users, messages, orderCertMap] = await Promise.all([
