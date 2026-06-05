@@ -80,7 +80,7 @@ services:
       # - key: REDIS_URL
       #   value: "redis://your-redis-host:6379"
       - key: AI_SEARCH_ENABLED
-        value: "true"
+        value: "false"
       - key: QDRANT_URL
         value: http://127.0.0.1:6333
       - key: QDRANT_API_KEY

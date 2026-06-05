@@ -432,7 +432,9 @@ export default function TexHub() {
         "Knitwear",
         "Woven",
         "Denim",
-        "Custom production",
+        "T-shirts",
+        "Home Textiles",
+        "Organic Cotton",
       ],
       audience: [
         {

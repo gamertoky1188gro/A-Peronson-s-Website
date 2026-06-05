@@ -636,7 +636,7 @@ export async function searchProducts(req, res) {
     ? [...new Set([...openSearchIds, ...qdrantIds])]
     : openSearchIds;
   const combinedIdSet = combinedIds.length ? new Set(combinedIds) : null;
-  const engine = osEngine === "opensearch" && combinedIdSet ? "opensearch" : qdrantResult?.engine || osEngine;
+  const engine = osEngine === "opensearch" && combinedIdSet ? "opensearch" : (qdrantResult?.engine === "qdrant" ? "qdrant" : osEngine);
 
   if (estimateOnly && engine === "opensearch") {
     const resolvedFacets = openSearchResult?.facets

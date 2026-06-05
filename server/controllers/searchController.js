@@ -117,8 +117,8 @@ export async function searchHistoryCreate(req, res) {
         org_owner_id: req.user.id,
         actor_id: req.user.id,
         entity_id: req.user.id,
-        type: "search_run",
-        metadata: { query, filters },
+        event_type: "search_run",
+        payload: { query, filters },
         occurred_at: new Date(),
       },
     });
@@ -131,14 +131,14 @@ export async function searchHistoryCreate(req, res) {
 export async function searchHistoryList(req, res) {
   try {
     const rows = await prisma.eventLog.findMany({
-      where: { type: "search_run", entity_id: req.user.id },
+      where: { event_type: "search_run", entity_id: req.user.id },
       orderBy: { created_at: "desc" },
       take: 20,
     });
     const seen = new Set();
     const history = [];
     for (const row of rows) {
-      const meta = (row.metadata || {});
+      const meta = (row.payload || {});
       const query = String(meta.query || "").trim();
       if (query && !seen.has(query)) {
         seen.add(query);
@@ -155,19 +155,32 @@ export async function trendingSearches(req, res) {
   try {
     const currentQ = String(req.query.q || "").trim().toLowerCase();
     const searchEvents = await prisma.eventLog.findMany({
-      where: { type: "search_run" },
-      select: { metadata: true },
+      where: { event_type: "search_run" },
+      select: { payload: true },
       orderBy: { created_at: "desc" },
       take: 500,
     });
     if (searchEvents.length === 0) {
-      const categories = await prisma.product.findMany({
-        where: { category: { not: null } },
-        select: { category: true },
-        distinct: ["category"],
-        take: 8,
-      });
-      const fallback = categories.map((c) => c.category).filter(Boolean);
+      const [productCats, reqCats] = await Promise.all([
+        prisma.product.findMany({
+          where: { category: { not: null } },
+          select: { category: true },
+          distinct: ["category"],
+          take: 8,
+        }),
+        prisma.requirement.findMany({
+          where: { category: { not: null } },
+          select: { category: true },
+          distinct: ["category"],
+          take: 8,
+        }),
+      ]);
+      const fallback = [
+        ...new Set([
+          ...productCats.map((c) => c.category).filter(Boolean),
+          ...reqCats.map((c) => c.category).filter(Boolean),
+        ]),
+      ];
       return res.json({
         trending: fallback.length ? fallback : ["Wovens", "Knits", "Denim", "T-shirts", "Home Textiles", "Organic Cotton", "PPE", "Sustainable"],
         source: "fallback",
@@ -179,7 +192,7 @@ export async function trendingSearches(req, res) {
     const relatedCounts = {};
     const currentQWords = currentQ ? currentQ.split(/\s+/).filter(Boolean) : [];
     searchEvents.forEach((e) => {
-      const meta = (e.metadata || {});
+      const meta = (e.payload || {});
       const q = String(meta.query || meta.q || "").trim().toLowerCase();
       const cat = String(meta.category_primary || meta.category || "").trim();
       if (q && q.length > 1) queryCounts[q] = (queryCounts[q] || 0) + 1;
@@ -209,25 +222,25 @@ export async function searchAnalytics(req, res) {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     const [totalSearches, recentLogs, searchesByDay] = await Promise.all([
-      prisma.eventLog.count({ where: { type: "search_run", created_at: { gte: since } } }),
+      prisma.eventLog.count({ where: { event_type: "search_run", created_at: { gte: since } } }),
       prisma.eventLog.findMany({
-        where: { type: "search_run", created_at: { gte: since } },
-        select: { metadata: true },
+        where: { event_type: "search_run", created_at: { gte: since } },
+        select: { payload: true },
         take: 5000,
         orderBy: { created_at: "desc" },
       }),
-      prisma.$queryRaw`SELECT DATE(created_at) as date, COUNT(*)::int as count FROM event_logs WHERE type = 'search_run' AND created_at >= ${since} GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 7`,
+      prisma.$queryRaw`SELECT DATE(created_at) as date, COUNT(*)::int as count FROM event_logs WHERE event_type = 'search_run' AND created_at >= ${since} GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 7`,
     ]);
 
     let zeroResultSearches = 0;
     for (const log of recentLogs) {
-      const meta = (log.metadata || {});
+      const meta = (log.payload || {});
       if (String(meta.result_count) === "0") zeroResultSearches++;
     }
 
     const queryCounts = {};
     for (const log of recentLogs) {
-      const meta = (log.metadata || {});
+      const meta = (log.payload || {});
       const q = String(meta.query || meta.q || "").trim();
       if (q) queryCounts[q] = (queryCounts[q] || 0) + 1;
     }
@@ -381,8 +394,8 @@ export async function searchSuggestions(req, res) {
         take: 8,
       }),
       prisma.eventLog.findMany({
-        where: { type: "search_run" },
-        select: { metadata: true },
+        where: { event_type: "search_run" },
+        select: { payload: true },
         take: 50,
         orderBy: { created_at: "desc" },
       }),
@@ -408,7 +421,7 @@ export async function searchSuggestions(req, res) {
       if (r.material) addMatch(r.material);
     });
     eventRows.forEach((e) => {
-      const meta = (e.metadata || {});
+      const meta = (e.payload || {});
       const query = String(meta.query || meta.q || "").trim();
       if (query && query.toLowerCase().includes(q) && query.length > 1) {
         addMatch(query);

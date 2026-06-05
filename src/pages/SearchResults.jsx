@@ -932,7 +932,7 @@ export default function SearchResults() {
       setCompanies(Array.isArray(prodRes?.items) ? prodRes.items : []);
       setFeedPosts(Array.isArray(feedRes?.items) ? feedRes.items : []);
       setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || null);
-      setFacetCounts(reqRes?.facets || prodRes?.facets || { countries: [], categories: [] });
+      setFacetCounts(reqRes?.facetCounts || prodRes?.facetCounts || { countries: [], categories: [] });
 
       const reqTotal = Number.isFinite(Number(reqRes?.total))
         ? Number(reqRes.total)

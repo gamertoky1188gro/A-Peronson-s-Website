@@ -36,7 +36,7 @@ function titleCase(value) {
 }
 
 export async function systemHome(req, res) {
-  const [factories, messageCount, metricCount] = await Promise.all([
+  const [factories, messageCount, metricCount, productCategories, reqCategories] = await Promise.all([
     prisma.user.findMany({
       where: { role: "factory" },
       select: { id: true, name: true, verified: true },
@@ -44,6 +44,18 @@ export async function systemHome(req, res) {
     }),
     prisma.message.count(),
     prisma.metricTransition.count(),
+    prisma.product.findMany({
+      where: { category: { not: null } },
+      select: { category: true },
+      distinct: ["category"],
+      take: 20,
+    }),
+    prisma.requirement.findMany({
+      where: { category: { not: null } },
+      select: { category: true },
+      distinct: ["category"],
+      take: 20,
+    }),
   ]);
 
   const factoriesMapped = factories.map((u) => ({
@@ -269,13 +281,11 @@ export async function systemHome(req, res) {
       },
     ],
     categories: [
-      "Shirts",
-      "Pants",
-      "Knitwear",
-      "Woven",
-      "Denim",
-      "Custom production",
-    ],
+      ...new Set([
+        ...productCategories.map((p) => p.category).filter(Boolean),
+        ...reqCategories.map((r) => r.category).filter(Boolean),
+      ]),
+    ].slice(0, 12),
     audience: [
       {
         title: "For Buyers",
