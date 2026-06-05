@@ -12,6 +12,8 @@ export const FILTER_TIERS = {
     "orgType",
     "postedAfter",
     "postedBefore",
+    "language",
+    "minRating",
   ],
   // Advanced filters (project.md): premium gating applies here.
   advanced: [

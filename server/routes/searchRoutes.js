@@ -12,6 +12,9 @@ import {
   spellingSuggestions,
   searchHistoryCreate,
   searchHistoryList,
+  searchAnalytics,
+  batchSearch,
+  batchSearchCSV,
 } from "../controllers/searchController.js";
 
 const router = Router();
@@ -25,5 +28,8 @@ router.get("/suggestions", requireAuth, searchSuggestions);
 router.get("/spelling", spellingSuggestions);
 router.post("/history", requireAuth, searchHistoryCreate);
 router.get("/history", requireAuth, searchHistoryList);
+router.post("/batch", requireAuth, batchSearch);
+router.post("/batch/csv", requireAuth, batchSearchCSV);
+router.get("/analytics", requireAuth, searchAnalytics);
 
 export default router;

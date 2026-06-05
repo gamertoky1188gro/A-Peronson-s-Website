@@ -203,6 +203,152 @@ export async function trendingSearches(req, res) {
   }
 }
 
+export async function searchAnalytics(req, res) {
+  try {
+    const days = Math.min(90, Math.max(1, Number(req.query.days) || 30));
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const [totalSearches, recentLogs, searchesByDay] = await Promise.all([
+      prisma.eventLog.count({ where: { type: "search_run", created_at: { gte: since } } }),
+      prisma.eventLog.findMany({
+        where: { type: "search_run", created_at: { gte: since } },
+        select: { metadata: true },
+        take: 5000,
+        orderBy: { created_at: "desc" },
+      }),
+      prisma.$queryRaw`SELECT DATE(created_at) as date, COUNT(*)::int as count FROM event_logs WHERE type = 'search_run' AND created_at >= ${since} GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 7`,
+    ]);
+
+    let zeroResultSearches = 0;
+    for (const log of recentLogs) {
+      const meta = (log.metadata || {});
+      if (String(meta.result_count) === "0") zeroResultSearches++;
+    }
+
+    const queryCounts = {};
+    for (const log of recentLogs) {
+      const meta = (log.metadata || {});
+      const q = String(meta.query || meta.q || "").trim();
+      if (q) queryCounts[q] = (queryCounts[q] || 0) + 1;
+    }
+    const topQueries = Object.entries(queryCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([query, count]) => ({ query, count }));
+
+    return res.json({
+      totalSearches,
+      zeroResultSearches,
+      zeroResultRate: totalSearches > 0 ? Math.round((zeroResultSearches / totalSearches) * 100) : 0,
+      topQueries,
+      searchesByDay: Array.isArray(searchesByDay) ? searchesByDay : [],
+    });
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+}
+
+const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === "text/csv" || file.originalname?.endsWith(".csv")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only CSV files are allowed"));
+    }
+  },
+});
+
+export async function batchSearch(req, res) {
+  try {
+    const { terms = [], type = "all" } = req.body;
+    if (!Array.isArray(terms) || terms.length === 0) {
+      return res.status(400).json({ error: "No search terms provided" });
+    }
+    const trimmed = terms.map(t => String(t).trim()).filter(Boolean);
+    if (trimmed.length > 100) {
+      return res.status(400).json({ error: "Maximum 100 terms allowed" });
+    }
+
+    const results = {};
+
+    if (type === "all" || type === "requirements") {
+      const reqs = await prisma.requirement.findMany({
+        where: {
+          OR: trimmed.map(term => ({
+            OR: [
+              { title: { contains: term, mode: "insensitive" } },
+              { category: { contains: term, mode: "insensitive" } },
+              { material: { contains: term, mode: "insensitive" } },
+            ],
+          })),
+        },
+        take: 200,
+      });
+      results.requirements = reqs;
+    }
+
+    if (type === "all" || type === "products") {
+      const prods = await prisma.product.findMany({
+        where: {
+          OR: trimmed.map(term => ({
+            OR: [
+              { title: { contains: term, mode: "insensitive" } },
+              { name: { contains: term, mode: "insensitive" } },
+              { category: { contains: term, mode: "insensitive" } },
+              { material: { contains: term, mode: "insensitive" } },
+            ],
+          })),
+        },
+        take: 200,
+      });
+      results.products = prods;
+    }
+
+    return res.json(results);
+  } catch (error) {
+    return handleControllerError(res, error);
+  }
+}
+
+export async function batchSearchCSV(req, res) {
+  csvUpload.single("file")(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: "No CSV file provided" });
+    }
+
+    try {
+      const content = req.file.buffer.toString("utf-8");
+      const lines = content.split(/\r?\n/);
+      const terms = [];
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        const firstColumn = trimmed.split(",")[0].trim();
+        if (!firstColumn) continue;
+        const lower = firstColumn.toLowerCase();
+        if (lower === "sku" || lower === "term" || lower === "terms" || lower === "product") continue;
+        terms.push(firstColumn);
+      }
+
+      if (terms.length === 0) {
+        return res.status(400).json({ error: "No valid terms found in CSV" });
+      }
+
+      const type = String(req.body?.type || "all").trim();
+      req.body = { terms, type };
+      return batchSearch(req, res);
+    } catch (parseErr) {
+      return res.status(400).json({ error: "Failed to parse CSV file: " + parseErr.message });
+    }
+  });
+}
+
 export async function searchSuggestions(req, res) {
   try {
     const q = String(req.query.q || "").trim().toLowerCase();

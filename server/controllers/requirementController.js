@@ -608,6 +608,8 @@ export async function searchRequirements(req, res) {
   const wantedSeason = String(req.query.season || "").trim().toLowerCase();
   const wantedMachinery = parseList(req.query.machinery);
   const wantedStockStatus = String(req.query.stockStatus || "").trim().toLowerCase();
+  const minRating = parseFloat(String(req.query.minRating || "").trim());
+  const language = String(req.query.language || "").trim().toLowerCase();
   const distanceKm = parseNumber(req.query.distanceKm);
   const locationLat = parseCoordinate(req.query.locationLat);
   const locationLng = parseCoordinate(req.query.locationLng);
@@ -754,6 +756,36 @@ export async function searchRequirements(req, res) {
     const offset = distanceKm / 111;
     where.location_lat = { gte: locationLat - offset, lte: locationLat + offset };
     where.location_lng = { gte: locationLng - offset, lte: locationLng + offset };
+  }
+  if (Number.isFinite(minRating) || language) {
+    let candidateBuyerIds = null;
+    if (Number.isFinite(minRating)) {
+      const highRated = await prisma.rating.groupBy({
+        by: ["profile_key"],
+        _avg: { score: true },
+        having: { score: { _avg: { gte: minRating } } },
+      });
+      candidateBuyerIds = new Set(
+        highRated.map(r => r.profile_key.replace(/^user:/, "")).filter(Boolean)
+      );
+    }
+    if (language) {
+      const matchingUsers = await prisma.user.findMany({
+        where: { profile: { path: ["language"], equals: language } },
+        select: { id: true },
+      });
+      const langUserIds = new Set(matchingUsers.map(u => u.id));
+      if (candidateBuyerIds) {
+        candidateBuyerIds = new Set([...candidateBuyerIds].filter(id => langUserIds.has(id)));
+      } else {
+        candidateBuyerIds = langUserIds;
+      }
+    }
+    if (candidateBuyerIds && candidateBuyerIds.size > 0) {
+      where.buyer_id = { in: [...candidateBuyerIds] };
+    } else if (candidateBuyerIds) {
+      where.buyer_id = { in: [] };
+    }
   }
   const all = await prisma.requirement.findMany({ where, orderBy: { created_at: "desc" } });
   const buyerIds = [...new Set(all.map((r) => r.buyer_id))];
@@ -1269,6 +1301,24 @@ export async function searchRequirements(req, res) {
       }
     : cappedFacets;
 
+  const facetCounts = { categories: [], countries: [] };
+  if (orderedResults.length < 100) {
+    const catCounts = {};
+    const countryCounts = {};
+    orderedResults.forEach((row) => {
+      const cat = row.category || "Other";
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+      const country = row.author?.country || "Unknown";
+      countryCounts[country] = (countryCounts[country] || 0) + 1;
+    });
+    facetCounts.categories = Object.entries(catCounts)
+      .sort((a, b) => b[1] - a[1]).slice(0, 20)
+      .map(([value, count]) => ({ value, count }));
+    facetCounts.countries = Object.entries(countryCounts)
+      .sort((a, b) => b[1] - a[1]).slice(0, 20)
+      .map(([value, count]) => ({ value, count }));
+  }
+
   return res.json({
     engine,
     cursor,
@@ -1277,6 +1327,7 @@ export async function searchRequirements(req, res) {
     next_cursor: nextCursor,
     items: pagedItems,
     facets: resolvedFacets,
+    facetCounts,
     ...(openSearchResult?.error_code
       ? { error_code: openSearchResult.error_code }
       : {}),

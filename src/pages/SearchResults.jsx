@@ -76,6 +76,10 @@ import {
   Crown,
   FileText,
   Clock,
+  FileSpreadsheet,
+  BarChart3,
+  Star,
+  Languages,
 } from "lucide-react";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import {
@@ -199,6 +203,8 @@ const initialFilters = {
   season: "Any season",
   machinery: "",
   stockStatus: "",
+  minRating: "",
+  language: "",
   postedAfter: "",
   postedBefore: "",
   distanceKm: "",
@@ -349,6 +355,11 @@ export default function SearchResults() {
   const [showShortlist, setShowShortlist] = useState(false);
   const [trendingSearches, setTrendingSearches] = useState([]);
   const [relatedSearches, setRelatedSearches] = useState([]);
+  const [facetCounts, setFacetCounts] = useState({ countries: [], categories: [] });
+  const [analytics, setAnalytics] = useState(null);
+  const [batchOpen, setBatchOpen] = useState(false);
+  const [batchTerms, setBatchTerms] = useState("");
+  const [batchResults, setBatchResults] = useState(null);
   const [history, setHistory] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("search_history") || "[]");
@@ -413,6 +424,22 @@ export default function SearchResults() {
     if (sortParam) setSortBy(sortParam);
     const cursorParam = params.get("cursor");
     if (cursorParam) setCursor(Number(cursorParam));
+    const country = params.get("country");
+    if (country) setFilters(f => ({ ...f, country }));
+    const season = params.get("season");
+    if (season) setFilters(f => ({ ...f, season }));
+    const machinery = params.get("machinery");
+    if (machinery) setFilters(f => ({ ...f, machinery }));
+    const stockStatus = params.get("stockStatus");
+    if (stockStatus) setFilters(f => ({ ...f, stockStatus }));
+    const minRating = params.get("minRating");
+    if (minRating) setFilters(f => ({ ...f, minRating }));
+    const language = params.get("language");
+    if (language) setFilters(f => ({ ...f, language }));
+    const field = params.get("field");
+    if (field) setSearchField(field);
+    const verifiedOnly = params.get("verifiedOnly");
+    if (verifiedOnly === "true") setFilters(f => ({ ...f, verifiedOnly: true }));
   }, []);
 
   const suggestionDebounce = useRef(null);
@@ -500,6 +527,19 @@ export default function SearchResults() {
       }
     }
     fetchTrending();
+  }, [token]);
+
+  useEffect(() => {
+    async function fetchAnalytics() {
+      try {
+        if (!token) return;
+        const data = await apiRequest("/search/analytics", { token });
+        if (data) setAnalytics(data);
+      } catch {
+        // ignore
+      }
+    }
+    fetchAnalytics();
   }, [token]);
 
   useEffect(() => {
@@ -833,6 +873,8 @@ export default function SearchResults() {
       if (filters.season && filters.season !== "Any season") params.set("season", filters.season);
       if (filters.machinery) params.set("machinery", filters.machinery);
       if (filters.stockStatus) params.set("stockStatus", filters.stockStatus);
+      if (filters.minRating) params.set("minRating", filters.minRating);
+      if (filters.language) params.set("language", filters.language);
     }
     if (searchField === "buyer") params.set("field", "buyer");
     if (searchField === "company") params.set("field", "company");
@@ -890,6 +932,7 @@ export default function SearchResults() {
       setCompanies(Array.isArray(prodRes?.items) ? prodRes.items : []);
       setFeedPosts(Array.isArray(feedRes?.items) ? feedRes.items : []);
       setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || null);
+      setFacetCounts(reqRes?.facets || prodRes?.facets || { countries: [], categories: [] });
 
       const reqTotal = Number.isFinite(Number(reqRes?.total))
         ? Number(reqRes.total)
@@ -1274,6 +1317,37 @@ export default function SearchResults() {
   );
 
   const ResultCards = () => {
+    if (totalResults === 0 && query && !loading) {
+      return (
+        <div className="space-y-4">
+          <div className="rounded-3xl border p-6 text-center">
+            <p className="text-lg font-medium">No results for &ldquo;{query}&rdquo;</p>
+            <p className="mt-1 text-sm text-slate-500">Try these categories instead:</p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {["Fabrics", "Yarn", "Garments", "Accessories", "Home Textile"].map(cat => (
+                <button key={cat} onClick={() => setFilters(f => ({ ...f, selectedCategories: [cat], allCategories: false }))}
+                  className="rounded-full border px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10">
+                  {cat}
+                </button>
+              ))}
+            </div>
+            {trendingSearches.length > 0 && (
+              <>
+                <p className="mt-6 text-sm text-slate-500">Trending searches:</p>
+                <div className="mt-2 flex flex-wrap justify-center gap-2">
+                  {trendingSearches.slice(0, 5).map(t => (
+                    <button key={t} onClick={() => setQuery(t)}
+                      className="rounded-full bg-slate-100 px-4 py-2 text-sm hover:bg-slate-200 dark:bg-slate-800">
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
     if (activeTab === "requests" || activeTab === "all") {
       const items = filteredRequests;
       if (items.length === 0 && !loading) {
@@ -1650,6 +1724,44 @@ export default function SearchResults() {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] text-slate-900 dark:text-white transition-colors">
       <ToastStack toasts={toasts} onDismiss={removeToast} />
       <SearchModal />
+      {batchOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold">Batch Search</h3>
+            <textarea value={batchTerms} onChange={e => setBatchTerms(e.target.value)}
+              placeholder="Paste terms, one per line..." className="w-full mt-3 rounded-2xl border p-3 h-32" />
+            <input type="file" accept=".csv" onChange={e => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const text = reader.result;
+                const lines = text.split("\n").map(l => l.split(",")[0].trim()).filter(Boolean);
+                setBatchTerms(lines.join("\n"));
+              };
+              reader.readAsText(e.target.files[0]);
+            }} className="mt-2" />
+            <div className="mt-4 flex gap-2">
+              <button onClick={async () => {
+                const terms = batchTerms.split("\n").map(t => t.trim()).filter(Boolean);
+                if (terms.length === 0) { addToast("No terms", "Add at least one search term", "error"); return; }
+                try {
+                  const res = await apiRequest("/search/batch", { method: "POST", token, body: { terms } });
+                  setBatchResults(res);
+                  addToast("Batch search", `Found ${(res?.requirements?.length || 0) + (res?.products?.length || 0)} matches`, "success");
+                } catch {
+                  addToast("Batch search failed", "Unable to run batch search", "error");
+                }
+              }} className="rounded-2xl bg-sky-600 px-6 py-2 text-white">Search All</button>
+              <button onClick={() => { setBatchOpen(false); setBatchResults(null); setBatchTerms(""); }} className="rounded-2xl border px-6 py-2">Close</button>
+            </div>
+            {batchResults && (
+              <div className="mt-4 text-sm space-y-1">
+                <p>Requirements: {batchResults.requirements?.length || 0} matches</p>
+                <p>Products: {batchResults.products?.length || 0} matches</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="mx-auto max-w-[1700px] px-4 py-5 sm:px-6 lg:px-8">
         <div className="grid gap-5 xl:grid-cols-[1fr_320px] 2xl:grid-cols-[1fr_360px]">
@@ -1834,6 +1946,13 @@ export default function SearchResults() {
                     <input type="file" accept="image/*" onChange={handleImageSearch} className="hidden" />
                   </label>
                   <button
+                    onClick={() => setBatchOpen(true)}
+                    className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700"
+                    title="Batch search"
+                  >
+                    <FileSpreadsheet className="h-5 w-5" />
+                  </button>
+                  <button
                     onClick={executeSearch}
                     disabled={loading}
                     className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
@@ -1907,6 +2026,20 @@ export default function SearchResults() {
                 </button>
               </div>
             </section>
+
+            {facetCounts.countries.length > 0 && (
+              <section className="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-4 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400 mr-1">Filter by country:</span>
+                  {facetCounts.countries.slice(0, 8).map(c => (
+                    <button key={c.value} onClick={() => setFilters(f => ({ ...f, country: c.value }))}
+                      className={`rounded-full border px-3 py-1 text-xs font-medium transition ${filters.country === c.value ? "bg-sky-600 text-white border-sky-500" : "hover:bg-sky-50 dark:hover:bg-sky-500/10 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800"}`}>
+                      {c.value} ({c.count})
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {filtersOpen && (
               <section className="grid gap-5 xl:grid-cols-3">
@@ -2205,6 +2338,45 @@ export default function SearchResults() {
                               </button>
                             ))}
                           </div>
+                        </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <Star className="h-4 w-4 inline mr-1" /> Minimum Rating
+                          </label>
+                          <select
+                            value={filters.minRating}
+                            onChange={(e) =>
+                              setFilters((f) => ({ ...f, minRating: e.target.value }))
+                            }
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                          >
+                            <option value="">Any</option>
+                            <option value="3">3+</option>
+                            <option value="4">4+</option>
+                            <option value="4.5">4.5+</option>
+                          </select>
+                        </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <Languages className="h-4 w-4 inline mr-1" /> Language
+                          </label>
+                          <select
+                            value={filters.language}
+                            onChange={(e) =>
+                              setFilters((f) => ({ ...f, language: e.target.value }))
+                            }
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                          >
+                            <option value="">Any</option>
+                            <option value="en">English</option>
+                            <option value="bn">Bengali</option>
+                            <option value="tr">Turkish</option>
+                            <option value="zh">Chinese</option>
+                          </select>
                         </div>
                         </PlanGate>
                         <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
@@ -2787,6 +2959,14 @@ export default function SearchResults() {
                       {term}
                     </button>
                   ))}
+                </div>
+              </SectionCard>
+            )}
+            {analytics && (
+              <SectionCard title="Search Stats" icon={BarChart3}>
+                <div className="text-sm space-y-2">
+                  <div className="flex justify-between"><span>Searches (30d)</span><span className="font-semibold">{analytics?.totalSearches || "—"}</span></div>
+                  <div className="flex justify-between"><span>Zero-result rate</span><span className="font-semibold">{analytics?.zeroResultRate || "—"}%</span></div>
                 </div>
               </SectionCard>
             )}
