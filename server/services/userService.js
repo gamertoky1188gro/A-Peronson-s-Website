@@ -186,7 +186,7 @@ export async function listEarlyVerifiedFactories({
   return rows.map(cleanUser);
 }
 
-export async function searchUsers(viewerId, query) {
+export async function searchUsers(viewerId, query, cursor = 0, limit = 12) {
   const search = sanitizeString(query || "", 120)
     .trim()
     .toLowerCase();
@@ -199,16 +199,29 @@ export async function searchUsers(viewerId, query) {
       { name: { contains: search, mode: "insensitive" } },
       { email: { contains: search, mode: "insensitive" } },
       { role: { contains: search, mode: "insensitive" } },
+      { username: { contains: search, mode: "insensitive" } },
     ];
   }
 
-  const [users, connections] = await Promise.all([
-    prisma.user.findMany({ where, take: 12 }),
+  const take = Math.min(50, Math.max(1, Number(limit) || 12));
+
+  const [users, total, connections] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      orderBy: { name: "asc" },
+      skip: cursor,
+      take: take + 1,
+    }),
+    prisma.user.count({ where }),
     prisma.userConnection.findMany(),
   ]);
 
-  return users.map((user) => {
+  const hasMore = users.length > take;
+  if (hasMore) users.pop();
+
+  const items = users.map((user) => {
     const safe = cleanUser(user);
+    const profile = (safe.profile || {});
     const isSelf = user.id === viewerId;
     const relation = isSelf
       ? { following: false, friend_status: "self" }
@@ -219,10 +232,21 @@ export async function searchUsers(viewerId, query) {
       email: safe.email,
       role: safe.role,
       verified: Boolean(safe.verified),
+      company: profile.company || "",
+      country: profile.country || "",
+      industry: profile.industry || "",
+      avatar_url: profile.avatar_url || profile.avatar || "",
       is_self: isSelf,
       ...relation,
     };
   });
+
+  return {
+    items,
+    total,
+    cursor: cursor + items.length,
+    next_cursor: hasMore ? cursor + items.length : null,
+  };
 }
 
 export async function followUser(viewerId, targetId) {

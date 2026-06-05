@@ -64,6 +64,8 @@ export async function updateMyProfile(req, res) {
 
 export async function searchUsersController(req, res) {
   const q = String(req.query?.q || "");
+  const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0;
+  const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 12));
   res.set(
     "Cache-Control",
     "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -71,7 +73,8 @@ export async function searchUsersController(req, res) {
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
   res.set("Surrogate-Control", "no-store");
-  return res.status(200).json({ users: await searchUsers(req.user.id, q) });
+  const result = await searchUsers(req.user.id, q, cursor, limit);
+  return res.status(200).json(result);
 }
 
 export async function lookupUsers(req, res) {

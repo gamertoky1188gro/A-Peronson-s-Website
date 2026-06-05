@@ -377,12 +377,14 @@ export default function SearchResults() {
     buyerRequests: 0,
     companies: 0,
     feedPosts: 0,
+    users: 0,
     total: 0,
   });
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [requests, setRequests] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [feedPosts, setFeedPosts] = useState([]);
+  const [users, setUsers] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const pageLoadCountRef = useRef(0);
   const [filterOptions, setFilterOptions] = useState({
@@ -664,16 +666,29 @@ export default function SearchResults() {
     return savedSearchAlerts.some((alert) => alert.query === q);
   }, [savedSearchAlerts, query]);
 
-  const filteredFeedPosts = useMemo(() => {
-    if (!refineQuery.trim()) return feedPosts;
-    const q = refineQuery.toLowerCase();
-    return feedPosts.filter(
-      (p) =>
-        (p.title || "").toLowerCase().includes(q) ||
-        (p.description_markdown || "").toLowerCase().includes(q) ||
-        (p.caption || "").toLowerCase().includes(q),
-    );
-  }, [feedPosts, refineQuery]);
+const filteredFeedPosts = useMemo(() => {
+  if (!refineQuery.trim()) return feedPosts;
+  const q = refineQuery.toLowerCase();
+  return feedPosts.filter(
+    (p) =>
+      (p.title || "").toLowerCase().includes(q) ||
+      (p.description_markdown || "").toLowerCase().includes(q) ||
+      (p.caption || "").toLowerCase().includes(q),
+  );
+}, [feedPosts, refineQuery]);
+
+const filteredUsers = useMemo(() => {
+  if (!refineQuery.trim()) return users;
+  const q = refineQuery.toLowerCase();
+  return users.filter(
+    (u) =>
+      (u.name || "").toLowerCase().includes(q) ||
+      (u.email || "").toLowerCase().includes(q) ||
+      (u.role || "").toLowerCase().includes(q) ||
+      (u.company || "").toLowerCase().includes(q) ||
+      (u.country || "").toLowerCase().includes(q),
+  );
+}, [users, refineQuery]);
 
   function toggleShortlist(id, type) {
     const key = `${type}:${id}`;
@@ -923,16 +938,18 @@ export default function SearchResults() {
         setImagePreview(null);
       }
 
-      const [reqRes, prodRes, feedRes] = await Promise.all([
+      const [reqRes, prodRes, feedRes, userRes] = await Promise.all([
         apiRequest(`/requirements/search?${params.toString()}`, { token }),
         apiRequest(`/products/search?${params.toString()}`, { token }),
         apiRequest(`/feed/search?${params.toString()}`, { token }),
+        apiRequest(`/users/search?${params.toString()}`, { token }),
       ]);
 
       setRequests(Array.isArray(reqRes?.items) ? reqRes.items : []);
       setCompanies(Array.isArray(prodRes?.items) ? prodRes.items : []);
       setFeedPosts(Array.isArray(feedRes?.items) ? feedRes.items : []);
-      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || null);
+      setUsers(Array.isArray(userRes?.items) ? userRes.items : []);
+      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || userRes?.next_cursor || null);
       setFacetCounts(reqRes?.facetCounts || prodRes?.facetCounts || { countries: [], categories: [] });
 
       const reqTotal = Number.isFinite(Number(reqRes?.total))
@@ -944,12 +961,16 @@ export default function SearchResults() {
       const feedTotal = Number.isFinite(Number(feedRes?.total))
         ? Number(feedRes.total)
         : feedRes?.items?.length || 0;
-      const total = reqTotal + prodTotal + feedTotal;
+      const userTotal = Number.isFinite(Number(userRes?.total))
+        ? Number(userRes.total)
+        : userRes?.items?.length || 0;
+      const total = reqTotal + prodTotal + feedTotal + userTotal;
       setTotalResults(total);
       setEstimatedCounts({
         buyerRequests: reqTotal,
         companies: prodTotal,
         feedPosts: feedTotal,
+        users: userTotal,
         total,
       });
 
@@ -1011,15 +1032,17 @@ export default function SearchResults() {
     setLoadingMore(true);
     try {
       const params = buildSearchParams(nextCursor);
-      const [reqRes, prodRes, feedRes] = await Promise.all([
+      const [reqRes, prodRes, feedRes, userRes] = await Promise.all([
         apiRequest(`/requirements/search?${params.toString()}`, { token }),
         apiRequest(`/products/search?${params.toString()}`, { token }),
         apiRequest(`/feed/search?${params.toString()}`, { token }),
+        apiRequest(`/users/search?${params.toString()}`, { token }),
       ]);
       setRequests((prev) => [...prev, ...(Array.isArray(reqRes?.items) ? reqRes.items : [])]);
       setCompanies((prev) => [...prev, ...(Array.isArray(prodRes?.items) ? prodRes.items : [])]);
       setFeedPosts((prev) => [...prev, ...(Array.isArray(feedRes?.items) ? feedRes.items : [])]);
-      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || null);
+      setUsers((prev) => [...prev, ...(Array.isArray(userRes?.items) ? userRes.items : [])]);
+      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || userRes?.next_cursor || null);
       setCursor(nextCursor);
     } catch {
       addToast("Load more failed", "Unable to load additional results", "error");
@@ -1277,6 +1300,7 @@ export default function SearchResults() {
         },
         { key: "companies", label: `Companies (${estimatedCounts.companies})` },
         { key: "feed", label: `Feed Posts (${estimatedCounts.feedPosts})` },
+        { key: "users", label: `Users (${estimatedCounts.users})` },
       ].map((tab) => (
         <button
           key={tab.key}
@@ -1654,6 +1678,53 @@ export default function SearchResults() {
               </AnimatePresence>
             </section>
           )}
+
+          {filteredUsers.length > 0 && (
+            <section>
+              <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+                Users ({filteredUsers.length})
+              </h3>
+              <AnimatePresence mode="popLayout">
+                <MasonryGrid columnCount={2} gap={4}>
+                  {filteredUsers.map((item) => (
+                    <motion.article
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
+                          {(item.name || "U").charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            to={`/profile/${item.id}`}
+                            className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                            dangerouslySetInnerHTML={{
+                              __html: highlightText(item.name || "Untitled User", query),
+                            }}
+                          />
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                            {item.role && (
+                              <Badge tone={item.role === "factory" ? "green" : item.role === "buyer" ? "blue" : "default"}>
+                                {item.role.replace(/_/g, " ")}
+                              </Badge>
+                            )}
+                            {item.verified && <Badge tone="green">verified</Badge>}
+                            {item.country && <span>{item.country}</span>}
+                            {item.company && <span className="truncate">{item.company}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.article>
+                  ))}
+                </MasonryGrid>
+              </AnimatePresence>
+            </section>
+          )}
         </div>
       );
     }
@@ -1842,6 +1913,64 @@ export default function SearchResults() {
               )}
               <div className="mt-4 text-xs text-slate-400">
                 {new Date(item.created_at).toLocaleDateString()}
+              </div>
+            </motion.article>
+          ))}
+          </MasonryGrid>
+        </AnimatePresence>
+      );
+    }
+
+    if (activeTab === "users") {
+      const items = filteredUsers;
+      if (items.length === 0 && !loading) {
+        return (
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+            <UserSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+            <p className="text-lg font-medium text-slate-900 dark:text-white">
+              No users found
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Try adjusting your search or filters
+            </p>
+          </div>
+        );
+      }
+      return (
+        <AnimatePresence mode="popLayout">
+          <MasonryGrid columnCount={2} gap={4}>
+          {items.map((item) => (
+            <motion.article
+              key={item.id}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
+                  {(item.name || "U").charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    to={`/profile/${item.id}`}
+                    className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightText(item.name || "Untitled User", query),
+                    }}
+                  />
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    {item.role && (
+                      <Badge tone={item.role === "factory" ? "green" : item.role === "buyer" ? "blue" : "default"}>
+                        {item.role.replace(/_/g, " ")}
+                      </Badge>
+                    )}
+                    {item.verified && <Badge tone="green">verified</Badge>}
+                    {item.country && <span>{item.country}</span>}
+                    {item.company && <span className="truncate">{item.company}</span>}
+                  </div>
+                </div>
               </div>
             </motion.article>
           ))}
