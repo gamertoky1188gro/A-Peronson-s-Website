@@ -758,9 +758,11 @@ export default function SearchResults() {
     if (filters.verifiedOnly) params.set("verifiedOnly", "true");
     if (sortBy !== "relevance") params.set("sort", sortBy);
     if (cursorVal > 0) params.set("cursor", String(cursorVal));
-    if (filters.season && filters.season !== "Any season") params.set("season", filters.season);
-    if (filters.machinery) params.set("machinery", filters.machinery);
-    if (filters.stockStatus) params.set("stockStatus", filters.stockStatus);
+    if (isPremium) {
+      if (filters.season && filters.season !== "Any season") params.set("season", filters.season);
+      if (filters.machinery) params.set("machinery", filters.machinery);
+      if (filters.stockStatus) params.set("stockStatus", filters.stockStatus);
+    }
     if (searchField === "buyer") params.set("field", "buyer");
     if (searchField === "company") params.set("field", "company");
     return params;
