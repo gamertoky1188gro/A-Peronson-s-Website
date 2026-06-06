@@ -7,6 +7,7 @@ import {
   MessageSquareText,
   ArrowUpRight,
   Zap,
+  Eye,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -68,6 +69,7 @@ export default function FeedItemCard({
   expressInterestDisabled,
   onExpressInterest,
   onOpenComments,
+  onOpenPreview,
   onShare,
   onReport,
   onMessage,
@@ -185,11 +187,17 @@ export default function FeedItemCard({
         </div>
 
         <h3 className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100">
-          {isBuyerRequest
+          {isUserFeedPost ? (
+            <button
+              type="button"
+              onClick={onOpenPreview}
+              className="text-left hover:text-gtBlue dark:hover:text-gtBlue transition-colors"
+            >
+              {item.title || item.category || "Post"}
+            </button>
+          ) : isBuyerRequest
             ? item.category || "Request"
-            : item.title ||
-              item.category ||
-              (isUserFeedPost ? "Post" : "Product")}
+            : item.title || item.category || "Product"}
         </h3>
 
         {item.content ? (
@@ -367,6 +375,15 @@ export default function FeedItemCard({
           >
             <MessageSquareText size={16} /> Comment
           </button>
+          {isUserFeedPost ? (
+            <button
+              type="button"
+              onClick={onOpenPreview}
+              className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue"
+            >
+              <Eye size={16} /> Preview
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onShare}
