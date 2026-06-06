@@ -815,7 +815,7 @@ export default function TexHub() {
                           <div className="text-sm font-medium">
                             {item.label}
                           </div>
-                          <div className="text-xs text-slate-500 dark:text-sky-100/70">
+                          <div className="text-xs text-slate-600 dark:text-sky-200/90">
                             {item.status}
                           </div>
                         </div>
@@ -830,11 +830,11 @@ export default function TexHub() {
                       <BadgeCheck className="h-4 w-4 text-cyan-600 dark:text-cyan-200" />{" "}
                       {heroFactories.title}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-sky-100/70">
+                    <div className="text-xs text-slate-600 dark:text-sky-200/90">
                       {heroFactories.subtitle}
                     </div>
                   </div>
-                  <div className="mt-3 grid gap-2 text-xs text-slate-600/85 sm:grid-cols-2 dark:text-sky-50/85">
+                  <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2 dark:text-sky-200">
                     {heroValueProps.slice(0, 4).map((t) => (
                       <div key={t} className="rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5">
                         {t}
@@ -1024,6 +1024,7 @@ export default function TexHub() {
                   <button
                     type="button"
                     disabled
+                    aria-label="Toggle content mode"
                     className="relative h-8 w-16 cursor-not-allowed rounded-full bg-slate-200 p-1 opacity-50 dark:bg-slate-800"
                   >
                     <motion.div
@@ -1210,9 +1211,9 @@ export default function TexHub() {
                         {section.eyebrow}
                       </p>
                     ) : null}
-                    <h4 className="mt-2 text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                    <h3 className="mt-2 text-base font-bold tracking-tight text-slate-900 dark:text-white">
                       {section.title}
-                    </h4>
+                    </h3>
                     {section.description ? (
                       <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                         {section.description}
