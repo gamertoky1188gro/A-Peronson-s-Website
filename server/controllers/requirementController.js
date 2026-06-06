@@ -707,7 +707,7 @@ export async function searchRequirements(req, res) {
     ? openSearchResult.ids.map(String)
     : [];
   const openSearchIdSet = openSearchIds.length ? new Set(openSearchIds) : null;
-  const osEngine = openSearchResult?.engine || "fallback_json";
+  const osEngine = openSearchResult?.engine || "database";
 
   const qdrantReady = q ? await isQdrantConfigured() : false;
   const qdrantResult = qdrantReady

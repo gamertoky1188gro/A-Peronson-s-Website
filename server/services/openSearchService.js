@@ -672,7 +672,7 @@ export async function searchOpenSearch({
   const cfg = await loadConfig();
   if (!cfg.enabled || !cfg.url)
     return {
-      engine: "fallback_json",
+      engine: "database",
       error_code: "not_configured",
       ids: [],
       facets: null,
@@ -682,7 +682,7 @@ export async function searchOpenSearch({
   const { client } = await getClient();
   if (!client)
     return {
-      engine: "fallback_json",
+      engine: "database",
       error_code: "not_configured",
       ids: [],
       facets: null,
@@ -885,7 +885,7 @@ export async function searchOpenSearch({
       last_error: error?.message || "opensearch_error",
     };
     return {
-      engine: "fallback_json",
+      engine: "database",
       error_code: "opensearch_error",
       ids: [],
       facets: null,
