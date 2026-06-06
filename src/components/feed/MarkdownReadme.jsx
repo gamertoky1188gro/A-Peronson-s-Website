@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkSmartypants from "remark-smartypants";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 
@@ -10,7 +11,7 @@ export default function MarkdownReadme({ content = "" }) {
   return (
     <div className="prose prose-sm max-w-none prose-slate dark:prose-invert prose-headings:font-semibold prose-pre:rounded-xl prose-pre:bg-slate-900 prose-code:before:content-none prose-code:after:content-none">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkSmartypants]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
       >
         {safe}

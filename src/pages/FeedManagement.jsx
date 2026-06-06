@@ -7,6 +7,7 @@ import { useTheme } from "../lib/ThemeProvider";
 import { getToken, syncUserFromApi, getCurrentUser } from "../lib/auth";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkSmartypants from "remark-smartypants";
 
 const Icon = {
   ArrowLeft: (p) => (
@@ -864,7 +865,7 @@ export default function FeedManagementPage() {
                         : "prose-slate prose-headings:text-slate-900 prose-a:text-sky-600",
                     )}
                   >
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{form.readme}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkSmartypants]}>{form.readme}</ReactMarkdown>
                   </article>
                 ) : (
                   <div

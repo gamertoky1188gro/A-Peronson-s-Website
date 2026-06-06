@@ -30,6 +30,7 @@ Pre-commit (husky) runs: Prettier → lint → test → build. If it fails, fix 
 - **OpenSearch** required for search tests/CI. Start via `docker compose up -d opensearch`. Reindex with `npm run ci:reindex`.
 - **No TypeScript** in source — JSX/JS only. `typescript` is a devDependency but unused for source code.
 - **Tailwind v4** (via `@tailwindcss/vite` plugin, not PostCSS). `tailwind.config.js` exists but may be legacy — check `tailwind.css` for `@import "tailwindcss"`. Uses `@tailwindcss/typography` v0.5.19 for `prose` classes — add with `@plugin "@tailwindcss/typography";` in `tailwind.css`. Required dependency. If `prose` styles (headings, lists, tables, blockquotes, etc.) aren't rendering, typography plugin is missing — install it and add the `@plugin` directive.
+- **Markdown rendering** uses `react-markdown` with `remark-gfm` (tables, strikethrough, task lists) and `remark-smartypants` (curly quotes, em/en dashes, ellipses, copyright/trademark symbols). Both plugins must be added to `remarkPlugins` array. Used in `MarkdownReadme.jsx`, `FeedManagement.jsx` (preview), and `MarkdownMessage.jsx` (chat).
 - **Jest config:** `jest.config.cjs` + `babel.config.cjs` with `babel-plugin-transform-vite-meta-env` for Vite env var compatibility.
 
 ## Search page (`/search`)

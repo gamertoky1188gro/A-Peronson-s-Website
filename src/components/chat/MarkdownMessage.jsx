@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkSmartypants from "remark-smartypants";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
@@ -56,7 +57,7 @@ export default function MarkdownMessage({ text = "" }) {
   return (
     <div className="break-words text-[13px] leading-[1.45] text-inherit">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkSmartypants]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, schema]]}
         components={{
           a({ href = "", className = "", ...props }) {
