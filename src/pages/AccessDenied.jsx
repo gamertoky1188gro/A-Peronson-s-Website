@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
+import usePageMeta from "../lib/usePageMeta";
 
 function formatRouteLabel(fromValue) {
   if (!fromValue) return "this page";
@@ -34,6 +35,13 @@ function InfoItem({ label, value }) {
 }
 
 export default function AccessDenied() {
+  usePageMeta({
+    title: "Access Denied — GarTexHub",
+    description:
+      "You don't have permission to access this page on GarTexHub. Upgrade your plan or contact support.",
+    url: "/access-denied",
+  });
+
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
   const location = useLocation();

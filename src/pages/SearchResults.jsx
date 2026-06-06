@@ -89,6 +89,7 @@ import {
   validateCoreFilterRenderKeys,
 } from "./searchFiltersConfig";
 import MasonryGrid from "../components/MasonryGrid";
+import usePageMeta from "../lib/usePageMeta";
 
 const SORT_OPTIONS = [
   { key: "relevance", label: "Relevance" },
@@ -322,6 +323,13 @@ function ToastStack({ toasts, onDismiss }) {
 }
 
 export default function SearchResults() {
+  usePageMeta({
+    title: "Search — GarTexHub",
+    description:
+      "Search GarTexHub for textile products, buyer requests, companies, and suppliers across the global textile marketplace.",
+    url: "/search",
+  });
+
   const [, setSearchParams] = useSearchParams();
   const token = useMemo(() => getToken(), []);
   const currentUser = useMemo(() => getCurrentUser(), []);

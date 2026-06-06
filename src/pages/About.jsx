@@ -54,6 +54,7 @@ import SpotlightCard from "../components/ui/SpotlightCard";
 import TextColorReveal from "../components/TextColorReveal";
 import ParallaxBackground from "../components/ParallaxBackground";
 import GooBlobs from "../components/GooBlobs";
+import usePageMeta from "../lib/usePageMeta";
 
 const Motion = motion;
 
@@ -217,6 +218,13 @@ function SectionHeading({ eyebrow, title, description }) {
 }
 
 export default function About() {
+  usePageMeta({
+    title: "About — GarTexHub",
+    description:
+      "Learn about GarTexHub — the global textile and garment marketplace connecting verified factories, buying houses, and suppliers worldwide.",
+    url: "/about",
+  });
+
   const [about, setAbout] = useState(fallbackAbout);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");

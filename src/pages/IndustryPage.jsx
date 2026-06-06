@@ -14,6 +14,7 @@ import { Sparkles, ArrowUpRight, ShoppingCart, Package, Clock3, PackageOpen, Glo
 import { apiRequest, getToken } from "../lib/auth";
 import { trackClientEvent } from "../lib/events";
 import CountUp from "../components/CountUp";
+import usePageMeta from "../lib/usePageMeta";
 
 function StatCard({ icon: Icon, label, value, caption }) {
   const isNumeric = typeof value === "number" && !Number.isNaN(value);
@@ -47,6 +48,16 @@ function Pill({ children, tone = "default" }) {
 
 export default function IndustryPage() {
   const { slug } = useParams();
+  usePageMeta({
+    title: slug
+      ? `${slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, " ")} — GarTexHub`
+      : "Industry — GarTexHub",
+    description: slug
+      ? `Explore ${slug.replace(/-/g, " ")} products, buyer requests, and suppliers on GarTexHub — the global textile and garment marketplace.`
+      : "Explore textile and garment industry categories on GarTexHub.",
+    url: slug ? `/industry/${slug}` : "/industry",
+  });
+
   const token = useMemo(() => getToken(), []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

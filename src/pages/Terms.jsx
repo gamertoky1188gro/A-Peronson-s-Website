@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import usePageMeta from "../lib/usePageMeta";
 import {
   ShieldCheck,
   Scale,
@@ -266,6 +267,13 @@ function SectionCard({ section, index, visible }) {
 }
 
 export default function Terms() {
+  usePageMeta({
+    title: "Terms of Service — GarTexHub",
+    description:
+      "Review the terms and conditions governing the use of GarTexHub's textile and garment marketplace platform.",
+    url: "/terms",
+  });
+
   const [visible, setVisible] = useState(() => sections.map((_, i) => i < 2));
   const refs = useRef([]);
 

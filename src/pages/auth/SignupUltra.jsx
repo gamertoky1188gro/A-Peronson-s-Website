@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
 import { apiRequest, getRoleHome, saveSession } from "../../lib/auth";
+import usePageMeta from "../../lib/usePageMeta";
 
 const POSITIONS = [
   "Owner",
@@ -32,6 +33,13 @@ const POSITIONS = [
 ];
 
 export default function SignupUltra() {
+  usePageMeta({
+    title: "Sign Up — GarTexHub",
+    description:
+      "Join GarTexHub — the global textile and garment marketplace. Create your account and connect with verified factories, buyers, and suppliers.",
+    url: "/signup",
+  });
+
   const { time, date } = useParams();
   const navigate = useNavigate();
 

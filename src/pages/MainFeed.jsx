@@ -20,6 +20,7 @@ import CommentsDrawer from "../components/feed/CommentsDrawer";
 import NeonAtom from "../components/ui/NeonAtom";
 import ReportModal from "../components/feed/ReportModal";
 import { subscribeFeedRealtime } from "../lib/feedRealtime";
+import usePageMeta from "../lib/usePageMeta";
 
 const Motion = motion;
 
@@ -397,6 +398,13 @@ function ActionButton({ icon, label, onClick }) {
 
 // ====== MAIN COMPONENT ======
 export default function MainFeed() {
+  usePageMeta({
+    title: "Feed — GarTexHub",
+    description:
+      "Stay updated with the latest textile and garment industry posts, product launches, and market insights on GarTexHub.",
+    url: "/feed",
+  });
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = useMemo(() => getToken(), []);

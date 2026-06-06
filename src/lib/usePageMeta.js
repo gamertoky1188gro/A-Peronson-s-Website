@@ -100,6 +100,15 @@ export default function usePageMeta({
     setMeta(`${OG_PREFIX}:title`, title);
     setMeta(`${OG_PREFIX}:type`, OG_TYPES[type] || type);
     setMeta(`${OG_PREFIX}:description`, description);
+    if (description) {
+      let el = document.querySelector('meta[name="description"]');
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute("name", "description");
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", String(description));
+    }
     setMeta(`${OG_PREFIX}:url`, url || window.location.href);
     setMeta(`${OG_PREFIX}:locale`, locale);
     if (localeAlternate) {

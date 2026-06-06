@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import usePageMeta from "../lib/usePageMeta";
 import {
   ShieldCheck,
   FileText,
@@ -251,6 +252,13 @@ function SectionCard({ section, index, dark }) {
 }
 
 export default function Privacy() {
+  usePageMeta({
+    title: "Privacy Policy — GarTexHub",
+    description:
+      "Understand how GarTexHub collects, uses, and protects your personal data and privacy.",
+    url: "/privacy",
+  });
+
   const [dark, setDark] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const lastUpdated = "16 March 2026";
