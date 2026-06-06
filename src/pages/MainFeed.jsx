@@ -634,12 +634,12 @@ export default function MainFeed() {
   async function handleShare(item) {
     setNotice({ type: "", message: "" });
     try {
+      const url = `${window.location.origin}/feed?item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`;
+      await copyToClipboard(url);
       await apiRequest(
         `/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share`,
         { method: "POST", token },
       );
-      const url = `${window.location.origin}/feed?item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`;
-      await copyToClipboard(url);
       setNotice({ type: "success", message: feedConfig.messages.share_copied });
     } catch (err) {
       setNotice({ type: "error", message: err.message || "Share failed." });
