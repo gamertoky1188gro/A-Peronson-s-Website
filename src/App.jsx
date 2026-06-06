@@ -359,7 +359,7 @@ function AppLayout() {
     location.pathname === "/chat" || location.pathname === "/call";
   const isAdminRoute = location.pathname.startsWith("/admin");
   const hideChrome = isImmersiveRoute || isAdminRoute;
-  const content = isAdminRoute ? (
+  const content = isAdminRoute || isImmersiveRoute ? (
     <>
       <Suspense fallback={
         <div className="flex min-h-screen items-center justify-center">
