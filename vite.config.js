@@ -17,6 +17,7 @@ export default defineConfig({
       external: ["rtf.js"],
     },
     reportCompressedSize: true, // turn off when releasing to public
+    sourcemap: true, // turn off when releasing to public
   },
   plugins: [
     tailwindcss(),
