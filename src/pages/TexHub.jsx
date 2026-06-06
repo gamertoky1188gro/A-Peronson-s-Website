@@ -665,7 +665,7 @@ export default function TexHub() {
               key={id}
               href={`#${id}`}
               onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
-              className={`block h-2 w-2 rounded-full transition-all duration-300 ${
+              className={`relative block h-2 w-2 rounded-full transition-all duration-300 before:absolute before:-inset-5 before:content-[''] ${
                 activeSection === id
                   ? "h-3 w-3 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]"
                   : "bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-400"
