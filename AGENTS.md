@@ -29,7 +29,7 @@ Pre-commit (husky) runs: Prettier → lint → test → build. If it fails, fix 
 - **Prisma commands:** `npm run db:generate`, `npm run db:migrate:dev`, `npm run db:studio`
 - **OpenSearch** required for search tests/CI. Start via `docker compose up -d opensearch`. Reindex with `npm run ci:reindex`.
 - **No TypeScript** in source — JSX/JS only. `typescript` is a devDependency but unused for source code.
-- **Tailwind v4** (via `@tailwindcss/vite` plugin, not PostCSS). `tailwind.config.js` exists but may be legacy — check `tailwind.css` for `@import "tailwindcss"`.
+- **Tailwind v4** (via `@tailwindcss/vite` plugin, not PostCSS). `tailwind.config.js` exists but may be legacy — check `tailwind.css` for `@import "tailwindcss"`. Uses `@tailwindcss/typography` v0.5.19 for `prose` classes — add with `@plugin "@tailwindcss/typography";` in `tailwind.css`. Required dependency. If `prose` styles (headings, lists, tables, blockquotes, etc.) aren't rendering, typography plugin is missing — install it and add the `@plugin` directive.
 - **Jest config:** `jest.config.cjs` + `babel.config.cjs` with `babel-plugin-transform-vite-meta-env` for Vite env var compatibility.
 
 ## Search page (`/search`)
