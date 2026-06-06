@@ -1747,7 +1747,7 @@ export default function ChatInterface() {
 
   return (
     <div
-      className="h-screen w-screen font-['Poppins',sans-serif] text-white chat-interface-container overflow-hidden"
+      className="fixed inset-0 font-['Poppins',sans-serif] text-white chat-interface-container overflow-hidden"
       style={{
         background: theme.pageBg,
         color: theme.textPrimary,
