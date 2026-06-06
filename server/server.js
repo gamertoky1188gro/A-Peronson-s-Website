@@ -195,6 +195,7 @@ const MIME_TYPES = {
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
   ".json": "application/json",
+  ".map": "application/json",
 };
 
 if (serveDist && fs.existsSync(distRoot)) {
