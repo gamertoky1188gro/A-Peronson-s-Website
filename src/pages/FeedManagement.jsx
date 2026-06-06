@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import { getToken, syncUserFromApi, getCurrentUser } from "../lib/auth";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const Icon = {
   ArrowLeft: (p) => (
@@ -183,6 +184,7 @@ export default function FeedManagementPage() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [editingPost, setEditingPost] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
@@ -285,7 +287,35 @@ export default function FeedManagementPage() {
   const clearForm = () => {
     setForm(initialForm);
     setMediaRows([]);
+    setEditingPost(null);
     setError("");
+  };
+
+  const editPost = (post) => {
+    setEditingPost(post);
+    setForm({
+      title: post.title || "",
+      category: post.category || "",
+      caption: post.caption || "",
+      readme: post.description_markdown || post.readme || "",
+      ctaText: post.cta_text || post.ctaText || "",
+      ctaUrl: post.cta_url || post.ctaUrl || "",
+      hashtags: Array.isArray(post.hashtags) ? post.hashtags.join(", ") : (post.hashtags || ""),
+      mentions: Array.isArray(post.mentions) ? post.mentions.join(", ") : (post.mentions || ""),
+      links: Array.isArray(post.links) ? post.links.join(", ") : (post.links || ""),
+      productTags: Array.isArray(post.product_tags) ? post.product_tags.join(", ") : (post.product_tags || post.productTags || ""),
+      location: post.location_tag || post.location || "",
+    });
+
+    const existingMedia = (post.media || []).map((m) => ({
+      id: `${m.url || m.name}-${Math.random().toString(36).slice(2, 8)}`,
+      file: null,
+      name: m.name || "Media",
+      type: m.type || "image/jpeg",
+      url: m.url || m,
+    }));
+    setMediaRows(existingMedia);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const createPost = async () => {
@@ -315,7 +345,6 @@ export default function FeedManagementPage() {
       links: splitCommaList(form.links),
       product_tags: splitCommaList(form.productTags),
       location_tag: form.location,
-      status: "published",
       media: mediaRows.map((item) => ({
         name: item.name,
         type: item.type,
@@ -323,9 +352,13 @@ export default function FeedManagementPage() {
       })),
     };
 
+    const isEditing = editingPost !== null;
+    const url = isEditing ? `/api/feed/posts/${editingPost.id}` : "/api/feed/posts";
+    const method = isEditing ? "PATCH" : "POST";
+
     try {
-      const res = await fetch("/api/feed/posts", {
-        method: "POST",
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -338,15 +371,17 @@ export default function FeedManagementPage() {
       }
 
       const data = await res.json();
-      const created = data?.post ?? {
-        id: String(Date.now()),
-        title: form.title,
-        category: form.category,
-        caption: form.caption,
+      const saved = data?.post ?? {
+        id: isEditing ? editingPost.id : String(Date.now()),
+        ...payload,
         createdAt: new Date().toISOString(),
       };
 
-      setPosts((prev) => [created, ...prev]);
+      if (isEditing) {
+        setPosts((prev) => prev.map((p) => (p.id === editingPost.id ? saved : p)));
+      } else {
+        setPosts((prev) => [saved, ...prev]);
+      }
       clearForm();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Save failed";
@@ -487,9 +522,11 @@ export default function FeedManagementPage() {
                     <Icon.Plus className="h-5 w-5" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Post Editor</h2>
+                    <h2 className="text-lg font-semibold">
+                      {editingPost ? "Edit Post" : "Post Editor"}
+                    </h2>
                     <p className={cn("text-sm", subtleText)}>
-                      Compose, enrich, and publish your feed post.
+                      {editingPost ? `Editing "${editingPost.title}"` : "Compose, enrich, and publish your feed post."}
                     </p>
                   </div>
                 </div>
@@ -767,17 +804,24 @@ export default function FeedManagementPage() {
                   mutedBorder,
                 )}
               >
-                <button
-                  type="button"
-                  onClick={clearForm}
-                  className={cn(
-                    "inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow-lg",
-                    panelBg,
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={clearForm}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow-lg",
+                      panelBg,
+                    )}
+                  >
+                    <Icon.Refresh className="h-4 w-4" />
+                    {editingPost ? "Cancel" : "Clear"}
+                  </button>
+                  {editingPost && (
+                    <span className="inline-flex items-center gap-2 rounded-2xl bg-sky-500/10 px-4 py-3 text-sm font-medium text-sky-400">
+                      Editing post
+                    </span>
                   )}
-                >
-                  <Icon.Refresh className="h-4 w-4" />
-                  Clear
-                </button>
+                </div>
 
                 <button
                   type="button"
@@ -790,7 +834,7 @@ export default function FeedManagementPage() {
                   ) : (
                     <Icon.Check className="h-4 w-4" />
                   )}
-                  {saving ? "Saving..." : "Save post"}
+                  {saving ? "Saving..." : editingPost ? "Update post" : "Save post"}
                 </button>
               </div>
             </section>
@@ -820,7 +864,7 @@ export default function FeedManagementPage() {
                         : "prose-slate prose-headings:text-slate-900 prose-a:text-sky-600",
                     )}
                   >
-                    <ReactMarkdown>{form.readme}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{form.readme}</ReactMarkdown>
                   </article>
                 ) : (
                   <div
@@ -955,6 +999,17 @@ export default function FeedManagementPage() {
                               {post.category || "Uncategorized"}
                             </p>
                           </div>
+                          <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => editPost(post)}
+                            className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-sm font-medium text-sky-300 transition hover:bg-sky-500/15"
+                          >
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                            </svg>
+                            Edit
+                          </button>
                           <button
                             type="button"
                             onClick={() => deletePost(post.id)}
@@ -963,6 +1018,7 @@ export default function FeedManagementPage() {
                             <Icon.Trash className="h-4 w-4" />
                             Delete
                           </button>
+                          </div>
                         </div>
 
                         <p
