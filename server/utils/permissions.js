@@ -20,8 +20,10 @@ export function deny(res, message = "Access denied") {
 export function handleControllerError(res, error) {
   const status = Number(error?.status) || 500;
   if (status === 403) return deny(res, error?.message || "Access denied");
-  if (status === 500)
-    return res.status(500).json({ error: "Internal server error" });
+  if (status >= 500) {
+    console.error("[handleControllerError]", status, error?.message, error?.stack);
+    return res.status(status).json({ error: "Internal server error" });
+  }
   return res.status(status).json({ error: error?.message || "Request failed" });
 }
 

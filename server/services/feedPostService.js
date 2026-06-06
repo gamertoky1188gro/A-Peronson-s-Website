@@ -243,11 +243,11 @@ export async function searchFeedPosts({ query = "", cursor = 0, limit = 20 } = {
   const users = userIds.length
     ? await prisma.user.findMany({
         where: { id: { in: userIds } },
-        select: { id: true, name: true, avatar_url: true },
+        select: { id: true, name: true, profile: true },
       })
     : [];
   const userMap = new Map(users.map((u) => [u.id, u.name]));
-  const avatarMap = new Map(users.map((u) => [u.id, u.avatar_url]));
+  const avatarMap = new Map(users.map((u) => [u.id, u.profile?.avatar_url || u.profile?.avatar || ""]));
 
   const items = rows.map((r) => ({
     ...r,
