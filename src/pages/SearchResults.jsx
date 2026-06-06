@@ -330,6 +330,22 @@ export default function SearchResults() {
   const { theme, toggleTheme } = useTheme();
   const dark = theme === "dark";
   const [query, setQuery] = useState("");
+  const isFirstRender = useRef(true);
+  const debounceTimer = useRef(null);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (!query.trim()) return;
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      executeSearchRef.current?.();
+    }, 350);
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [query]);
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
