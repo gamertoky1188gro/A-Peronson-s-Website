@@ -2,6 +2,7 @@ import crypto from "crypto";
 import prisma from "../utils/prisma.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import { getPlanForUser } from "./entitlementService.js";
+import { batchGetLinkPreviews } from "./linkPreviewService.js";
 const STATUSES = new Set(["draft", "published"]);
 const MEDIA_TYPES = new Set(["image", "video"]);
 
@@ -255,6 +256,18 @@ export async function searchFeedPosts({ query = "", cursor = 0, limit = 20 } = {
     author_id: r.user_id,
     author_avatar: avatarMap.get(r.user_id) || "",
   }));
+
+  const allLinks = items.flatMap((i) => (Array.isArray(i.links) ? i.links : []));
+  const linkPreviews = allLinks.length ? await batchGetLinkPreviews(allLinks) : [];
+  const previewMap = new Map(linkPreviews.map((p) => [p.url, p]));
+  for (const item of items) {
+    if (Array.isArray(item.links)) {
+      item.link_previews = item.links.map((url) => previewMap.get(url) || null).filter(Boolean);
+    } else {
+      item.link_previews = [];
+    }
+  }
+
   return {
     items,
     total,

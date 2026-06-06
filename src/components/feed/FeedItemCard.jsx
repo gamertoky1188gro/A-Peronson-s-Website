@@ -11,6 +11,7 @@ import {
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import MarkdownReadme from "./MarkdownReadme";
+import LinkPreviewCard from "../ui/LinkPreviewCard";
 
 function requestStatusBadgeClass(status = "") {
   const s = String(status || "open").toLowerCase();
@@ -328,17 +329,13 @@ export default function FeedItemCard({
         ) : null}
 
         {isUserFeedPost && Array.isArray(item.links) && item.links.length ? (
-          <div className="mt-2 flex flex-col gap-1">
+          <div className="mt-3 grid gap-3">
             {item.links.slice(0, 4).map((url, i) => (
-              <a
-                key={`${item.id}-url-${i}`}
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-gtBlue hover:underline break-all"
-              >
-                {url}
-              </a>
+              <LinkPreviewCard
+                key={`${item.id}-link-${i}`}
+                url={url}
+                preview={(item.link_previews && item.link_previews[i]) || null}
+              />
             ))}
           </div>
         ) : null}

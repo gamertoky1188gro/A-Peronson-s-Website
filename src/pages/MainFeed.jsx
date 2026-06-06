@@ -307,6 +307,7 @@ function normalizeFeedItem(raw) {
     ctaUrl: raw.cta_url || "",
     mentions: Array.isArray(raw.mentions) ? raw.mentions : [],
     links: Array.isArray(raw.links) ? raw.links : [],
+    link_previews: Array.isArray(raw.link_previews) ? raw.link_previews : [],
     productTags: Array.isArray(raw.product_tags) ? raw.product_tags : [],
     locationTag: raw.location_tag || "",
     emojis: Array.isArray(raw.emojis) ? raw.emojis : [],

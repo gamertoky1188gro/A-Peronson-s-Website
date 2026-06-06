@@ -1518,3 +1518,17 @@ model EmailOutbox {
 
   @@map("email_outbox")
 }
+
+model LinkPreview {
+  id          String   @id @default(cuid())
+  url         String   @unique
+  title       String?
+  description String?
+  image       String?
+  favicon     String?
+  site_name   String?
+  domain      String?
+  updated_at  DateTime @updatedAt
+
+  @@map("link_previews")
+}

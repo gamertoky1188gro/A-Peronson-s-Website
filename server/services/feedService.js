@@ -5,6 +5,7 @@ import { trackEvent } from "./eventTrackingService.js";
 import { logInfo } from "../utils/logger.js";
 import { getOrderCertificationMap } from "./orderCertificationService.js";
 import { listFeedPosts } from "./feedPostService.js";
+import { batchGetLinkPreviews } from "./linkPreviewService.js";
 
 const CATEGORIES = ["Shirts", "Knitwear", "Denim", "Women", "Kids"];
 
@@ -440,6 +441,19 @@ export async function getCombinedFeed({
       icon: "📝",
     })),
   ];
+
+  const feedPostLinks = combined
+    .filter((i) => i.feed_type === "user_feed_post" && Array.isArray(i.links))
+    .flatMap((i) => i.links);
+  if (feedPostLinks.length) {
+    const previews = await batchGetLinkPreviews(feedPostLinks);
+    const previewMap = new Map(previews.map((p) => [p.url, p]));
+    for (const item of combined) {
+      if (item.feed_type === "user_feed_post" && Array.isArray(item.links)) {
+        item.link_previews = item.links.map((url) => previewMap.get(url) || null).filter(Boolean);
+      }
+    }
+  }
 
   const itemsByAuthor = combined.reduce((acc, item) => {
     const authorId = getAuthorId(item);
