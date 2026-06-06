@@ -5,6 +5,14 @@ import remarkSmartypants from "remark-smartypants";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import CodeBlock from "../ui/CodeBlock";
+import remarkEmoji from "remark-emoji";
+import remarkSupersub from "remark-supersub";
+import remarkIns from "remark-ins";
+import { remarkHighlightMark } from "remark-highlight-mark";
+import remarkDeflist from "remark-deflist";
+import remarkDirective from "remark-directive";
+import remarkContainerDirective from "../../lib/remarkContainerDirective";
+import remarkAbbr from "@syenchuk/remark-abbr";
 
 const EXTRA_ALLOWED_TAGS = [
   "sub",
@@ -25,7 +33,7 @@ export default function MarkdownMessage({ text = "" }) {
     return {
       ...base,
       tagNames: Array.from(
-        new Set([...(base.tagNames || []), ...EXTRA_ALLOWED_TAGS]),
+        new Set([...(base.tagNames || []), ...EXTRA_ALLOWED_TAGS, "ins", "mark", "sup", "sub", "abbr", "dl", "dt", "dd"]),
       ),
       attributes: {
         ...(base.attributes || {}),
@@ -58,7 +66,18 @@ export default function MarkdownMessage({ text = "" }) {
   return (
     <div className="break-words text-[13px] leading-[1.45] text-inherit">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkSmartypants]}
+        remarkPlugins={[
+          [remarkGfm, { singleTilde: false }],
+          remarkSmartypants,
+          remarkEmoji,
+          remarkSupersub,
+          remarkIns,
+          remarkHighlightMark,
+          remarkDeflist,
+          remarkDirective,
+          remarkContainerDirective,
+          remarkAbbr,
+        ]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, schema]]}
         components={{
           a({ href = "", className = "", ...props }) {

@@ -9,6 +9,14 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkSmartypants from "remark-smartypants";
 import CodeBlock from "../components/ui/CodeBlock";
+import remarkEmoji from "remark-emoji";
+import remarkSupersub from "remark-supersub";
+import remarkIns from "remark-ins";
+import { remarkHighlightMark } from "remark-highlight-mark";
+import remarkDeflist from "remark-deflist";
+import remarkDirective from "remark-directive";
+import remarkContainerDirective from "../lib/remarkContainerDirective";
+import remarkAbbr from "@syenchuk/remark-abbr";
 
 const Icon = {
   ArrowLeft: (p) => (
@@ -867,7 +875,18 @@ export default function FeedManagementPage() {
                     )}
                   >
                     <ReactMarkdown
-                      remarkPlugins={[remarkGfm, remarkSmartypants]}
+                      remarkPlugins={[
+                        [remarkGfm, { singleTilde: false }],
+                        remarkSmartypants,
+                        remarkEmoji,
+                        remarkSupersub,
+                        remarkIns,
+                        remarkHighlightMark,
+                        remarkDeflist,
+                        remarkDirective,
+                        remarkContainerDirective,
+                        remarkAbbr,
+                      ]}
                       components={{
                         img({ src, alt, title, ...props }) {
                           return (
