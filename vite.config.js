@@ -5,11 +5,18 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   base: process.env.VITE_BASE_URL || "./",
+  logLevel: "info",
+  clearScreen: false,
+  envDir: process.cwd(),
+  css: {
+    cssCodeSplit: true,
+  },
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       external: ["rtf.js"],
     },
+    reportCompressedSize: true, // turn off when releasing to public
   },
   plugins: [
     tailwindcss(),
