@@ -3,6 +3,7 @@ import remarkGfm from "remark-gfm";
 import remarkSmartypants from "remark-smartypants";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
+import CodeBlock from "../ui/CodeBlock";
 
 export default function MarkdownReadme({ content = "" }) {
   const safe = String(content || "");
@@ -13,6 +14,22 @@ export default function MarkdownReadme({ content = "" }) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkSmartypants]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
+        components={{
+          code({ inline, className, children, ...props }) {
+            if (inline) {
+              return (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            }
+            return (
+              <CodeBlock className={className} {...props}>
+                {children}
+              </CodeBlock>
+            );
+          },
+        }}
       >
         {safe}
       </ReactMarkdown>

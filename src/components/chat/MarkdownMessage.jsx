@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import remarkSmartypants from "remark-smartypants";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import CodeBlock from "../ui/CodeBlock";
 
 const EXTRA_ALLOWED_TAGS = [
   "sub",
@@ -104,7 +105,7 @@ export default function MarkdownMessage({ text = "" }) {
               />
             );
           },
-          code({ inline = false, className = "", ...props }) {
+          code({ inline = false, className = "", children, ...props }) {
             if (inline) {
               return (
                 <code
@@ -120,7 +121,9 @@ export default function MarkdownMessage({ text = "" }) {
               );
             }
             return (
-              <code {...props} className={`font-mono ${className}`.trim()} />
+              <CodeBlock className={className} {...props}>
+                {children}
+              </CodeBlock>
             );
           },
           table({ className = "", ...props }) {

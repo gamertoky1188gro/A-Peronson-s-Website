@@ -8,6 +8,7 @@ import { getToken, syncUserFromApi, getCurrentUser } from "../lib/auth";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkSmartypants from "remark-smartypants";
+import CodeBlock from "../components/ui/CodeBlock";
 
 const Icon = {
   ArrowLeft: (p) => (
@@ -865,7 +866,17 @@ export default function FeedManagementPage() {
                         : "prose-slate prose-headings:text-slate-900 prose-a:text-sky-600",
                     )}
                   >
-                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkSmartypants]}>{form.readme}</ReactMarkdown>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm, remarkSmartypants]}
+                      components={{
+                        code({ inline, className, children, ...props }) {
+                          if (inline) {
+                            return <code className={className} {...props}>{children}</code>;
+                          }
+                          return <CodeBlock className={className} {...props}>{children}</CodeBlock>;
+                        },
+                      }}
+                    >{form.readme}</ReactMarkdown>
                   </article>
                 ) : (
                   <div
