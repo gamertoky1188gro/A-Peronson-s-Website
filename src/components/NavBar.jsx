@@ -1004,7 +1004,7 @@ export default function NavBar() {
                   )}
                 >
                   <Search className="h-4 w-4 text-slate-400" />
-                  <input
+                   <input
                     ref={searchInputRef}
                     value={searchQuery}
                     onChange={(e) => {
@@ -1015,6 +1015,13 @@ export default function NavBar() {
                     onBlur={() => {
                       if (!searchQuery.trim()) {
                         setSearchExpanded(false);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && searchQuery.trim()) {
+                        navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                        setSearchExpanded(false);
+                        setSearchOpen(false);
                       }
                     }}
                     placeholder="Search users..."
@@ -1202,6 +1209,14 @@ export default function NavBar() {
                 </Link>
               )}
 
+              <button
+                type="button"
+                onClick={() => navigate("/search")}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-sky-600 dark:bg-slate-950/70 dark:text-slate-300 dark:hover:text-sky-300 md:hidden"
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
               <button
                 onClick={() => setMobileOpen((v) => !v)}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white md:hidden"

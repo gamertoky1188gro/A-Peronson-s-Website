@@ -439,6 +439,9 @@ export default function SearchResults() {
     const params = new URLSearchParams(window.location.search);
     const q = params.get("q");
     if (q) setQuery(q);
+    if (q) {
+      setTimeout(() => executeSearchRef.current?.(), 100);
+    }
     const sortParam = params.get("sort");
     if (sortParam) setSortBy(sortParam);
     const cursorParam = params.get("cursor");
