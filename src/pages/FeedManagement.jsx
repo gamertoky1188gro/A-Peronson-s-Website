@@ -869,6 +869,18 @@ export default function FeedManagementPage() {
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm, remarkSmartypants]}
                       components={{
+                        img({ src, alt, title, ...props }) {
+                          return (
+                            <img
+                              src={src}
+                              alt={alt || ""}
+                              title={title}
+                              loading="lazy"
+                              className="max-w-full rounded-xl"
+                              {...props}
+                            />
+                          );
+                        },
                         code({ inline, className, children, ...props }) {
                           if (inline) {
                             return <code className={className} {...props}>{children}</code>;
