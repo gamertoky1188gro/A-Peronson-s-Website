@@ -3,10 +3,13 @@ import { EventEmitter } from "events";
 export const REALTIME_EVENTS = {
   notificationCreated: "notification:created",
   notificationRead: "notification:read",
+  feedPostCreated: "feed:post:created",
+  feedPostUpdated: "feed:post:updated",
+  feedPostDeleted: "feed:post:deleted",
 };
 
 export const realtimeBus = new EventEmitter();
-realtimeBus.setMaxListeners(50);
+realtimeBus.setMaxListeners(100);
 
 export function emitNotificationCreated(userId, notification) {
   if (!userId || !notification) return;
@@ -22,4 +25,19 @@ export function emitNotificationRead(userId, notificationId) {
     userId: String(userId),
     id: String(notificationId),
   });
+}
+
+export function emitFeedPostCreated(post) {
+  if (!post) return;
+  realtimeBus.emit(REALTIME_EVENTS.feedPostCreated, { post });
+}
+
+export function emitFeedPostUpdated(post) {
+  if (!post) return;
+  realtimeBus.emit(REALTIME_EVENTS.feedPostUpdated, { post });
+}
+
+export function emitFeedPostDeleted(postId) {
+  if (!postId) return;
+  realtimeBus.emit(REALTIME_EVENTS.feedPostDeleted, { postId });
 }

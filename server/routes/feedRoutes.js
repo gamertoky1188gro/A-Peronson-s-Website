@@ -1,8 +1,8 @@
 import { Router } from "express";
 import multer from "multer";
 import path from "path";
-import { requireAuth } from "../middleware/auth.js";
 import { combinedFeed } from "../controllers/feedController.js";
+import { feedStream } from "../controllers/feedStreamController.js";
 import {
   getMyFeedPosts,
   patchFeedPost,
@@ -29,6 +29,7 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
+router.get("/stream", feedStream);
 router.get("/posts/mine", requireAuth, getMyFeedPosts);
 router.get("/search", requireAuth, searchFeedPostsController);
 router.post(

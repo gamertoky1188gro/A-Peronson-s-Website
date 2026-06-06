@@ -3,6 +3,7 @@ import prisma from "../utils/prisma.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { batchGetLinkPreviews } from "./linkPreviewService.js";
+import { emitFeedPostCreated, emitFeedPostUpdated, emitFeedPostDeleted } from "../realtime/realtimeBus.js";
 const STATUSES = new Set(["draft", "published"]);
 const MEDIA_TYPES = new Set(["image", "video"]);
 
@@ -292,6 +293,17 @@ export async function createFeedPost(actor, payload = {}) {
     maxWords,
   );
   await prisma.feedPost.create({ data: next });
+
+  const author = actor ? await prisma.user.findUnique({ where: { id: ownerId }, select: { id: true, name: true, profile: true } }) : null;
+  emitFeedPostCreated({
+    ...next,
+    author_name: author?.name || "",
+    author_id: ownerId,
+    author_avatar: author?.profile?.avatar_url || author?.profile?.avatar || "",
+    feed_type: "user_feed_post",
+    icon: "📝",
+  });
+
   return next;
 }
 
@@ -319,6 +331,17 @@ export async function updateFeedPost(actor, postId, payload = {}) {
     );
   }
   await prisma.feedPost.update({ where: { id: String(postId) }, data: updated });
+
+  const author = actor ? await prisma.user.findUnique({ where: { id: String(actor.id) }, select: { id: true, name: true, profile: true } }) : null;
+  emitFeedPostUpdated({
+    ...updated,
+    author_name: author?.name || "",
+    author_id: String(actor.id),
+    author_avatar: author?.profile?.avatar_url || author?.profile?.avatar || "",
+    feed_type: "user_feed_post",
+    icon: "📝",
+  });
+
   return updated;
 }
 
@@ -337,4 +360,5 @@ export async function deleteFeedPost(actor, postId) {
   }
 
   await prisma.feedPost.delete({ where: { id: String(postId) } });
+  emitFeedPostDeleted(postId);
 }

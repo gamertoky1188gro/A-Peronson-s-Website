@@ -19,6 +19,7 @@ import FeedItemCard from "../components/feed/FeedItemCard";
 import CommentsDrawer from "../components/feed/CommentsDrawer";
 import NeonAtom from "../components/ui/NeonAtom";
 import ReportModal from "../components/feed/ReportModal";
+import { subscribeFeedRealtime } from "../lib/feedRealtime";
 
 const Motion = motion;
 
@@ -599,6 +600,30 @@ export default function MainFeed() {
     observer.observe(node);
     return () => observer.disconnect();
   }, [loadFeedPage, loading, loadingMore, nextCursor]);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) return;
+
+    const source = subscribeFeedRealtime({
+      onNewPost(raw) {
+        const normalized = normalizeFeedItem({ ...raw, feed_type: "user_feed_post" });
+        setItems((prev) => {
+          if (prev.some((i) => i.id === normalized.id)) return prev;
+          return [normalized, ...prev];
+        });
+      },
+      onDeletedPost(id) {
+        setItems((prev) => prev.filter((i) => i.id !== id));
+      },
+      onUpdatedPost(raw) {
+        const normalized = normalizeFeedItem({ ...raw, feed_type: "user_feed_post" });
+        setItems((prev) => prev.map((i) => (i.id === normalized.id ? normalized : i)));
+      },
+    });
+
+    return () => source?.close();
+  }, []);
 
   function isReportCoolingDown(item) {
     const key = `${item.entityType}:${item.id}`;
