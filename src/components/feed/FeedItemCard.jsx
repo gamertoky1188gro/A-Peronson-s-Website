@@ -7,12 +7,9 @@ import {
   MessageSquareText,
   ArrowUpRight,
   Zap,
-  Eye,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import MarkdownReadme from "./MarkdownReadme";
-import LinkPreviewCard from "../ui/LinkPreviewCard";
+import PostPreview from "../ui/PostPreview";
 
 function requestStatusBadgeClass(status = "") {
   const s = String(status || "open").toLowerCase();
@@ -69,7 +66,6 @@ export default function FeedItemCard({
   expressInterestDisabled,
   onExpressInterest,
   onOpenComments,
-  onOpenPreview,
   onShare,
   onReport,
   onMessage,
@@ -186,184 +182,76 @@ export default function FeedItemCard({
           ) : null}
         </div>
 
-        <h3 className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100">
-          {isUserFeedPost ? (
-            <button
-              type="button"
-              onClick={onOpenPreview}
-              className="text-left hover:text-gtBlue dark:hover:text-gtBlue transition-colors"
-            >
-              {item.title || item.category || "Post"}
-            </button>
-          ) : isBuyerRequest
-            ? item.category || "Request"
-            : item.title || item.category || "Product"}
-        </h3>
+        {isUserFeedPost ? (
+          <PostPreview item={item} />
+        ) : (
+          <>
+            <h3 className="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100">
+              {isBuyerRequest
+                ? item.category || "Request"
+                : item.title || item.category || "Product"}
+            </h3>
 
-        {item.content ? (
-          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
-            {item.content}
-          </p>
-        ) : null}
+            {item.content ? (
+              <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                {item.content}
+              </p>
+            ) : null}
 
-        {isUserFeedPost && item.descriptionMarkdown ? (
-          <div className="mt-3 rounded-xl bg-white p-3 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:ring-white/10">
-            <MarkdownReadme content={item.descriptionMarkdown} />
-          </div>
-        ) : null}
-
-        {isBuyerRequest ? (
-          <div className="mt-3 rounded-xl bg-slate-50/60 p-3 space-y-2 ring-1 ring-slate-200/60 dark:bg-white/5 dark:ring-white/10">
-            {fieldRow("Category", item.category)}
-            {fieldRow("Quantity", item.quantity)}
-            {fieldRow(
-              "Timeline",
-              item.timelineDays ? `${item.timelineDays} days` : "",
-            )}
-            {fieldRow("Material", item.material)}
-            {fieldRow(
-              "Certifications",
-              Array.isArray(item.certifications)
-                ? item.certifications.join(", ")
-                : "",
-            )}
-            {fieldRow("Shipping", item.shippingTerms)}
-          </div>
-        ) : !isUserFeedPost ? (
-          <div className="mt-3 rounded-xl bg-slate-50/60 p-3 space-y-2 ring-1 ring-slate-200/60 dark:bg-white/5 dark:ring-white/10">
-            {fieldRow("Category", item.category)}
-            {fieldRow("MOQ", item.moq)}
-            {fieldRow(
-              "Lead time",
-              item.leadTimeDays ? `${item.leadTimeDays} days` : "",
-            )}
-            {fieldRow("Material", item.material)}
-          </div>
-        ) : null}
-
-        {isUserFeedPost && Array.isArray(item.media) && item.media.length ? (
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {item.media.slice(0, 4).map((entry, index) => (
-              <div
-                key={`${item.id}-media-${index}`}
-                className="overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-slate-100 dark:bg-slate-900 dark:ring-white/10"
-              >
-                {entry.type === "video" ? (
-                  <video
-                    className="h-44 w-full object-cover"
-                    src={entry.url}
-                    controls
-                    preload="metadata"
-                  />
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 1.08 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true, margin: "-40px" }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <img
-                      className="h-44 w-full object-cover"
-                      src={entry.url}
-                      alt={entry.alt || item.title || "Feed media"}
-                      loading="lazy"
-                    />
-                  </motion.div>
+            {isBuyerRequest ? (
+              <div className="mt-3 rounded-xl bg-slate-50/60 p-3 space-y-2 ring-1 ring-slate-200/60 dark:bg-white/5 dark:ring-white/10">
+                {fieldRow("Category", item.category)}
+                {fieldRow("Quantity", item.quantity)}
+                {fieldRow(
+                  "Timeline",
+                  item.timelineDays ? `${item.timelineDays} days` : "",
                 )}
+                {fieldRow("Material", item.material)}
+                {fieldRow(
+                  "Certifications",
+                  Array.isArray(item.certifications)
+                    ? item.certifications.join(", ")
+                    : "",
+                )}
+                {fieldRow("Shipping", item.shippingTerms)}
               </div>
-            ))}
-          </div>
-        ) : null}
+            ) : (
+              <div className="mt-3 rounded-xl bg-slate-50/60 p-3 space-y-2 ring-1 ring-slate-200/60 dark:bg-white/5 dark:ring-white/10">
+                {fieldRow("Category", item.category)}
+                {fieldRow("MOQ", item.moq)}
+                {fieldRow(
+                  "Lead time",
+                  item.leadTimeDays ? `${item.leadTimeDays} days` : "",
+                )}
+                {fieldRow("Material", item.material)}
+              </div>
+            )}
 
-        {isUserFeedPost && item.ctaText && item.ctaUrl ? (
-          <div className="mt-3">
-            <a
-              href={item.ctaUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
-            >
-              {item.ctaText}
-              <ArrowUpRight size={14} />
-            </a>
-          </div>
-        ) : null}
+            {item.hasVideo ? (
+              <div className="mt-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-4 text-center dark:bg-white/5">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                  Video available
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Open the profile to view the gallery.
+                </p>
+              </div>
+            ) : null}
 
-        {item.hasVideo ? (
-          <div className="mt-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-4 text-center dark:bg-white/5">
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              Video available
-            </p>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Open the profile to view the gallery.
-            </p>
-          </div>
-        ) : null}
-
-        {isUserFeedPost && item.locationTag ? (
-          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            Location: {item.locationTag}
-          </p>
-        ) : null}
-
-        {isUserFeedPost &&
-        Array.isArray(item.productTags) &&
-        item.productTags.length ? (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {item.productTags.map((tag, i) => (
-              <span
-                key={`${item.id}-product-tag-${i}`}
-                className="rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
-
-        {isUserFeedPost &&
-        Array.isArray(item.mentions) &&
-        item.mentions.length ? (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {item.mentions.map((mention, i) => (
-              <span
-                key={`${item.id}-mention-${i}`}
-                className="rounded-full bg-sky-500/10 px-3 py-1 text-[11px] font-semibold text-sky-700 dark:text-sky-300"
-              >
-                {mention}
-              </span>
-            ))}
-          </div>
-        ) : null}
-
-        {isUserFeedPost && Array.isArray(item.links) && item.links.length ? (
-          <div className="mt-3 grid gap-3">
-            {item.links.slice(0, 4).map((url, i) => (
-              <LinkPreviewCard
-                key={`${item.id}-link-${i}`}
-                url={url}
-                preview={(item.link_previews && item.link_previews[i]) || null}
-              />
-            ))}
-          </div>
-        ) : null}
-
-        {isUserFeedPost && Array.isArray(item.emojis) && item.emojis.length ? (
-          <p className="mt-2 text-lg">{item.emojis.join(" ")}</p>
-        ) : null}
-
-        {Array.isArray(item.tags) && item.tags.length ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {item.tags.map((tag, i) => (
-              <span
-                key={`${item.id}-${tag}-${i}`}
-                className="rounded-full bg-[#3b82f6]/10 px-3 py-1 text-[11px] font-semibold text-[#2563eb] dark:bg-[#38bdf8]/10 dark:text-[#38bdf8]"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
+            {Array.isArray(item.tags) && item.tags.length ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.tags.map((tag, i) => (
+                  <span
+                    key={`${item.id}-${tag}-${i}`}
+                    className="rounded-full bg-[#3b82f6]/10 px-3 py-1 text-[11px] font-semibold text-[#2563eb] dark:bg-[#38bdf8]/10 dark:text-[#38bdf8]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
 
       <footer className="relative px-4 py-3 bg-white/70 dark:bg-slate-950/30 flex items-center justify-between gap-3">
@@ -375,15 +263,6 @@ export default function FeedItemCard({
           >
             <MessageSquareText size={16} /> Comment
           </button>
-          {isUserFeedPost ? (
-            <button
-              type="button"
-              onClick={onOpenPreview}
-              className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue"
-            >
-              <Eye size={16} /> Preview
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={onShare}

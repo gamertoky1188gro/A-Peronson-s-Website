@@ -17,7 +17,6 @@ import { trackClientEvent } from "../lib/events";
 import { recordLeadSource } from "../lib/leadSource";
 import FeedItemCard from "../components/feed/FeedItemCard";
 import CommentsDrawer from "../components/feed/CommentsDrawer";
-import PostPreviewDrawer from "../components/feed/PostPreviewDrawer";
 import NeonAtom from "../components/ui/NeonAtom";
 import ReportModal from "../components/feed/ReportModal";
 
@@ -431,7 +430,6 @@ export default function MainFeed() {
   const [notice, setNotice] = useState({ type: "", message: "" });
 
   const [commentsItem, setCommentsItem] = useState(null);
-  const [previewItem, setPreviewItem] = useState(null);
   const [reportItem, setReportItem] = useState(null);
   const [reportCooldowns, setReportCooldowns] = useState({});
   const [reportBusy, setReportBusy] = useState(false);
@@ -1034,7 +1032,6 @@ export default function MainFeed() {
                         expressInterestDisabled={expressBusyId === item.id}
                         onExpressInterest={() => handleExpressInterest(item)}
                         onOpenComments={() => setCommentsItem(item)}
-                        onOpenPreview={() => setPreviewItem(item)}
                         onShare={() => handleShare(item)}
                         onReport={() => {
                           if (reportDisabled) {
@@ -1073,11 +1070,6 @@ export default function MainFeed() {
           open={Boolean(commentsItem)}
           onClose={() => setCommentsItem(null)}
           item={commentsItem}
-        />
-        <PostPreviewDrawer
-          open={Boolean(previewItem)}
-          onClose={() => setPreviewItem(null)}
-          item={previewItem}
         />
         <ReportModal
           open={Boolean(reportItem)}
