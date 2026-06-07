@@ -250,7 +250,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto pt-4 pb-4 sm:pt-10">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 pb-4 sm:pt-10" style={{ overflow: "hidden" }}>
       <button
         type="button"
         aria-label="Close"
