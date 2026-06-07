@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { X, MessageSquareText, Share2, Flag } from "lucide-react";
+import { X, MessageSquareText, Share2, Flag, Heart, Reply, ChevronDown, ChevronUp } from "lucide-react";
 import { apiRequest, getToken } from "../../lib/auth";
 import NeonAtom from "../ui/NeonAtom";
 import PostPreview from "../ui/PostPreview";
@@ -137,112 +137,112 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
     setExpandedThreads((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
+  function getInitials(name) {
+    if (!name) return "?";
+    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  }
+
+  function avatarColors(name) {
+    const colors = [
+      "bg-blue-500", "bg-emerald-500", "bg-violet-500", "bg-amber-500",
+      "bg-rose-500", "bg-cyan-500", "bg-pink-500", "bg-indigo-500",
+    ];
+    let hash = 0;
+    for (let i = 0; i < (name || "").length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  }
+
   function renderCommentNode(node, depth = 0) {
     const { comment, children } = node;
     const safeDepth = Math.min(depth, 8);
-    const indent = safeDepth * 16;
     const hasChildren = children.length > 0;
-    const shouldCollapse =
-      hasChildren && !expandedThreads[comment.id] && children.length > 3;
-    const visibleChildren = shouldCollapse ? children.slice(0, 3) : children;
+    const expanded = expandedThreads[comment.id] !== false;
+    const visibleChildren = expanded ? children : children.slice(0, 2);
 
     return (
-      <div key={comment.id} className="relative">
-        {depth > 0 ? (
-          <>
-            <div
-              className="absolute top-0 bottom-0 w-px bg-slate-200 dark:bg-slate-700"
-              style={{ left: `${indent - 8}px` }}
-            />
-            <div
-              className="absolute top-6 h-px w-3 bg-slate-200 dark:bg-slate-700"
-              style={{ left: `${indent - 8}px` }}
-            />
-          </>
-        ) : null}
-        <div
-          className="bg-white dark:bg-slate-800/50 rounded-xl p-3 ring-1 ring-slate-200/60 dark:ring-slate-700"
-          style={{ marginLeft: `${indent}px` }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                {comment.actor_name || "User"}{" "}
+      <div key={comment.id}>
+        <div className="flex gap-2.5">
+          <div className={`mt-0.5 h-8 w-8 shrink-0 rounded-full ${avatarColors(comment.actor_name)} flex items-center justify-center text-xs font-bold text-white`}>
+            {getInitials(comment.actor_name)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="rounded-2xl bg-slate-100 dark:bg-slate-800 px-3.5 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {comment.actor_name || "User"}
+                </span>
                 {comment.actor_verified ? (
-                  <span className="ml-1 text-[10px] text-[#0A66C2] font-bold">
-                    Verified
-                  </span>
+                  <span className="text-[10px] text-[#0A66C2] font-bold">Verified</span>
                 ) : null}
+              </div>
+              <p className="mt-0.5 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                {comment.text}
               </p>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+            </div>
+            <div className="flex items-center gap-4 mt-0.5 px-1">
+              <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 {formatDateTime(comment.created_at)}
-              </p>
+              </span>
+              <button
+                type="button"
+                onClick={() => setReplyingTo(replyingTo === comment.id ? "" : comment.id)}
+                className="text-[11px] font-semibold text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400"
+              >
+                Reply
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setReplyingTo(comment.id)}
-              className="text-[11px] font-semibold text-[#0A66C2] hover:text-[#084b8a] shrink-0"
-            >
-              Reply
-            </button>
-          </div>
-          <p className="mt-2 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
-            {comment.text}
-          </p>
 
-          {replyingTo === comment.id ? (
-            <div className="mt-3 flex gap-2 items-center">
-              <input
-                value={replyInput}
-                onChange={(e) => setReplyInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && submitReply(comment.id)}
-                placeholder="Write a reply..."
-                className="flex-1 rounded-full bg-slate-100 dark:bg-slate-700 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-              />
-              <button
-                type="button"
-                onClick={() => submitReply(comment.id)}
-                disabled={submitting || !replyInput.trim()}
-                className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
-              >
-                {submitting ? <NeonAtom size={16} /> : "Send"}
-              </button>
-              <button
-                type="button"
-                onClick={resetReply}
-                className="text-[11px] font-semibold text-slate-500 hover:text-slate-700"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : null}
+            {replyingTo === comment.id ? (
+              <div className="mt-1.5 flex gap-2 items-center ml-1">
+                <input
+                  value={replyInput}
+                  onChange={(e) => setReplyInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && submitReply(comment.id)}
+                  placeholder="Write a reply..."
+                  className="flex-1 rounded-full bg-slate-100 dark:bg-slate-800 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+                />
+                <button
+                  type="button"
+                  onClick={() => submitReply(comment.id)}
+                  disabled={submitting || !replyInput.trim()}
+                  className="rounded-full bg-[#0A66C2] text-white px-3.5 py-2 text-sm font-semibold disabled:opacity-50"
+                >
+                  {submitting ? <NeonAtom size={16} /> : "Send"}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetReply}
+                  className="text-[11px] font-semibold text-slate-400 hover:text-slate-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : null}
+
+            {hasChildren ? (
+              <div className="mt-2 space-y-2 ml-1 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
+                {visibleChildren.map((child) =>
+                  renderCommentNode(child, depth + 1),
+                )}
+                {children.length > 2 ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleThread(comment.id)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-[#0A66C2] hover:text-[#084b8a]"
+                  >
+                    {expanded ? (
+                      <><ChevronUp size={14} /> Hide {children.length - 2} replies</>
+                    ) : (
+                      <><ChevronDown size={14} /> View {children.length - 2} replies</>
+                    )}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
-
-        {hasChildren ? (
-          <div className="mt-3 space-y-3">
-            {visibleChildren.map((child) =>
-              renderCommentNode(child, depth + 1),
-            )}
-            {shouldCollapse ? (
-              <button
-                type="button"
-                onClick={() => toggleThread(comment.id)}
-                className="ml-4 text-[11px] font-semibold text-[#0A66C2] hover:text-[#084b8a]"
-              >
-                View {children.length - 3} more replies
-              </button>
-            ) : null}
-            {!shouldCollapse && hasChildren && children.length > 3 ? (
-              <button
-                type="button"
-                onClick={() => toggleThread(comment.id)}
-                className="ml-4 text-[11px] font-semibold text-slate-500 hover:text-slate-700"
-              >
-                Hide replies
-              </button>
-            ) : null}
-          </div>
-        ) : null}
       </div>
     );
   }
@@ -309,9 +309,9 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0">
           {activeTab === "post" ? (
-            <div className="p-5">
+            <div className="h-full overflow-y-auto p-5">
               <PostPreview item={item} />
 
               <div className="mt-6 flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -343,41 +343,47 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
           ) : null}
 
           {activeTab === "comments" ? (
-            <div className="p-5 space-y-4">
-              {loading ? (
-                <div className="flex justify-center py-8">
-                  <NeonAtom fill size={48} text="Loading comments..." />
-                </div>
-              ) : null}
-              {!loading && error ? (
-                <div className="text-sm text-rose-700 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-300 rounded-lg p-3">
-                  {error}
-                </div>
-              ) : null}
-              {!loading && !error && comments.length === 0 ? (
-                <div className="text-sm text-slate-500 dark:text-slate-400 text-center py-8">
-                  No comments yet. Be the first to comment.
-                </div>
-              ) : null}
+            <div className="flex flex-col h-full">
+              <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <NeonAtom fill size={48} text="Loading comments..." />
+                  </div>
+                ) : null}
+                {!loading && error ? (
+                  <div className="text-sm text-rose-700 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-300 rounded-lg p-3">
+                    {error}
+                  </div>
+                ) : null}
+                {!loading && !error && comments.length === 0 ? (
+                  <div className="text-sm text-slate-500 dark:text-slate-400 text-center py-12">
+                    <MessageSquareText size={32} className="mx-auto mb-3 opacity-40" />
+                    <p>No comments yet.</p>
+                    <p className="text-xs mt-1">Be the first to share your thoughts.</p>
+                  </div>
+                ) : null}
 
-              {!loading && commentTree.map((node) => renderCommentNode(node, 0))}
+                {!loading && commentTree.map((node) => renderCommentNode(node, 0))}
+              </div>
 
-              <div className="flex gap-2 items-center pt-3 border-t border-slate-200 dark:border-slate-700">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submitComment()}
-                  placeholder="Write a comment..."
-                  className="flex-1 rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-                />
-                <button
-                  type="button"
-                  onClick={submitComment}
-                  disabled={submitting || !input.trim()}
-                  className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
-                >
-                  {submitting ? "Posting..." : "Post"}
-                </button>
+              <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                <div className="flex gap-2 items-center">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && submitComment()}
+                    placeholder="Write a comment..."
+                    className="flex-1 rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+                  />
+                  <button
+                    type="button"
+                    onClick={submitComment}
+                    disabled={submitting || !input.trim()}
+                    className="rounded-full bg-[#0A66C2] text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-[#084b8a] transition"
+                  >
+                    {submitting ? "Posting..." : "Post"}
+                  </button>
+                </div>
               </div>
             </div>
           ) : null}
