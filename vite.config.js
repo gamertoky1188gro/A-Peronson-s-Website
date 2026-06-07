@@ -16,8 +16,8 @@ export default defineConfig({
     rollupOptions: {
       external: ["rtf.js"],
     },
-    reportCompressedSize: true, // turn off when releasing to public
-    sourcemap: true, // turn off when releasing to public
+    reportCompressedSize: false,
+    sourcemap: process.env.NODE_ENV !== "production",
   },
   plugins: [
     tailwindcss(),
