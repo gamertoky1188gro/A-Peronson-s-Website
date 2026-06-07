@@ -156,6 +156,20 @@ export async function listInteractions(entityType, entityId) {
   });
 
   const comments = rows.filter((x) => x.interaction_type === "comment");
+  const emptyNames = comments.filter((c) => !c.actor_name && c.actor_id);
+  if (emptyNames.length) {
+    const ids = [...new Set(emptyNames.map((c) => c.actor_id))];
+    const users = await prisma.user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true },
+    });
+    const userMap = Object.fromEntries(users.map((u) => [u.id, u.name || ""]));
+    for (const c of comments) {
+      if (!c.actor_name && c.actor_id && userMap[c.actor_id]) {
+        c.actor_name = userMap[c.actor_id];
+      }
+    }
+  }
   return {
     comments,
     share_count: rows.filter((x) => x.interaction_type === "share").length,
