@@ -16,7 +16,7 @@ import {
 import { trackClientEvent } from "../lib/events";
 import { recordLeadSource } from "../lib/leadSource";
 import FeedItemCard from "../components/feed/FeedItemCard";
-import CommentsDrawer from "../components/feed/CommentsDrawer";
+import PostDetailModal from "../components/feed/PostDetailModal";
 import NeonAtom from "../components/ui/NeonAtom";
 import ReportModal from "../components/feed/ReportModal";
 import { subscribeFeedRealtime } from "../lib/feedRealtime";
@@ -1105,10 +1105,11 @@ export default function MainFeed() {
           </main>
         </div>
 
-        <CommentsDrawer
+        <PostDetailModal
           open={Boolean(commentsItem)}
           onClose={() => setCommentsItem(null)}
           item={commentsItem}
+          onShare={() => commentsItem && handleShare(commentsItem)}
         />
         <ReportModal
           open={Boolean(reportItem)}
