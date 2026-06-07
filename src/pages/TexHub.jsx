@@ -659,20 +659,26 @@ export default function TexHub() {
   return (
     <div className="relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white">
       {!reduceMotion && (
-        <nav className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 space-y-3 lg:block" aria-label="Section navigation">
-          {sectionIds.map((id, i) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
-              className={`relative block h-2 w-2 rounded-full transition-all duration-300 before:absolute before:-inset-5 before:content-[''] ${
-                activeSection === id
-                  ? "h-3 w-3 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]"
-                  : "bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-400"
-              }`}
-              aria-label={sectionLabels[i]}
-            />
-          ))}
+        <nav className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block" aria-label="Section navigation">
+          <div className="flex flex-col items-center gap-3">
+            {sectionIds.map((id, i) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
+                className="flex items-center justify-center min-w-[48px] min-h-[48px] rounded-full"
+                aria-label={sectionLabels[i]}
+              >
+                <span
+                  className={`block rounded-full transition-all duration-300 ${
+                    activeSection === id
+                      ? "h-3 w-3 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]"
+                      : "h-2 w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-400"
+                  }`}
+                />
+              </a>
+            ))}
+          </div>
         </nav>
       )}
       <div className="absolute inset-0 -z-10 overflow-hidden">
