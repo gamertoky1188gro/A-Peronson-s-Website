@@ -22,6 +22,15 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("post");
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
   const token = useMemo(() => getToken(), []);
 
   useEffect(() => {
@@ -248,7 +257,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
         onClick={onClose}
         className="fixed inset-0 bg-black/50"
       />
-      <div className="relative z-10 w-full max-w-2xl mx-2 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="relative z-10 w-full max-w-2xl mx-2 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overscroll-contain">
         <header className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 shrink-0" />
