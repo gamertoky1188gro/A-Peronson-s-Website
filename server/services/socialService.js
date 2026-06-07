@@ -156,17 +156,26 @@ export async function listInteractions(entityType, entityId) {
   });
 
   const comments = rows.filter((x) => x.interaction_type === "comment");
-  const emptyNames = comments.filter((c) => !c.actor_name && c.actor_id);
-  if (emptyNames.length) {
-    const ids = [...new Set(emptyNames.map((c) => c.actor_id))];
+  const commentActorIds = [...new Set(comments.filter((c) => c.actor_id).map((c) => c.actor_id))];
+  if (commentActorIds.length) {
     const users = await prisma.user.findMany({
-      where: { id: { in: ids } },
-      select: { id: true, name: true },
+      where: { id: { in: commentActorIds } },
+      select: { id: true, name: true, profile: true },
     });
-    const userMap = Object.fromEntries(users.map((u) => [u.id, u.name || ""]));
+    const userMap = Object.fromEntries(
+      users.map((u) => [
+        u.id,
+        {
+          name: u.name || "",
+          avatar: u.profile?.avatar_url || u.profile?.avatar || "",
+        },
+      ]),
+    );
     for (const c of comments) {
-      if (!c.actor_name && c.actor_id && userMap[c.actor_id]) {
-        c.actor_name = userMap[c.actor_id];
+      const entry = userMap[c.actor_id];
+      if (entry) {
+        if (!c.actor_name) c.actor_name = entry.name;
+        c.actor_avatar = entry.avatar;
       }
     }
   }

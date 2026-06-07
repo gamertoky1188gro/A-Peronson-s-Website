@@ -166,9 +166,13 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
     return (
       <div key={comment.id}>
         <div className="flex gap-2.5">
-          <div className={`mt-0.5 h-8 w-8 shrink-0 rounded-full ${avatarColors(comment.actor_name)} flex items-center justify-center text-xs font-bold text-white`}>
-            {getInitials(comment.actor_name)}
-          </div>
+          {comment.actor_avatar ? (
+            <img src={comment.actor_avatar} alt="" className="mt-0.5 h-8 w-8 shrink-0 rounded-full object-cover" />
+          ) : (
+            <div className={`mt-0.5 h-8 w-8 shrink-0 rounded-full ${avatarColors(comment.actor_name)} flex items-center justify-center text-xs font-bold text-white`}>
+              {getInitials(comment.actor_name)}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="rounded-2xl bg-slate-100 dark:bg-slate-800 px-3.5 py-2.5">
               <div className="flex items-center gap-2">
