@@ -633,6 +633,12 @@ export default function MainFeed() {
     return () => source?.close();
   }, []);
 
+  useEffect(() => {
+    if (!highlightKey || !items.length) return;
+    const match = items.find((i) => `${i.entityType}:${i.id}` === highlightKey);
+    if (match) setCommentsItem(match);
+  }, [highlightKey, items]);
+
   function isReportCoolingDown(item) {
     const key = `${item.entityType}:${item.id}`;
     const ends = reportCooldowns[key] || 0;
