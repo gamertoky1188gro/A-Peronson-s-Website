@@ -245,14 +245,20 @@ export default function CyberpunkCursor() {
     body.style.cursor = "none";
     resizeCanvas();
 
+    const cursorEls = [core, ring, glow, dot, spinner];
+
+    const setCursorVisible = (visible) => {
+      cursorEls.forEach((el) => { el.style.opacity = visible ? "1" : "0"; });
+    };
+
     const onResize = resizeCanvas;
     const onMouseMove = updateMouse;
     const onLeave = () => {
-      body.classList.add("cp-hidden");
+      setCursorVisible(false);
       state.visible = false;
     };
     const onEnter = (e) => {
-      body.classList.remove("cp-hidden");
+      setCursorVisible(true);
       state.visible = true;
       state.x = e.clientX;
       state.y = e.clientY;
@@ -262,13 +268,7 @@ export default function CyberpunkCursor() {
       setPos(dot, state.x, state.y);
       setPos(spinner, state.x, state.y);
     };
-    const onLeaveDoc = (e) => {
-      if (!e.relatedTarget && !e.toElement) {
-        body.classList.add("cp-hidden");
-        state.visible = false;
-      }
-    };
-    const onFirstMove = () => body.classList.remove("cp-hidden");
+    const onFirstMove = () => setCursorVisible(true);
     const onDown = (e) => {
       body.classList.add("cp-click");
       spawnWave(e.clientX, e.clientY);
@@ -283,24 +283,23 @@ export default function CyberpunkCursor() {
 
     window.addEventListener("resize", onResize);
     window.addEventListener("mousemove", onMouseMove, { passive: true });
-    document.addEventListener("mouseleave", onLeave);
-    document.addEventListener("mouseenter", onEnter);
-    document.addEventListener("mouseout", onLeaveDoc);
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    document.documentElement.addEventListener("mouseenter", onEnter);
     window.addEventListener("mousedown", onDown);
     window.addEventListener("mouseup", onUp);
     document.addEventListener("mousemove", onDomMove, { passive: true });
 
-    body.classList.add("cp-hidden");
+    setCursorVisible(false);
     window.addEventListener("mousemove", onFirstMove, { once: true });
     animate();
 
     return () => {
+      cursorEls.forEach((el) => { el.style.opacity = ""; });
       body.style.cursor = "";
       window.removeEventListener("resize", onResize);
       window.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseleave", onLeave);
-      document.removeEventListener("mouseenter", onEnter);
-      document.removeEventListener("mouseout", onLeaveDoc);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+      document.documentElement.removeEventListener("mouseenter", onEnter);
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup", onUp);
       document.removeEventListener("mousemove", onDomMove);
@@ -433,12 +432,6 @@ export default function CyberpunkCursor() {
 
       @keyframes cp-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-      .cp-hidden .cp-core,
-      .cp-hidden .cp-ring,
-      .cp-hidden .cp-glow,
-      .cp-hidden .cp-dot,
-      .cp-hidden .cp-spinner { opacity: 0; }
-
       .cp-pointer .cp-ring {
         width: 52px;
         height: 52px;
@@ -537,8 +530,6 @@ export default function CyberpunkCursor() {
         .cp-glow,
         .cp-click-wave { animation: none !important; }
       }
-
-      body, body * { cursor: none !important; }
     `,
     []
   );
