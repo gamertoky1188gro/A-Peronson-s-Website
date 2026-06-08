@@ -396,7 +396,7 @@ export async function getCombinedFeed({
   const products =
     type === "requests" || type === "posts"
       ? []
-      : await listProducts({ category });
+      : await listProducts({ category, viewerId: viewer?.id, viewerRole: viewer?.role });
   const feedPosts =
     type === "requests" || type === "products"
       ? []

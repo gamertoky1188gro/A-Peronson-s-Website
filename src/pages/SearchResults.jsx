@@ -1454,7 +1454,7 @@ const filteredUsers = useMemo(() => {
                       <ArrowLeftRight className="h-3.5 w-3.5" />
                     </button>
                     <Link
-                      to={`/buyer/${item.id}`}
+                      to={`/buyer/${item.buyer_id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
                       dangerouslySetInnerHTML={{
                         __html: highlightText(item.title || item.name || "Untitled Request", query),
@@ -1613,7 +1613,7 @@ const filteredUsers = useMemo(() => {
                             <ArrowLeftRight className="h-3.5 w-3.5" />
                           </button>
                           <Link
-                            to={`/buyer/${item.id}`}
+                            to={`/buyer/${item.buyer_id}`}
                             className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
                             dangerouslySetInnerHTML={{
                               __html: highlightText(item.title || item.name || "Untitled Request", query),
@@ -1660,7 +1660,7 @@ const filteredUsers = useMemo(() => {
                     >
                       <div className="flex items-start gap-2">
                         <Link
-                          to={`/factory/${item.id}`}
+                          to={`/factory/${item.company_id}`}
                           className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
                           dangerouslySetInnerHTML={{
                             __html: highlightText(item.name || item.title || "Untitled Company", query),
@@ -1839,7 +1839,7 @@ const filteredUsers = useMemo(() => {
                       <ArrowLeftRight className="h-3.5 w-3.5" />
                     </button>
                     <Link
-                      to={`/factory/${item.id}`}
+                      to={`/factory/${item.company_id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
                       dangerouslySetInnerHTML={{
                         __html: highlightText(item.name || item.title || "Untitled Company", query),
