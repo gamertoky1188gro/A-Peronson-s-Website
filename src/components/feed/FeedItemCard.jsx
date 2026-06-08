@@ -255,25 +255,25 @@ export default function FeedItemCard({
       </div>
 
       <footer className="relative px-4 py-3 bg-white/70 dark:bg-slate-950/30 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-1 text-xs">
           <button
             type="button"
             onClick={onOpenComments}
-            className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
           >
             <MessageSquareText size={16} /> Comment
           </button>
           <button
             type="button"
             onClick={onShare}
-            className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
           >
             <Share2 size={16} /> Share
           </button>
           <button
             type="button"
             onClick={onReport}
-            className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-95"
           >
             <Flag size={16} /> Report
           </button>
