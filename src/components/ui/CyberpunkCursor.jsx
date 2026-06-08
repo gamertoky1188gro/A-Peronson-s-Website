@@ -244,23 +244,50 @@ export default function CyberpunkCursor() {
 
     body.style.cursor = "none";
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-    window.addEventListener("mousemove", updateMouse, { passive: true });
-    window.addEventListener("mouseleave", () => body.classList.add("cp-hidden"));
-    window.addEventListener("mouseenter", () => body.classList.remove("cp-hidden"));
 
-    window.addEventListener("mousedown", (e) => {
+    const onResize = resizeCanvas;
+    const onMouseMove = updateMouse;
+    const onLeave = () => body.classList.add("cp-hidden");
+    const onEnter = () => body.classList.remove("cp-hidden");
+    const onLeaveDoc = (e) => {
+      if (!e.relatedTarget && !e.toElement) body.classList.add("cp-hidden");
+    };
+    const onFirstMove = () => body.classList.remove("cp-hidden");
+    const onDown = (e) => {
       body.classList.add("cp-click");
       spawnWave(e.clientX, e.clientY);
       emitBurst(e.clientX, e.clientY, 14);
       window.setTimeout(() => body.classList.remove("cp-click"), 420);
-    });
-
-    window.addEventListener("mouseup", () => body.classList.remove("cp-click"));
-
-    const handleDomMouseMove = (e) => {
+    };
+    const onUp = () => body.classList.remove("cp-click");
+    const onDomMove = (e) => {
       const el = document.elementFromPoint(e.clientX, e.clientY);
       applyStateFromElement(el);
+    };
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    document.addEventListener("mouseleave", onLeave);
+    document.addEventListener("mouseenter", onEnter);
+    document.addEventListener("mouseout", onLeaveDoc);
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("mouseup", onUp);
+    document.addEventListener("mousemove", onDomMove, { passive: true });
+
+    body.classList.add("cp-hidden");
+    window.addEventListener("mousemove", onFirstMove, { once: true });
+    animate();
+
+    return () => {
+      body.style.cursor = "";
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseleave", onLeave);
+      document.removeEventListener("mouseenter", onEnter);
+      document.removeEventListener("mouseout", onLeaveDoc);
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup", onUp);
+      document.removeEventListener("mousemove", onDomMove);
     };
 
     document.addEventListener("mousemove", handleDomMouseMove, { passive: true });
@@ -273,8 +300,8 @@ export default function CyberpunkCursor() {
       body.style.cursor = "";
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("mousemove", updateMouse);
-      window.removeEventListener("mouseleave", () => body.classList.add("cp-hidden"));
-      window.removeEventListener("mouseenter", () => body.classList.remove("cp-hidden"));
+      document.removeEventListener("mouseleave", () => body.classList.add("cp-hidden"));
+      document.removeEventListener("mouseenter", () => body.classList.remove("cp-hidden"));
       window.removeEventListener("mousedown", () => {});
       window.removeEventListener("mouseup", () => body.classList.remove("cp-click"));
       document.removeEventListener("mousemove", handleDomMouseMove);
