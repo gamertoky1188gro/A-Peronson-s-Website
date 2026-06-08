@@ -259,21 +259,21 @@ export default function FeedItemCard({
           <button
             type="button"
             onClick={onOpenComments}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue hover:bg-slate-200/70 dark:hover:bg-slate-700/60 hover:shadow-sm transition-all active:scale-90 cursor-pointer"
           >
             <MessageSquareText size={16} /> Comment
           </button>
           <button
             type="button"
             onClick={onShare}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue hover:bg-slate-200/70 dark:hover:bg-slate-700/60 hover:shadow-sm transition-all active:scale-90 cursor-pointer"
           >
             <Share2 size={16} /> Share
           </button>
           <button
             type="button"
             onClick={onReport}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-200/60 dark:hover:bg-rose-950/50 hover:shadow-sm transition-all active:scale-90 cursor-pointer"
           >
             <Flag size={16} /> Report
           </button>
