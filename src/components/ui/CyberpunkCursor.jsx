@@ -246,6 +246,8 @@ export default function CyberpunkCursor() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
     window.addEventListener("mousemove", updateMouse, { passive: true });
+    window.addEventListener("mouseleave", () => body.classList.add("cp-hidden"));
+    window.addEventListener("mouseenter", () => body.classList.remove("cp-hidden"));
 
     window.addEventListener("mousedown", (e) => {
       body.classList.add("cp-click");
@@ -262,12 +264,17 @@ export default function CyberpunkCursor() {
     };
 
     document.addEventListener("mousemove", handleDomMouseMove, { passive: true });
+
+    body.classList.add("cp-hidden");
+    window.addEventListener("mousemove", () => body.classList.remove("cp-hidden"), { once: true });
     animate();
 
     return () => {
       body.style.cursor = "";
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("mousemove", updateMouse);
+      window.removeEventListener("mouseleave", () => body.classList.add("cp-hidden"));
+      window.removeEventListener("mouseenter", () => body.classList.remove("cp-hidden"));
       window.removeEventListener("mousedown", () => {});
       window.removeEventListener("mouseup", () => body.classList.remove("cp-click"));
       document.removeEventListener("mousemove", handleDomMouseMove);
