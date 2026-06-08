@@ -632,7 +632,7 @@ export default function BuyingHouseProfile() {
           </div>
 
           <div className="grid gap-6 p-4 lg:grid-cols-[1.7fr_0.95fr] lg:p-6">
-            <div className="space-y-6">
+            <div className="w-full space-y-6">
               <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/60">
                 <div className="flex flex-wrap gap-2">
                   {["overview", "partner", "products", "work", "reviews"].map((key) => {

@@ -414,7 +414,7 @@ export default function BuyerProfile() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.55fr_0.85fr]">
-          <div className="space-y-6">
+          <div className="w-full space-y-6">
             <motion.div
               initial={reduceMotion ? false : { opacity: 0, y: 16 }}
               animate={reduceMotion ? false : { opacity: 1, y: 0 }}
