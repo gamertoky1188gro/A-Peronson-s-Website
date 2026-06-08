@@ -40,7 +40,7 @@ export default function VerificationPanel({ summary }) {
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1${chip.className}`}
           title="Verification is subscription-based and renews monthly"
         >
-          <Icon size={16} />
+          <_Icon size={16} />
           {chip.label}
         </span>
       </div>
