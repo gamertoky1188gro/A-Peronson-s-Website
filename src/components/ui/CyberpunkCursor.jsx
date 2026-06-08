@@ -242,6 +242,7 @@ export default function CyberpunkCursor() {
       requestAnimationFrame(animate);
     };
 
+    body.style.cursor = "none";
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
     window.addEventListener("mousemove", updateMouse, { passive: true });
@@ -269,6 +270,7 @@ export default function CyberpunkCursor() {
     animate();
 
     return () => {
+      body.style.cursor = "";
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("mousemove", updateMouse);
       window.removeEventListener("mouseleave", () => body.classList.add("cp-hidden"));
@@ -509,6 +511,8 @@ export default function CyberpunkCursor() {
         .cp-glow,
         .cp-click-wave { animation: none !important; }
       }
+
+      body, body * { cursor: none !important; }
     `,
     []
   );
