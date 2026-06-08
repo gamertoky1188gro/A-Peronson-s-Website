@@ -13,6 +13,7 @@ import Footer from "./components/Footer";
 import FloatingAssistant from "./components/FloatingAssistant";
 import ScrollProgressBar from "./components/ScrollProgressBar";
 import NeonAtom from "./components/ui/NeonAtom";
+import CyberpunkCursor from "./components/ui/CyberpunkCursor";
 import LenisProvider from "./components/LenisProvider";
 import { ToastProvider } from "./components/ToastContainer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -521,6 +522,7 @@ function AppLayout() {
 function App() {
   return (
     <BrowserRouter>
+      <CyberpunkCursor />
       <ToastProvider>
         <AppLayout />
         <ScrollToTop />
