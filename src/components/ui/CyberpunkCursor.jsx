@@ -247,10 +247,26 @@ export default function CyberpunkCursor() {
 
     const onResize = resizeCanvas;
     const onMouseMove = updateMouse;
-    const onLeave = () => body.classList.add("cp-hidden");
-    const onEnter = () => body.classList.remove("cp-hidden");
+    const onLeave = () => {
+      body.classList.add("cp-hidden");
+      state.visible = false;
+    };
+    const onEnter = (e) => {
+      body.classList.remove("cp-hidden");
+      state.visible = true;
+      state.x = e.clientX;
+      state.y = e.clientY;
+      state.px = e.clientX;
+      state.py = e.clientY;
+      setPos(core, state.x, state.y);
+      setPos(dot, state.x, state.y);
+      setPos(spinner, state.x, state.y);
+    };
     const onLeaveDoc = (e) => {
-      if (!e.relatedTarget && !e.toElement) body.classList.add("cp-hidden");
+      if (!e.relatedTarget && !e.toElement) {
+        body.classList.add("cp-hidden");
+        state.visible = false;
+      }
     };
     const onFirstMove = () => body.classList.remove("cp-hidden");
     const onDown = (e) => {
@@ -288,23 +304,6 @@ export default function CyberpunkCursor() {
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup", onUp);
       document.removeEventListener("mousemove", onDomMove);
-    };
-
-    document.addEventListener("mousemove", handleDomMouseMove, { passive: true });
-
-    body.classList.add("cp-hidden");
-    window.addEventListener("mousemove", () => body.classList.remove("cp-hidden"), { once: true });
-    animate();
-
-    return () => {
-      body.style.cursor = "";
-      window.removeEventListener("resize", resizeCanvas);
-      window.removeEventListener("mousemove", updateMouse);
-      document.removeEventListener("mouseleave", () => body.classList.add("cp-hidden"));
-      document.removeEventListener("mouseenter", () => body.classList.remove("cp-hidden"));
-      window.removeEventListener("mousedown", () => {});
-      window.removeEventListener("mouseup", () => body.classList.remove("cp-click"));
-      document.removeEventListener("mousemove", handleDomMouseMove);
     };
   }, [theme]);
 
