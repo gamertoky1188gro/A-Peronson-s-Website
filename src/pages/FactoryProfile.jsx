@@ -506,7 +506,7 @@ export default function FactoryProfile() {
             ) : null}
           </aside>
 
-          <main className="w-full space-y-6">
+          <main className="min-w-0 space-y-6">
             <SoftCard>
               <SectionTitle icon={Factory} title={displayName} subtitle="Overview, products, approved media, work history, and reviews" />
               <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-4 dark:border-slate-800">

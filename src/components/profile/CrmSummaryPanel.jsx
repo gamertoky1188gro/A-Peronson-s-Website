@@ -121,7 +121,7 @@ export default function CrmSummaryPanel({ targetId }) {
   }
 
   return (
-    <section className="mt-6 w-full rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-950 p-5">
+    <section className="mt-6 w-full min-w-0 rounded-2xl border border-slate-200/70 dark:border-slate-800/80 shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-950 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">CRM Timeline</p>
