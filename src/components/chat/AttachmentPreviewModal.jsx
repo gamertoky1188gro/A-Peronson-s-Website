@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Download, File, X } from "lucide-react";
+import { Atom } from 'react-loading-indicators'
 import MarkdownMessage from "./MarkdownMessage";
 import Prism from "prismjs";
 
@@ -129,32 +130,17 @@ const PRISM_TOMORROW_CSS = `/**
 `;
 
 const IMAGE_EXTS = new Set([
-  "jpg",
-  "jpeg",
-  "png",
-  "gif",
-  "apng",
-  "webp",
-  "avif",
-  "svg",
-  "ico",
-  "bmp",
-  "tif",
-  "tiff",
+  "jpg", "jpeg", "png", "webp", "avif", "gif", "apng", "bmp",
+  "tiff", "tif", "heic", "heif", "dcm", "tga", "svg", "eps",
+  "pdf", "dng", "cr2", "cr3", "nef", "arw", "sr2", "orf",
+  "raf", "psd", "ai", "xcf", "cdr",
 ]);
 const VIDEO_EXTS = new Set([
-  "mp4",
-  "mov",
-  "avi",
-  "wmv",
-  "webm",
-  "mkv",
-  "flv",
-  "3gp",
-  "mpg",
-  "mpeg",
-  "m4v",
-  "amv",
+  "mp4", "webm", "mkv", "flv", "vob", "ogv", "ogg", "rrc",
+  "gifv", "mng", "mov", "avi", "qt", "wmv", "yuv", "rm",
+  "asf", "amv", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe",
+  "mpv", "svi", "3gp", "3g2", "mxf", "roq", "nsv", "f4v",
+  "f4p", "f4a", "f4b", "mod",
 ]);
 const MARKDOWN_EXTS = new Set(["md", "markdown"]);
 const OFFICE_EXTS = new Set(["doc", "docx"]);
@@ -470,7 +456,7 @@ function formatXml(xmlText = "") {
   }
 }
 
-export default function AttachmentPreviewModal({
+function AttachmentPreviewModal({
   open = false,
   attachment = null,
   onClose = null,
@@ -1045,7 +1031,7 @@ export default function AttachmentPreviewModal({
           {kind === "pdf" ? (
             <div className="space-y-3">
               {pdfState.loading ? (
-                <div className="text-sm text-slate-300">Loading preview...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
               ) : null}
               {pdfState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1108,7 +1094,7 @@ export default function AttachmentPreviewModal({
           {kind === "spreadsheet" ? (
             <div className="space-y-3">
               {spreadsheetState.loading ? (
-                <div className="text-sm text-slate-300">Loading preview...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
               ) : null}
               {spreadsheetState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1175,7 +1161,7 @@ export default function AttachmentPreviewModal({
           {kind === "rtf" ? (
             <div className="space-y-3">
               {rtfState.loading ? (
-                <div className="text-sm text-slate-300">Loading preview...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
               ) : null}
               {rtfState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1203,7 +1189,7 @@ export default function AttachmentPreviewModal({
           {kind === "html" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300">Loading preview...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1235,7 +1221,7 @@ export default function AttachmentPreviewModal({
           {kind === "xml" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300">Loading preview...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1243,9 +1229,7 @@ export default function AttachmentPreviewModal({
                 </div>
               ) : null}
               {highlightState.loading ? (
-                <div className="text-sm text-slate-300">
-                  Formatting and highlighting...
-                </div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Formatting and highlighting..." textColor="#94a3b8" /></div>
               ) : null}
               {highlightState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
@@ -1271,7 +1255,7 @@ export default function AttachmentPreviewModal({
           {kind === "code" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300">Loading preview...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1279,7 +1263,7 @@ export default function AttachmentPreviewModal({
                 </div>
               ) : null}
               {highlightState.loading ? (
-                <div className="text-sm text-slate-300">Highlighting...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Highlighting..." textColor="#94a3b8" /></div>
               ) : null}
               {highlightState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
@@ -1307,7 +1291,7 @@ export default function AttachmentPreviewModal({
           {kind === "markdown" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300">Loading preview...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1325,7 +1309,7 @@ export default function AttachmentPreviewModal({
           {kind === "text" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300">Loading preview...</div>
+                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1356,3 +1340,5 @@ export default function AttachmentPreviewModal({
     </div>
   );
 }
+
+export default memo(AttachmentPreviewModal);

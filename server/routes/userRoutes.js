@@ -36,10 +36,21 @@ const upload = multer({
   }),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
+    const imgMimes = new Set([
+      "image/jpeg", "image/png", "image/webp", "image/avif", "image/gif",
+      "image/apng", "image/bmp", "image/x-ms-bmp", "image/tiff",
+      "image/heic", "image/heif", "image/svg+xml", "image/x-tga",
+      "image/vnd.adobe.photoshop", "image/x-photoshop", "image/x-xcf",
+      "image/x-coreldraw", "image/x-adobe-dng", "image/x-canon-cr2",
+      "image/x-canon-cr3", "image/x-nikon-nef", "image/x-sony-arw",
+      "image/x-sony-sr2", "image/x-olympus-orf", "image/x-fuji-raf",
+      "image/x-eps", "application/postscript", "application/pdf",
+      "application/dicom", "application/x-coreldraw",
+    ]);
+    if (imgMimes.has(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only jpg, png, and webp images are allowed"));
+      cb(new Error("Unsupported image format"));
     }
   },
 });

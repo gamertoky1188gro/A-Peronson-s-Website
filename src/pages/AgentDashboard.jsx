@@ -1,4 +1,5 @@
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot } from "react-loading-indicators";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
@@ -435,7 +436,7 @@ export default function AgentDashboard() {
                     className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     <Sparkles className="h-4 w-4" />
-                    {aiLoading ? <NeonAtom size={20} /> : "Generate"}
+                    {aiLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Generate"}
                   </button>
                   <button
                     type="button"

@@ -1,5 +1,8 @@
 import { useState, useRef } from "react";
 import { getToken } from "../../lib/auth";
+import { uploadFile } from "../../lib/upload";
+import UploadProgressBar from "./UploadProgressBar";
+import { ThreeDot } from 'react-loading-indicators'
 
 export default function ProfileImageUpload({
   value = "",
@@ -7,6 +10,7 @@ export default function ProfileImageUpload({
   label = "Profile image",
 }) {
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
 
@@ -14,9 +18,19 @@ export default function ProfileImageUpload({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    const validTypes = [
+      "image/jpeg", "image/png", "image/webp", "image/avif", "image/gif",
+      "image/apng", "image/bmp", "image/x-ms-bmp", "image/tiff",
+      "image/heic", "image/heif", "image/svg+xml", "image/x-tga",
+      "image/vnd.adobe.photoshop", "image/x-photoshop", "image/x-xcf",
+      "image/x-coreldraw", "image/x-adobe-dng", "image/x-canon-cr2",
+      "image/x-canon-cr3", "image/x-nikon-nef", "image/x-sony-arw",
+      "image/x-sony-sr2", "image/x-olympus-orf", "image/x-fuji-raf",
+      "image/x-eps", "application/postscript", "application/pdf",
+      "application/dicom", "application/x-coreldraw",
+    ];
     if (!validTypes.includes(file.type)) {
-      setError("Only JPG, PNG, and WebP images are allowed");
+      setError("Unsupported image format");
       return;
     }
 
@@ -29,27 +43,19 @@ export default function ProfileImageUpload({
     setError("");
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
+      setUploadProgress(0);
       const token = getToken();
-      const response = await fetch("/api/users/me/avatar", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+      const data = await uploadFile("/users/me/avatar", {
+        file,
+        token,
+        onProgress: setUploadProgress,
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Upload failed");
-      }
-
-      const data = await response.json();
       onChange(data.avatar_url || data.profile_image);
     } catch (err) {
       setError(err.message || "Unable to upload image");
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -62,12 +68,13 @@ export default function ProfileImageUpload({
           disabled={uploading}
           className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
-          {uploading ? "Uploading..." : "Choose Image"}
+          {uploading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Choose Image"}
         </button>
+        {uploading && <UploadProgressBar progress={uploadProgress} className="w-40" />}
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
           onChange={handleFileSelect}
           className="hidden"
         />

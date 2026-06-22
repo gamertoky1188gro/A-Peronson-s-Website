@@ -640,7 +640,6 @@ export async function createProduct(user, payload) {
 }
 
 export async function listProducts(filters = {}) {
-  const documents = await prisma.document.findMany();
   const includeDrafts = Boolean(filters.includeDrafts);
   const viewerId = filters.viewerId || "";
   const viewerRole = filters.viewerRole || "";
@@ -653,9 +652,12 @@ export async function listProducts(filters = {}) {
   if (filters.companyId) {
     where.company_id = filters.companyId;
   }
+  if (filters.createdAfter) {
+    where.created_at = { gte: filters.createdAfter };
+  }
 
   const all = await prisma.product.findMany({ where });
-  return all
+  const filteredProducts = all
     .filter((p) =>
       includeDrafts ? true : normalizeProductStatus(p.status) === "published",
     )
@@ -667,8 +669,16 @@ export async function listProducts(filters = {}) {
       if (["owner", "admin"].includes(String(viewerRole || "").toLowerCase()))
         return true;
       return false;
-    })
-    .map((p) => presentProduct(p, documents, viewer));
+    });
+
+  const productIds = filteredProducts.map((p) => p.id);
+  const documents = productIds.length
+    ? await prisma.document.findMany({
+        where: { entity_type: "company_product", entity_id: { in: productIds } },
+      })
+    : [];
+
+  return filteredProducts.map((p) => presentProduct(p, documents, viewer));
 }
 
 function canMutateProduct(actor, product) {

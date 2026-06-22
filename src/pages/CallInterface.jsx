@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import NeonAtom from "../components/ui/NeonAtom";
 import {
   ArrowLeft,
   Camera,
@@ -24,7 +25,6 @@ import {
   X,
   CircleDot,
   Circle,
-  Loader2,
   ShieldAlert,
   AlertTriangle,
   Clock3,
@@ -33,8 +33,11 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { uploadFile } from "../lib/upload";
+import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { trackClientEvent } from "../lib/events";
 import MarkdownMessage from "../components/chat/MarkdownMessage";
+import { ThreeDot } from 'react-loading-indicators';
 import JourneyTimeline from "../components/JourneyTimeline";
 
 const WS_BASE = (() => {
@@ -183,9 +186,12 @@ function MediaGate({ gate, onAction, onDismiss }) {
   );
 }
 
+const PulseSpinner = ({ className }) => <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />;
+
 export default function CallInterface() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [pageLoading, setPageLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
   const [callDetails, setCallDetails] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -276,6 +282,7 @@ export default function CallInterface() {
     remoteParticipant?.email ||
     callDetails?.title ||
     "Participant";
+  const [recordingUploadProgress, setRecordingUploadProgress] = useState(0);
   const recordingLabel = recordingState === "recording" ? "REC" : recordingState === "uploading" ? "Uploading" : recordingState === "available" ? "Saved" : recordingState === "failed" ? "Failed" : "Idle";
 
   const userMap = useMemo(() => {
@@ -848,6 +855,7 @@ export default function CallInterface() {
 
   useEffect(() => {
     mountedRef.current = true;
+    setPageLoading(false);
     return () => {
       mountedRef.current = false;
       if (toastTimerRef.current && typeof window !== "undefined") {
@@ -1669,22 +1677,15 @@ export default function CallInterface() {
     recordingChunksRef.current = [];
 
     try {
-      const form = new FormData();
-      form.append("file", blob, `call-${callId}.webm`);
-
-      const res = await fetch(
-        `${API_BASE}/calls/${encodeURIComponent(callId)}/recording/upload`,
+      setRecordingUploadProgress(0);
+      const data = await uploadFile(
+        `/calls/${encodeURIComponent(callId)}/recording/upload`,
         {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: form,
+          file: new File([blob], `call-${callId}.webm`, { type: mimeType }),
+          token,
+          onProgress: setRecordingUploadProgress,
         },
       );
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Recording upload failed");
 
       setRecordingState("available");
       setToast({ tone: "success", message: "Call recording saved securely." });
@@ -1790,6 +1791,8 @@ export default function CallInterface() {
 
   const conn = connectionBadge;
 
+  if (pageLoading) return <NeonAtom fill />;
+
   return (
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.30),transparent_28%),radial-gradient(circle_at_top_right,rgba(37,99,235,0.22),transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#e7f1ff_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.20),transparent_28%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_45%,#0b1728_100%)] dark:text-white">
       <ToastStack toasts={toastQueue} onDismiss={(id) => setToastQueue((prev) => prev.filter((t) => t.id !== id))} />
@@ -1821,6 +1824,7 @@ export default function CallInterface() {
                   <Badge tone={recordingState === "recording" ? "rose" : recordingState === "uploading" ? "amber" : recordingState === "available" ? "emerald" : recordingState === "failed" ? "rose" : "neutral"}>
                     <Radio className="h-3.5 w-3.5" /> {recordingLabel}
                   </Badge>
+                  {recordingState === "uploading" && <UploadProgressBar progress={recordingUploadProgress} className="w-24" />}
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
                   <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{timer}</span>
@@ -1939,7 +1943,7 @@ export default function CallInterface() {
                       </div>
 
                       <div className="mt-4 grid gap-3 md:grid-cols-3">
-                        <MiniStat label="Connection" value={conn.label} icon={conn.pulse ? Loader2 : WifiOff} />
+                        <MiniStat label="Connection" value={conn.label} icon={conn.pulse ? PulseSpinner : WifiOff} />
                         <MiniStat label="Chat" value={effectiveMatchId ? "Ready" : "Unavailable"} icon={MessageSquare} />
                         <MiniStat label="Recording" value={recordingLabel} icon={Radio} />
                       </div>

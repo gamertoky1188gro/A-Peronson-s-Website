@@ -32,7 +32,14 @@ const recordingUpload = multer({
     filename: (req, file, cb) => {
       const ext =
         path.extname(file.originalname || "").toLowerCase() || ".webm";
-      const safeExt = [".webm", ".mp4", ".ogg"].includes(ext) ? ext : ".webm";
+      const videoExts = new Set([
+        ".webm", ".mp4", ".ogg", ".mkv", ".flv", ".mov", ".avi", ".wmv",
+        ".mpg", ".mpeg", ".3gp", ".m4v", ".ogv", ".asf", ".amv", ".mxf",
+        ".f4v", ".f4a", ".f4b", ".f4p", ".qt", ".rm", ".vob", ".rrc",
+        ".gifv", ".mng", ".yuv", ".m4p", ".mp2", ".mpe", ".mpv", ".svi",
+        ".3g2", ".roq", ".nsv", ".mod",
+      ]);
+      const safeExt = videoExts.has(ext) ? ext : ".webm";
       const safeCallId = String(req.params.callId || "call").replace(
         /[^a-zA-Z0-9_-]/g,
         "_",

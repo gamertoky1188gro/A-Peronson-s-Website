@@ -6,6 +6,10 @@ import {
   analyzeBufferWithAI,
   isAIAnalyticsEnabled,
 } from "../services/aiModerationService.js";
+import { isVideoFile } from "../services/videoProcessor.js";
+import { addToQueue } from "../services/videoQueue.js";
+import { isImageFile } from "../services/imageProcessor.js";
+import { addImageToQueue } from "../services/imageQueue.js";
 
 function generateId() {
   return crypto.randomUUID();
@@ -16,7 +20,13 @@ function inferType(mime = "", originalName = "") {
   if (lower.startsWith("video/")) return "video";
   if (lower.startsWith("image/")) return "image";
   const ext = path.extname(String(originalName || "")).toLowerCase();
-  if ([".mp4", ".webm", ".mov", ".mkv"].includes(ext)) return "video";
+  if ([
+    ".mp4", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".rrc",
+    ".gifv", ".mng", ".mov", ".avi", ".qt", ".wmv", ".yuv", ".rm",
+    ".asf", ".amv", ".m4p", ".m4v", ".mpg", ".mp2", ".mpeg", ".mpe",
+    ".mpv", ".svi", ".3gp", ".3g2", ".mxf", ".roq", ".nsv", ".f4v",
+    ".f4p", ".f4a", ".f4b", ".mod",
+  ].includes(ext)) return "video";
   return "image";
 }
 
@@ -110,16 +120,26 @@ export async function uploadFeedMedia(req, res) {
       runAIAnalysis(doc.id, fullPath).catch(console.error);
     }
 
+    if (type === "video") {
+      addToQueue({ filePath: fullPath, documentId: doc.id });
+    }
+
+    if (type === "image") {
+      addImageToQueue({ filePath: fullPath, documentId: doc.id });
+    }
+
     return res.status(201).json({
       url,
       type,
       docId: doc.id,
+      video_status: type === "video" ? "queued" : undefined,
     });
   } catch (err) {
     console.error("Failed to create document record:", err);
     return res.status(201).json({
       url,
       type,
+      video_status: type === "video" ? "queued" : undefined,
     });
   }
 }

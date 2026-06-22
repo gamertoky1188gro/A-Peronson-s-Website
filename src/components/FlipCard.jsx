@@ -28,11 +28,11 @@ export default function FlipCard({
         whileHover={!isControlled && flipOn === "hover" ? { rotateY: 180 } : undefined}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="absolute inset-0 backface-hidden" style={{ backfaceVisibility: "hidden" }}>
+        <div className="absolute inset-0" style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}>
           {front}
         </div>
         <div
-          className="absolute inset-0 backface-hidden"
+          className="absolute inset-0"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           {back}

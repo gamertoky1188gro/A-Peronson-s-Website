@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot } from 'react-loading-indicators';
 import ScrollReveal from "../components/ScrollReveal";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import {
@@ -305,11 +306,7 @@ export default function PartnerNetwork() {
                     disabled={!canManage || loading || !targetAccountId.trim()}
                     className="min-w-32"
                   >
-                    {loading ? (
-                      <NeonAtom size={20} />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
+                    {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <Sparkles className="h-4 w-4" />}
                     Send Request
                   </ActionButton>
                 </div>

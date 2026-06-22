@@ -6,6 +6,7 @@
     - Collect bug reports, feature requests, account issues, and general feedback.
     - Store submissions in the reports queue for admin review.
 */
+import { Mosaic, ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +19,8 @@ import {
   getToken,
   hasEntitlement,
 } from "../lib/auth";
+import { uploadFile } from "../lib/upload";
+import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { useTheme } from "../lib/ThemeProvider";
 import { usePremiumCheck } from "../hooks/useSecureUser";
 
@@ -66,6 +69,7 @@ export default function SupportReports() {
   const [priority, setPriority] = useState("Medium");
   const [contactEmail, setContactEmail] = useState("");
   const [attachment, setAttachment] = useState(null);
+  const [attachmentUploadProgress, setAttachmentUploadProgress] = useState(0);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [reportId, setReportId] = useState("");
@@ -142,21 +146,17 @@ export default function SupportReports() {
 
       const ticketId = report?.ticket?.id || report?.id;
       if (attachment && ticketId) {
-        const formData = new FormData();
-        formData.append("file", attachment);
-        formData.append("entity_type", "support_ticket");
-        formData.append("entity_id", ticketId);
-        formData.append("type", "screenshot");
-
-        const res = await fetch(`${API_BASE}/documents`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
+        setAttachmentUploadProgress(0);
+        await uploadFile("/documents", {
+          file: attachment,
+          token,
+          fields: {
+            entity_type: "support_ticket",
+            entity_id: ticketId,
+            type: "screenshot",
+          },
+          onProgress: setAttachmentUploadProgress,
         });
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || "Attachment upload failed");
-        }
       }
 
       setReportId(ticketId || "");
@@ -512,6 +512,7 @@ export default function SupportReports() {
                     <Icon className="h-4 w-4">📄</Icon>
                     {attachment ? "Change" : "Choose file"}
                   </label>
+                  {attachmentUploadProgress > 0 && <UploadProgressBar progress={attachmentUploadProgress} className="mt-2" />}
                 </div>
               </div>
 
@@ -532,7 +533,7 @@ export default function SupportReports() {
                 className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-500 px-5 py-4 text-sm font-semibold text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? (
-                  <NeonAtom size={20} />
+                  <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                 ) : (
                   <Icon className="h-4 w-4">✓</Icon>
                 )}
@@ -566,13 +567,13 @@ export default function SupportReports() {
                       : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  {ticketsLoading ? <NeonAtom size={20} /> : <Icon className="h-4 w-4">↻</Icon>}
+                  {ticketsLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <Icon className="h-4 w-4">↻</Icon>}
                   Refresh
                 </button>
               </div>
 
               {ticketsLoading ? (
-                <NeonAtom fill size={64} text="Loading..." />
+                <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
               ) : tickets.length === 0 ? (
                 <div
                   className={`rounded-[24px] border border-dashed p-8 text-center ${darkMode ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"}`}

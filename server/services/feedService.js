@@ -381,6 +381,8 @@ function diversifyFeedItems(
   return output.length ? output : items;
 }
 
+const MAX_FEED_AGE_DAYS = 90;
+
 export async function getCombinedFeed({
   unique = false,
   type = "all",
@@ -389,25 +391,55 @@ export async function getCombinedFeed({
   limit = 12,
   viewer = null,
 }) {
-  const requests =
+  const recencyThreshold = new Date(Date.now() - MAX_FEED_AGE_DAYS * 24 * 60 * 60 * 1000);
+
+  const [requests, products, feedPosts, orderCertMap] = await Promise.all([
     type === "products" || type === "posts"
       ? []
-      : await listRequirements({ status: "open" });
-  const products =
+      : listRequirements({ status: "open", createdAfter: recencyThreshold }),
     type === "requests" || type === "posts"
       ? []
-      : await listProducts({ category, viewerId: viewer?.id, viewerRole: viewer?.role });
-  const feedPosts =
+      : listProducts({ category, viewerId: viewer?.id, viewerRole: viewer?.role, createdAfter: recencyThreshold }),
     type === "requests" || type === "products"
       ? []
-      : await listFeedPosts({ status: "published" });
-  const [users, socialInteractions, boosts, ratingsStore, orderCertMap] = await Promise.all([
-    prisma.user.findMany(),
-    prisma.socialInteraction.findMany(),
-    prisma.boost.findMany(),
-    prisma.rating.findMany(),
+      : listFeedPosts({ status: "published", createdAfter: recencyThreshold }),
     getOrderCertificationMap(),
   ]);
+
+  const allItemEntries = [];
+  for (const r of requests) allItemEntries.push({ id: r.id, authorId: r.buyer_id });
+  for (const p of products) allItemEntries.push({ id: p.id, authorId: p.company_id });
+  for (const fp of feedPosts) allItemEntries.push({ id: fp.id, authorId: fp.user_id });
+
+  const authorIds = [...new Set(allItemEntries.map(i => i.authorId).filter(Boolean))];
+  const itemIds = allItemEntries.map(i => i.id);
+
+  const now = new Date();
+  const [users, socialInteractions, boosts, ratingsStore] = await Promise.all([
+    authorIds.length
+      ? prisma.user.findMany({
+          where: { id: { in: authorIds } },
+          select: { id: true, name: true, email: true, verified: true, role: true, profile: true, subscription_status: true, created_at: true },
+        })
+      : [],
+    itemIds.length
+      ? prisma.socialInteraction.findMany({
+          where: { entity_id: { in: itemIds } },
+        })
+      : [],
+    prisma.boost.findMany({
+      where: {
+        scope: "feed",
+        status: "active",
+        starts_at: { lte: now },
+        ends_at: { gte: now },
+      },
+    }),
+    prisma.rating.findMany({
+      where: { profile_key: { startsWith: "user:" } },
+    }),
+  ]);
+
   const paidBoostByUser = buildPaidBoostMap(
     Array.isArray(boosts) ? boosts : [],
   );
@@ -533,6 +565,11 @@ export async function getCombinedFeed({
           "Unknown",
         verified: Boolean(author?.verified),
         role: String(author?.role || ""),
+        avatar_url: author?.profile?.profile_image || author?.profile?.avatar_url || author?.profile?.avatar || author?.avatar_url || "",
+        accountType: String(author?.role || "")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
+        rolePath: String(author?.role || "").replace(/_/g, "-"),
       },
       order_certification_status: certification?.status || "",
       discussion_active: discussionActive && viewerVerified,

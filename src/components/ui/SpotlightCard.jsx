@@ -1,14 +1,18 @@
+import { useRef } from "react";
+
 export default function SpotlightCard({ className = "", children }) {
+  const rafRef = useRef(null);
+
   function handleSpotlightMove(event) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty(
-      "--spotlight-x",
-      `${event.clientX - rect.left}px`,
-    );
-    event.currentTarget.style.setProperty(
-      "--spotlight-y",
-      `${event.clientY - rect.top}px`,
-    );
+    if (rafRef.current) return;
+    const el = event.currentTarget;
+    const { clientX, clientY } = event;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const rect = el.getBoundingClientRect();
+      el.style.setProperty("--spotlight-x", `${clientX - rect.left}px`);
+      el.style.setProperty("--spotlight-y", `${clientY - rect.top}px`);
+    });
   }
 
   return (

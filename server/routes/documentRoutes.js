@@ -20,7 +20,7 @@ import {
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: 250 * 1024 * 1024 },
 });
 const router = Router();
 

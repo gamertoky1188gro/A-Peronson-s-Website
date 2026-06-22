@@ -24,6 +24,7 @@
     - This file is large; comments focus on major blocks (state/effects/render sections).
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { List } from "react-window";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -47,7 +48,10 @@ import {
   VolumeX,
 } from "lucide-react";
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot, Mosaic } from 'react-loading-indicators';
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { uploadFile } from "../lib/upload";
+import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { useSecureUser } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
 import { consumeLeadSource } from "../lib/leadSource";
@@ -225,29 +229,17 @@ function lockStatusLabel(lock, thread = null) {
 }
 
 const IMAGE_ATTACHMENT_EXTS = new Set([
-  "jpg",
-  "jpeg",
-  "png",
-  "gif",
-  "apng",
-  "webp",
-  "avif",
-  "svg",
-  "ico",
+  "jpg", "jpeg", "png", "webp", "avif", "gif", "apng", "bmp",
+  "tiff", "tif", "heic", "heif", "dcm", "tga", "svg", "eps",
+  "pdf", "dng", "cr2", "cr3", "nef", "arw", "sr2", "orf",
+  "raf", "psd", "ai", "xcf", "cdr",
 ]);
 const VIDEO_ATTACHMENT_EXTS = new Set([
-  "mp4",
-  "mov",
-  "avi",
-  "wmv",
-  "webm",
-  "mkv",
-  "flv",
-  "3gp",
-  "mpg",
-  "mpeg",
-  "m4v",
-  "amv",
+  "mp4", "webm", "mkv", "flv", "vob", "ogv", "ogg", "rrc",
+  "gifv", "mng", "mov", "avi", "qt", "wmv", "yuv", "rm",
+  "asf", "amv", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe",
+  "mpv", "svi", "3gp", "3g2", "mxf", "roq", "nsv", "f4v",
+  "f4p", "f4a", "f4b", "mod",
 ]);
 
 function safeAttachmentExt(attachment) {
@@ -443,6 +435,7 @@ export default function ChatInterface() {
   const [pageLoading, setPageLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [policyFeedback, setPolicyFeedback] = useState({
     reason: "",
     retryAfter: 0,
@@ -467,6 +460,7 @@ export default function ChatInterface() {
   const [leadSummary, setLeadSummary] = useState(null);
   const [leadLoading, setLeadLoading] = useState(false);
   const [prequalOverride, setPrequalOverride] = useState(false);
+  const [countdownSeconds, setCountdownSeconds] = useState(0);
 
   const wsRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -709,8 +703,9 @@ export default function ChatInterface() {
     () => [...filteredPriorityInbox, ...filteredRequests],
     [filteredPriorityInbox, filteredRequests],
   );
-  const activeThread = allVisibleThreads.find(
-    (thread) => thread.id === activeThreadId,
+  const activeThread = useMemo(
+    () => allVisibleThreads.find((thread) => thread.id === activeThreadId),
+    [allVisibleThreads, activeThreadId],
   );
   activeThreadMatchIdRef.current = activeThread?.matchId || "";
 
@@ -1103,8 +1098,9 @@ export default function ChatInterface() {
     const token = getToken();
     if (!token) return undefined;
 
+    if (callPromptThread?.direction === "incoming") return undefined;
+
     const interval = window.setInterval(async () => {
-      if (callPromptThread?.direction === "incoming") return;
       try {
         const data = await apiRequest("/calls/pending", { token });
         const invite = (data?.invites || [])[0];
@@ -1213,30 +1209,24 @@ export default function ChatInterface() {
     }
 
     setUploading(true);
+    setUploadProgress(0);
     setUploadStatus("Uploading file...");
     try {
       const leadSource = consumeLeadSource();
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("message", draftMessage.trim());
-      if (leadSource?.type) formData.append("source_type", leadSource.type);
-      if (leadSource?.id) formData.append("source_id", leadSource.id);
-      if (leadSource?.label) formData.append("source_label", leadSource.label);
+      const fields = { message: draftMessage.trim() };
+      if (leadSource?.type) fields.source_type = leadSource.type;
+      if (leadSource?.id) fields.source_id = leadSource.id;
+      if (leadSource?.label) fields.source_label = leadSource.label;
 
-      const apiBase = import.meta.env.VITE_API_URL || "/api";
-      const response = await fetch(
-        `${apiBase}/messages/${encodeURIComponent(activeThread.matchId)}/upload`,
+      const payload = await uploadFile(
+        `/messages/${encodeURIComponent(activeThread.matchId)}/upload`,
         {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
+          file,
+          token,
+          fields,
+          onProgress: setUploadProgress,
         },
       );
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || "Upload failed");
 
       setMessagesByThread((previous) => ({
         ...previous,
@@ -1262,6 +1252,7 @@ export default function ChatInterface() {
       }
     } finally {
       setUploading(false);
+      setUploadProgress(0);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
@@ -1515,13 +1506,13 @@ export default function ChatInterface() {
   }
 
   useEffect(() => {
-    if (!policyFeedback.retryAfter || policyFeedback.retryAfter <= 0)
+    if (!policyFeedback.retryAfter || policyFeedback.retryAfter <= 0) {
+      setCountdownSeconds(0);
       return undefined;
+    }
+    setCountdownSeconds(policyFeedback.retryAfter);
     const timer = window.setInterval(() => {
-      setPolicyFeedback((prev) => ({
-        ...prev,
-        retryAfter: Math.max(0, Number(prev.retryAfter || 0) - 1),
-      }));
+      setCountdownSeconds((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => window.clearInterval(timer);
   }, [policyFeedback.retryAfter]);
@@ -1945,124 +1936,129 @@ export default function ChatInterface() {
             </span>
           </div>
 
-          <div className="h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar">
+          <div className="h-[calc(100vh-250px)] overflow-auto pr-1 custom-scrollbar">
             {loading ? (
-              <NeonAtom fill size={64} text="Loading..." />
+              <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
             ) : null}
             {!loading && visibleError ? (
               <div className="p-4 text-center text-sm text-red-400">
                 {visibleError}
               </div>
             ) : null}
-            {!loading &&
-              !visibleError &&
-              [...filteredPriorityInbox, ...filteredRequests].map((thread) => {
-                const threadName = formatDisplayName(
-                  thread.name,
-                  thread.senderId || thread.id,
-                );
-                const isActive = activeThreadId === thread.id;
-                const hasUnread = Number(thread.unread || 0) > 0;
-                const isFriendRequest =
-                  thread.isFriendThread &&
-                  thread.friendRequestStatus === "pending";
-                return (
-                  <button
-                    key={thread.id}
-                    className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? "ring-1 ring-gtBlue/20" : ""}${isFriendRequest ? " ring-2 ring-violet-400/30" : ""}`}
-                    style={{
-                      background: isActive
-                        ? theme.threadActiveBg
-                        : hasUnread
-                          ? isLight
-                            ? "#eef6ff"
-                            : "#1b1f3b"
-                          : "transparent",
-                    }}
-                    onClick={() => setActiveThreadId(thread.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Link
-                        to={
-                          activeThread?.matchId
-                            ? `/contracts?journey_match_id=${encodeURIComponent(activeThread.matchId)}`
-                            : "/contracts"
-                        }
-                        className="rounded-full bg-[#E8F3FF] px-3 py-1 text-[11px] font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]"
+            {!loading && !visibleError && allVisibleThreads.length > 0 ? (
+              <List
+                height={typeof window !== 'undefined' ? window.innerHeight - 250 : 600}
+                itemCount={allVisibleThreads.length}
+                itemSize={82}
+                width="100%"
+                overscanCount={5}
+              >
+                {({ index, style }) => {
+                  const thread = allVisibleThreads[index];
+                  const threadName = formatDisplayName(
+                    thread.name,
+                    thread.senderId || thread.id,
+                  );
+                  const isActive = activeThreadId === thread.id;
+                  const hasUnread = Number(thread.unread || 0) > 0;
+                  const isFriendRequest =
+                    thread.isFriendThread &&
+                    thread.friendRequestStatus === "pending";
+                  return (
+                    <div style={style} className="pb-1">
+                      <button
+                        key={thread.id}
+                        className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? "ring-1 ring-gtBlue/20" : ""}${isFriendRequest ? " ring-2 ring-violet-400/30" : ""}`}
+                        style={{
+                          background: isActive
+                            ? theme.threadActiveBg
+                            : hasUnread
+                              ? isLight
+                                ? "#eef6ff"
+                                : "#1b1f3b"
+                              : "transparent",
+                        }}
+                        onClick={() => setActiveThreadId(thread.id)}
                       >
-                        Contract draft
-                      </Link>
-                      <div className="relative flex-shrink-0">
-                        {thread.avatar ? (
-                          <img
-                            src={avatarUrl(thread.avatar)}
-                            alt={threadName}
-                            className="h-11 w-11 rounded-full object-cover shadow-sm"
-                          />
-                        ) : (
-                          <div
-                            className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? "bg-gtBlue text-white" : "bg-slate-100 text-slate-500"}`}
-                          >
-                            {getInitials(threadName)}
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex-shrink-0">
+                            {thread.avatar ? (
+                              <img
+                                src={avatarUrl(thread.avatar)}
+                                alt={threadName}
+                                className="h-11 w-11 rounded-full object-cover shadow-sm"
+                              />
+                            ) : (
+                              <div
+                                className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? "bg-gtBlue text-white" : "bg-slate-100 text-slate-500"}`}
+                              >
+                                {getInitials(threadName)}
+                              </div>
+                            )}
+                            <span
+                              className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
+                              style={{
+                                background:
+                                  presenceStatus(thread.senderId) === "online"
+                                    ? "#22c55e"
+                                    : "#94a3b8",
+                                boxShadow: `0 0 0 2px ${isLight ? "#e2e8f0" : "rgba(255,255,255,0.18)"}`,
+                              }}
+                            />
                           </div>
-                        )}
-                        <span
-                          className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
-                          style={{
-                            background:
-                              presenceStatus(thread.senderId) === "online"
-                                ? "#22c55e"
-                                : "#94a3b8",
-                            boxShadow: `0 0 0 2px ${isLight ? "#e2e8f0" : "rgba(255,255,255,0.18)"}`,
-                          }}
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
-                          <p
-                            className={`truncate text-[14px] font-semibold${isActive ? "text-gtBlue" : ""}`}
-                          >
-                            {threadName}
-                          </p>
-                          <div className="ml-2 flex flex-shrink-0 items-center gap-1">
-                            {thread.isFriendThread ? (
-                              <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[9px] font-bold uppercase text-violet-700">
-                                Request
-                              </span>
-                            ) : null}
-                            {thread.policyStatus &&
-                            thread.policyStatus !== "delivered" ? (
-                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">
-                                Queued
-                              </span>
-                            ) : null}
-                            {thread.policyPriority ? (
-                              <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-bold text-indigo-700">
-                                {thread.policyPriority}
-                              </span>
-                            ) : null}
-                            <span className="text-[10px] font-medium text-slate-400">
-                              {formatTime(thread.timestamp)}
-                            </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <p
+                                className={`truncate text-[14px] font-semibold${isActive ? "text-gtBlue" : ""}`}
+                              >
+                                {threadName}
+                              </p>
+                              <div className="ml-2 flex flex-shrink-0 items-center gap-1">
+                                {thread.isFriendThread ? (
+                                  <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[9px] font-bold uppercase text-violet-700">
+                                    Request
+                                  </span>
+                                ) : null}
+                                {thread.policyStatus &&
+                                thread.policyStatus !== "delivered" ? (
+                                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">
+                                    Queued
+                                  </span>
+                                ) : null}
+                                {thread.policyPriority ? (
+                                  <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-bold text-indigo-700">
+                                    {thread.policyPriority}
+                                  </span>
+                                ) : null}
+                                <span className="text-[10px] font-medium text-slate-400">
+                                  {formatTime(thread.timestamp)}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <p
+                                className={`truncate text-xs${isActive ? "text-slate-600" : hasUnread ? "text-slate-700" : "text-slate-400"}`}
+                              >
+                                {thread.last || "No messages"}
+                              </p>
+                              {hasUnread ? (
+                                <span className="min-w-[18px] rounded-full bg-gtBlue px-2 py-0.5 text-[10px] font-bold text-white">
+                                  {thread.unread}
+                                </span>
+                              ) : null}
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <p
-                            className={`truncate text-xs${isActive ? "text-slate-600" : hasUnread ? "text-slate-700" : "text-slate-400"}`}
-                          >
-                            {thread.last || "No messages"}
-                          </p>
-                          {hasUnread ? (
-                            <span className="min-w-[18px] rounded-full bg-gtBlue px-2 py-0.5 text-[10px] font-bold text-white">
-                              {thread.unread}
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
+                      </button>
                     </div>
-                  </button>
-                );
-              })}
+                  );
+                }}
+              </List>
+            ) : !loading && !visibleError && allVisibleThreads.length === 0 ? (
+              <div className="p-4 text-center text-sm text-slate-400">
+                No conversations
+              </div>
+            ) : null}
           </div>
         </aside>
 
@@ -2322,7 +2318,7 @@ export default function ChatInterface() {
                     disabled={aiSuggesting || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiSuggesting ? <NeonAtom size={20} /> : "Generate"}
+                    {aiSuggesting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Generate"}
                   </button>
                 </div>
                 {aiError ? (
@@ -2339,7 +2335,7 @@ export default function ChatInterface() {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading || !canSendMessage}
                   >
-                    {uploading ? <NeonAtom size={20} /> : <Plus size={20} />}
+                    {uploading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <Plus size={20} />}
                   </button>
                   <textarea
                     rows={1}
@@ -2381,11 +2377,12 @@ export default function ChatInterface() {
                 {policyFeedback.reason ? (
                   <p className="mt-2 px-4 text-[11px] font-medium text-rose-500">
                     Blocked: {policyFeedback.reason}
-                    {policyFeedback.retryAfter > 0
-                      ? ` • Retry in ${policyFeedback.retryAfter}s`
-                      : ""}
+                {countdownSeconds > 0
+                  ? ` • Retry in ${countdownSeconds}s`
+                  : ""}
                   </p>
                 ) : null}
+                {uploading && <div className="px-4 mt-2"><UploadProgressBar progress={uploadProgress} /></div>}
                 {uploadStatus || scheduleStatus ? (
                   <p className="mt-2 px-4 text-[11px] font-medium text-gtBlue">
                     {uploadStatus || scheduleStatus}
@@ -2438,7 +2435,7 @@ export default function ChatInterface() {
               </div>
 
               {leadLoading ? (
-                <NeonAtom size={20} />
+                <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
               ) : prequal ? (
                 <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
@@ -2465,7 +2462,7 @@ export default function ChatInterface() {
                     disabled={aiSummaryLoading || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiSummaryLoading ? <NeonAtom size={20} /> : "Refresh"}
+                    {aiSummaryLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Refresh"}
                   </button>
                 </div>
                 {aiSummaryError ? (
@@ -2502,7 +2499,7 @@ export default function ChatInterface() {
                     disabled={aiNegotiationLoading || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiNegotiationLoading ? <NeonAtom size={20} /> : "Generate"}
+                    {aiNegotiationLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Generate"}
                   </button>
                 </div>
                 {aiNegotiationError ? (

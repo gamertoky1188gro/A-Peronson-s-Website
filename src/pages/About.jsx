@@ -22,7 +22,7 @@
     - Skeleton -> fade-in "trust load" while documents/stats fetch.
     - Verified glow indicators (trust anchors).
 */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useCallback, useState } from "react";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -33,7 +33,6 @@ import {
   ExternalLink,
   FileText,
   Globe2,
-  Loader2,
   LockKeyhole,
   MessagesSquare,
   ShieldCheck,
@@ -53,7 +52,8 @@ import MagneticButton from "../components/ui/MagneticButton";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import TextColorReveal from "../components/TextColorReveal";
 import ParallaxBackground from "../components/ParallaxBackground";
-import GooBlobs from "../components/GooBlobs";
+import { ThreeDot } from 'react-loading-indicators';
+
 import usePageMeta from "../lib/usePageMeta";
 
 const Motion = motion;
@@ -110,8 +110,10 @@ const statusStyles = {
   },
 };
 
-const Skeleton = ({ className = "" }) => (
-  <NeonAtom size={24} className={className} />
+const Skeleton = ({ className = "", size }) => (
+  <div className={`flex items-center justify-center ${className}`}>
+    <ThreeDot variant="bounce" color="#6100ff" size="large" style={{ fontSize: (size || 48) + "px" }} text="" textColor="" />
+  </div>
 );
 
 function MotionItem({ className = "", children }) {
@@ -243,6 +245,19 @@ export default function About() {
   const y1 = useTransform(spring, [0, 1], [0, reduceMotion ? 0 : 60]);
   const y2 = useTransform(spring, [0, 1], [0, reduceMotion ? 0 : -40]);
 
+  const needleRaf = useRef(null);
+  const handleNeedleMove = useCallback((event) => {
+    if (needleRaf.current) return;
+    const el = event.currentTarget;
+    const { clientX, clientY } = event;
+    needleRaf.current = requestAnimationFrame(() => {
+      needleRaf.current = null;
+      const rect = el.getBoundingClientRect();
+      el.style.setProperty("--needle-x", `${clientX - rect.left}px`);
+      el.style.setProperty("--needle-y", `${clientY - rect.top}px`);
+    });
+  }, []);
+
   useEffect(() => {
     let alive = true;
     const controller = new AbortController();
@@ -295,26 +310,11 @@ export default function About() {
     [],
   );
 
-  function handleNeedleMove(event) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty(
-      "--needle-x",
-      `${event.clientX - rect.left}px`,
-    );
-    event.currentTarget.style.setProperty(
-      "--needle-y",
-      `${event.clientY - rect.top}px`,
-    );
-  }
-
-  if (loading) {
-    return <NeonAtom fill size={64} text="Loading..." />;
-  }
+  if (loading) return <NeonAtom fill />;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 dark:bg-[#050816] dark:text-white">
       <ParallaxBackground />
-      <GooBlobs />
 
       <svg className="pointer-events-none absolute h-0 w-0" aria-hidden="true">
         <filter id="noise-filter-about">
@@ -399,7 +399,7 @@ export default function About() {
                     </div>
                   ) : loading ? (
                     <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                       Loading...
                     </div>
                   ) : (

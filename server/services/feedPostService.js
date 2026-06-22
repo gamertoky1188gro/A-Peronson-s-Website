@@ -207,11 +207,15 @@ export async function listFeedPosts({
   status = "published",
   authorId = "",
   includeDrafts = false,
+  createdAfter = null,
 } = {}) {
   const where = {};
   if (authorId) where.user_id = authorId;
   if (!includeDrafts) {
     where.status = sanitizeString(String(status || "published"), 20).toLowerCase();
+  }
+  if (createdAfter) {
+    where.created_at = { gte: createdAfter };
   }
   return prisma.feedPost.findMany({
     where,

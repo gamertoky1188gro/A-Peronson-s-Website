@@ -19,6 +19,7 @@
   Notes:
     - Tailwind-only styling (no legacy App.css utilities).
 */
+import { ThreeDot } from 'react-loading-indicators';
 import NeonAtom from "../../components/ui/NeonAtom";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -351,6 +352,8 @@ export default function Login() {
 
   const roles = ["Buyer", "Factory", "Buying House"];
 
+  if (loading || passkeyLoading || enrollLoading) return <NeonAtom fill />;
+
   return (
     <div className={`min-h-screen overflow-hidden ${theme.page}`}>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -646,7 +649,7 @@ export default function Login() {
                   disabled={loading}
                   className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-semibold shadow-lg shadow-sky-500/20 transition ${theme.button}`}
                 >
-                  {loading ? <NeonAtom size={20} /> : "Sign in"}
+                  {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Sign in"}
                   {!loading && (
                     <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                   )}
@@ -660,7 +663,7 @@ export default function Login() {
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
                   >
                     <Fingerprint className="h-4 w-4" />
-                    {passkeyLoading ? <NeonAtom size={20} /> : "Passkey"}
+                    {passkeyLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Passkey"}
                   </button>
                   <button
                     type="button"
@@ -669,7 +672,7 @@ export default function Login() {
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
                   >
                     <BadgeCheck className="h-4 w-4" />
-                    {enrollLoading ? <NeonAtom size={20} /> : "Set up passkey"}
+                    {enrollLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Set up passkey"}
                   </button>
                 </div>
               </div>

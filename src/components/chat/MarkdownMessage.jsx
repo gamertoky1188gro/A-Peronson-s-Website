@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkSmartypants from "remark-smartypants";
@@ -25,7 +25,7 @@ const EXTRA_ALLOWED_TAGS = [
   "input",
 ];
 
-export default function MarkdownMessage({ text = "" }) {
+function MarkdownMessage({ text = "" }) {
   const value = String(text || "");
   const trimmed = value.trim();
   const schema = useMemo(() => {
@@ -210,3 +210,5 @@ export default function MarkdownMessage({ text = "" }) {
     </div>
   );
 }
+
+export default memo(MarkdownMessage);

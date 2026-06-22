@@ -1,9 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot } from "react-loading-indicators";
 
-export function SkeletonLine({ className = "" }) {
-  return <NeonAtom size={24} className={`inline-block ${className}`} />;
+export function SkeletonLine({ className = "", size = 24 }) {
+  return <span className={`inline-block ${className}`}><ThreeDot variant="bounce" color="#6100ff" size="medium" style={{ fontSize: size + "px" }} text="" textColor="" /></span>;
 }
 
 export function Badge({ children, tone = "default" }) {

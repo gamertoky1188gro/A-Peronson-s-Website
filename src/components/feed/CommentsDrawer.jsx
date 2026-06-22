@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { apiRequest, getToken } from "../../lib/auth";
-import NeonAtom from "../ui/NeonAtom";
+import { ThreeDot, Mosaic } from "react-loading-indicators";
 
 function formatDateTime(value) {
   if (!value) return "";
@@ -197,7 +197,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
                 disabled={submitting || !replyInput.trim()}
                 className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
               >
-                {submitting ? <NeonAtom size={16} /> : "Send"}
+                {submitting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Send"}
               </button>
               <button
                 type="button"
@@ -269,7 +269,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
           {loading ? (
-            <NeonAtom fill size={64} text="Loading comments..." />
+            <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
           ) : null}
           {!loading && error ? (
             <div className="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">
@@ -298,7 +298,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
               disabled={submitting || !input.trim()}
               className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
             >
-              {submitting ? "Posting..." : "Post"}
+              {submitting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Post"}
             </button>
           </div>
           <p className="mt-2 text-[10px] text-slate-500">

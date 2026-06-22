@@ -32,6 +32,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot, Mosaic } from "react-loading-indicators";
 import {
   Search,
   Filter,
@@ -83,6 +84,8 @@ import {
   Languages,
 } from "lucide-react";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
+import { uploadFile } from "../lib/upload";
+import UploadProgressBar from "../components/ui/UploadProgressBar";
 import {
   ADVANCED_FILTER_KEYS,
   DEFAULT_CORE_FILTER_KEYS,
@@ -376,6 +379,7 @@ export default function SearchResults() {
   const [searchField, setSearchField] = useState("all");
   const [imageSearchFile, setImageSearchFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [searchImageUploadProgress, setSearchImageUploadProgress] = useState(0);
   const [shortlist, setShortlist] = useState([]);
   const [showShortlist, setShowShortlist] = useState(false);
   const [trendingSearches, setTrendingSearches] = useState([]);
@@ -950,10 +954,13 @@ const filteredUsers = useMemo(() => {
       const params = buildSearchParams(0);
 
       if (imageSearchFile) {
-        const formData = new FormData();
-        formData.append("file", imageSearchFile);
         try {
-          const imgRes = await apiRequest("/search/image", { token, method: "POST", body: formData });
+          setSearchImageUploadProgress(0);
+          const imgRes = await uploadFile("/search/image", {
+            file: imageSearchFile,
+            token,
+            onProgress: setSearchImageUploadProgress,
+          });
           if (imgRes?.file?.url) {
             params.set("imageUrl", imgRes.file.url);
             addToast("Visual search", `Image uploaded: ${imgRes.file.originalname}. Matching by tags and colors.`, "success");
@@ -963,6 +970,7 @@ const filteredUsers = useMemo(() => {
         }
         setImageSearchFile(null);
         setImagePreview(null);
+        setSearchImageUploadProgress(0);
       }
 
       const [reqRes, prodRes, feedRes, userRes] = await Promise.all([
@@ -1572,7 +1580,7 @@ const filteredUsers = useMemo(() => {
     }
 
     if (activeTab === "all") {
-      const hasAny = filteredRequests.length || filteredCompanies.length || filteredFeedPosts.length;
+      const hasAny = filteredRequests.length || filteredCompanies.length || filteredFeedPosts.length || filteredUsers.length;
       if (!hasAny && !loading) {
         return (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
@@ -1753,9 +1761,13 @@ const filteredUsers = useMemo(() => {
                       className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
-                          {(item.name || "U").charAt(0).toUpperCase()}
-                        </div>
+                        {item.avatar_url ? (
+                          <img src={item.avatar_url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
+                        ) : (
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
+                            {(item.name || "U").charAt(0).toUpperCase()}
+                          </div>
+                        )}
                         <div className="min-w-0 flex-1">
                           <Link
                             to={`/profile/${item.id}`}
@@ -1764,7 +1776,13 @@ const filteredUsers = useMemo(() => {
                               __html: highlightText(item.name || "Untitled User", query),
                             }}
                           />
-                          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                          {item.headline && (
+                            <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">{item.headline}</p>
+                          )}
+                          {item.bio && (
+                            <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.bio}</p>
+                          )}
+                          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                             {item.role && (
                               <Badge tone={item.role === "factory" ? "green" : item.role === "buyer" ? "blue" : "default"}>
                                 {item.role.replace(/_/g, " ")}
@@ -2033,9 +2051,13 @@ const filteredUsers = useMemo(() => {
               className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
             >
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
-                  {(item.name || "U").charAt(0).toUpperCase()}
-                </div>
+                {item.avatar_url ? (
+                  <img src={item.avatar_url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
+                    {(item.name || "U").charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <Link
                     to={`/profile/${item.id}`}
@@ -2044,7 +2066,13 @@ const filteredUsers = useMemo(() => {
                       __html: highlightText(item.name || "Untitled User", query),
                     }}
                   />
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                  {item.headline && (
+                    <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">{item.headline}</p>
+                  )}
+                  {item.bio && (
+                    <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.bio}</p>
+                  )}
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     {item.role && (
                       <Badge tone={item.role === "factory" ? "green" : item.role === "buyer" ? "blue" : "default"}>
                         {item.role.replace(/_/g, " ")}
@@ -2295,8 +2323,9 @@ const filteredUsers = useMemo(() => {
                     ) : (
                       <ImagePlus className="h-5 w-5" />
                     )}
-                    <input type="file" accept="image/*" onChange={handleImageSearch} className="hidden" />
+                    <input type="file" accept=".jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr" onChange={handleImageSearch} className="hidden" />
                   </label>
+                  {searchImageUploadProgress > 0 && <UploadProgressBar progress={searchImageUploadProgress} className="w-16" />}
                   <button
                     onClick={() => setBatchOpen(true)}
                     className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700"
@@ -2310,7 +2339,7 @@ const filteredUsers = useMemo(() => {
                     className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     <Search className="h-5 w-5" />{" "}
-                    {loading ? <NeonAtom size={20} /> : "Search"}
+                    {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Search"}
                   </button>
                 </div>
               </div>
@@ -2320,7 +2349,7 @@ const filteredUsers = useMemo(() => {
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                   <Badge tone="blue">
                     {loading
-                      ? <NeonAtom size={20} />
+                      ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                       : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies · ${fmtNumber(estimatedCounts.feedPosts)} feed posts (${fmtNumber(estimatedCounts.total)} total)`}
                   </Badge>
                 </div>
@@ -3173,7 +3202,7 @@ const filteredUsers = useMemo(() => {
                       exit={{ clipPath: 'inset(0 0 0 100%)' }}
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                     >
-                      <NeonAtom fill size={64} />
+                      <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -3191,7 +3220,7 @@ const filteredUsers = useMemo(() => {
                             disabled={loadingMore}
                             className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500 disabled:opacity-60"
                           >
-                            {loadingMore ? <NeonAtom size={20} /> : <ChevronDown className="h-4 w-4" />}
+                            {loadingMore ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <ChevronDown className="h-4 w-4" />}
                             {loadingMore ? "Loading..." : `Load more (${Math.max(0, totalResults - cursor - (activeTab === "companies" ? filteredCompanies.length : filteredRequests.length))} remaining)`}
                           </button>
                         </div>

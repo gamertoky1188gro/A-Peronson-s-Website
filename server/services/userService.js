@@ -236,6 +236,8 @@ export async function searchUsers(viewerId, query, cursor = 0, limit = 12) {
       country: profile.country || "",
       industry: profile.industry || "",
       avatar_url: profile.avatar_url || profile.avatar || "",
+      headline: profile.headline || "",
+      bio: profile.bio || "",
       is_self: isSelf,
       ...relation,
     };

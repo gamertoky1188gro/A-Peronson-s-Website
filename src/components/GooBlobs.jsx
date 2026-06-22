@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
 
 const COLORS = [
   "rgba(14,165,233,0.25)",
@@ -13,8 +14,12 @@ export default function GooBlobs({
   colors = COLORS,
 }) {
   const reduceMotion = useReducedMotion();
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: false, margin: "-100px" });
 
   if (reduceMotion) return null;
+
+  const shouldAnimate = inView;
 
   const blobs = Array.from({ length: count }, (_, i) => ({
     id: i,
@@ -28,7 +33,7 @@ export default function GooBlobs({
   }));
 
   return (
-    <div className={`absolute inset-0 -z-10 overflow-hidden pointer-events-none ${className}`}>
+    <div ref={ref} className={`absolute inset-0 -z-10 overflow-hidden pointer-events-none ${className}`}>
       <svg
         className="w-full h-full"
         viewBox="0 0 100 100"
@@ -54,16 +59,16 @@ export default function GooBlobs({
               cy={b.cy}
               r={b.r}
               fill={b.color}
-              animate={{
+              animate={shouldAnimate ? {
                 cx: [b.cx, b.cx + b.dx, b.cx - b.dx, b.cx],
                 cy: [b.cy, b.cy + b.dy, b.cy - b.dy, b.cy],
                 r: [b.r, b.r * 1.15, b.r * 0.9, b.r],
-              }}
-              transition={{
+              } : undefined}
+              transition={shouldAnimate ? {
                 duration: b.dur,
                 repeat: Infinity,
                 ease: "easeInOut",
-              }}
+              } : undefined}
             />
           ))}
         </g>

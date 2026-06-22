@@ -95,6 +95,14 @@ export async function listMatchesForRequirement(requirementId) {
   });
 }
 
+export async function listMatchesForRequirements(requirementIds) {
+  if (!Array.isArray(requirementIds) || requirementIds.length === 0) return [];
+  return prisma.match.findMany({
+    where: { requirement_id: { in: requirementIds } },
+    orderBy: { score: "desc" },
+  });
+}
+
 export async function listMatchesForFactory(factoryId) {
   return prisma.match.findMany({
     where: { factory_id: factoryId },

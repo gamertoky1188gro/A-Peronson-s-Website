@@ -68,6 +68,7 @@ const RatingFeedback = safeLazy(() => import("./pages/RatingFeedback"));
 const SupportReports = safeLazy(() => import("./pages/SupportReports"));
 const VerificationPage = safeLazy(() => import("./pages/VerificationPage"));
 const TaskTracker = safeLazy(() => import("./pages/TaskTracker"));
+const ProfilePage = safeLazy(() => import("./pages/ProfilePage"));
 const AdminPanel = safeLazy(() => import("./pages/AdminPanel"));
 const AdminGovernance = safeLazy(() => import("./pages/AdminGovernance"));
 const AccessDenied = safeLazy(() => import("./pages/AccessDenied"));
@@ -349,6 +350,14 @@ function AppRoutes() {
 
 
       <Route path="/tasks" element={<TaskTracker />} />
+      <Route
+        path="/profile/:id"
+        element={
+          <ProtectedRoute roles={AUTH_ROLES}>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

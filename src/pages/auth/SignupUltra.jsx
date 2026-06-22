@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
 import { apiRequest, getRoleHome, saveSession } from "../../lib/auth";
 import usePageMeta from "../../lib/usePageMeta";
+import NeonAtom from "../../components/ui/NeonAtom";
+import { ThreeDot } from 'react-loading-indicators';
 
 const POSITIONS = [
   "Owner",
@@ -130,6 +132,8 @@ export default function SignupUltra() {
       setLoading(false);
     }
   };
+
+  if (loading) return <NeonAtom fill />;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4">
@@ -302,7 +306,7 @@ export default function SignupUltra() {
               disabled={loading}
               className="w-full py-3.5 rounded-lg bg-gtBlue hover:bg-gtBlueHover text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
             >
-              {loading ? "INITIALIZING ACCOUNT..." : "PROVISION ACCOUNT"}
+              {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "PROVISION ACCOUNT"}
             </button>
           </div>
         </motion.form>

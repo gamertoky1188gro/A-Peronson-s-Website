@@ -21,6 +21,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { Check } from "lucide-react";
+import { Atom, Mosaic } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import usePageMeta from "../lib/usePageMeta";
@@ -317,7 +318,7 @@ function PlanCard({
       : "border-slate-200/80 bg-white/85 dark:border-white/10 dark:bg-white/5");
 
   const cardClasses = shouldFlip
-    ? `${baseCardClasses} min-h-[440px]`
+    ? `${baseCardClasses}`
     : `${baseCardClasses} p-6`;
 
   const headerSection = (
@@ -378,20 +379,34 @@ function PlanCard({
         <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-400/20 blur-3xl" />
       )}
       {shouldFlip ? (
-        <FlipCard
-          front={
-            <div className="flex h-full flex-col p-6">
+        <div className="grid h-full" style={{ gridTemplateColumns: "1fr", gridTemplateRows: "1fr" }}>
+          <div className="invisible grid" style={{ gridArea: "1 / 1" }}>
+            <div className="flex flex-col p-6" style={{ gridArea: "1 / 1" }}>
               {headerSection}
             </div>
-          }
-          back={
-            <div className="flex h-full flex-col justify-between p-6">
+            <div className="flex flex-col justify-between p-6" style={{ gridArea: "1 / 1" }}>
               {featuresSection}
               <div className="mt-6">{buttonSection}</div>
             </div>
-          }
-          flipOn="hover"
-        />
+          </div>
+          <div style={{ gridArea: "1 / 1" }}>
+            <FlipCard
+              className="h-full"
+              front={
+                <div className="flex h-full flex-col p-6">
+                  {headerSection}
+                </div>
+              }
+              back={
+                <div className="flex h-full flex-col justify-between p-6">
+                  {featuresSection}
+                  <div className="mt-6">{buttonSection}</div>
+                </div>
+              }
+              flipOn="hover"
+            />
+          </div>
+        </div>
       ) : (
         <div className="relative z-10 flex h-full flex-col p-0">
           {headerSection}
@@ -428,7 +443,7 @@ function AnalyticsCard({ tiles = [], loading = false, loadError = "" }) {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <NeonAtom size={64} text="Loading..." />
+              <Atom color="#5900ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
             </div>
           ) : (
             displayMetrics.slice(0, 4).map((m) => (
@@ -448,7 +463,7 @@ function AnalyticsCard({ tiles = [], loading = false, loadError = "" }) {
         </div>
         {loadError && (
           <div className="flex h-64 items-center justify-center">
-            <NeonAtom size={64} text="Failed to load analytics" />
+            <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
           </div>
         )}
       </div>
@@ -683,6 +698,8 @@ export default function PricingPage() {
     }, 40);
     return () => { running = false; clearInterval(id); };
   }, [reduceMotion]);
+
+  if (loading) return <NeonAtom fill />;
 
   return (
     <div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">

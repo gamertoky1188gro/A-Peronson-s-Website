@@ -12,6 +12,10 @@ import {
 } from "../services/callSessionService.js";
 import path from "path";
 import { buildIceServers } from "../services/webrtcService.js";
+import { isVideoFile } from "../services/videoProcessor.js";
+import { addToQueue } from "../services/videoQueue.js";
+import { isImageFile } from "../services/imageProcessor.js";
+import { addImageToQueue } from "../services/imageQueue.js";
 import {
   buildFriendMatchId,
   isFriendConnected,
@@ -137,9 +141,29 @@ export async function uploadRecordingFile(req, res) {
   const allowedMimes = new Set([
     "video/webm",
     "video/mp4",
+    "video/ogg",
+    "video/x-matroska",
+    "video/x-flv",
+    "video/mpeg",
+    "video/quicktime",
+    "video/x-msvideo",
+    "video/x-ms-wmv",
+    "video/x-ms-asf",
+    "video/3gpp",
+    "video/3gpp2",
+    "video/x-m4v",
+    "video/x-amv",
+    "video/x-sgi-movie",
+    "video/x-nsv",
+    "video/x-yuv",
+    "video/x-f4v",
+    "video/x-mng",
+    "video/x-roq",
     "audio/webm",
     "audio/ogg",
-    "video/ogg",
+    "audio/mp4",
+    "application/mxf",
+    "application/vnd.rn-realmedia",
   ]);
   const mime = String(file.mimetype || "").toLowerCase();
   if (mime && !allowedMimes.has(mime)) {
@@ -178,6 +202,20 @@ export async function uploadRecordingFile(req, res) {
     return res.status(400).json({
       error: "recording_url is required when recording_status is available",
     });
+
+  if (isVideoFile(file.mimetype, file.originalname)) {
+    const fullPath = String(file.path || "");
+    if (fullPath) {
+      addToQueue({ filePath: fullPath, documentId: null });
+    }
+  }
+
+  if (isImageFile(file.mimetype, file.originalname)) {
+    const fullPath = String(file.path || "");
+    if (fullPath) {
+      addImageToQueue({ filePath: fullPath, documentId: null });
+    }
+  }
 
   return res.status(201).json(updated);
 }

@@ -7,8 +7,12 @@ import {
   MessageSquareText,
   ArrowUpRight,
   Zap,
+  User,
+  ExternalLink,
+  Link2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import PostPreview from "../ui/PostPreview";
 
 function requestStatusBadgeClass(status = "") {
@@ -71,6 +75,19 @@ export default function FeedItemCard({
   onMessage,
   highlight,
 }) {
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
   const isBuyerRequest = item.entityType === "buyer_request";
   const isUserFeedPost = item.entityType === "user_feed_post";
   const profileLink = !item.author?.id
@@ -92,7 +109,25 @@ export default function FeedItemCard({
       <header className="relative p-4 bg-white/70 dark:bg-slate-950/30">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 shrink-0" />
+            {profileLink ? (
+              <Link to={profileLink} className="shrink-0">
+                {item.author?.avatar_url ? (
+                  <img
+                    src={item.author.avatar_url}
+                    alt=""
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 shrink-0 flex items-center justify-center text-xs font-semibold text-slate-500">
+                    {(item.author?.name || "?")[0]}
+                  </div>
+                )}
+              </Link>
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 shrink-0 flex items-center justify-center text-xs font-semibold text-slate-500">
+                {(item.author?.name || "?")[0]}
+              </div>
+            )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 min-w-0">
                 {profileLink ? (
@@ -151,16 +186,73 @@ export default function FeedItemCard({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            className="rounded-full p-2 hover:bg-slate-50/70 dark:hover:bg-white/5"
-            aria-label="More actions"
-          >
-            <MoreHorizontal
-              size={18}
-              className="text-slate-500 dark:text-slate-400"
-            />
-          </button>
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              className="rounded-full p-2 hover:bg-slate-50/70 dark:hover:bg-white/5"
+              aria-label="More actions"
+              aria-haspopup="true"
+              aria-expanded={menuOpen}
+            >
+              <MoreHorizontal
+                size={18}
+                className="text-slate-500 dark:text-slate-400"
+              />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-xl bg-white p-1.5 shadow-xl ring-1 ring-slate-200/80 dark:bg-slate-900 dark:ring-slate-700">
+                {profileLink ? (
+                  <button
+                    type="button"
+                    onClick={() => { setMenuOpen(false); navigate(profileLink); }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <User size={15} /> View Profile
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => { setMenuOpen(false); onShare?.(); }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <Share2 size={15} /> Share
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    const url = profileLink
+                      ? `${window.location.origin}${profileLink}`
+                      : window.location.href;
+                    navigator.clipboard.writeText(url).catch(() => {});
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <Link2 size={15} /> Copy Link
+                </button>
+                {profileLink ? (
+                  <a
+                    href={profileLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <ExternalLink size={15} /> Open in New Tab
+                  </a>
+                ) : null}
+                <hr className="my-1 border-slate-100 dark:border-slate-800" />
+                <button
+                  type="button"
+                  onClick={() => { setMenuOpen(false); onReport?.(); }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/50"
+                >
+                  <Flag size={15} /> Report
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

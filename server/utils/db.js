@@ -39,21 +39,27 @@ export async function ensureDatabaseConnection() {
       "[redacted]",
     );
   }
-  try {
-    await prisma.$connect();
-    dbConnected = true;
-    dbError = "";
-  } catch (error) {
-    dbConnected = false;
-    dbError = error?.message || "DB connection failed";
-    if (allowOffline) {
+  while (true) {
+    try {
+      await prisma.$connect();
+      dbConnected = true;
+      dbError = "";
+      break;
+    } catch (error) {
+      dbConnected = false;
+      dbError = error?.message || "DB connection failed";
+      if (allowOffline) {
+        console.warn(
+          chalk.yellow("[db] Failed to connect; continuing in offline mode:"),
+          dbError,
+        );
+        return;
+      }
       console.warn(
-        chalk.yellow("[db] Failed to connect; continuing in offline mode:"),
-        dbError,
+        chalk.yellow(`[db] Connection failed: ${dbError}. Retrying in 30s...`),
       );
-      return;
+      await new Promise((r) => setTimeout(r, 30_000));
     }
-    throw error;
   }
 }
 

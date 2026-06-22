@@ -28,6 +28,7 @@ import {
   Users,
 } from "lucide-react";
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot } from 'react-loading-indicators';
 import ScrollReveal from "../components/ScrollReveal";
 
 function cx(...classes) {
@@ -646,7 +647,7 @@ export default function Insights() {
                           : "bg-sky-600 text-white shadow-lg shadow-sky-600/20 hover:bg-sky-500",
                       )}
                     >
-                      {exportLoading ? <NeonAtom size={20} /> : <FileDown className="h-4 w-4" />}
+                      {exportLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <FileDown className="h-4 w-4" />}
                       {exportLoading ? "Exporting..." : "Export CSV"}
                     </button>
                     <button
@@ -694,7 +695,7 @@ export default function Insights() {
                           : "border border-sky-200 bg-white text-sky-700 shadow-sm hover:bg-sky-50 dark:border-sky-500/20 dark:bg-slate-950 dark:text-sky-300 dark:hover:bg-slate-900",
                       )}
                     >
-                      {exportLoading ? <NeonAtom size={20} /> : <FileText className="h-4 w-4" />}
+                      {exportLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <FileText className="h-4 w-4" />}
                       {exportLoading ? "Preparing..." : "Download PDF Report"}
                     </button>
                   </div>
@@ -831,7 +832,7 @@ export default function Insights() {
                         <Badge tone="default">Limit 8</Badge>
                       </div>
                       {viewerLoading ? (
-                        <NeonAtom size={24} text="Loading viewers..." />
+                        <ThreeDot variant="bounce" color="#6100ff" size="medium" style={{ fontSize: "24px" }} text="" textColor="" />
                       ) : (
                         <div className="space-y-2">
                           {profileViewers.length ? (
@@ -860,7 +861,7 @@ export default function Insights() {
                         <Badge tone="default">Limit 8</Badge>
                       </div>
                       {viewerLoading ? (
-                        <NeonAtom size={24} text="Loading viewers..." />
+                        <ThreeDot variant="bounce" color="#6100ff" size="medium" style={{ fontSize: "24px" }} text="" textColor="" />
                       ) : (
                         <div className="space-y-2">
                           {productViewers.length ? (

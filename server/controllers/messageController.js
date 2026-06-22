@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import {
   listMatchesForFactory,
-  listMatchesForRequirement,
+  listMatchesForRequirements,
 } from "../services/matchingService.js";
 import {
   acceptMessageRequest,
@@ -15,6 +15,10 @@ import {
   rejectMessageRequest,
   tieredInbox,
 } from "../services/messageService.js";
+import { isVideoFile } from "../services/videoProcessor.js";
+import { addToQueue } from "../services/videoQueue.js";
+import { isImageFile } from "../services/imageProcessor.js";
+import { addImageToQueue } from "../services/imageQueue.js";
 import { maybeGenerateBotReply } from "../services/chatbotService.js";
 import {
   adjustSenderReputation,
@@ -180,6 +184,24 @@ export async function uploadMessageAttachment(req, res) {
       botReply = null;
     }
 
+    if (isVideoFile(file.mimetype, file.originalname)) {
+      const fullPath = file.path
+        ? path.resolve(file.path)
+        : null;
+      if (fullPath && created?.id) {
+        addToQueue({ filePath: fullPath, documentId: null });
+      }
+    }
+
+    if (isImageFile(file.mimetype, file.originalname)) {
+      const fullPath = file.path
+        ? path.resolve(file.path)
+        : null;
+      if (fullPath && created?.id) {
+        addImageToQueue({ filePath: fullPath, documentId: null });
+      }
+    }
+
     return res.status(201).json({ ...created, bot_reply: botReply });
   } catch (error) {
     return res.status(error.status || 400).json({
@@ -202,12 +224,11 @@ export async function inbox(req, res) {
       where: { buyer_id: req.user.id },
       select: { id: true },
     });
-    const all = [];
-    for (const r of mine) {
-      const mr = await listMatchesForRequirement(r.id);
-      all.push(...mr.map((m) => `${m.requirement_id}:${m.factory_id}`));
-    }
-    matchIds = all;
+    const requirementIds = mine.map((r) => r.id);
+    const matches = requirementIds.length > 0
+      ? await listMatchesForRequirements(requirementIds)
+      : [];
+    matchIds = matches.map((m) => `${m.requirement_id}:${m.factory_id}`);
   }
   const friendMatchIds = await listFriendMatchIdsForUser(req.user.id);
   return res.json(

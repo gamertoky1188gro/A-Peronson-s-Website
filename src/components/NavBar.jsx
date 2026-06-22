@@ -72,9 +72,9 @@ import {
   subscribeNotificationsRealtime,
 } from "../lib/notificationsRealtime";
 import { useTheme } from "../lib/ThemeProvider";
-import NeonAtom from "./ui/NeonAtom";
 import useScrollDirection from "../hooks/useScrollDirection";
 import SlideIn from "./SlideIn";
+import { ThreeDot } from 'react-loading-indicators'
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
@@ -1054,7 +1054,7 @@ export default function NavBar() {
               {user && searchOpen && searchQuery.trim().length >= 1 ? (
                 <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[360px] overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.16)] backdrop-blur-2xl dark:bg-slate-950/95">
                   {searchLoading ? (
-                    <NeonAtom size={16} />
+                    <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                   ) : null}
                   {!searchLoading && searchError ? (
                     <p className="px-2 py-3 text-xs text-rose-500">
@@ -1135,7 +1135,7 @@ export default function NavBar() {
                             className="inline-flex items-center rounded-xl bg-indigo-500/10 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
                           >
                             {actionBusyKey === `friend:${result.id}`
-                              ? "Sending..."
+                              ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                               : result.is_self
                                 ? "Add Friend"
                                 : result.friend_status === "incoming"

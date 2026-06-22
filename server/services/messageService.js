@@ -309,10 +309,33 @@ export async function postMessage(
   attachment = null,
   options = {},
 ) {
-  const messages = await prisma.message.findMany();
-  const users = await prisma.user.findMany();
-  const usersById = buildUsersById(users);
-  const messageRequests = await prisma.messageRequest.findMany();
+  const sender = await prisma.user.findUnique({ where: { id: senderId } });
+  if (!sender) {
+    const err = new Error("Sender not found");
+    err.status = 404;
+    throw err;
+  }
+
+  const usersById = new Map();
+  usersById.set(sender.id, sender);
+  if (sender.org_owner_id) {
+    const owner = await prisma.user.findUnique({ where: { id: String(sender.org_owner_id) } });
+    if (owner) usersById.set(owner.id, owner);
+  }
+
+  const [recentMatchMessages, existingRequest] = await Promise.all([
+    prisma.message.findMany({
+      where: { match_id: matchId },
+      orderBy: { timestamp: "desc" },
+      take: 5,
+      select: { message: true, sender_id: true, timestamp: true },
+    }),
+    prisma.messageRequest.findUnique({ where: { thread_id: matchId } }),
+  ]);
+
+  const recentContext = recentMatchMessages.map((m) => m.message).reverse();
+  const messageRequests = existingRequest ? [existingRequest] : [];
+
   const safeAttachment = attachment
     ? {
         name: sanitizeString(attachment?.name, 220),
@@ -338,7 +361,6 @@ export async function postMessage(
     queue_id: null,
   };
 
-  const sender = users.find((u) => u.id === senderId);
   // Enforce per-org AI auto-reply settings for messages originating from AI flows
   const sourceLabel = String(options?.source_label || "");
   if (sourceLabel.startsWith("ai:")) {
@@ -353,14 +375,15 @@ export async function postMessage(
         throw err;
       }
 
-      const cutoff = Date.now() - 60 * 60 * 1000;
-      const recent = (Array.isArray(messages) ? messages : []).filter(
-        (m) =>
-          String(m.sender_id || "") === String(senderId) &&
-          new Date(m.timestamp || 0).getTime() >= cutoff,
-      );
+      const cutoff = new Date(Date.now() - 60 * 60 * 1000);
+      const recentCount = await prisma.message.count({
+        where: {
+          sender_id: senderId,
+          timestamp: { gte: cutoff },
+        },
+      });
       if (
-        recent.length >=
+        recentCount >=
         Number(orgSettings.auto_reply_rate_limit_per_hour || 20)
       ) {
         const err = new Error(
@@ -437,11 +460,6 @@ export async function postMessage(
     entry.queue_id = policyResult?.queue?.id || null;
   }
 
-  const recentContext = messages
-    .filter((m) => String(m.match_id || "") === String(matchId || ""))
-    .slice(-5)
-    .map((m) => m?.message || "");
-
   const moderation = await moderateTextOrRedactWithContext({
     actor: sender,
     text: sanitizeString(message, 2000),
@@ -510,22 +528,31 @@ export async function postMessage(
 }
 
 export async function listMessagesByMatch(matchId) {
-  const [messages, users] = await Promise.all([
-    prisma.message.findMany({ where: { match_id: matchId } }),
-    prisma.user.findMany(),
-  ]);
+  const messages = await prisma.message.findMany({ where: { match_id: matchId } });
+  const senderIds = [...new Set(messages.map((m) => m.sender_id).filter(Boolean))];
+  const users = senderIds.length > 0
+    ? await prisma.user.findMany({ where: { id: { in: senderIds } } })
+    : [];
   const usersById = buildUsersById(users);
   return messages.map((message) => enrichMessage(message, usersById));
 }
 
 export async function tieredInbox(matchIds, currentUserId) {
-  const [users, messages, messageRequests, conversationLocks, messageReads] = await Promise.all([
-    prisma.user.findMany(),
+  const requestIds = [...new Set(matchIds.map(requestIdFromMatchId).filter(Boolean))];
+
+  const [messages, messageRequests, conversationLocks, messageReads] = await Promise.all([
     prisma.message.findMany({ where: { match_id: { in: matchIds } } }),
-    prisma.messageRequest.findMany(),
-    prisma.conversationLock.findMany(),
-    prisma.messageRead.findMany(),
+    prisma.messageRequest.findMany({ where: { thread_id: { in: matchIds } } }),
+    prisma.conversationLock.findMany({ where: { request_id: { in: requestIds } } }),
+    prisma.messageRead.findMany({ where: { match_id: { in: matchIds }, user_id: currentUserId } }),
   ]);
+
+  const senderIds = [...new Set(messages.map((m) => m.sender_id).filter(Boolean))];
+  const lockOwnerIds = [...new Set(conversationLocks.map((l) => l.locked_by).filter(Boolean))];
+  const allUserIds = [...new Set([...senderIds, ...lockOwnerIds])];
+  const users = allUserIds.length > 0
+    ? await prisma.user.findMany({ where: { id: { in: allUserIds } } })
+    : [];
   const usersById = buildUsersById(users);
   const lockByRequestId = new Map(
     conversationLocks.map((lock) => [lock.request_id, lock]),

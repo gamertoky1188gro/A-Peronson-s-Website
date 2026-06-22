@@ -22,7 +22,8 @@ import {
   ToggleRight,
 } from "lucide-react";
 import { apiRequest } from "../../../lib/auth";
-import NeonAtom from "../../../components/ui/NeonAtom";
+
+import { Mosaic, ThreeDot } from 'react-loading-indicators';
 
 export function AdminAISection({ activeCategory, adminDark }) {
   const [rules, setRules] = useState({ globalRules: [], smallTalkRules: [] });
@@ -253,7 +254,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
       </div>
 
       {loading ? (
-        <NeonAtom fill size={64} text="Loading..." />
+        <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
       ) : activeTab === "settings" ? (
         <div className="space-y-6">
           {/* System Prompt */}
@@ -431,11 +432,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
             disabled={saving}
             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/20 px-6 py-3 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-500/30 disabled:opacity-50"
           >
-            {saving ? (
-              <NeonAtom size={20} />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
+            {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <Save className="h-4 w-4" />}
             {saving ? "Saving..." : "Save Settings"}
           </button>
         </div>

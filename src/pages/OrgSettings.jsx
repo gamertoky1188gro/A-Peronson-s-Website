@@ -7,11 +7,15 @@ import {
   getToken,
   hasEntitlement,
 } from "../lib/auth";
+import { uploadFile } from "../lib/upload";
+import UploadProgressBar from "../components/ui/UploadProgressBar";
+import { Mosaic } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "../lib/ThemeProvider";
 import { useEntitlements } from "../hooks/useSecureUser";
 import ProfileImageUpload from "../components/ui/ProfileImageUpload";
+import { ThreeDot } from "react-loading-indicators";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -430,7 +434,9 @@ export default function OrgSettings() {
     String(currentUser?.profile?.brand_cover_url || ""),
   );
   const [bannerUploading, setBannerUploading] = useState(false);
+  const [bannerUploadProgress, setBannerUploadProgress] = useState(0);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUploadProgress, setLogoUploadProgress] = useState(0);
   const bannerInputRef = useRef(null);
   const logoInputRef = useRef(null);
 
@@ -438,9 +444,19 @@ export default function OrgSettings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    const validTypes = [
+      "image/jpeg", "image/png", "image/webp", "image/avif", "image/gif",
+      "image/apng", "image/bmp", "image/x-ms-bmp", "image/tiff",
+      "image/heic", "image/heif", "image/svg+xml", "image/x-tga",
+      "image/vnd.adobe.photoshop", "image/x-photoshop", "image/x-xcf",
+      "image/x-coreldraw", "image/x-adobe-dng", "image/x-canon-cr2",
+      "image/x-canon-cr3", "image/x-nikon-nef", "image/x-sony-arw",
+      "image/x-sony-sr2", "image/x-olympus-orf", "image/x-fuji-raf",
+      "image/x-eps", "application/postscript", "application/pdf",
+      "application/dicom", "application/x-coreldraw",
+    ];
     if (!validTypes.includes(file.type)) {
-      setStatusMessage("Only JPG, PNG, and WebP images are allowed");
+      setStatusMessage("Unsupported image format");
       return;
     }
 
@@ -450,17 +466,14 @@ export default function OrgSettings() {
     }
 
     setBannerUploading(true);
+    setBannerUploadProgress(0);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
       const token = getToken();
-      const response = await fetch("/api/users/me/avatar", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+      const data = await uploadFile("/users/me/avatar", {
+        file,
+        token,
+        onProgress: setBannerUploadProgress,
       });
-      if (!response.ok) throw new Error("Upload failed");
-      const data = await response.json();
       const uploadedUrl = data.avatar_url || data.profile_image;
       setBrandCoverUrl(uploadedUrl);
       setStatusMessage("Banner uploaded successfully");
@@ -468,6 +481,7 @@ export default function OrgSettings() {
       setStatusMessage(err.message || "Failed to upload banner");
     } finally {
       setBannerUploading(false);
+      setBannerUploadProgress(0);
     }
   };
 
@@ -475,9 +489,19 @@ export default function OrgSettings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    const validTypes = [
+      "image/jpeg", "image/png", "image/webp", "image/avif", "image/gif",
+      "image/apng", "image/bmp", "image/x-ms-bmp", "image/tiff",
+      "image/heic", "image/heif", "image/svg+xml", "image/x-tga",
+      "image/vnd.adobe.photoshop", "image/x-photoshop", "image/x-xcf",
+      "image/x-coreldraw", "image/x-adobe-dng", "image/x-canon-cr2",
+      "image/x-canon-cr3", "image/x-nikon-nef", "image/x-sony-arw",
+      "image/x-sony-sr2", "image/x-olympus-orf", "image/x-fuji-raf",
+      "image/x-eps", "application/postscript", "application/pdf",
+      "application/dicom", "application/x-coreldraw",
+    ];
     if (!validTypes.includes(file.type)) {
-      setStatusMessage("Only JPG, PNG, and WebP images are allowed");
+      setStatusMessage("Unsupported image format");
       return;
     }
 
@@ -487,17 +511,14 @@ export default function OrgSettings() {
     }
 
     setLogoUploading(true);
+    setLogoUploadProgress(0);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
       const token = getToken();
-      const response = await fetch("/api/users/me/avatar", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+      const data = await uploadFile("/users/me/avatar", {
+        file,
+        token,
+        onProgress: setLogoUploadProgress,
       });
-      if (!response.ok) throw new Error("Upload failed");
-      const data = await response.json();
       const uploadedUrl = data.avatar_url || data.profile_image;
       setBrandLogoUrl(uploadedUrl);
       setStatusMessage("Logo uploaded successfully");
@@ -505,6 +526,7 @@ export default function OrgSettings() {
       setStatusMessage(err.message || "Failed to upload logo");
     } finally {
       setLogoUploading(false);
+      setLogoUploadProgress(0);
     }
   };
 
@@ -1495,7 +1517,7 @@ export default function OrgSettings() {
                     onClick={saveProfileSettings}
                     disabled={loadingProfile}
                   >
-                    {loadingProfile ? "Saving..." : "Save Profile"}
+                    {loadingProfile ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save Profile"}
                   </PrimaryButton>
                 </div>
               </SectionCard>
@@ -1685,7 +1707,7 @@ export default function OrgSettings() {
                     </div>
                     <div className="space-y-3">
                       {loadingSessions ? (
-                        <NeonAtom fill size={64} text="Loading..." />
+                        <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
                       ) : sessions.length === 0 ? (
                         <p className="text-sm text-slate-500">
                           No active sessions.
@@ -1990,7 +2012,7 @@ export default function OrgSettings() {
               >
                 <div className="space-y-3">
                   {loadingSessions ? (
-                    <NeonAtom fill size={64} text="Loading..." />
+                    <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
                   ) : sessions.length === 0 ? (
                     <p className="text-sm text-slate-500">No sessions.</p>
                   ) : (
@@ -2096,7 +2118,7 @@ export default function OrgSettings() {
                     <input
                       ref={logoInputRef}
                       type="file"
-                      accept="image/jpeg,image/png,image/webp"
+                      accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
                       onChange={handleLogoUpload}
                       disabled={!canBranding || logoUploading}
                       className="hidden"
@@ -2108,8 +2130,9 @@ export default function OrgSettings() {
                         disabled={!canBranding || logoUploading}
                         className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                       >
-                        {logoUploading ? "Uploading..." : "Choose Image"}
+                        {logoUploading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Choose Image"}
                       </button>
+                      {logoUploading && <UploadProgressBar progress={logoUploadProgress} className="w-40" />}
                       {brandLogoUrl && (
                         <span className="text-sm text-slate-500">Logo set</span>
                       )}
@@ -2129,7 +2152,7 @@ export default function OrgSettings() {
                     <input
                       ref={bannerInputRef}
                       type="file"
-                      accept="image/jpeg,image/png,image/webp"
+                      accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
                       onChange={handleBannerUpload}
                       disabled={!canBranding || bannerUploading}
                       className="hidden"
@@ -2141,8 +2164,9 @@ export default function OrgSettings() {
                         disabled={!canBranding || bannerUploading}
                         className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                       >
-                        {bannerUploading ? "Uploading..." : "Choose Image"}
+                        {bannerUploading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Choose Image"}
                       </button>
+                      {bannerUploading && <UploadProgressBar progress={bannerUploadProgress} className="w-40" />}
                       {brandCoverUrl && (
                         <span className="text-sm text-slate-500">Banner set</span>
                       )}

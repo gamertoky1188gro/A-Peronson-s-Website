@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import PasswordStrengthBar from "react-password-strength-bar";
 import PasswordChecklist from "react-password-checklist";
 import NeonAtom from "../../components/ui/NeonAtom";
+import { ThreeDot } from 'react-loading-indicators';
 import {
   apiRequest,
   getCurrentUser,
@@ -287,6 +288,8 @@ export default function Signup() {
       setLoading(false);
     }
   };
+
+  if (loading) return <NeonAtom fill />;
 
   return (
     <div
@@ -684,7 +687,7 @@ export default function Signup() {
                   className="group relative mt-2 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-400 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_40px_rgba(14,165,233,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_60px_rgba(14,165,233,0.45)] disabled:opacity-60"
                 >
                   <span className="relative z-10">
-                    {loading ? <NeonAtom size={20} /> : "Create account"}
+                    {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Create account"}
                   </span>
                   <span className="absolute inset-0 translate-x-[-120%] bg-white/20 transition-transform duration-700 group-hover:translate-x-[120%]" />
                 </button>

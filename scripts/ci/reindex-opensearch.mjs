@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import "dotenv/config";
 import { Client } from "@opensearch-project/opensearch";
 
 const OPENSEARCH_URL = process.env.OPENSEARCH_URL || "http://localhost:9200";

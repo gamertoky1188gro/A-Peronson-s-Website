@@ -1,3 +1,7 @@
+import { isVideoFile } from "../services/videoProcessor.js";
+import { addToQueue } from "../services/videoQueue.js";
+import { isImageFile } from "../services/imageProcessor.js";
+import { addImageToQueue } from "../services/imageQueue.js";
 import {
   createDraftContract,
   deleteDocument,
@@ -17,6 +21,7 @@ import {
 } from "../services/eSignService.js";
 import { normalizeProviderWebhook } from "../services/eSignCallbackMapper.js";
 import crypto from "crypto";
+import path from "path";
 import prisma from "../utils/prisma.js";
 import { deny, handleControllerError } from "../utils/permissions.js";
 import { ensureEntitlement } from "../services/entitlementService.js";
@@ -35,6 +40,18 @@ export async function uploadDocument(req, res) {
       req.body?.type || "other",
       req.file,
     );
+
+    const filePath = doc.file_path
+      ? path.join(process.cwd(), doc.file_path)
+      : null;
+    if (filePath && isVideoFile(req.file.mimetype, req.file.originalname)) {
+      addToQueue({ filePath, documentId: doc.id });
+    }
+
+    if (filePath && isImageFile(req.file.mimetype, req.file.originalname)) {
+      addImageToQueue({ filePath, documentId: doc.id });
+    }
+
     return res.status(201).json(doc);
   } catch (error) {
     return handleControllerError(res, error);

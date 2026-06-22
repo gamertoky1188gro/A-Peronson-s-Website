@@ -6,6 +6,12 @@ const blobs = [
   { className: "absolute left-[-120px] top-[760px] h-[280px] w-[280px] rounded-full bg-cyan-400/15 blur-3xl dark:bg-cyan-400/10", speed: 1.2 },
 ];
 
+function ParallaxBlob({ blob, scrollY, scrollRange }) {
+  const y = useTransform(scrollY, [0, scrollRange], [0, -(blob.speed * 60)]);
+  const springY = useSpring(y, { stiffness: 80, damping: 20, restDelta: 0.01 });
+  return <motion.div style={{ y: springY }} className={blob.className} />;
+}
+
 export default function ParallaxBackground({
   className = "",
   scrollRange = 800,
@@ -20,17 +26,9 @@ export default function ParallaxBackground({
 
   return (
     <div className={"absolute inset-0 -z-10 overflow-hidden " + className}>
-      {items.map((blob, i) => {
-        const y = useTransform(scrollY, [0, scrollRange], [0, -(blob.speed * 60)]);
-        const springY = useSpring(y, { stiffness: 80, damping: 20, restDelta: 0.001 });
-        return (
-          <motion.div
-            key={i}
-            style={{ y: springY }}
-            className={blob.className}
-          />
-        );
-      })}
+      {items.map((blob, i) => (
+        <ParallaxBlob key={i} blob={blob} scrollY={scrollY} scrollRange={scrollRange} />
+      ))}
     </div>
   );
 }

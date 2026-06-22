@@ -4,7 +4,7 @@ import { motion, useReducedMotion, useSpring } from "framer-motion";
 import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
 import BotLogo from "./ui/BotLogo";
 import MarkdownMessage from "./chat/MarkdownMessage";
-import NeonAtom from "./ui/NeonAtom";
+import { ThreeDot } from 'react-loading-indicators';
 import useScrollDirection from "../hooks/useScrollDirection";
 
 function getUserId() {
@@ -400,7 +400,7 @@ export default function FloatingAssistant() {
                 </p>
                 <div className="flex items-center gap-1.5">
                   {loading ? (
-                    <NeonAtom size={20} text="Thinking..." />
+                    <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                   ) : (
                     <>
                       <span className="w-2 h-2 rounded-full bg-green-300"></span>
@@ -495,11 +495,7 @@ export default function FloatingAssistant() {
             {loading && !firstChunkReceived && (
               <div className="flex justify-start animate-in fade-in duration-200">
                 <div className="bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl rounded-bl-none px-4 py-3.5 shadow-sm">
-                  <div className="flex gap-1.5">
-                    <div className="w-2 h-2 bg-sky-400 rounded-full animate-bounce [animation-duration:0.8s]"></div>
-                    <div className="w-2 h-2 bg-sky-400 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.2s]"></div>
-                    <div className="w-2 h-2 bg-sky-400 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.4s]"></div>
-                  </div>
+                  <ThreeDot variant="bounce" color="#38bdf8" size="small" text="" textColor="" />
                 </div>
               </div>
             )}

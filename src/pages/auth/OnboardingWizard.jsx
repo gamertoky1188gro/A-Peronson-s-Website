@@ -26,6 +26,7 @@ import {
   getToken,
   saveSession,
 } from "../../lib/auth";
+import { ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../../components/ui/NeonAtom";
 
 const DEFAULT_CATEGORIES = [
@@ -164,6 +165,8 @@ export default function OnboardingWizard() {
     setStep((s) => Math.max(1, s - 1));
   }
 
+  if (saving) return <NeonAtom fill />;
+
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-500 ease-in-out dark:bg-[#020617] dark:text-slate-100">
       <div className="mx-auto w-full max-w-3xl">
@@ -292,7 +295,7 @@ export default function OnboardingWizard() {
                   disabled={saving}
                   className="rounded-xl bg-gtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-gtBlueHover disabled:opacity-60"
                 >
-                  {saving ? <NeonAtom size={20} /> : "Finish setup"}
+                  {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Finish setup"}
                 </button>
               )}
             </div>

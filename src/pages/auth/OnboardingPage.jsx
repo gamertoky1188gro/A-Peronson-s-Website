@@ -22,6 +22,7 @@ import {
   getRoleHome,
 } from "../../lib/auth";
 import ProfileImageUpload from "../../components/ui/ProfileImageUpload";
+import { ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../../components/ui/NeonAtom";
 
 const DEFAULT_CATEGORIES = [
@@ -148,6 +149,8 @@ export default function OnboardingPage() {
     if (!validate(step)) return;
     setStep((s) => Math.min(3, s + 1));
   }
+
+  if (saving) return <NeonAtom fill />;
 
   return (
     <div className={isDark ? "dark" : ""}>
@@ -455,7 +458,7 @@ export default function OnboardingPage() {
                       disabled={saving}
                       className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:translate-y-[-1px] hover:shadow-xl disabled:opacity-60"
                     >
-                      {saving ? <NeonAtom size={20} /> : "Finish setup"}
+                      {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Finish setup"}
                       <Check className="h-4 w-4" />
                     </button>
                   )}

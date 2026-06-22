@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth";
-import NeonAtom from "../ui/NeonAtom";
+import { Mosaic } from "react-loading-indicators";
 
 const STATUS_OPTIONS = [
   { key: "new", label: "New" },
@@ -374,7 +374,7 @@ export default function LeadManager({
           </div>
 
           {loading ? (
-            <NeonAtom fill size={64} text="Loading leads..." />
+            <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
           ) : null}
           {error ? (
             <div className="mt-2 text-sm text-rose-600">{error}</div>

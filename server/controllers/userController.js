@@ -1,3 +1,4 @@
+import path from "path";
 import {
   adminForceLogout as adminForceLogoutUser,
   adminLockMessaging as adminLockMessagingUser,
@@ -22,6 +23,8 @@ import {
   authorize,
   buildCapabilityPayload,
 } from "../services/authorizationService.js";
+import { isImageFile } from "../services/imageProcessor.js";
+import { addImageToQueue } from "../services/imageQueue.js";
 
 export async function me(req, res) {
   const user = await findUserById(req.user.id);
@@ -196,6 +199,12 @@ export async function uploadAvatar(req, res) {
       avatar_url: avatarUrl,
     });
     if (!user) return res.status(404).json({ error: "User not found" });
+
+    const fullPath = req.file.path ? path.resolve(req.file.path) : null;
+    if (fullPath && isImageFile(req.file.mimetype, req.file.originalname)) {
+      addImageToQueue({ filePath: fullPath, documentId: null });
+    }
+
     return res.json({ avatar_url: avatarUrl, profile_image: avatarUrl });
   } catch (err) {
     return res

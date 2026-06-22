@@ -23,10 +23,13 @@
     - Buyer required documents vary by region (EU/USA/OTHER), derived from country.
 */
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot } from 'react-loading-indicators'
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ScrollReveal from "../components/ScrollReveal";
 import WordleInput from "../components/WordleInput";
 import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
+import { uploadFile } from "../lib/upload";
+import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { useTheme } from "../lib/ThemeProvider";
 import {
   BUYER_COUNTRY_OPTIONS,
@@ -129,6 +132,7 @@ export default function VerificationPage() {
   const [verification, setVerification] = useState(null);
   const [buyerCountry, setBuyerCountry] = useState("");
   const [busyDoc, setBusyDoc] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [savingCountry, setSavingCountry] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -258,20 +262,16 @@ export default function VerificationPage() {
     setError("");
 
     try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("type", documentKey);
-      form.append("entity_type", "verification");
-
-      const uploadRes = await fetch(`${API_BASE}/documents`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
+      setUploadProgress(0);
+      const uploadData = await uploadFile("/documents", {
+        file,
+        token,
+        fields: {
+          type: documentKey,
+          entity_type: "verification",
+        },
+        onProgress: setUploadProgress,
       });
-
-      const uploadData = await uploadRes.json().catch(() => ({}));
-      if (!uploadRes.ok)
-        throw new Error(uploadData.error || "Document upload failed");
 
       const updatedDocs = {
         ...(verification?.documents || {}),
@@ -297,6 +297,7 @@ export default function VerificationPage() {
       setError(err.message || "Upload failed");
     } finally {
       setBusyDoc("");
+      setUploadProgress(0);
     }
   }
 
@@ -561,7 +562,7 @@ export default function VerificationPage() {
                   </select>
                   {savingCountry && (
                     <span className="flex items-center">
-                      <NeonAtom size={20} />
+                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                     </span>
                   )}
                 </div>
@@ -640,9 +641,10 @@ export default function VerificationPage() {
                       }`}
                     >
                       {busyDoc === requiredDocs[idx]
-                        ? "Uploading..."
+                        ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                         : "Upload"}
                     </button>
+                    {busyDoc === requiredDocs[idx] && <UploadProgressBar progress={uploadProgress} className="mt-2" />}
                   </div>
                 ))}
               </div>

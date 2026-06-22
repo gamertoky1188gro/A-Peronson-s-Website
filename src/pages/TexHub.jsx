@@ -32,6 +32,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
+import { ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
 import ScrollReveal from "../components/ScrollReveal";
 import {
@@ -54,7 +55,7 @@ import TextColorReveal from "../components/TextColorReveal";
 import ScrollVelocityText from "../components/ScrollVelocityText";
 import CardStack from "../components/CardStack";
 import StickySection from "../components/StickySection";
-import GooBlobs from "../components/GooBlobs";
+
 
 const Motion = motion;
 
@@ -222,16 +223,22 @@ function MagneticLinkButton({ to, className = "", children }) {
   const springX = useSpring(x, { stiffness: 300, damping: 20, mass: 0.4 });
   const springY = useSpring(y, { stiffness: 300, damping: 20, mass: 0.4 });
   const maxShift = 9;
+  const rafRef = useRef(null);
 
   function handleMove(event) {
-    if (reduceMotion) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const relX = (event.clientX - rect.left) / rect.width;
-    const relY = (event.clientY - rect.top) / rect.height;
-    const dx = (relX - 0.5) * 2;
-    const dy = (relY - 0.5) * 2;
-    x.set(dx * maxShift);
-    y.set(dy * maxShift);
+    if (reduceMotion || rafRef.current) return;
+    const el = event.currentTarget;
+    const { clientX, clientY } = event;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const rect = el.getBoundingClientRect();
+      const relX = (clientX - rect.left) / rect.width;
+      const relY = (clientY - rect.top) / rect.height;
+      const dx = (relX - 0.5) * 2;
+      const dy = (relY - 0.5) * 2;
+      x.set(dx * maxShift);
+      y.set(dy * maxShift);
+    });
   }
 
   function handleLeave() {
@@ -255,8 +262,8 @@ function MagneticLinkButton({ to, className = "", children }) {
   );
 }
 
-const SkeletonLine = ({ className = "" }) => (
-  <NeonAtom size={24} className={`inline-block ${className}`} />
+const SkeletonLine = ({ className = "", size = 24 }) => (
+  <ThreeDot variant="bounce" color="#6100ff" size="medium" style={{ fontSize: size + "px" }} text="" textColor="" className={`inline-block ${className}`} />
 );
 
 function GlassSurface({ className = "", children }) {
@@ -503,7 +510,7 @@ export default function TexHub() {
 
   const [home, setHome] = useState(initialHome);
   const [loadError, setLoadError] = useState("");
-  const [_loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState("professional");
 
   const iconMap = {
@@ -606,24 +613,9 @@ export default function TexHub() {
   const blob1Y = useTransform(scrollY, [0, 800], [0, -60]);
   const blob2Y = useTransform(scrollY, [0, 800], [0, -100]);
   const blob3Y = useTransform(scrollY, [0, 800], [0, -80]);
-  const blob1Spring = useSpring(blob1Y, { stiffness: 80, damping: 20, restDelta: 0.001 });
-  const blob2Spring = useSpring(blob2Y, { stiffness: 80, damping: 20, restDelta: 0.001 });
-  const blob3Spring = useSpring(blob3Y, { stiffness: 80, damping: 20, restDelta: 0.001 });
-
-  const gradientAngle = useMotionValue(0);
-  useEffect(() => {
-    if (reduceMotion) return;
-    let raf;
-    const animate = () => {
-      gradientAngle.set((gradientAngle.get() + 0.15) % 360);
-      raf = requestAnimationFrame(animate);
-    };
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [reduceMotion, gradientAngle]);
-  const blob1Bg = useTransform(gradientAngle, (v) => `conic-gradient(from ${v}deg, rgba(14,165,233,0.25), rgba(99,102,241,0.15), transparent 70%)`);
-  const blob2Bg = useTransform(gradientAngle, (v) => `conic-gradient(from ${v + 120}deg, rgba(59,130,246,0.20), rgba(99,102,241,0.12), transparent 70%)`);
-  const blob3Bg = useTransform(gradientAngle, (v) => `conic-gradient(from ${v + 240}deg, rgba(6,182,212,0.18), rgba(14,165,233,0.10), transparent 70%)`);
+  const blob1Spring = useSpring(blob1Y, { stiffness: 80, damping: 20, restDelta: 0.01 });
+  const blob2Spring = useSpring(blob2Y, { stiffness: 80, damping: 20, restDelta: 0.01 });
+  const blob3Spring = useSpring(blob3Y, { stiffness: 80, damping: 20, restDelta: 0.01 });
 
   const workflowParallax1 = useTransform(scrollY, [0, 600], [0, -20]);
   const workflowParallax2 = useTransform(scrollY, [0, 600], [0, -60]);
@@ -652,7 +644,7 @@ export default function TexHub() {
     return () => sectionObserver.current?.disconnect();
   }, []);
 
-  if (_loading) {
+  if (loading) {
     return <NeonAtom fill size={64} text="Loading..." />;
   }
 
@@ -682,22 +674,19 @@ export default function TexHub() {
         </nav>
       )}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <GooBlobs count={5} size={200} className="opacity-70" />
-        <motion.div style={{ y: reduceMotion ? 0 : blob1Spring, backgroundImage: blob1Bg }} className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full blur-3xl" />
-        <motion.div style={{ y: reduceMotion ? 0 : blob2Spring, backgroundImage: blob2Bg }} className="absolute right-[-80px] top-[260px] h-[360px] w-[360px] rounded-full blur-3xl" />
-        <motion.div style={{ y: reduceMotion ? 0 : blob3Spring, backgroundImage: blob3Bg }} className="absolute left-[-120px] top-[760px] h-[280px] w-[280px] rounded-full blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 max-sm:h-[360px] max-sm:w-[360px] animate-blob-spin-1">
+          <motion.div style={{ y: reduceMotion ? 0 : blob1Spring, backgroundImage: 'conic-gradient(from 0deg, rgba(14,165,233,0.25), rgba(99,102,241,0.15), transparent 70%)' }} className="h-full w-full rounded-full blur-3xl" />
+        </div>
+        <div className="absolute right-[-80px] top-[260px] h-[360px] w-[360px] max-sm:hidden animate-blob-spin-2">
+          <motion.div style={{ y: reduceMotion ? 0 : blob2Spring, backgroundImage: 'conic-gradient(from 120deg, rgba(59,130,246,0.20), rgba(99,102,241,0.12), transparent 70%)' }} className="h-full w-full rounded-full blur-3xl" />
+        </div>
+        <div className="absolute left-[-120px] top-[760px] h-[280px] w-[280px] max-sm:hidden animate-blob-spin-3">
+          <motion.div style={{ y: reduceMotion ? 0 : blob3Spring, backgroundImage: 'conic-gradient(from 240deg, rgba(6,182,212,0.18), rgba(14,165,233,0.10), transparent 70%)' }} className="h-full w-full rounded-full blur-3xl" />
+        </div>
         <svg className="absolute inset-0 h-full w-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <filter id="liquid">
-              <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise">
-                <animate attributeName="baseFrequency" values="0.015;0.025;0.015" dur="8s" repeatCount="indefinite" />
-              </feTurbulence>
-              <feDisplacementMap in="SourceGraphic" in2="noise" scale="30" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
             <filter id="noiseFilter">
-              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch">
-                <animate attributeName="baseFrequency" values="0.65;0.75;0.65" dur="4s" repeatCount="indefinite" />
-              </feTurbulence>
+              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
               <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.05 0" />
             </filter>
           </defs>
@@ -993,7 +982,7 @@ export default function TexHub() {
 
           <Card className="overflow-hidden p-0">
             <div className="grid gap-0 lg:grid-cols-2">
-              <div className="bg-gradient-to-br from-sky-500 to-blue-700 p-6 text-white">
+              <div className="flex h-full flex-col bg-gradient-to-br from-sky-500 to-blue-700 p-6 text-white">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
                   <LockKeyhole className="h-3.5 w-3.5" /> Internal Agent Lock
                   System
@@ -1017,7 +1006,7 @@ export default function TexHub() {
                   </p>
                 </div>
               </div>
-              <div className="p-6 dark:bg-slate-950/70">
+              <div className="flex h-full flex-col bg-white p-6 dark:bg-slate-950/70">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -1040,20 +1029,20 @@ export default function TexHub() {
                     />
                   </button>
                 </div>
-                <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+                <div className="mt-6 flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
                   <div className="text-sm font-medium">
                     {mode === "professional" ? "Professional" : "Diverse"}
                   </div>
                   <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
                     Factory video gallery
                   </div>
-                  <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="mt-4 flex-1 grid grid-cols-3 auto-rows-fr gap-2">
                     {Array.from({ length: 6 }).map((_, i) => (
                       <motion.div
                         key={i}
                         layout
                         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                        className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700"
+                        className="rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700"
                       />
                     ))}
                   </div>

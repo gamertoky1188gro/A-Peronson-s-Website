@@ -28,6 +28,7 @@ import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel";
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot } from 'react-loading-indicators';
 import {
   BadgeCheck,
   Building2,
@@ -46,7 +47,6 @@ import {
   Heart,
   Image as ImageIcon,
   Landmark,
-  Loader2,
   Mail,
   MapPin,
   MessageSquare,
@@ -193,7 +193,7 @@ function ActionButton({ children, icon: Icon, onClick, variant = "primary", disa
       disabled={disabled || loading}
       className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sky-400/50 disabled:cursor-not-allowed disabled:opacity-60 ${styles[variant]}`}
     >
-      {loading ? <Loader2 size={16} className="animate-spin" /> : Icon ? <Icon size={16} /> : null}
+      {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : Icon ? <Icon size={16} /> : null}
       <span>{children}</span>
     </button>
   );
@@ -514,18 +514,7 @@ export default function BuyingHouseProfile() {
     ["factory", "buying_house", "admin"].includes(viewer.role) &&
     !viewerPerms.is_self;
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.12),transparent_30%),linear-gradient(180deg,#eff9ff_0%,#ffffff_35%,#f8fbff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.14),transparent_35%),linear-gradient(180deg,#050816_0%,#07111f_40%,#020617_100%)] dark:text-white">
-        <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-10">
-          <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-8 text-center shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
-            <Loader2 className="mx-auto animate-spin text-sky-500" size={28} />
-            <div className="mt-4 text-lg font-semibold">Loading buying house profile...</div>
-            <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Fetching profile, ratings, and certifications.</div>
-          </div>
-        </div>
-      </div>
-    );
+  if (loading) return <NeonAtom fill />;
   if (error)
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.12),transparent_30%),linear-gradient(180deg,#eff9ff_0%,#ffffff_35%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.14),transparent_35%),linear-gradient(180deg,#050816_0%,#07111f_40%,#020617_100%)] p-6 text-rose-700 dark:text-rose-200">
@@ -731,7 +720,7 @@ export default function BuyingHouseProfile() {
                   <SoftCard>
                     <SectionTitle icon={Network} title="Connected factories" subtitle={`Total: ${partnerTotal}`} />
                     {loadingNetwork ? (
-                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400"><Loader2 size={16} className="animate-spin" /> Loading partner network...</div>
+                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400"><ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> Loading partner network...</div>
                     ) : partnerNetwork && profile?.partner_network_private && !(viewerPerms.is_self || viewerPerms.is_admin) ? (
                       <div className="rounded-2xl border border-dashed border-slate-300/80 bg-slate-50/60 p-5 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300">
                         Factory list is private; only the organization owner/admin can see it.
@@ -771,7 +760,7 @@ export default function BuyingHouseProfile() {
                         </div>
                       </div>
                       {loadingProducts && products.length === 0 ? (
-                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400"><Loader2 size={16} className="animate-spin" /> Loading products...</div>
+                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400"><ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> Loading products...</div>
                       ) : filteredProducts.length > 0 ? (
                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                           {filteredProducts.map((product) => (

@@ -1,8 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 import "./tailwind.css";
 import "lenis/dist/lenis.css";
 import { ThemeProvider } from "./lib/ThemeProvider.jsx";
+import { store } from "./store/index.js";
 import App from "./App.jsx";
 
 const preventHorizontalOverflow = () => {
@@ -12,16 +14,16 @@ const preventHorizontalOverflow = () => {
   if (root) root.style.overflowX = "hidden";
 };
 preventHorizontalOverflow();
-// Re-apply after any library (Lenis, etc.) might override it
 const ro = new ResizeObserver(preventHorizontalOverflow);
 ro.observe(document.documentElement);
-// Also re-apply after React mounts and Lenis initializes
 setTimeout(preventHorizontalOverflow, 500);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </Provider>
   </StrictMode>,
 );

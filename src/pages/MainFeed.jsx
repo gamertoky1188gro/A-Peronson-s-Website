@@ -246,14 +246,15 @@ function normalizeFeedItem(raw) {
     raw.author?.role ||
     raw.company_role ||
     (isBuyerRequest ? "buyer" : isUserFeedPost ? "member" : "factory");
-  const rolePath =
+  const rolePath = raw.author?.rolePath || (
     accountType === "buying_house"
       ? "buying-house"
       : accountType === "buyer"
         ? "buyer"
         : accountType === "factory"
           ? "factory"
-          : "";
+          : ""
+  );
 
   return {
     id: raw.id,
@@ -273,6 +274,7 @@ function normalizeFeedItem(raw) {
           ? "Buyer"
           : "Company",
       rolePath,
+      avatar_url: raw.author?.avatar_url || "",
     },
     verified: Boolean(raw.author?.verified || raw.verified),
     createdAt: formatRelativeTime(raw.created_at),
@@ -525,9 +527,12 @@ export default function MainFeed() {
         const normalized = rows.map(normalizeFeedItem);
 
         setTags(Array.isArray(data?.tags) ? data.tags : []);
-        setItems((previous) =>
-          reset ? normalized : [...previous, ...normalized],
-        );
+        setItems((previous) => {
+          if (reset) return normalized;
+          const existingIds = new Set(previous.map((i) => i.id));
+          const fresh = normalized.filter((i) => !existingIds.has(i.id));
+          return fresh.length ? [...previous, ...fresh] : previous;
+        });
 
         const serverNext = data?.next_cursor;
         setNextCursor(
@@ -798,6 +803,8 @@ export default function MainFeed() {
     [items],
   );
 
+  if (pageLoading) return <NeonAtom fill size={80} text="Loading feed..." />;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
       <motion.div
@@ -1018,9 +1025,7 @@ export default function MainFeed() {
 
             {/* Feed Items */}
             <section className="grid gap-5">
-              {pageLoading ? (
-  <NeonAtom fill size={80} text="Loading feed..." />
-) : null}
+
 
               {error ? (
                 <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">

@@ -444,6 +444,7 @@ export async function listRequirements(filters = {}) {
   const where = {};
   if (filters.buyerId) where.buyer_id = filters.buyerId;
   if (filters.status) where.status = filters.status;
+  if (filters.createdAfter) where.created_at = { gte: filters.createdAfter };
   return prisma.requirement.findMany({ where });
 }
 

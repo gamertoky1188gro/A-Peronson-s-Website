@@ -5,7 +5,7 @@
 
 import { Sliders, Database, Wrench, Save } from "lucide-react";
 import { cn } from "../../../lib/utils";
-import NeonAtom from "../../../components/ui/NeonAtom";
+import { ThreeDot } from "react-loading-indicators";
 
 export function AdminConfigSection({
   activeCategory,
@@ -89,7 +89,7 @@ export function AdminConfigSection({
 
       {/* Loading State */}
       {configEditorLoading ? (
-        <NeonAtom size={20} />
+        <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
       ) : configEditorError ? (
         <div className="py-8 text-center text-rose-500">
           {configEditorError}
@@ -116,7 +116,7 @@ export function AdminConfigSection({
                   disabled={configEditorSaving}
                   className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
-                  {configEditorSaving ? "Saving..." : "Save Inventory"}
+                  {configEditorSaving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save Inventory"}
                 </button>
               </div>
               <div className="grid gap-3">
@@ -156,7 +156,7 @@ export function AdminConfigSection({
                   disabled={configEditorSaving}
                   className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
-                  {configEditorSaving ? "Saving..." : "Save Actions"}
+                  {configEditorSaving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save Actions"}
                 </button>
               </div>
               <div
@@ -192,7 +192,7 @@ export function AdminConfigSection({
                   disabled={configEditorSaving}
                   className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
-                  {configEditorSaving ? "Saving..." : "Save UI Settings"}
+                  {configEditorSaving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save UI Settings"}
                 </button>
               </div>
               <pre

@@ -29,6 +29,7 @@ import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel";
 import JourneyTimeline from "../components/JourneyTimeline";
+import { Atom } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
 import {
   BadgeCheck,
@@ -357,13 +358,7 @@ export default function BuyerProfile() {
     });
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200">
-        Loading profile...
-      </div>
-    );
-  }
+  if (loading) return <NeonAtom fill />;
   if (error) {
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200">
@@ -632,7 +627,7 @@ export default function BuyerProfile() {
                             </div>
                           ))}
                           {loadingRequests ? (
-                            <NeonAtom size={40} text="Loading requests..." />
+                            <Atom color="#5900ff" size="large" style={{ fontSize: "32px" }} text="" textColor="" />
                           ) : null}
                           {requestsNext !== null && !loadingRequests ? (
                             <div className="flex items-center justify-between gap-3">

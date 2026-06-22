@@ -1,5 +1,7 @@
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot } from 'react-loading-indicators';
 import WordCount from "../components/ui/WordCount";
+import UploadProgressBar from "../components/ui/UploadProgressBar";
 import ScrollReveal from "../components/ScrollReveal";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -11,6 +13,7 @@ import {
   API_BASE,
   hasEntitlement,
 } from "../lib/auth";
+import { uploadFile } from "../lib/upload";
 import { useSecureUser, useEntitlements } from "../hooks/useSecureUser";
 import { mapExtractedToForm } from "../lib/aiPrefill";
 import { useTheme } from "../lib/ThemeProvider";
@@ -363,6 +366,7 @@ export default function BuyerRequestManagement() {
   const [agents, setAgents] = useState([]);
   const [attachmentsByRequest, setAttachmentsByRequest] = useState({});
   const [uploadingAttachmentId, setUploadingAttachmentId] = useState("");
+  const [attachmentUploadProgress, setAttachmentUploadProgress] = useState(0);
   const [attachmentFeedback, setAttachmentFeedback] = useState("");
   const [attachmentTypeByRequest, setAttachmentTypeByRequest] = useState({});
 
@@ -519,29 +523,25 @@ export default function BuyerRequestManagement() {
       if (!token || !requirementId || !file) return;
       setAttachmentFeedback("");
       setUploadingAttachmentId(requirementId);
+      setAttachmentUploadProgress(0);
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("entity_type", "buyer_request");
-        formData.append("entity_id", requirementId);
-        formData.append("type", type || "reference");
-
-        const res = await fetch(`${API_BASE}/documents`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
+        await uploadFile("/documents", {
+          file,
+          token,
+          fields: {
+            entity_type: "buyer_request",
+            entity_id: requirementId,
+            type: type || "reference",
+          },
+          onProgress: setAttachmentUploadProgress,
         });
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || "Upload failed");
-        }
-        await res.json().catch(() => ({}));
         setAttachmentFeedback("Attachment uploaded.");
         await loadAttachments(requirementId);
       } catch (err) {
         setAttachmentFeedback(err.message || "Attachment upload failed");
       } finally {
         setUploadingAttachmentId("");
+        setAttachmentUploadProgress(0);
       }
     },
     [loadAttachments, token],
@@ -1623,7 +1623,7 @@ export default function BuyerRequestManagement() {
                           onClick={saveDraft}
                           className="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-70 dark:text-sky-200"
                         >
-                          <CloudUpload className="h-4 w-4" /> {saving ? <NeonAtom size={20} /> : "Save Draft"}
+                          <CloudUpload className="h-4 w-4" /> {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save Draft"}
                         </button>
                       </div>
                       <div className="flex gap-2">
@@ -1634,7 +1634,7 @@ export default function BuyerRequestManagement() {
                             onClick={() => createRequest()}
                             className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5 disabled:opacity-70"
                           >
-                            {saving ? <NeonAtom size={20} /> : "Post Request"} <Sparkles className="h-4 w-4" />
+                            {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Post Request"} <Sparkles className="h-4 w-4" />
                           </button>
                         ) : (
                           <button
@@ -1895,7 +1895,7 @@ export default function BuyerRequestManagement() {
                                       onClick={() => loadSmartMatches(r.id)}
                                       className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium dark:border-white/10 dark:bg-white/5 disabled:opacity-60"
                                     >
-                                      <Sparkles className="h-3.5 w-3.5" /> {smartMatchLoading === r.id ? <NeonAtom size={20} /> : "Smart match"}
+                                      <Sparkles className="h-3.5 w-3.5" /> {smartMatchLoading === r.id ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Smart match"}
                                     </button>
                                     <button
                                       type="button"
@@ -2004,7 +2004,7 @@ export default function BuyerRequestManagement() {
                                       <option value="other">Other</option>
                                     </Select>
                                     <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white">
-                                      {uploadingAttachmentId === r.id ? <NeonAtom size={20} /> : "Upload file"}
+                                      {uploadingAttachmentId === r.id ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Upload file"}
                                       <input
                                         type="file"
                                         className="hidden"
@@ -2015,6 +2015,7 @@ export default function BuyerRequestManagement() {
                                         }}
                                       />
                                     </label>
+                                    {uploadingAttachmentId === r.id && <UploadProgressBar progress={attachmentUploadProgress} className="w-24" />}
                                   </div>
                                 </div>
                               </div>
@@ -2040,7 +2041,7 @@ export default function BuyerRequestManagement() {
                       onClick={loadBrowse}
                       className="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium dark:border-white/10 dark:bg-white/5"
                     >
-                      <RefreshCw className="h-4 w-4" /> {loadingBrowse ? <NeonAtom size={20} /> : "Refresh"}
+                      <RefreshCw className="h-4 w-4" /> {loadingBrowse ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Refresh"}
                     </button>
                   </div>
 

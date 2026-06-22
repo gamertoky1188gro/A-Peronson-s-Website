@@ -199,19 +199,22 @@ const MIME_TYPES = {
 };
 
 if (serveDist && fs.existsSync(distRoot)) {
-  app.use((req, res, next) => {
+  app.use(async (req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();
     const contentType = MIME_TYPES[ext];
     if (!contentType) return next();
     const filePath = path.join(distRoot, req.path);
-    if (!fs.existsSync(filePath)) return next();
-    const content = fs.readFileSync(filePath);
-    res.writeHead(200, {
-      "Content-Type": contentType,
-      "Content-Length": Buffer.byteLength(content),
-      "Cache-Control": "public, max-age=31536000, immutable",
-    });
-    res.end(content);
+    try {
+      const content = await fs.promises.readFile(filePath);
+      res.writeHead(200, {
+        "Content-Type": contentType,
+        "Content-Length": Buffer.byteLength(content),
+        "Cache-Control": "public, max-age=31536000, immutable",
+      });
+      res.end(content);
+    } catch {
+      next();
+    }
   });
 }
 
@@ -998,6 +1001,14 @@ async function start() {
   } catch (err) {
     logError("start_esign_retry_worker_failed", err);
   }
+
+  import("./services/videoQueue.js")
+    .then(({ startVideoQueueWorker }) => startVideoQueueWorker())
+    .catch((err) => logError("start_video_queue_worker_failed", err));
+
+  import("./services/imageQueue.js")
+    .then(({ startImageQueueWorker }) => startImageQueueWorker())
+    .catch((err) => logError("start_image_queue_worker_failed", err));
 
   import("./services/aiModerationService.js")
     .then(({ ensureVenv, isAIAnalyticsEnabled }) => {

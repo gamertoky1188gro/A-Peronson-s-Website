@@ -20,8 +20,19 @@ import { recordWorkflowEvent } from "./workflowLifecycleService.js";
 
 const SIGNATURE_STATES = new Set(["pending", "signed"]);
 const ARTIFACT_STATES = new Set(["draft", "generated", "locked", "archived"]);
-const MEDIA_REVIEW_EXTENSIONS = new Set([".png", ".jpg", ".jpeg"]);
-const VIDEO_EXTENSIONS = new Set([".mp4", ".webm"]);
+const MEDIA_REVIEW_EXTENSIONS = new Set([
+  ".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif", ".apng",
+  ".bmp", ".tiff", ".tif", ".heic", ".heif", ".tga",
+  ".svg", ".dng", ".cr2", ".cr3", ".nef", ".arw", ".sr2",
+  ".orf", ".raf", ".psd", ".ai", ".xcf", ".cdr",
+]);
+const VIDEO_EXTENSIONS = new Set([
+  ".mp4", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".rrc",
+  ".gifv", ".mng", ".mov", ".avi", ".qt", ".wmv", ".yuv", ".rm",
+  ".asf", ".amv", ".m4p", ".m4v", ".mpg", ".mp2", ".mpeg", ".mpe",
+  ".mpv", ".svi", ".3gp", ".3g2", ".mxf", ".roq", ".nsv", ".f4v",
+  ".f4p", ".f4a", ".f4b", ".mod",
+]);
 const PROHIBITED_MEDIA_KEYWORDS = [
   "porn",
   "explicit",
@@ -109,7 +120,17 @@ function sanitizeArtifactState(value, fallback = "draft") {
 
 function ensureAllowed(file) {
   const ext = path.extname(file.originalname || "").toLowerCase();
-  const allowed = [".pdf", ".png", ".jpg", ".jpeg", ".mp4", ".webm"];
+  const allowed = [
+    ".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".apng",
+    ".bmp", ".tiff", ".tif", ".heic", ".heif", ".dcm", ".tga",
+    ".svg", ".eps", ".pdf", ".dng", ".cr2", ".cr3", ".nef",
+    ".arw", ".sr2", ".orf", ".raf", ".psd", ".ai", ".xcf", ".cdr",
+    ".mp4", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".rrc",
+    ".gifv", ".mng", ".mov", ".avi", ".qt", ".wmv", ".yuv", ".rm",
+    ".asf", ".amv", ".m4p", ".m4v", ".mpg", ".mp2", ".mpeg", ".mpe",
+    ".mpv", ".svi", ".3gp", ".3g2", ".mxf", ".roq", ".nsv", ".f4v",
+    ".f4p", ".f4a", ".f4b", ".mod",
+  ];
   if (!allowed.includes(ext)) throw new Error("Invalid file type");
 }
 
@@ -186,8 +207,8 @@ function ensureAllowedUrl(url) {
     raw.includes("server/uploads/");
   if (!internal) throw new Error("Only internal media URLs are allowed");
   const ext = path.extname(raw).toLowerCase();
-  if (!MEDIA_REVIEW_EXTENSIONS.has(ext))
-    throw new Error("Only .png, .jpg, .jpeg images are supported");
+  if (!MEDIA_REVIEW_EXTENSIONS.has(ext) && ext !== ".pdf" && ext !== ".eps" && ext !== ".dcm")
+    throw new Error("Unsupported image format");
 }
 
 function escapePdfText(value = "") {

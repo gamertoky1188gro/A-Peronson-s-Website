@@ -1,4 +1,5 @@
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot, Mosaic } from "react-loading-indicators";
 import WordCount from "../components/ui/WordCount";
 import { motion, Reorder } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -700,7 +701,7 @@ export default function FeedManagementPage() {
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept="image/*,video/*"
+                    accept=".jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr,.mp4,.webm,.mkv,.flv,.vob,.ogv,.ogg,.rrc,.gifv,.mng,.mov,.avi,.qt,.wmv,.yuv,.rm,.asf,.amv,.m4p,.m4v,.mpg,.mp2,.mpeg,.mpe,.mpv,.svi,.3gp,.3g2,.mxf,.roq,.nsv,.f4v,.f4p,.f4a,.f4b,.mod"
                     className="hidden"
                     onChange={(e) => handleFiles(e.target.files)}
                   />
@@ -711,7 +712,7 @@ export default function FeedManagementPage() {
                     className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:translate-y-[-1px] hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {uploading ? (
-                      <NeonAtom size={20} />
+                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                     ) : (
                       <Icon.Upload className="h-4 w-4" />
                     )}
@@ -840,7 +841,7 @@ export default function FeedManagementPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] hover:shadow-xl hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {saving ? (
-                    <NeonAtom size={20} />
+                    <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                   ) : (
                     <Icon.Check className="h-4 w-4" />
                   )}
@@ -1002,7 +1003,7 @@ export default function FeedManagementPage() {
               <div className="p-5">
                 {loadingPosts ? (
                   <div className="flex items-center justify-center py-10">
-                    <NeonAtom size={40} />
+                    <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
                   </div>
                 ) : posts.length === 0 ? (
                   <div

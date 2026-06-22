@@ -1,4 +1,5 @@
 import NeonAtom from "../components/ui/NeonAtom";
+import { Mosaic } from 'react-loading-indicators';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
@@ -433,7 +434,7 @@ export default function OwnerDashboard() {
 
             <main className="px-4 py-6 sm:px-6 xl:px-8">
               {loading && (
-                <NeonAtom fill size={64} text="Loading dashboard..." />
+                <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
               )}
               {error && (
                 <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl p-4 flex items-center gap-3">

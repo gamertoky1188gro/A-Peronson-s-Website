@@ -110,6 +110,7 @@ import * as Helpers from "./AdminPanel.helpers";
 import * as CMS from "./AdminPanel.cms";
 import * as Ultra from "./AdminPanel.ultra";
 import NeonAtom from "../components/ui/NeonAtom";
+import { ThreeDot, Mosaic } from "react-loading-indicators";
 
 const {
   KNOWN_ROLES,
@@ -164,7 +165,7 @@ const {
 function SkeletonChart({ height = 320 }) {
   return (
     <div className="flex items-center justify-center" style={{ height }}>
-      <NeonAtom size={60} />
+      <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
     </div>
   );
 }
@@ -194,7 +195,7 @@ function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
     return (
       <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
         <div className="flex items-center justify-center">
-          <NeonAtom size={32} />
+          <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
         </div>
       </div>
     );
@@ -3259,7 +3260,7 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <NeonAtom size={16} />
+                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                             ) : (
                               formatNumber(summary?.users?.total)
                             )}
@@ -3271,7 +3272,7 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <NeonAtom size={16} />
+                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                             ) : (
                               formatNumber(summary?.verification?.pending)
                             )}
@@ -3283,7 +3284,7 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <NeonAtom size={16} />
+                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                             ) : (
                               formatNumber(summary?.support?.open)
                             )}
@@ -3295,14 +3296,14 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <NeonAtom size={16} />
+                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                             ) : (
                               `${formatNumber(summary?.traffic?.clicks)} / ${formatNumber(summary?.traffic?.visits)}`
                             )}
                           </div>
                           <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             {loading ? (
-                              <NeonAtom size={16} />
+                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                             ) : (
                               <>
                                 Spend:{" "}
@@ -3342,7 +3343,7 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <NeonAtom size={16} />
+                                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                     ) : (
                                       `${infra?.cpu?.usage_percent?.toFixed?.(0) || "0"}%`
                                     )}
@@ -3359,7 +3360,7 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <NeonAtom size={16} />
+                                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                     ) : (
                                       `${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : "0"} MB`
                                     )}
@@ -3376,7 +3377,7 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <NeonAtom size={16} />
+                                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                     ) : (
                                       `${formatNumber(network?.device_up)} / ${formatNumber(network?.device_down)}`
                                     )}
@@ -3393,7 +3394,7 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <NeonAtom size={16} />
+                                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                     ) : (
                                       formatNumber(network?.alert_count)
                                     )}
@@ -3448,7 +3449,7 @@ export default function AdminPanel() {
                               </span>
                               <span className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {loading ? (
-                                  <NeonAtom size={16} />
+                                  <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                 ) : (
                                   formatNumber(premiumUsers.length)
                                 )}
@@ -3460,7 +3461,7 @@ export default function AdminPanel() {
                               </span>
                               <span className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {loading ? (
-                                  <NeonAtom size={16} />
+                                  <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                 ) : (
                                   formatNumber(summary?.users?.suspended)
                                 )}
@@ -3820,7 +3821,7 @@ export default function AdminPanel() {
 
                       {loadingModeration ? (
                         <div className="flex items-center justify-center py-16">
-                          <NeonAtom size={40} />
+                          <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
                         </div>
                       ) : !moderationPending.length ? (
                         <div
@@ -5449,7 +5450,7 @@ export default function AdminPanel() {
                               disabled={clothingRulesBusy}
                               className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
                             >
-                              {clothingRulesBusy ? "Saving..." : "Save rules"}
+                              {clothingRulesBusy ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save rules"}
                             </button>
                           </div>
                           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 text-xs">
@@ -10918,7 +10919,7 @@ export default function AdminPanel() {
                                       )}
                                     >
                                       {openSearchConfigBusy
-                                        ? "Saving..."
+                                        ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                         : "Save settings"}
                                     </button>
                                     <button
@@ -11264,7 +11265,7 @@ export default function AdminPanel() {
                                       className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] disabled:opacity-60"
                                     >
                                       {emailConfigBusy
-                                        ? "Saving..."
+                                        ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                         : "Save settings"}
                                     </button>
                                     <button
@@ -11357,7 +11358,7 @@ export default function AdminPanel() {
                                   )}
                                 >
                                   {adminUiSettingsBusy
-                                    ? "Saving..."
+                                    ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                     : "Save settings"}
                                 </button>
                               </div>
@@ -13275,7 +13276,7 @@ export default function AdminPanel() {
                                         <span
                                           className={cmsChipClass(adminDark)}
                                         >
-                                          <NeonAtom size={14} />{" "}
+                                          <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />{" "}
                                           {log.status ?? 200}
                                         </span>
                                       </div>
@@ -14522,7 +14523,7 @@ export default function AdminPanel() {
 
                         {configEditorLoading ? (
                           <div className="py-8 text-center">
-                            <NeonAtom size={20} />
+                            <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                           </div>
                             ) : configEditorError ? (
                               <div className="py-8 text-center text-rose-500">
@@ -14563,7 +14564,7 @@ export default function AdminPanel() {
                                     className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                                   >
                                     {configEditorSaving
-                                      ? "Saving..."
+                                      ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                       : "Save Inventory"}
                                   </button>
                                 </div>
@@ -14624,7 +14625,7 @@ export default function AdminPanel() {
                                     className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                                   >
                                     {configEditorSaving
-                                      ? "Saving..."
+                                      ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                       : "Save Actions"}
                                   </button>
                                 </div>
@@ -14685,7 +14686,7 @@ export default function AdminPanel() {
                                     className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                                   >
                                     {configEditorSaving
-                                      ? "Saving..."
+                                      ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                       : "Save UI Settings"}
                                   </button>
                                 </div>
@@ -14991,7 +14992,7 @@ export default function AdminPanel() {
                   className="flex-1 bg-sky-500 text-white py-2 rounded-xl font-medium hover:bg-sky-600 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {reanalzyingId === aiModalDoc.id ? (
-                    <NeonAtom size={16} />
+                    <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                   ) : (
                     <>
                       <RefreshCw className="h-4 w-4" />

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { motion, useReducedMotion, AnimatePresence, Reorder } from "framer-motion";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
+import { uploadFile } from "../lib/upload";
+import UploadProgressBar from "../components/ui/UploadProgressBar";
 import ScrollReveal from "../components/ScrollReveal";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import FlipCard from "../components/FlipCard";
@@ -29,6 +31,7 @@ import {
   Eye,
   Rocket,
 } from "lucide-react";
+import { ThreeDot } from 'react-loading-indicators'
 
 const EMPTY_FORM = {
   title: "",
@@ -129,8 +132,10 @@ export default function ProductManagement() {
   const [mediaGallery, setMediaGallery] = useState([]);
 
   const [mediaBusy, setMediaBusy] = useState(false);
+  const [mediaUploadProgress, setMediaUploadProgress] = useState(0);
   const [mediaNotice, setMediaNotice] = useState("");
   const [videoBusy, setVideoBusy] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
   const [videoNotice, setVideoNotice] = useState("");
   const [complianceChecked, setComplianceChecked] = useState(false);
 
@@ -478,25 +483,21 @@ export default function ProductManagement() {
     }
     if (!files || !files.length) return;
     setMediaBusy(true);
+    setMediaUploadProgress(0);
     setMediaNotice("");
     try {
       const uploadedEntries = [];
       for (const file of files) {
-        const body = new FormData();
-        body.append("file", file);
-        body.append("entity_type", "company_product");
-        body.append("entity_id", editing.id);
-        body.append("type", "image");
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL || "/api"}/documents`,
-          {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body,
+        const data = await uploadFile("/documents", {
+          file,
+          token,
+          fields: {
+            entity_type: "company_product",
+            entity_id: editing.id,
+            type: "image",
           },
-        );
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || "Image upload failed");
+          onProgress: setMediaUploadProgress,
+        });
         const internalUrl = toInternalUrl(data.file_path || data.url || "");
         uploadedEntries.push({
           document_id: data.id,
@@ -531,6 +532,7 @@ export default function ProductManagement() {
       setMediaNotice(err.message || "Image upload failed");
     } finally {
       setMediaBusy(false);
+      setMediaUploadProgress(0);
     }
   }
 
@@ -541,23 +543,19 @@ export default function ProductManagement() {
     }
     if (!file) return;
     setVideoBusy(true);
+    setVideoUploadProgress(0);
     setVideoNotice("");
     try {
-      const body = new FormData();
-      body.append("file", file);
-      body.append("entity_type", "company_product");
-      body.append("entity_id", editing.id);
-      body.append("type", "video");
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "/api"}/documents`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body,
+      const data = await uploadFile("/documents", {
+        file,
+        token,
+        fields: {
+          entity_type: "company_product",
+          entity_id: editing.id,
+          type: "video",
         },
-      );
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Video upload failed");
+        onProgress: setVideoUploadProgress,
+      });
       const internalUrl = toInternalUrl(data.file_path || data.url || "");
       await syncProductVideo(internalUrl);
       setVideoNotice("Video uploaded and pending review.");
@@ -570,6 +568,7 @@ export default function ProductManagement() {
       setVideoNotice(err.message || "Video upload failed");
     } finally {
       setVideoBusy(false);
+      setVideoUploadProgress(0);
     }
   }
 
@@ -1029,7 +1028,7 @@ export default function ProductManagement() {
                             <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
                               <ImageIcon className="h-4 w-4 text-sky-500 dark:text-sky-300" />
                               {mediaBusy
-                                ? "Uploading..."
+                                ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                 : "Click to upload images"}
                             </div>
                             <div className="mt-1 text-xs text-slate-400">
@@ -1039,13 +1038,14 @@ export default function ProductManagement() {
                               ref={imageInputRef}
                               type="file"
                               multiple
-                              accept="image/*"
+                              accept=".jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
                               onChange={(e) =>
                                 handleUploadFiles(e.target.files)
                               }
                               disabled={mediaBusy}
                               className="hidden"
                             />
+                            {mediaBusy && <div className="mt-3"><UploadProgressBar progress={mediaUploadProgress} /></div>}
                             {mediaGallery.length > 0 && (
                               <AnimatePresence mode="popLayout">
                                 <Reorder.Group
@@ -1087,11 +1087,11 @@ export default function ProductManagement() {
                             <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
                               <Video className="h-4 w-4 text-sky-500 dark:text-sky-300" />
                               {videoBusy
-                                ? "Uploading..."
+                                ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                                 : "Click to upload video"}
                             </div>
                             <div className="mt-1 text-xs text-slate-400">
-                              MP4, WEBM up to 50MB
+                              MP4, WEBM, MKV, AVI, MOV, FLV, MPEG, 3GP, WMV, OGV, M4V, AMV, ASF, VOB, OGG, MNG, 3G2, MXF, ROQ, RM, QT, SVI, NSV, YUV, F4V up to 50MB
                             </div>
                             <input
                               ref={videoInputRef}
@@ -1103,6 +1103,7 @@ export default function ProductManagement() {
                               disabled={videoBusy}
                               className="hidden"
                             />
+                            {videoBusy && <div className="mt-3"><UploadProgressBar progress={videoUploadProgress} /></div>}
                           </div>
                         </>
                       )}
@@ -1166,7 +1167,7 @@ export default function ProductManagement() {
                         disabled={saving}
                         className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:scale-[1.01] hover:shadow-sky-500/35 disabled:opacity-60"
                       >
-                        {saving ? <NeonAtom size={20} /> : "Publish"}
+                        {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Publish"}
                       </button>
                     </div>
 

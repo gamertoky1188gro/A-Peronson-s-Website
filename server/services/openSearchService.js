@@ -1100,19 +1100,23 @@ export async function getOpenSearchStatus() {
 
 export function startOpenSearchHeartbeat() {
   async function beat() {
-    const { client } = await getClient();
-    if (!client) {
-      console.log(chalk.yellow("[opensearch] No client available, will retry in 30s..."));
-      return;
-    }
     try {
+      const { client } = await getClient();
+      if (!client) {
+        console.log(chalk.yellow("[opensearch] No client available, will retry in 30s..."));
+        return;
+      }
       await client.ping();
       console.log(chalk.green("[opensearch] Heartbeat OK"));
     } catch (err) {
-      console.warn(chalk.yellow(`[opensearch] Heartbeat failed: ${err.message}. Recreating client...`));
-      clientState.client = null;
+      if (err?.code === "P1001" || err?.message?.includes("Can't reach database server")) {
+        console.warn(chalk.yellow(`[opensearch] DB unavailable (${err.message}). Retrying in 30s...`));
+      } else {
+        console.warn(chalk.yellow(`[opensearch] Heartbeat failed: ${err.message}. Recreating client...`));
+        clientState.client = null;
+      }
     }
   }
   setInterval(beat, 30000).unref();
-  beat().catch(() => {});
+  beat();
 }

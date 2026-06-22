@@ -6,7 +6,7 @@ export default function TextColorReveal({
   className = "",
   as = "span",
   fromColor = "rgb(14, 165, 233)",
-  toColor = "rgb(30, 41, 59)",
+  toColor = "currentColor",
   scrollOffset = ["0px", "200px"],
 }) {
   const ref = useRef(null);

@@ -14,7 +14,7 @@ import {
   FileText,
 } from "lucide-react";
 import { apiRequest, getToken } from "../../../lib/auth";
-import NeonAtom from "../../../components/ui/NeonAtom";
+import { ThreeDot, Mosaic } from "react-loading-indicators";
 
 const FOLDER_CONFIG = [
   { id: "all", label: "All Files", icon: FolderOpen },
@@ -354,7 +354,7 @@ export function FileExplorerSection({ adminDark }) {
           className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${adminDark ? "bg-slate-800 text-white hover:bg-slate-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
           disabled={loading}
         >
-          {loading ? <NeonAtom size={16} /> : <RefreshCw className="h-4 w-4" />}
+          {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <RefreshCw className="h-4 w-4" />}
           Refresh
         </button>
       </div>
@@ -412,7 +412,7 @@ export function FileExplorerSection({ adminDark }) {
           </div>
 
           {loading ? (
-            <NeonAtom fill size={64} text="Loading files..." />
+            <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
           ) : filteredFiles.length === 0 ? (
             <EmptyState darkMode={adminDark} />
           ) : (

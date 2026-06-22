@@ -142,6 +142,7 @@ model Requirement {
   priceNormalizedBase        Float?
 
   @@index([buyer_id])
+  @@index([status, created_at])
   @@map("requirements")
 }
 
@@ -190,6 +191,7 @@ model Product {
   priceBaseMax               Float?
   currency                   String?
 
+  @@index([status, category, content_review_status, created_at])
   @@map("company_products")
 }
 
@@ -215,6 +217,7 @@ model FeedPost {
 
   @@index([user_id, created_at])
   @@index([user_id])
+  @@index([status, created_at])
   @@map("feed_posts")
 }
 
@@ -577,6 +580,7 @@ model Document {
   ai_early_exit           Boolean?
   ai_analyzed_at          DateTime?
   ai_auto_approved        Boolean?
+  video_status            String?
 
   @@index([uploaded_by])
   @@index([entity_type, entity_id])
@@ -815,6 +819,7 @@ model Boost {
   created_at   DateTime  @default(now())
   cancelled_at DateTime?
 
+  @@index([scope, status, starts_at, ends_at])
   @@map("boosts")
 }
 
@@ -875,6 +880,7 @@ model SocialInteraction {
   text             String?
   created_at       DateTime @default(now())
 
+  @@index([entity_id, entity_type, interaction_type, created_at])
   @@map("social_interactions")
 }
 
@@ -1095,6 +1101,7 @@ model Rating {
   created_at        DateTime @default(now())
 
   @@index([from_user_id])
+  @@index([profile_key])
   @@map("ratings")
 }
 

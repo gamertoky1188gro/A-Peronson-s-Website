@@ -23,6 +23,7 @@
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { Mosaic, ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
 import ScrollReveal from "../components/ScrollReveal";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
@@ -527,7 +528,7 @@ export default function NotificationsCenter() {
 
                 <StaggerContainer className="space-y-3">
                     {loading ? (
-                    <NeonAtom fill size={64} />
+                    <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
                   ) : error ? (
                     <div className="text-sm text-rose-300">{error}</div>
                   ) : filteredItems.length === 0 ? (
@@ -601,7 +602,7 @@ export default function NotificationsCenter() {
 
                   <div className="mt-5 space-y-3">
                     {loadingViews ? (
-                      <NeonAtom size={24} />
+                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
                     ) : views.length === 0 ? (
                       <EmptyState
                         title="No viewed products yet"

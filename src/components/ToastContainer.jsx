@@ -1,9 +1,9 @@
-import { createContext, useContext, useState, useCallback, useRef } from "react";
+import { createContext, useContext, useCallback, useEffect, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { addToast, removeToast as removeToastAction } from "../store/toastSlice";
 
 const ToastContext = createContext(null);
-
-let toastId = 0;
 
 export function useToast() {
   const ctx = useContext(ToastContext);
@@ -12,41 +12,57 @@ export function useToast() {
 }
 
 export function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
+  const toasts = useSelector((s) => s.toast.toasts);
+  const dispatch = useDispatch();
   const timersRef = useRef({});
   const reduceMotion = useReducedMotion();
 
-  const removeToast = useCallback((id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-    clearTimeout(timersRef.current[id]);
-    delete timersRef.current[id];
+  const removeToast = useCallback(
+    (id) => {
+      dispatch(removeToastAction(id));
+      clearTimeout(timersRef.current[id]);
+      delete timersRef.current[id];
+    },
+    [dispatch],
+  );
+
+  useEffect(() => {
+    return () => {
+      Object.values(timersRef.current).forEach(clearTimeout);
+    };
   }, []);
 
-  const addToast = useCallback(
-    (message, { type = "info", duration = 4000 } = {}) => {
-      const id = ++toastId;
-      setToasts((prev) => [...prev, { id, message, type }]);
-      timersRef.current[id] = setTimeout(() => removeToast(id), duration);
-      return id;
-    },
-    [removeToast],
-  );
+  useEffect(() => {
+    const currentIds = toasts.map((t) => t.id);
+    Object.keys(timersRef.current).forEach((id) => {
+      const numId = Number(id);
+      if (!currentIds.includes(numId)) {
+        clearTimeout(timersRef.current[numId]);
+        delete timersRef.current[numId];
+      }
+    });
+    toasts.forEach((t) => {
+      if (!timersRef.current[t.id]) {
+        timersRef.current[t.id] = setTimeout(() => removeToast(t.id), t.duration || 4000);
+      }
+    });
+  }, [toasts, removeToast]);
 
   const toast = useCallback(
-    (message, opts) => addToast(message, opts),
-    [addToast],
+    (message, opts) => dispatch(addToast({ message, ...opts })),
+    [dispatch],
   );
   toast.success = useCallback(
-    (msg, opts) => addToast(msg, { ...opts, type: "success" }),
-    [addToast],
+    (msg, opts) => dispatch(addToast({ message: msg, type: "success", ...opts })),
+    [dispatch],
   );
   toast.error = useCallback(
-    (msg, opts) => addToast(msg, { ...opts, type: "error" }),
-    [addToast],
+    (msg, opts) => dispatch(addToast({ message: msg, type: "error", ...opts })),
+    [dispatch],
   );
   toast.info = useCallback(
-    (msg, opts) => addToast(msg, { ...opts, type: "info" }),
-    [addToast],
+    (msg, opts) => dispatch(addToast({ message: msg, type: "info", ...opts })),
+    [dispatch],
   );
 
   const typeStyles = {

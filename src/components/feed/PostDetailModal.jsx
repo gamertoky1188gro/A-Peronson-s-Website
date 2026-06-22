@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { X, MessageSquareText, Share2, Flag, Heart, Reply, ChevronDown, ChevronUp } from "lucide-react";
 import { apiRequest, getToken } from "../../lib/auth";
-import NeonAtom from "../ui/NeonAtom";
+import { ThreeDot } from "react-loading-indicators";
 import PostPreview from "../ui/PostPreview";
 
 function formatDateTime(value) {
@@ -215,7 +215,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                   disabled={submitting || !replyInput.trim()}
                   className="rounded-full bg-[#0A66C2] text-white px-3.5 py-2 text-sm font-semibold disabled:opacity-50"
                 >
-                  {submitting ? <NeonAtom size={16} /> : "Send"}
+                  {submitting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Send"}
                 </button>
                 <button
                   type="button"
@@ -353,7 +353,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
               <div className="flex-1 overflow-y-auto p-5 space-y-5">
                 {loading ? (
                   <div className="flex justify-center py-8">
-                    <NeonAtom fill size={48} text="Loading comments..." />
+                    <ThreeDot variant="bounce" color="#6100ff" size="large" style={{ fontSize: "36px" }} text="" textColor="" />
                   </div>
                 ) : null}
                 {!loading && error ? (
@@ -387,7 +387,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                     disabled={submitting || !input.trim()}
                     className="rounded-full bg-[#0A66C2] text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-[#084b8a] transition"
                   >
-                    {submitting ? "Posting..." : "Post"}
+                    {submitting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Post"}
                   </button>
                 </div>
               </div>

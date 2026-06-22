@@ -19,15 +19,18 @@ const FOLDER_CONFIG = {
 };
 
 const IMAGE_EXTS = new Set([
-  ".png",
-  ".jpg",
-  ".jpeg",
-  ".gif",
-  ".webp",
-  ".svg",
-  ".bmp",
+  ".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".apng",
+  ".bmp", ".tiff", ".tif", ".heic", ".heif", ".dcm", ".tga",
+  ".svg", ".eps", ".pdf", ".dng", ".cr2", ".cr3", ".nef",
+  ".arw", ".sr2", ".orf", ".raf", ".psd", ".ai", ".xcf", ".cdr",
 ]);
-const VIDEO_EXTS = new Set([".mp4", ".webm", ".mov", ".avi", ".mkv"]);
+const VIDEO_EXTS = new Set([
+  ".mp4", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".rrc",
+  ".gifv", ".mng", ".mov", ".avi", ".qt", ".wmv", ".yuv", ".rm",
+  ".asf", ".amv", ".m4p", ".m4v", ".mpg", ".mp2", ".mpeg", ".mpe",
+  ".mpv", ".svi", ".3gp", ".3g2", ".mxf", ".roq", ".nsv", ".f4v",
+  ".f4p", ".f4a", ".f4b", ".mod",
+]);
 const DOC_EXTS = new Set([
   ".pdf",
   ".doc",

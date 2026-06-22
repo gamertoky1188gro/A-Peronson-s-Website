@@ -3,6 +3,8 @@ import multer from "multer";
 import path from "path";
 import prisma from "../utils/prisma.js";
 import { handleControllerError } from "../utils/permissions.js";
+import { isImageFile } from "../services/imageProcessor.js";
+import { addImageToQueue } from "../services/imageQueue.js";
 
 function normalizeSearchText(value) {
   return String(value || "")
@@ -27,10 +29,21 @@ const upload = multer({
   }),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.mimetype)) {
+    const imgMimes = new Set([
+      "image/jpeg", "image/png", "image/webp", "image/avif", "image/gif",
+      "image/apng", "image/bmp", "image/x-ms-bmp", "image/tiff",
+      "image/heic", "image/heif", "image/svg+xml", "image/x-tga",
+      "image/vnd.adobe.photoshop", "image/x-photoshop", "image/x-xcf",
+      "image/x-coreldraw", "image/x-adobe-dng", "image/x-canon-cr2",
+      "image/x-canon-cr3", "image/x-nikon-nef", "image/x-sony-arw",
+      "image/x-sony-sr2", "image/x-olympus-orf", "image/x-fuji-raf",
+      "image/x-eps", "application/postscript", "application/pdf",
+      "application/dicom", "application/x-coreldraw",
+    ]);
+    if (imgMimes.has(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only jpg, png, webp, and gif images are allowed"));
+      cb(new Error("Unsupported image format"));
     }
   },
 });
@@ -46,6 +59,12 @@ export function uploadSearchImage(req, res) {
       return res.status(400).json({ error: "No image file provided" });
     }
     const fileUrl = `/uploads/search/${req.file.filename}`;
+
+    const fullPath = req.file.path ? path.resolve(req.file.path) : null;
+    if (fullPath && isImageFile(req.file.mimetype, req.file.originalname)) {
+      addImageToQueue({ filePath: fullPath, documentId: null });
+    }
+
     return res.json({
       ok: true,
       file: {

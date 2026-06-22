@@ -1,3 +1,4 @@
+import { Mosaic } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import AccessDeniedState from "../components/AccessDeniedState";
@@ -419,7 +420,7 @@ export default function MemberManagement() {
                   {loading ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center">
-                        <NeonAtom size={40} text="Loading members..." />
+                        <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
                       </td>
                     </tr>
                   ) : filtered.length ? (

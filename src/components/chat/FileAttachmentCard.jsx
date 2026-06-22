@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
+import { Atom } from 'react-loading-indicators'
 
 const TEXT_EXTS = new Set([
   "txt",
@@ -117,7 +118,7 @@ function FileTypeBadge({ kind, isLight, ext }) {
   );
 }
 
-export default function FileAttachmentCard({
+function FileAttachmentCard({
   attachment = null,
   url = "",
   isOwn = false,
@@ -362,7 +363,7 @@ export default function FileAttachmentCard({
             ) : (
               <div className="px-3 text-[11px] font-semibold opacity-70">
                 {pdfPreview.loading
-                  ? "Generating preview..."
+                  ? <Atom color="#5900ff" size="small" text="Generating preview..." textColor="#94a3b8" />
                   : pdfPreview.error || "Preview unavailable"}
               </div>
             )}
@@ -379,9 +380,7 @@ export default function FileAttachmentCard({
         >
           <div className="max-h-28 overflow-hidden p-3 text-left">
             {textPreview.loading ? (
-              <div className="text-[11px] font-semibold opacity-70">
-                Loading preview...
-              </div>
+              <Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" />
             ) : textPreview.error ? (
               <div className="text-[11px] font-semibold opacity-70">
                 {textPreview.error}
@@ -429,3 +428,5 @@ export default function FileAttachmentCard({
     </div>
   );
 }
+
+export default memo(FileAttachmentCard);
