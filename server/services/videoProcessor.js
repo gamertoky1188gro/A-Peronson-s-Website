@@ -37,7 +37,7 @@ export function validateVideo(filePath) {
 export function compressVideo(inputPath) {
   return new Promise((resolve, reject) => {
     const ext = path.extname(inputPath).toLowerCase();
-    const dir = path.dirname(inputPath);
+    const _dir = path.dirname(inputPath);
     const base = path.basename(inputPath, ext);
     const outputPath = path.join(os.tmpdir(), `${base}${COMPRESSED_SUFFIX}`);
 

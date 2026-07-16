@@ -16,8 +16,8 @@ export async function addComment(
   let safeText = sanitizeString(text, 800);
   const safeParentId = sanitizeString(parentId, 120);
   let parent = null;
-  let rootId = "";
-  let depth = 0;
+  let _rootId = "";
+  let _depth = 0;
 
   try {
     const moderated = await moderateTextOrRedact({
@@ -49,8 +49,8 @@ export async function addComment(
       throw err;
     }
 
-    rootId = parent.id;
-    depth = 1;
+    _rootId = parent.id;
+    _depth = 1;
   }
 
   const row = await prisma.socialInteraction.create({

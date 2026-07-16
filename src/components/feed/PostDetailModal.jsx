@@ -36,6 +36,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
   useEffect(() => {
     if (!open || !item?.id || !item?.entityType) return;
     let alive = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError("");
     apiRequest(
@@ -317,7 +318,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 
         <div className="flex-1 min-h-0">
           {activeTab === "post" ? (
-            <div className="h-full overflow-y-auto p-5">
+            <div data-lenis-prevent className="h-full overflow-y-auto p-5">
               <PostPreview item={item} />
 
               <div className="mt-6 flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -350,7 +351,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 
           {activeTab === "comments" ? (
             <div className="flex flex-col h-full">
-              <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              <div data-lenis-prevent className="flex-1 overflow-y-auto p-5 space-y-5">
                 {loading ? (
                   <div className="flex justify-center py-8">
                     <ThreeDot variant="bounce" color="#6100ff" size="large" style={{ fontSize: "36px" }} text="" textColor="" />

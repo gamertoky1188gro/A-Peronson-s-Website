@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { getCurrentUser } from "../lib/auth";
 import ScrollReveal from "./ScrollReveal";
+import { isRouteValid } from "../lib/routeHealthCheck";
 
 export default function Footer() {
   const user = getCurrentUser();
@@ -122,16 +123,16 @@ export default function Footer() {
               Verification & Legal
             </h3>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li>
+              {isRouteValid("/verification") && <li>
                 <Link to="/verification" className="hover:text-gtBlue">
                   Document Verification
                 </Link>
-              </li>
-              <li>
+              </li>}
+              {isRouteValid("/contracts") && <li>
                 <Link to="/contracts" className="hover:text-gtBlue">
                   Digital Contract System
                 </Link>
-              </li>
+              </li>}
               <li>
                 <Link to="/privacy" className="hover:text-gtBlue">
                   Privacy Policy

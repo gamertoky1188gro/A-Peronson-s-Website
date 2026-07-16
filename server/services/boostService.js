@@ -12,11 +12,11 @@ const DEFAULTS = {
 
 const ALLOWED_SCOPES = new Set(["feed", "profile"]);
 
-function nowIso() {
+function _nowIso() {
   return new Date().toISOString();
 }
 
-function addDaysIso(days) {
+function _addDaysIso(days) {
   const safeDays = Number(days) > 0 ? Number(days) : DEFAULTS.durationDays;
   return new Date(Date.now() + safeDays * 24 * 60 * 60 * 1000).toISOString();
 }
@@ -38,7 +38,7 @@ function normalizePrice(priceUsd) {
   return Math.round(value * 100) / 100;
 }
 
-function isActiveBoost(boost) {
+function _isActiveBoost(boost) {
   if (!boost) return false;
   if (String(boost.status || "").toLowerCase() !== "active") return false;
   const now = Date.now();
@@ -115,7 +115,7 @@ export async function purchaseBoost(userId, payload = {}) {
   const priceUsd = normalizePrice(payload.price_usd);
 
   const now = new Date();
-  const endsAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+  const _endsAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
   const hasActive = await prisma.boost.findFirst({
     where: {
@@ -144,7 +144,7 @@ export async function purchaseBoost(userId, payload = {}) {
       multiplier,
       status: "active",
       starts_at: now,
-      ends_at,
+      ends_at: _endsAt,
       price_usd: priceUsd,
       created_at: now,
     },

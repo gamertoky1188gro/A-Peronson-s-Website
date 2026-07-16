@@ -6,9 +6,9 @@ import {
   analyzeBufferWithAI,
   isAIAnalyticsEnabled,
 } from "../services/aiModerationService.js";
-import { isVideoFile } from "../services/videoProcessor.js";
+import { isVideoFile as _isVideoFile } from "../services/videoProcessor.js";
 import { addToQueue } from "../services/videoQueue.js";
-import { isImageFile } from "../services/imageProcessor.js";
+import { isImageFile as _isImageFile } from "../services/imageProcessor.js";
 import { addImageToQueue } from "../services/imageQueue.js";
 
 function generateId() {

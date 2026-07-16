@@ -147,6 +147,7 @@ function FileAttachmentCard({
 
   useEffect(() => {
     if (!url || kind !== "pdf") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPdfPreview({ loading: false, error: "", thumbUrl: "", pages: 0 });
       return undefined;
     }
@@ -249,6 +250,7 @@ function FileAttachmentCard({
 
   useEffect(() => {
     if (!url || kind !== "text") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTextPreview({ loading: false, error: "", snippet: "" });
       return undefined;
     }

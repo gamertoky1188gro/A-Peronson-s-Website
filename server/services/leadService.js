@@ -15,11 +15,11 @@ import {
 } from "./enterpriseOpsService.js";
 
 const LEADS_FILE = "leads.json";
-const NOTES_FILE = "lead_notes.json";
-const REMINDERS_FILE = "lead_reminders.json";
-const ASSIGNMENTS_FILE = "lead_assignments.json";
 const USERS_FILE = "users.json";
-const REQUIREMENTS_FILE = "requirements.json";
+const _NOTES_FILE = "lead_notes.json";
+const _REMINDERS_FILE = "lead_reminders.json";
+const _ASSIGNMENTS_FILE = "lead_assignments.json";
+const _REQUIREMENTS_FILE = "requirements.json";
 const USE_SQL_CRM = isCrmSqlEnabled();
 
 async function readStore(fileName) {

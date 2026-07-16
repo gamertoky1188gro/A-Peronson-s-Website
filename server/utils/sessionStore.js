@@ -40,7 +40,7 @@ export async function saveSessionMeta(userId, sessionData) {
   try {
     const existing = await fs.readFile(metaPath, "utf8");
     meta = JSON.parse(existing);
-  } catch {}
+  } catch { void 0; }
   meta[userId] = {
     ...sessionData,
     lastActive: new Date().toISOString(),

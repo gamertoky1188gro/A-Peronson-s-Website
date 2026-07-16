@@ -10,12 +10,6 @@ export default function ScrollVelocityText({
 }) {
   const reduceMotion = useReducedMotion();
   const velocity = useScrollVelocity();
-
-  if (reduceMotion) {
-    const Tag = as;
-    return <Tag className={className}>{children}</Tag>;
-  }
-
   const translateX = useTransform(
     velocity,
     [-2000, 0, 2000],

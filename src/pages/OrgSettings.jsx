@@ -52,6 +52,36 @@ function Label({ children }) {
   );
 }
 
+function _TogglePref({ label, description, checked, onChange }) {
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <div className="font-medium text-slate-900 dark:text-white">
+          {label}
+        </div>
+        {description && (
+          <div className="text-sm text-slate-500">{description}</div>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onChange}
+        className={cx(
+          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+          checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-600",
+        )}
+      >
+        <span
+          className={cx(
+            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+            checked ? "translate-x-6" : "translate-x-1",
+          )}
+        />
+      </button>
+    </div>
+  );
+}
+
 function Input(props) {
   return (
     <input
@@ -227,16 +257,27 @@ const TABS = [
   },
 ];
 
-export default function OrgSettings() {
+export default function OrgSettings({ embedded = false }) {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParamName = embedded ? "settingsTab" : "tab";
   const initialTab = useMemo(() => {
-    const candidate = searchParams.get("tab") || "general";
+    const candidate = searchParams.get(tabParamName) || "general";
     return TABS.some((t) => t.id === candidate) ? candidate : "general";
-  }, [searchParams]);
+  }, [searchParams, tabParamName]);
 
   const [tab, setTab] = useState(initialTab);
-  const { theme, toggleTheme } = useTheme();
+  const goSettingsTab = useCallback((id) => {
+    setTab(id);
+    if (embedded) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("settingsTab", id);
+        return next;
+      }, { replace: true });
+    }
+  }, [embedded, setSearchParams]);
+  const { theme, toggleTheme, setTheme } = useTheme();
   const [statusMessage, setStatusMessage] = useState("Ready.");
 
   const currentUser = useMemo(() => getCurrentUser(), []);
@@ -1127,6 +1168,7 @@ export default function OrgSettings() {
   useEffect(() => {
     if (isOrgManager) {
       Promise.allSettled([
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadBilling(),
         loadUserProfile(),
         loadSessions(),
@@ -1161,115 +1203,68 @@ export default function OrgSettings() {
 
   const bodyTheme = theme === "dark" ? "dark" : "";
 
-  if (pageLoading) return <NeonAtom fill text="Loading..." />;
+  if (pageLoading && !embedded) return <NeonAtom fill text="Loading..." />;
 
-  return (
-    <div
-      className={cx(
-        bodyTheme,
-        "min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#07111f] dark:text-white",
-      )}
-    >
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-sky-400/25 blur-3xl" />
-        <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
+  const settingsContent = (
+    <>
+      {/* Tab Navigation */}
+      <div className="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+        <div className="flex min-w-max gap-2">
+          {accessibleTabs.map((tabItem) => (
+            <button
+              key={tabItem.id}
+              onClick={() => {
+                if (tabItem.id === "members") loadMembers();
+                goSettingsTab(tabItem.id);
+              }}
+              className={cx(
+                "rounded-2xl px-4 py-3 text-sm font-semibold transition",
+                activeTab === tabItem.id
+                  ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25"
+                  : "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-900",
+              )}
+            >
+              {tabItem.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-[0_24px_80px_-35px_rgba(2,132,199,0.6)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-4">
-            <Icon>
-              <span className="text-lg font-black">O</span>
-            </Icon>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                  Owner Console
-                </h1>
-                <Badge tone="sky">Premium Dashboard</Badge>
+      {/* Status Bar */}
+      <div className="mb-6 rounded-3xl border border-sky-200/60 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Status
+            </p>
+            <p className="text-sm text-slate-900 dark:text-white">
+              {statusMessage}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+            <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                Wallet
               </div>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Modern control center for automation, verification, branding,
-                security, and team growth.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge tone={verificationTone}>
-              {verificationStatus === "verified_active"
-                ? "Verified"
-                : verificationStatus === "expiring_soon"
-                  ? "Expiring Soon"
-                  : "Expired"}
-            </Badge>
-            <Badge tone="violet">{remainingDays} days left</Badge>
-            <SecondaryButton onClick={onThemeToggle}>
-              {theme === "dark" ? "Light mode" : "Dark mode"}
-            </SecondaryButton>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
-          <div className="flex min-w-max gap-2">
-            {accessibleTabs.map((tabItem) => (
-              <button
-                key={tabItem.id}
-                onClick={() => {
-                  if (tabItem.id === "members") loadMembers();
-                  setTab(tabItem.id);
-                }}
-                className={cx(
-                  "rounded-2xl px-4 py-3 text-sm font-semibold transition",
-                  activeTab === tabItem.id
-                    ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25"
-                    : "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-900",
-                )}
-              >
-                {tabItem.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Status Bar */}
-        <div className="mb-6 rounded-3xl border border-sky-200/60 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Status
-              </p>
-              <p className="text-sm text-slate-900 dark:text-white">
-                {statusMessage}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
-              <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  Wallet
-                </div>
-                <div className="font-semibold text-slate-900 dark:text-white">
-                  ${walletBalance.toFixed(2)}
-                </div>
+              <div className="font-semibold text-slate-900 dark:text-white">
+                ${walletBalance.toFixed(2)}
               </div>
-              <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  Restricted
-                </div>
-                <div className="font-semibold text-slate-900 dark:text-white">
-                  ${walletRestricted.toFixed(2)}
-                </div>
+            </div>
+            <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                Restricted
+              </div>
+              <div className="font-semibold text-slate-900 dark:text-white">
+                ${walletRestricted.toFixed(2)}
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* ==================== GENERAL TAB ==================== */}
-        {activeTab === "general" &&
-          hasRoleAccess(currentUserRole, "viewer") && (
-            <div className="grid gap-6 lg:grid-cols-2">
+      {/* Tab Content Sections */}
+      {activeTab === "general" && (
+        <div className="grid gap-6 lg:grid-cols-2">
               <SectionCard
                 title="Automation & Chatbot"
                 subtitle="Control buyer conversations, handoff rules, and saved alerts."
@@ -2470,6 +2465,62 @@ export default function OrgSettings() {
             You do not have permission to view organization settings.
           </div>
         )}
+    </>
+  );
+
+  if (embedded) {
+    return <div data-lenis-prevent className="space-y-6">{settingsContent}</div>;
+  }
+
+  return (
+    <div
+      className={cx(
+        bodyTheme,
+        "min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#07111f] dark:text-white",
+      )}
+    >
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-sky-400/25 blur-3xl" />
+        <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-[0_24px_80px_-35px_rgba(2,132,199,0.6)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-4">
+            <Icon>
+              <span className="text-lg font-black">O</span>
+            </Icon>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                  Owner Console
+                </h1>
+                <Badge tone="sky">Premium Dashboard</Badge>
+              </div>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Modern control center for automation, verification, branding,
+                security, and team growth.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge tone={verificationTone}>
+              {verificationStatus === "verified_active"
+                ? "Verified"
+                : verificationStatus === "expiring_soon"
+                  ? "Expiring Soon"
+                  : "Expired"}
+            </Badge>
+            <Badge tone="violet">{remainingDays} days left</Badge>
+            <SecondaryButton onClick={onThemeToggle}>
+              {theme === "dark" ? "Light mode" : "Dark mode"}
+            </SecondaryButton>
+          </div>
+        </div>
+
+        {settingsContent}
       </div>
     </div>
   );
@@ -2521,35 +2572,6 @@ function NotificationPreferencesTab() {
     }
   };
 
-  const Toggle = ({ label, description, checked, onChange }) => (
-    <div className="flex items-center justify-between py-3">
-      <div>
-        <div className="font-medium text-slate-900 dark:text-white">
-          {label}
-        </div>
-        {description && (
-          <div className="text-sm text-slate-500">{description}</div>
-        )}
-      </div>
-      <button
-        type="button"
-        onClick={onChange}
-        disabled={saving}
-        className={cx(
-          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-          checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-600",
-        )}
-      >
-        <span
-          className={cx(
-            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-            checked ? "translate-x-6" : "translate-x-1",
-          )}
-        />
-      </button>
-    </div>
-  );
-
   if (loading) {
     return <NeonAtom fill size={64} />;
   }
@@ -2560,13 +2582,13 @@ function NotificationPreferencesTab() {
         title="Notification Channels"
         subtitle="Choose how you receive notifications."
       >
-        <Toggle
+        <_TogglePref
           label="Email Notifications"
           description="Receive notifications via email."
           checked={prefs.email_enabled}
           onChange={() => handleToggle("email_enabled")}
         />
-        <Toggle
+        <_TogglePref
           label="Push Notifications"
           description="Receive in-app push notifications."
           checked={prefs.push_enabled}
@@ -2578,31 +2600,31 @@ function NotificationPreferencesTab() {
         title="Notification Types"
         subtitle="Select which events trigger notifications."
       >
-        <Toggle
+        <_TogglePref
           label="Messages"
           description="New chat messages."
           checked={prefs.message_notifs}
           onChange={() => handleToggle("message_notifs")}
         />
-        <Toggle
+        <_TogglePref
           label="Buyer Requests"
           description="New requirements matching your interests."
           checked={prefs.requirement_notifs}
           onChange={() => handleToggle("requirement_notifs")}
         />
-        <Toggle
+        <_TogglePref
           label="Contracts"
           description="Contract updates and signatures."
           checked={prefs.contract_notifs}
           onChange={() => handleToggle("contract_notifs")}
         />
-        <Toggle
+        <_TogglePref
           label="Smart Search Matches"
           description="When new items match your saved searches."
           checked={prefs.smart_match_notifs}
           onChange={() => handleToggle("smart_match_notifs")}
         />
-        <Toggle
+        <_TogglePref
           label="Monthly Summary"
           description="Your monthly activity summary."
           checked={prefs.monthly_summary}

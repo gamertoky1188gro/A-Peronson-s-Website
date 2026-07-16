@@ -697,7 +697,7 @@ export default function PricingPage() {
       if (running) gradientAngle.set((gradientAngle.get() + 0.4) % 360);
     }, 40);
     return () => { running = false; clearInterval(id); };
-  }, [reduceMotion]);
+  }, [reduceMotion, gradientAngle]);
 
   if (loading) return <NeonAtom fill />;
 

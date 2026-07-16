@@ -5,7 +5,11 @@ export default function useScrollVelocity() {
   const { scrollY } = useScroll();
   const velocity = useMotionValue(0);
   const lastY = useMotionValue(0);
-  const lastTime = useMotionValue(Date.now());
+  const lastTime = useMotionValue(0);
+
+  useEffect(() => {
+    lastTime.set(Date.now());
+  }, [lastTime]);
 
   useEffect(() => {
     const update = () => {
@@ -20,7 +24,7 @@ export default function useScrollVelocity() {
 
     const unsubscribe = scrollY.on("change", update);
     return () => unsubscribe();
-  }, [scrollY, velocity, lastY, lastTime]);
+  }, [scrollY, velocity, lastY]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return velocity;
 }

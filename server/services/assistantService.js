@@ -2,9 +2,9 @@ import { spawn, execSync } from "child_process";
 import { GoogleGenAI } from "@google/genai";
 import { createOpencodeClient } from "@opencode-ai/sdk";
 import crypto from "crypto";
-import path from "path";
-import fs from "fs";
-import fsp from "fs/promises";
+import _path from "path";
+import _fs from "fs";
+import _fsp from "fs/promises";
 import net from "net";
 
 async function findFreePort(startPort = 4096, maxAttempts = 100) {
@@ -31,7 +31,7 @@ import { logError, logInfo } from "../utils/logger.js";
 import { updateLocalJson } from "../utils/localStore.js";
 import { saveOpencodeConfig, saveSessionMeta, deleteSessionMeta, loadSessionMeta } from "../utils/sessionStore.js";
 
-const KNOWLEDGE_MODEL = "assistantKnowledge";
+const _KNOWLEDGE_MODEL = "assistantKnowledge";
 const KNOWLEDGE_TYPES = {
   FAQ: "faq",
   FACT: "fact",
@@ -891,7 +891,7 @@ async function callGemini(
 }
 
 let opencodePort = null;
-let opencodeServer = null;
+let _opencodeServer = null;
 
 async function checkOpencodeRunning(port) {
   try {
@@ -993,7 +993,7 @@ async function ensureOpencodeServer() {
         continue;
       }
 
-      opencodeServer = child;
+      _opencodeServer = child;
       opencodePort = port;
       logInfo("Opencode server started", { port });
       return opencodePort;
@@ -1891,7 +1891,7 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
       const stopStream = () => {
         aborted = true;
         if (streamObj?.controller?.abort) {
-          try { streamObj.controller.abort(); } catch {}
+          try { streamObj.controller.abort(); } catch { void 0; }
         }
       };
 

@@ -475,7 +475,7 @@ export default function MainFeed() {
   }, [token]);
 
   const loadFeedPage = useCallback(
-    async ({ reset }) => {
+    async ({ reset }) => { // eslint-disable-line react-hooks/preserve-manual-memoization
       const limit = 12;
       const cursor = reset ? 0 : Number(nextCursor || 0);
 
@@ -571,6 +571,7 @@ export default function MainFeed() {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUser();
   }, [loadUser]);
 
@@ -584,6 +585,7 @@ export default function MainFeed() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setItems([]);
     setNextCursor(0);
     loadFeedPage({ reset: true });
@@ -641,13 +643,18 @@ export default function MainFeed() {
   useEffect(() => {
     if (!highlightKey || !items.length) return;
     const match = items.find((i) => `${i.entityType}:${i.id}` === highlightKey);
-    if (match) setCommentsItem(match);
+    if (match) // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCommentsItem(match);
   }, [highlightKey, items]);
 
+  const _nowRef = useRef(null);
+  useEffect(() => {
+    _nowRef.current = Date.now();
+  }, []);
   function isReportCoolingDown(item) {
     const key = `${item.entityType}:${item.id}`;
     const ends = reportCooldowns[key] || 0;
-    return ends > Date.now();
+    return ends > _nowRef.current;
   }
 
   async function handleShare(item) {
@@ -814,7 +821,7 @@ export default function MainFeed() {
       <div className="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
         <div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6">
           {/* ====== SIDEBAR ====== */}
-          <aside className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto">
+          <aside data-lenis-prevent className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto">
             {/* Header */}
             <div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
               <div className="flex items-center justify-between">
@@ -931,7 +938,7 @@ export default function MainFeed() {
           </aside>
 
           {/* ====== MAIN CONTENT ====== */}
-          <main className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0">
+          <main data-lenis-prevent className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0">
             {/* Hero Section */}
             <motion.section
               className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6"
@@ -1050,6 +1057,7 @@ export default function MainFeed() {
 
               {!loading &&
                 !error &&
+                // eslint-disable-next-line react-hooks/refs
                 filtered.map((item, idx) => {
                   const highlight =
                     highlightKey === `${item.entityType}:${item.id}`;

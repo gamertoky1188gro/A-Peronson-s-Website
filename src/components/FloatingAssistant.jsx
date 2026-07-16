@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, useReducedMotion, useSpring } from "framer-motion";
 import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
@@ -154,7 +154,14 @@ export default function FloatingAssistant() {
   const reconnectTimerRef = useRef(null);
   const wsUrlRef = useRef(getWsUrl());
 
-  function connectWs() {
+  function cancelReconnect() {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+  }
+
+  const connectWs = useCallback(function connectWs() {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       return;
     }
@@ -250,31 +257,20 @@ export default function FloatingAssistant() {
 
     socket.onclose = () => {
       console.log("Assistant WS Disconnected — reconnecting in 30s");
-      scheduleReconnect();
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+      }
+      reconnectTimerRef.current = setTimeout(() => {
+        console.log("Assistant WS reconnecting...");
+        connectWs();
+      }, 30000);
     };
     socket.onerror = () => {
       socket.close();
     };
 
     socketRef.current = socket;
-  }
-
-  function scheduleReconnect() {
-    if (reconnectTimerRef.current) {
-      clearTimeout(reconnectTimerRef.current);
-    }
-    reconnectTimerRef.current = setTimeout(() => {
-      console.log("Assistant WS reconnecting...");
-      connectWs();
-    }, 30000);
-  }
-
-  function cancelReconnect() {
-    if (reconnectTimerRef.current) {
-      clearTimeout(reconnectTimerRef.current);
-      reconnectTimerRef.current = null;
-    }
-  }
+  }, []);
 
   useEffect(() => {
     connectWs();
@@ -288,7 +284,7 @@ export default function FloatingAssistant() {
         }
       }
     };
-  }, []);
+  }, [connectWs]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -462,7 +458,7 @@ export default function FloatingAssistant() {
             </div>
           </div>
 
-          <div
+          <div data-lenis-prevent
             ref={scrollRef}
             className="flex-1 overflow-y-auto px-4 py-5 space-y-4 scroll-smooth"
           >

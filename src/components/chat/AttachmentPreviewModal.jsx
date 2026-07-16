@@ -511,6 +511,7 @@ function AttachmentPreviewModal({
   }, [open, onClose]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVideoError(false);
   }, [file?.url, kind]);
 
@@ -524,6 +525,7 @@ function AttachmentPreviewModal({
         kind !== "xml" &&
         kind !== "html")
     ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTextState({ loading: false, error: "", content: "" });
       return undefined;
     }
@@ -576,6 +578,7 @@ function AttachmentPreviewModal({
 
   useEffect(() => {
     if (!open || !file?.url || (kind !== "code" && kind !== "xml")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHighlightState({
         loading: false,
         error: "",
@@ -678,6 +681,7 @@ function AttachmentPreviewModal({
     if (!open || !file?.url || kind !== "spreadsheet") {
       workbookRef.current = null;
       xlsxUtilsRef.current = null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSpreadsheetState({
         loading: false,
         error: "",
@@ -772,6 +776,7 @@ function AttachmentPreviewModal({
 
   useEffect(() => {
     if (!open || !file?.url || kind !== "rtf") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRtfState({ loading: false, error: "", html: "", meta: null });
       return undefined;
     }
@@ -865,6 +870,7 @@ function AttachmentPreviewModal({
 
   useEffect(() => {
     if (!open || !file?.url || kind !== "pdf") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPdfState({ loading: false, error: "", blobUrl: "" });
       return undefined;
     }
@@ -996,7 +1002,7 @@ function AttachmentPreviewModal({
           </div>
         </div>
 
-        <div className="max-h-[75vh] overflow-auto p-4">
+        <div data-lenis-prevent className="max-h-[75vh] overflow-auto p-4">
           {kind === "image" ? (
             <div className="flex justify-center">
               <img
@@ -1239,7 +1245,7 @@ function AttachmentPreviewModal({
               {!textState.loading &&
               !textState.error &&
               !highlightState.loading ? (
-                <pre className="language-markup overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
+                <pre data-lenis-prevent className="language-markup overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
                   <code
                     dangerouslySetInnerHTML={{
                       __html:
@@ -1273,7 +1279,7 @@ function AttachmentPreviewModal({
               {!textState.loading &&
               !textState.error &&
               !highlightState.loading ? (
-                <pre
+                <pre data-lenis-prevent
                   className={`language-${highlightState.language || prismLanguageForExt(fileExt) || "markup"}overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100`}
                 >
                   <code

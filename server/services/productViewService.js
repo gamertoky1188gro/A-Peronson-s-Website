@@ -3,15 +3,15 @@ import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { trackEvent } from "./eventTrackingService.js";
 
-function toIsoNow() {
+function _toIsoNow() {
   return new Date().toISOString();
 }
 
-function safeArray(value) {
+function _safeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
-function sortNewest(a, b) {
+function _sortNewest(a, b) {
   return String(b.viewed_at || "").localeCompare(String(a.viewed_at || ""));
 }
 

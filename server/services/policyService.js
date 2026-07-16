@@ -366,6 +366,7 @@ export async function recordPolicyViolation({
     },
   });
 
+  const users = await prisma.user.findMany();
   const adminTargets = users.filter((u) =>
     ["owner", "admin"].includes(String(u.role || "").toLowerCase()),
   );

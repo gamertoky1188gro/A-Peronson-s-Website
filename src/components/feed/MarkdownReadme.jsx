@@ -16,8 +16,6 @@ import remarkAbbr from "@syenchuk/remark-abbr";
 
 export default function MarkdownReadme({ content = "" }) {
   const safe = String(content || "");
-  if (!safe.trim()) return null;
-
   const schema = useMemo(() => {
     const base = defaultSchema || {};
     return {
@@ -29,6 +27,7 @@ export default function MarkdownReadme({ content = "" }) {
       },
     };
   }, []);
+  if (!safe.trim()) return null;
 
   return (
     <div className="prose prose-sm max-w-none prose-slate dark:prose-invert prose-headings:font-semibold prose-pre:rounded-xl prose-pre:bg-slate-900 prose-code:before:content-none prose-code:after:content-none">

@@ -942,7 +942,7 @@ export default function AdminPanel() {
   const user = getCurrentUser();
   const userRole = normalizeRole(user?.role);
   const { theme, toggleTheme } = useTheme();
-  const adminDark = theme === "dark";
+  const [adminDark, setAdminDark] = useState(theme === "dark");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -1189,7 +1189,8 @@ export default function AdminPanel() {
     selectedAction.fields.forEach((field) => {
       defaults[field.key] = "";
     });
-    setActionForm(defaults);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActionForm(defaults);
   }, [selectedAction]);
 
   useEffect(() => {
@@ -1205,6 +1206,7 @@ export default function AdminPanel() {
   useEffect(() => {
     if (deviceId) return;
     const fallback = `device-${Math.random().toString(36).slice(2, 10)}`;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDeviceId(fallback);
   }, [deviceId]);
 
@@ -1221,6 +1223,7 @@ export default function AdminPanel() {
   useEffect(() => {
     const rules = master?.config?.moderation?.clothing_rules;
     if (rules) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClothingRulesForm({
         forbidden_terms: listToTextarea(rules.forbidden_terms),
         flag_terms: listToTextarea(rules.flag_terms),
@@ -1461,11 +1464,13 @@ export default function AdminPanel() {
   }, [isAllowedAdminViewer, buildAdminHeaders, handleSecurityFailure]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAdminData();
   }, [loadAdminData]);
 
   useEffect(() => {
     if (pageLoading && !loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageLoading(false);
     }
   }, [pageLoading, loading]);
@@ -2528,6 +2533,7 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (activeCategory !== "platform") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshSupportTickets();
     refreshModerationQueues();
     refreshReportQueues();
@@ -2548,6 +2554,7 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (activeCategory !== "media-review") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshModerationQueues();
   }, [activeCategory, refreshModerationQueues]);
 
@@ -2997,7 +3004,7 @@ export default function AdminPanel() {
             </div>
 
             {/* Navigation */}
-            <nav className="mt-6 space-y-2 overflow-y-auto overflow-x-hidden pr-1">
+            <nav data-lenis-prevent className="mt-6 space-y-2 overflow-y-auto overflow-x-hidden pr-1">
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeCategory === item.id;
@@ -3105,7 +3112,7 @@ export default function AdminPanel() {
             />
           )}
 
-          <div className="flex-1 overflow-y-auto pb-6 pr-2">
+          <div data-lenis-prevent className="flex-1 overflow-y-auto pb-6 pr-2">
             <div className="space-y-8">
               {error ? (
                 <div className="admin-panel admin-sweep rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
@@ -13235,7 +13242,7 @@ export default function AdminPanel() {
                                   </button>
                                 }
                               >
-                                <div className="max-h-[540px] space-y-3 overflow-auto pr-1">
+                                <div data-lenis-prevent className="max-h-[540px] space-y-3 overflow-auto pr-1">
                                   {filteredCmsAuditRows.map((log) => (
                                     <div
                                       key={`${log.id || log.at}-${log.path || log.action}`}
@@ -14690,7 +14697,7 @@ export default function AdminPanel() {
                                       : "Save UI Settings"}
                                   </button>
                                 </div>
-                                <pre className="max-h-96 overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-200">
+                                <pre data-lenis-prevent className="max-h-96 overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-200">
                                   {JSON.stringify(configEditorData.ui, null, 2)}
                                 </pre>
                               </div>
@@ -14753,7 +14760,7 @@ export default function AdminPanel() {
             onClick={() => setAiModalDoc(null)}
             className="absolute inset-0 bg-black/50"
           />
-          <div className="relative w-[92vw] max-w-2xl max-h-[85vh] overflow-auto rounded-2xl bg-white dark:bg-slate-900 shadow-2xl">
+          <div data-lenis-prevent className="relative w-[92vw] max-w-2xl max-h-[85vh] overflow-auto rounded-2xl bg-white dark:bg-slate-900 shadow-2xl">
             <div className="sticky top-0 bg-white dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white">

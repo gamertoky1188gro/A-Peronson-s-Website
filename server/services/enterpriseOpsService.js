@@ -7,13 +7,13 @@ import { trackEvent } from "./eventTrackingService.js";
 
 const USE_SQL_CRM = isCrmSqlEnabled();
 
-const POLICY_FILE = "org_ops_policies.json";
+const _POLICY_FILE = "org_ops_policies.json";
 const LEADS_FILE = "leads.json";
 const USERS_FILE = "users.json";
 const SLA_FILE = "lead_sla_timers.json";
 const ESCALATIONS_FILE = "lead_escalations.json";
-const WORKLOAD_FILE = "agent_workloads.json";
-const ASSIGNMENTS_FILE = "lead_assignments.json";
+const _WORKLOAD_FILE = "agent_workloads.json";
+const _ASSIGNMENTS_FILE = "lead_assignments.json";
 
 const VALID_ASSIGNMENT_STRATEGIES = new Set([
   "round_robin",

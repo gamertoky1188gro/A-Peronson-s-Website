@@ -158,7 +158,7 @@ export async function deleteProduct(id) {
   if (!client) return;
   try {
     await client.delete(collectionName("products", cfg), { points: [id] });
-  } catch {}
+  } catch { void 0; }
 }
 
 export async function deleteRequirement(id) {
@@ -166,7 +166,7 @@ export async function deleteRequirement(id) {
   if (!client) return;
   try {
     await client.delete(collectionName("requirements", cfg), { points: [id] });
-  } catch {}
+  } catch { void 0; }
 }
 
 export async function searchQdrant({ type, query, filters = {}, cursor = 0, limit = 50 } = {}) {
@@ -233,7 +233,7 @@ export async function reindexAll({ reset = false } = {}) {
     const { cfg, client } = await getClient();
     if (client) {
       for (const type of ["products", "requirements"]) {
-        try { await client.deleteCollection(collectionName(type, cfg)); } catch {}
+        try { await client.deleteCollection(collectionName(type, cfg)); } catch { void 0; }
       }
     }
   }
@@ -250,13 +250,13 @@ export async function reindexAll({ reset = false } = {}) {
   let productsIndexed = 0;
   for (const p of products) {
     const author = usersById.get(String(p.company_id)) || {};
-    try { await indexProduct(p, author); productsIndexed++; } catch {}
+    try { await indexProduct(p, author); productsIndexed++; } catch { void 0; }
   }
 
   let requirementsIndexed = 0;
   for (const r of requirements) {
     const author = usersById.get(String(r.buyer_id)) || {};
-    try { await indexRequirement(r, author); requirementsIndexed++; } catch {}
+    try { await indexRequirement(r, author); requirementsIndexed++; } catch { void 0; }
   }
 
   return { ok: true, products: productsIndexed, requirements: requirementsIndexed };

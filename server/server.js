@@ -63,7 +63,7 @@ import workflowLifecycleRoutes from "./routes/workflowLifecycleRoutes.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { logInfo, logError } from "./utils/logger.js";
-import { assistantReply, streamOpencodeReply, initOpencodeServer, initAllUserSessions } from "./services/assistantService.js";
+import { assistantReply as _assistantReply, streamOpencodeReply, initOpencodeServer, initAllUserSessions } from "./services/assistantService.js";
 import { maybeGenerateBotReply } from "./services/chatbotService.js";
 import jwt from "jsonwebtoken";
 import {
@@ -839,7 +839,7 @@ wsServer.on("connection", (socket, req) => {
       const requestId = payload?.request_id || null;
 
       let streamedText = "";
-      let streamError = null;
+      let _streamError = null;
       let streamDone = false;
 
       const gotChunk = (delta, fullText) => {
@@ -856,7 +856,7 @@ wsServer.on("connection", (socket, req) => {
 
       const gotComplete = (answer, error) => {
         streamDone = true;
-        streamError = error;
+        _streamError = error;
         if (error) {
           sendReply({
             type: "reply",

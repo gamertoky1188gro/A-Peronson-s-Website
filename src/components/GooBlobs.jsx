@@ -1,11 +1,24 @@
 import { motion, useInView, useReducedMotion } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 const COLORS = [
   "rgba(14,165,233,0.25)",
   "rgba(99,102,241,0.20)",
   "rgba(6,182,212,0.20)",
 ];
+
+function createBlobs(count, size, colors) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    cx: 30 + (i * 70) / count + Math.random() * 10,
+    cy: 20 + Math.random() * 40,
+    r: size * (0.08 + Math.random() * 0.06),
+    color: colors[i % colors.length],
+    dx: -8 + Math.random() * 16,
+    dy: -8 + Math.random() * 16,
+    dur: 6 + Math.random() * 4,
+  }));
+}
 
 export default function GooBlobs({
   className = "",
@@ -16,21 +29,11 @@ export default function GooBlobs({
   const reduceMotion = useReducedMotion();
   const ref = useRef(null);
   const inView = useInView(ref, { once: false, margin: "-100px" });
+  const [blobs] = useState(() => createBlobs(count, size, colors));
 
   if (reduceMotion) return null;
 
   const shouldAnimate = inView;
-
-  const blobs = Array.from({ length: count }, (_, i) => ({
-    id: i,
-    cx: 30 + (i * 70) / count + Math.random() * 10,
-    cy: 20 + Math.random() * 40,
-    r: size * (0.08 + Math.random() * 0.06),
-    color: colors[i % colors.length],
-    dx: -8 + Math.random() * 16,
-    dy: -8 + Math.random() * 16,
-    dur: 6 + Math.random() * 4,
-  }));
 
   return (
     <div ref={ref} className={`absolute inset-0 -z-10 overflow-hidden pointer-events-none ${className}`}>

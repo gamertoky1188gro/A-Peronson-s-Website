@@ -66,6 +66,8 @@ const WS_BASE = (() => {
   return `${protocol}//${window.location.host}/ws`;
 })();
 
+import { isRouteValid } from "../lib/routeHealthCheck";
+
 const CHAT_NAV_ITEMS = [
   { to: "/feed", label: "Feed", icon: Home },
   { to: "/search", label: "Search", icon: Search },
@@ -73,7 +75,7 @@ const CHAT_NAV_ITEMS = [
   { to: "/chat", label: "Chat", icon: MessageCircle },
   { to: "/contracts", label: "Vault", icon: FolderOpen },
   { to: "/help", label: "Help", icon: CircleHelp },
-];
+].filter((item) => isRouteValid(item.to));
 
 const PANEL_STYLE = {
   background: "rgb(16, 13, 34)",
@@ -516,6 +518,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (location.state?.notice) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNotice(location.state.notice);
       navigate(location.pathname, { replace: true, state: {} });
     }
@@ -676,6 +679,7 @@ export default function ChatInterface() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadInbox();
   }, [loadInbox]);
 
@@ -707,11 +711,14 @@ export default function ChatInterface() {
     () => allVisibleThreads.find((thread) => thread.id === activeThreadId),
     [allVisibleThreads, activeThreadId],
   );
-  activeThreadMatchIdRef.current = activeThread?.matchId || "";
+  useEffect(() => {
+    activeThreadMatchIdRef.current = activeThread?.matchId || "";
+  }, [activeThread?.matchId]);
 
   useEffect(() => {
     if (pageLoading && !loading && !secureLoading) {
       if (!activeThread?.matchId) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPageLoading(false);
       } else if (messagesByThread[activeThread.matchId]) {
         setPageLoading(false);
@@ -722,6 +729,7 @@ export default function ChatInterface() {
   useEffect(() => {
     const token = getToken();
     if (!token || !activeThread?.matchId || activeThread?.isFriendThread) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLeadSummary(null);
       setPrequalOverride(false);
       setAiSummary(null);
@@ -740,6 +748,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!leadSummary?.notes) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAiSummary(null);
       setAiNegotiation(null);
       return;
@@ -891,6 +900,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!activeThread?.matchId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadThreadMessages(activeThread.matchId);
   }, [activeThread, loadThreadMessages]);
 
@@ -932,11 +942,13 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (participantIds.length === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshPresence(participantIds);
   }, [participantIds, refreshPresence]);
 
   useEffect(() => {
     if (!isLiveMessagingEnabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setChatConnectionStatus("offline");
       if (wsRef.current) {
         wsRef.current.close();
@@ -1507,6 +1519,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!policyFeedback.retryAfter || policyFeedback.retryAfter <= 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCountdownSeconds(0);
       return undefined;
     }
@@ -1936,7 +1949,7 @@ export default function ChatInterface() {
             </span>
           </div>
 
-          <div className="h-[calc(100vh-250px)] overflow-auto pr-1 custom-scrollbar">
+          <div data-lenis-prevent className="h-[calc(100vh-250px)] overflow-auto pr-1 custom-scrollbar">
             {loading ? (
               <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
             ) : null}
@@ -2181,7 +2194,7 @@ export default function ChatInterface() {
                 </div>
               ) : null}
 
-              <div
+              <div data-lenis-prevent
                 className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar"
                 style={{ background: isLight ? "#f8fafc" : "transparent" }}
               >
@@ -2402,7 +2415,7 @@ export default function ChatInterface() {
           )}
         </main>
 
-        <aside
+        <aside data-lenis-prevent
           className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto shadow-borderless dark:shadow-borderlessDark"
           style={{ background: theme.panelBg, boxShadow: theme.shadow }}
         >

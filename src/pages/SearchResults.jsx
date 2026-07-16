@@ -325,6 +325,639 @@ function ToastStack({ toasts, onDismiss }) {
   );
 }
 
+function SearchModal({ open, searchInputRef, query, onQueryChange, onClose, executeSearchRef }) {
+  if (!open) return null;
+  const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+  return (
+    <div className="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/40 px-4 pt-24 backdrop-blur-sm">
+      <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
+        <div className="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 p-4">
+          <Search className="h-5 w-5 text-sky-500" />
+          <input
+            ref={searchInputRef}
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder="Search requests, factories, products..."
+            className="w-full bg-transparent text-slate-900 dark:text-white outline-none placeholder:text-slate-400"
+          />
+          <span className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 text-xs text-slate-500">
+            {isMac ? "\u2318K" : "Ctrl K"}
+          </span>
+        </div>
+        <div className="grid gap-3 p-4 sm:grid-cols-2">
+          {[
+            "Buyer requests",
+            "Factories",
+            "Products",
+            "Verified suppliers",
+          ].map((item) => (
+            <button
+              key={item}
+              onClick={() => {
+                onQueryChange(item);
+                onClose();
+                executeSearchRef.current?.();
+              }}
+              className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 text-left hover:border-sky-300 dark:hover:border-sky-700"
+            >
+              <div className="text-sm font-medium text-slate-900 dark:text-white">
+                {item}
+              </div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Jump straight to this search theme.
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResultTabs({ estimatedCounts, activeTab, onTabChange }) {
+  return (
+    <div className="inline-flex rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-1 shadow-sm">
+      {[
+        { key: "all", label: `All (${estimatedCounts.total})` },
+        {
+          key: "requests",
+          label: `Buyer Requests (${estimatedCounts.buyerRequests})`,
+        },
+        { key: "companies", label: `Companies (${estimatedCounts.companies})` },
+        { key: "feed", label: `Feed Posts (${estimatedCounts.feedPosts})` },
+        { key: "users", label: `Users (${estimatedCounts.users})` },
+      ].map((tab) => (
+        <button
+          key={tab.key}
+          onClick={() => onTabChange(tab.key)}
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === tab.key ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"}`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ResultCards({ totalResults, query, loading, trendingSearches, activeTab, filteredRequests, filteredCompanies, filteredFeedPosts, filteredUsers, setFilters, setQuery, toggleShortlist, isShortlisted, highlightText, saveSearch, fmtNumber }) {
+  if (totalResults === 0 && query && !loading) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 text-center">
+          <p className="text-lg font-medium">No results for &ldquo;{query}&rdquo;</p>
+          <p className="mt-1 text-sm text-slate-500">Try these categories instead:</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {["Fabrics", "Yarn", "Garments", "Accessories", "Home Textile"].map(cat => (
+              <button key={cat} onClick={() => setFilters(f => ({ ...f, selectedCategories: [cat], allCategories: false }))}
+                className="rounded-full border border-slate-200/80 dark:border-slate-700 px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10">
+                {cat}
+              </button>
+            ))}
+          </div>
+          {trendingSearches.length > 0 && (
+            <>
+              <p className="mt-6 text-sm text-slate-500">Trending searches:</p>
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                {trendingSearches.slice(0, 5).map(t => (
+                  <button key={t} onClick={() => setQuery(t)}
+                    className="rounded-full bg-slate-100 px-4 py-2 text-sm hover:bg-slate-200 dark:bg-slate-800">
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+  if (activeTab === "requests") {
+    const items = filteredRequests;
+    if (items.length === 0 && !loading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+          <PackageSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+          <p className="text-lg font-medium text-slate-900 dark:text-white">
+            No buyer requests found
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Try adjusting your filters
+          </p>
+          {query && (
+            <div className="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
+              <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">
+                Similar Requests Alert
+              </p>
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+                Be the first to know when buyers post matching requests. Save
+                a search alert now.
+              </p>
+              <button
+                onClick={() => saveSearch && saveSearch()}
+                className="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
+              >
+                Save Alert
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-4">
+        <AnimatePresence mode="popLayout">
+          <MasonryGrid columnCount={2} gap={4}>
+          {items.map((item) => (
+            <motion.article
+              key={item.id}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2">
+                  <button
+                    onClick={() => toggleShortlist(item.id, "buyer")}
+                    className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+                  >
+                    <ArrowLeftRight className="h-3.5 w-3.5" />
+                  </button>
+                  <Link
+                    to={`/buyer/${item.buyer_id}`}
+                    className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightText(item.title || item.name || "Untitled Request", query),
+                    }}
+                  />
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <span>{item.location || item.country || "N/A"}</span>
+                    {item.category && (
+                      <>
+                        <span>&bull;</span>
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: highlightText(item.category, query),
+                          }}
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-wrap justify-end gap-2">
+                  {item.status === "verified" && (
+                    <Badge tone="green">verified</Badge>
+                  )}
+                  {item.isPriority && <Badge tone="violet">priority</Badge>}
+                  {item.status === "active" && (
+                    <Badge tone="blue">active</Badge>
+                  )}
+                </div>
+              </div>
+
+              {(item.gender || item.season || item.material) && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {item.gender && (
+                    <Badge tone="default">Gender: {item.gender}</Badge>
+                  )}
+                  {item.season && (
+                    <Badge tone="default">Season: {item.season}</Badge>
+                  )}
+                  {item.material && (
+                    <Badge tone="default">Material: {item.material}</Badge>
+                  )}
+                  {item.quoteDate && (
+                    <Badge tone="amber">Quote by {item.quoteDate}</Badge>
+                  )}
+                  {item.expiryDate && (
+                    <Badge tone="red">Expires {item.expiryDate}</Badge>
+                  )}
+                  {item.maxSuppliers && (
+                    <Badge tone="default">
+                      Max suppliers: {item.maxSuppliers}
+                    </Badge>
+                  )}
+                </div>
+              )}
+
+              {item.description && (
+                <p
+                  className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300"
+                  dangerouslySetInnerHTML={{
+                    __html: highlightText(item.description, query),
+                  }}
+                />
+              )}
+
+              {(item.quantity || item.targetPrice) && (
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {item.quantity && (
+                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Quantity
+                      </div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                        {item.quantity}
+                      </div>
+                    </div>
+                  )}
+                  {item.targetPrice && (
+                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Target price
+                      </div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                        {item.targetPrice}
+                      </div>
+                    </div>
+                  )}
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Discussion
+                    </div>
+                    <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                      {item.discussions?.length > 0 ? "Active" : "None"}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
+                  <Eye className="h-4 w-4" /> Quick View
+                </button>
+                <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
+                  <Share2 className="h-4 w-4" /> Share
+                </button>
+                <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
+                  <MessageSquareMore className="h-4 w-4" /> Discuss
+                </button>
+              </div>
+            </motion.article>
+          ))}
+          </MasonryGrid>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  if (activeTab === "all") {
+    const hasAny = filteredRequests.length || filteredCompanies.length || filteredFeedPosts.length || filteredUsers.length;
+    if (!hasAny && !loading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+          <SearchX className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+          <p className="text-lg font-medium text-slate-900 dark:text-white">
+            No results found
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-8">
+        {filteredRequests.length > 0 && (
+          <section>
+            <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+              Buyer Requests ({filteredRequests.length})
+            </h3>
+            <AnimatePresence mode="popLayout">
+              <MasonryGrid columnCount={2} gap={4}>
+                {filteredRequests.map((item) => (
+                  <motion.article
+                    key={item.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2">
+                        <button
+                          onClick={() => toggleShortlist(item.id, "buyer")}
+                          className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+                        >
+                          <ArrowLeftRight className="h-3.5 w-3.5" />
+                        </button>
+                        <Link
+                          to={`/buyer/${item.buyer_id}`}
+                          className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                          dangerouslySetInnerHTML={{
+                            __html: highlightText(item.title || item.name || "Untitled Request", query),
+                          }}
+                        />
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                          <span>{item.location || item.country || "N/A"}</span>
+                          {item.category && (
+                            <>
+                              <span>&bull;</span>
+                              <span dangerouslySetInnerHTML={{ __html: highlightText(item.category, query) }} />
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {item.description && (
+                      <p className="mt-4 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300"
+                        dangerouslySetInnerHTML={{ __html: highlightText(item.description, query) }}
+                      />
+                    )}
+                  </motion.article>
+                ))}
+              </MasonryGrid>
+            </AnimatePresence>
+          </section>
+        )}
+
+        {filteredCompanies.length > 0 && (
+          <section>
+            <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+              Companies ({filteredCompanies.length})
+            </h3>
+            <MasonryGrid columnCount={2} gap={4}>
+              {filteredCompanies.map((item) => (
+                <motion.article
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
+                >
+                  <div className="flex items-start gap-2">
+                    <Link
+                      to={`/factory/${item.company_id}`}
+                      className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                      dangerouslySetInnerHTML={{
+                        __html: highlightText(item.name || item.title || "Untitled Company", query),
+                      }}
+                    />
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <span>{item.location || item.country || "N/A"}</span>
+                    </div>
+                  </div>
+                </motion.article>
+              ))}
+            </MasonryGrid>
+          </section>
+        )}
+
+        {filteredFeedPosts.length > 0 && (
+          <section>
+            <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+              Feed Posts ({filteredFeedPosts.length})
+            </h3>
+            <MasonryGrid columnCount={2} gap={4}>
+              {filteredFeedPosts.map((item) => (
+                <motion.article
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
+                >
+                  <div className="text-lg font-semibold text-slate-900 dark:text-white"
+                    dangerouslySetInnerHTML={{ __html: highlightText(item.title || "Untitled Post", query) }} />
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {item.category && <Badge tone="default">{item.category}</Badge>}
+                    {item.type && <Badge tone="default">{item.type}</Badge>}
+                  </div>
+                  {item.caption && (
+                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-300"
+                      dangerouslySetInnerHTML={{ __html: highlightText(item.caption, query) }} />
+                  )}
+                  <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
+                    <UserSearch className="h-3 w-3" /> {item.author?.name || "Unknown"}
+                    <Clock className="h-3 w-3" /> {item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}
+                  </div>
+                </motion.article>
+              ))}
+            </MasonryGrid>
+          </section>
+        )}
+
+        {filteredUsers.length > 0 && (
+          <section>
+            <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+              Users ({filteredUsers.length})
+            </h3>
+            <MasonryGrid columnCount={2} gap={4}>
+              {filteredUsers.map((item) => (
+                <motion.article
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+                    <div>
+                      <Link
+                        to={`/user/${item.id}`}
+                        className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                        dangerouslySetInnerHTML={{ __html: highlightText(item.name || "Untitled User", query) }}
+                      />
+                      <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        {item.role || "Member"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.verified && <Badge tone="green">verified</Badge>}
+                    {item.country && <span>{item.country}</span>}
+                    {item.company && <span className="truncate">{item.company}</span>}
+                  </div>
+                </motion.article>
+              ))}
+            </MasonryGrid>
+          </section>
+        )}
+      </div>
+    );
+  }
+
+  if (activeTab === "companies") {
+    const items = filteredCompanies;
+    if (items.length === 0 && !loading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+          <Factory className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+          <p className="text-lg font-medium text-slate-900 dark:text-white">No companies found</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-4">
+        <AnimatePresence mode="popLayout">
+          <MasonryGrid columnCount={2} gap={4}>
+            {items.map((item) => (
+              <motion.article
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+              >
+                <div className="flex items-start gap-2">
+                  <button
+                    onClick={() => toggleShortlist(item.id, "company")}
+                    className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "company") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+                  >
+                    <ArrowLeftRight className="h-3.5 w-3.5" />
+                  </button>
+                  <div>
+                    <Link
+                      to={`/factory/${item.company_id}`}
+                      className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                      dangerouslySetInnerHTML={{ __html: highlightText(item.name || item.title || "Untitled Company", query) }}
+                    />
+                    <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {item.type && (
+                        <span dangerouslySetInnerHTML={{ __html: highlightText(item.type, query) }} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </MasonryGrid>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  if (activeTab === "feed") {
+    const items = filteredFeedPosts;
+    if (items.length === 0 && !loading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+          <FileText className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+          <p className="text-lg font-medium text-slate-900 dark:text-white">No feed posts found</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-4">
+        <AnimatePresence mode="popLayout">
+          <MasonryGrid columnCount={2} gap={4}>
+            {items.map((item) => (
+              <motion.article
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
+              >
+                <div className="text-lg font-semibold text-slate-900 dark:text-white"
+                  dangerouslySetInnerHTML={{ __html: highlightText(item.title || "Untitled Post", query) }} />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {item.category && <Badge tone="default">{item.category}</Badge>}
+                  {item.type && <Badge tone="default">{item.type}</Badge>}
+                </div>
+                {item.caption && (
+                  <p className="mt-3 text-sm text-slate-600 dark:text-slate-300"
+                    dangerouslySetInnerHTML={{ __html: highlightText(item.caption, query) }} />
+                )}
+                <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
+                  <UserSearch className="h-3 w-3" /> {item.author?.name || "Unknown"}
+                  <Clock className="h-3 w-3" /> {item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}
+                </div>
+              </motion.article>
+            ))}
+          </MasonryGrid>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  if (activeTab === "users") {
+    const items = filteredUsers;
+    if (items.length === 0 && !loading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+          <UserSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+          <p className="text-lg font-medium text-slate-900 dark:text-white">No users found</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-4">
+        <AnimatePresence mode="popLayout">
+          <MasonryGrid columnCount={2} gap={4}>
+            {items.map((item) => (
+              <motion.article
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-500 dark:text-slate-300">
+                    {(item.name || "U").charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <Link
+                      to={`/user/${item.id}`}
+                      className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                      dangerouslySetInnerHTML={{ __html: highlightText(item.name || "Untitled User", query) }}
+                    />
+                    <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {item.role || "Member"}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {item.verified && <Badge tone="green">verified</Badge>}
+                  {item.country && <span>{item.country}</span>}
+                  {item.company && <span className="truncate">{item.company}</span>}
+                </div>
+              </motion.article>
+            ))}
+          </MasonryGrid>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function MapPreview({ selectedLocation, filtersLocation }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-sky-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
+      <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800 px-4 py-3">
+        <div className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white">
+          <MapPinned className="h-4 w-4 text-sky-500" />
+          Map preview
+        </div>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          OpenStreetMap / Leaflet ready
+        </span>
+      </div>
+      <div className="relative h-44 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.18),transparent_25%),radial-gradient(circle_at_80%_30%,rgba(59,130,246,0.16),transparent_22%),linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.02))]" />
+        <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(15,23,42,.18)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,.18)_1px,transparent_1px)] [background-size:24px_24px]" />
+        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+          <div className="rounded-full bg-sky-600 p-3 text-white shadow-lg shadow-sky-500/30">
+            <MapPinned className="h-5 w-5" />
+          </div>
+          <div className="mt-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
+            {selectedLocation?.name || filtersLocation || "No location selected"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SearchResults() {
   usePageMeta({
     title: "Search — GarTexHub",
@@ -450,7 +1083,8 @@ export default function SearchResults() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const q = params.get("q");
-    if (q) setQuery(q);
+    if (q) // eslint-disable-next-line react-hooks/set-state-in-effect
+    setQuery(q);
     if (q) {
       setTimeout(() => executeSearchRef.current?.(), 100);
     }
@@ -480,6 +1114,7 @@ export default function SearchResults() {
   useEffect(() => {
     if (suggestionDebounce.current) clearTimeout(suggestionDebounce.current);
     if (!query.trim() || query.trim().length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSuggestions([]);
       setSuggestionsOpen(false);
       return;
@@ -665,6 +1300,7 @@ export default function SearchResults() {
   }, [token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSavedAlerts();
   }, [fetchSavedAlerts]);
 
@@ -936,7 +1572,7 @@ const filteredUsers = useMemo(() => {
       params.set("certifications", filters.certifications.join(","));
     }
     return params;
-  }, [query, filters, sortBy, searchField]);
+  }, [query, filters, sortBy, searchField, isPremium]);
 
   const executeSearch = useCallback(async () => {
     setLoading(true);
@@ -1060,7 +1696,7 @@ const filteredUsers = useMemo(() => {
     } finally {
       setLoading(false);
     }
-  }, [query, filters, token, activeTab, setSearchParams, addToast, buildSearchParams, imageSearchFile, history]);
+  }, [query, token, activeTab, setSearchParams, addToast, buildSearchParams, imageSearchFile, history]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || nextCursor === null) return;
@@ -1087,6 +1723,7 @@ const filteredUsers = useMemo(() => {
   }, [loadingMore, nextCursor, buildSearchParams, token, addToast]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     executeSearchRef.current = executeSearch;
   }, [executeSearch]);
 
@@ -1276,823 +1913,8 @@ const filteredUsers = useMemo(() => {
     setRoleSeatText("");
   }
 
-  const SearchModal = () => {
-    if (!searchModalOpen) return null;
-    const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-    return (
-      <div className="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/40 px-4 pt-24 backdrop-blur-sm">
-        <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
-          <div className="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 p-4">
-            <Search className="h-5 w-5 text-sky-500" />
-            <input
-              ref={searchInputRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search requests, factories, products..."
-              className="w-full bg-transparent text-slate-900 dark:text-white outline-none placeholder:text-slate-400"
-            />
-            <span className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 text-xs text-slate-500">
-              {isMac ? "⌘K" : "Ctrl K"}
-            </span>
-          </div>
-          <div className="grid gap-3 p-4 sm:grid-cols-2">
-            {[
-              "Buyer requests",
-              "Factories",
-              "Products",
-              "Verified suppliers",
-            ].map((item) => (
-              <button
-                key={item}
-                onClick={() => {
-                  setQuery(item);
-                  setSearchModalOpen(false);
-                  executeSearchRef.current?.();
-                }}
-                className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 text-left hover:border-sky-300 dark:hover:border-sky-700"
-              >
-                <div className="text-sm font-medium text-slate-900 dark:text-white">
-                  {item}
-                </div>
-                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  Jump straight to this search theme.
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
-  const ResultTabs = () => (
-    <div className="inline-flex rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-1 shadow-sm">
-      {[
-        { key: "all", label: `All (${estimatedCounts.total})` },
-        {
-          key: "requests",
-          label: `Buyer Requests (${estimatedCounts.buyerRequests})`,
-        },
-        { key: "companies", label: `Companies (${estimatedCounts.companies})` },
-        { key: "feed", label: `Feed Posts (${estimatedCounts.feedPosts})` },
-        { key: "users", label: `Users (${estimatedCounts.users})` },
-      ].map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => setActiveTab(tab.key)}
-          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === tab.key ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"}`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
 
-  const MapPreview = () => (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-sky-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-      <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800 px-4 py-3">
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white">
-          <MapPinned className="h-4 w-4 text-sky-500" />
-          Map preview
-        </div>
-        <span className="text-xs text-slate-500 dark:text-slate-400">
-          OpenStreetMap / Leaflet ready
-        </span>
-      </div>
-      <div className="relative h-44 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.18),transparent_25%),radial-gradient(circle_at_80%_30%,rgba(59,130,246,0.16),transparent_22%),linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.02))]" />
-        <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(15,23,42,.18)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,.18)_1px,transparent_1px)] [background-size:24px_24px]" />
-        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
-          <div className="rounded-full bg-sky-600 p-3 text-white shadow-lg shadow-sky-500/30">
-            <MapPinned className="h-5 w-5" />
-          </div>
-          <div className="mt-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
-            {selectedLocation?.name ||
-              filters.location ||
-              "No location selected"}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const ResultCards = () => {
-    if (totalResults === 0 && query && !loading) {
-      return (
-        <div className="space-y-4">
-          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 text-center">
-            <p className="text-lg font-medium">No results for &ldquo;{query}&rdquo;</p>
-            <p className="mt-1 text-sm text-slate-500">Try these categories instead:</p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {["Fabrics", "Yarn", "Garments", "Accessories", "Home Textile"].map(cat => (
-                <button key={cat} onClick={() => setFilters(f => ({ ...f, selectedCategories: [cat], allCategories: false }))}
-                  className="rounded-full border border-slate-200/80 dark:border-slate-700 px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10">
-                  {cat}
-                </button>
-              ))}
-            </div>
-            {trendingSearches.length > 0 && (
-              <>
-                <p className="mt-6 text-sm text-slate-500">Trending searches:</p>
-                <div className="mt-2 flex flex-wrap justify-center gap-2">
-                  {trendingSearches.slice(0, 5).map(t => (
-                    <button key={t} onClick={() => setQuery(t)}
-                      className="rounded-full bg-slate-100 px-4 py-2 text-sm hover:bg-slate-200 dark:bg-slate-800">
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      );
-    }
-    if (activeTab === "requests") {
-      const items = filteredRequests;
-      if (items.length === 0 && !loading) {
-        return (
-          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-            <PackageSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="text-lg font-medium text-slate-900 dark:text-white">
-              No buyer requests found
-            </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Try adjusting your filters
-            </p>
-            {query && (
-              <div className="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
-                <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">
-                  Similar Requests Alert
-                </p>
-                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                  Be the first to know when buyers post matching requests. Save
-                  a search alert now.
-                </p>
-                <button
-                  onClick={() => saveSearch && saveSearch()}
-                  className="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
-                >
-                  Save Alert
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      }
-      return (
-        <div className="space-y-4">
-          <AnimatePresence mode="popLayout">
-            <MasonryGrid columnCount={2} gap={4}>
-            {items.map((item) => (
-              <motion.article
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2">
-                    <button
-                      onClick={() => toggleShortlist(item.id, "buyer")}
-                      className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
-                    >
-                      <ArrowLeftRight className="h-3.5 w-3.5" />
-                    </button>
-                    <Link
-                      to={`/buyer/${item.buyer_id}`}
-                      className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                      dangerouslySetInnerHTML={{
-                        __html: highlightText(item.title || item.name || "Untitled Request", query),
-                      }}
-                    />
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                      <span>{item.location || item.country || "N/A"}</span>
-                      {item.category && (
-                        <>
-                          <span>•</span>
-                          <span
-                            dangerouslySetInnerHTML={{
-                              __html: highlightText(item.category, query),
-                            }}
-                          />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    {item.status === "verified" && (
-                      <Badge tone="green">verified</Badge>
-                    )}
-                    {item.isPriority && <Badge tone="violet">priority</Badge>}
-                    {item.status === "active" && (
-                      <Badge tone="blue">active</Badge>
-                    )}
-                  </div>
-                </div>
-
-                {(item.gender || item.season || item.material) && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {item.gender && (
-                      <Badge tone="default">Gender: {item.gender}</Badge>
-                    )}
-                    {item.season && (
-                      <Badge tone="default">Season: {item.season}</Badge>
-                    )}
-                    {item.material && (
-                      <Badge tone="default">Material: {item.material}</Badge>
-                    )}
-                    {item.quoteDate && (
-                      <Badge tone="amber">Quote by {item.quoteDate}</Badge>
-                    )}
-                    {item.expiryDate && (
-                      <Badge tone="red">Expires {item.expiryDate}</Badge>
-                    )}
-                    {item.maxSuppliers && (
-                      <Badge tone="default">
-                        Max suppliers: {item.maxSuppliers}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-
-                {item.description && (
-                  <p
-                    className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightText(item.description, query),
-                    }}
-                  />
-                )}
-
-                {(item.quantity || item.targetPrice) && (
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    {item.quantity && (
-                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Quantity
-                        </div>
-                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                          {item.quantity}
-                        </div>
-                      </div>
-                    )}
-                    {item.targetPrice && (
-                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          Target price
-                        </div>
-                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                          {item.targetPrice}
-                        </div>
-                      </div>
-                    )}
-                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Discussion
-                      </div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {item.discussions?.length > 0 ? "Active" : "None"}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
-                    <Eye className="h-4 w-4" /> Quick View
-                  </button>
-                  <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
-                    <Share2 className="h-4 w-4" /> Share
-                  </button>
-                  <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
-                    <MessageSquareMore className="h-4 w-4" /> Discuss
-                  </button>
-                </div>
-              </motion.article>
-            ))}
-            </MasonryGrid>
-          </AnimatePresence>
-        </div>
-      );
-    }
-
-    if (activeTab === "all") {
-      const hasAny = filteredRequests.length || filteredCompanies.length || filteredFeedPosts.length || filteredUsers.length;
-      if (!hasAny && !loading) {
-        return (
-          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-            <SearchX className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="text-lg font-medium text-slate-900 dark:text-white">
-              No results found
-            </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Try adjusting your search or filters
-            </p>
-          </div>
-        );
-      }
-      return (
-        <div className="space-y-8">
-          {filteredRequests.length > 0 && (
-            <section>
-              <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
-                Buyer Requests ({filteredRequests.length})
-              </h3>
-              <AnimatePresence mode="popLayout">
-                <MasonryGrid columnCount={2} gap={4}>
-                  {filteredRequests.map((item) => (
-                    <motion.article
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-2">
-                          <button
-                            onClick={() => toggleShortlist(item.id, "buyer")}
-                            className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
-                          >
-                            <ArrowLeftRight className="h-3.5 w-3.5" />
-                          </button>
-                          <Link
-                            to={`/buyer/${item.buyer_id}`}
-                            className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                            dangerouslySetInnerHTML={{
-                              __html: highlightText(item.title || item.name || "Untitled Request", query),
-                            }}
-                          />
-                          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                            <span>{item.location || item.country || "N/A"}</span>
-                            {item.category && (
-                              <>
-                                <span>•</span>
-                                <span dangerouslySetInnerHTML={{ __html: highlightText(item.category, query) }} />
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {item.description && (
-                        <p className="mt-4 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300"
-                          dangerouslySetInnerHTML={{ __html: highlightText(item.description, query) }}
-                        />
-                      )}
-                    </motion.article>
-                  ))}
-                </MasonryGrid>
-              </AnimatePresence>
-            </section>
-          )}
-
-          {filteredCompanies.length > 0 && (
-            <section>
-              <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
-                Companies ({filteredCompanies.length})
-              </h3>
-              <AnimatePresence mode="popLayout">
-                <MasonryGrid columnCount={2} gap={4}>
-                  {filteredCompanies.map((item) => (
-                    <motion.article
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-                    >
-                      <div className="flex items-start gap-2">
-                        <Link
-                          to={`/factory/${item.company_id}`}
-                          className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                          dangerouslySetInnerHTML={{
-                            __html: highlightText(item.name || item.title || "Untitled Company", query),
-                          }}
-                        />
-                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                          <span>{item.location || item.country || "N/A"}</span>
-                        </div>
-                      </div>
-                    </motion.article>
-                  ))}
-                </MasonryGrid>
-              </AnimatePresence>
-            </section>
-          )}
-
-          {filteredFeedPosts.length > 0 && (
-            <section>
-              <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
-                Feed Posts ({filteredFeedPosts.length})
-              </h3>
-              <AnimatePresence mode="popLayout">
-                <MasonryGrid columnCount={2} gap={4}>
-                  {filteredFeedPosts.map((item) => (
-                    <motion.article
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-                    >
-                      <div className="flex items-start gap-3">
-                        <Link to={`/profile/${item.user_id}`} className="shrink-0">
-                          {item.author_avatar ? (
-                            <img src={item.author_avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
-                          ) : (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
-                              {(item.author_name || "U").charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </Link>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-white"
-                            dangerouslySetInnerHTML={{ __html: highlightText(item.title || "Untitled Post", query) }}
-                          />
-                          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                            {item.author_name && (
-                              <span className="truncate">{item.author_name}</span>
-                            )}
-                            {item.category && (
-                              <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
-                                {item.category}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {item.caption && (
-                        <p className="mt-2 line-clamp-2 text-sm text-slate-600 dark:text-slate-300"
-                          dangerouslySetInnerHTML={{ __html: highlightText(item.caption, query) }}
-                        />
-                      )}
-                      {item.description_markdown && (
-                        <div className="mt-2 max-h-20 overflow-hidden text-xs leading-relaxed text-slate-500 dark:text-slate-400"
-                          dangerouslySetInnerHTML={{ __html: highlightText(item.description_markdown.slice(0, 200), query) }}
-                        />
-                      )}
-                    </motion.article>
-                  ))}
-                </MasonryGrid>
-              </AnimatePresence>
-            </section>
-          )}
-
-          {filteredUsers.length > 0 && (
-            <section>
-              <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
-                Users ({filteredUsers.length})
-              </h3>
-              <AnimatePresence mode="popLayout">
-                <MasonryGrid columnCount={2} gap={4}>
-                  {filteredUsers.map((item) => (
-                    <motion.article
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-                    >
-                      <div className="flex items-start gap-3">
-                        {item.avatar_url ? (
-                          <img src={item.avatar_url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
-                        ) : (
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
-                            {(item.name || "U").charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <Link
-                            to={`/profile/${item.id}`}
-                            className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                            dangerouslySetInnerHTML={{
-                              __html: highlightText(item.name || "Untitled User", query),
-                            }}
-                          />
-                          {item.headline && (
-                            <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">{item.headline}</p>
-                          )}
-                          {item.bio && (
-                            <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.bio}</p>
-                          )}
-                          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                            {item.role && (
-                              <Badge tone={item.role === "factory" ? "green" : item.role === "buyer" ? "blue" : "default"}>
-                                {item.role.replace(/_/g, " ")}
-                              </Badge>
-                            )}
-                            {item.verified && <Badge tone="green">verified</Badge>}
-                            {item.country && <span>{item.country}</span>}
-                            {item.company && <span className="truncate">{item.company}</span>}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.article>
-                  ))}
-                </MasonryGrid>
-              </AnimatePresence>
-            </section>
-          )}
-        </div>
-      );
-    }
-
-    if (activeTab === "companies") {
-      const items = filteredCompanies;
-      if (items.length === 0 && !loading) {
-        return (
-          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-            <Factory className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="text-lg font-medium text-slate-900 dark:text-white">
-              No companies found
-            </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Try adjusting your search or filters
-            </p>
-            {query && (
-              <div className="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
-                <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">
-                  Similar Products
-                </p>
-                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                  Set a search alert for "{query}" to get notified when matching
-                  companies are posted.
-                </p>
-                <button
-                  onClick={() => saveSearch && saveSearch()}
-                  className="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
-                >
-                  Save Alert
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      }
-      return (
-        <AnimatePresence mode="popLayout">
-          <MasonryGrid columnCount={2} gap={4}>
-          {items.map((item) => (
-            <motion.article
-              key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-            >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2">
-                    <button
-                      onClick={() => toggleShortlist(item.id, "company")}
-                      className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "company") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
-                    >
-                      <ArrowLeftRight className="h-3.5 w-3.5" />
-                    </button>
-                    <Link
-                      to={`/factory/${item.company_id}`}
-                      className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                      dangerouslySetInnerHTML={{
-                        __html: highlightText(item.name || item.title || "Untitled Company", query),
-                      }}
-                    />
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <span>{item.location || item.country || "N/A"}</span>
-                    {item.type && (
-                      <>
-                        <span>•</span>
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: highlightText(item.type, query),
-                          }}
-                        />
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="flex flex-wrap justify-end gap-2">
-                  {item.isVerified && <Badge tone="green">verified</Badge>}
-                  {item.exportsTo?.length > 0 && (
-                    <Badge tone="blue">export</Badge>
-                  )}
-                </div>
-              </div>
-
-              {(item.moq || item.workerCount || item.capacity) && (
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  {item.moq && (
-                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        MOQ
-                      </div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {item.moq}
-                      </div>
-                    </div>
-                  )}
-                  {item.workerCount && (
-                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Workers
-                      </div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {fmtNumber(item.workerCount)}
-                      </div>
-                    </div>
-                  )}
-                  {item.capacity && (
-                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Capacity
-                      </div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {item.capacity}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
-                  <Eye className="h-4 w-4" /> View Profile
-                </button>
-                <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
-                  <Share2 className="h-4 w-4" /> Share
-                </button>
-              </div>
-            </motion.article>
-          ))}
-          </MasonryGrid>
-        </AnimatePresence>
-      );
-    }
-
-    if (activeTab === "feed") {
-      const items = filteredFeedPosts;
-      if (items.length === 0 && !loading) {
-        return (
-          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-            <FileText className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="text-lg font-medium text-slate-900 dark:text-white">
-              No feed posts found
-            </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Try adjusting your search or filters
-            </p>
-          </div>
-        );
-      }
-      return (
-        <AnimatePresence mode="popLayout">
-          <MasonryGrid columnCount={2} gap={4}>
-          {items.map((item) => (
-            <motion.article
-              key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-            >
-              <div className="flex items-start gap-3">
-                <Link to={`/profile/${item.user_id}`} className="shrink-0">
-                  {item.author_avatar ? (
-                    <img src={item.author_avatar} alt="" className="h-9 w-9 rounded-full object-cover" />
-                  ) : (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
-                      {(item.author_name || "U").charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </Link>
-                <div className="min-w-0 flex-1">
-                  <Link
-                    to={`/profile/${item.user_id}`}
-                    className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightText(item.title || "Untitled Post", query),
-                    }}
-                  />
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    {item.author_name && (
-                      <Link to={`/profile/${item.author_id || item.user_id}`} className="hover:text-sky-600 dark:hover:text-sky-400">
-                        {item.author_name}
-                      </Link>
-                    )}
-                    {item.category && (
-                      <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
-                        {item.category}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {item.caption && (
-                <p className="mt-3 line-clamp-2 text-sm text-slate-600 dark:text-slate-300"
-                  dangerouslySetInnerHTML={{ __html: highlightText(item.caption, query) }}
-                />
-              )}
-              {item.description_markdown && (
-                <div className="mt-3 max-h-24 overflow-hidden text-xs leading-relaxed text-slate-500 dark:text-slate-400"
-                  dangerouslySetInnerHTML={{ __html: highlightText(item.description_markdown.slice(0, 300), query) }}
-                />
-              )}
-              {item.hashtags && Array.isArray(item.hashtags) && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {item.hashtags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className="mt-4 text-xs text-slate-400">
-                {new Date(item.created_at).toLocaleDateString()}
-              </div>
-            </motion.article>
-          ))}
-          </MasonryGrid>
-        </AnimatePresence>
-      );
-    }
-
-    if (activeTab === "users") {
-      const items = filteredUsers;
-      if (items.length === 0 && !loading) {
-        return (
-          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-            <UserSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="text-lg font-medium text-slate-900 dark:text-white">
-              No users found
-            </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Try adjusting your search or filters
-            </p>
-          </div>
-        );
-      }
-      return (
-        <AnimatePresence mode="popLayout">
-          <MasonryGrid columnCount={2} gap={4}>
-          {items.map((item) => (
-            <motion.article
-              key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-            >
-              <div className="flex items-start gap-3">
-                {item.avatar_url ? (
-                  <img src={item.avatar_url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
-                ) : (
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 dark:bg-sky-900 dark:text-sky-300">
-                    {(item.name || "U").charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <Link
-                    to={`/profile/${item.id}`}
-                    className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightText(item.name || "Untitled User", query),
-                    }}
-                  />
-                  {item.headline && (
-                    <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">{item.headline}</p>
-                  )}
-                  {item.bio && (
-                    <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.bio}</p>
-                  )}
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    {item.role && (
-                      <Badge tone={item.role === "factory" ? "green" : item.role === "buyer" ? "blue" : "default"}>
-                        {item.role.replace(/_/g, " ")}
-                      </Badge>
-                    )}
-                    {item.verified && <Badge tone="green">verified</Badge>}
-                    {item.country && <span>{item.country}</span>}
-                    {item.company && <span className="truncate">{item.company}</span>}
-                  </div>
-                </div>
-              </div>
-            </motion.article>
-          ))}
-          </MasonryGrid>
-        </AnimatePresence>
-      );
-    }
-
-    return null;
-  };
 
   const isMac =
     typeof navigator !== "undefined" &&
@@ -2103,7 +1925,7 @@ const filteredUsers = useMemo(() => {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] text-slate-900 dark:text-white transition-colors">
       <ToastStack toasts={toasts} onDismiss={removeToast} />
-      <SearchModal />
+      <SearchModal open={searchModalOpen} searchInputRef={searchInputRef} query={query} onQueryChange={setQuery} onClose={() => setSearchModalOpen(false)} executeSearchRef={executeSearchRef} />
       {batchOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
@@ -2345,7 +2167,7 @@ const filteredUsers = useMemo(() => {
               </div>
 
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                <ResultTabs />
+                <ResultTabs estimatedCounts={estimatedCounts} activeTab={activeTab} onTabChange={setActiveTab} />
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                   <Badge tone="blue">
                     {loading
@@ -2931,7 +2753,7 @@ const filteredUsers = useMemo(() => {
                       )}
                     </div>
 
-                    <MapPreview />
+                    <MapPreview selectedLocation={selectedLocation} filtersLocation={filters.location} />
 
                     <button
                       onClick={useCurrentLocation}
@@ -3212,7 +3034,7 @@ const filteredUsers = useMemo(() => {
                       exit={{ clipPath: 'inset(0 0 0 100%)' }}
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                     >
-                      <ResultCards />
+                      <ResultCards totalResults={totalResults} query={query} loading={loading} trendingSearches={trendingSearches} activeTab={activeTab} filteredRequests={filteredRequests} filteredCompanies={filteredCompanies} filteredFeedPosts={filteredFeedPosts} filteredUsers={filteredUsers} setFilters={setFilters} setQuery={setQuery} toggleShortlist={toggleShortlist} isShortlisted={isShortlisted} highlightText={highlightText} saveSearch={saveSearch} />
                       {!loading && nextCursor !== null && !refineQuery && (
                         <div className="mt-6 flex justify-center">
                           <button

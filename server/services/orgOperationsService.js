@@ -13,8 +13,8 @@ import { trackEvent } from "./eventTrackingService.js";
 
 const USE_SQL_CRM = isCrmSqlEnabled();
 
-const POLICIES_FILE = "org_policies.json";
-const ASSIGNMENTS_FILE = "lead_assignments.json";
+const _POLICIES_FILE = "org_policies.json";
+const _ASSIGNMENTS_FILE = "lead_assignments.json";
 const CAPACITY_FILE = "agent_capacity.json";
 const LEADS_FILE = "leads.json";
 const USERS_FILE = "users.json";
@@ -330,7 +330,7 @@ export async function rebalanceOrgQueue(actor, payload = {}) {
     return ranked[0]?.agent_id || "";
   }
 
-  const nextLeads = leads.map((lead) => {
+  const _nextLeads = leads.map((lead) => {
     if (String(lead.org_owner_id || "") !== orgOwnerId) return lead;
     const hasAssignee = Boolean(lead.assigned_agent_id);
     if (hasAssignee && strategy === "fill_unassigned") return lead;

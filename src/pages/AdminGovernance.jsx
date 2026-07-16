@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiRequest, getToken } from "../lib/auth";
+import NeonAtom from "../components/ui/NeonAtom";
 import {
   Activity,
   ArrowRight,
@@ -154,7 +155,7 @@ function Button({ children, variant = "primary", className = "", ...props }) {
 
 function JsonBlock({ value, minHeight = 160 }) {
   return (
-    <pre
+    <pre data-lenis-prevent
       className="overflow-auto rounded-2xl border border-slate-200 bg-slate-950 px-4 py-4 text-xs leading-6 text-slate-100 shadow-inner dark:border-slate-800"
       style={{ minHeight }}
     >

@@ -387,7 +387,7 @@ export async function searchSuggestions(req, res) {
     if (!q || q.length < 1) {
       return res.json({ suggestions: [] });
     }
-    const like = `%${q}%`;
+    const _like = `%${q}%`;
     const [products, requirements, eventRows] = await Promise.all([
       prisma.product.findMany({
         where: {

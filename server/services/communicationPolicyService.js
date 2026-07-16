@@ -933,8 +933,8 @@ export async function markPolicyDecisionFalsePositive(
 export async function adjustSenderReputation(
   senderId,
   delta = 0,
-  actorId = "",
-  notes = "",
+  _actorId = "",
+  _notes = "",
 ) {
   const safeSenderId = sanitizeString(String(senderId || ""), 120);
   if (!safeSenderId) return null;

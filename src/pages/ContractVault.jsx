@@ -4,7 +4,7 @@
   Allowed roles: buyer, buying_house, factory, owner, admin, agent
  */
 import NeonAtom from "../components/ui/NeonAtom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import AccessDeniedState from "../components/AccessDeniedState";
@@ -384,7 +384,7 @@ function isOwnerLevel(user) {
   return user?.role === "owner" || user?.role === "admin";
 }
 
-export default function ContractVaultPage() {
+export default function ContractVaultPage({ embedded = false }) {
   const { theme, toggleTheme } = useTheme();
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
@@ -403,6 +403,17 @@ export default function ContractVaultPage() {
     currency: "USD",
     document_file: null,
   });
+
+  const mainRef = useRef(null);
+  const [mainHeight, setMainHeight] = useState(null);
+
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el || !embedded) return;
+    const ro = new ResizeObserver(([entry]) => setMainHeight(entry.contentRect.height));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [embedded]);
 
   useEffect(() => {
     let cancelled = false;
@@ -566,8 +577,14 @@ export default function ContractVaultPage() {
 
   const canSign = currentUser && isOwnerLevel(currentUser);
 
-  if (pageLoading) return <NeonAtom fill />;
+  if (pageLoading) {
+    if (embedded) return <div className="flex items-center justify-center py-12"><NeonAtom /></div>;
+    return <NeonAtom fill />;
+  }
   if (!contract) {
+    if (embedded) {
+      return <div className="text-center py-12 text-slate-500 dark:text-slate-400">No contracts found.</div>;
+    }
     return (
       <div className={shell}>
         <div className="flex min-h-screen items-center justify-center">
@@ -577,14 +594,9 @@ export default function ContractVaultPage() {
     );
   }
 
-  return (
-    <div className={shell}>
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.22),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_24%),linear-gradient(180deg,#f8fbff_0%,#eef7ff_40%,#eaf3ff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_25%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.12),_transparent_22%),linear-gradient(180deg,#020617_0%,#07111f_45%,#08111b_100%)] dark:text-white">
-        <div className="mx-auto max-w-[1600px] px-4 py-4 md:px-6 lg:px-8">
-          <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
-            <CardStack>
-            <aside className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-950/70 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]">
-              <div className="flex items-center justify-between">
+  const sidebarContent = (
+            <aside data-lenis-prevent className="flex flex-col overflow-y-auto scrollbar-hide max-h-full rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-950/70 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]">
+              <div className="flex items-center justify-between shrink-0">
                 <div>
                   <div className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-sky-600 dark:text-sky-300">
                     <icons.vault className="h-5 w-5" />
@@ -597,15 +609,18 @@ export default function ContractVaultPage() {
                     Draft → Sign → PDF artifact → Lock → Archive
                   </p>
                 </div>
+                {!embedded && (
                 <button
                   onClick={() => { toggleTheme(); window.dispatchEvent(new Event("theme-change")); }}
                   className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
                 >
                   {theme === "dark" ? "Light" : "Dark"}
                 </button>
+                )}
               </div>
 
-              <div className="mt-6 grid gap-2">
+              {!embedded && (
+              <div className="mt-6 grid gap-2 shrink-0">
                 <NavItem
                   icon={icons.dashboard}
                   label="Dashboard"
@@ -614,14 +629,15 @@ export default function ContractVaultPage() {
                 <NavItem
                   icon={icons.bell}
                   label="Notifications"
-                  count="4"
                   onClick={() => navigate("/notifications")}
                 />
                 <NavItem icon={icons.plus} label="New draft" />
                 <NavItem icon={icons.file} label="Contracts" active />
                 <NavItem icon={icons.refresh} label="Refresh" />
               </div>
+              )}
 
+              <div className="shrink-0">
               <ScrollReveal as="section">
               <div className="mt-6 rounded-2xl border border-sky-500/15 bg-sky-500/5 p-4 dark:border-sky-400/20 dark:bg-sky-400/10">
                 <div className="flex items-center gap-2 text-sm font-semibold text-sky-700 dark:text-sky-200">
@@ -662,8 +678,10 @@ export default function ContractVaultPage() {
                 )}
               </div>
               </ScrollReveal>
+              </div>
 
-              <StaggerContainer className="mt-6 space-y-3">
+              <div className="flex-1 min-h-0 mt-6">
+              <StaggerContainer className="space-y-3">
                 {filtered.map((c) => (
                   <StaggerItem key={c.id}>
                   <button
@@ -704,10 +722,15 @@ export default function ContractVaultPage() {
                   </StaggerItem>
                 ))}
               </StaggerContainer>
+              </div>
             </aside>
-            </CardStack>
+  );
 
-            <main className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+  const vaultContent = (
+          <div className={cn(embedded ? "flex flex-col xl:flex-row max-h-full gap-4 items-start" : "grid max-h-full gap-4 xl:grid-cols-[280px_minmax(0,1fr)]")}>
+            {embedded ? <div className="w-full xl:w-[280px] shrink-0" style={{ maxHeight: mainHeight ? `${mainHeight}px` : undefined }}>{sidebarContent}</div> : <CardStack className="h-full">{sidebarContent}</CardStack>}
+
+            <main ref={mainRef} data-lenis-prevent className={cn(embedded ? "flex-1 min-w-0 min-h-0 overflow-y-auto scrollbar-hide max-h-full" : "grid overflow-y-auto scrollbar-hide max-h-full xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]")}>
               <div className="space-y-4">
                 <ScrollReveal as="section">
                 <SectionCard
@@ -870,9 +893,9 @@ export default function ContractVaultPage() {
                     right={<Pill tone="violet">Visible</Pill>}
                   >
                     <div className="grid gap-3 text-sm text-slate-700 dark:text-slate-300">
-                      <Row label="Bank name" value="—" />
-                      <Row label="Beneficiary" value="—" />
-                      <Row label="Transaction reference" value="—" />
+                      <Row label="Bank name" value={contract?.raw?.bank_name || "—"} />
+                      <Row label="Beneficiary" value={contract?.raw?.beneficiary_name || "—"} />
+                      <Row label="Transaction reference" value={contract?.raw?.transaction_reference || "—"} />
                     </div>
                   </SectionCard>
 
@@ -990,6 +1013,7 @@ export default function ContractVaultPage() {
                   </SectionCard>
               </div>
                 </ScrollReveal>
+              </div>
 
               <div className="space-y-4">
                 <ScrollReveal as="section">
@@ -1015,7 +1039,7 @@ export default function ContractVaultPage() {
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-slate-900 dark:text-white">
-                        0 available
+                        Call recordings
                       </span>
                       <icons.phone className="h-4 w-4 text-sky-500" />
                     </div>
@@ -1030,18 +1054,29 @@ export default function ContractVaultPage() {
                   subtitle="Generated, versioned, and traceable"
                 >
                   <div className="grid gap-3 text-sm text-slate-700 dark:text-slate-300">
-                    <Row label="Status" value="generated" />
-                    <Row
-                      label="Generated at"
-                      value="2026-04-21T15:33:19.998Z"
-                    />
-                    <Row label="Version" value="0" />
-                    <Row label="Hash" value="abc" />
-                    <Row label="Signer IDs" value="Buyer — - Factory —" />
-                    <Row
-                      label="Signature timestamps"
-                      value="Buyer — - Factory —"
-                    />
+                    {(() => {
+                      const a = contract?.raw?.artifact || {};
+                      const signers = a?.signer_ids;
+                      const timestamps = a?.signature_timestamps;
+                      return (
+                        <>
+                          <Row label="Status" value={a?.status || "—"} />
+                          <Row label="Generated at" value={a?.generated_at || "—"} />
+                          <Row label="Version" value={a?.version != null ? String(a.version) : "—"} />
+                          <Row label="Hash" value={a?.pdf_hash || "—"} />
+                          <Row label="Signer IDs" value={
+                            signers
+                              ? `Buyer ${signers.buyer_id || "—"} · Factory ${signers.factory_id || "—"}`
+                              : "—"
+                          } />
+                          <Row label="Signature timestamps" value={
+                            timestamps
+                              ? `Buyer ${timestamps.buyer_signed_at || "—"} · Factory ${timestamps.factory_signed_at || "—"}`
+                              : "—"
+                          } />
+                        </>
+                      );
+                    })()}
                   </div>
                 </SectionCard>
 
@@ -1079,15 +1114,29 @@ export default function ContractVaultPage() {
                       step="Factory sign"
                       done={contract.factorySign === "signed"}
                     />
-                    <SummaryRow step="Lock PDF" done={false} />
-                    <SummaryRow step="Archive" done={false} />
+                    <SummaryRow
+                      step="Lock PDF"
+                      done={contract?.raw?.artifact?.status === "locked" || contract?.raw?.artifact?.status === "archived"}
+                    />
+                    <SummaryRow
+                      step="Archive"
+                      done={contract?.raw?.lifecycle_status === "archived"}
+                    />
                   </div>
                 </SectionCard>
                 </ScrollReveal>
               </div>
-            </div>
             </main>
           </div>
+  );
+
+  if (embedded) return vaultContent;
+
+  return (
+    <div className={shell}>
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.22),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_24%),linear-gradient(180deg,#f8fbff_0%,#eef7ff_40%,#eaf3ff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_25%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.12),_transparent_22%),linear-gradient(180deg,#020617_0%,#07111f_45%,#08111b_100%)] dark:text-white">
+        <div className="mx-auto max-w-[1600px] px-4 py-4 md:px-6 lg:px-8">
+          {vaultContent}
         </div>
       </div>
     </div>

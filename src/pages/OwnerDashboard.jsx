@@ -1,16 +1,20 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import { Mosaic } from 'react-loading-indicators';
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
 import LeadManager from "../components/leads/LeadManager";
 import { apiRequest, getToken, syncUserFromApi } from "../lib/auth";
+import { isRouteValid } from "../lib/routeHealthCheck";
 import CountUp from "../components/CountUp";
 import ScrollReveal from "../components/ScrollReveal";
 import ScaleIn from "../components/ScaleIn";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import HoverCard from "../components/HoverCard";
+import ContractVaultPage from "./ContractVault";
+import VerificationPage from "./VerificationPage";
+import OrgSettings from "./OrgSettings";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -165,6 +169,8 @@ const menuItems = [
   { id: "contracts", label: "Contracts Vault", short: "Contracts" },
   { id: "insights", label: "Insights & Analytics", short: "Insights" },
   { id: "subscription", label: "Subscription", short: "Billing" },
+  { id: "verification", label: "Verification", short: "Verify" },
+  { id: "settings", label: "Settings", short: "Settings" },
 ];
 
 const quickActions = [
@@ -184,13 +190,21 @@ const quickActions = [
   { label: "Messages", href: "/chat", desc: "Chat with buyers" },
   { label: "Analytics", href: "/insights", desc: "View data insights" },
   { label: "Settings", href: "/org-settings", desc: "Account configuration" },
-];
+].filter((item) => isRouteValid(item.href));
 
 export default function OwnerDashboard() {
   const navigate = useNavigate();
-  const [active, setActive] = useState("home");
-  const { theme, toggleTheme } = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const active = useMemo(() => {
+    const candidate = searchParams.get("tab") || "home";
+    return menuItems.some((t) => t.id === candidate) ? candidate : "home";
+  }, [searchParams]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const goTab = useCallback((id) => {
+    setSearchParams({ tab: id }, { replace: true });
+    setSidebarOpen(false);
+  }, [setSearchParams]);
+  const { theme, toggleTheme } = useTheme();
 
   const { dashboard, subscription, isEnterprise, loading, error } =
     useAnalyticsDashboard();
@@ -309,17 +323,18 @@ export default function OwnerDashboard() {
 
   return (
     <div className={theme === "dark" ? "dark" : ""}>
-      <div className="min-h-screen w-full bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100">
-        <div className="flex min-h-screen w-full max-w-none overflow-x-hidden">
+      <div style={{ height: "100vh", overflow: "hidden" }} className="flex w-full bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100">
           <aside
+            data-lenis-prevent
             className={cn(
-              "fixed inset-y-0 left-0 z-40 w-80 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:sticky lg:top-0 lg:translate-x-0",
+              "fixed inset-y-0 left-0 z-40 w-80 shrink-0 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:relative lg:z-auto lg:translate-x-0 scrollbar-invisible",
               sidebarOpen
                 ? "translate-x-0"
                 : "-translate-x-full lg:translate-x-0",
             )}
+            style={{ height: "100vh", overflow: "auto" }}
           >
-            <div className="flex h-full flex-col rounded-[2rem] border border-slate-200/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-slate-950/65">
+            <div className="flex min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-slate-950/65">
               <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-4 dark:border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/20">
@@ -343,13 +358,12 @@ export default function OwnerDashboard() {
                 </button>
               </div>
 
-              <nav className="mt-4 flex-1 space-y-1 overflow-y-auto pr-1">
+              <nav className="mt-4 space-y-1 pr-1">
                 {menuItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => {
-                      setActive(item.id);
-                      setSidebarOpen(false);
+                      goTab(item.id);
                     }}
                     className={cn(
                       "group flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-all duration-200",
@@ -397,7 +411,7 @@ export default function OwnerDashboard() {
             </div>
           </aside>
 
-          <div className="flex-1 lg:ml-0">
+          <div data-lenis-prevent className="flex flex-1 flex-col min-h-0" style={{ overflowY: "auto" }}>
             <header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/70 px-4 py-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 sm:px-6 xl:px-8">
               <div className="flex items-center gap-3">
                 <button
@@ -432,7 +446,7 @@ export default function OwnerDashboard() {
               </div>
             </header>
 
-            <main className="px-4 py-6 sm:px-6 xl:px-8">
+            <main className="flex flex-col flex-1 min-h-0 px-4 py-6 sm:px-6 xl:px-8">
               {loading && (
                 <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
               )}
@@ -986,67 +1000,8 @@ export default function OwnerDashboard() {
               )}
 
               {active === "contracts" && !loading && (
-                <div className="space-y-6">
-                  <ScrollReveal as="section"><div className="grid gap-4 md:grid-cols-2">
-                    <StatCard
-                      label="Active Contracts"
-                      value={totals.contracts ?? 0}
-                      sub="Currently in force"
-                    />
-                    <StatCard
-                      label="Documents"
-                      value={totals.documents ?? 0}
-                      sub="Stored in vault"
-                    />
-                  </div></ScrollReveal>
-
-                  <SectionCard
-                    title="Contracts Vault"
-                    subtitle="Secure document and contract management."
-                    action={
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => go("/contracts?action=new")}
-                          className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
-                        >
-                          + New Contract
-                        </button>
-                        <button
-                          onClick={() => go("/contracts")}
-                          className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-white/10 dark:bg-slate-950/40 dark:text-slate-200"
-                        >
-                          View All Contracts
-                        </button>
-                      </div>
-                    }
-                  >
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-                        <div className="text-sm text-slate-500 dark:text-slate-400">
-                          Active contracts
-                        </div>
-                        <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
-                          {totals.contracts ?? 0}
-                        </div>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-                        <div className="text-sm text-slate-500 dark:text-slate-400">
-                          Total documents
-                        </div>
-                        <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
-                          {totals.documents ?? 0}
-                        </div>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-                        <div className="text-sm text-slate-500 dark:text-slate-400">
-                          Vault health
-                        </div>
-                        <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
-                          {vaultHealth}%
-                        </div>
-                      </div>
-                    </div>
-                  </SectionCard>
+                <div className="flex-1 min-h-0 space-y-6" data-lenis-prevent>
+                  <ContractVaultPage embedded />
                 </div>
               )}
 
@@ -1095,6 +1050,18 @@ export default function OwnerDashboard() {
                       <MiniBarChart values={chartDocsData} />
                     </SectionCard>
                   </div>
+                </div>
+              )}
+
+              {active === "verification" && !loading && (
+                <div className="flex-1 min-h-0 space-y-6" data-lenis-prevent>
+                  <VerificationPage embedded />
+                </div>
+              )}
+
+              {active === "settings" && !loading && (
+                <div className="flex-1 min-h-0" data-lenis-prevent>
+                  <OrgSettings embedded />
                 </div>
               )}
 
@@ -1184,6 +1151,5 @@ export default function OwnerDashboard() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

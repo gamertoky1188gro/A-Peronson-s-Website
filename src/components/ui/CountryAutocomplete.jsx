@@ -118,7 +118,7 @@ export default function CountryAutocomplete({
       />
 
       {open && filtered.length > 0 ? (
-        <ul
+        <ul data-lenis-prevent
           id={`${id}-list`}
           role="listbox"
           aria-label="Country suggestions"

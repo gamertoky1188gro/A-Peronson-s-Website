@@ -51,7 +51,6 @@ const PartnerNetwork = safeLazy(() => import("./pages/PartnerNetwork"));
 const ProductManagement = safeLazy(() => import("./pages/ProductManagement"));
 const BuyerRequestManagement = safeLazy(() => import("./pages/BuyerRequestManagement"));
 const HelpCenter = safeLazy(() => import("./pages/HelpCenter"));
-const ContractVault = safeLazy(() => import("./pages/ContractVault"));
 const NotificationsCenter = safeLazy(() => import("./pages/NotificationsCenter"));
 const OrgSettings = safeLazy(() => import("./pages/OrgSettings"));
 const Insights = safeLazy(() => import("./pages/Insights"));
@@ -227,14 +226,6 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/contracts"
-        element={
-          <ProtectedRoute roles={AUTH_ROLES}>
-            <ContractVault />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/notifications"
         element={
           <ProtectedRoute roles={AUTH_ROLES}>
@@ -255,22 +246,6 @@ function AppRoutes() {
         element={
           <ProtectedRoute roles={AUTH_ROLES}>
             <CallInterface />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/verification"
-        element={
-          <ProtectedRoute roles={AUTH_ROLES}>
-            <VerificationPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/verification-center"
-        element={
-          <ProtectedRoute roles={AUTH_ROLES}>
-            <VerificationPage />
           </ProtectedRoute>
         }
       />
@@ -317,6 +292,22 @@ function AppRoutes() {
       />
       <Route
         path="/owner"
+        element={
+          <ProtectedRoute roles={OWNER_ROLES}>
+            <OwnerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contracts"
+        element={
+          <ProtectedRoute roles={OWNER_ROLES}>
+            <OwnerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leads"
         element={
           <ProtectedRoute roles={OWNER_ROLES}>
             <OwnerDashboard />

@@ -49,7 +49,7 @@ export async function getLinkPreview(url) {
       return prisma.linkPreview.update({ where: { url }, data });
     }
     return prisma.linkPreview.create({ data });
-  } catch (err) {
+  } catch (_err) {
     const domain = parseDomain(url);
     const fallback = { url, title: domain, description: null, image: null, favicon: null, site_name: null, domain };
 

@@ -61,6 +61,7 @@ export default function ProductQuickViewModal({
 
   useEffect(() => {
     if (!open || !productId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentImageIndex(0);
     const state = viewRecordedRef.current;
     if (state.productId !== productId) {

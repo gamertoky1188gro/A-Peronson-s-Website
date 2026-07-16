@@ -436,7 +436,7 @@ export async function registerUser(payload) {
   try {
     const { createUserOpencodeSession } = await import("./assistantService.js");
     await createUserOpencodeSession(user.id);
-  } catch (err) {
+  } catch (_err) {
     // non-blocking: session creation should not block signup
   }
 

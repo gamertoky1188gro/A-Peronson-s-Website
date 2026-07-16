@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import prisma from "../utils/prisma.js";
-import { isCrmSqlEnabled, readLegacyJson } from "../utils/crmFallbackStore.js";
+import { isCrmSqlEnabled, readLegacyJson as _readLegacyJson } from "../utils/crmFallbackStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import { trackTransition } from "../utils/metrics.js";
 import {
@@ -26,7 +26,7 @@ import {
 } from "./communicationPolicyService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
 
-const USE_SQL_CRM = isCrmSqlEnabled();
+const _USE_SQL_CRM = isCrmSqlEnabled();
 
 function buildUsersById(users = []) {
   return new Map(

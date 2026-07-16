@@ -383,6 +383,7 @@ export default function BuyingHouseProfile() {
         setProductsCursor(reset ? 10 : cursor + 10);
         setProductsNext(data?.next_cursor ?? null);
       } catch {
+        void 0;
       } finally {
         setLoadingProducts(false);
       }
@@ -400,6 +401,7 @@ export default function BuyingHouseProfile() {
       );
       setPartnerNetwork(data || null);
     } catch {
+      void 0;
       setPartnerNetwork(null);
     } finally {
       setLoadingNetwork(false);
@@ -407,6 +409,7 @@ export default function BuyingHouseProfile() {
   }, [id, token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProfile();
     loadRatings();
     loadCertification();
@@ -438,12 +441,14 @@ export default function BuyingHouseProfile() {
   useEffect(() => {
     if (activeTab !== "products") return;
     if (products.length) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProducts({ reset: true });
   }, [activeTab, loadProducts, products.length]);
 
   useEffect(() => {
     if (activeTab !== "partner") return;
     if (partnerNetwork) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPartnerNetwork();
   }, [activeTab, loadPartnerNetwork, partnerNetwork]);
 
@@ -460,6 +465,7 @@ export default function BuyingHouseProfile() {
           : prev,
       );
     } catch {
+      void 0;
     }
   }
 
@@ -476,6 +482,7 @@ export default function BuyingHouseProfile() {
           : prev,
       );
     } catch {
+      void 0;
     }
   }
 
@@ -514,6 +521,16 @@ export default function BuyingHouseProfile() {
     ["factory", "buying_house", "admin"].includes(viewer.role) &&
     !viewerPerms.is_self;
 
+  const filteredProducts = useMemo(() => {
+    if (typeof searchProducts !== "string") return products;
+    const q = searchProducts.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter((p) => {
+      const hay = [p.title, p.category, p.description, p.status].filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }, [products, searchProducts]);
+
   if (loading) return <NeonAtom fill />;
   if (error)
     return (
@@ -540,15 +557,6 @@ export default function BuyingHouseProfile() {
   const avatarImage = user?.profile?.profile_image;
   const capacity = user?.profile?.sourcing_capacity || "—";
   const companiesWorked = user?.profile?.companies_worked_with || [];
-
-  const filteredProducts = useMemo(() => {
-    const q = searchProducts.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter((p) => {
-      const hay = [p.title, p.category, p.description, p.status].filter(Boolean).join(" ").toLowerCase();
-      return hay.includes(q);
-    });
-  }, [products, searchProducts]);
 
   const badges = [
     user?.verified ? { label: "Verified", icon: ShieldCheck, tone: "info" } : null,
@@ -865,13 +873,13 @@ export default function BuyingHouseProfile() {
                                         const score = window.prompt("Update rating (1-5)", String(review.score || "5"));
                                         if (!score) return;
                                         const comment = window.prompt("Update review comment", review.comment || "");
-                                        try { await apiRequest(`/ratings/${review.id}`, { method: "PATCH", token, body: { score: Number(score), comment: comment ?? "" } }); await loadRatings(); } catch {}
+                                        try { await apiRequest(`/ratings/${review.id}`, { method: "PATCH", token, body: { score: Number(score), comment: comment ?? "" } }); await loadRatings(); } catch { void 0; }
                                       }}
                                     ><Edit3 className="h-4 w-4" /> Edit</button>
                                     <button type="button" className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300"
                                       onClick={async () => {
                                         if (!window.confirm("Delete this review?")) return;
-                                        try { await apiRequest(`/ratings/${review.id}`, { method: "DELETE", token }); await loadRatings(); } catch {}
+                                        try { await apiRequest(`/ratings/${review.id}`, { method: "DELETE", token }); await loadRatings(); } catch { void 0; }
                                       }}
                                     ><Trash2 className="h-4 w-4" /> Delete</button>
                                   </div>

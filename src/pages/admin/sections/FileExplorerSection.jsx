@@ -277,6 +277,7 @@ export function FileExplorerSection({ adminDark }) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadFiles(activeFolder);
     loadStats();
   }, [activeFolder]);
@@ -416,7 +417,7 @@ export function FileExplorerSection({ adminDark }) {
           ) : filteredFiles.length === 0 ? (
             <EmptyState darkMode={adminDark} />
           ) : (
-            <div
+            <div data-lenis-prevent
               className={`grid gap-3 overflow-auto ${viewMode === "grid" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-1"}`}
               style={{ maxHeight: "70vh" }}
             >

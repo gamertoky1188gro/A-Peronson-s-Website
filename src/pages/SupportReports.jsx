@@ -112,11 +112,13 @@ export default function SupportReports() {
   }, [token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadTickets();
   }, [loadTickets]);
 
   useEffect(() => {
     if (pageLoading && !ticketsLoading && !premiumLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageLoading(false);
     }
   }, [pageLoading, ticketsLoading, premiumLoading]);

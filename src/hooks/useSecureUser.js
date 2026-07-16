@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchUser, clearUser } from "../store/userSlice";
+import { fetchUser, clearUser as _clearUser } from "../store/userSlice";
 import { getToken } from "../lib/auth";
 
 export function useSecureUser() {

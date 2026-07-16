@@ -22,7 +22,7 @@ function setMeta(property, content) {
   registry[key] = el;
 }
 
-function removeMeta(property) {
+function _removeMeta(property) {
   const el = registry[property];
   if (el) {
     el.remove();
@@ -37,7 +37,7 @@ function abs(url) {
 }
 
 const OG_PREFIX = "og";
-const NS = {
+const _NS = {
   article: "https://ogp.me/ns/article#",
   book: "https://ogp.me/ns/book#",
   profile: "http://ogp.me/ns/profile#",

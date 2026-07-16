@@ -32,7 +32,7 @@ export function isImageFile(mime, originalName) {
 
 export async function compressImage(inputPath) {
   const ext = path.extname(inputPath).toLowerCase();
-  const dir = path.dirname(inputPath);
+  const _dir = path.dirname(inputPath);
   const base = path.basename(inputPath, ext);
   const outputExt = ext === ".jpg" ? ".jpg" : ".jpg";
   const outputPath = path.join(os.tmpdir(), `${base}${COMPRESSED_SUFFIX}${outputExt}`);

@@ -225,6 +225,7 @@ export default function HelpCenterPage() {
 
   useEffect(() => {
     if (pageLoading && !loading && !secureLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageLoading(false);
     }
   }, [pageLoading, loading, secureLoading]);
@@ -318,7 +319,7 @@ export default function HelpCenterPage() {
       .filter(Boolean);
     els.forEach((el) => observerRef.current.observe(el));
     return () => observerRef.current.disconnect();
-  }, []);
+  }, [sectionIds]);
 
   if (pageLoading) {
     return <NeonAtom fill />;

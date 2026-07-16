@@ -41,13 +41,13 @@ export async function createSupportTicket({
   subject,
   description,
   category,
-  pageUrl,
-  contactEmail,
+  _pageUrl,
+  _contactEmail,
   priority,
 }) {
   const premium =
     String(actor?.subscription_status || "").toLowerCase() === "premium";
-  const sla = await getSlaTargets();
+  const _sla = await getSlaTargets();
   const now = new Date();
   const ticketId = crypto.randomUUID();
   const assignedTo = sanitizeString(
@@ -94,7 +94,7 @@ export async function listSupportTicketsAdmin({
   status,
   priority,
   assignedTo,
-  premiumOnly,
+  _premiumOnly,
   limit = 50,
   offset = 0,
 } = {}) {
@@ -149,7 +149,7 @@ export async function appendSupportTicketMessage(ticketId, actor, message) {
   return entry;
 }
 
-export async function adminAssignSupportTicket(ticketId, assigneeId, actorId) {
+export async function adminAssignSupportTicket(ticketId, assigneeId, _actorId) {
   const ticket = await prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
   if (!ticket) return null;
 
@@ -165,7 +165,7 @@ export async function adminAssignSupportTicket(ticketId, assigneeId, actorId) {
 export async function adminUpdateSupportTicket(
   ticketId,
   patch = {},
-  actorId = "",
+  _actorId = "",
 ) {
   const ticket = await prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
   if (!ticket) return null;

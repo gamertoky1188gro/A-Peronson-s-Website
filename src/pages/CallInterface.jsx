@@ -855,6 +855,7 @@ export default function CallInterface() {
 
   useEffect(() => {
     mountedRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPageLoading(false);
     return () => {
       mountedRef.current = false;
@@ -884,7 +885,8 @@ export default function CallInterface() {
 
   useEffect(() => {
     isChatOpenRef.current = Boolean(isChatOpen);
-    if (isChatOpen) setUnreadChatCount(0);
+    if (isChatOpen) // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUnreadChatCount(0);
   }, [isChatOpen]);
 
   useEffect(() => {
@@ -896,15 +898,18 @@ export default function CallInterface() {
   }, [isChatOpen]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadCallDetails();
   }, [loadCallDetails]);
   useEffect(() => {
     startCallIfNeeded();
   }, [startCallIfNeeded]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadParticipants();
   }, [loadParticipants]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadChatMessages();
   }, [loadChatMessages]);
 
@@ -946,6 +951,7 @@ export default function CallInterface() {
 
   useEffect(() => {
     if (isChatOpen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isEmojiOpen) setIsEmojiOpen(false);
     if (isMoreOpen) setIsMoreOpen(false);
   }, [isChatOpen, isEmojiOpen, isMoreOpen]);
@@ -987,6 +993,7 @@ export default function CallInterface() {
 
   useEffect(() => {
     if (!hasLocalStream) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMicLevel(0);
       return undefined;
     }
@@ -1702,6 +1709,7 @@ export default function CallInterface() {
     if (recordingState !== "idle") return;
     if (rtcConnectionState !== "connected") return;
     if (!hasLocalStream || !hasRemoteStream) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     startCallRecording();
   }, [
     hasLocalStream,
@@ -2007,14 +2015,14 @@ export default function CallInterface() {
                 </div>
               </div>
 
-              <div ref={chatScrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+              <div data-lenis-prevent ref={chatScrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
                 {sortedChatMessages.length > 0 ? (
                   sortedChatMessages.map((msg) => {
                     const isOwn = msg.sender_id === user?.id;
                     const sender = userMap.get(msg.sender_id);
                     const senderName = msg.sender_name || sender?.name || sender?.email || "User";
                     return (
-                      <div key={msg.id || Math.random()} className={cx("max-w-[88%] rounded-2xl px-4 py-3 shadow-sm", isOwn ? "ml-auto bg-gradient-to-r from-sky-500 to-blue-500 text-white" : "bg-white/70 text-slate-800 dark:bg-white/8 dark:text-slate-100")}>
+                      <div key={msg.id} className={cx("max-w-[88%] rounded-2xl px-4 py-3 shadow-sm", isOwn ? "ml-auto bg-gradient-to-r from-sky-500 to-blue-500 text-white" : "bg-white/70 text-slate-800 dark:bg-white/8 dark:text-slate-100")}>
                         <div className="flex items-center justify-between gap-3 text-[11px] font-semibold opacity-80">
                           <span>{isOwn ? "You" : senderName}</span>
                           <span>{formatMessageTime(msg.timestamp)}</span>

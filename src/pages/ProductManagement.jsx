@@ -158,11 +158,13 @@ export default function ProductManagement() {
   }, [token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadMine();
   }, [loadMine]);
 
   useEffect(() => {
     if (pageLoading && !loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageLoading(false);
     }
   }, [pageLoading, loading]);
@@ -825,7 +827,7 @@ export default function ProductManagement() {
 
         {modalOpen ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8 backdrop-blur-sm dark:bg-slate-950/70">
-            <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40">
+            <div data-lenis-prevent className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40">
               <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 px-6 py-5 backdrop-blur dark:border-white/10 dark:bg-slate-950/95">
                 <div>
                   <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">

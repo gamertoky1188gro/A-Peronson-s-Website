@@ -122,7 +122,7 @@ function normalizeBuyerRegionFromCountry(country) {
   return "OTHER";
 }
 
-export default function VerificationPage() {
+export default function VerificationPage({ embedded = false }) {
   const user = getCurrentUser();
   const token = getToken();
   const role = user?.role || "buyer";
@@ -421,42 +421,36 @@ export default function VerificationPage() {
     done: Boolean(documents?.[key]),
   }));
 
-  if (pageLoading) return <NeonAtom fill />;
+  if (pageLoading) return embedded ? null : <NeonAtom fill />;
 
-  return (
-    <div className={`min-h-screen ${pageBg} transition-colors duration-300`}>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-sky-500/20 blur-3xl" />
-        <div className="absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
-        <div className="absolute bottom-[-6rem] left-[-4rem] h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <header
-          className={`mb-6 flex items-center justify-between rounded-3xl border px-4 py-4 ${cardBg}`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/25">
-              <Icon d={icons.shield} className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-                  Verification Center
-                </h1>
-                <span
-                  className={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] ${chipBg}`}
-                >
-                  {reviewStatus}
-                </span>
-              </div>
-              <p className={`mt-1 text-sm ${softText}`}>
-                Verification is subscription-based and renews monthly. First
-                month: $1.99 • Renewals: $6.99/month
-              </p>
-            </div>
+  const content = (
+    <>
+      <header
+        className={`mb-6 flex items-center justify-between rounded-3xl border px-4 py-4 ${cardBg}`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/25">
+            <Icon d={icons.shield} className="h-6 w-6" />
           </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                Verification Center
+              </h1>
+              <span
+                className={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] ${chipBg}`}
+              >
+                {reviewStatus}
+              </span>
+            </div>
+            <p className={`mt-1 text-sm ${softText}`}>
+              Verification is subscription-based and renews monthly. First
+              month: $1.99 • Renewals: $6.99/month
+            </p>
+          </div>
+        </div>
 
+        {!embedded && (
           <button
             onClick={toggleTheme}
             className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
@@ -464,7 +458,8 @@ export default function VerificationPage() {
             <Icon d={isDark ? icons.sun : icons.moon} className="h-4 w-4" />
             {isDark ? "Light" : "Dark"}
           </button>
-        </header>
+        )}
+      </header>
 
         {feedback && (
           <div className="mb-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-3 text-emerald-200">
@@ -851,6 +846,19 @@ export default function VerificationPage() {
           className="hidden"
           onChange={onFileSelected}
         />
+    </>
+  );
+
+  if (embedded) return content;
+  return (
+    <div className={`min-h-screen ${pageBg} transition-colors duration-300`}>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-sky-500/20 blur-3xl" />
+        <div className="absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
+        <div className="absolute bottom-[-6rem] left-[-4rem] h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+      </div>
+      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+        {content}
       </div>
     </div>
   );

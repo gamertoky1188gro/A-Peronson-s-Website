@@ -18,7 +18,7 @@ import {
   normalizePriceRange,
 } from "./currencyService.js";
 
-const FILE = "company_products.json";
+const _FILE = "company_products.json";
 const PROHIBITED_MEDIA_KEYWORDS = [
   "porn",
   "explicit",

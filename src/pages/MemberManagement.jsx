@@ -84,7 +84,7 @@ function Modal({ title, children, onClose, footer }) {
             ✕
           </button>
         </div>
-        <div className="max-h-[75vh] overflow-y-auto px-6 py-5">{children}</div>
+        <div data-lenis-prevent className="max-h-[75vh] overflow-y-auto px-6 py-5">{children}</div>
         {footer ? (
           <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-800">{footer}</div>
         ) : null}
@@ -174,12 +174,14 @@ export default function MemberManagement() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (pageLoading && !loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageLoading(false);
     }
   }, [pageLoading, loading]);

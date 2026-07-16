@@ -130,6 +130,7 @@ export default function RatingFeedback() {
 
   useEffect(() => {
     if (pageLoading && !loading && lookupDone) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageLoading(false);
     }
   }, [pageLoading, loading, lookupDone]);

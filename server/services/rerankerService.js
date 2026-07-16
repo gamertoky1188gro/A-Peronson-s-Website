@@ -145,7 +145,7 @@ function fallbackRerank(query, documents) {
     .sort((a, b) => b.relevance_score - a.relevance_score);
 }
 
-export async function rerankIds(query, items, idField = "id") {
+export async function rerankIds(query, items, _idField = "id") {
   if (!query || !items?.length) return items;
 
   const useReranker = await isRerankerConfigured();

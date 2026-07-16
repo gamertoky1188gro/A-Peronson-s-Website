@@ -25,6 +25,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
   useEffect(() => {
     if (!open || !item?.id || !item?.entityType) return;
     let alive = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError("");
     apiRequest(
@@ -267,7 +268,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
+        <div data-lenis-prevent className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
           {loading ? (
             <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
           ) : null}

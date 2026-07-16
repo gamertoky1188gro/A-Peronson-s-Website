@@ -162,11 +162,13 @@ export default function LeadManager({
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadLeads();
   }, [loadLeads]);
 
   useEffect(() => {
     if (!selectedId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelected(null);
       setNoteDraft("");
       return;
@@ -380,7 +382,7 @@ export default function LeadManager({
             <div className="mt-2 text-sm text-rose-600">{error}</div>
           ) : null}
 
-          <div className="mt-3 space-y-2 max-h-[520px] overflow-auto pr-1">
+          <div data-lenis-prevent className="mt-3 space-y-2 max-h-[520px] overflow-auto pr-1">
             {items.length === 0 && !loading ? (
               <div className="text-sm text-slate-500">
                 No leads yet. Leads are created automatically when chats start.
@@ -714,7 +716,7 @@ export default function LeadManager({
                   </button>
                 </div>
 
-                <div className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1">
+                <div data-lenis-prevent className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1">
                   {(selected?.notes || []).length === 0 ? (
                     <div className="text-sm text-slate-500">No notes yet.</div>
                   ) : null}

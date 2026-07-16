@@ -30,7 +30,7 @@ async function loadConfig() {
   return cfg;
 }
 
-async function refreshConfig() {
+async function _refreshConfig() {
   cachedConfig = { at: 0, value: null };
   return loadConfig();
 }
@@ -62,7 +62,7 @@ export async function generateEmbedding(text) {
   throw new Error(`Unknown embedding provider: ${provider}`);
 }
 
-async function embeddingViaOllama(cfg, text, start) {
+async function embeddingViaOllama(cfg, text, _start) {
   const url = `${cfg.url.replace(/\/+$/, "")}/api/embeddings`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), cfg.timeout_ms);
@@ -89,7 +89,7 @@ async function embeddingViaOllama(cfg, text, start) {
   }
 }
 
-async function embeddingViaHuggingFace(cfg, text, start) {
+async function embeddingViaHuggingFace(cfg, text, _start) {
   const model = cfg.model || "BAAI/bge-m3";
   const url = `https://api-inference.huggingface.co/models/${model}`;
   const controller = new AbortController();
@@ -122,7 +122,7 @@ async function embeddingViaHuggingFace(cfg, text, start) {
   }
 }
 
-async function embeddingViaOpencode(cfg, text, start) {
+async function embeddingViaOpencode(cfg, text, _start) {
   const url = `${cfg.url.replace(/\/+$/, "")}/v1/embeddings`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), cfg.timeout_ms);
@@ -159,7 +159,7 @@ export async function generateEmbeddingWithRetry(text, maxRetries = 1) {
     try {
       const emb = await generateEmbedding(text);
       if (emb) return emb;
-    } catch (err) {
+    } catch (_err) {
       if (attempt === maxRetries) {
         console.warn(`[embedding] All ${maxRetries + 1} attempts failed for text: "${text.slice(0, 60)}..."`);
         return null;

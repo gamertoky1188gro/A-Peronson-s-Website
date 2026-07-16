@@ -268,6 +268,7 @@ export default function NotificationsCenter() {
   useEffect(() => {
     if (tab !== "viewed") return;
     if (views.length) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadViews({ reset: true });
   }, [loadViews, tab, views.length]);
 

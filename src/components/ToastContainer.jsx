@@ -1,10 +1,11 @@
-import { createContext, useContext, useCallback, useEffect, useRef } from "react";
+import { createContext, useContext, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { addToast, removeToast as removeToastAction } from "../store/toastSlice";
 
 const ToastContext = createContext(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast must be used within ToastProvider");
@@ -27,8 +28,9 @@ export function ToastProvider({ children }) {
   );
 
   useEffect(() => {
+    const timers = timersRef.current;
     return () => {
-      Object.values(timersRef.current).forEach(clearTimeout);
+      Object.values(timers).forEach(clearTimeout);
     };
   }, []);
 
@@ -48,22 +50,16 @@ export function ToastProvider({ children }) {
     });
   }, [toasts, removeToast]);
 
-  const toast = useCallback(
-    (message, opts) => dispatch(addToast({ message, ...opts })),
-    [dispatch],
-  );
-  toast.success = useCallback(
-    (msg, opts) => dispatch(addToast({ message: msg, type: "success", ...opts })),
-    [dispatch],
-  );
-  toast.error = useCallback(
-    (msg, opts) => dispatch(addToast({ message: msg, type: "error", ...opts })),
-    [dispatch],
-  );
-  toast.info = useCallback(
-    (msg, opts) => dispatch(addToast({ message: msg, type: "info", ...opts })),
-    [dispatch],
-  );
+  const toast = useMemo(() => {
+    return Object.assign(
+      (message, opts) => dispatch(addToast({ message, ...opts })),
+      {
+        success: (msg, opts) => dispatch(addToast({ message: msg, type: "success", ...opts })),
+        error: (msg, opts) => dispatch(addToast({ message: msg, type: "error", ...opts })),
+        info: (msg, opts) => dispatch(addToast({ message: msg, type: "info", ...opts })),
+      },
+    );
+  }, [dispatch]);
 
   const typeStyles = {
     success:

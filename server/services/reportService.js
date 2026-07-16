@@ -8,7 +8,7 @@ export async function createReport({
   entity_type,
   entity_id,
   reason = "",
-  metadata = {},
+  _metadata = {},
 }) {
   const row = await prisma.report.create({
     data: {

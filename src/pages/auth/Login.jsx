@@ -151,6 +151,7 @@ export default function Login() {
   }, [existingUser?.role, navigate, suppressRedirect]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPasskeySupported(
       typeof window !== "undefined" && !!window.PublicKeyCredential,
     );
@@ -163,6 +164,7 @@ export default function Login() {
     );
     if (!rememberPasskeyUser) {
       localStorage.removeItem("passkey_user_hint");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPasskeyHint(null);
     }
   }, [rememberPasskeyUser]);
@@ -347,7 +349,7 @@ export default function Login() {
             buttonAlt: "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100",
             outline: "border-sky-200 hover:bg-sky-50",
           },
-    [currentTheme],
+    [darkMode],
   );
 
   const roles = ["Buyer", "Factory", "Buying House"];

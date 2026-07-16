@@ -306,7 +306,7 @@ export async function updateMember(orgOwnerId, memberId, payload) {
     nextStatus: next.status,
   });
 
-  const { id, created_at, password_hash, ...updatable } = next;
+  const { id: _id, created_at: _created_at, password_hash: _password_hash, ...updatable } = next;
 
   const updated = await prisma.user.update({
     where: { id: memberId },

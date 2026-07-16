@@ -75,6 +75,7 @@ import { useTheme } from "../lib/ThemeProvider";
 import useScrollDirection from "../hooks/useScrollDirection";
 import SlideIn from "./SlideIn";
 import { ThreeDot } from 'react-loading-indicators'
+import { isRouteValid } from "../lib/routeHealthCheck";
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
@@ -547,6 +548,22 @@ export default function NavBar() {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [dropdownTimeout, setDropdownTimeout] = useState(null);
 
+  const validPublicLinks = useMemo(
+    () => publicLinks.filter((link) => isRouteValid(link.to)),
+    [],
+  );
+
+  const validNavGroups = useMemo(
+    () =>
+      navigationGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => isRouteValid(item.to)),
+        }))
+        .filter((group) => group.items.length > 0),
+    [],
+  );
+
   useEffect(() => {
     setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
   }, []);
@@ -950,7 +967,7 @@ export default function NavBar() {
 
             <SlideIn direction="down" as="div" className="hidden min-w-0 flex-shrink items-center gap-1 md:flex">
               {!user
-                ? publicLinks.map(({ to, label }, idx) => (
+                ? validPublicLinks.map(({ to, label }, idx) => (
                     <Motion.div
                       key={to}
                       initial={{ opacity: 0, y: -8 }}
@@ -968,7 +985,7 @@ export default function NavBar() {
                       />
                     </Motion.div>
                   ))
-                : navigationGroups.map((group, idx) => (
+                : validNavGroups.map((group, idx) => (
                     <Motion.div
                       key={group.label}
                       initial={{ opacity: 0, y: -8 }}
@@ -1263,10 +1280,10 @@ export default function NavBar() {
               </button>
             </div>
 
-            <div className="max-h-[70vh] overflow-y-auto p-4">
+            <div data-lenis-prevent className="max-h-[70vh] overflow-y-auto p-4">
               <div className="space-y-3">
                 {!user
-                  ? publicLinks.map(({ to, label }) => (
+                  ? validPublicLinks.map(({ to, label }) => (
                       <Link
                         key={to}
                         to={to}
@@ -1282,7 +1299,7 @@ export default function NavBar() {
                         <ChevronRight className="h-4 w-4 opacity-40" />
                       </Link>
                     ))
-                  : navigationGroups.map((group) => (
+                  : validNavGroups.map((group) => (
                       <div
                         key={group.label}
                         className="rounded-3xl border border-slate-900/5 bg-white/70 p-3 dark:border-white/10 dark:bg-white/5"

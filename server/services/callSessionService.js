@@ -378,7 +378,7 @@ export async function findOrCreateCallSession(userId, payload = {}) {
   return { call: createdCall, created: true };
 }
 
-export async function listCallsByContract(contractId, userId) {
+export async function listCallsByContract(contractId, _userId) {
   const id = sanitizeString(String(contractId || ""), 120);
   if (!id) return [];
 

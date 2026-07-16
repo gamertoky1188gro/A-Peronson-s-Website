@@ -603,7 +603,7 @@ export default function Signup() {
                       required
                     />
                     {countryOpen ? (
-                      <div className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
+                      <div data-lenis-prevent className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
                         {filteredCountries.length ? (
                           filteredCountries.map((item) => (
                             <button
@@ -655,7 +655,7 @@ export default function Signup() {
                     </button>
 
                     {positionOpen ? (
-                      <div className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
+                      <div data-lenis-prevent className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
                         {POSITIONS.map((item) => (
                           <button
                             key={item}

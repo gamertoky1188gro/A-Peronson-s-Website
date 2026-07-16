@@ -297,6 +297,7 @@ export default function TexHub() {
 
   useEffect(() => {
     const token = getToken();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoggedIn(!!token);
   }, []);
 
@@ -621,7 +622,7 @@ export default function TexHub() {
   const workflowParallax2 = useTransform(scrollY, [0, 600], [0, -60]);
   const workflowParallax3 = useTransform(scrollY, [0, 600], [0, -10]);
 
-  const sectionIds = ["why", "workflow", "platform", "trust"];
+  const sectionIds = useMemo(() => ["why", "workflow", "platform", "trust"], []);
   const sectionLabels = ["Why", "Workflow", "Platform", "Trust"];
   const [activeSection, setActiveSection] = useState("");
   const sectionObserver = useRef(null);
@@ -642,7 +643,7 @@ export default function TexHub() {
       if (el) sectionObserver.current.observe(el);
     }
     return () => sectionObserver.current?.disconnect();
-  }, []);
+  }, [sectionIds]);
 
   if (loading) {
     return <NeonAtom fill size={64} text="Loading..." />;

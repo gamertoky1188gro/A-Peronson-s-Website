@@ -46,37 +46,44 @@ export function AdminAISection({ activeCategory, adminDark }) {
   });
   const [showAddForm, setShowAddForm] = useState(false);
 
+  async function fetchData() {
+    try {
+      setLoading(true);
+      const [rulesData, configData] = await Promise.all([
+        apiRequest("/api/assistant/rules", { token: true }),
+        apiRequest("/api/assistant/config", { token: true }),
+      ]);
+      if (rulesData) {
+        setRules({
+          globalRules: rulesData.globalRules || [],
+          smallTalkRules: rulesData.smallTalkRules || [],
+        });
+      }
+      if (configData) {
+        setConfig({
+          systemPrompt: configData.systemPrompt || "",
+          agentPrompt: configData.agentPrompt || "",
+          codeContextEnabled: configData.codeContextEnabled !== false,
+          codeContextKeywords: (configData.codeContextKeywords || []).join(
+            ", ",
+          ),
+        });
+      }
+    } catch {
+      setError("Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, []);
 
   if (activeCategory !== "ai") return null;
 
   async function saveConfig() {
-    try {
-      setSaving(true);
-      setError("");
-      const keywordsArray = config.codeContextKeywords
-        .split(",")
-        .map((k) => k.trim())
-        .filter(Boolean);
-      await apiRequest("/api/assistant/config", {
-        method: "PUT",
-        token: true,
-        body: {
-          systemPrompt: config.systemPrompt,
-          agentPrompt: config.agentPrompt,
-          codeContextEnabled: config.codeContextEnabled,
-          codeContextKeywords: keywordsArray,
-        },
-      });
-      setNotice("Settings saved successfully");
-      setTimeout(() => setNotice(""), 3000);
-    } catch {
-      setError("Failed to save settings");
-    } finally {
-      setSaving(false);
-    }
   }
 
   async function addRule() {
@@ -137,36 +144,6 @@ export function AdminAISection({ activeCategory, adminDark }) {
       setTimeout(() => setNotice(""), 3000);
     } catch {
       setError("Failed to delete rule");
-    }
-  }
-
-  async function fetchData() {
-    try {
-      setLoading(true);
-      const [rulesData, configData] = await Promise.all([
-        apiRequest("/api/assistant/rules", { token: true }),
-        apiRequest("/api/assistant/config", { token: true }),
-      ]);
-      if (rulesData) {
-        setRules({
-          globalRules: rulesData.globalRules || [],
-          smallTalkRules: rulesData.smallTalkRules || [],
-        });
-      }
-      if (configData) {
-        setConfig({
-          systemPrompt: configData.systemPrompt || "",
-          agentPrompt: configData.agentPrompt || "",
-          codeContextEnabled: configData.codeContextEnabled !== false,
-          codeContextKeywords: (configData.codeContextKeywords || []).join(
-            ", ",
-          ),
-        });
-      }
-    } catch {
-      setError("Failed to load data");
-    } finally {
-      setLoading(false);
     }
   }
 

@@ -39,7 +39,7 @@ async function processNext() {
     await updateDoc(documentId, {
       video_status: result.replaced ? "processed" : "skipped",
     });
-  } catch (err) {
+  } catch (_err) {
     await updateDoc(documentId, { video_status: "failed" });
   }
 

@@ -131,11 +131,13 @@ export default function PartnerNetwork() {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadNetwork(tab);
   }, [loadNetwork, tab]);
 
   useEffect(() => {
     if (pageLoading && !loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageLoading(false);
     }
   }, [pageLoading, loading]);

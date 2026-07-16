@@ -4,6 +4,8 @@ import fs from "fs";
 import os from "os";
 import crypto from "crypto";
 
+const VENV_DIR = process.env.VENV_DIR || "";
+
 const HARAM_DETECTION_DIR = process.env.HARAM_DETECTION_DIR;
 const aiAvailable = Boolean(HARAM_DETECTION_DIR);
 

@@ -268,7 +268,7 @@ async function buildResponseTimeByOwner() {
     now() - responseCache.at < RESPONSE_CACHE_TTL_MS
   )
     return responseCache.map;
-  const [messages, users] = await Promise.all([
+  const [msgRows, userRows] = await Promise.all([
     prisma.message.findMany(),
     prisma.user.findMany(),
   ]);
@@ -911,7 +911,7 @@ export async function reindexAll({ reset = false } = {}) {
   await ensureIndex(productsIndex, productMappings());
   await ensureIndex(requirementsIndex, requirementMappings());
 
-  const [products, requirements, users] = await Promise.all([
+  const [productRows, requirements, users] = await Promise.all([
     prisma.product.findMany(),
     prisma.requirement.findMany(),
     prisma.user.findMany(),
@@ -961,7 +961,7 @@ export async function reindexOrg(orgId) {
 
   await ensureOpenSearchIndices();
 
-  const [products, requirements, users] = await Promise.all([
+  const [products, requirements, userRows] = await Promise.all([
     prisma.product.findMany(),
     prisma.requirement.findMany(),
     prisma.user.findMany(),

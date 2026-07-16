@@ -165,7 +165,7 @@ export function AdminConfigSection({
                   adminDark ? "border-white/10" : "border-slate-200",
                 )}
               >
-                <pre className="max-h-96 overflow-auto text-xs">
+                <pre data-lenis-prevent className="max-h-96 overflow-auto text-xs">
                   {JSON.stringify(configEditorData?.actions || {}, null, 2)}
                 </pre>
               </div>
@@ -195,7 +195,7 @@ export function AdminConfigSection({
                   {configEditorSaving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save UI Settings"}
                 </button>
               </div>
-              <pre
+              <pre data-lenis-prevent
                 className={cn(
                   "max-h-96 overflow-auto rounded-xl p-4 text-xs",
                   adminDark

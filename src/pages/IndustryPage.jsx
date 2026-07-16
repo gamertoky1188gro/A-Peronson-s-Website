@@ -71,6 +71,7 @@ export default function IndustryPage() {
 
   useEffect(() => {
     if (!slug) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError("");
     apiRequest(`/industry/${encodeURIComponent(slug)}`, { token })

@@ -609,7 +609,7 @@ export async function searchProducts(req, res) {
   const openSearchIds = Array.isArray(openSearchResult?.ids)
     ? openSearchResult.ids.map(String)
     : [];
-  const openSearchIdSet = openSearchIds.length ? new Set(openSearchIds) : null;
+  const _openSearchIdSet = openSearchIds.length ? new Set(openSearchIds) : null;
   const osEngine = openSearchResult?.engine || "database";
 
   const qdrantReady = q ? await isQdrantConfigured() : false;

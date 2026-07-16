@@ -19,7 +19,7 @@ function ensureContractAccess(actor, contract) {
   return canAccessContract(actor, contract);
 }
 
-function getContractById(contracts, id) {
+function _getContractById(contracts, id) {
   return (
     (Array.isArray(contracts) ? contracts : []).find(
       (row) => String(row?.id || "") === String(id),
