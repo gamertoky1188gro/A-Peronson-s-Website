@@ -15,7 +15,23 @@ import {
   getToken,
   syncUserFromApi,
 } from "../lib/auth";
-import { Package, LayoutDashboard, Bell, Plus, RefreshCw, Search, HelpCircle, MessageSquare, Lock, Download, Shield, Check, File, Phone, Calendar } from "lucide-react";
+import {
+  Package,
+  LayoutDashboard,
+  Bell,
+  Plus,
+  RefreshCw,
+  Search,
+  HelpCircle,
+  MessageSquare,
+  Lock,
+  Download,
+  Shield,
+  Check,
+  File,
+  Phone,
+  Calendar,
+} from "lucide-react";
 import ScrollReveal from "../components/ScrollReveal";
 import CardStack from "../components/CardStack";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
@@ -478,16 +494,23 @@ export default function ContractVaultPage({ embedded = false }) {
       .then((data) => {
         if (!cancelled) setCalls(Array.isArray(data) ? data : []);
       })
-      .catch(() => { if (!cancelled) setCalls([]); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setCalls([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedId]);
 
   const refreshPaymentProofs = async () => {
     if (!contract?.id) return;
     try {
-      const data = await apiRequest(`/contracts/${contract.id}/payment-proofs`, {
-        token: getToken(),
-      });
+      const data = await apiRequest(
+        `/contracts/${contract.id}/payment-proofs`,
+        {
+          token: getToken(),
+        },
+      );
       setPaymentProofs(Array.isArray(data) ? data : []);
     } catch {
       setPaymentProofs([]);
@@ -497,20 +520,29 @@ export default function ContractVaultPage({ embedded = false }) {
   useEffect(() => {
     if (!contract?.id) return;
     let cancelled = false;
-    apiRequest(`/contracts/${contract.id}/payment-proofs`, { token: getToken() })
+    apiRequest(`/contracts/${contract.id}/payment-proofs`, {
+      token: getToken(),
+    })
       .then((data) => {
         if (cancelled) return;
         setPaymentProofs(Array.isArray(data) ? data : []);
       })
-      .catch(() => { if (!cancelled) setPaymentProofs([]); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setPaymentProofs([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [contract?.id]);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !contract?.id) return;
     try {
-      await uploadFile("/documents", { file, fields: { contract_id: contract.id, type: "payment_proof" } });
+      await uploadFile("/documents", {
+        file,
+        fields: { contract_id: contract.id, type: "payment_proof" },
+      });
       await refreshPaymentProofs();
     } catch (err) {
       console.warn("Failed to upload file", err);
@@ -717,9 +749,17 @@ export default function ContractVaultPage({ embedded = false }) {
             label="Notifications"
             onClick={() => navigate("/notifications")}
           />
-          <NavItem icon={icons.plus} label="New draft" onClick={handleNewDraft} />
+          <NavItem
+            icon={icons.plus}
+            label="New draft"
+            onClick={handleNewDraft}
+          />
           <NavItem icon={icons.file} label="Contracts" active />
-          <NavItem icon={icons.refresh} label="Refresh" onClick={loadContracts} />
+          <NavItem
+            icon={icons.refresh}
+            label="Refresh"
+            onClick={loadContracts}
+          />
         </div>
       )}
 
@@ -833,7 +873,13 @@ export default function ContractVaultPage({ embedded = false }) {
       {feedback && (
         <div className="fixed top-4 right-4 z-50 rounded-2xl bg-sky-500 px-4 py-3 text-sm font-medium text-white shadow-lg">
           {feedback}
-          <button onClick={() => setFeedback("")} className="ml-3 text-white/70 hover:text-white" aria-label="Dismiss">×</button>
+          <button
+            onClick={() => setFeedback("")}
+            className="ml-3 text-white/70 hover:text-white"
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -909,11 +955,11 @@ export default function ContractVaultPage({ embedded = false }) {
                           />
                         </div>
                         {contract?.raw?.payment_proof_accepted === false && (
-                        <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
-                          Warning: No accepted payment proof yet. You may
-                          continue, but proof is strongly recommended for
-                          safety.
-                        </div>
+                          <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
+                            Warning: No accepted payment proof yet. You may
+                            continue, but proof is strongly recommended for
+                            safety.
+                          </div>
                         )}
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
                           <ActionButton
@@ -1025,7 +1071,10 @@ export default function ContractVaultPage({ embedded = false }) {
                 title="Payment proof workflow"
                 subtitle="Submit bank transfer or LC documents. Seller review sets status, disputes trigger internal admin review."
                 right={
-                  <button onClick={refreshPaymentProofs} className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                  <button
+                    onClick={refreshPaymentProofs}
+                    className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                  >
                     Refresh
                   </button>
                 }
@@ -1119,7 +1168,12 @@ export default function ContractVaultPage({ embedded = false }) {
                     <span className="mb-2 block font-medium">
                       Upload proof document
                     </span>
-                    <input type="file" onChange={handleFileUpload} aria-label="Upload payment proof file" className="block w-full text-sm" />
+                    <input
+                      type="file"
+                      onChange={handleFileUpload}
+                      aria-label="Upload payment proof file"
+                      className="block w-full text-sm"
+                    />
                   </label>
                   <button
                     onClick={handleSubmitProof}
@@ -1131,9 +1185,24 @@ export default function ContractVaultPage({ embedded = false }) {
                   {paymentProofs.length > 0 ? (
                     <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-white/10 dark:bg-slate-950">
                       {paymentProofs.map((proof, idx) => (
-                        <div key={proof.id || idx} className="flex items-center justify-between py-1 text-slate-700 dark:text-slate-300">
-                          <span>{proof.type || proof.transaction_reference || `Proof ${idx + 1}`}</span>
-                          <Pill tone={proof.status === "accepted" ? "green" : proof.status === "rejected" ? "red" : "amber"}>
+                        <div
+                          key={proof.id || idx}
+                          className="flex items-center justify-between py-1 text-slate-700 dark:text-slate-300"
+                        >
+                          <span>
+                            {proof.type ||
+                              proof.transaction_reference ||
+                              `Proof ${idx + 1}`}
+                          </span>
+                          <Pill
+                            tone={
+                              proof.status === "accepted"
+                                ? "green"
+                                : proof.status === "rejected"
+                                  ? "red"
+                                  : "amber"
+                            }
+                          >
                             {proof.status || "pending"}
                           </Pill>
                         </div>
@@ -1181,12 +1250,20 @@ export default function ContractVaultPage({ embedded = false }) {
                 {calls.length > 0 ? (
                   <ul className="mt-2 space-y-2">
                     {calls.map((call, idx) => (
-                      <li key={call.id || idx} className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm dark:bg-slate-950">
+                      <li
+                        key={call.id || idx}
+                        className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm dark:bg-slate-950"
+                      >
                         <span className="text-slate-700 dark:text-slate-300">
                           {call.title || call.id || `Call ${idx + 1}`}
                         </span>
                         {call.recording_url && (
-                          <a href={call.recording_url} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline dark:text-sky-400">
+                          <a
+                            href={call.recording_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sky-600 hover:underline dark:text-sky-400"
+                          >
                             Listen
                           </a>
                         )}
@@ -1250,7 +1327,11 @@ export default function ContractVaultPage({ embedded = false }) {
             >
               {(() => {
                 const cu = getCurrentUser();
-                const hasPremium = cu?.subscription_status === "premium" || cu?.plan === "premium" || cu?.role === "owner" || cu?.role === "admin";
+                const hasPremium =
+                  cu?.subscription_status === "premium" ||
+                  cu?.plan === "premium" ||
+                  cu?.role === "owner" ||
+                  cu?.role === "admin";
                 if (hasPremium) {
                   return (
                     <div className="space-y-3">
@@ -1259,37 +1340,49 @@ export default function ContractVaultPage({ embedded = false }) {
                       </p>
                       {contract?.raw?.audit_log?.length > 0 ? (
                         contract.raw.audit_log.slice(0, 10).map((entry, i) => (
-                          <div key={i} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-900">
+                          <div
+                            key={i}
+                            className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-900"
+                          >
                             <div className="mt-0.5 h-2 w-2 rounded-full bg-sky-500 shrink-0" />
                             <div>
-                              <p className="font-medium text-slate-900 dark:text-white">{entry.action}</p>
-                              <p className="text-xs text-slate-500">{entry.performed_by} · {entry.timestamp}</p>
+                              <p className="font-medium text-slate-900 dark:text-white">
+                                {entry.action}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {entry.performed_by} · {entry.timestamp}
+                              </p>
                             </div>
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm text-slate-500 dark:text-slate-400">No audit trail entries yet.</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          No audit trail entries yet.
+                        </p>
                       )}
                     </div>
                   );
                 }
                 return (
                   <div className="rounded-3xl border border-dashed border-sky-400/30 bg-sky-500/5 p-6 text-center">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sky-600 text-white shadow-lg shadow-sky-500/20">
-                  <icons.lock className="h-5 w-5" />
-                </div>
-                <div className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
-                  Premium
-                </div>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                  Premium plan required to view the contract audit trail.
-                </p>
-                <button onClick={() => navigate("/pricing")} className="mt-4 rounded-2xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20">
-                  Upgrade to Premium
-                </button>
-              </div>
-            );
-          })()}
+                    <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sky-600 text-white shadow-lg shadow-sky-500/20">
+                      <icons.lock className="h-5 w-5" />
+                    </div>
+                    <div className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
+                      Premium
+                    </div>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      Premium plan required to view the contract audit trail.
+                    </p>
+                    <button
+                      onClick={() => navigate("/pricing")}
+                      className="mt-4 rounded-2xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20"
+                    >
+                      Upgrade to Premium
+                    </button>
+                  </div>
+                );
+              })()}
             </SectionCard>
 
             <SectionCard

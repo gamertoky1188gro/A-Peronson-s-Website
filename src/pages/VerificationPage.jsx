@@ -127,7 +127,10 @@ export default function VerificationPage({ embedded = false }) {
   const [optionalLicenseInput, setOptionalLicenseInput] = useState("");
   const [renewing, setRenewing] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [verificationPrice, setVerificationPrice] = useState({ firstMonth: 1.99, renewal: 6.99 });
+  const [verificationPrice, setVerificationPrice] = useState({
+    firstMonth: 1.99,
+    renewal: 6.99,
+  });
   const [code, setCode] = useState("");
   const [verifyingCode, setVerifyingCode] = useState(false);
 
@@ -252,9 +255,15 @@ export default function VerificationPage({ embedded = false }) {
     if (!token) return;
     (async () => {
       try {
-        const data = await apiRequest("/subscriptions/me/verification-pricing", { token });
+        const data = await apiRequest(
+          "/subscriptions/me/verification-pricing",
+          { token },
+        );
         if (data?.first_month != null) {
-          setVerificationPrice({ firstMonth: data.first_month, renewal: data.renewal ?? data.renewal_monthly ?? data.first_month });
+          setVerificationPrice({
+            firstMonth: data.first_month,
+            renewal: data.renewal ?? data.renewal_monthly ?? data.first_month,
+          });
         }
       } catch {
         // use defaults
@@ -452,7 +461,8 @@ export default function VerificationPage({ embedded = false }) {
             </div>
             <p className={`mt-1 text-sm ${softText}`}>
               Verification is subscription-based and renews monthly. First
-              month: ${verificationPrice.firstMonth.toFixed(2)} • Renewals: ${verificationPrice.renewal.toFixed(2)}/month
+              month: ${verificationPrice.firstMonth.toFixed(2)} • Renewals: $
+              {verificationPrice.renewal.toFixed(2)}/month
             </p>
           </div>
         </div>
@@ -462,7 +472,11 @@ export default function VerificationPage({ embedded = false }) {
             onClick={toggleTheme}
             className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
           >
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {isDark ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
             {isDark ? "Light" : "Dark"}
           </button>
         )}
@@ -620,7 +634,11 @@ export default function VerificationPage({ embedded = false }) {
                       <div
                         className={`mt-0.5 grid h-10 w-10 place-items-center rounded-2xl ${item.done ? "bg-emerald-500/15 text-emerald-300" : "bg-sky-500/10 text-sky-500"}`}
                       >
-                        {item.done ? <Check className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
+                        {item.done ? (
+                          <Check className="h-5 w-5" />
+                        ) : (
+                          <Clock className="h-5 w-5" />
+                        )}
                       </div>
                       <div>
                         <h4 className="font-semibold">{item.title}</h4>
@@ -737,7 +755,11 @@ export default function VerificationPage({ embedded = false }) {
                     setVerifyingCode(true);
                     setFeedback("");
                     setError("");
-                    apiRequest("/verification/code", { method: "POST", token, body: { code: val } })
+                    apiRequest("/verification/code", {
+                      method: "POST",
+                      token,
+                      body: { code: val },
+                    })
                       .then((res) => {
                         if (res?.error) throw new Error(res.error);
                         setFeedback("Code accepted. Verification in progress.");
@@ -755,7 +777,13 @@ export default function VerificationPage({ embedded = false }) {
               />
               {verifyingCode && (
                 <div className="mt-3 flex items-center gap-2 text-sm text-sky-400">
-                  <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                  <ThreeDot
+                    variant="bounce"
+                    color="#6100ff"
+                    size="small"
+                    text=""
+                    textColor=""
+                  />
                   <span>Verifying code...</span>
                 </div>
               )}
@@ -850,11 +878,15 @@ export default function VerificationPage({ embedded = false }) {
             <div className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className={softText}>First month</span>
-                <span className="font-semibold">${verificationPrice.firstMonth.toFixed(2)}</span>
+                <span className="font-semibold">
+                  ${verificationPrice.firstMonth.toFixed(2)}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className={softText}>Renewals</span>
-                <span className="font-semibold">{verificationPrice.renewal.toFixed(2)}/month</span>
+                <span className="font-semibold">
+                  {verificationPrice.renewal.toFixed(2)}/month
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className={softText}>Review status</span>

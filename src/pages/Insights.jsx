@@ -524,22 +524,23 @@ export default function Insights() {
             <div className="relative mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
               {(topMetrics.length
                 ? topMetrics.slice(0, 5)
-                : Object.entries(totals).slice(0, 5).map(([key, value]) => ({
-                    key,
-                    label: safeLabel(key),
-                    value: String(value ?? 0),
-                    hint: "",
-                  }))
-              )
-                .map((m, idx) => (
-                  <StatCard
-                    key={m.key || idx}
-                    icon={[Gauge, Users, Link2, FileText, Building2][idx % 5]}
-                    label={m.label}
-                    value={formatNumber(m.value)}
-                    hint={m.hint || "Top metric"}
-                  />
-                ))}
+                : Object.entries(totals)
+                    .slice(0, 5)
+                    .map(([key, value]) => ({
+                      key,
+                      label: safeLabel(key),
+                      value: String(value ?? 0),
+                      hint: "",
+                    }))
+              ).map((m, idx) => (
+                <StatCard
+                  key={m.key || idx}
+                  icon={[Gauge, Users, Link2, FileText, Building2][idx % 5]}
+                  label={m.label}
+                  value={formatNumber(m.value)}
+                  hint={m.hint || "Top metric"}
+                />
+              ))}
             </div>
           </ScrollReveal>
 
@@ -638,7 +639,10 @@ export default function Insights() {
               <SectionHeader
                 icon={Crown}
                 title="Analytics Panel"
-                subtitle={(isEnterprise ? "Enterprise" : subscription?.plan || "Free") + " — analytics and platform intelligence"}
+                subtitle={
+                  (isEnterprise ? "Enterprise" : subscription?.plan || "Free") +
+                  " — analytics and platform intelligence"
+                }
                 right={
                   <Badge tone={isEnterprise ? "green" : "amber"}>
                     {isEnterprise ? "Enterprise view" : "Free view"}
@@ -655,20 +659,21 @@ export default function Insights() {
                       </div>
                       <div>
                         <div className="text-base font-semibold text-slate-950 dark:text-white">
-                          {subscription?.plan === "premium" ? "Premium plan" : "Upgrade to unlock advanced analytics"}
+                          {subscription?.plan === "premium"
+                            ? "Premium plan"
+                            : "Upgrade to unlock advanced analytics"}
                         </div>
                         <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                           {subscription?.plan === "premium"
                             ? "You are on the Premium plan. Upgrade to Enterprise for unlimited advanced filters, expanded analytics, and exports."
-                            : `You are currently on ${subscription?.plan || "free"}. Upgrade to Premium/Enterprise to unlock unlimited advanced filters, expanded analytics, and exports.`
-                          }
+                            : `You are currently on ${subscription?.plan || "free"}. Upgrade to Premium/Enterprise to unlock unlimited advanced filters, expanded analytics, and exports.`}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center justify-center rounded-3xl border border-dashed border-sky-200 bg-white/70 p-5 dark:border-sky-500/20 dark:bg-slate-950/60">
                     <button
-                      onClick={() => window.location.href = "/pricing"}
+                      onClick={() => (window.location.href = "/pricing")}
                       className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:bg-sky-500"
                     >
                       Upgrade to Enterprise <ArrowUpRight className="h-4 w-4" />
@@ -868,10 +873,15 @@ export default function Insights() {
               {!premiumInsights ? (
                 <EmptyState
                   icon={Lock}
-                  title={subscription?.plan === "enterprise" ? "Premium analytics not available" : "Premium analytics locked"}
-                  description={subscription?.plan === "enterprise"
-                    ? "Premium analytics data is not available at this time. Check back later."
-                    : `Premium analytics unlock buying patterns, conversion insights, and agent performance. Upgrade from ${subscription?.plan || "free"} to Premium to view.`
+                  title={
+                    subscription?.plan === "enterprise"
+                      ? "Premium analytics not available"
+                      : "Premium analytics locked"
+                  }
+                  description={
+                    subscription?.plan === "enterprise"
+                      ? "Premium analytics data is not available at this time. Check back later."
+                      : `Premium analytics unlock buying patterns, conversion insights, and agent performance. Upgrade from ${subscription?.plan || "free"} to Premium to view.`
                   }
                 />
               ) : (
@@ -1065,9 +1075,16 @@ export default function Insights() {
                     <div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
                       <div className="mb-4 flex items-center justify-between">
                         <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                          {premiumInsights?.agent_performance_analytics?.length === 1 ? "Agent Performance" : "Team Performance"}
+                          {premiumInsights?.agent_performance_analytics
+                            ?.length === 1
+                            ? "Agent Performance"
+                            : "Team Performance"}
                         </h3>
-                        <Badge tone="default">{premiumInsights?.agent_performance_analytics?.length || 0} members</Badge>
+                        <Badge tone="default">
+                          {premiumInsights?.agent_performance_analytics
+                            ?.length || 0}{" "}
+                          members
+                        </Badge>
                       </div>
                       <div className="space-y-2">
                         {premiumInsights.agent_performance_analytics.map(
@@ -1268,7 +1285,11 @@ export default function Insights() {
                   <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
                     Advanced analytics (who viewed, inquiry rate, conversion
                     metrics) require the{" "}
-                    <strong>{subscription?.plan === "premium" ? "Enterprise" : "Premium"}</strong>{" "}
+                    <strong>
+                      {subscription?.plan === "premium"
+                        ? "Enterprise"
+                        : "Premium"}
+                    </strong>{" "}
                     plan. You are currently on{" "}
                     <strong>{subscription?.plan || "free"}</strong>.
                   </div>

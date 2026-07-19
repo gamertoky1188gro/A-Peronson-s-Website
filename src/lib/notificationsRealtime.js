@@ -57,10 +57,7 @@ function stopHeartbeat() {
 function scheduleReconnect(token) {
   if (reconnectTimer) return;
   reconnectAttempts += 1;
-  const delay = Math.min(
-    1000 * 2 ** reconnectAttempts,
-    MAX_RECONNECT_DELAY,
-  );
+  const delay = Math.min(1000 * 2 ** reconnectAttempts, MAX_RECONNECT_DELAY);
   reconnectTimer = window.setTimeout(() => {
     reconnectTimer = null;
     connectNotificationsRealtime(token);

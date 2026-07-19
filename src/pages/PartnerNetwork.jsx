@@ -544,8 +544,8 @@ export default function PartnerNetwork() {
                   <div>
                     <h4 className="font-semibold">Summary</h4>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      {rows.filter((r) => r.status === tab).length} request(s) in
-                      the current tab.
+                      {rows.filter((r) => r.status === tab).length} request(s)
+                      in the current tab.
                     </p>
                   </div>
                 </div>

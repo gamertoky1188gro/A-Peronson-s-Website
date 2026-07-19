@@ -417,7 +417,12 @@ export default function BuyingHouseProfile() {
     following: false,
     friend_status: "none",
   };
-  const [reviewEditModal, setReviewEditModal] = useState({ open: false, id: null, score: 5, comment: "" });
+  const [reviewEditModal, setReviewEditModal] = useState({
+    open: false,
+    id: null,
+    score: 5,
+    comment: "",
+  });
   const [reviewDeleteId, setReviewDeleteId] = useState(null);
   const viewerPerms = profile?.viewer_permissions || {
     is_self: false,
@@ -559,7 +564,9 @@ export default function BuyingHouseProfile() {
         if (!cancelled) setLoading(false);
       });
 
-    apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, { token: "" })
+    apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, {
+      token: "",
+    })
       .then((data) => {
         if (!cancelled) setRatingSummary(data || null);
       })
@@ -579,7 +586,9 @@ export default function BuyingHouseProfile() {
         });
     }
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, navigate, token]);
 
   useEffect(() => {
@@ -611,9 +620,14 @@ export default function BuyingHouseProfile() {
     if (!id) return;
     let cancelled = false;
 
-    queueMicrotask(() => { if (!cancelled) setLoadingProducts(true); });
+    queueMicrotask(() => {
+      if (!cancelled) setLoadingProducts(true);
+    });
 
-    apiRequest(`/profiles/${encodeURIComponent(id)}/products?cursor=0&limit=10`, { token })
+    apiRequest(
+      `/profiles/${encodeURIComponent(id)}/products?cursor=0&limit=10`,
+      { token },
+    )
       .then((data) => {
         if (cancelled) return;
         const rows = Array.isArray(data?.items) ? data.items : [];
@@ -628,7 +642,9 @@ export default function BuyingHouseProfile() {
         if (!cancelled) setLoadingProducts(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab, products.length, id, token]);
 
   useEffect(() => {
@@ -637,7 +653,9 @@ export default function BuyingHouseProfile() {
     if (!id) return;
     let cancelled = false;
 
-    queueMicrotask(() => { if (!cancelled) setLoadingNetwork(true); });
+    queueMicrotask(() => {
+      if (!cancelled) setLoadingNetwork(true);
+    });
 
     apiRequest(`/profiles/${encodeURIComponent(id)}/partner-network`, { token })
       .then((data) => {
@@ -651,7 +669,9 @@ export default function BuyingHouseProfile() {
         if (!cancelled) setLoadingNetwork(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab, partnerNetwork, id, token]);
 
   async function follow() {
@@ -813,7 +833,7 @@ export default function BuyingHouseProfile() {
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-              <Sparkles size={13} /> Enterprise {roleLabel} profile
+            <Sparkles size={13} /> Enterprise {roleLabel} profile
           </div>
         </div>
 
@@ -1531,32 +1551,53 @@ export default function BuyingHouseProfile() {
       {reviewEditModal.open ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
-          onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
-          onKeyDown={(e) => e.key === "Escape" && setReviewEditModal({ ...reviewEditModal, open: false })}
+          onClick={() =>
+            setReviewEditModal({ ...reviewEditModal, open: false })
+          }
+          onKeyDown={(e) =>
+            e.key === "Escape" &&
+            setReviewEditModal({ ...reviewEditModal, open: false })
+          }
           tabIndex={-1}
         >
           <div
             className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Review</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Edit Review
+            </h3>
             <div className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Score (1-5)</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Score (1-5)
+                </label>
                 <input
                   type="number"
                   min={1}
                   max={5}
                   value={reviewEditModal.score}
-                  onChange={(e) => setReviewEditModal({ ...reviewEditModal, score: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setReviewEditModal({
+                      ...reviewEditModal,
+                      score: Number(e.target.value),
+                    })
+                  }
                   className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Comment</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Comment
+                </label>
                 <textarea
                   value={reviewEditModal.comment}
-                  onChange={(e) => setReviewEditModal({ ...reviewEditModal, comment: e.target.value })}
+                  onChange={(e) =>
+                    setReviewEditModal({
+                      ...reviewEditModal,
+                      comment: e.target.value,
+                    })
+                  }
                   rows={3}
                   className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 />
@@ -1564,7 +1605,9 @@ export default function BuyingHouseProfile() {
             </div>
             <div className="mt-6 flex items-center justify-end gap-3">
               <button
-                onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
+                onClick={() =>
+                  setReviewEditModal({ ...reviewEditModal, open: false })
+                }
                 className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
               >
                 Cancel
@@ -1575,13 +1618,21 @@ export default function BuyingHouseProfile() {
                     await apiRequest(`/ratings/${reviewEditModal.id}`, {
                       method: "PATCH",
                       token,
-                      body: { score: reviewEditModal.score, comment: reviewEditModal.comment },
+                      body: {
+                        score: reviewEditModal.score,
+                        comment: reviewEditModal.comment,
+                      },
                     });
                     await loadRatings();
                   } catch (err) {
                     console.warn("API error:", err);
                   }
-                  setReviewEditModal({ open: false, id: null, score: 5, comment: "" });
+                  setReviewEditModal({
+                    open: false,
+                    id: null,
+                    score: 5,
+                    comment: "",
+                  });
                 }}
                 className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
               >
@@ -1603,8 +1654,13 @@ export default function BuyingHouseProfile() {
             className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete Review</h3>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Are you sure you want to delete this review? This action cannot be undone.</p>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Delete Review
+            </h3>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+              Are you sure you want to delete this review? This action cannot be
+              undone.
+            </p>
             <div className="mt-6 flex items-center justify-end gap-3">
               <button
                 onClick={() => setReviewDeleteId(null)}
@@ -1615,7 +1671,10 @@ export default function BuyingHouseProfile() {
               <button
                 onClick={async () => {
                   try {
-                    await apiRequest(`/ratings/${reviewDeleteId}`, { method: "DELETE", token });
+                    await apiRequest(`/ratings/${reviewDeleteId}`, {
+                      method: "DELETE",
+                      token,
+                    });
                     await loadRatings();
                   } catch (err) {
                     console.warn("API error:", err);

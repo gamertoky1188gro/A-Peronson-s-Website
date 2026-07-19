@@ -1269,7 +1269,9 @@ function AttachmentPreviewModal({
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-slate-100">
                   <div
                     className="prose prose-invert max-w-none text-[13px] leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(rtfState.html || "") }}
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeHtml(rtfState.html || ""),
+                    }}
                   />
                 </div>
               ) : null}

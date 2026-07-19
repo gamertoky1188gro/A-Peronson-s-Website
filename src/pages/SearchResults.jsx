@@ -1761,9 +1761,12 @@ export default function SearchResults() {
         params.set("certifications", filters.certifications.join(","));
       }
       if (filters.roles?.length) params.set("roles", filters.roles.join(","));
-      if (filters.colorPants?.length) params.set("color_pantones", filters.colorPants.join(","));
-      if (filters.exportMarkets?.length) params.set("export_markets", filters.exportMarkets.join(","));
-      if (filters.paymentTerms?.length) params.set("payment_terms", filters.paymentTerms.join(","));
+      if (filters.colorPants?.length)
+        params.set("color_pantones", filters.colorPants.join(","));
+      if (filters.exportMarkets?.length)
+        params.set("export_markets", filters.exportMarkets.join(","));
+      if (filters.paymentTerms?.length)
+        params.set("payment_terms", filters.paymentTerms.join(","));
       return params;
     },
     [query, filters, sortBy, searchField, isPremium],
@@ -1972,7 +1975,11 @@ export default function SearchResults() {
 
   async function saveSearch() {
     if (alertsQuota !== null && alertsQuota <= 0) {
-      addToast("Alert limit reached", "You have reached your alert limit.", "error");
+      addToast(
+        "Alert limit reached",
+        "You have reached your alert limit.",
+        "error",
+      );
       return;
     }
     const hasFilters =
@@ -2040,11 +2047,7 @@ export default function SearchResults() {
     } catch {
       // silently fail
     }
-    addToast(
-      "Share link copied",
-      "Share link copied to clipboard.",
-      "success",
-    );
+    addToast("Share link copied", "Share link copied to clipboard.", "success");
   }
 
   function clearAll() {

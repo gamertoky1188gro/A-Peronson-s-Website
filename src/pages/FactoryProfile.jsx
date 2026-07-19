@@ -379,7 +379,9 @@ export default function FactoryProfile() {
         if (!cancelled) setLoading(false);
       });
 
-    apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, { token: "" })
+    apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, {
+      token: "",
+    })
       .then((data) => {
         if (!cancelled) setRatingSummary(data || null);
       })
@@ -399,7 +401,9 @@ export default function FactoryProfile() {
         });
     }
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, navigate, token]);
 
   useEffect(() => {
@@ -431,9 +435,14 @@ export default function FactoryProfile() {
     if (!id) return;
     let cancelled = false;
 
-    queueMicrotask(() => { if (!cancelled) setLoadingProducts(true); });
+    queueMicrotask(() => {
+      if (!cancelled) setLoadingProducts(true);
+    });
 
-    apiRequest(`/profiles/${encodeURIComponent(id)}/products?cursor=0&limit=10`, { token })
+    apiRequest(
+      `/profiles/${encodeURIComponent(id)}/products?cursor=0&limit=10`,
+      { token },
+    )
       .then((data) => {
         if (cancelled) return;
         const rows = Array.isArray(data?.items) ? data.items : [];
@@ -448,7 +457,9 @@ export default function FactoryProfile() {
         if (!cancelled) setLoadingProducts(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab, products.length, id, token]);
 
   async function follow() {
@@ -505,7 +516,12 @@ export default function FactoryProfile() {
       return products.filter((p) => p.video_url);
     return products.filter(isApprovedVideo);
   }, [products, viewerPerms.is_admin, viewerPerms.is_self]);
-  const [reviewEditModal, setReviewEditModal] = useState({ open: false, id: null, score: 5, comment: "" });
+  const [reviewEditModal, setReviewEditModal] = useState({
+    open: false,
+    id: null,
+    score: 5,
+    comment: "",
+  });
   const [reviewDeleteId, setReviewDeleteId] = useState(null);
   const isBoosted = Boolean(profileBoost);
 
@@ -969,9 +985,7 @@ export default function FactoryProfile() {
                                         className="group relative block h-48 w-full overflow-hidden bg-slate-200"
                                       >
                                         <img
-                                          src={
-                                            product.cover_image_public_url
-                                          }
+                                          src={product.cover_image_public_url}
                                           alt={product.title}
                                           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                                         />
@@ -1299,12 +1313,16 @@ export default function FactoryProfile() {
                                               type="button"
                                               className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
                                               onClick={async () => {
-                                                const score = setReviewEditModal({
-                                                  open: true,
-                                                  id: review.id,
-                                                  score: Number(review.score || 5),
-                                                  comment: review.comment || "",
-                                                });
+                                                const score =
+                                                  setReviewEditModal({
+                                                    open: true,
+                                                    id: review.id,
+                                                    score: Number(
+                                                      review.score || 5,
+                                                    ),
+                                                    comment:
+                                                      review.comment || "",
+                                                  });
                                               }}
                                             >
                                               <Edit3 className="h-4 w-4" /> Edit
@@ -1461,32 +1479,53 @@ export default function FactoryProfile() {
       {reviewEditModal.open ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
-          onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
-          onKeyDown={(e) => e.key === "Escape" && setReviewEditModal({ ...reviewEditModal, open: false })}
+          onClick={() =>
+            setReviewEditModal({ ...reviewEditModal, open: false })
+          }
+          onKeyDown={(e) =>
+            e.key === "Escape" &&
+            setReviewEditModal({ ...reviewEditModal, open: false })
+          }
           tabIndex={-1}
         >
           <div
             className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Review</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Edit Review
+            </h3>
             <div className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Score (1-5)</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Score (1-5)
+                </label>
                 <input
                   type="number"
                   min={1}
                   max={5}
                   value={reviewEditModal.score}
-                  onChange={(e) => setReviewEditModal({ ...reviewEditModal, score: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setReviewEditModal({
+                      ...reviewEditModal,
+                      score: Number(e.target.value),
+                    })
+                  }
                   className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Comment</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Comment
+                </label>
                 <textarea
                   value={reviewEditModal.comment}
-                  onChange={(e) => setReviewEditModal({ ...reviewEditModal, comment: e.target.value })}
+                  onChange={(e) =>
+                    setReviewEditModal({
+                      ...reviewEditModal,
+                      comment: e.target.value,
+                    })
+                  }
                   rows={3}
                   className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 />
@@ -1494,7 +1533,9 @@ export default function FactoryProfile() {
             </div>
             <div className="mt-6 flex items-center justify-end gap-3">
               <button
-                onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
+                onClick={() =>
+                  setReviewEditModal({ ...reviewEditModal, open: false })
+                }
                 className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
               >
                 Cancel
@@ -1505,13 +1546,21 @@ export default function FactoryProfile() {
                     await apiRequest(`/ratings/${reviewEditModal.id}`, {
                       method: "PATCH",
                       token,
-                      body: { score: reviewEditModal.score, comment: reviewEditModal.comment },
+                      body: {
+                        score: reviewEditModal.score,
+                        comment: reviewEditModal.comment,
+                      },
                     });
                     await loadRatings();
                   } catch (err) {
                     console.warn("API error:", err);
                   }
-                  setReviewEditModal({ open: false, id: null, score: 5, comment: "" });
+                  setReviewEditModal({
+                    open: false,
+                    id: null,
+                    score: 5,
+                    comment: "",
+                  });
                 }}
                 className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
               >
@@ -1533,8 +1582,13 @@ export default function FactoryProfile() {
             className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete Review</h3>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Are you sure you want to delete this review? This action cannot be undone.</p>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Delete Review
+            </h3>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+              Are you sure you want to delete this review? This action cannot be
+              undone.
+            </p>
             <div className="mt-6 flex items-center justify-end gap-3">
               <button
                 onClick={() => setReviewDeleteId(null)}
@@ -1545,7 +1599,10 @@ export default function FactoryProfile() {
               <button
                 onClick={async () => {
                   try {
-                    await apiRequest(`/ratings/${reviewDeleteId}`, { method: "DELETE", token });
+                    await apiRequest(`/ratings/${reviewDeleteId}`, {
+                      method: "DELETE",
+                      token,
+                    });
                     await loadRatings();
                   } catch (err) {
                     console.warn("API error:", err);

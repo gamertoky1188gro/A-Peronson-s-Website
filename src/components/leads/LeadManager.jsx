@@ -245,9 +245,7 @@ export default function LeadManager({
   }
 
   function openReminderModal() {
-    setReminderDate(
-      new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    );
+    setReminderDate(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString());
     setReminderMessage("Follow up");
     setReminderModalOpen(true);
   }
@@ -374,83 +372,152 @@ export default function LeadManager({
 
   return (
     <>
-    <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
-      <div className="flex flex-col gap-4 lg:flex-row">
-        <div className="lg:w-2/5">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <h3 className="font-semibold">{title}</h3>
-            <div className="flex items-center gap-2">
-              {showOperations ? (
+      <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+        <div className="flex flex-col gap-4 lg:flex-row">
+          <div className="lg:w-2/5">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h3 className="font-semibold">{title}</h3>
+              <div className="flex items-center gap-2">
+                {showOperations ? (
+                  <button
+                    type="button"
+                    onClick={triggerRebalance}
+                    className="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white hover:bg-indigo-500 active:scale-[0.98]"
+                    disabled={loading || saving}
+                  >
+                    Rebalance
+                  </button>
+                ) : null}
                 <button
                   type="button"
-                  onClick={triggerRebalance}
-                  className="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white hover:bg-indigo-500 active:scale-[0.98]"
-                  disabled={loading || saving}
+                  onClick={loadLeads}
+                  className="px-3 py-1.5 text-sm rounded-md bg-white shadow-borderless ring-1 ring-slate-200/60 hover:bg-slate-50 active:scale-[0.98] dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:hover:bg-white/8"
+                  disabled={loading}
                 >
-                  Rebalance
+                  Refresh
                 </button>
+              </div>
+            </div>
+
+            {loading ? (
+              <Mosaic
+                color="#3b00ff"
+                size="large"
+                style={{ fontSize: "40px" }}
+                text=""
+                textColor=""
+              />
+            ) : null}
+            {error ? (
+              <div className="mt-2 text-sm text-rose-600">{error}</div>
+            ) : null}
+
+            <div
+              data-lenis-prevent
+              className="mt-3 space-y-2 max-h-[520px] overflow-auto pr-1"
+            >
+              {items.length === 0 && !loading ? (
+                <div className="text-sm text-slate-500">
+                  No leads yet. Leads are created automatically when chats
+                  start.
+                </div>
               ) : null}
-              <button
-                type="button"
-                onClick={loadLeads}
-                className="px-3 py-1.5 text-sm rounded-md bg-white shadow-borderless ring-1 ring-slate-200/60 hover:bg-slate-50 active:scale-[0.98] dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:hover:bg-white/8"
-                disabled={loading}
-              >
-                Refresh
-              </button>
+              {items.map((lead) => {
+                const counterparty = lead.counterparty_id
+                  ? lookup[lead.counterparty_id]
+                  : null;
+                const label =
+                  counterparty?.name || lead.counterparty_id || "Counterparty";
+                const isActive = lead.id === selectedId;
+                const avatarUrl =
+                  counterparty?.profile?.profile_image ||
+                  counterparty?.avatar_url ||
+                  counterparty?.avatar ||
+                  "";
+
+                return (
+                  <button
+                    key={lead.id}
+                    type="button"
+                    onClick={() => setSelectedId(lead.id)}
+                    className={[
+                      "w-full text-left rounded-lg bg-white shadow-borderless ring-1 ring-slate-200/60 px-3 py-2 transition dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10",
+                      isActive
+                        ? "bg-gtBlue/10 ring-gtBlue/40 dark:bg-gtBlue/15 dark:ring-gtBlue/40"
+                        : "hover:bg-slate-50 dark:hover:bg-white/8",
+                    ].join(" ")}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {avatarUrl ? (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{
+                              duration: 0.35,
+                              ease: [0.16, 1, 0.3, 1],
+                            }}
+                            className="h-8 w-8 shrink-0"
+                          >
+                            <img
+                              src={avatarUrl}
+                              alt={label}
+                              className="h-8 w-8 rounded-full object-cover"
+                            />
+                          </motion.div>
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200">
+                            {String(label).slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <p className="font-medium truncate">{label}</p>
+                      </div>
+                      <span className="text-[11px] uppercase tracking-widest text-slate-500">
+                        {(lead.status || "new").replace(/_/g, " ")}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      {lead?.sla?.status || lead?.sla?.deadline_at ? (
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusBadgeClass(lead?.sla?.status || "healthy")}`}
+                        >
+                          SLA {lead?.sla?.status || "active"} ·{" "}
+                          {formatCountdown(lead?.sla?.deadline_at)}
+                        </span>
+                      ) : null}
+                      {lead?.queue_owner_id ? (
+                        <span className="text-[10px] text-slate-500">
+                          Queue:{" "}
+                          {lookup[lead.queue_owner_id]?.name ||
+                            lead.queue_owner_id}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Last:{" "}
+                      {formatDate(lead.last_interaction_at || lead.updated_at)}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {loading ? (
-            <Mosaic
-              color="#3b00ff"
-              size="large"
-              style={{ fontSize: "40px" }}
-              text=""
-              textColor=""
-            />
-          ) : null}
-          {error ? (
-            <div className="mt-2 text-sm text-rose-600">{error}</div>
-          ) : null}
-
-          <div
-            data-lenis-prevent
-            className="mt-3 space-y-2 max-h-[520px] overflow-auto pr-1"
-          >
-            {items.length === 0 && !loading ? (
-              <div className="text-sm text-slate-500">
-                No leads yet. Leads are created automatically when chats start.
+          <div className="lg:w-3/5">
+            {!selectedId ? (
+              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-6 text-sm text-slate-500">
+                Select a lead to view details, notes, and reminders.
               </div>
-            ) : null}
-            {items.map((lead) => {
-              const counterparty = lead.counterparty_id
-                ? lookup[lead.counterparty_id]
-                : null;
-              const label =
-                counterparty?.name || lead.counterparty_id || "Counterparty";
-              const isActive = lead.id === selectedId;
-              const avatarUrl =
-                counterparty?.profile?.profile_image ||
-                counterparty?.avatar_url ||
-                counterparty?.avatar ||
-                "";
-
-              return (
-                <button
-                  key={lead.id}
-                  type="button"
-                  onClick={() => setSelectedId(lead.id)}
-                  className={[
-                    "w-full text-left rounded-lg bg-white shadow-borderless ring-1 ring-slate-200/60 px-3 py-2 transition dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10",
-                    isActive
-                      ? "bg-gtBlue/10 ring-gtBlue/40 dark:bg-gtBlue/15 dark:ring-gtBlue/40"
-                      : "hover:bg-slate-50 dark:hover:bg-white/8",
-                  ].join(" ")}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      {avatarUrl ? (
+            ) : (
+              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-widest text-slate-500">
+                      Counterparty
+                    </p>
+                    <div className="mt-2 flex items-center gap-3">
+                      {selectedCounterparty?.profile?.profile_image ? (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.9 }}
                           whileInView={{ opacity: 1, scale: 1 }}
@@ -459,366 +526,306 @@ export default function LeadManager({
                             duration: 0.35,
                             ease: [0.16, 1, 0.3, 1],
                           }}
-                          className="h-8 w-8 shrink-0"
+                          className="h-10 w-10 shrink-0"
                         >
                           <img
-                            src={avatarUrl}
-                            alt={label}
-                            className="h-8 w-8 rounded-full object-cover"
+                            src={selectedCounterparty.profile.profile_image}
+                            alt={selectedCounterparty?.name}
+                            className="h-10 w-10 rounded-full object-cover"
                           />
                         </motion.div>
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200">
-                          {String(label).slice(0, 2).toUpperCase()}
+                        <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
+                          {String(
+                            selectedCounterparty?.name ||
+                              selected?.counterparty_id ||
+                              "--",
+                          )
+                            .slice(0, 2)
+                            .toUpperCase()}
                         </div>
                       )}
-                      <p className="font-medium truncate">{label}</p>
-                    </div>
-                    <span className="text-[11px] uppercase tracking-widest text-slate-500">
-                      {(lead.status || "new").replace(/_/g, " ")}
-                    </span>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    {lead?.sla?.status || lead?.sla?.deadline_at ? (
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusBadgeClass(lead?.sla?.status || "healthy")}`}
-                      >
-                        SLA {lead?.sla?.status || "active"} ·{" "}
-                        {formatCountdown(lead?.sla?.deadline_at)}
-                      </span>
-                    ) : null}
-                    {lead?.queue_owner_id ? (
-                      <span className="text-[10px] text-slate-500">
-                        Queue:{" "}
-                        {lookup[lead.queue_owner_id]?.name ||
-                          lead.queue_owner_id}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Last:{" "}
-                    {formatDate(lead.last_interaction_at || lead.updated_at)}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="lg:w-3/5">
-          {!selectedId ? (
-            <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-6 text-sm text-slate-500">
-              Select a lead to view details, notes, and reminders.
-            </div>
-          ) : (
-            <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-widest text-slate-500">
-                    Counterparty
-                  </p>
-                  <div className="mt-2 flex items-center gap-3">
-                    {selectedCounterparty?.profile?.profile_image ? (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                        className="h-10 w-10 shrink-0"
-                      >
-                        <img
-                          src={selectedCounterparty.profile.profile_image}
-                          alt={selectedCounterparty?.name}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                      </motion.div>
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
-                        {String(
-                          selectedCounterparty?.name ||
+                      <div className="min-w-0">
+                        <p className="font-semibold truncate">
+                          {selectedCounterparty?.name ||
                             selected?.counterparty_id ||
-                            "--",
-                        )
-                          .slice(0, 2)
-                          .toUpperCase()}
+                            "--"}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {selectedCounterparty?.profile?.organization_name ||
+                            selectedCounterparty?.profile?.organization ||
+                            ""}
+                        </p>
                       </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="font-semibold truncate">
-                        {selectedCounterparty?.name ||
-                          selected?.counterparty_id ||
-                          "--"}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {selectedCounterparty?.profile?.organization_name ||
-                          selectedCounterparty?.profile?.organization ||
-                          ""}
-                      </p>
                     </div>
+                    <p className="text-xs text-slate-500">
+                      Match: {selected?.match_id || "--"}
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Match: {selected?.match_id || "--"}
-                  </p>
-                </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs uppercase tracking-widest text-slate-500">
-                    Status
-                  </label>
-                  <select
-                    value={selected?.status || "new"}
-                    onChange={(e) => updateLead({ status: e.target.value })}
-                    className="rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
-                    disabled={saving}
-                  >
-                    {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt.key} value={opt.key}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className="rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                    disabled={!selected?.match_id}
-                    onClick={() => {
-                      if (!selected?.match_id) return;
-                      navigate("/chat", {
-                        state: {
-                          matchId: selected.match_id,
-                          notice: "Opening the lead conversation.",
-                        },
-                      });
-                    }}
-                  >
-                    Message
-                  </button>
-                  {showOperations ? (
-                    <button
-                      type="button"
-                      className="rounded-md bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-400"
-                      disabled={saving || !selectedId}
-                      onClick={openEscalationModal}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs uppercase tracking-widest text-slate-500">
+                      Status
+                    </label>
+                    <select
+                      value={selected?.status || "new"}
+                      onChange={(e) => updateLead({ status: e.target.value })}
+                      className="rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
+                      disabled={saving}
                     >
-                      Escalate
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs uppercase tracking-widest text-slate-500">
-                    Assigned agent
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {assignedAgent?.name ||
-                      selected?.assigned_agent_id ||
-                      "Unassigned"}
-                  </p>
-                  {!allowAssign || !canAssignLeads ? null : (
+                      {STATUS_OPTIONS.map((opt) => (
+                        <option key={opt.key} value={opt.key}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                     <button
                       type="button"
+                      className="rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                      disabled={!selected?.match_id}
                       onClick={() => {
-                        setAssignAgentId(selected?.assigned_agent_id || "");
-                        setAssignReason("manual_reassignment");
-                        setAssignModalOpen(true);
+                        if (!selected?.match_id) return;
+                        navigate("/chat", {
+                          state: {
+                            matchId: selected.match_id,
+                            notice: "Opening the lead conversation.",
+                          },
+                        });
                       }}
+                    >
+                      Message
+                    </button>
+                    {showOperations ? (
+                      <button
+                        type="button"
+                        className="rounded-md bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-400"
+                        disabled={saving || !selectedId}
+                        onClick={openEscalationModal}
+                      >
+                        Escalate
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="rounded-lg bg-slate-50 p-3">
+                    <p className="text-xs uppercase tracking-widest text-slate-500">
+                      Assigned agent
+                    </p>
+                    <p className="mt-1 text-sm font-medium">
+                      {assignedAgent?.name ||
+                        selected?.assigned_agent_id ||
+                        "Unassigned"}
+                    </p>
+                    {!allowAssign || !canAssignLeads ? null : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssignAgentId(selected?.assigned_agent_id || "");
+                          setAssignReason("manual_reassignment");
+                          setAssignModalOpen(true);
+                        }}
+                        className="mt-2 text-sm text-gtBlue hover:underline"
+                        disabled={saving}
+                      >
+                        Assign / Reassign
+                      </button>
+                    )}
+                    {allowAssign && !canAssignLeads ? (
+                      <p className="mt-2 text-xs text-slate-500">
+                        Lead assignment is restricted by your role policy.
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="rounded-lg bg-slate-50 p-3">
+                    <p className="text-xs uppercase tracking-widest text-slate-500">
+                      Updated
+                    </p>
+                    <p className="mt-1 text-sm font-medium">
+                      {formatDate(selected?.updated_at || "") || "--"}
+                    </p>
+                    {selected?.sla?.status || selected?.sla?.deadline_at ? (
+                      <p
+                        className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusBadgeClass(selected?.sla?.status || "healthy")}`}
+                      >
+                        SLA {selected?.sla?.status || "active"} ·{" "}
+                        {formatCountdown(selected?.sla?.deadline_at)}
+                      </p>
+                    ) : null}
+                    {selectedEscalation ? (
+                      <button
+                        type="button"
+                        onClick={() => resolveEscalation(selectedId)}
+                        className="mt-2 text-xs rounded bg-emerald-600 px-2 py-1 text-white"
+                        disabled={saving}
+                      >
+                        Resolve escalation
+                      </button>
+                    ) : null}
+                    {selected?.queue_owner_id ? (
+                      <p className="mt-1 text-xs text-slate-600">
+                        Queue owner:{" "}
+                        {lookup[selected.queue_owner_id]?.name ||
+                          selected.queue_owner_id}
+                      </p>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={openReminderModal}
                       className="mt-2 text-sm text-gtBlue hover:underline"
                       disabled={saving}
                     >
-                      Assign / Reassign
+                      Set reminder
                     </button>
-                  )}
-                  {allowAssign && !canAssignLeads ? (
-                    <p className="mt-2 text-xs text-slate-500">
-                      Lead assignment is restricted by your role policy.
-                    </p>
-                  ) : null}
-                </div>
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs uppercase tracking-widest text-slate-500">
-                    Updated
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {formatDate(selected?.updated_at || "") || "--"}
-                  </p>
-                  {selected?.sla?.status || selected?.sla?.deadline_at ? (
-                    <p
-                      className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusBadgeClass(selected?.sla?.status || "healthy")}`}
-                    >
-                      SLA {selected?.sla?.status || "active"} ·{" "}
-                      {formatCountdown(selected?.sla?.deadline_at)}
-                    </p>
-                  ) : null}
-                  {selectedEscalation ? (
-                    <button
-                      type="button"
-                      onClick={() => resolveEscalation(selectedId)}
-                      className="mt-2 text-xs rounded bg-emerald-600 px-2 py-1 text-white"
-                      disabled={saving}
-                    >
-                      Resolve escalation
-                    </button>
-                  ) : null}
-                  {selected?.queue_owner_id ? (
-                    <p className="mt-1 text-xs text-slate-600">
-                      Queue owner:{" "}
-                      {lookup[selected.queue_owner_id]?.name ||
-                        selected.queue_owner_id}
-                    </p>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={openReminderModal}
-                    className="mt-2 text-sm text-gtBlue hover:underline"
-                    disabled={saving}
-                  >
-                    Set reminder
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-5">
-                {showOperations ? (
-                  <div className="mb-4 rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs uppercase tracking-widest text-slate-500">
-                      Team queue snapshot
-                    </p>
-                    <div className="mt-2 grid gap-2 md:grid-cols-2">
-                      {(queueMeta.team_queues || [])
-                        .slice(0, 4)
-                        .map((queue) => (
-                          <div
-                            key={queue.agent_id}
-                            className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs"
-                          >
-                            <div className="font-medium">
-                              {queue.agent_name || queue.agent_id}
-                            </div>
-                            <div className="text-slate-500">
-                              Load: {queue.current_load} leads
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                    <p className="mt-3 text-xs uppercase tracking-widest text-slate-500">
-                      Escalation queue
-                    </p>
-                    <div className="mt-2 space-y-1">
-                      {(queueMeta.escalations || []).slice(0, 5).map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs flex items-center justify-between gap-2"
-                        >
-                          <span className="truncate">
-                            Lead {item.lead_id} · {item.reason}
-                          </span>
-                          <span className="text-slate-500">
-                            {formatDate(item.triggered_at)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
-                ) : null}
-                <p className="text-xs uppercase tracking-widest text-slate-500">
-                  Internal notes
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <input
-                    value={noteDraft}
-                    onChange={(e) => setNoteDraft(e.target.value)}
-                    placeholder="Add a note for your team..."
-                    className="flex-1 rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
-                    disabled={saving}
-                  />
-                  <button
-                    type="button"
-                    onClick={submitNote}
-                    className="px-3 py-2 rounded-md bg-gtBlue text-white text-sm font-medium hover:bg-gtBlueHover active:scale-[0.98]"
-                    disabled={saving}
-                  >
-                    Add
-                  </button>
                 </div>
 
-                <div
-                  data-lenis-prevent
-                  className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1"
-                >
-                  {(selected?.notes || []).length === 0 ? (
-                    <div className="text-sm text-slate-500">No notes yet.</div>
-                  ) : null}
-                  {(selected?.notes || []).map((note) => (
-                    <div
-                      key={note.id}
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3"
-                    >
-                      <p className="text-sm text-slate-900">{note.note}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {formatDate(note.created_at)}
+                <div className="mt-5">
+                  {showOperations ? (
+                    <div className="mb-4 rounded-lg bg-slate-50 p-3">
+                      <p className="text-xs uppercase tracking-widest text-slate-500">
+                        Team queue snapshot
                       </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-5">
-                {selectedAssignments.length ? (
-                  <div className="mb-4">
-                    <p className="text-xs uppercase tracking-widest text-slate-500">
-                      Assignment audit trail
-                    </p>
-                    <div className="mt-2 space-y-1">
-                      {selectedAssignments.map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                        >
-                          <span className="font-medium">
-                            {item.reason || "assignment"}
-                          </span>
-                          <span className="text-slate-500">
-                            {" "}
-                            · {formatDate(item.assigned_at || item.created_at)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-                <p className="text-xs uppercase tracking-widest text-slate-500">
-                  Reminders
-                </p>
-                <div className="mt-2 space-y-2">
-                  {(selected?.reminders || []).length === 0 ? (
-                    <div className="text-sm text-slate-500">
-                      No reminders yet.
-                    </div>
-                  ) : null}
-                  {(selected?.reminders || []).map((reminder) => (
-                    <div
-                      key={reminder.id}
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium">
-                          {reminder.message}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {formatDate(reminder.remind_at)}
-                        </p>
+                      <div className="mt-2 grid gap-2 md:grid-cols-2">
+                        {(queueMeta.team_queues || [])
+                          .slice(0, 4)
+                          .map((queue) => (
+                            <div
+                              key={queue.agent_id}
+                              className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs"
+                            >
+                              <div className="font-medium">
+                                {queue.agent_name || queue.agent_id}
+                              </div>
+                              <div className="text-slate-500">
+                                Load: {queue.current_load} leads
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                      <p className="mt-3 text-xs uppercase tracking-widest text-slate-500">
+                        Escalation queue
+                      </p>
+                      <div className="mt-2 space-y-1">
+                        {(queueMeta.escalations || [])
+                          .slice(0, 5)
+                          .map((item) => (
+                            <div
+                              key={item.id}
+                              className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs flex items-center justify-between gap-2"
+                            >
+                              <span className="truncate">
+                                Lead {item.lead_id} · {item.reason}
+                              </span>
+                              <span className="text-slate-500">
+                                {formatDate(item.triggered_at)}
+                              </span>
+                            </div>
+                          ))}
                       </div>
                     </div>
-                  ))}
+                  ) : null}
+                  <p className="text-xs uppercase tracking-widest text-slate-500">
+                    Internal notes
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      value={noteDraft}
+                      onChange={(e) => setNoteDraft(e.target.value)}
+                      placeholder="Add a note for your team..."
+                      className="flex-1 rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
+                      disabled={saving}
+                    />
+                    <button
+                      type="button"
+                      onClick={submitNote}
+                      className="px-3 py-2 rounded-md bg-gtBlue text-white text-sm font-medium hover:bg-gtBlueHover active:scale-[0.98]"
+                      disabled={saving}
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  <div
+                    data-lenis-prevent
+                    className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1"
+                  >
+                    {(selected?.notes || []).length === 0 ? (
+                      <div className="text-sm text-slate-500">
+                        No notes yet.
+                      </div>
+                    ) : null}
+                    {(selected?.notes || []).map((note) => (
+                      <div
+                        key={note.id}
+                        className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3"
+                      >
+                        <p className="text-sm text-slate-900">{note.note}</p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {formatDate(note.created_at)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  {selectedAssignments.length ? (
+                    <div className="mb-4">
+                      <p className="text-xs uppercase tracking-widest text-slate-500">
+                        Assignment audit trail
+                      </p>
+                      <div className="mt-2 space-y-1">
+                        {selectedAssignments.map((item) => (
+                          <div
+                            key={item.id}
+                            className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+                          >
+                            <span className="font-medium">
+                              {item.reason || "assignment"}
+                            </span>
+                            <span className="text-slate-500">
+                              {" "}
+                              ·{" "}
+                              {formatDate(item.assigned_at || item.created_at)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  <p className="text-xs uppercase tracking-widest text-slate-500">
+                    Reminders
+                  </p>
+                  <div className="mt-2 space-y-2">
+                    {(selected?.reminders || []).length === 0 ? (
+                      <div className="text-sm text-slate-500">
+                        No reminders yet.
+                      </div>
+                    ) : null}
+                    {(selected?.reminders || []).map((reminder) => (
+                      <div
+                        key={reminder.id}
+                        className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium">
+                            {reminder.message}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {formatDate(reminder.remind_at)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Reminder modal */}
       {reminderModalOpen ? (

@@ -45,7 +45,8 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [availableCategories, setAvailableCategories] = useState(DEFAULT_CATEGORIES);
+  const [availableCategories, setAvailableCategories] =
+    useState(DEFAULT_CATEGORIES);
 
   const [profileImage, setProfileImage] = useState(
     () => user?.profile?.profile_image || "",
@@ -278,10 +279,17 @@ export default function OnboardingPage() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold">
-                        {String(user?.role || "Account").replace("_", " ")} setup
+                        {String(user?.role || "Account").replace("_", " ")}{" "}
+                        setup
                       </h3>
                       <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                        Step {step} of 3 — {step === 1 ? "profile image" : step === 2 ? "organization details" : "product categories"}. You can always update these later.
+                        Step {step} of 3 —{" "}
+                        {step === 1
+                          ? "profile image"
+                          : step === 2
+                            ? "organization details"
+                            : "product categories"}
+                        . You can always update these later.
                       </p>
                     </div>
                   </div>

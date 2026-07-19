@@ -410,7 +410,9 @@ export default function FloatingAssistant() {
                       />
                     ) : (
                       <>
-                        <span className={`w-2 h-2 rounded-full ${wsConnected ? "bg-green-300" : "bg-amber-400"}`}></span>
+                        <span
+                          className={`w-2 h-2 rounded-full ${wsConnected ? "bg-green-300" : "bg-amber-400"}`}
+                        ></span>
                         <p className="text-[10px] uppercase tracking-wider text-white/80 font-semibold">
                           {wsConnected ? "Online" : "Connecting"}
                         </p>

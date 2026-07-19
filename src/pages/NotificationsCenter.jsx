@@ -672,7 +672,13 @@ export default function NotificationsCenter() {
 
                   <div className="mt-4 space-y-3">
                     {loadingAlerts ? (
-                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
                     ) : alerts.length === 0 ? (
                       <EmptyState
                         title="No saved alerts yet."
@@ -706,7 +712,7 @@ export default function NotificationsCenter() {
                             className="rounded-xl p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
                             aria-label="Delete alert"
                           >
-                          <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       ))

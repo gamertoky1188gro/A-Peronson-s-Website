@@ -305,15 +305,12 @@ export default function OwnerDashboard() {
     cap: item.capped_max_leads || 10,
   }));
 
-  const chartRequestsData = dashboard?.series?.buyer_requests?.map(
-    (item) => item.count,
-  ) || [];
-  const chartChatsData = dashboard?.series?.chats?.map(
-    (item) => item.count,
-  ) || [];
-  const chartDocsData = dashboard?.series?.documents?.map(
-    (item) => item.count,
-  ) || [];
+  const chartRequestsData =
+    dashboard?.series?.buyer_requests?.map((item) => item.count) || [];
+  const chartChatsData =
+    dashboard?.series?.chats?.map((item) => item.count) || [];
+  const chartDocsData =
+    dashboard?.series?.documents?.map((item) => item.count) || [];
 
   if (pageLoading) return <NeonAtom fill />;
 
@@ -628,7 +625,15 @@ export default function OwnerDashboard() {
                               {policyData.slaTarget}
                             </span>
                           </div>
-                          <ProgressBar value={escalationsData.length > 0 ? Math.round((1 - escalationsData.length / 10) * 100) : 85} />
+                          <ProgressBar
+                            value={
+                              escalationsData.length > 0
+                                ? Math.round(
+                                    (1 - escalationsData.length / 10) * 100,
+                                  )
+                                : 85
+                            }
+                          />
                         </div>
                         <div>
                           <div className="mb-2 flex items-center justify-between">
@@ -639,7 +644,13 @@ export default function OwnerDashboard() {
                               {policyData.escalationWindow}
                             </span>
                           </div>
-                          <ProgressBar value={opsEscalations.length > 0 ? Math.round(opsEscalations.length * 10) : 0} />
+                          <ProgressBar
+                            value={
+                              opsEscalations.length > 0
+                                ? Math.round(opsEscalations.length * 10)
+                                : 0
+                            }
+                          />
                         </div>
                       </div>
                     </SectionCard>
@@ -654,7 +665,9 @@ export default function OwnerDashboard() {
                             Buyer request health
                           </div>
                           <div className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
-                            {escalationsData.length === 0 ? "Healthy pipeline" : `${escalationsData.length} active escalations`}
+                            {escalationsData.length === 0
+                              ? "Healthy pipeline"
+                              : `${escalationsData.length} active escalations`}
                           </div>
                         </div>
                         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-slate-950/40">
@@ -697,85 +710,85 @@ export default function OwnerDashboard() {
 
                 <SectionCard
                   title="All Buyer Requests"
-                      subtitle={`Status: Active · Category: All · Assigned vs unassigned overview`}
-                      action={
-                        <button
-                          onClick={() => go("/buyer-requests")}
-                          className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/15"
-                        >
-                          View All Requests
-                        </button>
-                      }
+                  subtitle={`Status: Active · Category: All · Assigned vs unassigned overview`}
+                  action={
+                    <button
+                      onClick={() => go("/buyer-requests")}
+                      className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/15"
                     >
-                      <div className="grid gap-4 md:grid-cols-3">
-                        <div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-                          <div className="text-sm text-slate-500 dark:text-slate-400">
-                            Assigned
-                          </div>
-                          <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
-                            {totals.assigned_requests ?? 0}
-                          </div>
-                        </div>
-                        <div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-                          <div className="text-sm text-slate-500 dark:text-slate-400">
-                            Unassigned
-                          </div>
-                          <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
-                            {(totals.buyer_requests ?? 0) -
-                              (totals.assigned_requests ?? 0)}
-                          </div>
-                        </div>
-                        <div className="rounded-2xl bg-gradient-to-br from-sky-500/10 to-cyan-400/10 p-4">
-                          <div className="text-sm text-slate-500 dark:text-slate-400">
-                            Open rate
-                          </div>
-                          <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
-                            {totals.buyer_requests
-                              ? Math.round(
-                                  (totals.open_buyer_requests /
-                                    totals.buyer_requests) *
-                                    100,
-                                )
-                              : 0}
-                            %
-                          </div>
-                        </div>
+                      View All Requests
+                    </button>
+                  }
+                >
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        Assigned
                       </div>
+                      <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+                        {totals.assigned_requests ?? 0}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        Unassigned
+                      </div>
+                      <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+                        {(totals.buyer_requests ?? 0) -
+                          (totals.assigned_requests ?? 0)}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl bg-gradient-to-br from-sky-500/10 to-cyan-400/10 p-4">
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        Open rate
+                      </div>
+                      <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+                        {totals.buyer_requests
+                          ? Math.round(
+                              (totals.open_buyer_requests /
+                                totals.buyer_requests) *
+                                100,
+                            )
+                          : 0}
+                        %
+                      </div>
+                    </div>
+                  </div>
 
-                      <div className="mt-6 space-y-3">
-                        {(dashboard?.recent_requests || []).length === 0 ? (
-                          <div className="text-sm text-slate-500 dark:text-slate-400">
-                            No recent buyer requests
-                          </div>
-                        ) : (
-                          (dashboard?.recent_requests || []).map((req, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5"
-                            >
-                              <div className="flex-1">
-                                <div className="font-semibold text-slate-900 dark:text-white">
-                                  {req.title || req.name || `Request #${i + 1}`}
-                                </div>
-                                <div className="text-sm text-slate-500">
-                                  {req.buyer_name || req.buyer || "Unknown buyer"}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-                                  {req.status || "Open"}
-                                </span>
-                                <span className="text-xs text-slate-400">
-                                  {req.created_at
-                                    ? new Date(req.created_at).toLocaleDateString()
-                                    : ""}
-                                </span>
-                              </div>
-                            </div>
-                          ))
-                        )}
+                  <div className="mt-6 space-y-3">
+                    {(dashboard?.recent_requests || []).length === 0 ? (
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        No recent buyer requests
                       </div>
-                    </SectionCard>
+                    ) : (
+                      (dashboard?.recent_requests || []).map((req, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5"
+                        >
+                          <div className="flex-1">
+                            <div className="font-semibold text-slate-900 dark:text-white">
+                              {req.title || req.name || `Request #${i + 1}`}
+                            </div>
+                            <div className="text-sm text-slate-500">
+                              {req.buyer_name || req.buyer || "Unknown buyer"}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                              {req.status || "Open"}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                              {req.created_at
+                                ? new Date(req.created_at).toLocaleDateString()
+                                : ""}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </SectionCard>
               </div>
             )}
 
@@ -828,7 +841,9 @@ export default function OwnerDashboard() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-slate-900 dark:text-white">
-                                {chat.contact_name || chat.name || `Chat #${i + 1}`}
+                                {chat.contact_name ||
+                                  chat.name ||
+                                  `Chat #${i + 1}`}
                               </span>
                               {chat.unread ? (
                                 <span className="h-2 w-2 rounded-full bg-sky-500" />
@@ -840,7 +855,9 @@ export default function OwnerDashboard() {
                           </div>
                           <span className="shrink-0 text-xs text-slate-400">
                             {chat.last_message_at || chat.updated_at
-                              ? new Date(chat.last_message_at || chat.updated_at).toLocaleDateString()
+                              ? new Date(
+                                  chat.last_message_at || chat.updated_at,
+                                ).toLocaleDateString()
                               : ""}
                           </span>
                         </div>

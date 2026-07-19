@@ -1,14 +1,16 @@
 # GarTexHub Comprehensive Code Audit Report
+
 **Date:** July 19, 2026  
 **Auditor:** GitHub Copilot Code Audit Agent  
 **Project:** GarTexHub B2B Textile Marketplace  
-**Repository:** A-Peronson-s-Website  
+**Repository:** A-Peronson-s-Website
 
 ---
 
 ## Executive Summary
 
 ### Project Overview
+
 - **Total Source Files:** 139 (JSX/JS files)
 - **Server Files:** 237 (JS files)
 - **Lines of Code:** ~74,000
@@ -17,9 +19,11 @@
 - **Test Coverage:** 60 test files
 
 ### Health Assessment
+
 **READINESS FOR PRODUCTION: ⚠️ CONDITIONAL - WITH CRITICAL FIXES REQUIRED**
 
 ### Critical Issues Found: 47
+
 - **Critical:** 8
 - **High:** 14
 - **Medium:** 18
@@ -30,37 +34,42 @@
 ## Executive Summary: Top 5 Most Urgent Fixes
 
 ### 1. **CRITICAL: Hardcoded Secrets in .env File**
-   - Severity: **CRITICAL**
-   - Location: `.env` (Repository root)
-   - Issue: Database credentials, API keys, JWT secrets exposed in version control
-   - Impact: Complete database compromise, unauthorized API access
-   - Priority: **IMMEDIATE - Block production deployment**
+
+- Severity: **CRITICAL**
+- Location: `.env` (Repository root)
+- Issue: Database credentials, API keys, JWT secrets exposed in version control
+- Impact: Complete database compromise, unauthorized API access
+- Priority: **IMMEDIATE - Block production deployment**
 
 ### 2. **CRITICAL: Missing Error Handling in Promise Chains**
-   - Severity: **CRITICAL**
-   - Location: Multiple files (48 .then() patterns, only 293 catch blocks for 335 try statements)
-   - Issue: 42 unhandled promise rejections across codebase
-   - Impact: Silent failures, unpredictable application state
-   - Priority: **IMMEDIATE**
+
+- Severity: **CRITICAL**
+- Location: Multiple files (48 .then() patterns, only 293 catch blocks for 335 try statements)
+- Issue: 42 unhandled promise rejections across codebase
+- Impact: Silent failures, unpredictable application state
+- Priority: **IMMEDIATE**
 
 ### 3. **HIGH: XSS Vulnerability via dangerouslySetInnerHTML**
-   - Severity: **HIGH**
-   - Location: SearchResults.jsx (25+ instances), AttachmentPreviewModal.jsx
-   - Issue: User-supplied content rendered with dangerouslySetInnerHTML
-   - Impact: Malicious script injection possible
-   - Priority: **IMMEDIATE**
+
+- Severity: **HIGH**
+- Location: SearchResults.jsx (25+ instances), AttachmentPreviewModal.jsx
+- Issue: User-supplied content rendered with dangerouslySetInnerHTML
+- Impact: Malicious script injection possible
+- Priority: **IMMEDIATE**
 
 ### 4. **HIGH: 78 Console Statements Left in Production Code**
-   - Severity: **HIGH**
-   - Location: 21 files across src/
-   - Issue: Performance degradation, information leakage
-   - Priority: **NEXT SPRINT**
+
+- Severity: **HIGH**
+- Location: 21 files across src/
+- Issue: Performance degradation, information leakage
+- Priority: **NEXT SPRINT**
 
 ### 5. **HIGH: Missing Input Validation in Forms**
-   - Severity: **HIGH**
-   - Location: OrgSettings.jsx, OnboardingWizard.jsx, AdminPanel.jsx
-   - Issue: No sanitization of user inputs before API submission
-   - Priority: **NEXT SPRINT**
+
+- Severity: **HIGH**
+- Location: OrgSettings.jsx, OnboardingWizard.jsx, AdminPanel.jsx
+- Issue: No sanitization of user inputs before API submission
+- Priority: **NEXT SPRINT**
 
 ---
 
@@ -69,6 +78,7 @@
 ### SECTION 1: SECURITY ISSUES
 
 #### SEC-001: **CRITICAL** - Hardcoded Database Credentials
+
 - **File:** `.env`
 - **Line:** 1
 - **Severity:** CRITICAL
@@ -78,7 +88,7 @@
   ```
   DATABASE_URL="postgres://user:password@*.aivencloud.com:17598/defaultdb"
   ```
-- **Impact:** 
+- **Impact:**
   - Complete database compromise
   - Unauthorized access to all user data
   - Potential data theft/deletion
@@ -94,6 +104,7 @@
 ---
 
 #### SEC-002: **CRITICAL** - Hardcoded API Keys & JWT Secrets
+
 - **File:** `.env`
 - **Lines:** Multiple
 - **Severity:** CRITICAL
@@ -105,7 +116,7 @@
   ADMIN_MFA_CODE="123456"
   OPENSEARCH_PASSWORD=AVNS_5jxzXb4MdXsXWeUrVsp
   ```
-- **Impact:** 
+- **Impact:**
   - API quota hijacking (Gemini)
   - Session forgery (JWT secret compromise)
   - Admin panel bypass (hardcoded MFA code)
@@ -115,6 +126,7 @@
 ---
 
 #### SEC-003: **HIGH** - XSS via dangerouslySetInnerHTML in SearchResults.jsx
+
 - **File:** `src/pages/SearchResults.jsx`
 - **Lines:** ~25 instances
 - **Severity:** HIGH
@@ -125,7 +137,7 @@
   dangerouslySetInnerHTML={{ __html: searchResult.description }}
   ```
 - **Evidence:** All occurrences use unsanitized backend data
-- **Impact:** 
+- **Impact:**
   - Stored XSS if backend doesn't sanitize
   - Malicious script execution in user browsers
   - Session hijacking possible
@@ -140,6 +152,7 @@
 ---
 
 #### SEC-004: **HIGH** - Admin Credentials Stored in LocalStorage
+
 - **File:** `src/pages/AdminPanel.jsx`
 - **Lines:** Multiple
 - **Severity:** HIGH
@@ -149,7 +162,7 @@
   localStorage.setItem("admin_mfa_code", mfaCode);
   localStorage.setItem("admin_passkey", passkeyValue);
   ```
-- **Impact:** 
+- **Impact:**
   - XSS can steal admin credentials
   - LocalStorage accessible from any script
   - Persistent across sessions
@@ -159,6 +172,7 @@
 ---
 
 #### SEC-005: **MEDIUM** - EventSource Token in URL Query Parameter
+
 - **File:** `src/lib/feedRealtime.js`
 - **Line:** 6
 - **Severity:** MEDIUM
@@ -167,7 +181,7 @@
   ```js
   const url = `${BASE}/api/feed/stream?token=${encodeURIComponent(token)}`;
   ```
-- **Impact:** 
+- **Impact:**
   - JWT token exposed in URL (visible in logs, referrer headers, browser history)
   - Server-side logging captures sensitive token
 - **Fix:** Use Authorization header with SSE
@@ -176,6 +190,7 @@
 ---
 
 #### SEC-006: **MEDIUM** - Missing CSRF Protection
+
 - **File:** Server-wide
 - **Severity:** MEDIUM
 - **Category:** Security - CSRF
@@ -186,12 +201,13 @@
 ---
 
 #### SEC-007: **MEDIUM** - Hardcoded Test/Debug Features
+
 - **File:** `src/lib/auth.js`
 - **Line:** DEBUG flag
 - **Severity:** MEDIUM
 - **Description:**
   ```js
-  String(import.meta.env.VITE_REQUEST_DEBUG || "").toLowerCase() === "true"
+  String(import.meta.env.VITE_REQUEST_DEBUG || "").toLowerCase() === "true";
   ```
 - **Impact:** Debug logging may expose sensitive data
 - **Fix:** Ensure debug mode disabled in production
@@ -202,6 +218,7 @@
 ### SECTION 2: BUGS & RUNTIME ERRORS
 
 #### BUG-001: **CRITICAL** - Missing Error Handling in Promise Chains
+
 - **File:** Multiple files (48 locations)
 - **Severity:** CRITICAL
 - **Category:** Error Handling
@@ -212,7 +229,7 @@
     setState(data);
   });
   ```
-- **Impact:** 
+- **Impact:**
   - Unhandled rejections crash application
   - User loses work, application freezes
   - Network errors silently fail
@@ -229,12 +246,13 @@
 ---
 
 #### BUG-002: **HIGH** - Missing Route Definition for /verification
+
 - **File:** `src/App.jsx`
 - **Severity:** HIGH
 - **Category:** Navigation
 - **Description:**
   Footer and nav items reference `/verification` but route doesn't exist in App.jsx routes
-- **Evidence:** 
+- **Evidence:**
   - Route manifest includes `/verification` (routeHealthCheck.js)
   - Navigation bar has dead link
   - Users get redirected to `/` on click
@@ -245,6 +263,7 @@
 ---
 
 #### BUG-003: **HIGH** - Missing Route Definition for /contracts and /leads
+
 - **File:** `src/App.jsx`
 - **Severity:** HIGH
 - **Category:** Navigation
@@ -257,6 +276,7 @@
 ---
 
 #### BUG-004: **HIGH** - Type Mismatch in ContractVault.jsx
+
 - **File:** `src/pages/ContractVault.jsx`
 - **Lines:** mapContract() function
 - **Severity:** HIGH
@@ -275,6 +295,7 @@
 ---
 
 #### BUG-005: **MEDIUM** - Uncontrolled Component in SearchResults.jsx
+
 - **File:** `src/pages/SearchResults.jsx`
 - **Severity:** MEDIUM
 - **Category:** React Anti-Pattern
@@ -287,6 +308,7 @@
 ---
 
 #### BUG-006: **MEDIUM** - Missing Dependency in useEffect
+
 - **File:** `src/pages/ChatInterface.jsx` and others
 - **Severity:** MEDIUM
 - **Category:** React Hooks
@@ -299,6 +321,7 @@
 ---
 
 #### BUG-007: **MEDIUM** - Event Listener Not Cleaned Up
+
 - **File:** `src/main.jsx`
 - **Lines:** 12-18
 - **Severity:** MEDIUM
@@ -318,12 +341,13 @@
 ### SECTION 3: HARDCODED VALUES & NON-DYNAMIC LOGIC
 
 #### HARD-001: **HIGH** - Hardcoded Localhost in AdminPanel.jsx
+
 - **File:** `src/pages/AdminPanel.jsx`
 - **Line:** 10820
 - **Severity:** HIGH
 - **Description:**
   ```jsx
-  placeholder="http://localhost:9200"
+  placeholder = "http://localhost:9200";
   ```
 - **Impact:** Confusing for users, may cause copy-paste errors
 - **Fix:** Use environment variable
@@ -332,6 +356,7 @@
 ---
 
 #### HARD-002: **MEDIUM** - Magic Numbers Throughout Codebase
+
 - **Files:** Multiple
 - **Severity:** MEDIUM
 - **Description:**
@@ -344,6 +369,7 @@
 ---
 
 #### HARD-003: **MEDIUM** - Hardcoded Route Paths
+
 - **File:** `src/pages/ChatInterface.jsx`
 - **Severity:** MEDIUM
 - **Description:**
@@ -356,6 +382,7 @@
 ### SECTION 4: INCOMPLETE/NON-FUNCTIONAL FEATURES
 
 #### INC-001: **HIGH** - Console.log Statements in Production
+
 - **Files:** 21 files
 - **Count:** 78 instances
 - **Severity:** HIGH
@@ -381,7 +408,7 @@
   - `src/pages/auth/Login.jsx`
   - `src/pages/BuyingHouseProfile.jsx`
   - And more...
-- **Impact:** 
+- **Impact:**
   - Performance degradation (dev tools overhead)
   - Information leakage (errors visible to users)
   - Looks unprofessional
@@ -391,7 +418,8 @@
 ---
 
 #### INC-002: **HIGH** - Missing Input Validation
-- **Files:** 
+
+- **Files:**
   - `src/pages/OrgSettings.jsx`
   - `src/pages/OnboardingWizard.jsx`
   - `src/pages/AdminPanel.jsx`
@@ -408,6 +436,7 @@
 ---
 
 #### INC-003: **MEDIUM** - Missing Loading States
+
 - **Files:** Multiple pages
 - **Severity:** MEDIUM
 - **Description:** Some async operations don't show loading indicators
@@ -417,6 +446,7 @@
 ---
 
 #### INC-004: **MEDIUM** - Missing Error States
+
 - **Files:** All data-fetching components
 - **Severity:** MEDIUM
 - **Description:** No error boundaries or error UI
@@ -428,6 +458,7 @@
 ### SECTION 5: DATA & PERSISTENCE ISSUES
 
 #### DATA-001: **HIGH** - Insufficient Type Checking
+
 - **File:** Across React components
 - **Severity:** HIGH
 - **Description:** No PropTypes or TypeScript used
@@ -438,6 +469,7 @@
 ---
 
 #### DATA-002: **MEDIUM** - Missing Database Transaction Handling
+
 - **File:** Server-side API endpoints
 - **Severity:** MEDIUM
 - **Description:** Multi-step operations not wrapped in transactions
@@ -449,10 +481,11 @@
 ### SECTION 6: PERFORMANCE ISSUES
 
 #### PERF-001: **MEDIUM** - Unnecessary Re-renders
+
 - **Files:** Main feed components, OwnerDashboard.jsx
 - **Severity:** MEDIUM
 - **Description:** Missing React.memo() and useMemo() optimizations
-- **Impact:** 
+- **Impact:**
   - Slower performance on low-end devices
   - Janky animations
   - Battery drain on mobile
@@ -462,9 +495,10 @@
 ---
 
 #### PERF-002: **MEDIUM** - Large Bundle Size
+
 - **File:** `vite.config.js`
 - **Severity:** MEDIUM
-- **Description:** 
+- **Description:**
   - chunkSizeWarningLimit: 1000 (very high)
   - No route-based code splitting visible
 - **Impact:** Long initial load times
@@ -474,6 +508,7 @@
 ---
 
 #### PERF-003: **MEDIUM** - Missing Pagination
+
 - **Files:** Feed, search results
 - **Severity:** MEDIUM
 - **Description:** Potential rendering of large lists without virtualization
@@ -485,6 +520,7 @@
 ### SECTION 7: UI/UX ISSUES
 
 #### UX-001: **MEDIUM** - Hardcoded Color Values Instead of Theme
+
 - **File:** Various components
 - **Severity:** MEDIUM
 - **Description:** Direct color values like `#0a66c2` instead of CSS variables
@@ -494,6 +530,7 @@
 ---
 
 #### UX-002: **MEDIUM** - Missing Responsive Design in Some Components
+
 - **File:** AdminPanel.jsx
 - **Severity:** MEDIUM
 - **Description:** Mobile view not properly tested
@@ -505,12 +542,13 @@
 ### SECTION 8: CONFIGURATION & BUILD
 
 #### CONFIG-001: **MEDIUM** - Sourcemaps Enabled in Production
+
 - **File:** `vite.config.js`
 - **Line:** 15
 - **Severity:** MEDIUM
 - **Description:**
   ```js
-  sourcemap: process.env.NODE_ENV !== "production"
+  sourcemap: process.env.NODE_ENV !== "production";
   ```
   Sourcemaps expose source code to users
 - **Fix:** Disable sourcemaps in production
@@ -519,6 +557,7 @@
 ---
 
 #### CONFIG-002: **MEDIUM** - Missing Environment Variable Validation
+
 - **File:** `src/lib/auth.js`, config files
 - **Severity:** MEDIUM
 - **Description:** No validation that required env vars are set at startup
@@ -528,6 +567,7 @@
 ---
 
 #### CONFIG-003: **MEDIUM** - CORS Policy Too Permissive in Dev
+
 - **File:** `server/server.js`
 - **Line:** ~130
 - **Severity:** MEDIUM
@@ -547,6 +587,7 @@
 ### SECTION 9: CODE QUALITY ISSUES
 
 #### QUALITY-001: **MEDIUM** - Large Files Need Refactoring
+
 - **Files:**
   - `src/pages/AdminPanel.jsx` - ~10000+ lines
   - `src/pages/ChatInterface.jsx` - ~2000+ lines
@@ -559,9 +600,10 @@
 ---
 
 #### QUALITY-002: **MEDIUM** - Inconsistent Naming
+
 - **Files:** Various
 - **Severity:** MEDIUM
-- **Description:** 
+- **Description:**
   - Some use `cx()`, others `cn()`, others `clsx()`
   - State naming inconsistent (camelCase vs snake_case)
 - **Fix:** Establish and enforce naming conventions
@@ -570,6 +612,7 @@
 ---
 
 #### QUALITY-003: **MEDIUM** - Missing JSDoc Comments
+
 - **Files:** Service files, utilities
 - **Severity:** MEDIUM
 - **Description:** Complex functions lack documentation
@@ -579,6 +622,7 @@
 ---
 
 #### QUALITY-004: **LOW** - Unused Imports
+
 - **Files:** Multiple
 - **Severity:** LOW
 - **Description:** Some imports imported but never used
@@ -590,9 +634,10 @@
 ### SECTION 10: ARCHITECTURE ISSUES
 
 #### ARCH-001: **MEDIUM** - No Error Boundary Component
+
 - **File:** Global app level
 - **Severity:** MEDIUM
-- **Description:** 
+- **Description:**
   React error boundary missing - entire app crashes on component error
 - **Fix:** Add ErrorBoundary wrapper to App.jsx
 - **Priority:** NEXT SPRINT
@@ -600,6 +645,7 @@
 ---
 
 #### ARCH-002: **MEDIUM** - Service Layer Inconsistency
+
 - **File:** `src/lib/` and API calls scattered throughout components
 - **Severity:** MEDIUM
 - **Description:** Some components call API directly, others use services
@@ -613,51 +659,61 @@
 ## Summary by Category
 
 ### Security: 7 Issues (2 Critical, 5 High/Medium)
+
 - Hardcoded secrets: CRITICAL
 - XSS vulnerabilities: HIGH
 - Token exposure: MEDIUM
 - CSRF missing: MEDIUM
 
 ### Bugs: 7 Issues (3 Critical, 4 Medium)
+
 - Unhandled promises: CRITICAL
 - Missing routes: CRITICAL
 - Type mismatches: HIGH
 
 ### Hardcoded Values: 3 Issues (1 High, 2 Medium)
+
 - Localhost references: HIGH
 - Magic numbers: MEDIUM
 - Hardcoded paths: MEDIUM
 
 ### Incomplete Features: 4 Issues (2 High, 2 Medium)
+
 - Console.logs: HIGH
 - Missing validation: HIGH
 - Missing states: MEDIUM
 
 ### Data/Persistence: 2 Issues
+
 - No type checking: HIGH
 - Missing transactions: MEDIUM
 
 ### Performance: 3 Issues (All Medium)
+
 - Unnecessary renders: MEDIUM
 - Large bundle: MEDIUM
 - Missing pagination: MEDIUM
 
 ### UI/UX: 2 Issues (All Medium)
+
 - Hardcoded colors: MEDIUM
 - Mobile responsiveness: MEDIUM
 
 ### Configuration: 3 Issues (All Medium)
+
 - Sourcemaps in prod: MEDIUM
 - Missing env validation: MEDIUM
 - CORS too permissive: MEDIUM
 
 ### Code Quality: 4 Issues (All Medium/Low)
+
 - Large files: MEDIUM
 - Inconsistent naming: MEDIUM
 - Missing docs: MEDIUM
 - Unused imports: LOW
 
 ### Architecture: 2 Issues (All Medium)
+
 - No error boundary: MEDIUM
 - Service inconsistency: MEDIUM
 
@@ -729,6 +785,7 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 ## Fix Priority Roadmap
 
 ### IMMEDIATE (This Week)
+
 1. Remove `.env` from git history - Rotate all credentials
 2. Add error boundaries to App
 3. Fix missing route definitions (/verification, /contracts, /leads)
@@ -736,6 +793,7 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 5. Fix ContractVault type safety
 
 ### NEXT SPRINT (This Month)
+
 1. Remove all console.log statements (78 instances)
 2. Add input validation to all forms
 3. Replace dangerouslySetInnerHTML with DOMPurify
@@ -745,6 +803,7 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 7. Fix CORS configuration for production
 
 ### LATER (Next Quarter)
+
 1. Add Error Boundary component
 2. Refactor large components (AdminPanel, ChatInterface, SearchResults)
 3. Add PropTypes or migrate to TypeScript
@@ -760,25 +819,30 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 ## Recommended Refactors
 
 ### 1. Extract Monolithic AdminPanel
+
 - Current: ~10000 lines in single file
 - Target: Split into logical sections (Security, Config, Server, Network, etc.)
 
 ### 2. Centralize API Service Layer
+
 - Move API calls from components into services
 - Standardize error handling
 - Add request/response logging
 
 ### 3. Extract Constants
+
 - Create `src/constants/routes.js` for all route definitions
 - Create `src/constants/colors.js` for color theme
 - Create `src/constants/timeouts.js` for all magic numbers
 
 ### 4. Add Global Error Handling
+
 - Implement error boundary
 - Add error logger service
 - Standardize error messages
 
 ### 5. Create Utility Components
+
 - Extract common form elements (Input, Textarea, Label)
 - Extract common layouts
 - Extract common modals
@@ -790,12 +854,14 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 ### Current Status: ⚠️ **NOT PRODUCTION READY**
 
 ### Blockers for Production:
+
 1. ✅ Secrets exposed in .env (CRITICAL)
 2. ✅ 42 unhandled promise rejections (CRITICAL)
 3. ✅ Missing route definitions causing 404s (CRITICAL)
 4. ✅ XSS vulnerabilities in SearchResults (HIGH)
 
 ### Required Before Launch:
+
 1. Remove credentials from git, rotate secrets
 2. Add error handlers to all promises
 3. Fix route definitions
@@ -806,12 +872,14 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 8. Disable sourcemaps in production
 
 ### Estimated Fix Effort:
+
 - **Critical Issues:** 5-8 hours
 - **High Priority Issues:** 10-15 hours
 - **Medium Priority Issues:** 20-30 hours
 - **Total to Ship:** ~40-50 hours
 
 ### Recommended Next Steps:
+
 1. Create hot-fix branch for critical security issues
 2. Run code through ESLint with strict rules
 3. Add pre-commit hooks to catch secrets
@@ -823,16 +891,16 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 
 ## Metrics & Statistics
 
-| Metric | Value |
-|--------|-------|
-| Total Files Analyzed | 139 (src) + 237 (server) |
-| Lines of Code | ~74,000 |
-| Console Statements | 78 |
-| Promise .then() without .catch() | ~42 |
-| dangerouslySetInnerHTML instances | 25+ |
-| Test Files | 60 |
-| Code Coverage | Unknown (no coverage report found) |
-| Average Function Length | ~150 lines (estimated) |
+| Metric                            | Value                              |
+| --------------------------------- | ---------------------------------- |
+| Total Files Analyzed              | 139 (src) + 237 (server)           |
+| Lines of Code                     | ~74,000                            |
+| Console Statements                | 78                                 |
+| Promise .then() without .catch()  | ~42                                |
+| dangerouslySetInnerHTML instances | 25+                                |
+| Test Files                        | 60                                 |
+| Code Coverage                     | Unknown (no coverage report found) |
+| Average Function Length           | ~150 lines (estimated)             |
 
 ---
 

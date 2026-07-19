@@ -93,7 +93,6 @@ export default function SupportReports() {
   const [categoryOptions, setCategoryOptions] = useState(FALLBACK_CATEGORIES);
   const [priorityOptions, setPriorityOptions] = useState(FALLBACK_PRIORITIES);
 
-
   const theme = useMemo(() => {
     return darkMode ? "bg-slate-950 text-white" : "bg-sky-50 text-slate-900";
   }, [darkMode]);
@@ -154,7 +153,7 @@ export default function SupportReports() {
         }
       })
       .catch((err) => console.warn("Failed to load support options:", err));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   async function submitReport(e) {
@@ -736,28 +735,28 @@ export default function SupportReports() {
                     return steps.map((item, index) => {
                       const LucideIcon = item.icon;
                       return (
-                      <div key={item.title} className="flex gap-4">
-                        <div className="flex flex-col items-center">
-                          <div
-                            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${darkMode ? "bg-white/5 text-sky-300" : "bg-sky-50 text-sky-600"}`}
-                          >
-                            <LucideIcon className="h-5 w-5" />
-                          </div>
-                          {index < 3 && (
+                        <div key={item.title} className="flex gap-4">
+                          <div className="flex flex-col items-center">
                             <div
-                              className={`mt-2 h-full w-px flex-1 ${darkMode ? "bg-white/10" : "bg-slate-200"}`}
-                            />
-                          )}
+                              className={`flex h-11 w-11 items-center justify-center rounded-2xl ${darkMode ? "bg-white/5 text-sky-300" : "bg-sky-50 text-sky-600"}`}
+                            >
+                              <LucideIcon className="h-5 w-5" />
+                            </div>
+                            {index < 3 && (
+                              <div
+                                className={`mt-2 h-full w-px flex-1 ${darkMode ? "bg-white/10" : "bg-slate-200"}`}
+                              />
+                            )}
+                          </div>
+                          <div className="pb-3">
+                            <p className="font-semibold">{item.title}</p>
+                            <p
+                              className={`mt-1 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-600"}`}
+                            >
+                              {item.text}
+                            </p>
+                          </div>
                         </div>
-                        <div className="pb-3">
-                          <p className="font-semibold">{item.title}</p>
-                          <p
-                            className={`mt-1 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-600"}`}
-                          >
-                            {item.text}
-                          </p>
-                        </div>
-                      </div>
                       );
                     });
                   })()}

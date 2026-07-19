@@ -202,7 +202,9 @@ export default function AdminGovernance() {
   const [status, setStatus] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
   const [evalDecision, setEvalDecision] = useState("auto_evaluated");
-  const [enforceReason, setEnforceReason] = useState("Automated governance review from admin panel");
+  const [enforceReason, setEnforceReason] = useState(
+    "Automated governance review from admin panel",
+  );
 
   const shellClass = darkMode
     ? "dark bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.22),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),_transparent_23%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] text-slate-100"
@@ -662,10 +664,7 @@ export default function AdminGovernance() {
                   <FileJson className="h-4 w-4 text-sky-300" /> Simulation
                   result
                 </div>
-                <JsonBlock
-                  value={simulationResult}
-                  minHeight={280}
-                />
+                <JsonBlock value={simulationResult} minHeight={280} />
               </div>
             </div>
           </SectionCard>
@@ -719,10 +718,7 @@ export default function AdminGovernance() {
                   <FileJson className="h-4 w-4 text-emerald-300" /> Trust
                   signals
                 </div>
-                <JsonBlock
-                  value={trustSignals}
-                  minHeight={280}
-                />
+                <JsonBlock value={trustSignals} minHeight={280} />
               </div>
             </div>
           </SectionCard>
@@ -842,10 +838,7 @@ export default function AdminGovernance() {
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
                   <FileJson className="h-4 w-4 text-sky-300" /> Monthly report
                 </div>
-                <JsonBlock
-                  value={monthlyReport}
-                  minHeight={260}
-                />
+                <JsonBlock value={monthlyReport} minHeight={260} />
               </div>
             </div>
           </SectionCard>

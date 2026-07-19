@@ -3,6 +3,7 @@
 ## 🚨 CRITICAL ISSUES - DO THIS FIRST
 
 ### 1. Secrets Exposure (IMMEDIATE)
+
 ```bash
 # DO NOT push .env to git!
 # Rotate these credentials NOW:
@@ -20,15 +21,17 @@ echo ".env" >> .gitignore
 ```
 
 ### 2. Promise Error Handling (2-3 hours)
+
 **Files to fix:** 48 locations with unhandled .then()
+
 ```jsx
 // ❌ Bad:
-apiRequest("/api/data").then(data => setState(data));
+apiRequest("/api/data").then((data) => setState(data));
 
 // ✅ Good:
 apiRequest("/api/data")
-  .then(data => setState(data))
-  .catch(err => handleError(err));
+  .then((data) => setState(data))
+  .catch((err) => handleError(err));
 
 // ✅ Better (async/await):
 try {
@@ -40,13 +43,16 @@ try {
 ```
 
 Key files:
+
 - `src/pages/AdminPanel.jsx`
 - `src/pages/ChatInterface.jsx`
 - `src/pages/SearchResults.jsx`
 - `src/components/FloatingAssistant.jsx`
 
 ### 3. Missing Routes (30 min)
+
 Add to `/src/App.jsx` if missing:
+
 ```jsx
 <Route path="/verification" element={<ProtectedRoute><VerificationPage /></ProtectedRoute>} />
 <Route path="/contracts" element={<ProtectedRoute roles={OWNER_ROLES}><ContractVault /></ProtectedRoute>} />
@@ -54,6 +60,7 @@ Add to `/src/App.jsx` if missing:
 ```
 
 ### 4. XSS Vulnerability in SearchResults (1-2 hours)
+
 ```bash
 npm install dompurify
 ```
@@ -74,6 +81,7 @@ import DOMPurify from 'dompurify';
 ## 🔴 HIGH PRIORITY (Next Sprint)
 
 ### Remove Console Statements (1-2 hours)
+
 ```bash
 # Find all:
 grep -r "console\." src/ --include="*.jsx" --include="*.js" | wc -l
@@ -84,12 +92,15 @@ if (import.meta.env.DEV) console.log(...);
 ```
 
 ### Add Input Validation (2-3 hours)
+
 Key files needing validation:
+
 - `src/pages/OrgSettings.jsx`
 - `src/pages/OnboardingWizard.jsx`
 - `src/pages/AdminPanel.jsx`
 
 Example:
+
 ```jsx
 // Add validation before submission:
 if (!orgName || orgName.length < 3) {
@@ -99,7 +110,9 @@ if (!orgName || orgName.length < 3) {
 ```
 
 ### Fix Admin Credential Storage (1 hour)
+
 **File:** `src/pages/AdminPanel.jsx`
+
 ```jsx
 // ❌ Bad - in localStorage:
 localStorage.setItem("admin_mfa_code", mfaCode);
@@ -111,31 +124,37 @@ sessionStorage.setItem("admin_mfa_code", mfaCode);
 ```
 
 ### Fix SSE Token (1 hour)
+
 **File:** `src/lib/feedRealtime.js`
+
 ```jsx
 // ❌ Bad - token in URL:
 const url = `${BASE}/api/feed/stream?token=${token}`;
 
 // ✅ Good - use Authorization header:
 const source = new EventSource(url);
-source.addEventListener('open', () => {
+source.addEventListener("open", () => {
   source.close();
   // Use fetch with proper headers instead
 });
 ```
 
 ### Disable Sourcemaps in Production (10 min)
+
 **File:** `vite.config.js`
+
 ```js
 // Current (problematic):
-sourcemap: process.env.NODE_ENV !== "production"
+sourcemap: process.env.NODE_ENV !== "production";
 
 // Better:
-sourcemap: false // or use process.env.GENERATE_SOURCEMAP === "true"
+sourcemap: false; // or use process.env.GENERATE_SOURCEMAP === "true"
 ```
 
 ### Fix CORS (10 min)
+
 **File:** `server/server.js`
+
 ```js
 // Current: allows no-origin in production
 // Fix: Ensure strict CORS for production
@@ -160,13 +179,13 @@ if (process.env.NODE_ENV === "production") {
 
 ## 📊 Audit Results Summary
 
-| Category | Critical | High | Medium | Low |
-|----------|----------|------|--------|-----|
-| Security | 2 | 3 | 2 | - |
-| Bugs | 3 | 2 | 2 | - |
-| Code Quality | - | 2 | 3 | 2 |
-| Performance | - | - | 3 | - |
-| **TOTAL** | **5** | **7** | **10** | **2** |
+| Category     | Critical | High  | Medium | Low   |
+| ------------ | -------- | ----- | ------ | ----- |
+| Security     | 2        | 3     | 2      | -     |
+| Bugs         | 3        | 2     | 2      | -     |
+| Code Quality | -        | 2     | 3      | 2     |
+| Performance  | -        | -     | 3      | -     |
+| **TOTAL**    | **5**    | **7** | **10** | **2** |
 
 ---
 
@@ -194,6 +213,7 @@ npm run build
 ## 📝 Checklists
 
 ### Before Next Deployment
+
 - [ ] .env removed from git
 - [ ] All credentials rotated
 - [ ] All .then() have .catch()
@@ -206,6 +226,7 @@ npm run build
 - [ ] Admin credentials moved to secure storage
 
 ### Before Production Launch
+
 - [ ] All above completed
 - [ ] Error boundary added
 - [ ] PropTypes added to components

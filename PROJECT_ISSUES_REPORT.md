@@ -1,4 +1,5 @@
 # A-Peronson-s-Website: Comprehensive Issues Report
+
 **Generated:** 2026-07-19  
 **Project:** GarTexHub - B2B Textile Marketplace  
 **Tech Stack:** React + Vite (Frontend), Node.js + Express (Backend), MySQL + Prisma (DB)
@@ -10,24 +11,26 @@
 **Total Issues Identified:** 34  
 **Critical Issues (High):** 5  
 **Medium Issues:** 18  
-**Low Issues:** 11  
+**Low Issues:** 11
 
 ### Issue Distribution by Category
-| Category | Count | Status |
-|----------|-------|--------|
-| **Security** | 6 | Needs Review |
-| **Code Quality** | 4 | Needs Refactoring |
-| **Navigation** | 3 | 2/3 Fixed |
-| **Error Handling** | 2 | Needs Standardization |
-| **Performance** | 2 | Low Priority |
-| **Backend** | 2 | Needs Audit |
-| **Other** | 15 | Various |
+
+| Category           | Count | Status                |
+| ------------------ | ----- | --------------------- |
+| **Security**       | 6     | Needs Review          |
+| **Code Quality**   | 4     | Needs Refactoring     |
+| **Navigation**     | 3     | 2/3 Fixed             |
+| **Error Handling** | 2     | Needs Standardization |
+| **Performance**    | 2     | Low Priority          |
+| **Backend**        | 2     | Needs Audit           |
+| **Other**          | 15    | Various               |
 
 ---
 
 ## 🔴 CRITICAL ISSUES (High Priority)
 
-### 1. **File Upload Security** 
+### 1. **File Upload Security**
+
 - **Severity:** 🔴 HIGH
 - **Category:** Security
 - **Location:** `server/routes/*upload*`, Multer middleware
@@ -40,6 +43,7 @@
 - **Recommendation:** Audit all file upload endpoints before production
 
 ### 2. **SSL/TLS Configuration Missing**
+
 - **Severity:** 🔴 HIGH
 - **Category:** Security
 - **Location:** Production deployment docs, Nginx config
@@ -48,6 +52,7 @@
 - **Recommendation:** Document SSL/TLS setup and enforce in production
 
 ### 3. **Lenis Scroll Hijacking** ⚠️ PARTIALLY FIXED
+
 - **Severity:** 🔴 HIGH
 - **Category:** UI/UX
 - **Location:** `src/components/LenisProvider.jsx`
@@ -64,6 +69,7 @@
 - **Recommendation:** Test scroll behavior on all pages with multiple monitors/devices
 
 ### 4. **ContractVault Hardcoded Mock Data**
+
 - **Severity:** 🔴 HIGH
 - **Category:** Data Integrity
 - **Location:** `src/pages/ContractVault.jsx`
@@ -77,12 +83,13 @@
 - **Recommendation:** Audit all sections to ensure complete API integration
 
 ### 5. **Missing Owner Panel Routes**
+
 - **Severity:** 🔴 HIGH
 - **Category:** Navigation
 - **Location:** `App.jsx`, `src/lib/routeHealthCheck.js`
 - **Issue:** `/contracts` and `/leads` routes not defined or in ROUTE_MANIFEST
 - **Status:** ✅ FIXED
-- **Details:** 
+- **Details:**
   - Routes now properly defined in App.jsx
   - Protected by OWNER_ROLES
   - OwnerDashboard reads `?tab=` query param
@@ -95,12 +102,14 @@
 ### Security Issues (6)
 
 #### S1. **Authentication: Token Storage in localStorage**
+
 - **Location:** `src/lib/auth.js`
 - **Issue:** JWT tokens stored in localStorage - vulnerable to XSS attacks
 - **Recommendation:** Migrate to httpOnly cookies with secure flag
 - **Impact:** If XSS vulnerability exists, attacker can steal tokens
 
 #### S2. **Rate Limiting Not Verified**
+
 - **Location:** `server/middleware/rateLimit.js` (if exists)
 - **Issue:** `express-rate-limit` in dependencies but not verified on all endpoints
 - **Recommendation:** Audit rate limit configuration on:
@@ -110,21 +119,25 @@
   - API creation endpoints
 
 #### S3. **CORS Policy Needs Audit**
+
 - **Location:** `server/middleware` or `server/server.js`
 - **Issue:** CORS enabled but scope and security implications need review
 - **Recommendation:** Restrict CORS to known domains only in production
 
 #### S4. **Environment Variables Not Validated**
+
 - **Location:** `server/server.js` or startup logic
 - **Issue:** No validation that required env vars are set at startup
 - **Recommendation:** Add startup checks for: DB credentials, JWT secret, API keys
 
 #### S5. **Electron App Security Hardening**
+
 - **Location:** `electron/main.cjs`, `index.html`
 - **Issue:** CSP meta tag present but need full security audit
 - **Recommendation:** Review electron security hardening checklist (preload scripts, IPC, content scripts)
 
 #### S6. **WebRTC Error Handling**
+
 - **Location:** `src/pages/CallInterface.jsx`
 - **Issue:** Multiple WebRTC error suppressions without logging
   - Duplicate track errors silently ignored
@@ -137,6 +150,7 @@
 ### Code Quality Issues (4)
 
 #### CQ1. **Excessive console.error Statements**
+
 - **Severity:** LOW → MEDIUM
 - **Files:**
   - `src/App.jsx`
@@ -149,6 +163,7 @@
 - **Recommendation:** Implement centralized logging with `winston` or `pino`
 
 #### CQ2. **Ignore Comments Without Explanation**
+
 - **Severity:** MEDIUM
 - **Files:**
   - `src/lib/auth.js` - "ignore parse errors"
@@ -160,12 +175,14 @@
 - **Recommendation:** Document WHY errors are being ignored or handle properly
 
 #### CQ3. **ESLint Disables Without Explanation**
+
 - **Severity:** LOW
 - **Location:** `src/pages/AdminPanel.helpers.js`
 - **Issue:** File-level `/* eslint-disable no-unused-vars */`
 - **Recommendation:** Remove or document specific disables with reasoning
 
 #### CQ4. **Unused Files in Repository**
+
 - **Severity:** LOW
 - **Files:**
   - `1.t`, `1.txt`
@@ -182,6 +199,7 @@
 ### Navigation Issues (3)
 
 #### N1. **Route Health Check System** ✅ FIXED
+
 - **Severity:** MEDIUM
 - **Status:** FIXED
 - **Details:**
@@ -191,6 +209,7 @@
   - Applied to: NavBar, Footer, ChatInterface, OwnerDashboard
 
 #### N2. **Verification Page Routing** ✅ FIXED
+
 - **Severity:** MEDIUM
 - **Status:** FIXED
 - **Details:**
@@ -199,6 +218,7 @@
   - Added "Verification" nav item
 
 #### N3. **OrgSettings Only as Standalone Page** ✅ FIXED
+
 - **Severity:** MEDIUM
 - **Status:** FIXED
 - **Details:**
@@ -211,6 +231,7 @@
 ### Error Handling Issues (2)
 
 #### EH1. **Inconsistent Error Handling Patterns**
+
 - **Issue:** Mixed approaches:
   - Some use `.catch(console.error)`
   - Some use `try/catch`
@@ -219,6 +240,7 @@
 - **Recommendation:** Standardize on single error handling pattern
 
 #### EH2. **WebSocket Reliability**
+
 - **Files:** `src/components/FloatingAssistant.jsx`, `src/lib/notificationsRealtime.js`
 - **Issue:** WebSocket connections basic error handling, no backoff retry logic
 - **Recommendation:** Add:
@@ -231,6 +253,7 @@
 ### Performance Issues (2)
 
 #### P1. **Pagination Not Documented**
+
 - **Severity:** LOW
 - **Issue:** Some endpoints may return all results without pagination
 - **Affected Endpoints:**
@@ -241,6 +264,7 @@
 - **Recommendation:** Implement cursor-based or offset pagination on all list endpoints
 
 #### P2. **Caching Strategy Undefined**
+
 - **Severity:** MEDIUM
 - **Issue:** Redis available in dependencies but usage unclear
 - **Recommendation:**
@@ -256,6 +280,7 @@
 ### Backend Issues (2)
 
 #### B1. **Database: JSON Files for MVP**
+
 - **Severity:** LOW
 - **Location:** `server/database/*.json`
 - **Issue:** Using JSON files instead of proper database
@@ -263,6 +288,7 @@
 - **Recommendation:** Complete migration to MySQL with Prisma queries
 
 #### B2. **API Error Response Inconsistency**
+
 - **Severity:** MEDIUM
 - **Issue:** Endpoints may have different error response formats
 - **Recommendation:** Standardize to:
@@ -280,26 +306,32 @@
 ### Other Medium Issues (6)
 
 #### Type Safety
+
 - **Issue:** No TypeScript in most frontend code (.jsx files)
 - **Recommendation:** Gradual migration to TypeScript or JSDoc type annotations
 
 #### Dependencies
+
 - **Issue:** Large number of dependencies may increase bundle size
 - **Recommendation:** Run bundle analysis, audit for unused packages
 
 #### Testing
+
 - **Issue:** Test coverage percentage unknown
 - **Recommendation:** Add coverage reports, improve test coverage to >80%
 
 #### React
+
 - **Issue:** No error boundaries
 - **Recommendation:** Add React error boundary components to prevent full-page crashes
 
 #### Accessibility (A11y)
+
 - **Issue:** Features need audit
 - **Recommendation:** Run accessibility audit (axe, lighthouse)
 
 #### Mobile
+
 - **Issue:** Responsive design needs verification
 - **Recommendation:** Test on various mobile devices and breakpoints
 
@@ -308,47 +340,58 @@
 ## 🟢 LOW PRIORITY ISSUES (11 total)
 
 ### L1. **Build Artifacts in Repository**
+
 - **Issue:** dist/, build artifacts potentially in git history
 - **Recommendation:** Verify .gitignore is comprehensive
 
 ### L2. **Documentation Completeness**
+
 - **Issue:** API docs in README may be outdated
 - **Status:** AGENTS.md documents recent fixes
 - **Recommendation:** Keep docs in sync with code changes
 
 ### L3. **Monorepo Organization**
+
 - **Issue:** Complex folder structure: server/, src/, tests/, prisma/, docker/, electron/
 - **Recommendation:** Consider monorepo tools or clearer workspace structure
 
 ### L4. **Form Validation Inconsistency**
+
 - **Issue:** Validation logic may be scattered
 - **Recommendation:** Centralize form validation logic
 
 ### L5. **Unused Dependencies**
+
 - **Issue:** Full audit not performed
 - **Recommendation:** Run npm audit, check for unused packages
 
 ### L6. **Code Comments**
+
 - **Issue:** Some sections lack clarity on complex logic
 - **Recommendation:** Add clarifying comments for complex business logic
 
 ### L7. **Docker Setup**
+
 - **Issue:** Docker/Docker Compose files present but unclear status
 - **Recommendation:** Document Docker setup and requirements
 
 ### L8. **Environment Configuration**
+
 - **Issue:** .env.example exists but completeness unclear
 - **Recommendation:** Ensure all required env vars documented
 
 ### L9. **Session Storage**
+
 - **Issue:** sessions/ folder with state files
 - **Recommendation:** Document session storage strategy
 
 ### L10. **Prisma Integration**
+
 - **Issue:** Prisma configured but full integration unclear
 - **Recommendation:** Verify all database queries use Prisma ORM
 
 ### L11. **Nginx Configuration**
+
 - **Issue:** Reverse proxy docs exist but not verified for production
 - **Recommendation:** Test nginx config under load
 
@@ -357,6 +400,7 @@
 ## 📊 Summary by Status
 
 ### ✅ Fixed Issues (6)
+
 1. Navigation route health check system
 2. Verification page routing
 3. OrgSettings accessibility
@@ -365,10 +409,12 @@
 6. ContractVault API integration (partially)
 
 ### 🔄 Partial Fixes (2)
+
 1. **Lenis Scroll** - Applied but needs verification across all pages
 2. **ContractVault** - Now using API but some mock data may remain
 
 ### ⏳ Not Started (26)
+
 - Most security issues
 - All performance optimizations
 - Testing and type safety
@@ -380,6 +426,7 @@
 ## 🎯 Recommended Action Plan
 
 ### Phase 1: Security (Week 1)
+
 - [ ] Audit file upload handlers
 - [ ] Configure SSL/TLS for production
 - [ ] Implement httpOnly cookies for auth tokens
@@ -387,6 +434,7 @@
 - [ ] Document CORS policy
 
 ### Phase 2: Quality (Week 2-3)
+
 - [ ] Standardize error handling
 - [ ] Implement centralized logging
 - [ ] Add React error boundaries
@@ -394,12 +442,14 @@
 - [ ] Run accessibility audit
 
 ### Phase 3: Performance (Week 4)
+
 - [ ] Implement pagination on list endpoints
 - [ ] Define caching strategy
 - [ ] Run bundle analysis
 - [ ] Test scroll behavior on all pages
 
 ### Phase 4: Documentation & Testing (Week 5+)
+
 - [ ] Migrate to TypeScript or JSDoc
 - [ ] Improve test coverage
 - [ ] Update API documentation
@@ -416,4 +466,4 @@
 
 ---
 
-*Report generated by Copilot CLI for comprehensive project analysis*
+_Report generated by Copilot CLI for comprehensive project analysis_

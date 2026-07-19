@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import {
-  motion,
-  AnimatePresence,
-  Reorder,
-} from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import { uploadFile } from "../lib/upload";
 import UploadProgressBar from "../components/ui/UploadProgressBar";
@@ -1247,9 +1243,12 @@ export default function ProductManagement() {
         {deleteConfirmId ? (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm dark:bg-slate-950/70">
             <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Confirm Delete</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Confirm Delete
+              </h3>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                Are you sure you want to delete this product? This action cannot be undone.
+                Are you sure you want to delete this product? This action cannot
+                be undone.
               </p>
               <div className="mt-6 flex justify-end gap-3">
                 <button

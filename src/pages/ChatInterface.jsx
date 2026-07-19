@@ -1002,7 +1002,6 @@ export default function ChatInterface() {
       const token = getToken();
       if (!token) return;
 
-      
       const ws = new WebSocket(WS_BASE);
       wsRef.current = ws;
 
@@ -1426,7 +1425,9 @@ export default function ChatInterface() {
               {meta.host}
             </div>
             <div className="text-sm font-semibold">{meta.host}</div>
-            {meta.path ? <div className="text-xs opacity-70">{meta.path}</div> : null}
+            {meta.path ? (
+              <div className="text-xs opacity-70">{meta.path}</div>
+            ) : null}
           </a>
         </div>
       );
@@ -1585,10 +1586,7 @@ export default function ChatInterface() {
         : {};
       // Optimistic local append of the user's message so UI feels instant.
       // The server will still be the source of truth after `loadInbox()`.
-      if (
-        wsRef.current &&
-        wsRef.current.readyState === WebSocket.OPEN
-      ) {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(
           JSON.stringify({
             type: "chat_message",

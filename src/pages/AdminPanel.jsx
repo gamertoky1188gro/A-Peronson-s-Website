@@ -4956,9 +4956,7 @@ export default function AdminPanel() {
                                   <button
                                     type="button"
                                     onClick={async () => {
-                                      const reason =
-                                        "" ||
-                                        "rejected_by_admin";
+                                      const reason = "" || "rejected_by_admin";
                                       await runInlineAdminAction(
                                         "verification.reject",
                                         { user_id: row.user_id, reason },
@@ -5188,11 +5186,8 @@ export default function AdminPanel() {
                                   <button
                                     type="button"
                                     onClick={async () => {
-                                      const resolutionAction =
-                                        "" ||
-                                        "resolved";
-                                      const resolutionNote =
-                                        "" || "";
+                                      const resolutionAction = "" || "resolved";
+                                      const resolutionNote = "" || "";
                                       await runInlineAdminAction(
                                         "dispute.resolve",
                                         {

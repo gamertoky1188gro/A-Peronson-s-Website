@@ -900,7 +900,7 @@ export default function MainFeed() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <button
-                    onClick={() => setFiltersOpen(v => !v)}
+                    onClick={() => setFiltersOpen((v) => !v)}
                     className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300"
                   >
                     <Filter className="h-4 w-4" />

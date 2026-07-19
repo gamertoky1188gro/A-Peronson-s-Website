@@ -141,8 +141,6 @@ export default function RatingFeedback() {
       .finally(() => setLoading(false));
   }, [token]);
 
-
-
   function updateDraft(id, patch) {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   }
@@ -419,7 +417,9 @@ export default function RatingFeedback() {
                           disabled={submittingId === row.id}
                           className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {submittingId === row.id ? "Submitting..." : "Submit rating"}
+                          {submittingId === row.id
+                            ? "Submitting..."
+                            : "Submit rating"}
                         </button>
                       </div>
                     </div>

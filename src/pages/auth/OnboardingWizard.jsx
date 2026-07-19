@@ -64,7 +64,8 @@ export default function OnboardingWizard() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [availableCategories, setAvailableCategories] = useState(FALLBACK_CATEGORIES);
+  const [availableCategories, setAvailableCategories] =
+    useState(FALLBACK_CATEGORIES);
 
   useEffect(() => {
     if (!token) return;
@@ -296,7 +297,7 @@ export default function OnboardingWizard() {
                   type="button"
                   onClick={next}
                   disabled={saving}
-                    className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
+                  className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
                 >
                   Continue
                 </button>
@@ -305,7 +306,7 @@ export default function OnboardingWizard() {
                   type="button"
                   onClick={() => submit()}
                   disabled={saving}
-                    className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
+                  className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
                 >
                   {saving ? (
                     <ThreeDot

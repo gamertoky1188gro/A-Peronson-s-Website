@@ -635,7 +635,6 @@ export default function OrgSettings({ embedded = false }) {
     String(currentUser?.profile?.brand_accent || ""),
   );
 
-
   const canAutoReply = hasEntitlement(
     entitlements ? { entitlements } : null,
     "ai_auto_reply_customization",
@@ -652,7 +651,12 @@ export default function OrgSettings({ embedded = false }) {
   }, [remainingDays]);
 
   const planPrice = useMemo(() => {
-    const prices = { free: "0.00", starter: "9.99", premium: "49.00", enterprise: "99.00" };
+    const prices = {
+      free: "0.00",
+      starter: "9.99",
+      premium: "49.00",
+      enterprise: "99.00",
+    };
     return prices[subscriptionPlan] || "0.00";
   }, [subscriptionPlan]);
 
@@ -2088,10 +2092,7 @@ export default function OrgSettings({ embedded = false }) {
                     checked={showActivityStatus}
                     onChange={(e) => {
                       setShowActivityStatus(e.target.checked);
-                      savePrivacySettings(
-                        "show_activity",
-                        e.target.checked,
-                      );
+                      savePrivacySettings("show_activity", e.target.checked);
                     }}
                   />
                 </div>
@@ -2144,7 +2145,9 @@ export default function OrgSettings({ embedded = false }) {
                   onClick={renewVerification}
                   disabled={renewingVerification}
                 >
-                  {renewingVerification ? "Processing..." : "Renew verification"}
+                  {renewingVerification
+                    ? "Processing..."
+                    : "Renew verification"}
                 </PrimaryButton>
               </div>
             </SectionCard>
@@ -2833,9 +2836,7 @@ export default function OrgSettings({ embedded = false }) {
                       setFaqFeedback("FAQ added successfully.");
                       save("FAQ added.");
                     } catch (err) {
-                      setFaqFeedback(
-                        err.message || "Failed to add FAQ entry",
-                      );
+                      setFaqFeedback(err.message || "Failed to add FAQ entry");
                     }
                   }}
                 >

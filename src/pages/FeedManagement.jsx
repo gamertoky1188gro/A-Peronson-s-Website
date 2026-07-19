@@ -5,7 +5,12 @@ import { motion, Reorder } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
-import { apiRequest, getToken, syncUserFromApi, getCurrentUser } from "../lib/auth";
+import {
+  apiRequest,
+  getToken,
+  syncUserFromApi,
+  getCurrentUser,
+} from "../lib/auth";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkSmartypants from "remark-smartypants";
@@ -158,7 +163,9 @@ export default function FeedManagementPage() {
 
   const wordLimit = useMemo(() => {
     const user = getCurrentUser();
-    return String(user?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600;
+    return String(user?.subscription_status || "").toLowerCase() === "premium"
+      ? 1500
+      : 600;
   }, []);
 
   const updateField = (key, value) => {
@@ -268,9 +275,7 @@ export default function FeedManagementPage() {
     };
 
     const isEditing = editingPost !== null;
-    const baseUrl = isEditing
-      ? `/feed/posts/${editingPost.id}`
-      : "/feed/posts";
+    const baseUrl = isEditing ? `/feed/posts/${editingPost.id}` : "/feed/posts";
     const method = isEditing ? "PATCH" : "POST";
 
     try {
@@ -280,7 +285,10 @@ export default function FeedManagementPage() {
         body: payload,
       });
 
-      if (!data?.post) { setError("Failed to save post"); return; }
+      if (!data?.post) {
+        setError("Failed to save post");
+        return;
+      }
       const saved = data.post;
 
       if (isEditing) {
@@ -483,10 +491,7 @@ export default function FeedManagementPage() {
                       "min-h-[220px]",
                     )}
                   />
-                  <WordCount
-                    text={form.readme}
-                    limit={wordLimit}
-                  />
+                  <WordCount text={form.readme} limit={wordLimit} />
                 </Field>
 
                 <Field label="CTA Text">
@@ -623,9 +628,7 @@ export default function FeedManagementPage() {
                           : "border-slate-200 bg-slate-50/70",
                       )}
                     >
-                      <Image
-                        className={cn("mx-auto h-10 w-10", subtleText)}
-                      />
+                      <Image className={cn("mx-auto h-10 w-10", subtleText)} />
                       <p className="mt-3 text-sm font-medium">
                         No media uploaded yet
                       </p>
@@ -835,9 +838,7 @@ export default function FeedManagementPage() {
                         : "border-slate-200 bg-slate-50",
                     )}
                   >
-                    <Sparkles
-                      className={cn("mx-auto h-10 w-10", subtleText)}
-                    />
+                    <Sparkles className={cn("mx-auto h-10 w-10", subtleText)} />
                     <p className="mt-3 text-sm font-medium">
                       No preview content yet
                     </p>

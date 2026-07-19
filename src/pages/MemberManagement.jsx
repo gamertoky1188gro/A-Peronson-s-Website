@@ -386,7 +386,10 @@ export default function MemberManagement() {
                   setSuccess("");
                   setCreateForm((prev) => ({
                     ...prev,
-                    member_id: generateMemberId(members, constraints.member_id_prefix),
+                    member_id: generateMemberId(
+                      members,
+                      constraints.member_id_prefix,
+                    ),
                   }));
                   setShowCreate(true);
                 }}
@@ -419,7 +422,9 @@ export default function MemberManagement() {
           {!canTeamAccess ? (
             <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
               Team/agent access management is a Premium feature on the{" "}
-              <strong>{String(constraints.plan || "current").toUpperCase()}</strong>{" "}
+              <strong>
+                {String(constraints.plan || "current").toUpperCase()}
+              </strong>{" "}
               plan. Upgrade to edit permissions and access controls.
             </div>
           ) : null}
@@ -635,7 +640,9 @@ export default function MemberManagement() {
               {!canTeamAccess ? (
                 <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
                   Team/agent access management requires the{" "}
-                  <strong>{String(constraints.plan || "current").toUpperCase()}</strong>{" "}
+                  <strong>
+                    {String(constraints.plan || "current").toUpperCase()}
+                  </strong>{" "}
                   plan. Upgrade to edit permissions and access controls.
                 </div>
               ) : null}
@@ -915,7 +922,9 @@ const MemberEditor = forwardRef(function MemberEditor(
         {!canTeamAccess ? (
           <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
             Team/agent access management requires the{" "}
-            <strong>{String(constraints.plan || "current").toUpperCase()}</strong>{" "}
+            <strong>
+              {String(constraints.plan || "current").toUpperCase()}
+            </strong>{" "}
             plan. Upgrade to edit permissions and access controls.
           </div>
         ) : null}
