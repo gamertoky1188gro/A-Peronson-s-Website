@@ -165,7 +165,13 @@ const {
 function SkeletonChart({ height = 320 }) {
   return (
     <div className="flex items-center justify-center" style={{ height }}>
-      <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+      <Mosaic
+        color="#3b00ff"
+        size="large"
+        style={{ fontSize: "40px" }}
+        text=""
+        textColor=""
+      />
     </div>
   );
 }
@@ -195,7 +201,13 @@ function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
     return (
       <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
         <div className="flex items-center justify-center">
-          <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+          <ThreeDot
+            variant="bounce"
+            color="#6100ff"
+            size="small"
+            text=""
+            textColor=""
+          />
         </div>
       </div>
     );
@@ -1189,8 +1201,8 @@ export default function AdminPanel() {
     selectedAction.fields.forEach((field) => {
       defaults[field.key] = "";
     });
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setActionForm(defaults);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActionForm(defaults);
   }, [selectedAction]);
 
   useEffect(() => {
@@ -1343,8 +1355,8 @@ export default function AdminPanel() {
         headers: buildAdminHeaders(),
       });
       setAudit(Array.isArray(auditData?.items) ? auditData.items : []);
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn("Failed to load audit:", err);
     }
   }
 
@@ -1791,7 +1803,7 @@ export default function AdminPanel() {
     const token = getToken();
     if (!token) return;
     const headers = buildAdminHeaders({ stepUp: true });
-    const newPassword = window.prompt("Enter a new password (min 6 chars):");
+    const newPassword = "";
     if (!newPassword) return;
     try {
       await apiRequest(`/users/${userId}/reset-password`, {
@@ -3004,7 +3016,10 @@ export default function AdminPanel() {
             </div>
 
             {/* Navigation */}
-            <nav data-lenis-prevent className="mt-6 space-y-2 overflow-y-auto overflow-x-hidden pr-1">
+            <nav
+              data-lenis-prevent
+              className="mt-6 space-y-2 overflow-y-auto overflow-x-hidden pr-1"
+            >
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeCategory === item.id;
@@ -3057,7 +3072,9 @@ export default function AdminPanel() {
                           </span>
                         )}
                       </div>
-                      <p className={`mt-0.5 truncate text-xs ${themeStyles.muted}`}>
+                      <p
+                        className={`mt-0.5 truncate text-xs ${themeStyles.muted}`}
+                      >
                         {item.sub}
                       </p>
                     </div>
@@ -3267,7 +3284,13 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                              <ThreeDot
+                                variant="bounce"
+                                color="#6100ff"
+                                size="small"
+                                text=""
+                                textColor=""
+                              />
                             ) : (
                               formatNumber(summary?.users?.total)
                             )}
@@ -3279,7 +3302,13 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                              <ThreeDot
+                                variant="bounce"
+                                color="#6100ff"
+                                size="small"
+                                text=""
+                                textColor=""
+                              />
                             ) : (
                               formatNumber(summary?.verification?.pending)
                             )}
@@ -3291,7 +3320,13 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                              <ThreeDot
+                                variant="bounce"
+                                color="#6100ff"
+                                size="small"
+                                text=""
+                                textColor=""
+                              />
                             ) : (
                               formatNumber(summary?.support?.open)
                             )}
@@ -3303,14 +3338,26 @@ export default function AdminPanel() {
                           </p>
                           <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
                             {loading ? (
-                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                              <ThreeDot
+                                variant="bounce"
+                                color="#6100ff"
+                                size="small"
+                                text=""
+                                textColor=""
+                              />
                             ) : (
                               `${formatNumber(summary?.traffic?.clicks)} / ${formatNumber(summary?.traffic?.visits)}`
                             )}
                           </div>
                           <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             {loading ? (
-                              <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                              <ThreeDot
+                                variant="bounce"
+                                color="#6100ff"
+                                size="small"
+                                text=""
+                                textColor=""
+                              />
                             ) : (
                               <>
                                 Spend:{" "}
@@ -3350,7 +3397,13 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                                      <ThreeDot
+                                        variant="bounce"
+                                        color="#6100ff"
+                                        size="small"
+                                        text=""
+                                        textColor=""
+                                      />
                                     ) : (
                                       `${infra?.cpu?.usage_percent?.toFixed?.(0) || "0"}%`
                                     )}
@@ -3367,7 +3420,13 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                                      <ThreeDot
+                                        variant="bounce"
+                                        color="#6100ff"
+                                        size="small"
+                                        text=""
+                                        textColor=""
+                                      />
                                     ) : (
                                       `${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : "0"} MB`
                                     )}
@@ -3384,7 +3443,13 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                                      <ThreeDot
+                                        variant="bounce"
+                                        color="#6100ff"
+                                        size="small"
+                                        text=""
+                                        textColor=""
+                                      />
                                     ) : (
                                       `${formatNumber(network?.device_up)} / ${formatNumber(network?.device_down)}`
                                     )}
@@ -3401,7 +3466,13 @@ export default function AdminPanel() {
                                   </p>
                                   <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                                     {loading ? (
-                                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                                      <ThreeDot
+                                        variant="bounce"
+                                        color="#6100ff"
+                                        size="small"
+                                        text=""
+                                        textColor=""
+                                      />
                                     ) : (
                                       formatNumber(network?.alert_count)
                                     )}
@@ -3456,7 +3527,13 @@ export default function AdminPanel() {
                               </span>
                               <span className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {loading ? (
-                                  <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                                  <ThreeDot
+                                    variant="bounce"
+                                    color="#6100ff"
+                                    size="small"
+                                    text=""
+                                    textColor=""
+                                  />
                                 ) : (
                                   formatNumber(premiumUsers.length)
                                 )}
@@ -3468,7 +3545,13 @@ export default function AdminPanel() {
                               </span>
                               <span className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {loading ? (
-                                  <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                                  <ThreeDot
+                                    variant="bounce"
+                                    color="#6100ff"
+                                    size="small"
+                                    text=""
+                                    textColor=""
+                                  />
                                 ) : (
                                   formatNumber(summary?.users?.suspended)
                                 )}
@@ -3828,7 +3911,13 @@ export default function AdminPanel() {
 
                       {loadingModeration ? (
                         <div className="flex items-center justify-center py-16">
-                          <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+                          <Mosaic
+                            color="#3b00ff"
+                            size="large"
+                            style={{ fontSize: "40px" }}
+                            text=""
+                            textColor=""
+                          />
                         </div>
                       ) : !moderationPending.length ? (
                         <div
@@ -4868,7 +4957,7 @@ export default function AdminPanel() {
                                     type="button"
                                     onClick={async () => {
                                       const reason =
-                                        window.prompt("Reject reason?") ||
+                                        "" ||
                                         "rejected_by_admin";
                                       await runInlineAdminAction(
                                         "verification.reject",
@@ -5100,10 +5189,10 @@ export default function AdminPanel() {
                                     type="button"
                                     onClick={async () => {
                                       const resolutionAction =
-                                        window.prompt("Resolution action?") ||
+                                        "" ||
                                         "resolved";
                                       const resolutionNote =
-                                        window.prompt("Resolution note?") || "";
+                                        "" || "";
                                       await runInlineAdminAction(
                                         "dispute.resolve",
                                         {
@@ -5457,7 +5546,17 @@ export default function AdminPanel() {
                               disabled={clothingRulesBusy}
                               className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
                             >
-                              {clothingRulesBusy ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save rules"}
+                              {clothingRulesBusy ? (
+                                <ThreeDot
+                                  variant="bounce"
+                                  color="#6100ff"
+                                  size="small"
+                                  text=""
+                                  textColor=""
+                                />
+                              ) : (
+                                "Save rules"
+                              )}
                             </button>
                           </div>
                           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 text-xs">
@@ -8241,9 +8340,7 @@ export default function AdminPanel() {
 
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    toggleTheme
-                                  }
+                                  onClick={() => toggleTheme}
                                   className={cn(
                                     "inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm",
                                     adminDark
@@ -10925,9 +11022,17 @@ export default function AdminPanel() {
                                           : "bg-sky-600 text-white shadow-lg shadow-sky-500/20 hover:translate-y-[-1px]",
                                       )}
                                     >
-                                      {openSearchConfigBusy
-                                        ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                                        : "Save settings"}
+                                      {openSearchConfigBusy ? (
+                                        <ThreeDot
+                                          variant="bounce"
+                                          color="#6100ff"
+                                          size="small"
+                                          text=""
+                                          textColor=""
+                                        />
+                                      ) : (
+                                        "Save settings"
+                                      )}
                                     </button>
                                     <button
                                       type="button"
@@ -11271,9 +11376,17 @@ export default function AdminPanel() {
                                       disabled={emailConfigBusy}
                                       className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] disabled:opacity-60"
                                     >
-                                      {emailConfigBusy
-                                        ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                                        : "Save settings"}
+                                      {emailConfigBusy ? (
+                                        <ThreeDot
+                                          variant="bounce"
+                                          color="#6100ff"
+                                          size="small"
+                                          text=""
+                                          textColor=""
+                                        />
+                                      ) : (
+                                        "Save settings"
+                                      )}
                                     </button>
                                     <button
                                       type="button"
@@ -11364,9 +11477,17 @@ export default function AdminPanel() {
                                       : "bg-sky-600 shadow-sky-500/20 hover:translate-y-[-1px]",
                                   )}
                                 >
-                                  {adminUiSettingsBusy
-                                    ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                                    : "Save settings"}
+                                  {adminUiSettingsBusy ? (
+                                    <ThreeDot
+                                      variant="bounce"
+                                      color="#6100ff"
+                                      size="small"
+                                      text=""
+                                      textColor=""
+                                    />
+                                  ) : (
+                                    "Save settings"
+                                  )}
                                 </button>
                               </div>
 
@@ -13242,7 +13363,10 @@ export default function AdminPanel() {
                                   </button>
                                 }
                               >
-                                <div data-lenis-prevent className="max-h-[540px] space-y-3 overflow-auto pr-1">
+                                <div
+                                  data-lenis-prevent
+                                  className="max-h-[540px] space-y-3 overflow-auto pr-1"
+                                >
                                   {filteredCmsAuditRows.map((log) => (
                                     <div
                                       key={`${log.id || log.at}-${log.path || log.action}`}
@@ -13283,7 +13407,13 @@ export default function AdminPanel() {
                                         <span
                                           className={cmsChipClass(adminDark)}
                                         >
-                                          <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />{" "}
+                                          <ThreeDot
+                                            variant="bounce"
+                                            color="#6100ff"
+                                            size="small"
+                                            text=""
+                                            textColor=""
+                                          />{" "}
                                           {log.status ?? 200}
                                         </span>
                                       </div>
@@ -14528,10 +14658,16 @@ export default function AdminPanel() {
                               ))}
                             </div>
 
-                        {configEditorLoading ? (
-                          <div className="py-8 text-center">
-                            <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                          </div>
+                            {configEditorLoading ? (
+                              <div className="py-8 text-center">
+                                <ThreeDot
+                                  variant="bounce"
+                                  color="#6100ff"
+                                  size="small"
+                                  text=""
+                                  textColor=""
+                                />
+                              </div>
                             ) : configEditorError ? (
                               <div className="py-8 text-center text-rose-500">
                                 {configEditorError}
@@ -14570,9 +14706,17 @@ export default function AdminPanel() {
                                     disabled={configEditorSaving}
                                     className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                                   >
-                                    {configEditorSaving
-                                      ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                                      : "Save Inventory"}
+                                    {configEditorSaving ? (
+                                      <ThreeDot
+                                        variant="bounce"
+                                        color="#6100ff"
+                                        size="small"
+                                        text=""
+                                        textColor=""
+                                      />
+                                    ) : (
+                                      "Save Inventory"
+                                    )}
                                   </button>
                                 </div>
                                 <div className="grid gap-3">
@@ -14631,9 +14775,17 @@ export default function AdminPanel() {
                                     disabled={configEditorSaving}
                                     className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                                   >
-                                    {configEditorSaving
-                                      ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                                      : "Save Actions"}
+                                    {configEditorSaving ? (
+                                      <ThreeDot
+                                        variant="bounce"
+                                        color="#6100ff"
+                                        size="small"
+                                        text=""
+                                        textColor=""
+                                      />
+                                    ) : (
+                                      "Save Actions"
+                                    )}
                                   </button>
                                 </div>
                                 <div className="space-y-3">
@@ -14692,12 +14844,23 @@ export default function AdminPanel() {
                                     disabled={configEditorSaving}
                                     className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                                   >
-                                    {configEditorSaving
-                                      ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                                      : "Save UI Settings"}
+                                    {configEditorSaving ? (
+                                      <ThreeDot
+                                        variant="bounce"
+                                        color="#6100ff"
+                                        size="small"
+                                        text=""
+                                        textColor=""
+                                      />
+                                    ) : (
+                                      "Save UI Settings"
+                                    )}
                                   </button>
                                 </div>
-                                <pre data-lenis-prevent className="max-h-96 overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-200">
+                                <pre
+                                  data-lenis-prevent
+                                  className="max-h-96 overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-200"
+                                >
                                   {JSON.stringify(configEditorData.ui, null, 2)}
                                 </pre>
                               </div>
@@ -14760,7 +14923,10 @@ export default function AdminPanel() {
             onClick={() => setAiModalDoc(null)}
             className="absolute inset-0 bg-black/50"
           />
-          <div data-lenis-prevent className="relative w-[92vw] max-w-2xl max-h-[85vh] overflow-auto rounded-2xl bg-white dark:bg-slate-900 shadow-2xl">
+          <div
+            data-lenis-prevent
+            className="relative w-[92vw] max-w-2xl max-h-[85vh] overflow-auto rounded-2xl bg-white dark:bg-slate-900 shadow-2xl"
+          >
             <div className="sticky top-0 bg-white dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white">
@@ -14999,7 +15165,13 @@ export default function AdminPanel() {
                   className="flex-1 bg-sky-500 text-white py-2 rounded-xl font-medium hover:bg-sky-600 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {reanalzyingId === aiModalDoc.id ? (
-                    <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
                   ) : (
                     <>
                       <RefreshCw className="h-4 w-4" />

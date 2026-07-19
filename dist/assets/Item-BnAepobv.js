@@ -1,1 +1,212 @@
-import{r as g,aa as H,ab as T,a6 as W,m as j,j as E,c as V,ac as X,a as B}from"./index-CNnTWoea.js";const k=g.createContext(null);function D(t,o,n,s){if(!s)return t;const e=t.findIndex(w=>w.value===o);if(e===-1)return t;const u=s>0?1:-1,c=t[e+u];if(!c)return t;const l=t[e],r=c.layout,i=H(r.min,r.max,.5);return u===1&&l.layout.max+n>i||u===-1&&l.layout.min+n<i?T(t,e,e+u):t}function G({children:t,as:o="ul",axis:n="y",onReorder:s,values:e,...u},c){const l=W(()=>j[o]),r=[],i=g.useRef(!1),w=g.useRef(null),f={axis:n,groupRef:w,registerItem:(m,y)=>{const h=r.findIndex(a=>m===a.value);h!==-1?r[h].layout=y[n]:r.push({value:m,layout:y[n]}),r.sort(Y)},updateOrder:(m,y,h)=>{if(i.current)return;const a=D(r,m,y,h);if(r!==a){i.current=!0;const d=[...e];for(let x=0;x<a.length;x++)if(r[x].value!==a[x].value){const S=e.indexOf(r[x].value),R=e.indexOf(a[x].value);S!==-1&&R!==-1&&([d[S],d[R]]=[d[R],d[S]]);break}s(d)}}};g.useEffect(()=>{i.current=!1});const M=m=>{w.current=m,typeof c=="function"?c(m):c&&(c.current=m)},p={overflowAnchor:"none",...u.style};return E.jsx(l,{...u,style:p,ref:M,ignoreStrict:!0,children:E.jsx(k.Provider,{value:f,children:t})})}const Q=g.forwardRef(G);function Y(t,o){return t.layout.min-o.layout.min}const I=50,O=25,F=new Set(["auto","scroll"]),v=new WeakMap,C=new WeakMap;let b=null;function N(){if(b){const t=A(b,"y");t&&(C.delete(t),v.delete(t));const o=A(b,"x");o&&o!==t&&(C.delete(o),v.delete(o)),b=null}}function P(t,o){const n=getComputedStyle(t),s=o==="x"?n.overflowX:n.overflowY,e=t===document.body||t===document.documentElement;return F.has(s)||e}function A(t,o){let n=t==null?void 0:t.parentElement;for(;n;){if(P(n,o))return n;n=n.parentElement}return null}function z(t,o,n){const s=o.getBoundingClientRect(),e=n==="x"?Math.max(0,s.left):Math.max(0,s.top),u=n==="x"?Math.min(window.innerWidth,s.right):Math.min(window.innerHeight,s.bottom),c=t-e,l=u-t;if(c<I){const r=1-c/I;return{amount:-O*r*r,edge:"start"}}else if(l<I){const r=1-l/I;return{amount:O*r*r,edge:"end"}}return{amount:0,edge:null}}function q(t,o,n,s){if(!t)return;b=t;const e=A(t,n);if(!e)return;const u=o-(n==="x"?window.scrollX:window.scrollY),{amount:c,edge:l}=z(u,e,n);if(l===null){C.delete(e),v.delete(e);return}const r=C.get(e),i=e===document.body||e===document.documentElement;if(r!==l){if(!(l==="start"&&s<0||l==="end"&&s>0))return;C.set(e,l);const f=n==="x"?e.scrollWidth-(i?window.innerWidth:e.clientWidth):e.scrollHeight-(i?window.innerHeight:e.clientHeight);v.set(e,f)}if(c>0){const w=v.get(e);if((n==="x"?i?window.scrollX:e.scrollLeft:i?window.scrollY:e.scrollTop)>=w)return}n==="x"?i?window.scrollBy({left:c}):e.scrollLeft+=c:i?window.scrollBy({top:c}):e.scrollTop+=c}function L(t,o=0){return X(t)?t:B(o)}function J({children:t,style:o={},value:n,as:s="li",onDrag:e,onDragEnd:u,layout:c=!0,...l},r){const i=W(()=>j[s]),w=g.useContext(k),f={x:L(o.x),y:L(o.y)},M=V([f.x,f.y],([a,d])=>a||d?1:"unset"),{axis:p,registerItem:m,updateOrder:y,groupRef:h}=w;return E.jsx(i,{drag:p,...l,dragSnapToOrigin:!0,style:{...o,x:f.x,y:f.y,zIndex:M},layout:c,onDrag:(a,d)=>{const{velocity:x,point:S}=d,R=f[p].get();y(n,R,x[p]),q(h.current,S[p],p,x[p]),e&&e(a,d)},onDragEnd:(a,d)=>{N(),u&&u(a,d)},onLayoutMeasure:a=>{m(n,a)},ref:r,ignoreStrict:!0,children:t})}const U=g.forwardRef(J);export{Q as R,U as a};
+import {
+  r as g,
+  aa as H,
+  ab as T,
+  a6 as W,
+  m as j,
+  j as E,
+  c as V,
+  ac as X,
+  a as B,
+} from "./index-CNnTWoea.js";
+const k = g.createContext(null);
+function D(t, o, n, s) {
+  if (!s) return t;
+  const e = t.findIndex((w) => w.value === o);
+  if (e === -1) return t;
+  const u = s > 0 ? 1 : -1,
+    c = t[e + u];
+  if (!c) return t;
+  const l = t[e],
+    r = c.layout,
+    i = H(r.min, r.max, 0.5);
+  return (u === 1 && l.layout.max + n > i) || (u === -1 && l.layout.min + n < i)
+    ? T(t, e, e + u)
+    : t;
+}
+function G(
+  { children: t, as: o = "ul", axis: n = "y", onReorder: s, values: e, ...u },
+  c,
+) {
+  const l = W(() => j[o]),
+    r = [],
+    i = g.useRef(!1),
+    w = g.useRef(null),
+    f = {
+      axis: n,
+      groupRef: w,
+      registerItem: (m, y) => {
+        const h = r.findIndex((a) => m === a.value);
+        (h !== -1 ? (r[h].layout = y[n]) : r.push({ value: m, layout: y[n] }),
+          r.sort(Y));
+      },
+      updateOrder: (m, y, h) => {
+        if (i.current) return;
+        const a = D(r, m, y, h);
+        if (r !== a) {
+          i.current = !0;
+          const d = [...e];
+          for (let x = 0; x < a.length; x++)
+            if (r[x].value !== a[x].value) {
+              const S = e.indexOf(r[x].value),
+                R = e.indexOf(a[x].value);
+              S !== -1 && R !== -1 && ([d[S], d[R]] = [d[R], d[S]]);
+              break;
+            }
+          s(d);
+        }
+      },
+    };
+  g.useEffect(() => {
+    i.current = !1;
+  });
+  const M = (m) => {
+      ((w.current = m), typeof c == "function" ? c(m) : c && (c.current = m));
+    },
+    p = { overflowAnchor: "none", ...u.style };
+  return E.jsx(l, {
+    ...u,
+    style: p,
+    ref: M,
+    ignoreStrict: !0,
+    children: E.jsx(k.Provider, { value: f, children: t }),
+  });
+}
+const Q = g.forwardRef(G);
+function Y(t, o) {
+  return t.layout.min - o.layout.min;
+}
+const I = 50,
+  O = 25,
+  F = new Set(["auto", "scroll"]),
+  v = new WeakMap(),
+  C = new WeakMap();
+let b = null;
+function N() {
+  if (b) {
+    const t = A(b, "y");
+    t && (C.delete(t), v.delete(t));
+    const o = A(b, "x");
+    (o && o !== t && (C.delete(o), v.delete(o)), (b = null));
+  }
+}
+function P(t, o) {
+  const n = getComputedStyle(t),
+    s = o === "x" ? n.overflowX : n.overflowY,
+    e = t === document.body || t === document.documentElement;
+  return F.has(s) || e;
+}
+function A(t, o) {
+  let n = t == null ? void 0 : t.parentElement;
+  for (; n;) {
+    if (P(n, o)) return n;
+    n = n.parentElement;
+  }
+  return null;
+}
+function z(t, o, n) {
+  const s = o.getBoundingClientRect(),
+    e = n === "x" ? Math.max(0, s.left) : Math.max(0, s.top),
+    u =
+      n === "x"
+        ? Math.min(window.innerWidth, s.right)
+        : Math.min(window.innerHeight, s.bottom),
+    c = t - e,
+    l = u - t;
+  if (c < I) {
+    const r = 1 - c / I;
+    return { amount: -O * r * r, edge: "start" };
+  } else if (l < I) {
+    const r = 1 - l / I;
+    return { amount: O * r * r, edge: "end" };
+  }
+  return { amount: 0, edge: null };
+}
+function q(t, o, n, s) {
+  if (!t) return;
+  b = t;
+  const e = A(t, n);
+  if (!e) return;
+  const u = o - (n === "x" ? window.scrollX : window.scrollY),
+    { amount: c, edge: l } = z(u, e, n);
+  if (l === null) {
+    (C.delete(e), v.delete(e));
+    return;
+  }
+  const r = C.get(e),
+    i = e === document.body || e === document.documentElement;
+  if (r !== l) {
+    if (!((l === "start" && s < 0) || (l === "end" && s > 0))) return;
+    C.set(e, l);
+    const f =
+      n === "x"
+        ? e.scrollWidth - (i ? window.innerWidth : e.clientWidth)
+        : e.scrollHeight - (i ? window.innerHeight : e.clientHeight);
+    v.set(e, f);
+  }
+  if (c > 0) {
+    const w = v.get(e);
+    if (
+      (n === "x"
+        ? i
+          ? window.scrollX
+          : e.scrollLeft
+        : i
+          ? window.scrollY
+          : e.scrollTop) >= w
+    )
+      return;
+  }
+  n === "x"
+    ? i
+      ? window.scrollBy({ left: c })
+      : (e.scrollLeft += c)
+    : i
+      ? window.scrollBy({ top: c })
+      : (e.scrollTop += c);
+}
+function L(t, o = 0) {
+  return X(t) ? t : B(o);
+}
+function J(
+  {
+    children: t,
+    style: o = {},
+    value: n,
+    as: s = "li",
+    onDrag: e,
+    onDragEnd: u,
+    layout: c = !0,
+    ...l
+  },
+  r,
+) {
+  const i = W(() => j[s]),
+    w = g.useContext(k),
+    f = { x: L(o.x), y: L(o.y) },
+    M = V([f.x, f.y], ([a, d]) => (a || d ? 1 : "unset")),
+    { axis: p, registerItem: m, updateOrder: y, groupRef: h } = w;
+  return E.jsx(i, {
+    drag: p,
+    ...l,
+    dragSnapToOrigin: !0,
+    style: { ...o, x: f.x, y: f.y, zIndex: M },
+    layout: c,
+    onDrag: (a, d) => {
+      const { velocity: x, point: S } = d,
+        R = f[p].get();
+      (y(n, R, x[p]), q(h.current, S[p], p, x[p]), e && e(a, d));
+    },
+    onDragEnd: (a, d) => {
+      (N(), u && u(a, d));
+    },
+    onLayoutMeasure: (a) => {
+      m(n, a);
+    },
+    ref: r,
+    ignoreStrict: !0,
+    children: t,
+  });
+}
+const U = g.forwardRef(J);
+export { Q as R, U as a };

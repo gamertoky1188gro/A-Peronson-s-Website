@@ -19,7 +19,7 @@
   Notes:
     - Tailwind-only styling (no legacy App.css utilities).
 */
-import { ThreeDot } from 'react-loading-indicators';
+import { ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../../components/ui/NeonAtom";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -103,7 +103,8 @@ export default function Login() {
   usePageMeta({
     title: "Login — GarTexHub",
     type: "website",
-    description: "Sign in to your GarTexHub account to manage sourcing, products, and connections.",
+    description:
+      "Sign in to your GarTexHub account to manage sourcing, products, and connections.",
     siteName: "GarTexHub",
     locale: "en_US",
   });
@@ -651,7 +652,17 @@ export default function Login() {
                   disabled={loading}
                   className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-semibold shadow-lg shadow-sky-500/20 transition ${theme.button}`}
                 >
-                  {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Sign in"}
+                  {loading ? (
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
+                  ) : (
+                    "Sign in"
+                  )}
                   {!loading && (
                     <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                   )}
@@ -665,7 +676,17 @@ export default function Login() {
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
                   >
                     <Fingerprint className="h-4 w-4" />
-                    {passkeyLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Passkey"}
+                    {passkeyLoading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      "Passkey"
+                    )}
                   </button>
                   <button
                     type="button"
@@ -674,7 +695,17 @@ export default function Login() {
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
                   >
                     <BadgeCheck className="h-4 w-4" />
-                    {enrollLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Set up passkey"}
+                    {enrollLoading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      "Set up passkey"
+                    )}
                   </button>
                 </div>
               </div>

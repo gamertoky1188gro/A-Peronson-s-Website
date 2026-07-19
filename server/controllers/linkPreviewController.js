@@ -8,7 +8,8 @@ export async function getLinkPreviewController(req, res) {
       return res.status(400).json({ error: "url query param required" });
     }
     const preview = await getLinkPreview(url.trim());
-    if (!preview) return res.status(404).json({ error: "Could not fetch preview" });
+    if (!preview)
+      return res.status(404).json({ error: "Could not fetch preview" });
     return res.json(preview);
   } catch (err) {
     return handleControllerError(res, err);

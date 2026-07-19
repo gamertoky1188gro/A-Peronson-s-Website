@@ -69,14 +69,20 @@ export async function generateMatchesForRequirement(requirement) {
 export async function updateMatchStatus(requirementId, factoryId, status) {
   const match = await prisma.match.findUnique({
     where: {
-      requirement_id_factory_id: { requirement_id: requirementId, factory_id: factoryId },
+      requirement_id_factory_id: {
+        requirement_id: requirementId,
+        factory_id: factoryId,
+      },
     },
   });
   if (!match) return null;
   const prev = match.status;
   const updated = await prisma.match.update({
     where: {
-      requirement_id_factory_id: { requirement_id: requirementId, factory_id: factoryId },
+      requirement_id_factory_id: {
+        requirement_id: requirementId,
+        factory_id: factoryId,
+      },
     },
     data: { status },
   });

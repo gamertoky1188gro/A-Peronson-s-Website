@@ -1,15 +1,18 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getUserFromApi, getToken } from "../lib/auth";
 
-export const fetchUser = createAsyncThunk("user/fetchUser", async (_, { rejectWithValue }) => {
-  const token = getToken();
-  if (!token) return rejectWithValue("No token");
-  try {
-    return await getUserFromApi(token);
-  } catch (err) {
-    return rejectWithValue(err.message);
-  }
-});
+export const fetchUser = createAsyncThunk(
+  "user/fetchUser",
+  async (_, { rejectWithValue }) => {
+    const token = getToken();
+    if (!token) return rejectWithValue("No token");
+    try {
+      return await getUserFromApi(token);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
 
 const userSlice = createSlice({
   name: "user",

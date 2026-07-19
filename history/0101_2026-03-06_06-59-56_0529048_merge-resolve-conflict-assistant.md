@@ -2,19 +2,19 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0101 |
-| Hash | `0529048a3d8012bf9251817af743e372ad74267a` |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0101                                       |
+| Hash          | `0529048a3d8012bf9251817af743e372ad74267a` |
 | Parent Hash 1 | `bc4870e183d1c51495f9f636f1e56cb3d6b8edc0` |
 | Parent Hash 2 | `10b6340c231d3e946665d4bd8476ea0832291781` |
-| Author | gamertoky1188gro |
-| Date/Time | 2026-03-06 06:59:56 |
-| Files Changed | 1 |
-| Lines Added | 195 |
-| Lines Deleted | 92 |
-| Net Change | +103 |
-| Merge | Yes |
+| Author        | gamertoky1188gro                           |
+| Date/Time     | 2026-03-06 06:59:56                        |
+| Files Changed | 1                                          |
+| Lines Added   | 195                                        |
+| Lines Deleted | 92                                         |
+| Net Change    | +103                                       |
+| Merge         | Yes                                        |
 
 ## Custom Title
 
@@ -31,6 +31,7 @@ Merge commit resolving conflicts between two divergent branches: commit 0100 (lo
 ## Detailed Diff Analysis
 
 ### Key Resolution
+
 - Kept: `CODE_EXTENSIONS`, `SKIP_DIRECTORIES`, `collectCodeFiles`, `getCodeFiles`, `findBestSnippet`, `searchCodeContext` (from commit 0098)
 - Removed: `callLocalLLM`, `discoverCodeContext`, `axios` import, LLM endpoint config, `TECH_FILES` array, AI-generated answer path (from commit 0100)
 - The `assistantReply` function uses the original `findBestMatch` with FAQ/fact entries + `globalRules` fallback, now augmented with `codeContext` in metadata and `agent_prompt_context`.

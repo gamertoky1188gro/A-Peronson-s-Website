@@ -49,9 +49,13 @@ const BuyingHouseProfile = safeLazy(() => import("./pages/BuyingHouseProfile"));
 const MemberManagement = safeLazy(() => import("./pages/MemberManagement"));
 const PartnerNetwork = safeLazy(() => import("./pages/PartnerNetwork"));
 const ProductManagement = safeLazy(() => import("./pages/ProductManagement"));
-const BuyerRequestManagement = safeLazy(() => import("./pages/BuyerRequestManagement"));
+const BuyerRequestManagement = safeLazy(
+  () => import("./pages/BuyerRequestManagement"),
+);
 const HelpCenter = safeLazy(() => import("./pages/HelpCenter"));
-const NotificationsCenter = safeLazy(() => import("./pages/NotificationsCenter"));
+const NotificationsCenter = safeLazy(
+  () => import("./pages/NotificationsCenter"),
+);
 const OrgSettings = safeLazy(() => import("./pages/OrgSettings"));
 const Insights = safeLazy(() => import("./pages/Insights"));
 const About = safeLazy(() => import("./pages/About"));
@@ -339,7 +343,6 @@ function AppRoutes() {
         }
       />
 
-
       <Route path="/tasks" element={<TaskTracker />} />
       <Route
         path="/profile/:id"
@@ -360,46 +363,52 @@ function AppLayout() {
     location.pathname === "/chat" || location.pathname === "/call";
   const isAdminRoute = location.pathname.startsWith("/admin");
   const hideChrome = isImmersiveRoute || isAdminRoute;
-  const content = isAdminRoute || isImmersiveRoute ? (
-    <>
-      <Suspense fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <NeonAtom size={48} />
-        </div>
-      }>
-        <AppRoutes />
-      </Suspense>
-    </>
-  ) : (
-    <>
-      {!hideChrome ? <ScrollProgressBar /> : null}
-      <div className="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
-      <div className="app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden" style={{ zoom: 0.8, width: '100%' }}>
-      {!hideChrome ? <NavBar /> : null}
-      <main
-        className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden"
-      >
-        <Suspense fallback={
-          <div className="flex min-h-screen items-center justify-center">
-            <NeonAtom size={48} />
-          </div>
-        }>
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <AppRoutes />
-          </motion.div>
+  const content =
+    isAdminRoute || isImmersiveRoute ? (
+      <>
+        <Suspense
+          fallback={
+            <div className="flex min-h-screen items-center justify-center">
+              <NeonAtom size={48} />
+            </div>
+          }
+        >
+          <AppRoutes />
         </Suspense>
-      </main>
-      {!hideChrome && location.pathname !== "/feed" ? <Footer /> : null}
-      {!hideChrome ? <FloatingAssistant /> : null}
-    </div>
-    </div>
-    </>
-  );
+      </>
+    ) : (
+      <>
+        {!hideChrome ? <ScrollProgressBar /> : null}
+        <div className="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
+          <div
+            className="app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden"
+            style={{ zoom: 0.8, width: "100%" }}
+          >
+            {!hideChrome ? <NavBar /> : null}
+            <main className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
+              <Suspense
+                fallback={
+                  <div className="flex min-h-screen items-center justify-center">
+                    <NeonAtom size={48} />
+                  </div>
+                }
+              >
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <AppRoutes />
+                </motion.div>
+              </Suspense>
+            </main>
+            {!hideChrome && location.pathname !== "/feed" ? <Footer /> : null}
+            {!hideChrome ? <FloatingAssistant /> : null}
+          </div>
+        </div>
+      </>
+    );
 
   const navigationRef = useRef({ path: "", startedAt: 0 });
   const sessionRef = useRef({ startedAt: 0, ended: false });
@@ -510,13 +519,7 @@ function AppLayout() {
     };
   }, []);
 
-  return (
-    hideChrome ? content : (
-      <LenisProvider>
-        {content}
-      </LenisProvider>
-    )
-  );
+  return hideChrome ? content : <LenisProvider>{content}</LenisProvider>;
 }
 
 function App() {

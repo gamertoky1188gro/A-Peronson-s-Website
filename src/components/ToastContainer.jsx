@@ -1,7 +1,17 @@
-import { createContext, useContext, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { addToast, removeToast as removeToastAction } from "../store/toastSlice";
+import {
+  addToast,
+  removeToast as removeToastAction,
+} from "../store/toastSlice";
 
 const ToastContext = createContext(null);
 
@@ -45,7 +55,10 @@ export function ToastProvider({ children }) {
     });
     toasts.forEach((t) => {
       if (!timersRef.current[t.id]) {
-        timersRef.current[t.id] = setTimeout(() => removeToast(t.id), t.duration || 4000);
+        timersRef.current[t.id] = setTimeout(
+          () => removeToast(t.id),
+          t.duration || 4000,
+        );
       }
     });
   }, [toasts, removeToast]);
@@ -54,16 +67,18 @@ export function ToastProvider({ children }) {
     return Object.assign(
       (message, opts) => dispatch(addToast({ message, ...opts })),
       {
-        success: (msg, opts) => dispatch(addToast({ message: msg, type: "success", ...opts })),
-        error: (msg, opts) => dispatch(addToast({ message: msg, type: "error", ...opts })),
-        info: (msg, opts) => dispatch(addToast({ message: msg, type: "info", ...opts })),
+        success: (msg, opts) =>
+          dispatch(addToast({ message: msg, type: "success", ...opts })),
+        error: (msg, opts) =>
+          dispatch(addToast({ message: msg, type: "error", ...opts })),
+        info: (msg, opts) =>
+          dispatch(addToast({ message: msg, type: "info", ...opts })),
       },
     );
   }, [dispatch]);
 
   const typeStyles = {
-    success:
-      "bg-emerald-600 text-white shadow-lg shadow-emerald-500/20",
+    success: "bg-emerald-600 text-white shadow-lg shadow-emerald-500/20",
     error: "bg-red-600 text-white shadow-lg shadow-red-500/20",
     info: "bg-sky-600 text-white shadow-lg shadow-sky-500/20",
   };
@@ -78,9 +93,17 @@ export function ToastProvider({ children }) {
               key={t.id}
               layout
               className={`pointer-events-auto rounded-2xl px-5 py-3 text-sm font-semibold shadow-xl ${typeStyles[t.type] || typeStyles.info}`}
-              initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 20, scale: 0.9 }}
+              initial={
+                reduceMotion
+                  ? { opacity: 1 }
+                  : { opacity: 0, y: 20, scale: 0.9 }
+              }
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.9 }}
+              exit={
+                reduceMotion
+                  ? { opacity: 0 }
+                  : { opacity: 0, y: -10, scale: 0.9 }
+              }
               transition={{ type: "spring", stiffness: 400, damping: 28 }}
               onClick={() => removeToast(t.id)}
             >

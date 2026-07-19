@@ -185,18 +185,14 @@ export async function uploadMessageAttachment(req, res) {
     }
 
     if (isVideoFile(file.mimetype, file.originalname)) {
-      const fullPath = file.path
-        ? path.resolve(file.path)
-        : null;
+      const fullPath = file.path ? path.resolve(file.path) : null;
       if (fullPath && created?.id) {
         addToQueue({ filePath: fullPath, documentId: null });
       }
     }
 
     if (isImageFile(file.mimetype, file.originalname)) {
-      const fullPath = file.path
-        ? path.resolve(file.path)
-        : null;
+      const fullPath = file.path ? path.resolve(file.path) : null;
       if (fullPath && created?.id) {
         addImageToQueue({ filePath: fullPath, documentId: null });
       }
@@ -225,9 +221,10 @@ export async function inbox(req, res) {
       select: { id: true },
     });
     const requirementIds = mine.map((r) => r.id);
-    const matches = requirementIds.length > 0
-      ? await listMatchesForRequirements(requirementIds)
-      : [];
+    const matches =
+      requirementIds.length > 0
+        ? await listMatchesForRequirements(requirementIds)
+        : [];
     matchIds = matches.map((m) => `${m.requirement_id}:${m.factory_id}`);
   }
   const friendMatchIds = await listFriendMatchIdsForUser(req.user.id);

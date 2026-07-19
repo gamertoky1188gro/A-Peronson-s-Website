@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 0c286b0c1ea55a3fb9451363c6c963ced744b53f
 - **Parent:** 5e88171c1caf550985a6c9b6c8961ac9d81430c1
 - **Author:** Cyber Code Master
@@ -6,45 +7,49 @@
 - **Message:** Add workflow lifecycle domain, API, hooks, UI timeline, and e2e coverage
 
 ## Custom Title
+
 Add workflow lifecycle domain, API, hooks, UI timeline, and e2e coverage
 
 ## High-Level Summary
+
 Add workflow lifecycle domain, API, hooks, UI timeline, and e2e coverage
 
- 22 files changed, 774 insertions(+), 118 deletions(-)
+22 files changed, 774 insertions(+), 118 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 0c286b0c1ea55a3fb9451363c6c963ced744b53f
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Mon Apr 6 18:52:43 2026 +0600
+Date: Mon Apr 6 18:52:43 2026 +0600
 
     Add workflow lifecycle domain, API, hooks, UI timeline, and e2e coverage
 
- .../migration.sql                                  |  32 ++
- prisma/schema.prisma                               |  36 +++
- server/controllers/productController.js            |   4 +-
- server/controllers/requirementController.js        |   4 +-
- server/controllers/workflowLifecycleController.js  |  41 +++
- server/routes/workflowLifecycleRoutes.js           |  17 +
- server/server.js                                   |  13 +
- server/services/callSessionService.js              |  14 +-
- server/services/documentService.js                 |   6 +-
- server/services/matchingService.js                 |   4 +-
- server/services/messageService.js                  |   4 +-
- server/services/workflowLifecycleService.js        | 350 +++++++++++++++++++++
- server/utils/jsonStore.js                          |   2 +
- shared/workflowLifecycle.js                        |  71 +++++
- src/components/JourneyTimeline.jsx                 |  66 ++++
- src/components/journey/JourneyTimeline.jsx         |  96 +-----
- src/pages/BuyerProfile.jsx                         |   2 +-
- src/pages/CallInterface.jsx                        |  32 +-
- src/pages/ChatInterface.jsx                        |   2 +-
- src/pages/ContractVault.jsx                        |   9 +-
- src/pages/SearchResults.jsx                        |  26 ++
- tests/e2e/workflow-lifecycle.spec.ts               |  61 ++++
- 22 files changed, 774 insertions(+), 118 deletions(-)
+.../migration.sql | 32 ++
+prisma/schema.prisma | 36 +++
+server/controllers/productController.js | 4 +-
+server/controllers/requirementController.js | 4 +-
+server/controllers/workflowLifecycleController.js | 41 +++
+server/routes/workflowLifecycleRoutes.js | 17 +
+server/server.js | 13 +
+server/services/callSessionService.js | 14 +-
+server/services/documentService.js | 6 +-
+server/services/matchingService.js | 4 +-
+server/services/messageService.js | 4 +-
+server/services/workflowLifecycleService.js | 350 +++++++++++++++++++++
+server/utils/jsonStore.js | 2 +
+shared/workflowLifecycle.js | 71 +++++
+src/components/JourneyTimeline.jsx | 66 ++++
+src/components/journey/JourneyTimeline.jsx | 96 +-----
+src/pages/BuyerProfile.jsx | 2 +-
+src/pages/CallInterface.jsx | 32 +-
+src/pages/ChatInterface.jsx | 2 +-
+src/pages/ContractVault.jsx | 9 +-
+src/pages/SearchResults.jsx | 26 ++
+tests/e2e/workflow-lifecycle.spec.ts | 61 ++++
+22 files changed, 774 insertions(+), 118 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/migrations/20260406120000_add_workflow_lifecycle/migration.sql b/prisma/migrations/20260406120000_add_workflow_lifecycle/migration.sql
 new file mode 100644
@@ -91,7 +96,7 @@ index 234e06b..0cae528 100644
 @@ -720,6 +720,42 @@ model Match {
    @@map("matches")
  }
- 
+
 +model WorkflowJourney {
 +  id             String   @id
 +  match_id       String?
@@ -141,12 +146,12 @@ index 775477b..2c3c5d6 100644
  import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
 -import { recordJourneyEvent } from '../services/dealJourneyService.js'
 +import { recordWorkflowEvent } from '../services/workflowLifecycleService.js'
- 
+
  function parseNumber(value) {
    if (value === undefined || value === null) return null
 @@ -272,7 +272,7 @@ export async function getProducts(req, res) {
  }
- 
+
  export async function searchProducts(req, res) {
 -  await recordJourneyEvent('search_open', {
 +  await recordWorkflowEvent('search_open', {
@@ -163,12 +168,12 @@ index 23a71ce..5928a91 100644
  import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
 -import { recordJourneyEvent } from '../services/dealJourneyService.js'
 +import { recordWorkflowEvent } from '../services/workflowLifecycleService.js'
- 
+
  function redactRequirementForBuyer(requirement) {
    return {
 @@ -275,7 +275,7 @@ export async function getRequirements(req, res) {
  }
- 
+
  export async function browseRequirements(req, res) {
 -  await recordJourneyEvent('search_open', {
 +  await recordWorkflowEvent('search_open', {
@@ -282,13 +287,13 @@ index 3540188..15602d9 100644
 +    requirement_id: payload?.requirement_id,
 +    product_id: payload?.product_id,
 +  }, { actor_id: user.id, source: 'ws.join_chat_room' }).catch(() => null)
- 
+
    const history = await listMessagesByMatch(matchId)
    sendWs(socket, {
 @@ -352,6 +360,11 @@ async function relayChatMessage(socket, payload) {
        })
      }
- 
+
 +
 +    await recordWorkflowEvent('chat_message_sent', {
 +      match_id: matchId,
@@ -307,11 +312,11 @@ index 638fc33..e07eac6 100644
  import { recordMilestone } from './ratingsService.js'
 -import { recordJourneyEvent } from './dealJourneyService.js'
 +import { recordWorkflowEvent } from './workflowLifecycleService.js'
- 
+
  const FILE = 'call_sessions.json'
  const RECORDING_VIEWS_FILE = 'call_recording_views.json'
 @@ -114,7 +114,7 @@ export async function createScheduledCallSession(userId, payload = {}) {
- 
+
    calls.push(row)
    await writeJson(FILE, calls)
 -  await recordJourneyEvent('call_scheduled', {
@@ -327,7 +332,7 @@ index 638fc33..e07eac6 100644
 +    match_id: next.match_id,
 +    contract_id: next.contract_id,
 +  }, { actor_id: userId, source: 'calls.start' }).catch(() => null)
- 
+
    return next
  }
 @@ -167,6 +171,10 @@ export async function endCallSession(callId, userId, endReason = '') {
@@ -338,12 +343,12 @@ index 638fc33..e07eac6 100644
 +    match_id: next.match_id,
 +    contract_id: next.contract_id,
 +  }, { actor_id: userId, source: 'calls.end' }).catch(() => null)
- 
+
    return next
  }
 @@ -228,7 +236,7 @@ export async function markRecording(callId, userId, payload = {}) {
    await writeJson(FILE, calls)
- 
+
    if (shouldComplete) {
 -    await recordJourneyEvent('call_completed', {
 +    await recordWorkflowEvent('call_ended', {
@@ -360,7 +365,7 @@ index 792a4a7..7c5fa1d 100644
  import { markLeadConvertedFromContract } from './leadService.js'
 -import { recordJourneyEvent } from './dealJourneyService.js'
 +import { recordWorkflowEvent } from './workflowLifecycleService.js'
- 
+
  const FILE = 'documents.json'
  const CONTRACT_AUDIT_FILE = 'contract_audit.json'
 @@ -405,7 +405,7 @@ export async function createDraftContract(actor, payload = {}) {
@@ -390,17 +395,17 @@ index 006c9fb..0444eca 100644
  import { trackTransition } from '../utils/metrics.js'
 -import { recordJourneyEvent } from './dealJourneyService.js'
 +import { recordWorkflowEvent } from './workflowLifecycleService.js'
- 
+
  const USERS_FILE = 'users.json'
  const MATCHES_FILE = 'matches.json'
 @@ -45,7 +45,7 @@ export async function generateMatchesForRequirement(requirement) {
    await writeJson(MATCHES_FILE, [...withoutOld, ...ranked])
- 
+
    if (ranked.length > 0) {
 -    await recordJourneyEvent('match_confirmed', { requirement_id: requirement.id }, { match_count: ranked.length }).catch(() => null)
 +    await recordWorkflowEvent('match_confirmed', { requirement_id: requirement.id }, { match_count: ranked.length }).catch(() => null)
    }
- 
+
    return ranked
 diff --git a/server/services/messageService.js b/server/services/messageService.js
 index 4243f83..0ca8950 100644
@@ -412,16 +417,16 @@ index 4243f83..0ca8950 100644
  import { attachMessageToQueue, evaluateMessagePolicy } from './communicationPolicyService.js'
 -import { recordJourneyEvent } from './dealJourneyService.js'
 +import { recordWorkflowEvent } from './workflowLifecycleService.js'
- 
+
  const FILE = 'messages.json'
  const USERS_FILE = 'users.json'
 @@ -402,7 +402,7 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
- 
+
    await trackTransition(matchId, 'matched', 'first_message_sent', { sender_id: senderId })
- 
+
 -  await recordJourneyEvent('message_start', { match_id: matchId, chat_thread_id: matchId }, { sender_id: senderId }).catch(() => null)
 +  await recordWorkflowEvent('chat_message_sent', { match_id: matchId, chat_thread_id: matchId }, { sender_id: senderId }).catch(() => null)
- 
+
    try {
      const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, senderId)
 diff --git a/server/services/workflowLifecycleService.js b/server/services/workflowLifecycleService.js
@@ -1053,9 +1058,9 @@ index 104486a..8580ddc 100644
  import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
 -import JourneyTimeline from '../components/journey/JourneyTimeline'
 +import JourneyTimeline from '../components/JourneyTimeline'
- 
+
  const Motion = motion
- 
+
 diff --git a/src/pages/CallInterface.jsx b/src/pages/CallInterface.jsx
 index 8aea438..86b3e05 100644
 --- a/src/pages/CallInterface.jsx
@@ -1065,7 +1070,7 @@ index 8aea438..86b3e05 100644
  import { trackClientEvent } from '../lib/events'
  import MarkdownMessage from '../components/chat/MarkdownMessage'
 +import JourneyTimeline from '../components/JourneyTimeline'
- 
+
  const WS_BASE = (() => {
    if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
 @@ -536,10 +537,24 @@ export default function CallInterface() {
@@ -1091,7 +1096,7 @@ index 8aea438..86b3e05 100644
      }
 -  }, [callId])
 +  }, [callId, effectiveMatchId])
- 
+
    const loadParticipants = useCallback(async () => {
      const token = getToken()
 @@ -1438,6 +1453,16 @@ export default function CallInterface() {
@@ -1118,7 +1123,7 @@ index 8aea438..86b3e05 100644
 +            <div className="borderless-divider-b bg-white/30 p-3 dark:bg-white/5">
 +              <JourneyTimeline title="Journey Timeline" matchId={effectiveMatchId || ''} />
 +            </div>
- 
+
            <div ref={chatScrollRef} className="flex-1 overflow-y-auto bg-slate-50/60 p-5 space-y-6 dark:bg-black/20 scrollbar-hide">
              {sortedChatMessages.length > 0 ? sortedChatMessages.map((msg) => {
 @@ -1878,5 +1906,3 @@ export default function CallInterface() {
@@ -1137,7 +1142,7 @@ index dbcc01c..7fa4829 100644
  import FileAttachmentCard from '../components/chat/FileAttachmentCard'
 -import JourneyTimeline from '../components/journey/JourneyTimeline'
 +import JourneyTimeline from '../components/JourneyTimeline'
- 
+
  const WS_BASE = (() => {
    if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
 diff --git a/src/pages/ContractVault.jsx b/src/pages/ContractVault.jsx
@@ -1156,12 +1161,12 @@ index e919548..0eeadcc 100644
  import { trackClientEvent } from '../lib/events'
 -import JourneyTimeline from '../components/journey/JourneyTimeline'
 +import JourneyTimeline from '../components/JourneyTimeline'
- 
+
  const Motion = motion
- 
+
 @@ -244,6 +244,8 @@ function Drawer({ open, onClose, children }) {
  }
- 
+
  export default function ContractVault() {
 +  const location = useLocation()
 +  const journeyParams = useMemo(() => new URLSearchParams(location.search), [location.search])
@@ -1169,7 +1174,7 @@ index e919548..0eeadcc 100644
    const reduceMotion = useReducedMotion()
    const [loadingContracts, setLoadingContracts] = useState(true)
 @@ -666,7 +668,7 @@ export default function ContractVault() {
- 
+
        {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
        <div className="mt-4">
 -        <JourneyTimeline title="Journey Timeline" contractId={selected.id} />
@@ -1289,17 +1294,22 @@ index 0000000..0ea8934
 ```
 
 ## Why This Change
+
 Add workflow lifecycle domain, API, hooks, UI timeline, and e2e coverage
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  22 files changed, 774 insertions(+), 118 deletions(-)
+
+- **Scope:** 22 files changed, 774 insertions(+), 118 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 217 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

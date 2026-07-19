@@ -20,13 +20,47 @@ function inferType(mime = "", originalName = "") {
   if (lower.startsWith("video/")) return "video";
   if (lower.startsWith("image/")) return "image";
   const ext = path.extname(String(originalName || "")).toLowerCase();
-  if ([
-    ".mp4", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".rrc",
-    ".gifv", ".mng", ".mov", ".avi", ".qt", ".wmv", ".yuv", ".rm",
-    ".asf", ".amv", ".m4p", ".m4v", ".mpg", ".mp2", ".mpeg", ".mpe",
-    ".mpv", ".svi", ".3gp", ".3g2", ".mxf", ".roq", ".nsv", ".f4v",
-    ".f4p", ".f4a", ".f4b", ".mod",
-  ].includes(ext)) return "video";
+  if (
+    [
+      ".mp4",
+      ".webm",
+      ".mkv",
+      ".flv",
+      ".vob",
+      ".ogv",
+      ".ogg",
+      ".rrc",
+      ".gifv",
+      ".mng",
+      ".mov",
+      ".avi",
+      ".qt",
+      ".wmv",
+      ".yuv",
+      ".rm",
+      ".asf",
+      ".amv",
+      ".m4p",
+      ".m4v",
+      ".mpg",
+      ".mp2",
+      ".mpeg",
+      ".mpe",
+      ".mpv",
+      ".svi",
+      ".3gp",
+      ".3g2",
+      ".mxf",
+      ".roq",
+      ".nsv",
+      ".f4v",
+      ".f4p",
+      ".f4a",
+      ".f4b",
+      ".mod",
+    ].includes(ext)
+  )
+    return "video";
   return "image";
 }
 

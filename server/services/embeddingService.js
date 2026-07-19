@@ -23,8 +23,12 @@ async function loadConfig() {
     apiKey: raw.apiKey || envApiKey || "",
     model: raw.model || envModel || "BAAI/bge-m3",
     dimension: Number.isFinite(envDim) ? envDim : 1024,
-    timeout_ms: Math.max(1000, Math.min(120000, Number(raw.timeout_ms || 30000))),
-    enabled: aiSearchEnabled && (Boolean(raw.enabled) || Boolean(envUrl) || false),
+    timeout_ms: Math.max(
+      1000,
+      Math.min(120000, Number(raw.timeout_ms || 30000)),
+    ),
+    enabled:
+      aiSearchEnabled && (Boolean(raw.enabled) || Boolean(envUrl) || false),
   };
   cachedConfig = { at: Date.now(), value: cfg };
   return cfg;
@@ -107,7 +111,9 @@ async function embeddingViaHuggingFace(cfg, text, _start) {
     });
     if (!resp.ok) {
       const errText = await resp.text().catch(() => "");
-      console.warn(`[embedding] HuggingFace API error ${resp.status}: ${errText}`);
+      console.warn(
+        `[embedding] HuggingFace API error ${resp.status}: ${errText}`,
+      );
       return null;
     }
     const data = await resp.json();
@@ -161,10 +167,12 @@ export async function generateEmbeddingWithRetry(text, maxRetries = 1) {
       if (emb) return emb;
     } catch (_err) {
       if (attempt === maxRetries) {
-        console.warn(`[embedding] All ${maxRetries + 1} attempts failed for text: "${text.slice(0, 60)}..."`);
+        console.warn(
+          `[embedding] All ${maxRetries + 1} attempts failed for text: "${text.slice(0, 60)}..."`,
+        );
         return null;
       }
-      await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
     }
   }
   return null;

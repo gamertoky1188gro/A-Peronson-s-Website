@@ -42,14 +42,22 @@ const DEFAULT_POLICY = {
 async function readStore(fileName) {
   if (USE_SQL_CRM) {
     switch (fileName) {
-      case "org_ops_policies.json": return prisma.orgOpsPolicy.findMany();
-      case "leads.json": return prisma.lead.findMany();
-      case "users.json": return prisma.user.findMany();
-      case "lead_sla_timers.json": return prisma.leadSlaTimer.findMany();
-      case "lead_escalations.json": return prisma.leadEscalation.findMany();
-      case "agent_workloads.json": return prisma.agentWorkload.findMany();
-      case "lead_assignments.json": return prisma.leadAssignment.findMany();
-      default: return prisma.lead.findMany();
+      case "org_ops_policies.json":
+        return prisma.orgOpsPolicy.findMany();
+      case "leads.json":
+        return prisma.lead.findMany();
+      case "users.json":
+        return prisma.user.findMany();
+      case "lead_sla_timers.json":
+        return prisma.leadSlaTimer.findMany();
+      case "lead_escalations.json":
+        return prisma.leadEscalation.findMany();
+      case "agent_workloads.json":
+        return prisma.agentWorkload.findMany();
+      case "lead_assignments.json":
+        return prisma.leadAssignment.findMany();
+      default:
+        return prisma.lead.findMany();
     }
   }
   return readLegacyJson(fileName);
@@ -608,7 +616,10 @@ export async function resolveEscalation(actor, leadId, resolutionNote = "") {
     data: {
       resolved_at: now,
       resolved_by: String(actor?.id || ""),
-      resolution_note: sanitizeString(String(resolutionNote || "resolved"), 300),
+      resolution_note: sanitizeString(
+        String(resolutionNote || "resolved"),
+        300,
+      ),
       updated_at: now,
     },
   });

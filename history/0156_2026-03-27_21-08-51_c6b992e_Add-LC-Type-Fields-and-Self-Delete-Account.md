@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** c6b992e9a1bd4d43a2a68114bc3f987ad7ec254c
 - **Parent:** 03f6becc8bebc6ada1f04ebed859d9919c629fb7
 - **Author:** gamertoky1188gro
@@ -6,12 +7,15 @@
 - **Message:** Add LC type fields and self-delete account
 
 ## Custom Title
+
 LC type fields for payment proofs and self-delete account feature
 
 ## High-Level Summary
+
 Added LC type (sight/usance) and usance_days fields to payment proofs with backend validation. Added a self-delete account endpoint requiring password confirmation. Refactored admin panel to a blue/sky theme (from orange), added admin passkey support, and reworked security cards with save buttons for MFA/device/passkey actions.
 
 ## File-by-File Breakdown
+
 - **prisma/schema.prisma** — Added `lc_type` and `usance_days` columns to payment_proofs table
 - **server/controllers/authController.js** — Unchanged in diff, likely referenced
 - **server/controllers/userController.js** — Added DELETE /users/me endpoint
@@ -27,6 +31,7 @@ Added LC type (sight/usance) and usance_days fields to payment proofs with backe
 - **src/pages/OrgSettings.jsx** — Added "Delete account" section with password confirmation, imported clearSession
 
 ## Detailed Diff Analysis
+
 **SecurityService.js:** New `admin_auth` state object with mfa_code, device_allowlist, passkeys. Added `getAdminAuthConfig()` function. New actions: `security.admin.mfa.set`, `security.admin.device.add`, `security.admin.device.remove`, `security.admin.passkey.add`, `security.admin.passkey.remove`.
 
 **UserService.js:** `deleteUserWithPassword()` verifies password via bcrypt, anonymizes user data (name→"Deleted User", email→deleted+id@invalid), removes connections.
@@ -40,18 +45,23 @@ Added LC type (sight/usance) and usance_days fields to payment proofs with backe
 **OrgSettings.jsx:** Delete account section with password input, confirmation dialog, API call to `/users/me`, redirects to `/login` after deletion.
 
 ## Why This Change
+
 LC types are a real requirement for textile trade payment proofs. Self-delete addresses user data privacy/control. The admin blue theme swap suggests a design system change from amber to blue.
 
 ## Was It Useful
+
 Yes. LC fields are domain-relevant. Self-delete is a compliance requirement for user data management.
 
 ## Impact Analysis
+
 - **Scope:** 13 files across backend, frontend, and CSS
 - **Risk:** Medium — new validation logic for payment proofs could reject existing data
 - **Security:** Self-delete requires password verification; admin auth uses stored/hybrid config
 
 ## Relationships
+
 The largest commit in the 151-160 range. Sets up the blue theme used in subsequent admin work.
 
 ## Confidence Notes
+
 High. All changes are well-structured with proper validation and error handling.

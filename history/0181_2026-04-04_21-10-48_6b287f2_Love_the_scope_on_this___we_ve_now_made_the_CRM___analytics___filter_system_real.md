@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 6b287f29cc9662f5da7fc0752cc9126689ce3402
 - **Parent:** 0f449010ca8288c87dbd7f6da63e8a7e97a9c7cb
 - **Author:** gamertoky1188gro
@@ -6,22 +7,25 @@
 - **Message:** Love the scope on this — we’ve now made the CRM + analytics + filter system real in the codebase.
 
 ## Custom Title
+
 Love the scope on this — we’ve now made the CRM + analytics + filter system real in the codebase.
 
 ## High-Level Summary
+
 Love the scope on this — we’ve now made the CRM + analytics + filter system real in the codebase.
 
- 13 files changed, 647 insertions(+), 190 deletions(-)
+13 files changed, 647 insertions(+), 190 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 6b287f29cc9662f5da7fc0752cc9126689ce3402
 Author: gamertoky1188gro <tokyintelligentgamer@gmail.com>
-Date:   Sat Apr 4 21:10:48 2026 +0600
+Date: Sat Apr 4 21:10:48 2026 +0600
 
     Love the scope on this — we’ve now made the CRM + analytics + filter system real in the codebase.
-    
+
     **What I implemented**
-    
+
     **CRM**
     - Added /api/crm/profile/:targetId (team‑only) to return:
       - Recent message threads
@@ -30,23 +34,23 @@ Date:   Sat Apr 4 21:10:48 2026 +0600
       - Lead status summary
     - Added **CRM Summary panel** to Buyer / Factory / Buying House profiles (shows only to org/team).
     - Conversion tracking: when a contract is signed, related leads are tagged with conversion_at.
-    
+
     **Analytics**
     - Company analytics now include **Top Lead Sources**.
     - Platform analytics now include:
       - Top search categories (global + by country)
       - Trending search categories (30‑day delta)
-    
+
     **Filters**
     - Added **Product vs Supplier** toggle inside advanced filters (kept tabs).
     - Organized advanced filters accordingly without changing backend query params.
-    
+
     **Lead Tracking**
     - Leads now store source_type / source_id and fire lead_created events.
     - Contracts now trigger lead_converted events.
-    
+
     ---
-    
+
     **Files changed**
     - C:\Users\tokyi\OneDrive\Desktop\meow\server\services\leadService.js
     - C:\Users\tokyi\OneDrive\Desktop\meow\server\services\documentService.js
@@ -62,22 +66,23 @@ Date:   Sat Apr 4 21:10:48 2026 +0600
     - C:\Users\tokyi\OneDrive\Desktop\meow\src\pages\SearchResults.jsx
     - C:\Users\tokyi\OneDrive\Desktop\meow\src\pages\Insights.jsx
 
- server/controllers/crmController.js        |  13 +
- server/routes/crmRoutes.js                 |   9 +
- server/server.js                           |   2 +
- server/services/analyticsService.js        |  78 +++++-
- server/services/crmService.js              | 119 +++++++++
- server/services/documentService.js         |   2 +
- server/services/leadService.js             |  44 ++++
- src/components/profile/CrmSummaryPanel.jsx | 112 ++++++++
- src/pages/BuyerProfile.jsx                 |   2 +
- src/pages/BuyingHouseProfile.jsx           |   2 +
- src/pages/FactoryProfile.jsx               |   2 +
- src/pages/Insights.jsx                     |  53 ++++
- src/pages/SearchResults.jsx                | 399 +++++++++++++++--------------
- 13 files changed, 647 insertions(+), 190 deletions(-)
+server/controllers/crmController.js | 13 +
+server/routes/crmRoutes.js | 9 +
+server/server.js | 2 +
+server/services/analyticsService.js | 78 +++++-
+server/services/crmService.js | 119 +++++++++
+server/services/documentService.js | 2 +
+server/services/leadService.js | 44 ++++
+src/components/profile/CrmSummaryPanel.jsx | 112 ++++++++
+src/pages/BuyerProfile.jsx | 2 +
+src/pages/BuyingHouseProfile.jsx | 2 +
+src/pages/FactoryProfile.jsx | 2 +
+src/pages/Insights.jsx | 53 ++++
+src/pages/SearchResults.jsx | 399 +++++++++++++++--------------
+13 files changed, 647 insertions(+), 190 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/server/controllers/crmController.js b/server/controllers/crmController.js
 new file mode 100644
@@ -140,7 +145,7 @@ index fa27b4e..592bd1a 100644
 @@ -413,13 +413,14 @@ export async function getCompanyAnalytics(user) {
    ensureAnalyticsDashboardAccess(user)
    const plan = await getPlanForUser(user)
- 
+
 -  const [events, products, productViews, messages, documents, users] = await Promise.all([
 +  const [events, products, productViews, messages, documents, users, leads] = await Promise.all([
      readJson(FILE),
@@ -151,12 +156,12 @@ index fa27b4e..592bd1a 100644
      readJson('users.json'),
 +    readJson('leads.json'),
    ])
- 
+
    const actorRole = String(user?.role || '').toLowerCase()
 @@ -526,6 +527,17 @@ export async function getCompanyAnalytics(user) {
      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
      : 0
- 
+
 +  const leadRows = (Array.isArray(leads) ? leads : []).filter((l) => String(l.org_owner_id || '') === orgOwnerId)
 +  const leadSources = leadRows.reduce((acc, lead) => {
 +    const label = String(lead.source_type || 'message')
@@ -178,30 +183,30 @@ index fa27b4e..592bd1a 100644
 +    top_lead_sources: topLeadSources,
    }
  }
- 
+
  export async function getPlatformAnalytics(user) {
    ensureAnalyticsAdminAccess(user)
- 
+
 -  const [requirements, users] = await Promise.all([
 +  const [requirements, users, events] = await Promise.all([
      readJson('requirements.json'),
      readJson('users.json'),
 +    readJson(FILE),
    ])
- 
+
    const usersById = new Map((Array.isArray(users) ? users : []).map((u) => [String(u.id), u]))
 @@ -556,6 +570,7 @@ export async function getPlatformAnalytics(user) {
    const priceBuckets = {}
- 
+
    const requirementsRows = Array.isArray(requirements) ? requirements : []
 +  const eventRows = Array.isArray(events) ? events : []
- 
+
    for (const req of requirementsRows) {
      const buyer = usersById.get(String(req.buyer_id || ''))
 @@ -597,6 +612,49 @@ export async function getPlatformAnalytics(user) {
    const repeatBuyers = buyers.filter((bid) => buyerCounts[bid] >= 2).length
    const repeatBuyerRate = calcPercent(repeatBuyers, buyers.length)
- 
+
 +  const searchEvents = eventRows.filter((e) => String(e.type || '') === 'search_run')
 +  const searchByCountry = {}
 +  const searchGlobal = {}
@@ -257,11 +262,11 @@ index fa27b4e..592bd1a 100644
 +    trending_search_categories: trendingCategories,
    }
  }
- 
+
 @@ -742,12 +803,25 @@ export async function getPremiumInsights(user) {
      return acc
    }, {})
- 
+
 +  const leadOutcomeByAgent = leadRows.reduce((acc, lead) => {
 +    const key = String(lead.assigned_agent_id || 'unassigned')
 +    if (!acc[key]) acc[key] = { closed: 0, confirmed: 0, converted: 0 }
@@ -282,7 +287,7 @@ index fa27b4e..592bd1a 100644
 +      orders_confirmed: leadOutcomeByAgent[String(agent.id)]?.confirmed || 0,
 +      conversions: leadOutcomeByAgent[String(agent.id)]?.converted || 0,
      }))
- 
+
    const categoryCounts = orgRequests.reduce((acc, r) => {
 diff --git a/server/services/crmService.js b/server/services/crmService.js
 new file mode 100644
@@ -418,7 +423,7 @@ index 9268f6f..170ba68 100644
  import { trackEvent } from './analyticsService.js'
  import { ensureCertificationForContract } from './certificationService.js'
 +import { markLeadConvertedFromContract } from './leadService.js'
- 
+
  const FILE = 'documents.json'
  const CONTRACT_AUDIT_FILE = 'contract_audit.json'
 @@ -487,6 +488,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
@@ -438,7 +443,7 @@ index 6272e0e..be99cf3 100644
  import { forbiddenError, isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
  import { getPlanForUser } from './entitlementService.js'
 +import { trackEvent } from './analyticsService.js'
- 
+
  const LEADS_FILE = 'leads.json'
  const NOTES_FILE = 'lead_notes.json'
 @@ -122,6 +123,8 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp })
@@ -447,9 +452,9 @@ index 6272e0e..be99cf3 100644
    const supplierId = marketplace ? marketplace.supplierId : ''
 +  const leadSourceType = marketplace ? 'buyer_request' : (friendPair ? 'direct' : 'message')
 +  const leadSourceId = marketplace?.requirementId || matchId || ''
- 
+
    const orgTargets = new Map()
- 
+
 @@ -204,6 +207,8 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp })
          ...current,
          counterparty_id: current.counterparty_id || counterpartyId,
@@ -476,11 +481,11 @@ index 6272e0e..be99cf3 100644
      updated.push(row)
 +    await trackEvent({ type: 'lead_created', actor_id: senderId || orgId, entity_id: row.id, metadata: { source_type: leadSourceType, source_id: leadSourceId } })
    }
- 
+
    await writeJson(LEADS_FILE, leads)
    return updated
  }
- 
+
 +export async function markLeadConvertedFromContract({ buyerId, factoryId, contractId }) {
 +  const safeBuyer = sanitizeString(String(buyerId || ''), 120)
 +  const safeFactory = sanitizeString(String(factoryId || ''), 120)
@@ -646,12 +651,12 @@ index b851569..ca10f44 100644
  import { trackClientEvent } from '../lib/events'
  import VerificationPanel from '../components/profile/VerificationPanel'
 +import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
- 
+
  const Motion = motion
- 
+
 @@ -312,6 +313,7 @@ export default function BuyerProfile() {
          </aside>
- 
+
          <main className="col-span-12 lg:col-span-8 space-y-4">
 +          <CrmSummaryPanel targetId={user.id} />
            <motion.div
@@ -666,12 +671,12 @@ index f025fa4..42f1a1c 100644
  import { trackClientEvent } from '../lib/events'
  import VerificationPanel from '../components/profile/VerificationPanel'
 +import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
- 
+
  const Motion = motion
- 
+
 @@ -319,6 +320,7 @@ export default function BuyingHouseProfile() {
          </aside>
- 
+
          <main className="col-span-12 lg:col-span-8 space-y-4">
 +          <CrmSummaryPanel targetId={user.id} />
            <motion.div
@@ -686,12 +691,12 @@ index 8f06b6e..3986f00 100644
  import { trackClientEvent } from '../lib/events'
  import VerificationPanel from '../components/profile/VerificationPanel'
 +import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
- 
+
  const Motion = motion
- 
+
 @@ -282,6 +283,7 @@ export default function FactoryProfile() {
          </aside>
- 
+
          <main className="col-span-12 lg:col-span-8 space-y-4">
 +          <CrmSummaryPanel targetId={user.id} />
            <motion.div
@@ -715,7 +720,7 @@ index fff4991..4e68aee 100644
 +  const platformSearchByCountry = Array.isArray(platformAnalytics?.top_search_categories_by_country) ? platformAnalytics.top_search_categories_by_country : []
 +  const platformTrending = Array.isArray(platformAnalytics?.trending_search_categories) ? platformAnalytics.trending_search_categories : []
    const premiumRole = premiumInsights?.role || ''
- 
+
    useEffect(() => {
 @@ -410,6 +414,18 @@ export default function Insights() {
                      </div>
@@ -735,11 +740,11 @@ index fff4991..4e68aee 100644
 +                </div>
                </div>
              ) : null}
- 
+
 @@ -446,6 +462,43 @@ export default function Insights() {
                    </div>
                  </div>
- 
+
 +                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 +                  <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
 +                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Search Categories</p>
@@ -793,7 +798,7 @@ index 19af36a..5ead04d 100644
    const [alertFeedback, setAlertFeedback] = useState('')
    const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
 @@ -752,196 +753,218 @@ export default function SearchResults() {
- 
+
                  {advancedFiltersOpen ? (
                    <div className="mt-3 grid grid-cols-1 gap-2">
 -                  <input
@@ -927,7 +932,7 @@ index 19af36a..5ead04d 100644
 +                        Supplier Filters
 +                      </button>
 +                    </div>
- 
+
 -                  <div className="pt-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">Supplier & account</div>
 -                  <input
 -                    value={filters.processes}
@@ -1202,17 +1207,22 @@ index 19af36a..5ead04d 100644
 ```
 
 ## Why This Change
+
 Love the scope on this — we’ve now made the CRM + analytics + filter system real in the codebase.
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  13 files changed, 647 insertions(+), 190 deletions(-)
+
+- **Scope:** 13 files changed, 647 insertions(+), 190 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 181 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

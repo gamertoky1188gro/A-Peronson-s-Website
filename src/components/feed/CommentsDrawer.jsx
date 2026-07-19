@@ -129,8 +129,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
 
   function renderCommentNode(node, depth = 0) {
     const { comment, children } = node;
-    const safeDepth = Math.min(depth, 8);
-    const indent = safeDepth * 16;
+    const indent = depth * 16;
     const hasChildren = children.length > 0;
     const shouldCollapse =
       hasChildren && !expandedThreads[comment.id] && children.length > 3;
@@ -198,7 +197,17 @@ export default function CommentsDrawer({ open, onClose, item }) {
                 disabled={submitting || !replyInput.trim()}
                 className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
               >
-                {submitting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Send"}
+                {submitting ? (
+                  <ThreeDot
+                    variant="bounce"
+                    color="#6100ff"
+                    size="small"
+                    text=""
+                    textColor=""
+                  />
+                ) : (
+                  "Send"
+                )}
               </button>
               <button
                 type="button"
@@ -268,9 +277,18 @@ export default function CommentsDrawer({ open, onClose, item }) {
           </button>
         </header>
 
-        <div data-lenis-prevent className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
+        <div
+          data-lenis-prevent
+          className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60"
+        >
           {loading ? (
-            <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+            <Mosaic
+              color="#3b00ff"
+              size="large"
+              style={{ fontSize: "40px" }}
+              text=""
+              textColor=""
+            />
           ) : null}
           {!loading && error ? (
             <div className="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">
@@ -299,7 +317,17 @@ export default function CommentsDrawer({ open, onClose, item }) {
               disabled={submitting || !input.trim()}
               className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
             >
-              {submitting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Post"}
+              {submitting ? (
+                <ThreeDot
+                  variant="bounce"
+                  color="#6100ff"
+                  size="small"
+                  text=""
+                  textColor=""
+                />
+              ) : (
+                "Post"
+              )}
             </button>
           </div>
           <p className="mt-2 text-[10px] text-slate-500">

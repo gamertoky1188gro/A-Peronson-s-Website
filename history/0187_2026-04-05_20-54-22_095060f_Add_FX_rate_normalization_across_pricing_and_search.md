@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 095060fb9198730a32aac4994cdfe23c09311aee
 - **Parent:** 0918039fde8c90a374137290fbb598b2ed109c34
 - **Author:** Cyber Code Master
@@ -6,34 +7,38 @@
 - **Message:** Add FX rate normalization across pricing and search
 
 ## Custom Title
+
 Add FX rate normalization across pricing and search
 
 ## High-Level Summary
+
 Add FX rate normalization across pricing and search
 
- 11 files changed, 536 insertions(+), 35 deletions(-)
+11 files changed, 536 insertions(+), 35 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 095060fb9198730a32aac4994cdfe23c09311aee
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Sun Apr 5 20:54:22 2026 +0600
+Date: Sun Apr 5 20:54:22 2026 +0600
 
     Add FX rate normalization across pricing and search
 
- .../migration.sql                                  |  34 +++
- prisma/schema.prisma                               |  29 +++
- server/controllers/productController.js            |  36 ++-
- server/controllers/requirementController.js        |  36 ++-
- server/server.js                                   |   6 +
- server/services/__tests__/currencyService.test.js  |  56 +++++
- server/services/analyticsService.js                |  33 +--
- server/services/currencyService.js                 | 267 +++++++++++++++++++++
- server/services/openSearchService.js               |  35 ++-
- server/services/productService.js                  |  20 ++
- server/services/requirementService.js              |  19 ++
- 11 files changed, 536 insertions(+), 35 deletions(-)
+.../migration.sql | 34 +++
+prisma/schema.prisma | 29 +++
+server/controllers/productController.js | 36 ++-
+server/controllers/requirementController.js | 36 ++-
+server/server.js | 6 +
+server/services/**tests**/currencyService.test.js | 56 +++++
+server/services/analyticsService.js | 33 +--
+server/services/currencyService.js | 267 +++++++++++++++++++++
+server/services/openSearchService.js | 35 ++-
+server/services/productService.js | 20 ++
+server/services/requirementService.js | 19 ++
+11 files changed, 536 insertions(+), 35 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/migrations/20260405120000_add_fx_rates_and_normalized_prices/migration.sql b/prisma/migrations/20260405120000_add_fx_rates_and_normalized_prices/migration.sql
 new file mode 100644
@@ -102,7 +107,7 @@ index 065e247..00e6b3e 100644
 @@ -163,6 +169,29 @@ model Product {
    @@map("company_products")
  }
- 
+
 +model FxRate {
 +  id        String   @id @default(cuid())
 +  base      String
@@ -138,13 +143,13 @@ index c48737e..661b822 100644
  import { getOrderCertificationMap } from '../services/orderCertificationService.js'
  import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
 +import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
- 
+
  function parseNumber(value) {
    if (value === undefined || value === null) return null
 @@ -92,6 +93,14 @@ function rangesOverlap(filterRange, valueRange) {
    return true
  }
- 
+
 +function numberInsideRange(value, rangeRaw) {
 +  const range = parseRange(rangeRaw)
 +  if (!Number.isFinite(value)) return false
@@ -181,7 +186,7 @@ index c48737e..661b822 100644
 +    const maxText = maxConv.amount !== null ? String(maxConv.amount) : ''
 +    priceRangeBase = [minText, maxText].filter((v, idx) => v || idx === 0).join('-')
 +  }
- 
+
    const openSearchReady = await isOpenSearchConfigured()
    const openSearchResult = openSearchReady
 @@ -365,7 +388,7 @@ export async function searchProducts(req, res) {
@@ -217,7 +222,7 @@ index c48737e..661b822 100644
 +    },
    })
  }
- 
+
 diff --git a/server/controllers/requirementController.js b/server/controllers/requirementController.js
 index 5cc85b8..bac4649 100644
 --- a/server/controllers/requirementController.js
@@ -227,13 +232,13 @@ index 5cc85b8..bac4649 100644
  import { getOrderCertificationMap } from '../services/orderCertificationService.js'
  import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
 +import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
- 
+
  function redactRequirementForBuyer(requirement) {
    return {
 @@ -118,6 +119,14 @@ function rangesOverlap(filterRange, valueRange) {
    return true
  }
- 
+
 +function numberInsideRange(value, rangeRaw) {
 +  const range = parseRange(rangeRaw)
 +  if (!Number.isFinite(value)) return false
@@ -270,7 +275,7 @@ index 5cc85b8..bac4649 100644
 +    const maxText = maxConv.amount !== null ? String(maxConv.amount) : ''
 +    priceRangeBase = [minText, maxText].filter((v, idx) => v || idx === 0).join('-')
 +  }
- 
+
    const openSearchReady = await isOpenSearchConfigured()
    const openSearchResult = openSearchReady
 @@ -451,7 +474,7 @@ export async function searchRequirements(req, res) {
@@ -315,10 +320,10 @@ index 99aeca1..ec380af 100644
  import { enforcePartnerFreeTierLimits } from './services/partnerNetworkService.js'
  import { runLeadReminderSweep } from './services/leadReminderService.js'
 +import { refreshRates } from './services/currencyService.js'
- 
+
  const app = express()
  const PORT = process.env.PORT || 4000
- 
+
 +const FX_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 +setInterval(() => {
 +  refreshRates().catch(() => null)
@@ -326,7 +331,7 @@ index 99aeca1..ec380af 100644
 +
  app.use(cors())
  app.use(express.json({ limit: '5mb' }))
- 
+
 diff --git a/server/services/__tests__/currencyService.test.js b/server/services/__tests__/currencyService.test.js
 new file mode 100644
 index 0000000..5543490
@@ -396,7 +401,7 @@ index bc9071f..5004dc9 100644
 @@ -116,9 +116,9 @@ function safeNumber(value) {
    return Number.isFinite(n) ? n : null
  }
- 
+
 -function bucketPrice(value) {
 -  const n = safeNumber(value)
 -  if (n === null) return 'unknown'
@@ -409,7 +414,7 @@ index bc9071f..5004dc9 100644
 @@ -162,29 +162,6 @@ function computeResponseTimesForOrg(messages = [], orgMemberIds = new Set()) {
    return { avg_hours: avg, formatted: formatHours(avg) }
  }
- 
+
 -function parseNumericRange(value) {
 -  const raw = String(value || '')
 -  if (!raw) return { min: null, max: null }
@@ -435,19 +440,19 @@ index bc9071f..5004dc9 100644
 -
  export async function getDashboardAnalytics(user) {
    ensureAnalyticsDashboardAccess(user)
- 
+
 @@ -634,7 +611,7 @@ export async function getPlatformAnalytics(user) {
      byCountry[country][category] = (byCountry[country][category] || 0) + 1
      globalCategories[category] = (globalCategories[category] || 0) + 1
- 
+
 -    const bucket = bucketPriceRange(req.price_range || req.priceRange || '')
 +    const bucket = bucketNormalizedPrice(req.priceNormalizedBase)
      priceBuckets[bucket] = (priceBuckets[bucket] || 0) + 1
    }
- 
+
 @@ -801,7 +778,7 @@ export async function getPremiumInsights(user) {
      }, {})
- 
+
      const priceBuckets = myRequests.reduce((acc, r) => {
 -      const bucket = bucketPrice(r.price_range || '')
 +      const bucket = bucketNormalizedPrice(r.priceNormalizedBase)
@@ -736,7 +741,7 @@ index ef18616..a672d95 100644
  import { getAdminConfig } from './adminConfigService.js'
  import { readJson } from '../utils/jsonStore.js'
 +import { getBaseCurrency, normalizeMoney } from './currencyService.js'
- 
+
  const CONFIG_TTL_MS = 15000
  const RESPONSE_CACHE_TTL_MS = 10 * 60 * 1000
 @@ -151,6 +152,9 @@ function productMappings() {
@@ -760,7 +765,7 @@ index ef18616..a672d95 100644
        fabric_gsm: { type: 'double' },
        created_at: { type: 'date' },
 @@ -315,6 +322,14 @@ async function buildResponseTimeByOwner() {
- 
+
  async function buildProductDoc(product, author = {}, responseMap = null) {
    const priceRange = parseRangeValue(product.price_range || '')
 +  const baseCurrency = await getBaseCurrency()
@@ -785,7 +790,7 @@ index ef18616..a672d95 100644
      fabric_gsm: fabricGsm,
      created_at: product.created_at || new Date().toISOString(),
 @@ -374,6 +392,14 @@ function shouldIndexProduct(product) {
- 
+
  async function buildRequirementDoc(req, author = {}, responseMap = null) {
    const priceRange = parseRangeValue(req.price_range || req.target_price || '')
 +  const baseCurrency = await getBaseCurrency()
@@ -812,7 +817,7 @@ index ef18616..a672d95 100644
 @@ -568,9 +597,9 @@ export async function searchOpenSearch({
    const moqFilter = buildRangeFilter('moq_value', moqRange)
    if (moqFilter) filter.push(moqFilter)
- 
+
 -  const priceRange = parseRangeValue(filters.priceRange)
 -  const priceMinFilter = buildRangeFilter('price_min', priceRange)
 -  const priceMaxFilter = buildRangeFilter('price_max', priceRange)
@@ -821,7 +826,7 @@ index ef18616..a672d95 100644
 +  const priceMaxFilter = buildRangeFilter('price_base_max', priceRange)
    if (priceMinFilter) filter.push(priceMinFilter)
    if (priceMaxFilter) filter.push(priceMaxFilter)
- 
+
 diff --git a/server/services/productService.js b/server/services/productService.js
 index 6979be2..dad5eb8 100644
 --- a/server/services/productService.js
@@ -831,13 +836,13 @@ index 6979be2..dad5eb8 100644
  import { getPlanForUser } from './entitlementService.js'
  import { indexProduct, deleteProductIndex } from './openSearchService.js'
 +import { extractOriginalPrice, getBaseCurrency, normalizeMoney } from './currencyService.js'
- 
+
  const FILE = 'company_products.json'
  const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
 @@ -428,6 +429,13 @@ export async function createProduct(user, payload) {
      created_at: new Date().toISOString(),
    }
- 
+
 +  const baseCurrency = await getBaseCurrency()
 +  const originalPrice = extractOriginalPrice(payload)
 +  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
@@ -851,7 +856,7 @@ index 6979be2..dad5eb8 100644
 @@ -601,6 +609,18 @@ export async function updateProductById(actor, productId, patch = {}) {
      updated_at: new Date().toISOString(),
    }
- 
+
 +  const baseCurrency = await getBaseCurrency()
 +  const originalPrice = extractOriginalPrice({
 +    priceOriginal: patch.priceOriginal !== undefined ? patch.priceOriginal : existing.priceOriginal,
@@ -876,9 +881,9 @@ index eb831f6..1100931 100644
  import { getPlanForUser } from './entitlementService.js'
  import { indexRequirement, deleteRequirementIndex } from './openSearchService.js'
 +import { extractOriginalPrice, getBaseCurrency, normalizeMoney } from './currencyService.js'
- 
+
  const FILE = 'requirements.json'
- 
+
 @@ -238,6 +239,12 @@ function normalizeRequirement(buyerId, payload) {
  export async function createRequirement(buyerId, payload) {
    const requirements = await readJson(FILE)
@@ -895,7 +900,7 @@ index eb831f6..1100931 100644
 @@ -399,6 +406,18 @@ export async function updateRequirement(requirementId, patch, actor) {
      priority_until: patch.priority_until !== undefined ? normalizeDate(patch.priority_until) : (previous.priority_until || null),
    }
- 
+
 +  const baseCurrency = await getBaseCurrency()
 +  const originalPrice = extractOriginalPrice({
 +    priceOriginal: patch.priceOriginal !== undefined ? patch.priceOriginal : previous.priceOriginal,
@@ -914,17 +919,22 @@ index eb831f6..1100931 100644
 ```
 
 ## Why This Change
+
 Add FX rate normalization across pricing and search
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  11 files changed, 536 insertions(+), 35 deletions(-)
+
+- **Scope:** 11 files changed, 536 insertions(+), 35 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 187 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

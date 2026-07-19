@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../lib/ThemeProvider";
 import {
@@ -10,7 +10,6 @@ import {
   MoonStar,
   Sparkles,
   SunMedium,
-  Upload,
   Building2,
   Layers3,
 } from "lucide-react";
@@ -46,6 +45,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [availableCategories, setAvailableCategories] = useState(DEFAULT_CATEGORIES);
 
   const [profileImage, setProfileImage] = useState(
     () => user?.profile?.profile_image || "",
@@ -58,6 +58,17 @@ export default function OnboardingPage() {
     const current = user?.profile?.categories;
     return Array.isArray(current) && current.length ? current : [];
   });
+
+  useEffect(() => {
+    if (!token) return;
+    apiRequest("/categories", { token })
+      .then((data) => {
+        if (Array.isArray(data?.items)) {
+          setAvailableCategories(data.items.map((c) => c.name || c.label || c));
+        }
+      })
+      .catch((err) => console.warn("Failed to load categories:", err));
+  }, [token]);
 
   const progress = useMemo(() => ((step - 1) / 2) * 100, [step]);
 
@@ -267,12 +278,10 @@ export default function OnboardingPage() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold">
-                        Premium setup experience
+                        {String(user?.role || "Account").replace("_", " ")} setup
                       </h3>
                       <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                        A polished onboarding flow that feels fast, modern, and
-                        easy to complete. Built for a premium brand impression
-                        in both light and dark mode.
+                        Step {step} of 3 — {step === 1 ? "profile image" : step === 2 ? "organization details" : "product categories"}. You can always update these later.
                       </p>
                     </div>
                   </div>
@@ -292,7 +301,7 @@ export default function OnboardingPage() {
                 </div>
                 <div className="hidden rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-sky-300 sm:flex sm:items-center sm:gap-2">
                   <Layers3 className="h-4 w-4" />
-                  Blue-sky theme
+                  {String(user?.role || "user").replace("_", " ")}
                 </div>
               </div>
 
@@ -386,7 +395,7 @@ export default function OnboardingPage() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      {DEFAULT_CATEGORIES.map((cat) => {
+                      {availableCategories.map((cat) => {
                         const active = categories.includes(cat);
                         return (
                           <button
@@ -458,7 +467,17 @@ export default function OnboardingPage() {
                       disabled={saving}
                       className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:translate-y-[-1px] hover:shadow-xl disabled:opacity-60"
                     >
-                      {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Finish setup"}
+                      {saving ? (
+                        <ThreeDot
+                          variant="bounce"
+                          color="#6100ff"
+                          size="small"
+                          text=""
+                          textColor=""
+                        />
+                      ) : (
+                        "Finish setup"
+                      )}
                       <Check className="h-4 w-4" />
                     </button>
                   )}

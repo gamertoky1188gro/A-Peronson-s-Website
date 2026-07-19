@@ -10,7 +10,9 @@ export default function CyberpunkCursor() {
 
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") return "dark";
-    const htmlTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+    const htmlTheme = document.documentElement.classList.contains("dark")
+      ? "dark"
+      : "light";
     return htmlTheme;
   });
 
@@ -19,7 +21,10 @@ export default function CyberpunkCursor() {
       const isDark = document.documentElement.classList.contains("dark");
       setTheme(isDark ? "dark" : "light");
     });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -37,7 +42,9 @@ export default function CyberpunkCursor() {
 
     if (!canvas || !ctx || !core || !ring || !glow || !dot || !spinner) return;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     const state = {
       x: window.innerWidth * 0.5,
@@ -104,12 +111,23 @@ export default function CyberpunkCursor() {
       wave.className = "cp-click-wave";
       setPos(wave, x, y);
       document.body.appendChild(wave);
-      wave.addEventListener("animationend", () => wave.remove(), { once: true });
+      wave.addEventListener("animationend", () => wave.remove(), {
+        once: true,
+      });
     };
 
-    const isTextTarget = (el) => !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
-    const isLoadingTarget = (el) => !!el && !!el.closest("[data-cursor='loading'], .loading-btn");
-    const isPointerTarget = (el) => !!el && !!el.closest("button, a, [role='button'], .magnetic, .cursor-hoverable, select, summary");
+    const isTextTarget = (el) =>
+      !!el &&
+      (el.tagName === "INPUT" ||
+        el.tagName === "TEXTAREA" ||
+        el.isContentEditable);
+    const isLoadingTarget = (el) =>
+      !!el && !!el.closest("[data-cursor='loading'], .loading-btn");
+    const isPointerTarget = (el) =>
+      !!el &&
+      !!el.closest(
+        "button, a, [role='button'], .magnetic, .cursor-hoverable, select, summary",
+      );
 
     const setMode = (mode) => {
       state.mode = mode;
@@ -139,12 +157,19 @@ export default function CyberpunkCursor() {
       state.x = e.clientX;
       state.y = e.clientY;
 
-      state.hue = theme === "light"
-        ? (210 + (state.x / window.innerWidth) * 60) % 360
-        : (180 + (state.x / window.innerWidth) * 170 + (state.y / window.innerHeight) * 40) % 360;
+      state.hue =
+        theme === "light"
+          ? (210 + (state.x / window.innerWidth) * 60) % 360
+          : (180 +
+              (state.x / window.innerWidth) * 170 +
+              (state.y / window.innerHeight) * 40) %
+            360;
 
       html.style.setProperty("--cursor-hue", String(state.hue));
-      html.style.setProperty("--cursor-accent", String((state.hue + 120) % 360));
+      html.style.setProperty(
+        "--cursor-accent",
+        String((state.hue + 120) % 360),
+      );
 
       const el = document.elementFromPoint(state.x, state.y);
       applyStateFromElement(el);
@@ -248,7 +273,9 @@ export default function CyberpunkCursor() {
     const cursorEls = [core, ring, glow, dot, spinner];
 
     const setCursorVisible = (visible) => {
-      cursorEls.forEach((el) => { el.style.opacity = visible ? "1" : "0"; });
+      cursorEls.forEach((el) => {
+        el.style.opacity = visible ? "1" : "0";
+      });
     };
 
     const onResize = resizeCanvas;
@@ -294,7 +321,9 @@ export default function CyberpunkCursor() {
     animate();
 
     return () => {
-      cursorEls.forEach((el) => { el.style.opacity = ""; });
+      cursorEls.forEach((el) => {
+        el.style.opacity = "";
+      });
       body.style.cursor = "";
       window.removeEventListener("resize", onResize);
       window.removeEventListener("mousemove", onMouseMove);
@@ -531,7 +560,7 @@ export default function CyberpunkCursor() {
         .cp-click-wave { animation: none !important; }
       }
     `,
-    []
+    [],
   );
 
   return (

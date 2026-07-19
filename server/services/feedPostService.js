@@ -3,7 +3,11 @@ import prisma from "../utils/prisma.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { batchGetLinkPreviews } from "./linkPreviewService.js";
-import { emitFeedPostCreated, emitFeedPostUpdated, emitFeedPostDeleted } from "../realtime/realtimeBus.js";
+import {
+  emitFeedPostCreated,
+  emitFeedPostUpdated,
+  emitFeedPostDeleted,
+} from "../realtime/realtimeBus.js";
 const STATUSES = new Set(["draft", "published"]);
 const MEDIA_TYPES = new Set(["image", "video"]);
 
@@ -212,7 +216,10 @@ export async function listFeedPosts({
   const where = {};
   if (authorId) where.user_id = authorId;
   if (!includeDrafts) {
-    where.status = sanitizeString(String(status || "published"), 20).toLowerCase();
+    where.status = sanitizeString(
+      String(status || "published"),
+      20,
+    ).toLowerCase();
   }
   if (createdAfter) {
     where.created_at = { gte: createdAfter };
@@ -223,7 +230,11 @@ export async function listFeedPosts({
   });
 }
 
-export async function searchFeedPosts({ query = "", cursor = 0, limit = 20 } = {}) {
+export async function searchFeedPosts({
+  query = "",
+  cursor = 0,
+  limit = 20,
+} = {}) {
   const where = { status: "published" };
   if (query.trim()) {
     const q = query.trim();
@@ -253,7 +264,9 @@ export async function searchFeedPosts({ query = "", cursor = 0, limit = 20 } = {
       })
     : [];
   const userMap = new Map(users.map((u) => [u.id, u.name]));
-  const avatarMap = new Map(users.map((u) => [u.id, u.profile?.avatar_url || u.profile?.avatar || ""]));
+  const avatarMap = new Map(
+    users.map((u) => [u.id, u.profile?.avatar_url || u.profile?.avatar || ""]),
+  );
 
   const items = rows.map((r) => ({
     ...r,
@@ -262,12 +275,18 @@ export async function searchFeedPosts({ query = "", cursor = 0, limit = 20 } = {
     author_avatar: avatarMap.get(r.user_id) || "",
   }));
 
-  const allLinks = items.flatMap((i) => (Array.isArray(i.links) ? i.links : []));
-  const linkPreviews = allLinks.length ? await batchGetLinkPreviews(allLinks) : [];
+  const allLinks = items.flatMap((i) =>
+    Array.isArray(i.links) ? i.links : [],
+  );
+  const linkPreviews = allLinks.length
+    ? await batchGetLinkPreviews(allLinks)
+    : [];
   const previewMap = new Map(linkPreviews.map((p) => [p.url, p]));
   for (const item of items) {
     if (Array.isArray(item.links)) {
-      item.link_previews = item.links.map((url) => previewMap.get(url) || null).filter(Boolean);
+      item.link_previews = item.links
+        .map((url) => previewMap.get(url) || null)
+        .filter(Boolean);
     } else {
       item.link_previews = [];
     }
@@ -298,7 +317,12 @@ export async function createFeedPost(actor, payload = {}) {
   );
   await prisma.feedPost.create({ data: next });
 
-  const author = actor ? await prisma.user.findUnique({ where: { id: ownerId }, select: { id: true, name: true, profile: true } }) : null;
+  const author = actor
+    ? await prisma.user.findUnique({
+        where: { id: ownerId },
+        select: { id: true, name: true, profile: true },
+      })
+    : null;
   emitFeedPostCreated({
     ...next,
     author_name: author?.name || "",
@@ -312,7 +336,9 @@ export async function createFeedPost(actor, payload = {}) {
 }
 
 export async function updateFeedPost(actor, postId, payload = {}) {
-  const current = await prisma.feedPost.findUnique({ where: { id: String(postId) } });
+  const current = await prisma.feedPost.findUnique({
+    where: { id: String(postId) },
+  });
   if (!current) {
     const err = new Error("Feed post not found");
     err.status = 404;
@@ -326,7 +352,10 @@ export async function updateFeedPost(actor, postId, payload = {}) {
   }
 
   const updated = normalizeFeedPost(actor.id, payload, current);
-  if (payload.description_markdown !== undefined || payload.description !== undefined) {
+  if (
+    payload.description_markdown !== undefined ||
+    payload.description !== undefined
+  ) {
     const plan = await getPlanForUser(actor);
     const maxWords = plan === "premium" ? 1500 : 600;
     updated.description_markdown = limitWordCount(
@@ -334,9 +363,17 @@ export async function updateFeedPost(actor, postId, payload = {}) {
       maxWords,
     );
   }
-  await prisma.feedPost.update({ where: { id: String(postId) }, data: updated });
+  await prisma.feedPost.update({
+    where: { id: String(postId) },
+    data: updated,
+  });
 
-  const author = actor ? await prisma.user.findUnique({ where: { id: String(actor.id) }, select: { id: true, name: true, profile: true } }) : null;
+  const author = actor
+    ? await prisma.user.findUnique({
+        where: { id: String(actor.id) },
+        select: { id: true, name: true, profile: true },
+      })
+    : null;
   emitFeedPostUpdated({
     ...updated,
     author_name: author?.name || "",
@@ -350,7 +387,9 @@ export async function updateFeedPost(actor, postId, payload = {}) {
 }
 
 export async function deleteFeedPost(actor, postId) {
-  const target = await prisma.feedPost.findUnique({ where: { id: String(postId) } });
+  const target = await prisma.feedPost.findUnique({
+    where: { id: String(postId) },
+  });
   if (!target) {
     const err = new Error("Feed post not found");
     err.status = 404;

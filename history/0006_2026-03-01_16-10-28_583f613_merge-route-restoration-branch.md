@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| **Commit Number** | 0006 |
-| **Commit Hash** | `583f6137f72a09abebfdb31291e0994042a3e511` |
-| **Parent Hashes** | `f4b274f` (0004), `c80862d` (0005) |
-| **Author** | gamertoky1188gro |
-| **Date/Time** | 2026-03-01 16:10:28 (+0600) |
-| **Files Changed** | 5 (relative to first parent) |
-| **Additions** | 417 |
-| **Deletions** | 328 |
-| **Net Change** | +89 lines |
-| **Merge Commit** | Yes |
+| Field             | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Commit Number** | 0006                                       |
+| **Commit Hash**   | `583f6137f72a09abebfdb31291e0994042a3e511` |
+| **Parent Hashes** | `f4b274f` (0004), `c80862d` (0005)         |
+| **Author**        | gamertoky1188gro                           |
+| **Date/Time**     | 2026-03-01 16:10:28 (+0600)                |
+| **Files Changed** | 5 (relative to first parent)               |
+| **Additions**     | 417                                        |
+| **Deletions**     | 328                                        |
+| **Net Change**    | +89 lines                                  |
+| **Merge Commit**  | Yes                                        |
 
 ## Custom Title
 
@@ -25,13 +25,13 @@ This merge brings commit 0005's improvements (clean route-based App.jsx, MvpDash
 
 ## What Changed (Relative to Parent 1 / 0004)
 
-| File | Change |
-|------|--------|
-| `src/App.jsx` | Replaced monolithic state component with clean route-based router (25 pages + /mvp) |
-| `src/pages/MvpDashboard.jsx` | New — dedicated MVP dashboard page with all API interaction |
-| `server/controllers/systemController.js` | New — platform metadata endpoint |
-| `server/routes/systemRoutes.js` | New — GET `/api/meta` route |
-| `server/server.js` | Added system routes mount |
+| File                                     | Change                                                                              |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| `src/App.jsx`                            | Replaced monolithic state component with clean route-based router (25 pages + /mvp) |
+| `src/pages/MvpDashboard.jsx`             | New — dedicated MVP dashboard page with all API interaction                         |
+| `server/controllers/systemController.js` | New — platform metadata endpoint                                                    |
+| `server/routes/systemRoutes.js`          | New — GET `/api/meta` route                                                         |
+| `server/server.js`                       | Added system routes mount                                                           |
 
 ## Merge Strategy
 

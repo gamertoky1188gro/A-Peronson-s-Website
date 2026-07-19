@@ -47,7 +47,12 @@ export async function readAuditLog() {
 }
 
 const REDACTED_KEYS = new Set([
-  "password", "new_password", "token", "authorization", "jwt", "secret",
+  "password",
+  "new_password",
+  "token",
+  "authorization",
+  "jwt",
+  "secret",
 ]);
 
 export function sanitizeAuditPayload(payload = {}) {

@@ -43,7 +43,7 @@ export default function FeedControlBar({
                   aria-pressed={active}
                   title={opt.label}
                 >
-                  <Icon size={16} />
+                  <_Icon size={16} />
                   <span className="hidden sm:inline">{opt.label}</span>
                 </button>
               );

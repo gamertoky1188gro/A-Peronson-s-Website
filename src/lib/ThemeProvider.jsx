@@ -1,6 +1,10 @@
 import { createContext, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setTheme, toggleTheme, syncThemeFromStorage } from "../store/themeSlice";
+import {
+  setTheme,
+  toggleTheme,
+  syncThemeFromStorage,
+} from "../store/themeSlice";
 
 const ThemeContext = createContext(null);
 

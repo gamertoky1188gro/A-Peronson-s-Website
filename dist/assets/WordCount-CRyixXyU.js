@@ -1,1 +1,16 @@
-import{j as r}from"./index-CNnTWoea.js";function i({text:t="",limit:e}){const o=t.trim()?t.trim().split(/\s+/).length:0,s=o>e;return r.jsxs("span",{className:`mt-1 block text-right text-xs ${s?"font-semibold text-red-500":"text-slate-400"}`,children:[o.toLocaleString()," / ",e.toLocaleString()," words",s?" — limit exceeded":""]})}export{i as W};
+import { j as r } from "./index-CNnTWoea.js";
+function i({ text: t = "", limit: e }) {
+  const o = t.trim() ? t.trim().split(/\s+/).length : 0,
+    s = o > e;
+  return r.jsxs("span", {
+    className: `mt-1 block text-right text-xs ${s ? "font-semibold text-red-500" : "text-slate-400"}`,
+    children: [
+      o.toLocaleString(),
+      " / ",
+      e.toLocaleString(),
+      " words",
+      s ? " — limit exceeded" : "",
+    ],
+  });
+}
+export { i as W };

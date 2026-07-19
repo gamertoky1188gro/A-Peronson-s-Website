@@ -114,6 +114,12 @@ const SEASON_OPTIONS = [
   "Winter 2025",
   "Spring 2026",
   "Summer 2026",
+  "Fall 2026",
+  "Winter 2026",
+  "Spring 2027",
+  "Summer 2027",
+  "Fall 2027",
+  "Winter 2027",
 ];
 
 const STOCK_STATUS_OPTIONS = [
@@ -182,7 +188,7 @@ const initialFilters = {
   moqMax: 5000,
   currency: "USD",
   priceMin: 0,
-  priceMax: 20,
+  priceMax: 100000,
   incoterms: ["FOB"],
   companyType: [],
   productionMin: 0,
@@ -217,9 +223,9 @@ const initialFilters = {
 
 function highlightText(text, query) {
   if (!text || !query?.trim()) return text;
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return text.replace(
-    new RegExp(`(${escaped})`, 'gi'),
+    new RegExp(`(${escaped})`, "gi"),
     '<strong class="text-sky-600 dark:text-sky-400">$1</strong>',
   );
 }
@@ -325,7 +331,14 @@ function ToastStack({ toasts, onDismiss }) {
   );
 }
 
-function SearchModal({ open, searchInputRef, query, onQueryChange, onClose, executeSearchRef }) {
+function SearchModal({
+  open,
+  searchInputRef,
+  query,
+  onQueryChange,
+  onClose,
+  executeSearchRef,
+}) {
   if (!open) return null;
   const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
   return (
@@ -399,28 +412,63 @@ function ResultTabs({ estimatedCounts, activeTab, onTabChange }) {
   );
 }
 
-function ResultCards({ totalResults, query, loading, trendingSearches, activeTab, filteredRequests, filteredCompanies, filteredFeedPosts, filteredUsers, setFilters, setQuery, toggleShortlist, isShortlisted, highlightText, saveSearch, fmtNumber }) {
+function ResultCards({
+  totalResults,
+  query,
+  loading,
+  trendingSearches,
+  activeTab,
+  filteredRequests,
+  filteredCompanies,
+  filteredFeedPosts,
+  filteredUsers,
+  setFilters,
+  setQuery,
+  toggleShortlist,
+  isShortlisted,
+  highlightText,
+  saveSearch,
+  fmtNumber,
+}) {
   if (totalResults === 0 && query && !loading) {
     return (
       <div className="space-y-4">
         <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 text-center">
-          <p className="text-lg font-medium">No results for &ldquo;{query}&rdquo;</p>
-          <p className="mt-1 text-sm text-slate-500">Try these categories instead:</p>
+          <p className="text-lg font-medium">
+            No results for &ldquo;{query}&rdquo;
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Try these categories instead:
+          </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {["Fabrics", "Yarn", "Garments", "Accessories", "Home Textile"].map(cat => (
-              <button key={cat} onClick={() => setFilters(f => ({ ...f, selectedCategories: [cat], allCategories: false }))}
-                className="rounded-full border border-slate-200/80 dark:border-slate-700 px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10">
-                {cat}
-              </button>
-            ))}
+            {["Fabrics", "Yarn", "Garments", "Accessories", "Home Textile"].map(
+              (cat) => (
+                <button
+                  key={cat}
+                  onClick={() =>
+                    setFilters((f) => ({
+                      ...f,
+                      selectedCategories: [cat],
+                      allCategories: false,
+                    }))
+                  }
+                  className="rounded-full border border-slate-200/80 dark:border-slate-700 px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10"
+                >
+                  {cat}
+                </button>
+              ),
+            )}
           </div>
           {trendingSearches.length > 0 && (
             <>
               <p className="mt-6 text-sm text-slate-500">Trending searches:</p>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
-                {trendingSearches.slice(0, 5).map(t => (
-                  <button key={t} onClick={() => setQuery(t)}
-                    className="rounded-full bg-slate-100 px-4 py-2 text-sm hover:bg-slate-200 dark:bg-slate-800">
+                {trendingSearches.slice(0, 5).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setQuery(t)}
+                    className="rounded-full bg-slate-100 px-4 py-2 text-sm hover:bg-slate-200 dark:bg-slate-800"
+                  >
                     {t}
                   </button>
                 ))}
@@ -449,8 +497,8 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                 Similar Requests Alert
               </p>
               <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                Be the first to know when buyers post matching requests. Save
-                a search alert now.
+                Be the first to know when buyers post matching requests. Save a
+                search alert now.
               </p>
               <button
                 onClick={() => saveSearch && saveSearch()}
@@ -467,135 +515,138 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
       <div className="space-y-4">
         <AnimatePresence mode="popLayout">
           <MasonryGrid columnCount={2} gap={4}>
-          {items.map((item) => (
-            <motion.article
-              key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-2">
-                  <button
-                    onClick={() => toggleShortlist(item.id, "buyer")}
-                    className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
-                  >
-                    <ArrowLeftRight className="h-3.5 w-3.5" />
-                  </button>
-                  <Link
-                    to={`/buyer/${item.buyer_id}`}
-                    className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightText(item.title || item.name || "Untitled Request", query),
-                    }}
-                  />
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <span>{item.location || item.country || "N/A"}</span>
-                    {item.category && (
-                      <>
-                        <span>&bull;</span>
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: highlightText(item.category, query),
-                          }}
-                        />
-                      </>
+            {items.map((item) => (
+              <motion.article
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-2">
+                    <button
+                      onClick={() => toggleShortlist(item.id, "buyer")}
+                      className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+                    >
+                      <ArrowLeftRight className="h-3.5 w-3.5" />
+                    </button>
+                    <Link
+                      to={`/buyer/${item.buyer_id}`}
+                      className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                      dangerouslySetInnerHTML={{
+                        __html: highlightText(
+                          item.title || item.name || "Untitled Request",
+                          query,
+                        ),
+                      }}
+                    />
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <span>{item.location || item.country || "N/A"}</span>
+                      {item.category && (
+                        <>
+                          <span>&bull;</span>
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: highlightText(item.category, query),
+                            }}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {item.status === "verified" && (
+                      <Badge tone="green">verified</Badge>
+                    )}
+                    {item.isPriority && <Badge tone="violet">priority</Badge>}
+                    {item.status === "active" && (
+                      <Badge tone="blue">active</Badge>
                     )}
                   </div>
                 </div>
-                <div className="flex flex-wrap justify-end gap-2">
-                  {item.status === "verified" && (
-                    <Badge tone="green">verified</Badge>
-                  )}
-                  {item.isPriority && <Badge tone="violet">priority</Badge>}
-                  {item.status === "active" && (
-                    <Badge tone="blue">active</Badge>
-                  )}
-                </div>
-              </div>
 
-              {(item.gender || item.season || item.material) && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {item.gender && (
-                    <Badge tone="default">Gender: {item.gender}</Badge>
-                  )}
-                  {item.season && (
-                    <Badge tone="default">Season: {item.season}</Badge>
-                  )}
-                  {item.material && (
-                    <Badge tone="default">Material: {item.material}</Badge>
-                  )}
-                  {item.quoteDate && (
-                    <Badge tone="amber">Quote by {item.quoteDate}</Badge>
-                  )}
-                  {item.expiryDate && (
-                    <Badge tone="red">Expires {item.expiryDate}</Badge>
-                  )}
-                  {item.maxSuppliers && (
-                    <Badge tone="default">
-                      Max suppliers: {item.maxSuppliers}
-                    </Badge>
-                  )}
-                </div>
-              )}
+                {(item.gender || item.season || item.material) && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {item.gender && (
+                      <Badge tone="default">Gender: {item.gender}</Badge>
+                    )}
+                    {item.season && (
+                      <Badge tone="default">Season: {item.season}</Badge>
+                    )}
+                    {item.material && (
+                      <Badge tone="default">Material: {item.material}</Badge>
+                    )}
+                    {item.quoteDate && (
+                      <Badge tone="amber">Quote by {item.quoteDate}</Badge>
+                    )}
+                    {item.expiryDate && (
+                      <Badge tone="red">Expires {item.expiryDate}</Badge>
+                    )}
+                    {item.maxSuppliers && (
+                      <Badge tone="default">
+                        Max suppliers: {item.maxSuppliers}
+                      </Badge>
+                    )}
+                  </div>
+                )}
 
-              {item.description && (
-                <p
-                  className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300"
-                  dangerouslySetInnerHTML={{
-                    __html: highlightText(item.description, query),
-                  }}
-                />
-              )}
+                {item.description && (
+                  <p
+                    className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightText(item.description, query),
+                    }}
+                  />
+                )}
 
-              {(item.quantity || item.targetPrice) && (
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  {item.quantity && (
+                {(item.quantity || item.targetPrice) && (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    {item.quantity && (
+                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Quantity
+                        </div>
+                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                          {item.quantity}
+                        </div>
+                      </div>
+                    )}
+                    {item.targetPrice && (
+                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Target price
+                        </div>
+                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                          {item.targetPrice}
+                        </div>
+                      </div>
+                    )}
                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Quantity
+                        Discussion
                       </div>
                       <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {item.quantity}
+                        {item.discussions?.length > 0 ? "Active" : "None"}
                       </div>
-                    </div>
-                  )}
-                  {item.targetPrice && (
-                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Target price
-                      </div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {item.targetPrice}
-                      </div>
-                    </div>
-                  )}
-                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      Discussion
-                    </div>
-                    <div className="mt-1 font-semibold text-slate-900 dark:text-white">
-                      {item.discussions?.length > 0 ? "Active" : "None"}
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
-                  <Eye className="h-4 w-4" /> Quick View
-                </button>
-                <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
-                  <Share2 className="h-4 w-4" /> Share
-                </button>
-                <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
-                  <MessageSquareMore className="h-4 w-4" /> Discuss
-                </button>
-              </div>
-            </motion.article>
-          ))}
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
+                    <Eye className="h-4 w-4" /> Quick View
+                  </button>
+                  <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
+                    <Share2 className="h-4 w-4" /> Share
+                  </button>
+                  <button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
+                    <MessageSquareMore className="h-4 w-4" /> Discuss
+                  </button>
+                </div>
+              </motion.article>
+            ))}
           </MasonryGrid>
         </AnimatePresence>
       </div>
@@ -603,7 +654,11 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
   }
 
   if (activeTab === "all") {
-    const hasAny = filteredRequests.length || filteredCompanies.length || filteredFeedPosts.length || filteredUsers.length;
+    const hasAny =
+      filteredRequests.length ||
+      filteredCompanies.length ||
+      filteredFeedPosts.length ||
+      filteredUsers.length;
     if (!hasAny && !loading) {
       return (
         <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
@@ -647,7 +702,10 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                           to={`/buyer/${item.buyer_id}`}
                           className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
                           dangerouslySetInnerHTML={{
-                            __html: highlightText(item.title || item.name || "Untitled Request", query),
+                            __html: highlightText(
+                              item.title || item.name || "Untitled Request",
+                              query,
+                            ),
                           }}
                         />
                         <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
@@ -655,15 +713,22 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                           {item.category && (
                             <>
                               <span>&bull;</span>
-                              <span dangerouslySetInnerHTML={{ __html: highlightText(item.category, query) }} />
+                              <span
+                                dangerouslySetInnerHTML={{
+                                  __html: highlightText(item.category, query),
+                                }}
+                              />
                             </>
                           )}
                         </div>
                       </div>
                     </div>
                     {item.description && (
-                      <p className="mt-4 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300"
-                        dangerouslySetInnerHTML={{ __html: highlightText(item.description, query) }}
+                      <p
+                        className="mt-4 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300"
+                        dangerouslySetInnerHTML={{
+                          __html: highlightText(item.description, query),
+                        }}
                       />
                     )}
                   </motion.article>
@@ -691,7 +756,10 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                       to={`/factory/${item.company_id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
                       dangerouslySetInnerHTML={{
-                        __html: highlightText(item.name || item.title || "Untitled Company", query),
+                        __html: highlightText(
+                          item.name || item.title || "Untitled Company",
+                          query,
+                        ),
                       }}
                     />
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
@@ -717,19 +785,36 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                   animate={{ opacity: 1, scale: 1 }}
                   className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
                 >
-                  <div className="text-lg font-semibold text-slate-900 dark:text-white"
-                    dangerouslySetInnerHTML={{ __html: highlightText(item.title || "Untitled Post", query) }} />
+                  <div
+                    className="text-lg font-semibold text-slate-900 dark:text-white"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightText(
+                        item.title || "Untitled Post",
+                        query,
+                      ),
+                    }}
+                  />
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {item.category && <Badge tone="default">{item.category}</Badge>}
+                    {item.category && (
+                      <Badge tone="default">{item.category}</Badge>
+                    )}
                     {item.type && <Badge tone="default">{item.type}</Badge>}
                   </div>
                   {item.caption && (
-                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-300"
-                      dangerouslySetInnerHTML={{ __html: highlightText(item.caption, query) }} />
+                    <p
+                      className="mt-3 text-sm text-slate-600 dark:text-slate-300"
+                      dangerouslySetInnerHTML={{
+                        __html: highlightText(item.caption, query),
+                      }}
+                    />
                   )}
                   <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
-                    <UserSearch className="h-3 w-3" /> {item.author?.name || "Unknown"}
-                    <Clock className="h-3 w-3" /> {item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}
+                    <UserSearch className="h-3 w-3" />{" "}
+                    {item.author?.name || "Unknown"}
+                    <Clock className="h-3 w-3" />{" "}
+                    {item.created_at
+                      ? new Date(item.created_at).toLocaleDateString()
+                      : ""}
                   </div>
                 </motion.article>
               ))}
@@ -756,7 +841,12 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                       <Link
                         to={`/user/${item.id}`}
                         className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                        dangerouslySetInnerHTML={{ __html: highlightText(item.name || "Untitled User", query) }}
+                        dangerouslySetInnerHTML={{
+                          __html: highlightText(
+                            item.name || "Untitled User",
+                            query,
+                          ),
+                        }}
                       />
                       <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         {item.role || "Member"}
@@ -766,7 +856,9 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                   <div className="mt-3 flex flex-wrap gap-2">
                     {item.verified && <Badge tone="green">verified</Badge>}
                     {item.country && <span>{item.country}</span>}
-                    {item.company && <span className="truncate">{item.company}</span>}
+                    {item.company && (
+                      <span className="truncate">{item.company}</span>
+                    )}
                   </div>
                 </motion.article>
               ))}
@@ -783,8 +875,12 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
       return (
         <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
           <Factory className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-          <p className="text-lg font-medium text-slate-900 dark:text-white">No companies found</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+          <p className="text-lg font-medium text-slate-900 dark:text-white">
+            No companies found
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Try adjusting your filters
+          </p>
         </div>
       );
     }
@@ -812,11 +908,20 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                     <Link
                       to={`/factory/${item.company_id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                      dangerouslySetInnerHTML={{ __html: highlightText(item.name || item.title || "Untitled Company", query) }}
+                      dangerouslySetInnerHTML={{
+                        __html: highlightText(
+                          item.name || item.title || "Untitled Company",
+                          query,
+                        ),
+                      }}
                     />
                     <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                       {item.type && (
-                        <span dangerouslySetInnerHTML={{ __html: highlightText(item.type, query) }} />
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: highlightText(item.type, query),
+                          }}
+                        />
                       )}
                     </div>
                   </div>
@@ -835,8 +940,12 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
       return (
         <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
           <FileText className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-          <p className="text-lg font-medium text-slate-900 dark:text-white">No feed posts found</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+          <p className="text-lg font-medium text-slate-900 dark:text-white">
+            No feed posts found
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Try adjusting your filters
+          </p>
         </div>
       );
     }
@@ -853,19 +962,33 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
               >
-                <div className="text-lg font-semibold text-slate-900 dark:text-white"
-                  dangerouslySetInnerHTML={{ __html: highlightText(item.title || "Untitled Post", query) }} />
+                <div
+                  className="text-lg font-semibold text-slate-900 dark:text-white"
+                  dangerouslySetInnerHTML={{
+                    __html: highlightText(item.title || "Untitled Post", query),
+                  }}
+                />
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {item.category && <Badge tone="default">{item.category}</Badge>}
+                  {item.category && (
+                    <Badge tone="default">{item.category}</Badge>
+                  )}
                   {item.type && <Badge tone="default">{item.type}</Badge>}
                 </div>
                 {item.caption && (
-                  <p className="mt-3 text-sm text-slate-600 dark:text-slate-300"
-                    dangerouslySetInnerHTML={{ __html: highlightText(item.caption, query) }} />
+                  <p
+                    className="mt-3 text-sm text-slate-600 dark:text-slate-300"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightText(item.caption, query),
+                    }}
+                  />
                 )}
                 <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
-                  <UserSearch className="h-3 w-3" /> {item.author?.name || "Unknown"}
-                  <Clock className="h-3 w-3" /> {item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}
+                  <UserSearch className="h-3 w-3" />{" "}
+                  {item.author?.name || "Unknown"}
+                  <Clock className="h-3 w-3" />{" "}
+                  {item.created_at
+                    ? new Date(item.created_at).toLocaleDateString()
+                    : ""}
                 </div>
               </motion.article>
             ))}
@@ -881,8 +1004,12 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
       return (
         <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
           <UserSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-          <p className="text-lg font-medium text-slate-900 dark:text-white">No users found</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+          <p className="text-lg font-medium text-slate-900 dark:text-white">
+            No users found
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Try adjusting your filters
+          </p>
         </div>
       );
     }
@@ -907,7 +1034,12 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                     <Link
                       to={`/user/${item.id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
-                      dangerouslySetInnerHTML={{ __html: highlightText(item.name || "Untitled User", query) }}
+                      dangerouslySetInnerHTML={{
+                        __html: highlightText(
+                          item.name || "Untitled User",
+                          query,
+                        ),
+                      }}
                     />
                     <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                       {item.role || "Member"}
@@ -917,7 +1049,9 @@ function ResultCards({ totalResults, query, loading, trendingSearches, activeTab
                 <div className="mt-3 flex flex-wrap gap-2">
                   {item.verified && <Badge tone="green">verified</Badge>}
                   {item.country && <span>{item.country}</span>}
-                  {item.company && <span className="truncate">{item.company}</span>}
+                  {item.company && (
+                    <span className="truncate">{item.company}</span>
+                  )}
                 </div>
               </motion.article>
             ))}
@@ -950,7 +1084,9 @@ function MapPreview({ selectedLocation, filtersLocation }) {
             <MapPinned className="h-5 w-5" />
           </div>
           <div className="mt-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
-            {selectedLocation?.name || filtersLocation || "No location selected"}
+            {selectedLocation?.name ||
+              filtersLocation ||
+              "No location selected"}
           </div>
         </div>
       </div>
@@ -969,7 +1105,8 @@ export default function SearchResults() {
   const [, setSearchParams] = useSearchParams();
   const token = useMemo(() => getToken(), []);
   const currentUser = useMemo(() => getCurrentUser(), []);
-  const isPremium = String(currentUser?.subscription_status || "").toLowerCase() === "premium";
+  const isPremium =
+    String(currentUser?.subscription_status || "").toLowerCase() === "premium";
 
   const { theme, toggleTheme } = useTheme();
   const dark = theme === "dark";
@@ -994,13 +1131,19 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState("all");
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (viewMode === "requests") setActiveTab("requests");
+    else if (viewMode === "companies") setActiveTab("companies");
+    else setActiveTab("all");
+  }, [viewMode]);
   const [searchFocused, setSearchFocused] = useState(false);
   const [filters, setFilters] = useState(initialFilters);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [roleSeatText, setRoleSeatText] = useState("");
   const [colorText, setColorText] = useState("PMS 185C");
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [alertsQuota, setAlertsQuota] = useState(0);
+  const [alertsQuota, setAlertsQuota] = useState(null);
   const [sortBy, setSortBy] = useState("relevance");
   const [cursor, setCursor] = useState(0);
   const [nextCursor, setNextCursor] = useState(null);
@@ -1017,7 +1160,10 @@ export default function SearchResults() {
   const [showShortlist, setShowShortlist] = useState(false);
   const [trendingSearches, setTrendingSearches] = useState([]);
   const [relatedSearches, setRelatedSearches] = useState([]);
-  const [facetCounts, setFacetCounts] = useState({ countries: [], categories: [] });
+  const [facetCounts, setFacetCounts] = useState({
+    countries: [],
+    categories: [],
+  });
   const [analytics, setAnalytics] = useState(null);
   const [batchOpen, setBatchOpen] = useState(false);
   const [batchTerms, setBatchTerms] = useState("");
@@ -1083,8 +1229,9 @@ export default function SearchResults() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const q = params.get("q");
-    if (q) // eslint-disable-next-line react-hooks/set-state-in-effect
-    setQuery(q);
+    if (q)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQuery(q);
     if (q) {
       setTimeout(() => executeSearchRef.current?.(), 100);
     }
@@ -1093,21 +1240,22 @@ export default function SearchResults() {
     const cursorParam = params.get("cursor");
     if (cursorParam) setCursor(Number(cursorParam));
     const country = params.get("country");
-    if (country) setFilters(f => ({ ...f, country }));
+    if (country) setFilters((f) => ({ ...f, country }));
     const season = params.get("season");
-    if (season) setFilters(f => ({ ...f, season }));
+    if (season) setFilters((f) => ({ ...f, season }));
     const machinery = params.get("machinery");
-    if (machinery) setFilters(f => ({ ...f, machinery }));
+    if (machinery) setFilters((f) => ({ ...f, machinery }));
     const stockStatus = params.get("stockStatus");
-    if (stockStatus) setFilters(f => ({ ...f, stockStatus }));
+    if (stockStatus) setFilters((f) => ({ ...f, stockStatus }));
     const minRating = params.get("minRating");
-    if (minRating) setFilters(f => ({ ...f, minRating }));
+    if (minRating) setFilters((f) => ({ ...f, minRating }));
     const language = params.get("language");
-    if (language) setFilters(f => ({ ...f, language }));
+    if (language) setFilters((f) => ({ ...f, language }));
     const field = params.get("field");
     if (field) setSearchField(field);
     const verifiedOnly = params.get("verifiedOnly");
-    if (verifiedOnly === "true") setFilters(f => ({ ...f, verifiedOnly: true }));
+    if (verifiedOnly === "true")
+      setFilters((f) => ({ ...f, verifiedOnly: true }));
   }, []);
 
   const suggestionDebounce = useRef(null);
@@ -1121,16 +1269,23 @@ export default function SearchResults() {
     }
     suggestionDebounce.current = setTimeout(async () => {
       try {
-        const data = await apiRequest(`/search/suggestions?q=${encodeURIComponent(query.trim())}`, { token });
+        const data = await apiRequest(
+          `/search/suggestions?q=${encodeURIComponent(query.trim())}`,
+          { token },
+        );
         if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
           setSuggestions(data.suggestions);
         } else {
-          const filtered = trendingSearches.filter((t) => t.toLowerCase().includes(query.toLowerCase()));
+          const filtered = trendingSearches.filter((t) =>
+            t.toLowerCase().includes(query.toLowerCase()),
+          );
           setSuggestions(filtered.slice(0, 5));
         }
         setSuggestionsOpen(true);
       } catch {
-        const filtered = trendingSearches.filter((t) => t.toLowerCase().includes(query.toLowerCase()));
+        const filtered = trendingSearches.filter((t) =>
+          t.toLowerCase().includes(query.toLowerCase()),
+        );
         setSuggestions(filtered.slice(0, 5));
         setSuggestionsOpen(true);
       }
@@ -1191,8 +1346,8 @@ export default function SearchResults() {
         if (Array.isArray(data?.trending)) {
           setTrendingSearches(data.trending.slice(0, 8));
         }
-      } catch {
-        // fallback static list already set
+      } catch (err) {
+        console.warn("fetchTrending failed:", err);
       }
     }
     fetchTrending();
@@ -1204,8 +1359,8 @@ export default function SearchResults() {
         if (!token) return;
         const data = await apiRequest("/search/analytics", { token });
         if (data) setAnalytics(data);
-      } catch {
-        // ignore
+      } catch (err) {
+        console.warn("fetchAnalytics failed:", err);
       }
     }
     fetchAnalytics();
@@ -1294,8 +1449,8 @@ export default function SearchResults() {
       if (Array.isArray(data?.alerts)) {
         setSavedSearchAlerts(data.alerts);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn("fetchSavedAlerts failed:", err);
     }
   }, [token]);
 
@@ -1333,29 +1488,29 @@ export default function SearchResults() {
     return savedSearchAlerts.some((alert) => alert.query === q);
   }, [savedSearchAlerts, query]);
 
-const filteredFeedPosts = useMemo(() => {
-  if (!refineQuery.trim()) return feedPosts;
-  const q = refineQuery.toLowerCase();
-  return feedPosts.filter(
-    (p) =>
-      (p.title || "").toLowerCase().includes(q) ||
-      (p.description_markdown || "").toLowerCase().includes(q) ||
-      (p.caption || "").toLowerCase().includes(q),
-  );
-}, [feedPosts, refineQuery]);
+  const filteredFeedPosts = useMemo(() => {
+    if (!refineQuery.trim()) return feedPosts;
+    const q = refineQuery.toLowerCase();
+    return feedPosts.filter(
+      (p) =>
+        (p.title || "").toLowerCase().includes(q) ||
+        (p.description_markdown || "").toLowerCase().includes(q) ||
+        (p.caption || "").toLowerCase().includes(q),
+    );
+  }, [feedPosts, refineQuery]);
 
-const filteredUsers = useMemo(() => {
-  if (!refineQuery.trim()) return users;
-  const q = refineQuery.toLowerCase();
-  return users.filter(
-    (u) =>
-      (u.name || "").toLowerCase().includes(q) ||
-      (u.email || "").toLowerCase().includes(q) ||
-      (u.role || "").toLowerCase().includes(q) ||
-      (u.company || "").toLowerCase().includes(q) ||
-      (u.country || "").toLowerCase().includes(q),
-  );
-}, [users, refineQuery]);
+  const filteredUsers = useMemo(() => {
+    if (!refineQuery.trim()) return users;
+    const q = refineQuery.toLowerCase();
+    return users.filter(
+      (u) =>
+        (u.name || "").toLowerCase().includes(q) ||
+        (u.email || "").toLowerCase().includes(q) ||
+        (u.role || "").toLowerCase().includes(q) ||
+        (u.company || "").toLowerCase().includes(q) ||
+        (u.country || "").toLowerCase().includes(q),
+    );
+  }, [users, refineQuery]);
 
   function toggleShortlist(id, type) {
     const key = `${type}:${id}`;
@@ -1370,11 +1525,34 @@ const filteredUsers = useMemo(() => {
 
   function exportCSV() {
     const allItems = [
-      ...filteredRequests.map((r) => ({ type: "Buyer Request", title: r.title || r.name || "Untitled", category: r.category || "", country: r.author?.country || r.country || "", material: r.material || "", moq: r.moq || r.quantity || "", price: r.price_range || "" })),
-      ...filteredCompanies.map((c) => ({ type: "Company", title: c.name || c.title || "Untitled", category: c.category || "", country: c.author?.country || c.country || "", material: c.material || "", moq: c.moq || "", price: c.price_range || "" })),
+      ...filteredRequests.map((r) => ({
+        type: "Buyer Request",
+        title: r.title || r.name || "Untitled",
+        category: r.category || "",
+        country: r.author?.country || r.country || "",
+        material: r.material || "",
+        moq: r.moq || r.quantity || "",
+        price: r.price_range || "",
+      })),
+      ...filteredCompanies.map((c) => ({
+        type: "Company",
+        title: c.name || c.title || "Untitled",
+        category: c.category || "",
+        country: c.author?.country || c.country || "",
+        material: c.material || "",
+        moq: c.moq || "",
+        price: c.price_range || "",
+      })),
     ];
     const headers = Object.keys(allItems[0] || {});
-    const csv = [headers.join(","), ...allItems.map((row) => headers.map((h) => `"${String(row[h] || "").replace(/"/g, '""')}"`).join(","))].join("\n");
+    const csv = [
+      headers.join(","),
+      ...allItems.map((row) =>
+        headers
+          .map((h) => `"${String(row[h] || "").replace(/"/g, '""')}"`)
+          .join(","),
+      ),
+    ].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1382,7 +1560,11 @@ const filteredUsers = useMemo(() => {
     a.download = `search_results_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast("Exported", `Downloaded ${allItems.length} results as CSV`, "success");
+    addToast(
+      "Exported",
+      `Downloaded ${allItems.length} results as CSV`,
+      "success",
+    );
   }
 
   function handleImageSearch(e) {
@@ -1392,7 +1574,11 @@ const filteredUsers = useMemo(() => {
     const reader = new FileReader();
     reader.onload = (ev) => setImagePreview(ev.target?.result);
     reader.readAsDataURL(file);
-    addToast("Image selected", `${file.name} ready for visual search. Click search to find similar items.`, "success");
+    addToast(
+      "Image selected",
+      `${file.name} ready for visual search. Click search to find similar items.`,
+      "success",
+    );
   }
 
   const addToast = useCallback((title, message, kind = "success") => {
@@ -1535,44 +1721,53 @@ const filteredUsers = useMemo(() => {
     });
   }
 
-  const buildSearchParams = useCallback((cursorVal = 0) => {
-    const params = new URLSearchParams();
-    if (query.trim()) params.set("q", query.trim());
-    if (!filters.allCategories)
-      params.set("category", filters.selectedCategories.join(","));
-    if (filters.industry !== "Any") params.set("industry", filters.industry);
-    if (filters.country) params.set("country", filters.country);
-    if (filters.incoterms.length)
-      params.set("incoterms", filters.incoterms.join(","));
-    if (filters.companyType.length)
-      params.set("orgType", filters.companyType.join(","));
-    if (filters.location) params.set("location", filters.location);
-    if (filters.verifiedOnly) params.set("verifiedOnly", "true");
-    if (sortBy !== "relevance") params.set("sort", sortBy);
-    if (cursorVal > 0) params.set("cursor", String(cursorVal));
-    if (!isPremium) {
-      ADVANCED_FILTER_KEYS.forEach((key) => params.delete(key));
-    } else {
-      if (filters.season && filters.season !== "Any season") params.set("season", filters.season);
-      if (filters.machinery) params.set("machinery", filters.machinery);
-      if (filters.stockStatus) params.set("stockStatus", filters.stockStatus);
-      if (filters.minRating) params.set("minRating", filters.minRating);
-      if (filters.language) params.set("language", filters.language);
-    }
-    if (searchField === "buyer") params.set("field", "buyer");
-    if (searchField === "company") params.set("field", "company");
-    if (filters.postedAfter) params.set("postedAfter", filters.postedAfter);
-    if (filters.postedBefore) params.set("postedBefore", filters.postedBefore);
-    if (filters.distanceKm) params.set("distanceKm", filters.distanceKm);
-    if (filters.locationCoords) {
-      params.set("locationLat", filters.locationCoords.lat);
-      params.set("locationLng", filters.locationCoords.lng);
-    }
-    if (filters.certifications?.length) {
-      params.set("certifications", filters.certifications.join(","));
-    }
-    return params;
-  }, [query, filters, sortBy, searchField, isPremium]);
+  const buildSearchParams = useCallback(
+    (cursorVal = 0) => {
+      const params = new URLSearchParams();
+      if (query.trim()) params.set("q", query.trim());
+      if (!filters.allCategories)
+        params.set("category", filters.selectedCategories.join(","));
+      if (filters.industry !== "Any") params.set("industry", filters.industry);
+      if (filters.country) params.set("country", filters.country);
+      if (filters.incoterms.length)
+        params.set("incoterms", filters.incoterms.join(","));
+      if (filters.companyType.length)
+        params.set("orgType", filters.companyType.join(","));
+      if (filters.location) params.set("location", filters.location);
+      if (filters.verifiedOnly) params.set("verifiedOnly", "true");
+      if (sortBy !== "relevance") params.set("sort", sortBy);
+      if (cursorVal > 0) params.set("cursor", String(cursorVal));
+      if (!isPremium) {
+        ADVANCED_FILTER_KEYS.forEach((key) => params.delete(key));
+      } else {
+        if (filters.season && filters.season !== "Any season")
+          params.set("season", filters.season);
+        if (filters.machinery) params.set("machinery", filters.machinery);
+        if (filters.stockStatus) params.set("stockStatus", filters.stockStatus);
+        if (filters.minRating) params.set("minRating", filters.minRating);
+        if (filters.language) params.set("language", filters.language);
+      }
+      if (searchField === "buyer") params.set("field", "buyer");
+      if (searchField === "company") params.set("field", "company");
+      if (filters.postedAfter) params.set("postedAfter", filters.postedAfter);
+      if (filters.postedBefore)
+        params.set("postedBefore", filters.postedBefore);
+      if (filters.distanceKm) params.set("distanceKm", filters.distanceKm);
+      if (filters.locationCoords) {
+        params.set("locationLat", filters.locationCoords.lat);
+        params.set("locationLng", filters.locationCoords.lng);
+      }
+      if (filters.certifications?.length) {
+        params.set("certifications", filters.certifications.join(","));
+      }
+      if (filters.roles?.length) params.set("roles", filters.roles.join(","));
+      if (filters.colorPants?.length) params.set("color_pantones", filters.colorPants.join(","));
+      if (filters.exportMarkets?.length) params.set("export_markets", filters.exportMarkets.join(","));
+      if (filters.paymentTerms?.length) params.set("payment_terms", filters.paymentTerms.join(","));
+      return params;
+    },
+    [query, filters, sortBy, searchField, isPremium],
+  );
 
   const executeSearch = useCallback(async () => {
     setLoading(true);
@@ -1599,10 +1794,18 @@ const filteredUsers = useMemo(() => {
           });
           if (imgRes?.file?.url) {
             params.set("imageUrl", imgRes.file.url);
-            addToast("Visual search", `Image uploaded: ${imgRes.file.originalname}. Matching by tags and colors.`, "success");
+            addToast(
+              "Visual search",
+              `Image uploaded: ${imgRes.file.originalname}. Matching by tags and colors.`,
+              "success",
+            );
           }
         } catch {
-          addToast("Image upload failed", "Continuing with text search only", "error");
+          addToast(
+            "Image upload failed",
+            "Continuing with text search only",
+            "error",
+          );
         }
         setImageSearchFile(null);
         setImagePreview(null);
@@ -1620,8 +1823,17 @@ const filteredUsers = useMemo(() => {
       setCompanies(Array.isArray(prodRes?.items) ? prodRes.items : []);
       setFeedPosts(Array.isArray(feedRes?.items) ? feedRes.items : []);
       setUsers(Array.isArray(userRes?.items) ? userRes.items : []);
-      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || userRes?.next_cursor || null);
-      setFacetCounts(reqRes?.facetCounts || prodRes?.facetCounts || { countries: [], categories: [] });
+      setNextCursor(
+        reqRes?.next_cursor ||
+          prodRes?.next_cursor ||
+          feedRes?.next_cursor ||
+          userRes?.next_cursor ||
+          null,
+      );
+      setFacetCounts(
+        reqRes?.facetCounts ||
+          prodRes?.facetCounts || { countries: [], categories: [] },
+      );
 
       const reqTotal = Number.isFinite(Number(reqRes?.total))
         ? Number(reqRes.total)
@@ -1671,8 +1883,8 @@ const filteredUsers = useMemo(() => {
           ) {
             setSpellingSuggestion(spRes.suggestion);
           }
-        } catch {
-          /* ignore */
+        } catch (err) {
+          console.warn("Spelling suggestion failed:", err);
         }
       }
 
@@ -1684,8 +1896,8 @@ const filteredUsers = useMemo(() => {
         if (Array.isArray(trendRes?.related)) {
           setRelatedSearches(trendRes.related.slice(0, 8));
         }
-      } catch {
-        /* ignore */
+      } catch (err) {
+        console.warn("Related searches failed:", err);
       }
     } catch (err) {
       addToast(
@@ -1696,7 +1908,16 @@ const filteredUsers = useMemo(() => {
     } finally {
       setLoading(false);
     }
-  }, [query, token, activeTab, setSearchParams, addToast, buildSearchParams, imageSearchFile, history]);
+  }, [
+    query,
+    token,
+    activeTab,
+    setSearchParams,
+    addToast,
+    buildSearchParams,
+    imageSearchFile,
+    history,
+  ]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || nextCursor === null) return;
@@ -1709,14 +1930,36 @@ const filteredUsers = useMemo(() => {
         apiRequest(`/feed/search?${params.toString()}`, { token }),
         apiRequest(`/users/search?${params.toString()}`, { token }),
       ]);
-      setRequests((prev) => [...prev, ...(Array.isArray(reqRes?.items) ? reqRes.items : [])]);
-      setCompanies((prev) => [...prev, ...(Array.isArray(prodRes?.items) ? prodRes.items : [])]);
-      setFeedPosts((prev) => [...prev, ...(Array.isArray(feedRes?.items) ? feedRes.items : [])]);
-      setUsers((prev) => [...prev, ...(Array.isArray(userRes?.items) ? userRes.items : [])]);
-      setNextCursor(reqRes?.next_cursor || prodRes?.next_cursor || feedRes?.next_cursor || userRes?.next_cursor || null);
+      setRequests((prev) => [
+        ...prev,
+        ...(Array.isArray(reqRes?.items) ? reqRes.items : []),
+      ]);
+      setCompanies((prev) => [
+        ...prev,
+        ...(Array.isArray(prodRes?.items) ? prodRes.items : []),
+      ]);
+      setFeedPosts((prev) => [
+        ...prev,
+        ...(Array.isArray(feedRes?.items) ? feedRes.items : []),
+      ]);
+      setUsers((prev) => [
+        ...prev,
+        ...(Array.isArray(userRes?.items) ? userRes.items : []),
+      ]);
+      setNextCursor(
+        reqRes?.next_cursor ||
+          prodRes?.next_cursor ||
+          feedRes?.next_cursor ||
+          userRes?.next_cursor ||
+          null,
+      );
       setCursor(nextCursor);
     } catch {
-      addToast("Load more failed", "Unable to load additional results", "error");
+      addToast(
+        "Load more failed",
+        "Unable to load additional results",
+        "error",
+      );
     } finally {
       setLoadingMore(false);
     }
@@ -1728,6 +1971,10 @@ const filteredUsers = useMemo(() => {
   }, [executeSearch]);
 
   async function saveSearch() {
+    if (alertsQuota !== null && alertsQuota <= 0) {
+      addToast("Alert limit reached", "You have reached your alert limit.", "error");
+      return;
+    }
     const hasFilters =
       query.trim() ||
       filters.industry !== "Any" ||
@@ -1769,11 +2016,7 @@ const filteredUsers = useMemo(() => {
       );
       await fetchSavedAlerts();
     } catch {
-      addToast(
-        "Failed",
-        "Could not save alert",
-        "error",
-      );
+      addToast("Failed", "Could not save alert", "error");
     }
   }
 
@@ -1793,29 +2036,15 @@ const filteredUsers = useMemo(() => {
       params.set("certs", filters.certifications.join(","));
     const url = `${window.location.origin}/search?${params.toString()}`;
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        addToast(
-          "Share link copied",
-          "Share link copied to clipboard.",
-          "success",
-        );
-      } else {
-        window.prompt("Copy this link:", url);
-        addToast(
-          "Share link ready",
-          "Clipboard API unavailable, opened copy prompt.",
-          "success",
-        );
-      }
+      await navigator.clipboard.writeText(url);
     } catch {
-      window.prompt("Copy this link:", url);
-      addToast(
-        "Share link ready",
-        "Clipboard access was blocked, opened copy prompt.",
-        "success",
-      );
+      // silently fail
     }
+    addToast(
+      "Share link copied",
+      "Share link copied to clipboard.",
+      "success",
+    );
   }
 
   function clearAll() {
@@ -1913,9 +2142,6 @@ const filteredUsers = useMemo(() => {
     setRoleSeatText("");
   }
 
-
-
-
   const isMac =
     typeof navigator !== "undefined" &&
     /Mac|iPhone|iPad|iPod/.test(navigator.platform);
@@ -1925,39 +2151,96 @@ const filteredUsers = useMemo(() => {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] text-slate-900 dark:text-white transition-colors">
       <ToastStack toasts={toasts} onDismiss={removeToast} />
-      <SearchModal open={searchModalOpen} searchInputRef={searchInputRef} query={query} onQueryChange={setQuery} onClose={() => setSearchModalOpen(false)} executeSearchRef={executeSearchRef} />
+      <SearchModal
+        open={searchModalOpen}
+        searchInputRef={searchInputRef}
+        query={query}
+        onQueryChange={setQuery}
+        onClose={() => setSearchModalOpen(false)}
+        executeSearchRef={executeSearchRef}
+      />
       {batchOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <h3 className="text-lg font-semibold">Batch Search</h3>
-            <textarea value={batchTerms} onChange={e => setBatchTerms(e.target.value)}
-              placeholder="Paste terms, one per line..." className="w-full mt-3 rounded-2xl border p-3 h-32" />
-            <input type="file" accept=".csv" onChange={e => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                const text = reader.result;
-                const lines = text.split("\n").map(l => l.split(",")[0].trim()).filter(Boolean);
-                setBatchTerms(lines.join("\n"));
-              };
-              reader.readAsText(e.target.files[0]);
-            }} className="mt-2" />
+            <textarea
+              value={batchTerms}
+              onChange={(e) => setBatchTerms(e.target.value)}
+              placeholder="Paste terms, one per line..."
+              className="w-full mt-3 rounded-2xl border p-3 h-32"
+            />
+            <input
+              type="file"
+              accept=".csv"
+              onChange={(e) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const text = reader.result;
+                  const lines = text
+                    .split("\n")
+                    .map((l) => l.split(",")[0].trim())
+                    .filter(Boolean);
+                  setBatchTerms(lines.join("\n"));
+                };
+                reader.readAsText(e.target.files[0]);
+              }}
+              className="mt-2"
+            />
             <div className="mt-4 flex gap-2">
-              <button onClick={async () => {
-                const terms = batchTerms.split("\n").map(t => t.trim()).filter(Boolean);
-                if (terms.length === 0) { addToast("No terms", "Add at least one search term", "error"); return; }
-                try {
-                  const res = await apiRequest("/search/batch", { method: "POST", token, body: { terms } });
-                  setBatchResults(res);
-                  addToast("Batch search", `Found ${(res?.requirements?.length || 0) + (res?.products?.length || 0)} matches`, "success");
-                } catch {
-                  addToast("Batch search failed", "Unable to run batch search", "error");
-                }
-              }} className="rounded-2xl bg-sky-600 px-6 py-2 text-white">Search All</button>
-              <button onClick={() => { setBatchOpen(false); setBatchResults(null); setBatchTerms(""); }} className="rounded-2xl border px-6 py-2">Close</button>
+              <button
+                onClick={async () => {
+                  const terms = batchTerms
+                    .split("\n")
+                    .map((t) => t.trim())
+                    .filter(Boolean);
+                  if (terms.length === 0) {
+                    addToast(
+                      "No terms",
+                      "Add at least one search term",
+                      "error",
+                    );
+                    return;
+                  }
+                  try {
+                    const res = await apiRequest("/search/batch", {
+                      method: "POST",
+                      token,
+                      body: { terms },
+                    });
+                    setBatchResults(res);
+                    addToast(
+                      "Batch search",
+                      `Found ${(res?.requirements?.length || 0) + (res?.products?.length || 0)} matches`,
+                      "success",
+                    );
+                  } catch {
+                    addToast(
+                      "Batch search failed",
+                      "Unable to run batch search",
+                      "error",
+                    );
+                  }
+                }}
+                className="rounded-2xl bg-sky-600 px-6 py-2 text-white"
+              >
+                Search All
+              </button>
+              <button
+                onClick={() => {
+                  setBatchOpen(false);
+                  setBatchResults(null);
+                  setBatchTerms("");
+                }}
+                className="rounded-2xl border px-6 py-2"
+              >
+                Close
+              </button>
             </div>
             {batchResults && (
               <div className="mt-4 text-sm space-y-1">
-                <p>Requirements: {batchResults.requirements?.length || 0} matches</p>
+                <p>
+                  Requirements: {batchResults.requirements?.length || 0} matches
+                </p>
                 <p>Products: {batchResults.products?.length || 0} matches</p>
               </div>
             )}
@@ -2003,7 +2286,8 @@ const filteredUsers = useMemo(() => {
                         disabled={isSearchAlreadySaved}
                         className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <Save className="h-4 w-4" /> {isSearchAlreadySaved ? "Already saved" : "Save search"}
+                        <Save className="h-4 w-4" />{" "}
+                        {isSearchAlreadySaved ? "Already saved" : "Save search"}
                       </button>
                       <button
                         onClick={shareSearch}
@@ -2062,27 +2346,45 @@ const filteredUsers = useMemo(() => {
                       Alerts left
                     </div>
                     <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
-                      {alertsQuota}
+                      {alertsQuota === null ? "—" : alertsQuota}
                     </div>
                   </div>
                 </div>
               </div>
 
-                  <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
+              <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
                 <motion.div
                   className="relative"
-                  animate={{ width: searchFocused ? '104%' : '100%' }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                  animate={{ width: searchFocused ? "104%" : "100%" }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
                 >
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    {searchField === "all" ? <Search className="h-5 w-5" /> : <UserSearch className="h-5 w-5" />}
+                    {searchField === "all" ? (
+                      <Search className="h-5 w-5" />
+                    ) : (
+                      <UserSearch className="h-5 w-5" />
+                    )}
                   </div>
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    onFocus={() => { setSearchFocused(true); setSuggestionsOpen(true); }}
-                    onBlur={() => { setTimeout(() => { setSuggestionsOpen(false); setSearchFocused(false); }, 200); }}
-                    placeholder={searchField === "buyer" ? "Search by buyer name..." : searchField === "company" ? "Search by company name..." : "Search requests, factories, products..."}
+                    onFocus={() => {
+                      setSearchFocused(true);
+                      setSuggestionsOpen(true);
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setSuggestionsOpen(false);
+                        setSearchFocused(false);
+                      }, 200);
+                    }}
+                    placeholder={
+                      searchField === "buyer"
+                        ? "Search by buyer name..."
+                        : searchField === "company"
+                          ? "Search by company name..."
+                          : "Search requests, factories, products..."
+                    }
                     className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-36 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
                   />
                   {suggestionsOpen && suggestions.length > 0 && (
@@ -2090,11 +2392,16 @@ const filteredUsers = useMemo(() => {
                       {suggestions.map((s) => (
                         <button
                           key={s}
-                          onMouseDown={() => { setQuery(s); setSuggestionsOpen(false); }}
+                          onMouseDown={() => {
+                            setQuery(s);
+                            setSuggestionsOpen(false);
+                          }}
                           className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
                         >
                           <Search className="h-4 w-4 text-slate-400 shrink-0" />
-                          <span className="text-slate-700 dark:text-slate-200">{s}</span>
+                          <span className="text-slate-700 dark:text-slate-200">
+                            {s}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -2107,23 +2414,40 @@ const filteredUsers = useMemo(() => {
                       {history.map((h) => (
                         <button
                           key={h.timestamp}
-                          onMouseDown={() => { setQuery(h.query); setSuggestionsOpen(false); }}
+                          onMouseDown={() => {
+                            setQuery(h.query);
+                            setSuggestionsOpen(false);
+                          }}
                           className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
                         >
                           <Clock className="h-4 w-4 text-slate-400 shrink-0" />
-                          <span className="text-slate-700 dark:text-slate-200">{h.query}</span>
+                          <span className="text-slate-700 dark:text-slate-200">
+                            {h.query}
+                          </span>
                         </button>
                       ))}
                     </div>
                   )}
                   <div className="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">
                     <button
-                      onClick={() => setSearchField((f) => f === "all" ? "buyer" : f === "buyer" ? "company" : "all")}
+                      onClick={() =>
+                        setSearchField((f) =>
+                          f === "all"
+                            ? "buyer"
+                            : f === "buyer"
+                              ? "company"
+                              : "all",
+                        )
+                      }
                       className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300 hover:border-sky-300"
                       title={`Search: ${searchField === "all" ? "All fields" : searchField === "buyer" ? "Buyer names" : "Company names"}`}
                     >
                       <UserSearch className="h-3.5 w-3.5 inline mr-1" />
-                      {searchField === "all" ? "All" : searchField === "buyer" ? "Buyer" : "Company"}
+                      {searchField === "all"
+                        ? "All"
+                        : searchField === "buyer"
+                          ? "Buyer"
+                          : "Company"}
                     </button>
                     <button
                       onClick={() => setSearchModalOpen(true)}
@@ -2137,17 +2461,38 @@ const filteredUsers = useMemo(() => {
                   <label className="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700">
                     {imagePreview ? (
                       <div className="relative">
-                        <img src={imagePreview} alt="search" className="h-8 w-8 rounded-lg object-cover" />
-                        <button onClick={(e) => { e.preventDefault(); setImageSearchFile(null); setImagePreview(null); }} className="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white">
+                        <img
+                          src={imagePreview}
+                          alt="search"
+                          className="h-8 w-8 rounded-lg object-cover"
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setImageSearchFile(null);
+                            setImagePreview(null);
+                          }}
+                          className="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white"
+                        >
                           <X className="h-3 w-3" />
                         </button>
                       </div>
                     ) : (
                       <ImagePlus className="h-5 w-5" />
                     )}
-                    <input type="file" accept=".jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr" onChange={handleImageSearch} className="hidden" />
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
+                      onChange={handleImageSearch}
+                      className="hidden"
+                    />
                   </label>
-                  {searchImageUploadProgress > 0 && <UploadProgressBar progress={searchImageUploadProgress} className="w-16" />}
+                  {searchImageUploadProgress > 0 && (
+                    <UploadProgressBar
+                      progress={searchImageUploadProgress}
+                      className="w-16"
+                    />
+                  )}
                   <button
                     onClick={() => setBatchOpen(true)}
                     className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700"
@@ -2161,18 +2506,40 @@ const filteredUsers = useMemo(() => {
                     className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     <Search className="h-5 w-5" />{" "}
-                    {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Search"}
+                    {loading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      "Search"
+                    )}
                   </button>
                 </div>
               </div>
 
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                <ResultTabs estimatedCounts={estimatedCounts} activeTab={activeTab} onTabChange={setActiveTab} />
+                <ResultTabs
+                  estimatedCounts={estimatedCounts}
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                />
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                   <Badge tone="blue">
-                    {loading
-                      ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                      : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies · ${fmtNumber(estimatedCounts.feedPosts)} feed posts (${fmtNumber(estimatedCounts.total)} total)`}
+                    {loading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies · ${fmtNumber(estimatedCounts.feedPosts)} feed posts (${fmtNumber(estimatedCounts.total)} total)`
+                    )}
                   </Badge>
                 </div>
               </div>
@@ -2186,20 +2553,19 @@ const filteredUsers = useMemo(() => {
                   return (
                     <motion.div
                       layout
-                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
                     >
-                    <button
-                      key={cat.key}
-                      onClick={() => toggleCategory(cat.key)}
-                      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${pillClass(active)}`}
-                    >
-                      {cat.label}
-                      {!active && cat.key !== "all" ? (
-                        <span className="text-xs opacity-80">
-                          ({fmtNumber(150 + cat.key.length * 11)})
-                        </span>
-                      ) : null}
-                    </button>
+                      <button
+                        key={cat.key}
+                        onClick={() => toggleCategory(cat.key)}
+                        className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${pillClass(active)}`}
+                      >
+                        {cat.label}
+                      </button>
                     </motion.div>
                   );
                 })}
@@ -2233,10 +2599,17 @@ const filteredUsers = useMemo(() => {
             {facetCounts.countries.length > 0 && (
               <section className="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-4 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400 mr-1">Filter by country:</span>
-                  {facetCounts.countries.slice(0, 8).map(c => (
-                    <button key={c.value} onClick={() => setFilters(f => ({ ...f, country: c.value }))}
-                      className={`rounded-full border px-3 py-1 text-xs font-medium transition ${filters.country === c.value ? "bg-sky-600 text-white border-sky-500" : "hover:bg-sky-50 dark:hover:bg-sky-500/10 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800"}`}>
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400 mr-1">
+                    Filter by country:
+                  </span>
+                  {facetCounts.countries.slice(0, 8).map((c) => (
+                    <button
+                      key={c.value}
+                      onClick={() =>
+                        setFilters((f) => ({ ...f, country: c.value }))
+                      }
+                      className={`rounded-full border px-3 py-1 text-xs font-medium transition ${filters.country === c.value ? "bg-sky-600 text-white border-sky-500" : "hover:bg-sky-50 dark:hover:bg-sky-500/10 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800"}`}
+                    >
                       {c.value} ({c.count})
                     </button>
                   ))}
@@ -2436,151 +2809,174 @@ const filteredUsers = useMemo(() => {
                           />
                         </div>
                         <PlanGate premium={isPremium}>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <Shirt className="h-4 w-4 inline mr-1" /> Season / Collection
-                          </label>
-                          <select
-                            value={filters.season}
-                            onChange={(e) =>
-                              setFilters((f) => ({
-                                ...f,
-                                season: e.target.value,
-                              }))
-                            }
-                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
-                          >
-                            {SEASON_OPTIONS.map((s) => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                        </div>
-                        </PlanGate>
-                        <PlanGate premium={isPremium}>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <Wrench className="h-4 w-4 inline mr-1" /> Machinery / Equipment
-                          </label>
-                          <input
-                            value={filters.machinery}
-                            onChange={(e) =>
-                              setFilters((f) => ({
-                                ...f,
-                                machinery: e.target.value,
-                              }))
-                            }
-                            placeholder="e.g. Dyeing, Spinning, Cutting"
-                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
-                          />
-                        </div>
-                        </PlanGate>
-                        <PlanGate premium={isPremium}>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <PackageCheck className="h-4 w-4 inline mr-1" /> Availability
-                          </label>
-                          <select
-                            value={filters.stockStatus}
-                            onChange={(e) =>
-                              setFilters((f) => ({
-                                ...f,
-                                stockStatus: e.target.value,
-                              }))
-                            }
-                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
-                          >
-                            {STOCK_STATUS_OPTIONS.map((opt) => (
-                              <option key={opt.key} value={opt.key}>{opt.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                        </PlanGate>
-                        <PlanGate premium={isPremium}>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Posted after
-                          </label>
-                          <input
-                            type="date"
-                            value={filters.postedAfter}
-                            onChange={(e) =>
-                              setFilters((f) => ({ ...f, postedAfter: e.target.value }))
-                            }
-                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
-                          />
-                        </div>
-                        </PlanGate>
-                        <PlanGate premium={isPremium}>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Posted before
-                          </label>
-                          <input
-                            type="date"
-                            value={filters.postedBefore}
-                            onChange={(e) =>
-                              setFilters((f) => ({ ...f, postedBefore: e.target.value }))
-                            }
-                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
-                          />
-                        </div>
-                        </PlanGate>
-                        <PlanGate premium={isPremium}>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Certifications
-                          </label>
-                          <div className="flex flex-wrap gap-2">
-                            {CERTIFICATION_OPTIONS.map((cert) => (
-                              <button
-                                key={cert}
-                                onClick={() => toggleArrayFilter("certifications", cert)}
-                                className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(cert))}`}
-                              >
-                                {cert}
-                              </button>
-                            ))}
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              <Shirt className="h-4 w-4 inline mr-1" /> Season /
+                              Collection
+                            </label>
+                            <select
+                              value={filters.season}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  season: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                            >
+                              {SEASON_OPTIONS.map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                        </div>
                         </PlanGate>
                         <PlanGate premium={isPremium}>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <Star className="h-4 w-4 inline mr-1" /> Minimum Rating
-                          </label>
-                          <select
-                            value={filters.minRating}
-                            onChange={(e) =>
-                              setFilters((f) => ({ ...f, minRating: e.target.value }))
-                            }
-                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
-                          >
-                            <option value="">Any</option>
-                            <option value="3">3+</option>
-                            <option value="4">4+</option>
-                            <option value="4.5">4.5+</option>
-                          </select>
-                        </div>
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              <Wrench className="h-4 w-4 inline mr-1" />{" "}
+                              Machinery / Equipment
+                            </label>
+                            <input
+                              value={filters.machinery}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  machinery: e.target.value,
+                                }))
+                              }
+                              placeholder="e.g. Dyeing, Spinning, Cutting"
+                              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                            />
+                          </div>
                         </PlanGate>
                         <PlanGate premium={isPremium}>
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <Languages className="h-4 w-4 inline mr-1" /> Language
-                          </label>
-                          <select
-                            value={filters.language}
-                            onChange={(e) =>
-                              setFilters((f) => ({ ...f, language: e.target.value }))
-                            }
-                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
-                          >
-                            <option value="">Any</option>
-                            <option value="en">English</option>
-                            <option value="bn">Bengali</option>
-                            <option value="tr">Turkish</option>
-                            <option value="zh">Chinese</option>
-                          </select>
-                        </div>
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              <PackageCheck className="h-4 w-4 inline mr-1" />{" "}
+                              Availability
+                            </label>
+                            <select
+                              value={filters.stockStatus}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  stockStatus: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                            >
+                              {STOCK_STATUS_OPTIONS.map((opt) => (
+                                <option key={opt.key} value={opt.key}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              Posted after
+                            </label>
+                            <input
+                              type="date"
+                              value={filters.postedAfter}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  postedAfter: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                            />
+                          </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              Posted before
+                            </label>
+                            <input
+                              type="date"
+                              value={filters.postedBefore}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  postedBefore: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                            />
+                          </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              Certifications
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                              {CERTIFICATION_OPTIONS.map((cert) => (
+                                <button
+                                  key={cert}
+                                  onClick={() =>
+                                    toggleArrayFilter("certifications", cert)
+                                  }
+                                  className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(cert))}`}
+                                >
+                                  {cert}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              <Star className="h-4 w-4 inline mr-1" /> Minimum
+                              Rating
+                            </label>
+                            <select
+                              value={filters.minRating}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  minRating: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                            >
+                              <option value="">Any</option>
+                              <option value="3">3+</option>
+                              <option value="4">4+</option>
+                              <option value="4.5">4.5+</option>
+                            </select>
+                          </div>
+                        </PlanGate>
+                        <PlanGate premium={isPremium}>
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              <Languages className="h-4 w-4 inline mr-1" />{" "}
+                              Language
+                            </label>
+                            <select
+                              value={filters.language}
+                              onChange={(e) =>
+                                setFilters((f) => ({
+                                  ...f,
+                                  language: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                            >
+                              <option value="">Any</option>
+                              <option value="en">English</option>
+                              <option value="bn">Bengali</option>
+                              <option value="tr">Turkish</option>
+                              <option value="zh">Chinese</option>
+                            </select>
+                          </div>
                         </PlanGate>
                         <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                           <input
@@ -2753,7 +3149,10 @@ const filteredUsers = useMemo(() => {
                       )}
                     </div>
 
-                    <MapPreview selectedLocation={selectedLocation} filtersLocation={filters.location} />
+                    <MapPreview
+                      selectedLocation={selectedLocation}
+                      filtersLocation={filters.location}
+                    />
 
                     <button
                       onClick={useCurrentLocation}
@@ -2773,7 +3172,10 @@ const filteredUsers = useMemo(() => {
                         step="1"
                         value={filters.distanceKm}
                         onChange={(e) =>
-                          setFilters((f) => ({ ...f, distanceKm: e.target.value }))
+                          setFilters((f) => ({
+                            ...f,
+                            distanceKm: e.target.value,
+                          }))
                         }
                         placeholder="Radius in km"
                         className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
@@ -2933,7 +3335,9 @@ const filteredUsers = useMemo(() => {
                     Results
                   </h2>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {totalResults > 0 ? `${totalResults} total results` : "Buyer requests, companies, and marketplace data."}
+                    {totalResults > 0
+                      ? `${totalResults} total results`
+                      : "Buyer requests, companies, and marketplace data."}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -2945,7 +3349,9 @@ const filteredUsers = useMemo(() => {
                       className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200"
                     >
                       {SORT_OPTIONS.map((opt) => (
-                        <option key={opt.key} value={opt.key}>{opt.label}</option>
+                        <option key={opt.key} value={opt.key}>
+                          {opt.label}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -2958,7 +3364,10 @@ const filteredUsers = useMemo(() => {
                       className="w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 py-2 pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-sky-400"
                     />
                     {refineQuery && (
-                      <button onClick={() => setRefineQuery("")} className="absolute right-2 text-slate-400 hover:text-slate-600">
+                      <button
+                        onClick={() => setRefineQuery("")}
+                        className="absolute right-2 text-slate-400 hover:text-slate-600"
+                      >
                         <X className="h-3.5 w-3.5" />
                       </button>
                     )}
@@ -2973,7 +3382,8 @@ const filteredUsers = useMemo(() => {
                     onClick={() => setShowShortlist((v) => !v)}
                     className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium ${shortlist.length > 0 ? "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300" : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200"} hover:border-sky-300 dark:hover:border-sky-700`}
                   >
-                    <ArrowLeftRight className="h-4 w-4" /> Compare ({shortlist.length})
+                    <ArrowLeftRight className="h-4 w-4" /> Compare (
+                    {shortlist.length})
                   </button>
                   <button
                     onClick={() => setViewMode("all")}
@@ -3019,22 +3429,44 @@ const filteredUsers = useMemo(() => {
                   {loading ? (
                     <motion.div
                       key="loading"
-                      initial={{ clipPath: 'inset(0 100% 0 0)' }}
-                      animate={{ clipPath: 'inset(0 0 0 0)' }}
-                      exit={{ clipPath: 'inset(0 0 0 100%)' }}
-                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      initial={{ clipPath: "inset(0 100% 0 0)" }}
+                      animate={{ clipPath: "inset(0 0 0 0)" }}
+                      exit={{ clipPath: "inset(0 0 0 100%)" }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                      <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+                      <Mosaic
+                        color="#3b00ff"
+                        size="large"
+                        style={{ fontSize: "40px" }}
+                        text=""
+                        textColor=""
+                      />
                     </motion.div>
                   ) : (
                     <motion.div
                       key={activeTab}
-                      initial={{ clipPath: 'inset(0 100% 0 0)' }}
-                      animate={{ clipPath: 'inset(0 0 0 0)' }}
-                      exit={{ clipPath: 'inset(0 0 0 100%)' }}
-                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      initial={{ clipPath: "inset(0 100% 0 0)" }}
+                      animate={{ clipPath: "inset(0 0 0 0)" }}
+                      exit={{ clipPath: "inset(0 0 0 100%)" }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                      <ResultCards totalResults={totalResults} query={query} loading={loading} trendingSearches={trendingSearches} activeTab={activeTab} filteredRequests={filteredRequests} filteredCompanies={filteredCompanies} filteredFeedPosts={filteredFeedPosts} filteredUsers={filteredUsers} setFilters={setFilters} setQuery={setQuery} toggleShortlist={toggleShortlist} isShortlisted={isShortlisted} highlightText={highlightText} saveSearch={saveSearch} />
+                      <ResultCards
+                        totalResults={totalResults}
+                        query={query}
+                        loading={loading}
+                        trendingSearches={trendingSearches}
+                        activeTab={activeTab}
+                        filteredRequests={filteredRequests}
+                        filteredCompanies={filteredCompanies}
+                        filteredFeedPosts={filteredFeedPosts}
+                        filteredUsers={filteredUsers}
+                        setFilters={setFilters}
+                        setQuery={setQuery}
+                        toggleShortlist={toggleShortlist}
+                        isShortlisted={isShortlisted}
+                        highlightText={highlightText}
+                        saveSearch={saveSearch}
+                      />
                       {!loading && nextCursor !== null && !refineQuery && (
                         <div className="mt-6 flex justify-center">
                           <button
@@ -3042,8 +3474,20 @@ const filteredUsers = useMemo(() => {
                             disabled={loadingMore}
                             className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500 disabled:opacity-60"
                           >
-                            {loadingMore ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <ChevronDown className="h-4 w-4" />}
-                            {loadingMore ? "Loading..." : `Load more (${Math.max(0, totalResults - cursor - (activeTab === "companies" ? filteredCompanies.length : filteredRequests.length))} remaining)`}
+                            {loadingMore ? (
+                              <ThreeDot
+                                variant="bounce"
+                                color="#6100ff"
+                                size="small"
+                                text=""
+                                textColor=""
+                              />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                            {loadingMore
+                              ? "Loading..."
+                              : `Load more (${Math.max(0, totalResults - cursor - (activeTab === "companies" ? filteredCompanies.length : filteredRequests.length))} remaining)`}
                           </button>
                         </div>
                       )}
@@ -3057,32 +3501,48 @@ const filteredUsers = useMemo(() => {
               <section className="rounded-[2rem] border border-sky-200/80 dark:border-sky-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                    <ArrowLeftRight className="h-5 w-5 text-sky-500" /> Compare ({shortlist.length})
+                    <ArrowLeftRight className="h-5 w-5 text-sky-500" /> Compare
+                    ({shortlist.length})
                   </h2>
-                  <button onClick={() => setShowShortlist(false)} className="text-slate-400 hover:text-slate-600">
+                  <button
+                    onClick={() => setShowShortlist(false)}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
                     <X className="h-5 w-5" />
                   </button>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {shortlist.map((key) => {
                     const [type, id] = key.split(":");
-                    const item = type === "buyer"
-                      ? filteredRequests.find((r) => String(r.id) === id)
-                      : filteredCompanies.find((c) => String(c.id) === id);
+                    const item =
+                      type === "buyer"
+                        ? filteredRequests.find((r) => String(r.id) === id)
+                        : filteredCompanies.find((c) => String(c.id) === id);
                     if (!item) return null;
                     return (
-                      <div key={key} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-4">
+                      <div
+                        key={key}
+                        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-4"
+                      >
                         <div className="flex items-start justify-between">
                           <div>
-                            <div className="text-xs text-sky-500 font-medium uppercase">{type === "buyer" ? "Buyer Request" : "Company"}</div>
+                            <div className="text-xs text-sky-500 font-medium uppercase">
+                              {type === "buyer" ? "Buyer Request" : "Company"}
+                            </div>
                             <div
                               className="mt-1 font-medium text-slate-900 dark:text-white"
                               dangerouslySetInnerHTML={{
-                                __html: highlightText(item.title || item.name || "Untitled", query),
+                                __html: highlightText(
+                                  item.title || item.name || "Untitled",
+                                  query,
+                                ),
                               }}
                             />
                           </div>
-                          <button onClick={() => toggleShortlist(id, type)} className="text-slate-400 hover:text-red-400">
+                          <button
+                            onClick={() => toggleShortlist(id, type)}
+                            className="text-slate-400 hover:text-red-400"
+                          >
                             <X className="h-4 w-4" />
                           </button>
                         </div>
@@ -3094,17 +3554,31 @@ const filteredUsers = useMemo(() => {
                             }}
                           />
                         )}
-                        {item.country && <div className="text-xs text-slate-500">Country: {item.country}</div>}
-                        {item.moq && <div className="text-xs text-slate-500">MOQ: {item.moq}</div>}
+                        {item.country && (
+                          <div className="text-xs text-slate-500">
+                            Country: {item.country}
+                          </div>
+                        )}
+                        {item.moq && (
+                          <div className="text-xs text-slate-500">
+                            MOQ: {item.moq}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
                 </div>
                 <div className="mt-4 flex gap-2">
-                  <button onClick={exportCSV} className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500">
+                  <button
+                    onClick={exportCSV}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500"
+                  >
                     <Download className="h-4 w-4" /> Export compared
                   </button>
-                  <button onClick={() => setShortlist([])} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-sm font-medium hover:border-red-300">
+                  <button
+                    onClick={() => setShortlist([])}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-sm font-medium hover:border-red-300"
+                  >
                     Clear all
                   </button>
                 </div>
@@ -3129,13 +3603,19 @@ const filteredUsers = useMemo(() => {
                         <div
                           className="truncate text-sm font-medium text-slate-900 dark:text-white"
                           dangerouslySetInnerHTML={{
-                            __html: highlightText(item.title || item.name, query),
+                            __html: highlightText(
+                              item.title || item.name,
+                              query,
+                            ),
                           }}
                         />
                         <div
                           className="truncate text-xs text-slate-500 dark:text-slate-400"
                           dangerouslySetInnerHTML={{
-                            __html: highlightText(item.subtitle || item.description, query),
+                            __html: highlightText(
+                              item.subtitle || item.description,
+                              query,
+                            ),
                           }}
                         />
                       </div>
@@ -3156,7 +3636,10 @@ const filteredUsers = useMemo(() => {
                   {trendingSearches.map((term) => (
                     <button
                       key={term}
-                      onClick={() => { setQuery(term); executeSearchRef.current?.(); }}
+                      onClick={() => {
+                        setQuery(term);
+                        executeSearchRef.current?.();
+                      }}
                       className="rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-sm hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-500/10"
                     >
                       {term}
@@ -3168,8 +3651,18 @@ const filteredUsers = useMemo(() => {
             {analytics && (
               <SectionCard title="Search Stats" icon={BarChart3}>
                 <div className="text-sm space-y-2">
-                  <div className="flex justify-between"><span>Searches (30d)</span><span className="font-semibold">{analytics?.totalSearches || "—"}</span></div>
-                  <div className="flex justify-between"><span>Zero-result rate</span><span className="font-semibold">{analytics?.zeroResultRate || "—"}%</span></div>
+                  <div className="flex justify-between">
+                    <span>Searches (30d)</span>
+                    <span className="font-semibold">
+                      {analytics?.totalSearches || "—"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Zero-result rate</span>
+                    <span className="font-semibold">
+                      {analytics?.zeroResultRate || "—"}%
+                    </span>
+                  </div>
                 </div>
               </SectionCard>
             )}
@@ -3179,7 +3672,10 @@ const filteredUsers = useMemo(() => {
                   {relatedSearches.map((term) => (
                     <button
                       key={term}
-                      onClick={() => { setQuery(term); executeSearchRef.current?.(); }}
+                      onClick={() => {
+                        setQuery(term);
+                        executeSearchRef.current?.();
+                      }}
                       className="rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-sm hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-500/10"
                     >
                       {term}

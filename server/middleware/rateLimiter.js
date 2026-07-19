@@ -25,7 +25,9 @@ export function createRateLimiter({ windowMs = 15 * 60 * 1000, max = 20 }) {
     ipHits.set(ip, hits);
 
     if (hits.length > max) {
-      return res.status(429).json({ error: "Too many requests, please try again later." });
+      return res
+        .status(429)
+        .json({ error: "Too many requests, please try again later." });
     }
 
     next();

@@ -20,7 +20,10 @@ export default function MasonryGrid({
         }}
       >
         {items.map((child, i) => (
-          <div key={i} style={{ breakInside: "avoid", marginBottom: `${gap * 0.25}rem` }}>
+          <div
+            key={i}
+            style={{ breakInside: "avoid", marginBottom: `${gap * 0.25}rem` }}
+          >
             {child}
           </div>
         ))}
@@ -42,7 +45,11 @@ export default function MasonryGrid({
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
-          transition={{ delay: i * staggerDelay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{
+            delay: i * staggerDelay,
+            duration: 0.5,
+            ease: [0.16, 1, 0.3, 1],
+          }}
           style={{ breakInside: "avoid", marginBottom: `${gap * 0.25}rem` }}
         >
           {child}

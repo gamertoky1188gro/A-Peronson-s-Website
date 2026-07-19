@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| **Commit Number** | 0003 |
-| **Commit Hash** | `6213071b41a3d9158b979bf159a30253bf9886c3` |
-| **Parent Hash** | `daba2ccb910d4be00c31d3d955a9e1db8a904b29` |
-| **Author** | Cyber Code Master |
-| **Date/Time** | 2026-03-01 15:43:59 (+0600) |
-| **Files Changed** | 66 |
-| **Additions** | 3,870 |
-| **Deletions** | 187 |
-| **Net Change** | +3,683 lines |
-| **Merge Commit** | No |
+| Field             | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Commit Number** | 0003                                       |
+| **Commit Hash**   | `6213071b41a3d9158b979bf159a30253bf9886c3` |
+| **Parent Hash**   | `daba2ccb910d4be00c31d3d955a9e1db8a904b29` |
+| **Author**        | Cyber Code Master                          |
+| **Date/Time**     | 2026-03-01 15:43:59 (+0600)                |
+| **Files Changed** | 66                                         |
+| **Additions**     | 3,870                                      |
+| **Deletions**     | 187                                        |
+| **Net Change**    | +3,683 lines                               |
+| **Merge Commit**  | No                                         |
 
 ## Custom Title
 
@@ -27,33 +27,33 @@ This commit transforms the project from a purely frontend Vite+React scaffold in
 
 ### Backend (`server/`) — 21 new files
 
-| File | Lines | Description |
-|------|-------|-------------|
-| `server/server.js` | 34 | Express app entry: CORS, JSON parsing, static uploads, health check, route mounting, error handler |
-| `server/middleware/auth.js` | 29 | JWT signing/verification, `requireAuth` guard, `allowRoles` role-check middleware |
-| `server/middleware/errorHandler.js` | 7 | Global error handler returning 500 JSON |
-| `server/routes/authRoutes.js` | 11 | POST `/api/auth/register`, `/api/auth/login`, `/api/auth/logout` |
-| `server/routes/userRoutes.js` | 14 | GET/PATCH user profile, admin user listing/verification/deletion |
-| `server/routes/requirementRoutes.js` | 21 | CRUD for buyer requirements, match listing, status patching |
-| `server/routes/messageRoutes.js` | 11 | GET inbox, POST/get messages by match ID |
-| `server/routes/documentRoutes.js` | 11 | POST document upload with multer |
-| `server/routes/adminRoutes.js` | 10 | GET match audit, conversion metrics |
-| `server/controllers/authController.js` | 36 | Register (validation, duplicate check), login (password verify), logout |
-| `server/controllers/userController.js` | 30 | Profile CRUD, admin user management |
-| `server/controllers/requirementController.js` | 37 | Requirement CRUD, match viewing, status updates |
-| `server/controllers/messageController.js` | 30 | Send/get messages, role-aware inbox with priority/request pool |
-| `server/controllers/documentController.js` | 11 | Document upload handling |
-| `server/controllers/adminController.js` | 11 | Match audit and metrics endpoints |
-| `server/services/userService.js` | 94 | User CRUD with bcrypt hashing, profile updates, verification |
-| `server/services/requirementService.js` | 73 | Requirement CRUD with auto-match generation |
-| `server/services/matchingService.js` | 70 | Factory scoring algorithm, match generation/update/listing |
-| `server/services/messageService.js` | 43 | Message posting, listing, tiered inbox (verified priority vs request pool) |
-| `server/services/documentService.js` | 30 | File upload to disk, metadata persistence (.pdf only) |
-| `server/utils/jsonStore.js` | 47 | Thread-safe JSON file read/write with per-file locking |
-| `server/utils/logger.js` | 17 | INFO/ERROR console logging with timestamps |
-| `server/utils/metrics.js` | 17 | State transition tracking for analytics |
-| `server/utils/validators.js` | 25 | Email, role, sanitization, field requirement helpers |
-| `server/database/*.json` | 6 files | Empty JSON arrays: `users.json`, `requirements.json`, `matches.json`, `messages.json`, `documents.json`, `metrics.json` |
+| File                                          | Lines   | Description                                                                                                             |
+| --------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `server/server.js`                            | 34      | Express app entry: CORS, JSON parsing, static uploads, health check, route mounting, error handler                      |
+| `server/middleware/auth.js`                   | 29      | JWT signing/verification, `requireAuth` guard, `allowRoles` role-check middleware                                       |
+| `server/middleware/errorHandler.js`           | 7       | Global error handler returning 500 JSON                                                                                 |
+| `server/routes/authRoutes.js`                 | 11      | POST `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`                                                        |
+| `server/routes/userRoutes.js`                 | 14      | GET/PATCH user profile, admin user listing/verification/deletion                                                        |
+| `server/routes/requirementRoutes.js`          | 21      | CRUD for buyer requirements, match listing, status patching                                                             |
+| `server/routes/messageRoutes.js`              | 11      | GET inbox, POST/get messages by match ID                                                                                |
+| `server/routes/documentRoutes.js`             | 11      | POST document upload with multer                                                                                        |
+| `server/routes/adminRoutes.js`                | 10      | GET match audit, conversion metrics                                                                                     |
+| `server/controllers/authController.js`        | 36      | Register (validation, duplicate check), login (password verify), logout                                                 |
+| `server/controllers/userController.js`        | 30      | Profile CRUD, admin user management                                                                                     |
+| `server/controllers/requirementController.js` | 37      | Requirement CRUD, match viewing, status updates                                                                         |
+| `server/controllers/messageController.js`     | 30      | Send/get messages, role-aware inbox with priority/request pool                                                          |
+| `server/controllers/documentController.js`    | 11      | Document upload handling                                                                                                |
+| `server/controllers/adminController.js`       | 11      | Match audit and metrics endpoints                                                                                       |
+| `server/services/userService.js`              | 94      | User CRUD with bcrypt hashing, profile updates, verification                                                            |
+| `server/services/requirementService.js`       | 73      | Requirement CRUD with auto-match generation                                                                             |
+| `server/services/matchingService.js`          | 70      | Factory scoring algorithm, match generation/update/listing                                                              |
+| `server/services/messageService.js`           | 43      | Message posting, listing, tiered inbox (verified priority vs request pool)                                              |
+| `server/services/documentService.js`          | 30      | File upload to disk, metadata persistence (.pdf only)                                                                   |
+| `server/utils/jsonStore.js`                   | 47      | Thread-safe JSON file read/write with per-file locking                                                                  |
+| `server/utils/logger.js`                      | 17      | INFO/ERROR console logging with timestamps                                                                              |
+| `server/utils/metrics.js`                     | 17      | State transition tracking for analytics                                                                                 |
+| `server/utils/validators.js`                  | 25      | Email, role, sanitization, field requirement helpers                                                                    |
+| `server/database/*.json`                      | 6 files | Empty JSON arrays: `users.json`, `requirements.json`, `matches.json`, `messages.json`, `documents.json`, `metrics.json` |
 
 ### Frontend Changes
 
@@ -68,6 +68,7 @@ This commit transforms the project from a purely frontend Vite+React scaffold in
 ## Detailed Diff Analysis
 
 ### Backend Architecture
+
 - **JSON file store** (`jsonStore.js`): Simple async file-based persistence with per-file locking to prevent race conditions. Reads and writes pretty-printed JSON arrays.
 - **Authentication**: JWT-based with 7-day expiry. Hardcoded `'mvp-dev-secret'` secret. Bearer token in Authorization header.
 - **Role system**: `buyer`, `factory`, `buying_house`, `admin` roles. Middleware guards routes.
@@ -76,6 +77,7 @@ This commit transforms the project from a purely frontend Vite+React scaffold in
 - **Document upload**: Multer with memory storage, 5MB limit, PDF only.
 
 ### Frontend Monolith
+
 - Single `App.jsx` component handles all UI and state
 - No React Router — everything is conditionally rendered based on auth state and inline navigation
 - API helper function with token management
@@ -88,6 +90,7 @@ The initial scaffold was a static frontend with no backend. To demonstrate a wor
 ## Was It Useful?
 
 **Yes, but with caveats.** The backend is well-structured with separation of concerns (routes, controllers, services, utils). However:
+
 - JSON file storage is not scalable but works for prototyping
 - The frontend monolith (App.jsx at 332+ lines) is not maintainable long-term
 - The matching engine is a simple scoring algorithm that would need refinement

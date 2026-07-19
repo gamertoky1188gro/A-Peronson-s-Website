@@ -63,7 +63,12 @@ import workflowLifecycleRoutes from "./routes/workflowLifecycleRoutes.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { logInfo, logError } from "./utils/logger.js";
-import { assistantReply as _assistantReply, streamOpencodeReply, initOpencodeServer, initAllUserSessions } from "./services/assistantService.js";
+import {
+  assistantReply as _assistantReply,
+  streamOpencodeReply,
+  initOpencodeServer,
+  initAllUserSessions,
+} from "./services/assistantService.js";
 import { maybeGenerateBotReply } from "./services/chatbotService.js";
 import jwt from "jsonwebtoken";
 import {
@@ -145,21 +150,23 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      imgSrc: ["'self'", "data:", "blob:", "https:"],
-      connectSrc: ["'self'", "wss:", "https:"],
-      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'", "blob:"],
-      frameSrc: ["'none'"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: ["'self'", "wss:", "https:"],
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'", "blob:"],
+        frameSrc: ["'none'"],
+      },
     },
-  },
-}));
+  }),
+);
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "5mb" }));
 
@@ -180,7 +187,10 @@ app.use("/uploads", express.static(uploadsRoot));
 const distRoot = path.join(process.cwd(), "dist");
 const serveDist = process.env.SERVE_DIST === "true";
 if (serveDist) {
-  console.log("[static] SERVE_DIST=true, dist exists:", fs.existsSync(distRoot));
+  console.log(
+    "[static] SERVE_DIST=true, dist exists:",
+    fs.existsSync(distRoot),
+  );
 }
 const MIME_TYPES = {
   ".js": "application/javascript",
@@ -296,14 +306,20 @@ const server = http.createServer(app);
 const ALLOWED_WS_ORIGINS = (
   process.env.ALLOWED_WS_ORIGINS ||
   "http://localhost:5173,http://localhost:4000"
-).split(",").map((s) => s.trim());
+)
+  .split(",")
+  .map((s) => s.trim());
 const wsServer = new WebSocketServer({
   server,
   verifyClient: (info, cb) => {
     const origin = info.origin || info.req.headers.origin || "";
     const host = info.req.headers.host || "";
     const allowed = ALLOWED_WS_ORIGINS.some(
-      (o) => origin === o || origin.startsWith(o + "/") || origin === `https://${host}` || origin === `http://${host}`,
+      (o) =>
+        origin === o ||
+        origin.startsWith(o + "/") ||
+        origin === `https://${host}` ||
+        origin === `http://${host}`,
     );
     if (allowed || !origin) {
       cb(true);
@@ -784,7 +800,9 @@ wsServer.on("connection", (socket, req) => {
         ? payload.participant_ids.map((id) => String(id))
         : [];
       if (!participantIds.length) return;
-      const caller = await prisma.user.findUnique({ where: { id: tokenUser.id } });
+      const caller = await prisma.user.findUnique({
+        where: { id: tokenUser.id },
+      });
       const callerPayload = caller
         ? {
             id: caller.id,
@@ -862,7 +880,9 @@ wsServer.on("connection", (socket, req) => {
             type: "reply",
             request_id: requestId,
             question,
-            matched_answer: answer || "I could not find a response right now. Please try again.",
+            matched_answer:
+              answer ||
+              "I could not find a response right now. Please try again.",
             source: "ws:stream_error",
             metadata: {
               matched_source: "ws:stream_error",
@@ -876,7 +896,9 @@ wsServer.on("connection", (socket, req) => {
             type: "reply",
             request_id: requestId,
             question,
-            matched_answer: answer || "I could not find a response right now. Please try again.",
+            matched_answer:
+              answer ||
+              "I could not find a response right now. Please try again.",
             source: "ws:stream",
             metadata: {
               matched_source: "ws:stream",
@@ -895,7 +917,9 @@ wsServer.on("connection", (socket, req) => {
           type: "reply",
           request_id: requestId,
           question,
-          matched_answer: streamedText || "I could not find a response right now. Please try again.",
+          matched_answer:
+            streamedText ||
+            "I could not find a response right now. Please try again.",
           source: "ws:fallback",
           metadata: {
             matched_source: "ws:fallback",
@@ -985,11 +1009,11 @@ async function start() {
     },
     5 * 60 * 1000,
   );
-  
+
   initOpencodeServer()
     .then(() => initAllUserSessions())
     .catch((err) => logError("init_opencode_failed", err));
-  
+
   server.listen(PORT, () => {
     logInfo(`Verification MVP API running on http://localhost:${PORT}`);
   });

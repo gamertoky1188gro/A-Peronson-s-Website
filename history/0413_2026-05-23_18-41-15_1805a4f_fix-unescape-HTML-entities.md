@@ -1,12 +1,12 @@
 # Commit 0413 — `1805a4f2b78`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `1805a4f2b781e3dc1794b7f00647ab1d21b71c34` |
-| Parent Hash | `51321c8effb1941a0f6021f4396b510bc0c583e6` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-23 18:41:15 +0600 |
-| Subject | fix: unescape HTML entities in AI responses |
+| Field       | Value                                       |
+| ----------- | ------------------------------------------- |
+| Commit Hash | `1805a4f2b781e3dc1794b7f00647ab1d21b71c34`  |
+| Parent Hash | `51321c8effb1941a0f6021f4396b510bc0c583e6`  |
+| Author      | gamertoky1188gro                            |
+| Date        | 2026-05-23 18:41:15 +0600                   |
+| Subject     | fix: unescape HTML entities in AI responses |
 
 ---
 
@@ -18,10 +18,10 @@ Wraps all AI response text through a new `unescapeHtml` utility function that co
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/assistantService.js` | modified | 18 | 0 |
-| `server/utils/validators.js` | **new** | 10 | 0 |
+| File                                  | Status   | Insertions | Deletions |
+| ------------------------------------- | -------- | ---------- | --------- |
+| `server/services/assistantService.js` | modified | 18         | 0         |
+| `server/utils/validators.js`          | **new**  | 10         | 0         |
 
 **2 files changed, 19 insertions, 9 deletions**
 

@@ -56,7 +56,8 @@ const sections = [
       "Using copyrighted music",
       "All media content must be published in a professional and business-like manner.",
     ],
-    alert: "Sharing any external contact information (phone, email, WhatsApp, Telegram, Facebook, Instagram, or similar) is strictly forbidden on GarTexHub. Violations will result in account restrictions and may lead to permanent termination.",
+    alert:
+      "Sharing any external contact information (phone, email, WhatsApp, Telegram, Facebook, Instagram, or similar) is strictly forbidden on GarTexHub. Violations will result in account restrictions and may lead to permanent termination.",
   },
   {
     id: "communication",
@@ -221,11 +222,16 @@ function SectionCard({ section, index, visible }) {
             </span>
           </div>
 
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{section.title}</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            {section.title}
+          </h2>
 
           <div className="mt-5 space-y-3 text-[15px] leading-7 text-slate-600 dark:text-slate-300">
             {section.bullets.map((bullet) => (
-              <div key={bullet} className="flex gap-3 rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 dark:border-slate-800/70 dark:bg-slate-900/50">
+              <div
+                key={bullet}
+                className="flex gap-3 rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 dark:border-slate-800/70 dark:bg-slate-900/50"
+              >
                 <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-sky-500" />
                 <p>{bullet}</p>
               </div>
@@ -234,7 +240,9 @@ function SectionCard({ section, index, visible }) {
 
           {section.alert ? (
             <div className="mt-5 rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-4 text-[15px] leading-7 text-amber-950 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100">
-              <strong className="block text-amber-900 dark:text-amber-200">Strict policy: No third-party contact sharing</strong>
+              <strong className="block text-amber-900 dark:text-amber-200">
+                Strict policy: No third-party contact sharing
+              </strong>
               {section.alert}
             </div>
           ) : null}
@@ -292,7 +300,9 @@ export default function Terms() {
         setVisible((prev) => {
           const next = [...prev];
           for (const entry of entries) {
-            const index = refs.current.findIndex((node) => node === entry.target);
+            const index = refs.current.findIndex(
+              (node) => node === entry.target,
+            );
             if (index !== -1 && entry.isIntersecting) next[index] = true;
           }
           return next;
@@ -302,7 +312,7 @@ export default function Terms() {
         root: null,
         threshold: 0.08,
         rootMargin: "-80px 0px -10% 0px",
-      }
+      },
     );
 
     refs.current.forEach((node) => node && observer.observe(node));
@@ -329,7 +339,11 @@ export default function Terms() {
               </h1>
 
               <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-                This platform is an international B2B Garments and Textiles Marketplace, where Buyer, Factory and Buying House connect for professional business purposes. By creating or using an account on the platform, you agree to the following terms and conditions.
+                This platform is an international B2B Garments and Textiles
+                Marketplace, where Buyer, Factory and Buying House connect for
+                professional business purposes. By creating or using an account
+                on the platform, you agree to the following terms and
+                conditions.
               </p>
             </div>
 
@@ -338,16 +352,24 @@ export default function Terms() {
                 <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
                   Platform
                 </div>
-                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">GarTexHub Professional Network</div>
-                <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Public route: /terms</div>
+                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                  GarTexHub Professional Network
+                </div>
+                <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  Public route: /terms
+                </div>
               </div>
 
               <div className="rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50 to-cyan-50 p-5 shadow-sm dark:border-sky-900/60 dark:from-sky-950/40 dark:to-cyan-950/20">
                 <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
                   Last Updated
                 </div>
-                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{lastUpdated}</div>
-                <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Dynamically generated on render.</div>
+                <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                  {lastUpdated}
+                </div>
+                <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  Dynamically generated on render.
+                </div>
               </div>
             </div>
           </div>
@@ -360,9 +382,16 @@ export default function Terms() {
             ["Security", "Encrypted and controlled environment"],
             ["Evidence", "PDF copies and recordings retained"],
           ].map(([label, value]) => (
-            <div key={label} className="rounded-3xl border border-slate-200/80 bg-white/75 p-5 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/60">
-              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">{label}</div>
-              <div className="mt-2 text-base font-medium text-slate-800 dark:text-slate-100">{value}</div>
+            <div
+              key={label}
+              className="rounded-3xl border border-slate-200/80 bg-white/75 p-5 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/60"
+            >
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                {label}
+              </div>
+              <div className="mt-2 text-base font-medium text-slate-800 dark:text-slate-100">
+                {value}
+              </div>
             </div>
           ))}
         </section>
@@ -375,7 +404,11 @@ export default function Terms() {
                 refs.current[index] = node;
               }}
             >
-              <SectionCard section={section} index={index} visible={visible[index] ?? false} />
+              <SectionCard
+                section={section}
+                index={index}
+                visible={visible[index] ?? false}
+              />
             </div>
           ))}
         </section>

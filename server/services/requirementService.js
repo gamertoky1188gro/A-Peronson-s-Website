@@ -13,9 +13,7 @@ import {
   indexRequirement,
   deleteRequirementIndex,
 } from "./openSearchService.js";
-import {
-  indexRequirement as indexRequirementQdrant,
-} from "./qdrantService.js";
+import { indexRequirement as indexRequirementQdrant } from "./qdrantService.js";
 import {
   extractOriginalPrice,
   getBaseCurrency,
@@ -453,7 +451,9 @@ export async function getRequirementById(id) {
 }
 
 export async function updateRequirement(requirementId, patch, actor) {
-  const existing = await prisma.requirement.findUnique({ where: { id: requirementId } });
+  const existing = await prisma.requirement.findUnique({
+    where: { id: requirementId },
+  });
   if (!existing) return null;
   if (actor.role === "buyer" && existing.buyer_id !== actor.id)
     return "forbidden";
@@ -749,7 +749,9 @@ export async function updateRequirement(requirementId, patch, actor) {
 
   await prisma.requirement.update({ where: { id: requirementId }, data: next });
   try {
-    const author = await prisma.user.findUnique({ where: { id: next.buyer_id } });
+    const author = await prisma.user.findUnique({
+      where: { id: next.buyer_id },
+    });
     await indexRequirement(next, {
       ...(author || {}),
       ...(author?.profile || {}),
@@ -785,7 +787,9 @@ export async function updateRequirement(requirementId, patch, actor) {
 }
 
 export async function removeRequirement(requirementId, actor) {
-  const target = await prisma.requirement.findUnique({ where: { id: requirementId } });
+  const target = await prisma.requirement.findUnique({
+    where: { id: requirementId },
+  });
   if (!target) return false;
   if (actor.role === "buyer" && target.buyer_id !== actor.id)
     return "forbidden";

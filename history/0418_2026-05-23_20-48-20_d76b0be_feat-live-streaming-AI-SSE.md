@@ -1,12 +1,12 @@
 # Commit 0418 — `d76b0be0e94`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `d76b0be0e945deffc08e829c15f4a364419ae61a` |
-| Parent Hash | `40861aa82fe3e910059ec86aae187c52ef3de24d` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-23 20:48:20 +0600 |
-| Subject | feat: live streaming AI responses via opencode SSE |
+| Field       | Value                                              |
+| ----------- | -------------------------------------------------- |
+| Commit Hash | `d76b0be0e945deffc08e829c15f4a364419ae61a`         |
+| Parent Hash | `40861aa82fe3e910059ec86aae187c52ef3de24d`         |
+| Author      | gamertoky1188gro                                   |
+| Date        | 2026-05-23 20:48:20 +0600                          |
+| Subject     | feat: live streaming AI responses via opencode SSE |
 
 ---
 
@@ -18,11 +18,11 @@ Major feature: implements live streaming of AI responses via opencode's SSE (Ser
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/server.js` | modified | 88 | 0 |
-| `server/services/assistantService.js` | modified | 97 | 0 |
-| `src/components/FloatingAssistant.jsx` | modified | 29 | 0 |
+| File                                   | Status   | Insertions | Deletions |
+| -------------------------------------- | -------- | ---------- | --------- |
+| `server/server.js`                     | modified | 88         | 0         |
+| `server/services/assistantService.js`  | modified | 97         | 0         |
+| `src/components/FloatingAssistant.jsx` | modified | 29         | 0         |
 
 **3 files changed, 194 insertions, 20 deletions**
 
@@ -31,6 +31,7 @@ Major feature: implements live streaming of AI responses via opencode's SSE (Ser
 ## Detailed Changes
 
 ### `server/services/assistantService.js` — `streamOpencodeReply` (new)
+
 - Creates opencode client, ensures server is running
 - Gets or creates a user/guest session
 - Sets up `client.event.subscribe()` for SSE event stream
@@ -41,11 +42,13 @@ Major feature: implements live streaming of AI responses via opencode's SSE (Ser
 - Sanitizes and unescapes HTML in all text
 
 ### `server/server.js` — WebSocket handler refactored
+
 - Replaced synchronous `assistantReply` call with streaming flow
 - Defines `gotChunk` (sends `{ type: "chunk", delta, text, done: false }`) and `gotComplete` (sends `{ type: "reply", matched_answer }`)
 - Falls back to `streamedText` if stream didn't start properly
 
 ### `src/components/FloatingAssistant.jsx` — Client streaming support
+
 - Uses `streamingIds` Set to track in-progress streams
 - Handles `data.type === "chunk"`: finds existing message by `request_id` and updates text in-place, or creates new assistant message
 - Handles `data.type === "reply"`: marks `isNew` based on whether it was already streamed

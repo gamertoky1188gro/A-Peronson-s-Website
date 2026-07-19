@@ -1,12 +1,12 @@
 # Commit 0402 — `90e3d95da61`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `90e3d95da61439008cff7ec840e4636dd0412c0d` |
-| Parent Hash | `8bb6582341266727f4462fcd79f2766eb43266dd` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-22 19:21:08 +0600 |
-| Subject | fix: pass model config when starting opencode server |
+| Field       | Value                                                |
+| ----------- | ---------------------------------------------------- |
+| Commit Hash | `90e3d95da61439008cff7ec840e4636dd0412c0d`           |
+| Parent Hash | `8bb6582341266727f4462fcd79f2766eb43266dd`           |
+| Author      | gamertoky1188gro                                     |
+| Date        | 2026-05-22 19:21:08 +0600                            |
+| Subject     | fix: pass model config when starting opencode server |
 
 ---
 
@@ -18,9 +18,9 @@ Passes the model config (`model` and `autoupdate: false`) to the `createOpencode
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/assistantService.js` | modified | 6 | 0 |
+| File                                  | Status   | Insertions | Deletions |
+| ------------------------------------- | -------- | ---------- | --------- |
+| `server/services/assistantService.js` | modified | 6          | 0         |
 
 **1 file changed, 5 insertions, 1 deletion**
 

@@ -89,7 +89,13 @@ export function AdminConfigSection({
 
       {/* Loading State */}
       {configEditorLoading ? (
-        <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+        <ThreeDot
+          variant="bounce"
+          color="#6100ff"
+          size="small"
+          text=""
+          textColor=""
+        />
       ) : configEditorError ? (
         <div className="py-8 text-center text-rose-500">
           {configEditorError}
@@ -116,7 +122,17 @@ export function AdminConfigSection({
                   disabled={configEditorSaving}
                   className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
-                  {configEditorSaving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save Inventory"}
+                  {configEditorSaving ? (
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
+                  ) : (
+                    "Save Inventory"
+                  )}
                 </button>
               </div>
               <div className="grid gap-3">
@@ -156,7 +172,17 @@ export function AdminConfigSection({
                   disabled={configEditorSaving}
                   className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
-                  {configEditorSaving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save Actions"}
+                  {configEditorSaving ? (
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
+                  ) : (
+                    "Save Actions"
+                  )}
                 </button>
               </div>
               <div
@@ -165,7 +191,10 @@ export function AdminConfigSection({
                   adminDark ? "border-white/10" : "border-slate-200",
                 )}
               >
-                <pre data-lenis-prevent className="max-h-96 overflow-auto text-xs">
+                <pre
+                  data-lenis-prevent
+                  className="max-h-96 overflow-auto text-xs"
+                >
                   {JSON.stringify(configEditorData?.actions || {}, null, 2)}
                 </pre>
               </div>
@@ -192,10 +221,21 @@ export function AdminConfigSection({
                   disabled={configEditorSaving}
                   className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
-                  {configEditorSaving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Save UI Settings"}
+                  {configEditorSaving ? (
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
+                  ) : (
+                    "Save UI Settings"
+                  )}
                 </button>
               </div>
-              <pre data-lenis-prevent
+              <pre
+                data-lenis-prevent
                 className={cn(
                   "max-h-96 overflow-auto rounded-xl p-4 text-xs",
                   adminDark

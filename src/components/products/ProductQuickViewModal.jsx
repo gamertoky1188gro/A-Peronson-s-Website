@@ -28,6 +28,8 @@ export default function ProductQuickViewModal({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [appealReason, setAppealReason] = useState("");
+  const [showAppealModal, setShowAppealModal] = useState(false);
 
   const productId = item?.product?.id || item?.id || "";
   const companyId =
@@ -114,18 +116,21 @@ export default function ProductQuickViewModal({
     handleClose();
   }
 
-  async function reportMistake() {
-    if (!token || !productId) return;
-    const reason =
-      window.prompt("Explain why this product should be approved:") || "";
-    if (!reason.trim()) return;
+  function startAppeal() {
+    setAppealReason("");
+    setShowAppealModal(true);
+  }
+
+  async function submitAppeal() {
+    if (!token || !productId || !appealReason.trim()) return;
     setError("");
     setNotice("");
+    setShowAppealModal(false);
     try {
       await apiRequest("/reports/product-appeal", {
         method: "POST",
         token,
-        body: { product_id: productId, reason },
+        body: { product_id: productId, reason: appealReason.trim() },
       });
       setNotice("Appeal submitted. Our team will review it shortly.");
     } catch (err) {
@@ -137,7 +142,9 @@ export default function ProductQuickViewModal({
     ? roleToProfileRoute(author.role, author.id)
     : "";
 
-  const allImages = coverUrl ? [coverUrl, ...galleryUrls.filter((u) => u !== coverUrl)] : galleryUrls;
+  const allImages = coverUrl
+    ? [coverUrl, ...galleryUrls.filter((u) => u !== coverUrl)]
+    : galleryUrls;
   const currentImage = allImages[currentImageIndex] || "";
 
   function nextImage() {
@@ -145,11 +152,17 @@ export default function ProductQuickViewModal({
   }
 
   function prevImage() {
-    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + allImages.length) % allImages.length,
+    );
   }
 
   return (
-    <AnimatedModal open={open} onClose={handleClose} className="w-[92vw] max-w-2xl overflow-hidden">
+    <AnimatedModal
+      open={open}
+      onClose={handleClose}
+      className="w-[92vw] max-w-2xl overflow-hidden"
+    >
       <div className="bg-white dark:bg-slate-950 rounded-2xl">
         <header className="flex items-center justify-between gap-3 px-5 py-4 shadow-dividerB dark:shadow-dividerBDark">
           <div className="min-w-0">
@@ -160,7 +173,7 @@ export default function ProductQuickViewModal({
               <p className="text-[11px] text-slate-500 truncate">
                 {author.name}{" "}
                 {author.verified ? (
-                  <span className="ml-1 font-bold text-[#0A66C2]">
+                  <span className="ml-1 font-bold text-sky-600 dark:text-sky-400">
                     Verified
                   </span>
                 ) : null}{" "}
@@ -239,7 +252,11 @@ export default function ProductQuickViewModal({
                     onClick={() => setCurrentImageIndex(i)}
                     className={`shrink-0 h-10 w-10 rounded-lg overflow-hidden border-2 transition ${i === currentImageIndex ? "border-sky-500" : "border-transparent opacity-60 hover:opacity-100"}`}
                   >
-                    <img src={url} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={url}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -279,7 +296,7 @@ export default function ProductQuickViewModal({
                 href={item?.video_url || item?.product?.video_url}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-block text-xs font-semibold text-[#0A66C2] hover:underline"
+                className="mt-4 inline-block text-xs font-semibold text-sky-600 hover:underline dark:text-sky-400"
               >
                 Open video link
               </a>
@@ -304,7 +321,7 @@ export default function ProductQuickViewModal({
                 </p>
                 <button
                   type="button"
-                  onClick={reportMistake}
+                  onClick={startAppeal}
                   className="mt-3 w-full rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white"
                 >
                   If you think this is a mistake, report it for review
@@ -319,6 +336,43 @@ export default function ProductQuickViewModal({
             ) : null}
           </div>
         </div>
+
+        {showAppealModal ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-slate-950">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Appeal rejection
+              </h3>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Explain why this product should be approved.
+              </p>
+              <textarea
+                value={appealReason}
+                onChange={(e) => setAppealReason(e.target.value)}
+                rows={4}
+                className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white"
+                placeholder="Explain why this product should be approved..."
+              />
+              <div className="mt-4 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAppealModal(false)}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={submitAppeal}
+                  disabled={!appealReason.trim()}
+                  className="rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Submit appeal
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         <footer className="px-5 py-4 shadow-dividerT dark:shadow-dividerTDark bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="text-[11px] text-slate-500">
@@ -337,7 +391,7 @@ export default function ProductQuickViewModal({
             <button
               type="button"
               onClick={contact}
-              className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]"
+              className="rounded-full bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700"
             >
               Contact
             </button>

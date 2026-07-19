@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| **Commit Number** | 0020 |
-| **Commit Hash** | `6fffdefc55a436cae3681bdc864a662d568cabbb` |
-| **Parent Hash** | `daba2ccb910d4be00c31d3d955a9e1db8a904b29` |
-| **Author** | Cyber Code Master |
-| **Date/Time** | 2026-03-02 06:55:59 (+0600) |
-| **Files Changed** | 135 |
-| **Additions** | 6,651 |
-| **Deletions** | 1,103 |
-| **Net Change** | +5,548 lines |
-| **Merge Commit** | No |
+| Field             | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Commit Number** | 0020                                       |
+| **Commit Hash**   | `6fffdefc55a436cae3681bdc864a662d568cabbb` |
+| **Parent Hash**   | `daba2ccb910d4be00c31d3d955a9e1db8a904b29` |
+| **Author**        | Cyber Code Master                          |
+| **Date/Time**     | 2026-03-02 06:55:59 (+0600)                |
+| **Files Changed** | 135                                        |
+| **Additions**     | 6,651                                      |
+| **Deletions**     | 1,103                                      |
+| **Net Change**    | +5,548 lines                               |
+| **Merge Commit**  | No                                         |
 
 ## Custom Title
 
@@ -30,6 +30,7 @@ A root branch that adds three major feature sets: (1) a smart notification syste
 **`src/pages/AccessDenied.jsx`** (21 lines) — Simple "403 Access Denied" page for unauthorized route access.
 
 **Backend:**
+
 - `server/controllers/notificationController.js` — Search alerts CRUD, notification listing/marking read
 - `server/controllers/socialController.js` — Comments, shares, reports
 - `server/services/notificationService.js` — Smart search alert matching, notification generation
@@ -47,6 +48,7 @@ A root branch that adds three major feature sets: (1) a smart notification syste
 ## Role-Based Route Protection
 
 Routes now gated by role:
+
 - `/partner-network`: buying_house, admin, factory
 - `/product-management`: factory, buying_house, admin
 - `/buyer-requests`: buyer, buying_house, admin

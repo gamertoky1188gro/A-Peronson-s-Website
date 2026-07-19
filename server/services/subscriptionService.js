@@ -28,7 +28,9 @@ export async function upsertSubscription(
   autoRenew = true,
   meta = {},
 ) {
-  const existing = await prisma.subscription.findFirst({ where: { user_id: userId } });
+  const existing = await prisma.subscription.findFirst({
+    where: { user_id: userId },
+  });
   const previousPlan = existing?.plan || "";
   const start = nowIso();
   const end = plan === "premium" ? plusDays(30) : plusDays(3650);
@@ -56,7 +58,13 @@ export async function upsertSubscription(
     });
   }
 
-  const next = { user_id: userId, plan, start_date: start.toISOString(), end_date: end.toISOString(), auto_renew: Boolean(autoRenew) };
+  const next = {
+    user_id: userId,
+    plan,
+    start_date: start.toISOString(),
+    end_date: end.toISOString(),
+    auto_renew: Boolean(autoRenew),
+  };
   const action =
     previousPlan && previousPlan !== plan
       ? plan === "premium"
@@ -76,7 +84,9 @@ export async function upsertSubscription(
 }
 
 export async function renewPremiumMonthly(userId, autoRenew = true, meta = {}) {
-  const existing = await prisma.subscription.findFirst({ where: { user_id: userId } });
+  const existing = await prisma.subscription.findFirst({
+    where: { user_id: userId },
+  });
   const previousPlan = existing?.plan || "";
 
   const currentEndTime = existing?.end_date

@@ -2,9 +2,13 @@
 import { Client } from "@opensearch-project/opensearch";
 
 const OPENSEARCH_URL = process.env.OPENSEARCH_URL || "http://localhost:9200";
-const auth = process.env.OPENSEARCH_USERNAME && process.env.OPENSEARCH_PASSWORD
-  ? { username: process.env.OPENSEARCH_USERNAME, password: process.env.OPENSEARCH_PASSWORD }
-  : undefined;
+const auth =
+  process.env.OPENSEARCH_USERNAME && process.env.OPENSEARCH_PASSWORD
+    ? {
+        username: process.env.OPENSEARCH_USERNAME,
+        password: process.env.OPENSEARCH_PASSWORD,
+      }
+    : undefined;
 const ssl = OPENSEARCH_URL.startsWith("https://")
   ? { rejectUnauthorized: false }
   : undefined;

@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| **Commit Number** | 0018 |
-| **Commit Hash** | `e5cca345d3120ff5899e47a2881247b53745800c` |
-| **Parent Hash** | `5de6103` (0017) |
-| **Author** | Cyber Code Master |
-| **Date/Time** | 2026-03-02 01:32:44 (+0600) |
-| **Files Changed** | 2 |
-| **Additions** | 421 |
-| **Deletions** | 189 |
-| **Net Change** | +232 lines |
-| **Merge Commit** | No |
+| Field             | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Commit Number** | 0018                                       |
+| **Commit Hash**   | `e5cca345d3120ff5899e47a2881247b53745800c` |
+| **Parent Hash**   | `5de6103` (0017)                           |
+| **Author**        | Cyber Code Master                          |
+| **Date/Time**     | 2026-03-02 01:32:44 (+0600)                |
+| **Files Changed** | 2                                          |
+| **Additions**     | 421                                        |
+| **Deletions**     | 189                                        |
+| **Net Change**    | +232 lines                                 |
+| **Merge Commit**  | No                                         |
 
 ## Custom Title
 
@@ -26,6 +26,7 @@ Rewrites `MainFeed.jsx` and `SearchResults.jsx` to fetch live data from the back
 ## Key Changes
 
 **`src/pages/MainFeed.jsx`** (+290/-59):
+
 - Added API helper with JWT auth token support
 - `normalizeFeedItem()` function to handle various API response formats
 - `toArray()` helper to extract arrays from nested API responses
@@ -34,6 +35,7 @@ Rewrites `MainFeed.jsx` and `SearchResults.jsx` to fetch live data from the back
 - Like, comment, share buttons still UI-only
 
 **`src/pages/SearchResults.jsx`** (+320/-99):
+
 - Same API helper and normalization
 - Search queries fetch from `/api/feed?type=buyer_request&category=...`
 - Results displayed from API data instead of hardcoded samples

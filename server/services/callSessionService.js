@@ -108,7 +108,10 @@ export async function createScheduledCallSession(userId, payload = {}) {
         Number(payload?.duration_minutes) > 0
           ? Number(payload.duration_minutes)
           : 30,
-      participant_ids: normalizeParticipantIds(payload?.participant_ids, userId),
+      participant_ids: normalizeParticipantIds(
+        payload?.participant_ids,
+        userId,
+      ),
       status: CALL_STATUS.SCHEDULED,
       recording_status: RECORDING_STATUS.PENDING,
       contract_id: sanitizeString(payload?.contract_id, 120),
@@ -122,7 +125,9 @@ export async function createScheduledCallSession(userId, payload = {}) {
       },
       created_at: new Date(),
       audit_trail: [
-        buildAuditEntry("scheduled", userId, { scheduled_for: scheduledFor.toISOString() }),
+        buildAuditEntry("scheduled", userId, {
+          scheduled_for: scheduledFor.toISOString(),
+        }),
       ],
     },
   });
@@ -334,10 +339,9 @@ export async function listCallHistory(matchIds = [], userId) {
   }
 
   const ids = new Set(matchIds);
-  return allowed
-    .filter(
-      (call) => ids.has(call.match_id) || ids.has(call.context?.chat_thread_id),
-    );
+  return allowed.filter(
+    (call) => ids.has(call.match_id) || ids.has(call.context?.chat_thread_id),
+  );
 }
 
 export async function findOrCreateCallSession(userId, payload = {}) {

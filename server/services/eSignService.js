@@ -87,8 +87,10 @@ export async function handleSignCallback(contractId, payload = {}) {
   // If both signed, attempt to generate PDF artifact
   try {
     if (
-      (updateData.buyer_signature_state === "signed" || contract.buyer_signature_state === "signed") &&
-      (updateData.factory_signature_state === "signed" || contract.factory_signature_state === "signed")
+      (updateData.buyer_signature_state === "signed" ||
+        contract.buyer_signature_state === "signed") &&
+      (updateData.factory_signature_state === "signed" ||
+        contract.factory_signature_state === "signed")
     ) {
       const { generateContractArtifact } = await import("./documentService.js");
       if (typeof generateContractArtifact === "function") {

@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 94fc77876f2a77973bbbf4c72bedcd488ab872b1
 - **Parent:** d5a545f7bba1802c83a342f224f0be6e984e248f 44cbdb7e8e42f614abc2e67c70c3f046e7ed6a6d
 - **Author:** Cyber Code Master
@@ -6,29 +7,33 @@
 - **Message:** Merge pull request #77 from gamertoky1188gro/codex/add-prisma-models-and-relations
 
 ## Custom Title
+
 Merge pull request #77 from gamertoky1188gro/codex/add-prisma-models-and-relations
 
 ## High-Level Summary
+
 Merge pull request #77 from gamertoky1188gro/codex/add-prisma-models-and-relations
 
- 12 files changed, 333 insertions(+), 58 deletions(-)
+12 files changed, 333 insertions(+), 58 deletions(-)
 
 ## File-by-File Breakdown
- .../migration.sql                                  |  78 +++++++++++++
- prisma/schema.prisma                               | 121 ++++++++++++++-------
- scripts/db/migrate-crm-json-to-sql.mjs             |  42 ++++++-
- .../__tests__/leadService.crm-regression.test.js   |  90 +++++++++++++++
- server/services/analyticsService.js                |   6 +-
- server/services/crmService.js                      |   4 +-
- server/services/leadReminderService.js             |   6 +-
- server/services/leadService.js                     |  16 +--
- server/services/messageService.js                  |   4 +-
- server/utils/crmFallbackStore.js                   |  14 ++-
- server/utils/jsonStore.js                          |   1 +
- server/utils/logger.js                             |   9 ++
- 12 files changed, 333 insertions(+), 58 deletions(-)
+
+.../migration.sql | 78 +++++++++++++
+prisma/schema.prisma | 121 ++++++++++++++-------
+scripts/db/migrate-crm-json-to-sql.mjs | 42 ++++++-
+.../**tests**/leadService.crm-regression.test.js | 90 +++++++++++++++
+server/services/analyticsService.js | 6 +-
+server/services/crmService.js | 4 +-
+server/services/leadReminderService.js | 6 +-
+server/services/leadService.js | 16 +--
+server/services/messageService.js | 4 +-
+server/utils/crmFallbackStore.js | 14 ++-
+server/utils/jsonStore.js | 1 +
+server/utils/logger.js | 9 ++
+12 files changed, 333 insertions(+), 58 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/migrations/20260405153000_crm_relations_event_log/migration.sql b/prisma/migrations/20260405153000_crm_relations_event_log/migration.sql
 new file mode 100644
@@ -121,7 +126,7 @@ index 89bde8c..0c5832a 100644
 @@ -37,6 +37,14 @@ model User {
    updated_at                 DateTime?
    password_reset_at          DateTime?
- 
+
 +  ownedLeads                Lead[]           @relation("LeadOrgOwner")
 +  assignedLeads             Lead[]           @relation("LeadAssignedAgent")
 +  counterpartyLeads         Lead[]           @relation("LeadCounterpartyUser")
@@ -132,10 +137,10 @@ index 89bde8c..0c5832a 100644
 +
    @@map("users")
  }
- 
+
 @@ -193,15 +201,16 @@ model CurrencyConfig {
  }
- 
+
  model Message {
 -  id                String   @id
 +  id                String           @id
@@ -150,12 +155,12 @@ index 89bde8c..0c5832a 100644
    moderated         Boolean?
    moderation_reason String?
 +  interactions      InteractionLog[]
- 
+
    @@map("messages")
  }
 @@ -312,23 +321,24 @@ model PartnerRequest {
  }
- 
+
  model CallSession {
 -  id               String   @id
 -  created_by       String
@@ -191,12 +196,12 @@ index 89bde8c..0c5832a 100644
 +  ended_at          DateTime?
 +  audit_trail       Json?
 +  interactions      InteractionLog[]
- 
+
    @@map("call_sessions")
  }
 @@ -377,22 +387,29 @@ model Document {
  }
- 
+
  model Lead {
 -  id                   String   @id
 -  org_owner_id         String
@@ -239,14 +244,14 @@ index 89bde8c..0c5832a 100644
 +  @@index([assigned_agent_id, updated_at])
    @@map("leads")
  }
- 
+
 @@ -403,6 +420,8 @@ model LeadNote {
    author_id    String
    note         String?
    created_at   DateTime @default(now())
 +  lead         Lead     @relation(fields: [lead_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 +  author       User     @relation("LeadNoteAuthor", fields: [author_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
- 
+
    @@index([lead_id, created_at])
    @@map("lead_notes")
 @@ -418,28 +437,56 @@ model LeadReminder {
@@ -255,11 +260,11 @@ index 89bde8c..0c5832a 100644
    created_at   DateTime @default(now())
 +  lead         Lead     @relation(fields: [lead_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 +  creator      User     @relation("LeadReminderCreator", fields: [created_by], references: [id], onDelete: Restrict, onUpdate: Cascade)
- 
+
    @@index([lead_id, remind_at, done])
    @@map("lead_reminders")
  }
- 
+
  model InteractionLog {
 -  id               String   @id
 +  id               String      @id
@@ -284,11 +289,11 @@ index 89bde8c..0c5832a 100644
 +  message          Message?    @relation(fields: [message_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 +  callSession      CallSession? @relation(fields: [call_session_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 +  eventLog         EventLog?   @relation(fields: [event_log_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
- 
+
    @@index([org_owner_id, interaction_type, occurred_at])
    @@map("interaction_logs")
  }
- 
+
 +model EventLog {
 +  id           String           @id
 +  org_owner_id String
@@ -315,7 +320,7 @@ index f2c9e85..b0cb90c 100644
 @@ -126,6 +126,39 @@ async function migrateLeadReminders(reminders) {
    }
  }
- 
+
 +
 +async function migrateEventLogs(eventLogs) {
 +  for (const eventLog of eventLogs) {
@@ -386,7 +391,7 @@ index f2c9e85..b0cb90c 100644
            duration_minutes: call.duration_minutes || null,
 @@ -207,12 +244,13 @@ async function migrateInteractions(messages, calls) {
  }
- 
+
  async function main() {
 -  const [leads, notes, reminders, messages, callSessions] = await Promise.all([
 +  const [leads, notes, reminders, messages, callSessions, eventLogs] = await Promise.all([
@@ -397,7 +402,7 @@ index f2c9e85..b0cb90c 100644
      readLegacyJson('call_sessions.json'),
 +    readLegacyJson('event_logs.json'),
    ])
- 
+
    console.log('Legacy rows found:', {
 @@ -221,11 +259,13 @@ async function main() {
      lead_reminders: reminders.length,
@@ -405,13 +410,13 @@ index f2c9e85..b0cb90c 100644
      call_sessions: callSessions.length,
 +    event_logs: eventLogs.length,
    })
- 
+
    await migrateLeads(leads)
    await migrateLeadNotes(notes)
    await migrateLeadReminders(reminders)
 +  await migrateEventLogs(eventLogs)
    await migrateInteractions(messages, callSessions)
- 
+
    console.log('CRM JSON → SQL migration complete.')
 diff --git a/server/services/__tests__/leadService.crm-regression.test.js b/server/services/__tests__/leadService.crm-regression.test.js
 new file mode 100644
@@ -514,17 +519,17 @@ index 5004dc9..77fe347 100644
 --- a/server/services/analyticsService.js
 +++ b/server/services/analyticsService.js
 @@ -11,7 +11,7 @@ import { getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analy
- 
+
  const FILE = 'analytics.json'
  const SEARCH_TREND_MIN_EVENTS = 25
 -const CRM_SQL_ENABLED = isCrmSqlEnabled()
 +const USE_SQL_CRM = isCrmSqlEnabled()
- 
+
  async function getSearchMinEvents() {
    try {
 @@ -24,7 +24,7 @@ async function getSearchMinEvents() {
  }
- 
+
  export async function trackEvent({ type, actor_id, entity_id, metadata = {} }) {
 -  if (CRM_SQL_ENABLED) {
 +  if (USE_SQL_CRM) {
@@ -532,7 +537,7 @@ index 5004dc9..77fe347 100644
        data: {
          id: crypto.randomUUID(),
 @@ -69,7 +69,7 @@ function scopeAnalyticsRecords(user, records, idFields) {
- 
+
  export async function getAnalyticsSummary(user) {
    ensureAnalyticsAccess(user)
 -  const all = CRM_SQL_ENABLED ? await prisma.analyticsEvent.findMany() : await readLegacyJson(FILE)
@@ -550,7 +555,7 @@ index dab7edb..7647deb 100644
  }
 -const CRM_SQL_ENABLED = isCrmSqlEnabled()
 +const USE_SQL_CRM = isCrmSqlEnabled()
- 
+
  async function readStore(fileName) {
 -  if (CRM_SQL_ENABLED) {
 +  if (USE_SQL_CRM) {
@@ -567,12 +572,12 @@ index e8c3167..7cf07d1 100644
  const USERS_FILE = 'users.json'
 -const CRM_SQL_ENABLED = isCrmSqlEnabled()
 +const USE_SQL_CRM = isCrmSqlEnabled()
- 
+
  let sweepActive = false
- 
+
 @@ -33,7 +33,7 @@ export async function runLeadReminderSweep() {
    sweepActive = true
- 
+
    try {
 -    const [reminders, leads, users] = CRM_SQL_ENABLED
 +    const [reminders, leads, users] = USE_SQL_CRM
@@ -582,7 +587,7 @@ index e8c3167..7cf07d1 100644
 @@ -107,7 +107,7 @@ export async function runLeadReminderSweep() {
        }
      })
- 
+
 -    if (processed > 0 && CRM_SQL_ENABLED) {
 +    if (processed > 0 && USE_SQL_CRM) {
        await prisma.$transaction(
@@ -598,7 +603,7 @@ index 6c9ab1a..f572b5a 100644
  const REQUIREMENTS_FILE = 'requirements.json'
 -const CRM_SQL_ENABLED = isCrmSqlEnabled()
 +const USE_SQL_CRM = isCrmSqlEnabled()
- 
+
  async function readStore(fileName) {
 -  if (CRM_SQL_ENABLED) {
 +  if (USE_SQL_CRM) {
@@ -607,7 +612,7 @@ index 6c9ab1a..f572b5a 100644
    return readLegacyJson(fileName)
 @@ -324,7 +324,7 @@ export async function markLeadConvertedFromContract({ buyerId, factoryId, contra
  }
- 
+
  export async function listLeads(actor) {
 -  if (CRM_SQL_ENABLED) {
 +  if (USE_SQL_CRM) {
@@ -615,7 +620,7 @@ index 6c9ab1a..f572b5a 100644
        return prisma.lead.findMany({ orderBy: { updated_at: 'desc' } })
      }
 @@ -358,7 +358,7 @@ export async function listLeads(actor) {
- 
+
  export async function getLeadById(actor, leadId) {
    const id = sanitizeString(String(leadId || ''), 120)
 -  if (CRM_SQL_ENABLED) {
@@ -633,7 +638,7 @@ index 6c9ab1a..f572b5a 100644
      const lead = await prisma.lead.findFirst({
        where: isOwnerOrAdmin(actor) ? { match_id: id } : { match_id: id, org_owner_id: actorOrgId },
 @@ -417,7 +417,7 @@ export async function getLeadByMatch(actor, matchId) {
- 
+
  export async function updateLead(actor, leadId, patch = {}) {
    const id = sanitizeString(String(leadId || ''), 120)
 -  if (CRM_SQL_ENABLED) {
@@ -642,7 +647,7 @@ index 6c9ab1a..f572b5a 100644
      const current = await prisma.lead.findFirst({
        where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
 @@ -467,7 +467,7 @@ export async function updateLead(actor, leadId, patch = {}) {
- 
+
  export async function addLeadNote(actor, leadId, noteText) {
    const id = sanitizeString(String(leadId || ''), 120)
 -  if (CRM_SQL_ENABLED) {
@@ -651,7 +656,7 @@ index 6c9ab1a..f572b5a 100644
      const lead = await prisma.lead.findFirst({
        where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
 @@ -508,7 +508,7 @@ export async function addLeadNote(actor, leadId, noteText) {
- 
+
  export async function addLeadReminder(actor, leadId, payload = {}) {
    const id = sanitizeString(String(leadId || ''), 120)
 -  if (CRM_SQL_ENABLED) {
@@ -669,13 +674,13 @@ index 0dcff23..65772c0 100644
  const MESSAGE_READS_FILE = 'message_reads.json'
 -const CRM_SQL_ENABLED = isCrmSqlEnabled()
 +const USE_SQL_CRM = isCrmSqlEnabled()
- 
+
  async function readStore(fileName) {
 -  if (CRM_SQL_ENABLED) return readJson(fileName)
 +  if (USE_SQL_CRM) return readJson(fileName)
    return readLegacyJson(fileName)
  }
- 
+
 diff --git a/server/utils/crmFallbackStore.js b/server/utils/crmFallbackStore.js
 index e4417be..96d877a 100644
 --- a/server/utils/crmFallbackStore.js
@@ -683,7 +688,7 @@ index e4417be..96d877a 100644
 @@ -4,9 +4,19 @@ import path from 'node:path'
  const ROOT = process.cwd()
  const LEGACY_DB_DIR = path.join(ROOT, 'server', 'database')
- 
+
 +function normalizeFlag(raw, fallback = true) {
 +  if (raw === undefined || raw === null || raw === '') return fallback
 +  const value = String(raw).toLowerCase().trim()
@@ -700,7 +705,7 @@ index e4417be..96d877a 100644
 +  }
 +  return normalizeFlag(process.env.CRM_SQL_ENABLED, true)
  }
- 
+
  export async function readLegacyJson(fileName) {
 diff --git a/server/utils/jsonStore.js b/server/utils/jsonStore.js
 index 0e3ee38..7c269bb 100644
@@ -721,7 +726,7 @@ index 9b45d67..8f9d2db 100644
 @@ -7,6 +7,15 @@ export function logInfo(message, data = null) {
    console.log(`[INFO] ${stamp} ${message}`)
  }
- 
+
 +export function logWarn(message, data = null) {
 +  const stamp = new Date().toISOString()
 +  if (data) {
@@ -737,17 +742,22 @@ index 9b45d67..8f9d2db 100644
 ```
 
 ## Why This Change
+
 Merge pull request #77 from gamertoky1188gro/codex/add-prisma-models-and-relations
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  12 files changed, 333 insertions(+), 58 deletions(-)
+
+- **Scope:** 12 files changed, 333 insertions(+), 58 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 198 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

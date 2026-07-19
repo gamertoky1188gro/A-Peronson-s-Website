@@ -1,7 +1,11 @@
 import { QdrantClient } from "@qdrant/qdrant-js";
 import { getAdminConfig } from "./adminConfigService.js";
 import prisma from "../utils/prisma.js";
-import { generateEmbedding, generateEmbeddingWithRetry, isEmbeddingConfigured } from "./embeddingService.js";
+import {
+  generateEmbedding,
+  generateEmbeddingWithRetry,
+  isEmbeddingConfigured,
+} from "./embeddingService.js";
 
 const CONFIG_TTL_MS = 15000;
 let cachedConfig = { at: 0, value: null };
@@ -29,7 +33,11 @@ async function loadConfig() {
 }
 
 function buildClientKey(cfg) {
-  return JSON.stringify({ url: cfg.url, apiKey: cfg.apiKey, timeout_ms: cfg.timeout_ms });
+  return JSON.stringify({
+    url: cfg.url,
+    apiKey: cfg.apiKey,
+    timeout_ms: cfg.timeout_ms,
+  });
 }
 
 async function getClient() {
@@ -67,7 +75,10 @@ export async function ensureQdrantCollections() {
   try {
     for (const type of ["products", "requirements"]) {
       const name = collectionName(type, cfg);
-      const exists = await client.getCollection(name).then(() => true).catch(() => false);
+      const exists = await client
+        .getCollection(name)
+        .then(() => true)
+        .catch(() => false);
       if (!exists) {
         await client.createCollection(name, {
           vectors: { distance: "Cosine", size: 1024 },
@@ -86,7 +97,10 @@ async function getOrCreateCollection(type) {
   const { cfg, client } = await getClient();
   if (!client) return null;
   const name = collectionName(type, cfg);
-  const exists = await client.getCollection(name).then(() => true).catch(() => false);
+  const exists = await client
+    .getCollection(name)
+    .then(() => true)
+    .catch(() => false);
   if (!exists) {
     await client.createCollection(name, {
       vectors: { distance: "Cosine", size: 1024 },
@@ -132,12 +146,15 @@ export async function indexProduct(product, author) {
   if (!coll) return;
   const { client, name } = coll;
   const payload = buildPayloadForProduct(product, author);
-  const text = `${payload.title} ${payload.category} ${payload.industry} ${payload.material} ${payload.country} ${payload.description || ""}`.trim();
+  const text =
+    `${payload.title} ${payload.category} ${payload.industry} ${payload.material} ${payload.country} ${payload.description || ""}`.trim();
   const embedding = await generateEmbeddingWithRetry(text);
   if (!embedding) return;
-  await client.upsert(name, {
-    points: [{ id: product.id, vector: embedding, payload }],
-  }).catch(() => {});
+  await client
+    .upsert(name, {
+      points: [{ id: product.id, vector: embedding, payload }],
+    })
+    .catch(() => {});
 }
 
 export async function indexRequirement(req, author) {
@@ -145,12 +162,15 @@ export async function indexRequirement(req, author) {
   if (!coll) return;
   const { client, name } = coll;
   const payload = buildPayloadForRequirement(req, author);
-  const text = `${payload.title} ${payload.category} ${payload.industry} ${payload.material} ${payload.country} ${payload.description || ""}`.trim();
+  const text =
+    `${payload.title} ${payload.category} ${payload.industry} ${payload.material} ${payload.country} ${payload.description || ""}`.trim();
   const embedding = await generateEmbeddingWithRetry(text);
   if (!embedding) return;
-  await client.upsert(name, {
-    points: [{ id: req.id, vector: embedding, payload }],
-  }).catch(() => {});
+  await client
+    .upsert(name, {
+      points: [{ id: req.id, vector: embedding, payload }],
+    })
+    .catch(() => {});
 }
 
 export async function deleteProduct(id) {
@@ -158,7 +178,9 @@ export async function deleteProduct(id) {
   if (!client) return;
   try {
     await client.delete(collectionName("products", cfg), { points: [id] });
-  } catch { void 0; }
+  } catch {
+    void 0;
+  }
 }
 
 export async function deleteRequirement(id) {
@@ -166,24 +188,44 @@ export async function deleteRequirement(id) {
   if (!client) return;
   try {
     await client.delete(collectionName("requirements", cfg), { points: [id] });
-  } catch { void 0; }
+  } catch {
+    void 0;
+  }
 }
 
-export async function searchQdrant({ type, query, filters = {}, cursor = 0, limit = 50 } = {}) {
+export async function searchQdrant({
+  type,
+  query,
+  filters = {},
+  cursor = 0,
+  limit = 50,
+} = {}) {
   if (!query || !query.trim()) return { ids: [], scores: [], total: 0 };
 
   const embEnabled = await isEmbeddingConfigured();
-  if (!embEnabled) return { ids: [], scores: [], total: 0, engine: "embedding_not_configured" };
+  if (!embEnabled)
+    return {
+      ids: [],
+      scores: [],
+      total: 0,
+      engine: "embedding_not_configured",
+    };
 
   const { cfg, client } = await getClient();
-  if (!client) return { ids: [], scores: [], total: 0, engine: "qdrant_not_configured" };
+  if (!client)
+    return { ids: [], scores: [], total: 0, engine: "qdrant_not_configured" };
 
   const name = collectionName(type, cfg);
-  const colExists = await client.getCollection(name).then(() => true).catch(() => false);
-  if (!colExists) return { ids: [], scores: [], total: 0, engine: "collection_not_found" };
+  const colExists = await client
+    .getCollection(name)
+    .then(() => true)
+    .catch(() => false);
+  if (!colExists)
+    return { ids: [], scores: [], total: 0, engine: "collection_not_found" };
 
   const embedding = await generateEmbedding(query);
-  if (!embedding) return { ids: [], scores: [], total: 0, engine: "embedding_failed" };
+  if (!embedding)
+    return { ids: [], scores: [], total: 0, engine: "embedding_failed" };
 
   const actualLimit = Math.min(100, Math.max(1, Number(limit || 50)));
   const offset = Math.max(0, Number(cursor || 0));
@@ -192,18 +234,32 @@ export async function searchQdrant({ type, query, filters = {}, cursor = 0, limi
     const mustFilters = [];
 
     if (filters.country) {
-      mustFilters.push({ key: "country", match: { value: String(filters.country).toLowerCase() } });
+      mustFilters.push({
+        key: "country",
+        match: { value: String(filters.country).toLowerCase() },
+      });
     }
     if (filters.category) {
-      const cats = Array.isArray(filters.category) ? filters.category : [filters.category];
+      const cats = Array.isArray(filters.category)
+        ? filters.category
+        : [filters.category];
       if (cats.length === 1) {
-        mustFilters.push({ key: "category", match: { value: String(cats[0]).toLowerCase() } });
+        mustFilters.push({
+          key: "category",
+          match: { value: String(cats[0]).toLowerCase() },
+        });
       } else {
-        mustFilters.push({ key: "category", match: { any: cats.map(c => String(c).toLowerCase()) } });
+        mustFilters.push({
+          key: "category",
+          match: { any: cats.map((c) => String(c).toLowerCase()) },
+        });
       }
     }
     if (filters.industry) {
-      mustFilters.push({ key: "industry", match: { value: String(filters.industry).toLowerCase() } });
+      mustFilters.push({
+        key: "industry",
+        match: { value: String(filters.industry).toLowerCase() },
+      });
     }
 
     const filter = mustFilters.length ? { must: mustFilters } : undefined;
@@ -217,23 +273,34 @@ export async function searchQdrant({ type, query, filters = {}, cursor = 0, limi
       filter,
     });
 
-    const ids = result.map(p => String(p.id));
-    const scores = result.map(p => p.score || 0);
+    const ids = result.map((p) => String(p.id));
+    const scores = result.map((p) => p.score || 0);
     return { ids, scores, total: ids.length, engine: "qdrant" };
   } catch (err) {
     console.warn(`[qdrant] Search error: ${err.message}`);
-    return { ids: [], scores: [], total: 0, engine: "qdrant_error", error: err.message };
+    return {
+      ids: [],
+      scores: [],
+      total: 0,
+      engine: "qdrant_error",
+      error: err.message,
+    };
   }
 }
 
 export async function reindexAll({ reset = false } = {}) {
-  if (!(await isQdrantConfigured())) return { ok: false, reason: "not_configured" };
+  if (!(await isQdrantConfigured()))
+    return { ok: false, reason: "not_configured" };
 
   if (reset) {
     const { cfg, client } = await getClient();
     if (client) {
       for (const type of ["products", "requirements"]) {
-        try { await client.deleteCollection(collectionName(type, cfg)); } catch { void 0; }
+        try {
+          await client.deleteCollection(collectionName(type, cfg));
+        } catch {
+          void 0;
+        }
       }
     }
   }
@@ -245,21 +312,35 @@ export async function reindexAll({ reset = false } = {}) {
     prisma.requirement.findMany(),
     prisma.user.findMany(),
   ]);
-  const usersById = new Map(users.map(u => [String(u.id), u]));
+  const usersById = new Map(users.map((u) => [String(u.id), u]));
 
   let productsIndexed = 0;
   for (const p of products) {
     const author = usersById.get(String(p.company_id)) || {};
-    try { await indexProduct(p, author); productsIndexed++; } catch { void 0; }
+    try {
+      await indexProduct(p, author);
+      productsIndexed++;
+    } catch {
+      void 0;
+    }
   }
 
   let requirementsIndexed = 0;
   for (const r of requirements) {
     const author = usersById.get(String(r.buyer_id)) || {};
-    try { await indexRequirement(r, author); requirementsIndexed++; } catch { void 0; }
+    try {
+      await indexRequirement(r, author);
+      requirementsIndexed++;
+    } catch {
+      void 0;
+    }
   }
 
-  return { ok: true, products: productsIndexed, requirements: requirementsIndexed };
+  return {
+    ok: true,
+    products: productsIndexed,
+    requirements: requirementsIndexed,
+  };
 }
 
 export async function getQdrantStatus() {
@@ -267,12 +348,20 @@ export async function getQdrantStatus() {
   const configured = Boolean(cfg.enabled && cfg.url);
 
   if (!configured) {
-    return { configured: false, enabled: Boolean(cfg.enabled), url_set: Boolean(cfg.url) };
+    return {
+      configured: false,
+      enabled: Boolean(cfg.enabled),
+      url_set: Boolean(cfg.url),
+    };
   }
 
   const { client } = await getClient();
   if (!client) {
-    return { configured: false, enabled: Boolean(cfg.enabled), url_set: Boolean(cfg.url) };
+    return {
+      configured: false,
+      enabled: Boolean(cfg.enabled),
+      url_set: Boolean(cfg.url),
+    };
   }
 
   let reachable = false;
@@ -287,12 +376,27 @@ export async function getQdrantStatus() {
     const prodInfo = await client.getCollection(productName).catch(() => null);
     const reqInfo = await client.getCollection(reqName).catch(() => null);
     collections = {
-      products: { name: productName, exists: !!prodInfo, points_count: prodInfo?.points_count || 0 },
-      requirements: { name: reqName, exists: !!reqInfo, points_count: reqInfo?.points_count || 0 },
+      products: {
+        name: productName,
+        exists: !!prodInfo,
+        points_count: prodInfo?.points_count || 0,
+      },
+      requirements: {
+        name: reqName,
+        exists: !!reqInfo,
+        points_count: reqInfo?.points_count || 0,
+      },
     };
   } catch (err) {
     error = err.message;
   }
 
-  return { configured: true, enabled: Boolean(cfg.enabled), reachable, url: cfg.url, collections, error };
+  return {
+    configured: true,
+    enabled: Boolean(cfg.enabled),
+    reachable,
+    url: cfg.url,
+    collections,
+    error,
+  };
 }

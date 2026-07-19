@@ -7,13 +7,36 @@ import sharp from "sharp";
 const COMPRESSED_SUFFIX = ".compressed";
 
 const SHARP_FORMATS = new Set([
-  ".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".tiff", ".tif",
-  ".svg", ".heic", ".heif",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".avif",
+  ".gif",
+  ".tiff",
+  ".tif",
+  ".svg",
+  ".heic",
+  ".heif",
 ]);
 
 const IMAGEMAGICK_FORMATS = new Set([
-  ".bmp", ".dcm", ".tga", ".eps", ".psd", ".ai", ".xcf", ".cdr",
-  ".dng", ".cr2", ".cr3", ".nef", ".arw", ".sr2", ".orf", ".raf",
+  ".bmp",
+  ".dcm",
+  ".tga",
+  ".eps",
+  ".psd",
+  ".ai",
+  ".xcf",
+  ".cdr",
+  ".dng",
+  ".cr2",
+  ".cr3",
+  ".nef",
+  ".arw",
+  ".sr2",
+  ".orf",
+  ".raf",
   ".apng",
 ]);
 
@@ -21,10 +44,35 @@ export function isImageFile(mime, originalName) {
   const mimeLower = String(mime || "").toLowerCase();
   if (mimeLower.startsWith("image/")) return true;
   const imgExts = new Set([
-    ".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".apng",
-    ".bmp", ".tiff", ".tif", ".heic", ".heif", ".dcm", ".tga",
-    ".svg", ".eps", ".pdf", ".dng", ".cr2", ".cr3", ".nef",
-    ".arw", ".sr2", ".orf", ".raf", ".psd", ".ai", ".xcf", ".cdr",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".avif",
+    ".gif",
+    ".apng",
+    ".bmp",
+    ".tiff",
+    ".tif",
+    ".heic",
+    ".heif",
+    ".dcm",
+    ".tga",
+    ".svg",
+    ".eps",
+    ".pdf",
+    ".dng",
+    ".cr2",
+    ".cr3",
+    ".nef",
+    ".arw",
+    ".sr2",
+    ".orf",
+    ".raf",
+    ".psd",
+    ".ai",
+    ".xcf",
+    ".cdr",
   ]);
   const ext = path.extname(String(originalName || "")).toLowerCase();
   return imgExts.has(ext);
@@ -35,7 +83,10 @@ export async function compressImage(inputPath) {
   const _dir = path.dirname(inputPath);
   const base = path.basename(inputPath, ext);
   const outputExt = ext === ".jpg" ? ".jpg" : ".jpg";
-  const outputPath = path.join(os.tmpdir(), `${base}${COMPRESSED_SUFFIX}${outputExt}`);
+  const outputPath = path.join(
+    os.tmpdir(),
+    `${base}${COMPRESSED_SUFFIX}${outputExt}`,
+  );
 
   if (SHARP_FORMATS.has(ext)) {
     await compressWithSharp(inputPath, outputPath);
@@ -79,20 +130,28 @@ async function compressWithImageMagick(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
     const proc = spawn("convert", [
       inputPath,
-      "-quality", "80%",
-      "-resize", "1920x1920>",
+      "-quality",
+      "80%",
+      "-resize",
+      "1920x1920>",
       outputPath,
     ]);
     let stderr = "";
-    proc.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
+    proc.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
     proc.on("close", (code) => {
       if (code !== 0) {
-        reject(new Error(`ImageMagick failed (code ${code}): ${stderr.slice(-200)}`));
+        reject(
+          new Error(`ImageMagick failed (code ${code}): ${stderr.slice(-200)}`),
+        );
       } else {
         resolve();
       }
     });
-    proc.on("error", () => reject(new Error("ImageMagick (convert) not available")));
+    proc.on("error", () =>
+      reject(new Error("ImageMagick (convert) not available")),
+    );
   });
 }
 
@@ -109,10 +168,14 @@ async function compressPdf(inputPath, outputPath) {
       inputPath,
     ]);
     let stderr = "";
-    proc.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
+    proc.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
     proc.on("close", (code) => {
       if (code !== 0) {
-        reject(new Error(`Ghostscript failed (code ${code}): ${stderr.slice(-200)}`));
+        reject(
+          new Error(`Ghostscript failed (code ${code}): ${stderr.slice(-200)}`),
+        );
       } else {
         resolve();
       }

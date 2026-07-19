@@ -2,19 +2,19 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0092 |
-| Hash | `6e4cbfb82171135c1d0f26a9ca2ba3eaf1367cd7` |
-| Parent Hash 1 | `7208e182e7d87ef2034ccefe0e9271f853c711c5` |
-| Parent Hash 2 | `cf51242cfb90cc1071a4b05bb479195461c3119d` |
-| Author | Cyber Code Master |
-| Date/Time | 2026-03-03 18:19:14 |
-| Files Changed | 6 |
-| Lines Added | 227 |
-| Lines Deleted | 58 |
-| Net Change | +169 |
-| Merge | Yes (PR #48: `ccm/expose-lock-workflow-in-production-ui_2026-03-03_12-18-48`) |
+| Field         | Value                                                                         |
+| ------------- | ----------------------------------------------------------------------------- |
+| Commit Number | 0092                                                                          |
+| Hash          | `6e4cbfb82171135c1d0f26a9ca2ba3eaf1367cd7`                                    |
+| Parent Hash 1 | `7208e182e7d87ef2034ccefe0e9271f853c711c5`                                    |
+| Parent Hash 2 | `cf51242cfb90cc1071a4b05bb479195461c3119d`                                    |
+| Author        | Cyber Code Master                                                             |
+| Date/Time     | 2026-03-03 18:19:14                                                           |
+| Files Changed | 6                                                                             |
+| Lines Added   | 227                                                                           |
+| Lines Deleted | 58                                                                            |
+| Net Change    | +169                                                                          |
+| Merge         | Yes (PR #48: `ccm/expose-lock-workflow-in-production-ui_2026-03-03_12-18-48`) |
 
 ## Custom Title
 
@@ -27,6 +27,7 @@ Standard merge commit that integrates the conversation lock UI branch (commit `c
 ## File-by-File Breakdown
 
 Same as commit 0091 — the merge brings all six files into the target branch:
+
 - `server/controllers/conversationController.js`
 - `server/controllers/messageController.js`
 - `server/services/conversationLockService.js`

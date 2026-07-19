@@ -27,11 +27,24 @@ const sections = [
     items: [
       {
         label: "Account Data",
-        details: ["Full Name", "Organization Name", "Email Address", "Phone Number", "Country", "Verification Docs", "Account Type"],
+        details: [
+          "Full Name",
+          "Organization Name",
+          "Email Address",
+          "Phone Number",
+          "Country",
+          "Verification Docs",
+          "Account Type",
+        ],
       },
       {
         label: "Business Data",
-        details: ["Product Specifications", "Design Requirements", "Order Documents", "Digital Signature Records"],
+        details: [
+          "Product Specifications",
+          "Design Requirements",
+          "Order Documents",
+          "Digital Signature Records",
+        ],
       },
       {
         label: "Communications",
@@ -39,7 +52,12 @@ const sections = [
       },
       {
         label: "Technical Information",
-        details: ["IP address", "Device/Browser type", "Usage activity", "Search history"],
+        details: [
+          "IP address",
+          "Device/Browser type",
+          "Usage activity",
+          "Search history",
+        ],
       },
     ],
   },
@@ -47,7 +65,15 @@ const sections = [
     id: "how-we-use-your-information",
     title: "How We Use Your Information",
     icon: ClipboardCheck,
-    pills: ["Account Management", "Order Matching", "AI-Assisted Replies", "Secure Communications", "Digital Contracts", "Fraud Prevention", "Personalized Alerts"],
+    pills: [
+      "Account Management",
+      "Order Matching",
+      "AI-Assisted Replies",
+      "Secure Communications",
+      "Digital Contracts",
+      "Fraud Prevention",
+      "Personalized Alerts",
+    ],
   },
   {
     id: "fraud-prevention-measures",
@@ -95,7 +121,12 @@ const sections = [
     id: "data-security",
     title: "Data Security",
     icon: Lock,
-    pills: ["Encrypted transmission", "Secure server infrastructure", "Multi-level authentication", "Granular role-based permissions"],
+    pills: [
+      "Encrypted transmission",
+      "Secure server infrastructure",
+      "Multi-level authentication",
+      "Granular role-based permissions",
+    ],
   },
   {
     id: "user-rights",
@@ -173,10 +204,14 @@ function SectionCard({ section, index, dark }) {
             <div
               key={item.label}
               className={`rounded-2xl border p-4 ${
-                dark ? "border-slate-800 bg-slate-900/70" : "border-slate-200 bg-slate-50/80"
+                dark
+                  ? "border-slate-800 bg-slate-900/70"
+                  : "border-slate-200 bg-slate-50/80"
               }`}
             >
-              <h3 className={`text-sm font-semibold uppercase tracking-[0.18em] ${dark ? "text-sky-300" : "text-sky-700"}`}>
+              <h3
+                className={`text-sm font-semibold uppercase tracking-[0.18em] ${dark ? "text-sky-300" : "text-sky-700"}`}
+              >
                 {item.label}
               </h3>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -184,7 +219,9 @@ function SectionCard({ section, index, dark }) {
                   <span
                     key={d}
                     className={`inline-flex items-center rounded-full px-3 py-1 text-sm ${
-                      dark ? "bg-slate-800 text-slate-200" : "bg-white text-slate-700 shadow-sm"
+                      dark
+                        ? "bg-slate-800 text-slate-200"
+                        : "bg-white text-slate-700 shadow-sm"
                     }`}
                   >
                     {d}
@@ -202,7 +239,9 @@ function SectionCard({ section, index, dark }) {
             <span
               key={p}
               className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${
-                dark ? "bg-slate-900 text-sky-100 ring-1 ring-inset ring-sky-500/15" : "bg-sky-50 text-sky-800 ring-1 ring-inset ring-sky-200"
+                dark
+                  ? "bg-slate-900 text-sky-100 ring-1 ring-inset ring-sky-500/15"
+                  : "bg-sky-50 text-sky-800 ring-1 ring-inset ring-sky-200"
               }`}
             >
               {p}
@@ -217,10 +256,14 @@ function SectionCard({ section, index, dark }) {
             <li
               key={b}
               className={`flex gap-3 rounded-2xl border p-4 text-sm leading-6 ${
-                dark ? "border-slate-800 bg-slate-900/60 text-slate-200" : "border-slate-200 bg-slate-50 text-slate-700"
+                dark
+                  ? "border-slate-800 bg-slate-900/60 text-slate-200"
+                  : "border-slate-200 bg-slate-50 text-slate-700"
               }`}
             >
-              <ChevronRight className={`mt-0.5 h-4 w-4 shrink-0 ${dark ? "text-sky-300" : "text-sky-600"}`} />
+              <ChevronRight
+                className={`mt-0.5 h-4 w-4 shrink-0 ${dark ? "text-sky-300" : "text-sky-600"}`}
+              />
               <span>{b}</span>
             </li>
           ))}
@@ -230,13 +273,21 @@ function SectionCard({ section, index, dark }) {
       {section.contact && (
         <div
           className={`mt-6 rounded-2xl border p-5 ${
-            dark ? "border-sky-500/20 bg-sky-500/10" : "border-sky-200 bg-sky-50"
+            dark
+              ? "border-sky-500/20 bg-sky-500/10"
+              : "border-sky-200 bg-sky-50"
           }`}
         >
           <div className="flex items-center gap-3">
-            <Mail className={`h-5 w-5 ${dark ? "text-sky-300" : "text-sky-700"}`} />
+            <Mail
+              className={`h-5 w-5 ${dark ? "text-sky-300" : "text-sky-700"}`}
+            />
             <div>
-              <p className={`text-sm font-medium ${dark ? "text-sky-100" : "text-sky-900"}`}>Direct Support</p>
+              <p
+                className={`text-sm font-medium ${dark ? "text-sky-100" : "text-sky-900"}`}
+              >
+                Direct Support
+              </p>
               <a
                 href={`mailto:${section.contact}`}
                 className={`text-sm underline-offset-4 hover:underline ${dark ? "text-white" : "text-slate-950"}`}
@@ -269,7 +320,7 @@ export default function Privacy() {
         id: s.id,
         label: `${idx + 1}. ${s.title}`,
       })),
-    []
+    [],
   );
 
   return (
@@ -293,11 +344,15 @@ export default function Privacy() {
                     <span className="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 ring-1 ring-inset ring-sky-200 dark:text-sky-300 dark:ring-sky-400/20">
                       Legal Documentation
                     </span>
-                    <span className={`text-xs font-medium ${dark ? "text-slate-400" : "text-slate-500"}`}>
+                    <span
+                      className={`text-xs font-medium ${dark ? "text-slate-400" : "text-slate-500"}`}
+                    >
                       Last Updated: {lastUpdated}
                     </span>
                   </div>
-                  <h1 className={`mt-2 text-2xl font-semibold tracking-tight md:text-4xl ${dark ? "text-white" : "text-slate-950"}`}>
+                  <h1
+                    className={`mt-2 text-2xl font-semibold tracking-tight md:text-4xl ${dark ? "text-white" : "text-slate-950"}`}
+                  >
                     Privacy Policy
                   </h1>
                 </div>
@@ -308,10 +363,16 @@ export default function Privacy() {
                   type="button"
                   onClick={() => setMenuOpen((v) => !v)}
                   className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 md:hidden ${
-                    dark ? "border-slate-800 bg-slate-900 text-slate-100" : "border-slate-200 bg-white text-slate-700"
+                    dark
+                      ? "border-slate-800 bg-slate-900 text-slate-100"
+                      : "border-slate-200 bg-white text-slate-700"
                   }`}
                 >
-                  {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                  {menuOpen ? (
+                    <X className="h-4 w-4" />
+                  ) : (
+                    <Menu className="h-4 w-4" />
+                  )}
                   Menu
                 </button>
 
@@ -319,11 +380,17 @@ export default function Privacy() {
                   type="button"
                   onClick={() => setDark((v) => !v)}
                   className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 ${
-                    dark ? "border-slate-800 bg-slate-900 text-slate-100" : "border-slate-200 bg-white text-slate-700"
+                    dark
+                      ? "border-slate-800 bg-slate-900 text-slate-100"
+                      : "border-slate-200 bg-white text-slate-700"
                   }`}
                   aria-label="Toggle theme"
                 >
-                  {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  {dark ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
                   {dark ? "Light" : "Dark"}
                 </button>
               </div>
@@ -333,16 +400,28 @@ export default function Privacy() {
           <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
             <aside
               className={`lg:sticky lg:top-28 h-fit rounded-3xl border p-5 shadow-sm ${
-                dark ? "border-slate-800 bg-slate-950/70" : "border-slate-200 bg-white"
+                dark
+                  ? "border-slate-800 bg-slate-950/70"
+                  : "border-slate-200 bg-white"
               } ${menuOpen ? "block" : "hidden lg:block"}`}
             >
               <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${dark ? "bg-sky-500/10 text-sky-300" : "bg-sky-50 text-sky-700"}`}>
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-2xl ${dark ? "bg-sky-500/10 text-sky-300" : "bg-sky-50 text-sky-700"}`}
+                >
                   <FileText className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className={`text-sm font-semibold ${dark ? "text-white" : "text-slate-950"}`}>Quick Navigation</p>
-                  <p className={`text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>Jump to any policy section</p>
+                  <p
+                    className={`text-sm font-semibold ${dark ? "text-white" : "text-slate-950"}`}
+                  >
+                    Quick Navigation
+                  </p>
+                  <p
+                    className={`text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}
+                  >
+                    Jump to any policy section
+                  </p>
                 </div>
               </div>
 
@@ -364,53 +443,110 @@ export default function Privacy() {
                 ))}
               </nav>
 
-              <div className={`mt-5 rounded-2xl border p-4 ${dark ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-slate-50"}`}>
+              <div
+                className={`mt-5 rounded-2xl border p-4 ${dark ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-slate-50"}`}
+              >
                 <div className="flex items-center gap-2 text-sm font-semibold">
-                  <Fingerprint className={`h-4 w-4 ${dark ? "text-sky-300" : "text-sky-700"}`} />
+                  <Fingerprint
+                    className={`h-4 w-4 ${dark ? "text-sky-300" : "text-sky-700"}`}
+                  />
                   Secure Business Platform
                 </div>
-                <p className={`mt-2 text-sm leading-6 ${dark ? "text-slate-300" : "text-slate-600"}`}>
-                  GarTexHub connects Buyers, Factories, and Buying Houses in a secure and professional environment.
+                <p
+                  className={`mt-2 text-sm leading-6 ${dark ? "text-slate-300" : "text-slate-600"}`}
+                >
+                  GarTexHub connects Buyers, Factories, and Buying Houses in a
+                  secure and professional environment.
                 </p>
               </div>
             </aside>
 
             <main className="space-y-6">
-              <section className={`rounded-3xl border p-6 md:p-8 ${dark ? "border-slate-800 bg-slate-950/70" : "border-slate-200 bg-white"}`}>
+              <section
+                className={`rounded-3xl border p-6 md:p-8 ${dark ? "border-slate-800 bg-slate-950/70" : "border-slate-200 bg-white"}`}
+              >
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="inline-flex items-center rounded-full bg-gradient-to-r from-sky-500/15 to-cyan-300/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 ring-1 ring-inset ring-sky-200 dark:text-sky-300 dark:ring-sky-400/20">
                     Legal Documentation
                   </span>
-                  <span className={`text-xs font-medium ${dark ? "text-slate-400" : "text-slate-500"}`}>Route: /privacy &middot; Access: Public</span>
+                  <span
+                    className={`text-xs font-medium ${dark ? "text-slate-400" : "text-slate-500"}`}
+                  >
+                    Route: /privacy &middot; Access: Public
+                  </span>
                 </div>
 
-                <p className={`mt-5 max-w-4xl text-base leading-8 md:text-lg ${dark ? "text-slate-300" : "text-slate-600"}`}>
-                  This Privacy Policy explains how our B2B Garments and Textile Marketplace platform collects, uses, protects, and manages your information. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. By creating an account or using our services, you agree to the practices described in this policy.
+                <p
+                  className={`mt-5 max-w-4xl text-base leading-8 md:text-lg ${dark ? "text-slate-300" : "text-slate-600"}`}
+                >
+                  This Privacy Policy explains how our B2B Garments and Textile
+                  Marketplace platform collects, uses, protects, and manages
+                  your information. Our platform connects international Buyers,
+                  Factories, and Buying Houses in a secure and professional
+                  environment. By creating an account or using our services, you
+                  agree to the practices described in this policy.
                 </p>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
-                  <div className={`rounded-2xl border p-4 ${dark ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-slate-50"}`}>
-                    <p className={`text-xs uppercase tracking-[0.2em] ${dark ? "text-slate-400" : "text-slate-500"}`}>Platform</p>
-                    <p className={`mt-2 font-semibold ${dark ? "text-white" : "text-slate-950"}`}>GarTexHub</p>
+                  <div
+                    className={`rounded-2xl border p-4 ${dark ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-slate-50"}`}
+                  >
+                    <p
+                      className={`text-xs uppercase tracking-[0.2em] ${dark ? "text-slate-400" : "text-slate-500"}`}
+                    >
+                      Platform
+                    </p>
+                    <p
+                      className={`mt-2 font-semibold ${dark ? "text-white" : "text-slate-950"}`}
+                    >
+                      GarTexHub
+                    </p>
                   </div>
-                  <div className={`rounded-2xl border p-4 ${dark ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-slate-50"}`}>
-                    <p className={`text-xs uppercase tracking-[0.2em] ${dark ? "text-slate-400" : "text-slate-500"}`}>Category</p>
-                    <p className={`mt-2 font-semibold ${dark ? "text-white" : "text-slate-950"}`}>Legal Documentation</p>
+                  <div
+                    className={`rounded-2xl border p-4 ${dark ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-slate-50"}`}
+                  >
+                    <p
+                      className={`text-xs uppercase tracking-[0.2em] ${dark ? "text-slate-400" : "text-slate-500"}`}
+                    >
+                      Category
+                    </p>
+                    <p
+                      className={`mt-2 font-semibold ${dark ? "text-white" : "text-slate-950"}`}
+                    >
+                      Legal Documentation
+                    </p>
                   </div>
-                  <div className={`rounded-2xl border p-4 ${dark ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-slate-50"}`}>
-                    <p className={`text-xs uppercase tracking-[0.2em] ${dark ? "text-slate-400" : "text-slate-500"}`}>Policy Style</p>
-                    <p className={`mt-2 font-semibold ${dark ? "text-white" : "text-slate-950"}`}>Static JSX Page</p>
+                  <div
+                    className={`rounded-2xl border p-4 ${dark ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-slate-50"}`}
+                  >
+                    <p
+                      className={`text-xs uppercase tracking-[0.2em] ${dark ? "text-slate-400" : "text-slate-500"}`}
+                    >
+                      Policy Style
+                    </p>
+                    <p
+                      className={`mt-2 font-semibold ${dark ? "text-white" : "text-slate-950"}`}
+                    >
+                      Static JSX Page
+                    </p>
                   </div>
                 </div>
               </section>
 
               {sections.map((section, idx) => (
-                <SectionCard key={section.id} section={section} index={idx + 1} dark={dark} />
+                <SectionCard
+                  key={section.id}
+                  section={section}
+                  index={idx + 1}
+                  dark={dark}
+                />
               ))}
 
               <footer
                 className={`rounded-3xl border p-6 text-center text-sm tracking-wide ${
-                  dark ? "border-slate-800 bg-slate-950/80 text-slate-300" : "border-slate-200 bg-white text-slate-600"
+                  dark
+                    ? "border-slate-800 bg-slate-950/80 text-slate-300"
+                    : "border-slate-200 bg-white text-slate-600"
                 }`}
               >
                 &copy; 2026 GARTEXHUB PROFESSIONAL NETWORK. ALL RIGHTS RESERVE

@@ -1,5 +1,9 @@
 import prisma from "../utils/prisma.js";
-import { validateVideo, compressVideo, replaceWithCompressed } from "./videoProcessor.js";
+import {
+  validateVideo,
+  compressVideo,
+  replaceWithCompressed,
+} from "./videoProcessor.js";
 
 const QUEUE = [];
 let isProcessing = false;

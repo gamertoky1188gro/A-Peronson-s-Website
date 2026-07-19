@@ -56,7 +56,6 @@ import ScrollVelocityText from "../components/ScrollVelocityText";
 import CardStack from "../components/CardStack";
 import StickySection from "../components/StickySection";
 
-
 const Motion = motion;
 
 const staggerContainerVariants = {
@@ -93,7 +92,9 @@ function SectionTitle({ eyebrow, title, text }) {
         </div>
       </ScrollVelocityText>
       <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
-        {reduceMotion ? title : (
+        {reduceMotion ? (
+          title
+        ) : (
           <span className="inline-flex flex-wrap gap-x-[0.25em]">
             {words.map((word, i) => (
               <motion.span
@@ -102,7 +103,11 @@ function SectionTitle({ eyebrow, title, text }) {
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.4, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                transition={{
+                  duration: 0.4,
+                  delay: i * 0.06,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
               >
                 {word}
               </motion.span>
@@ -263,7 +268,15 @@ function MagneticLinkButton({ to, className = "", children }) {
 }
 
 const SkeletonLine = ({ className = "", size = 24 }) => (
-  <ThreeDot variant="bounce" color="#6100ff" size="medium" style={{ fontSize: size + "px" }} text="" textColor="" className={`inline-block ${className}`} />
+  <ThreeDot
+    variant="bounce"
+    color="#6100ff"
+    size="medium"
+    style={{ fontSize: size + "px" }}
+    text=""
+    textColor=""
+    className={`inline-block ${className}`}
+  />
 );
 
 function GlassSurface({ className = "", children }) {
@@ -614,15 +627,30 @@ export default function TexHub() {
   const blob1Y = useTransform(scrollY, [0, 800], [0, -60]);
   const blob2Y = useTransform(scrollY, [0, 800], [0, -100]);
   const blob3Y = useTransform(scrollY, [0, 800], [0, -80]);
-  const blob1Spring = useSpring(blob1Y, { stiffness: 80, damping: 20, restDelta: 0.01 });
-  const blob2Spring = useSpring(blob2Y, { stiffness: 80, damping: 20, restDelta: 0.01 });
-  const blob3Spring = useSpring(blob3Y, { stiffness: 80, damping: 20, restDelta: 0.01 });
+  const blob1Spring = useSpring(blob1Y, {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.01,
+  });
+  const blob2Spring = useSpring(blob2Y, {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.01,
+  });
+  const blob3Spring = useSpring(blob3Y, {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.01,
+  });
 
   const workflowParallax1 = useTransform(scrollY, [0, 600], [0, -20]);
   const workflowParallax2 = useTransform(scrollY, [0, 600], [0, -60]);
   const workflowParallax3 = useTransform(scrollY, [0, 600], [0, -10]);
 
-  const sectionIds = useMemo(() => ["why", "workflow", "platform", "trust"], []);
+  const sectionIds = useMemo(
+    () => ["why", "workflow", "platform", "trust"],
+    [],
+  );
   const sectionLabels = ["Why", "Workflow", "Platform", "Trust"];
   const [activeSection, setActiveSection] = useState("");
   const sectionObserver = useRef(null);
@@ -652,13 +680,21 @@ export default function TexHub() {
   return (
     <div className="relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white">
       {!reduceMotion && (
-        <nav className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block" aria-label="Section navigation">
+        <nav
+          className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block"
+          aria-label="Section navigation"
+        >
           <div className="flex flex-col items-center gap-3">
             {sectionIds.map((id, i) => (
               <a
                 key={id}
                 href={`#${id}`}
-                onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  document
+                    .getElementById(id)
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
                 className="flex items-center justify-center min-w-[48px] min-h-[48px] rounded-full"
                 aria-label={sectionLabels[i]}
               >
@@ -676,19 +712,51 @@ export default function TexHub() {
       )}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 max-sm:h-[360px] max-sm:w-[360px] animate-blob-spin-1">
-          <motion.div style={{ y: reduceMotion ? 0 : blob1Spring, backgroundImage: 'conic-gradient(from 0deg, rgba(14,165,233,0.25), rgba(99,102,241,0.15), transparent 70%)' }} className="h-full w-full rounded-full blur-3xl" />
+          <motion.div
+            style={{
+              y: reduceMotion ? 0 : blob1Spring,
+              backgroundImage:
+                "conic-gradient(from 0deg, rgba(14,165,233,0.25), rgba(99,102,241,0.15), transparent 70%)",
+            }}
+            className="h-full w-full rounded-full blur-3xl"
+          />
         </div>
         <div className="absolute right-[-80px] top-[260px] h-[360px] w-[360px] max-sm:hidden animate-blob-spin-2">
-          <motion.div style={{ y: reduceMotion ? 0 : blob2Spring, backgroundImage: 'conic-gradient(from 120deg, rgba(59,130,246,0.20), rgba(99,102,241,0.12), transparent 70%)' }} className="h-full w-full rounded-full blur-3xl" />
+          <motion.div
+            style={{
+              y: reduceMotion ? 0 : blob2Spring,
+              backgroundImage:
+                "conic-gradient(from 120deg, rgba(59,130,246,0.20), rgba(99,102,241,0.12), transparent 70%)",
+            }}
+            className="h-full w-full rounded-full blur-3xl"
+          />
         </div>
         <div className="absolute left-[-120px] top-[760px] h-[280px] w-[280px] max-sm:hidden animate-blob-spin-3">
-          <motion.div style={{ y: reduceMotion ? 0 : blob3Spring, backgroundImage: 'conic-gradient(from 240deg, rgba(6,182,212,0.18), rgba(14,165,233,0.10), transparent 70%)' }} className="h-full w-full rounded-full blur-3xl" />
+          <motion.div
+            style={{
+              y: reduceMotion ? 0 : blob3Spring,
+              backgroundImage:
+                "conic-gradient(from 240deg, rgba(6,182,212,0.18), rgba(14,165,233,0.10), transparent 70%)",
+            }}
+            className="h-full w-full rounded-full blur-3xl"
+          />
         </div>
-        <svg className="absolute inset-0 h-full w-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          className="absolute inset-0 h-full w-full opacity-[0.04] pointer-events-none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <defs>
             <filter id="noiseFilter">
-              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-              <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.05 0" />
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.65"
+                numOctaves="3"
+                stitchTiles="stitch"
+              />
+              <feColorMatrix
+                type="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.05 0"
+              />
             </filter>
           </defs>
           <rect width="100%" height="100%" filter="url(#noiseFilter)" />
@@ -696,21 +764,31 @@ export default function TexHub() {
       </div>
 
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8">
-        <ScrollReveal as="section" transition={srWave(0)} className="grid items-center gap-8 lg:grid-cols-[1.25fr_0.95fr]">
+        <ScrollReveal
+          as="section"
+          transition={srWave(0)}
+          className="grid items-center gap-8 lg:grid-cols-[1.25fr_0.95fr]"
+        >
           <motion.div
             variants={staggerContainerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
           >
-            <motion.div variants={staggerChildVariants} className="flex flex-wrap gap-2">
+            <motion.div
+              variants={staggerChildVariants}
+              className="flex flex-wrap gap-2"
+            >
               <Pill>Bangladesh-centric</Pill>
               <Pill>Global-facing</Pill>
               <Pill>Garments</Pill>
               <Pill>Textiles</Pill>
             </motion.div>
 
-            <motion.h1 variants={staggerChildVariants} className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
+            <motion.h1
+              variants={staggerChildVariants}
+              className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl"
+            >
               <AnimatedHeroHeading text={heroHeadline} />
             </motion.h1>
             <motion.div variants={staggerChildVariants}>
@@ -727,7 +805,10 @@ export default function TexHub() {
               ) : null}
             </motion.div>
 
-            <motion.div variants={staggerChildVariants} className="mt-8 flex flex-wrap gap-3">
+            <motion.div
+              variants={staggerChildVariants}
+              className="mt-8 flex flex-wrap gap-3"
+            >
               {isLoggedIn ? (
                 <>
                   <MagneticLinkButton
@@ -767,7 +848,10 @@ export default function TexHub() {
               )}
             </motion.div>
 
-            <motion.div variants={staggerChildVariants} className="mt-8 grid gap-3 sm:grid-cols-3">
+            <motion.div
+              variants={staggerChildVariants}
+              className="mt-8 grid gap-3 sm:grid-cols-3"
+            >
               {buyerStats.map((item) => (
                 <Card key={item.label} className="p-4">
                   <div className="text-sm text-slate-500 dark:text-slate-400">
@@ -832,7 +916,10 @@ export default function TexHub() {
                   </div>
                   <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2 dark:text-sky-200">
                     {heroValueProps.slice(0, 4).map((t) => (
-                      <div key={t} className="rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5">
+                      <div
+                        key={t}
+                        className="rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5"
+                      >
                         {t}
                       </div>
                     ))}
@@ -875,28 +962,35 @@ export default function TexHub() {
           <div className="mt-8 flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-3">
             {workflowSteps.map((item, idx) => {
               const Icon = workflowIconMap[item.icon] || ClipboardList;
-              const parallaxStyle = reduceMotion ? {} : {
-                y: [workflowParallax1, workflowParallax2, workflowParallax3][idx] || 0,
-              };
+              const parallaxStyle = reduceMotion
+                ? {}
+                : {
+                    y:
+                      [workflowParallax1, workflowParallax2, workflowParallax3][
+                        idx
+                      ] || 0,
+                  };
               return (
                 <motion.div key={item.title} style={parallaxStyle}>
-                <Card className="min-w-[280px] snap-start lg:min-w-0 p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
-                      <TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(99,102,241)">
-                        {item.step}
-                      </TextColorReveal>
+                  <Card className="min-w-[280px] snap-start lg:min-w-0 p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
+                        <TextColorReveal
+                          fromColor="rgb(14,165,233)"
+                          toColor="rgb(99,102,241)"
+                        >
+                          {item.step}
+                        </TextColorReveal>
+                      </div>
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-100">
+                        <Icon className="h-5 w-5" />
+                      </div>
                     </div>
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-100">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                  </div>
-                  <h3 className="mt-5 text-xl font-semibold">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    {item.text}
-                  </p>
-
-                </Card>
+                    <h3 className="mt-5 text-xl font-semibold">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      {item.text}
+                    </p>
+                  </Card>
                 </motion.div>
               );
             })}
@@ -931,7 +1025,10 @@ export default function TexHub() {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal as="section" className="mt-20 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+        <ScrollReveal
+          as="section"
+          className="mt-20 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]"
+        >
           <Card className="p-6" id="trust">
             <SectionTitle
               eyebrow="Trust"
@@ -946,14 +1043,23 @@ export default function TexHub() {
                     initial={reduceMotion ? {} : { opacity: 0, x: -10 }}
                     whileInView={reduceMotion ? {} : { opacity: 1, x: 0 }}
                     viewport={{ once: true, margin: "-40px" }}
-                    transition={{ delay: i * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{
+                      delay: i * 0.1,
+                      duration: 0.4,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
                     className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5"
                   >
                     <motion.div
                       initial={reduceMotion ? {} : { scale: 0 }}
                       whileInView={reduceMotion ? {} : { scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 + 0.2, type: "spring", stiffness: 300, damping: 15 }}
+                      transition={{
+                        delay: i * 0.1 + 0.2,
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 15,
+                      }}
                     >
                       <ShieldCheck className="h-5 w-5 text-sky-500" />
                     </motion.div>
@@ -1042,7 +1148,11 @@ export default function TexHub() {
                       <motion.div
                         key={i}
                         layout
-                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 25,
+                        }}
                         className="rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700"
                       />
                     ))}
@@ -1106,7 +1216,11 @@ export default function TexHub() {
                     initial={reduceMotion ? {} : { opacity: 0, y: 6 }}
                     whileInView={reduceMotion ? {} : { opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{
+                      delay: i * 0.04,
+                      duration: 0.3,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
                     className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
                   >
                     {item}
@@ -1150,9 +1264,9 @@ export default function TexHub() {
                       >
                         Login
                       </MagneticLinkButton>
-                </>
-              )}
-            </div>
+                    </>
+                  )}
+                </div>
               </div>
             </Card>
           </div>
@@ -1233,7 +1347,10 @@ export default function TexHub() {
           </ScrollReveal>
         ) : null}
 
-        <ScrollReveal as="section" className="mt-20 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500 to-blue-800 p-8 text-white shadow-2xl shadow-sky-500/20 md:p-10">
+        <ScrollReveal
+          as="section"
+          className="mt-20 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500 to-blue-800 p-8 text-white shadow-2xl shadow-sky-500/20 md:p-10"
+        >
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">

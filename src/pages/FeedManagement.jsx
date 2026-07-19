@@ -5,7 +5,7 @@ import { motion, Reorder } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
-import { getToken, syncUserFromApi, getCurrentUser } from "../lib/auth";
+import { apiRequest, getToken, syncUserFromApi, getCurrentUser } from "../lib/auth";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkSmartypants from "remark-smartypants";
@@ -18,121 +18,19 @@ import remarkDeflist from "remark-deflist";
 import remarkDirective from "remark-directive";
 import remarkContainerDirective from "../lib/remarkContainerDirective";
 import remarkAbbr from "@syenchuk/remark-abbr";
-
-const Icon = {
-  ArrowLeft: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M19 12H5" />
-      <path d="M12 19l-7-7 7-7" />
-    </svg>
-  ),
-  Check: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M20 6L9 17l-5-5" />
-    </svg>
-  ),
-  Upload: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M12 16V4" />
-      <path d="M8 8l4-4 4 4" />
-      <path d="M4 20h16" />
-    </svg>
-  ),
-  Image: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <path d="M21 15l-5-5L5 21" />
-    </svg>
-  ),
-  Plus: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  ),
-  Play: (p) => (
-    <svg {...p} viewBox="0 0 24 24" fill="currentColor">
-      <polygon points="5,3 19,12 5,21" />
-    </svg>
-  ),
-  Refresh: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M21 12a9 9 0 1 1-3-6.7" />
-      <path d="M21 3v6h-6" />
-    </svg>
-  ),
-  Sparkles: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
-    </svg>
-  ),
-  Trash: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M3 6h18" />
-      <path d="M8 6V4h8v2" />
-      <path d="M6 6l1 14h10l1-14" />
-    </svg>
-  ),
-  X: (p) => (
-    <svg
-      {...p}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M6 6l12 12M6 18L18 6" />
-    </svg>
-  ),
-};
+import {
+  ArrowLeft,
+  Check,
+  Image,
+  Pencil,
+  Play,
+  Plus,
+  RefreshCw,
+  Sparkles,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 
 const initialForm = {
   title: "",
@@ -213,15 +111,8 @@ export default function FeedManagementPage() {
       setError("");
       try {
         const token = getToken();
-        const res = await fetch("/api/feed/posts/mine", {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to load your posts");
-        }
-
-        const data = await res.json();
+        if (!token) return;
+        const data = await apiRequest("/feed/posts/mine", { token });
         const rows = Array.isArray(data)
           ? data
           : Array.isArray(data?.posts)
@@ -264,6 +155,11 @@ export default function FeedManagementPage() {
     }),
     [form.hashtags, form.mentions, form.links, form.productTags],
   );
+
+  const wordLimit = useMemo(() => {
+    const user = getCurrentUser();
+    return String(user?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600;
+  }, []);
 
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -311,10 +207,18 @@ export default function FeedManagementPage() {
       readme: post.description_markdown || post.readme || "",
       ctaText: post.cta_text || post.ctaText || "",
       ctaUrl: post.cta_url || post.ctaUrl || "",
-      hashtags: Array.isArray(post.hashtags) ? post.hashtags.join(", ") : (post.hashtags || ""),
-      mentions: Array.isArray(post.mentions) ? post.mentions.join(", ") : (post.mentions || ""),
-      links: Array.isArray(post.links) ? post.links.join(", ") : (post.links || ""),
-      productTags: Array.isArray(post.product_tags) ? post.product_tags.join(", ") : (post.product_tags || post.productTags || ""),
+      hashtags: Array.isArray(post.hashtags)
+        ? post.hashtags.join(", ")
+        : post.hashtags || "",
+      mentions: Array.isArray(post.mentions)
+        ? post.mentions.join(", ")
+        : post.mentions || "",
+      links: Array.isArray(post.links)
+        ? post.links.join(", ")
+        : post.links || "",
+      productTags: Array.isArray(post.product_tags)
+        ? post.product_tags.join(", ")
+        : post.product_tags || post.productTags || "",
       location: post.location_tag || post.location || "",
     });
 
@@ -335,7 +239,7 @@ export default function FeedManagementPage() {
       return;
     }
 
-    const token = localStorage.getItem("jwt") || localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       setError("Please log in again. Token missing.");
       return;
@@ -364,32 +268,25 @@ export default function FeedManagementPage() {
     };
 
     const isEditing = editingPost !== null;
-    const url = isEditing ? `/api/feed/posts/${editingPost.id}` : "/api/feed/posts";
+    const baseUrl = isEditing
+      ? `/feed/posts/${editingPost.id}`
+      : "/feed/posts";
     const method = isEditing ? "PATCH" : "POST";
 
     try {
-      const res = await fetch(url, {
+      const data = await apiRequest(baseUrl, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+        token,
+        body: payload,
       });
 
-      if (!res.ok) {
-        throw new Error("Save failed");
-      }
-
-      const data = await res.json();
-      const saved = data?.post ?? {
-        id: isEditing ? editingPost.id : String(Date.now()),
-        ...payload,
-        createdAt: new Date().toISOString(),
-      };
+      if (!data?.post) { setError("Failed to save post"); return; }
+      const saved = data.post;
 
       if (isEditing) {
-        setPosts((prev) => prev.map((p) => (p.id === editingPost.id ? saved : p)));
+        setPosts((prev) =>
+          prev.map((p) => (p.id === editingPost.id ? saved : p)),
+        );
       } else {
         setPosts((prev) => [saved, ...prev]);
       }
@@ -403,7 +300,7 @@ export default function FeedManagementPage() {
   };
 
   const deletePost = async (postId) => {
-    const token = localStorage.getItem("jwt") || localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       setError("Please log in again. Token missing.");
       return;
@@ -414,16 +311,7 @@ export default function FeedManagementPage() {
     setPosts((prev) => prev.filter((post) => post.id !== postId));
 
     try {
-      const res = await fetch(`/api/feed/posts/${postId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Delete failed");
-      }
+      await apiRequest(`/feed/posts/${postId}`, { method: "DELETE", token });
     } catch (err) {
       setPosts(snapshot);
       const message = err instanceof Error ? err.message : "Delete failed";
@@ -470,7 +358,7 @@ export default function FeedManagementPage() {
       >
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="space-y-2">
+            <div className="space-y-2">
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                   Feed Management
@@ -486,7 +374,7 @@ export default function FeedManagementPage() {
                 to="/feed"
                 className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg"
               >
-                <Icon.ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4" />
                 Back to Feed
               </Link>
               <button
@@ -509,7 +397,7 @@ export default function FeedManagementPage() {
           <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200 shadow-lg">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 rounded-full bg-red-500/20 p-1.5 text-red-300">
-                <Icon.X className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </div>
               <div>
                 <p className="font-medium text-red-100">Something went wrong</p>
@@ -530,14 +418,16 @@ export default function FeedManagementPage() {
               <div className={cn("border-b px-5 py-4", mutedBorder)}>
                 <div className="flex items-center gap-3">
                   <div className="rounded-2xl bg-sky-500/15 p-2 text-sky-400">
-                    <Icon.Plus className="h-5 w-5" />
+                    <Plus className="h-5 w-5" />
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold">
                       {editingPost ? "Edit Post" : "Post Editor"}
                     </h2>
                     <p className={cn("text-sm", subtleText)}>
-                      {editingPost ? `Editing "${editingPost.title}"` : "Compose, enrich, and publish your feed post."}
+                      {editingPost
+                        ? `Editing "${editingPost.title}"`
+                        : "Compose, enrich, and publish your feed post."}
                     </p>
                   </div>
                 </div>
@@ -595,10 +485,7 @@ export default function FeedManagementPage() {
                   />
                   <WordCount
                     text={form.readme}
-                    limit={(() => {
-                      const user = getCurrentUser();
-                      return String(user?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600;
-                    })()}
+                    limit={wordLimit}
                   />
                 </Field>
 
@@ -712,9 +599,15 @@ export default function FeedManagementPage() {
                     className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:translate-y-[-1px] hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {uploading ? (
-                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
                     ) : (
-                      <Icon.Upload className="h-4 w-4" />
+                      <Upload className="h-4 w-4" />
                     )}
                     {uploading ? "Uploading..." : "Upload"}
                   </button>
@@ -730,7 +623,7 @@ export default function FeedManagementPage() {
                           : "border-slate-200 bg-slate-50/70",
                       )}
                     >
-                      <Icon.Image
+                      <Image
                         className={cn("mx-auto h-10 w-10", subtleText)}
                       />
                       <p className="mt-3 text-sm font-medium">
@@ -765,7 +658,7 @@ export default function FeedManagementPage() {
                                   />
                                   <div className="absolute inset-0 grid place-items-center bg-black/20">
                                     <div className="rounded-full bg-black/40 p-3 text-white backdrop-blur-sm">
-                                      <Icon.Play className="h-6 w-6 fill-white" />
+                                      <Play className="h-6 w-6 fill-white" />
                                     </div>
                                   </div>
                                 </>
@@ -774,7 +667,10 @@ export default function FeedManagementPage() {
                                   initial={{ opacity: 0, scale: 1.06 }}
                                   whileInView={{ opacity: 1, scale: 1 }}
                                   viewport={{ once: true, margin: "-40px" }}
-                                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                  transition={{
+                                    duration: 0.5,
+                                    ease: [0.16, 1, 0.3, 1],
+                                  }}
                                   className="h-full w-full"
                                 >
                                   <img
@@ -790,7 +686,7 @@ export default function FeedManagementPage() {
                                 className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white opacity-100 transition hover:bg-black"
                                 aria-label="Remove media"
                               >
-                                <Icon.X className="h-4 w-4" />
+                                <X className="h-4 w-4" />
                               </button>
                             </div>
                             <div className="space-y-1 p-3">
@@ -824,7 +720,7 @@ export default function FeedManagementPage() {
                       panelBg,
                     )}
                   >
-                    <Icon.Refresh className="h-4 w-4" />
+                    <RefreshCw className="h-4 w-4" />
                     {editingPost ? "Cancel" : "Clear"}
                   </button>
                   {editingPost && (
@@ -841,11 +737,21 @@ export default function FeedManagementPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] hover:shadow-xl hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {saving ? (
-                    <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
                   ) : (
-                    <Icon.Check className="h-4 w-4" />
+                    <Check className="h-4 w-4" />
                   )}
-                  {saving ? "Saving..." : editingPost ? "Update post" : "Save post"}
+                  {saving
+                    ? "Saving..."
+                    : editingPost
+                      ? "Update post"
+                      : "Save post"}
                 </button>
               </div>
             </section>
@@ -903,12 +809,22 @@ export default function FeedManagementPage() {
                         },
                         code({ inline, className, children, ...props }) {
                           if (inline) {
-                            return <code className={className} {...props}>{children}</code>;
+                            return (
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            );
                           }
-                          return <CodeBlock className={className} {...props}>{children}</CodeBlock>;
+                          return (
+                            <CodeBlock className={className} {...props}>
+                              {children}
+                            </CodeBlock>
+                          );
                         },
                       }}
-                    >{form.readme}</ReactMarkdown>
+                    >
+                      {form.readme}
+                    </ReactMarkdown>
                   </article>
                 ) : (
                   <div
@@ -919,7 +835,7 @@ export default function FeedManagementPage() {
                         : "border-slate-200 bg-slate-50",
                     )}
                   >
-                    <Icon.Sparkles
+                    <Sparkles
                       className={cn("mx-auto h-10 w-10", subtleText)}
                     />
                     <p className="mt-3 text-sm font-medium">
@@ -1003,7 +919,13 @@ export default function FeedManagementPage() {
               <div className="p-5">
                 {loadingPosts ? (
                   <div className="flex items-center justify-center py-10">
-                    <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+                    <Mosaic
+                      color="#3b00ff"
+                      size="large"
+                      style={{ fontSize: "40px" }}
+                      text=""
+                      textColor=""
+                    />
                   </div>
                 ) : posts.length === 0 ? (
                   <div
@@ -1015,7 +937,7 @@ export default function FeedManagementPage() {
                     )}
                   >
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-500/10 text-sky-400">
-                      <Icon.Image className="h-6 w-6" />
+                      <Image className="h-6 w-6" />
                     </div>
                     <p className="mt-3 text-sm font-medium">No posts yet</p>
                     <p className={cn("mt-1 text-sm", subtleText)}>
@@ -1023,72 +945,75 @@ export default function FeedManagementPage() {
                     </p>
                   </div>
                 ) : (
-                  <Reorder.Group axis="y" values={posts} onReorder={setPosts} className="space-y-4">
+                  <Reorder.Group
+                    axis="y"
+                    values={posts}
+                    onReorder={setPosts}
+                    className="space-y-4"
+                  >
                     {posts.map((post) => (
                       <Reorder.Item key={post.id} value={post}>
-                      <article
-                        className={cn(
-                          "rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-xl",
-                          theme === "dark"
-                            ? "border-white/10 bg-slate-950/40"
-                            : "border-slate-200 bg-white",
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h3 className="truncate text-base font-semibold">
-                              {post.title}
-                            </h3>
-                            <p className="mt-0.5 text-xs uppercase tracking-wide text-slate-400">
-                              {post.category || "Uncategorized"}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => editPost(post)}
-                            className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-sm font-medium text-sky-300 transition hover:bg-sky-500/15"
-                          >
-                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                            </svg>
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deletePost(post.id)}
-                            className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/15"
-                          >
-                            <Icon.Trash className="h-4 w-4" />
-                            Delete
-                          </button>
-                          </div>
-                        </div>
-
-                        <p
+                        <article
                           className={cn(
-                            "mt-3 line-clamp-3 text-sm leading-6",
-                            subtleText,
+                            "rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-xl",
+                            theme === "dark"
+                              ? "border-white/10 bg-slate-950/40"
+                              : "border-slate-200 bg-white",
                           )}
                         >
-                          {post.caption || "No caption provided."}
-                        </p>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="truncate text-base font-semibold">
+                                {post.title}
+                              </h3>
+                              <p className="mt-0.5 text-xs uppercase tracking-wide text-slate-400">
+                                {post.category || "Uncategorized"}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => editPost(post)}
+                                className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-sm font-medium text-sky-300 transition hover:bg-sky-500/15"
+                              >
+                                <Pencil className="h-4 w-4" />
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deletePost(post.id)}
+                                className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/15"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
 
-                        <div className="mt-4 flex items-center justify-between gap-3 text-xs">
-                          <div
+                          <p
                             className={cn(
-                              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5",
-                              theme === "dark"
-                                ? "border-white/10 bg-white/5 text-slate-300"
-                                : "border-slate-200 bg-slate-50 text-slate-600",
+                              "mt-3 line-clamp-3 text-sm leading-6",
+                              subtleText,
                             )}
                           >
-                            <span className="h-2 w-2 rounded-full bg-sky-400" />
-                            Created {timeAgo(post.createdAt)}
+                            {post.caption || "No caption provided."}
+                          </p>
+
+                          <div className="mt-4 flex items-center justify-between gap-3 text-xs">
+                            <div
+                              className={cn(
+                                "inline-flex items-center gap-2 rounded-full border px-3 py-1.5",
+                                theme === "dark"
+                                  ? "border-white/10 bg-white/5 text-slate-300"
+                                  : "border-slate-200 bg-slate-50 text-slate-600",
+                              )}
+                            >
+                              <span className="h-2 w-2 rounded-full bg-sky-400" />
+                              Created {timeAgo(post.createdAt)}
+                            </div>
+                            <div className="text-sky-400/90">Published</div>
                           </div>
-                          <div className="text-sky-400/90">Published</div>
-                        </div>
-                      </article>
+                        </article>
                       </Reorder.Item>
                     ))}
                   </Reorder.Group>

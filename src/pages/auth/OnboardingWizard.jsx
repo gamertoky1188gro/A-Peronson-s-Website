@@ -14,7 +14,7 @@
     - This is intentionally lightweight and non-blocking: users can skip, but the app will
       re-prompt until onboarding_completed is true.
 */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BackButton from "../../components/ui/BackButton";
 import ProfileImageUpload from "../../components/ui/ProfileImageUpload";
@@ -29,7 +29,7 @@ import {
 import { ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../../components/ui/NeonAtom";
 
-const DEFAULT_CATEGORIES = [
+const FALLBACK_CATEGORIES = [
   "T-Shirt",
   "Polo",
   "Denim",
@@ -43,7 +43,7 @@ const DEFAULT_CATEGORIES = [
 function StepHeader({ step, title, subtitle }) {
   return (
     <div className="mb-6">
-      <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(10,102,194,0.10)] px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-gtBlue">
+      <div className="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-sky-600 dark:text-sky-300">
         Step {step} / 3
       </div>
       <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
@@ -64,6 +64,18 @@ export default function OnboardingWizard() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [availableCategories, setAvailableCategories] = useState(FALLBACK_CATEGORIES);
+
+  useEffect(() => {
+    if (!token) return;
+    apiRequest("/categories", { token })
+      .then((data) => {
+        if (Array.isArray(data?.items)) {
+          setAvailableCategories(data.items.map((c) => c.name || c.label || c));
+        }
+      })
+      .catch((err) => console.warn("Failed to load categories:", err));
+  }, [token]);
 
   const [profileImage, setProfileImage] = useState(
     () => user?.profile?.profile_image || "",
@@ -237,7 +249,7 @@ export default function OnboardingWizard() {
                     subtitle="Pick a few categories you work with."
                   />
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {DEFAULT_CATEGORIES.map((cat) => {
+                    {availableCategories.map((cat) => {
                       const active = categories.includes(cat);
                       return (
                         <button
@@ -247,7 +259,7 @@ export default function OnboardingWizard() {
                           className={[
                             "rounded-xl px-3 py-2 text-xs font-semibold transition",
                             active
-                              ? "bg-gtBlue text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]"
+                              ? "bg-sky-600 text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]"
                               : "bg-slate-50 text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10",
                           ].join(" ")}
                         >
@@ -284,7 +296,7 @@ export default function OnboardingWizard() {
                   type="button"
                   onClick={next}
                   disabled={saving}
-                  className="rounded-xl bg-gtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-gtBlueHover disabled:opacity-60"
+                    className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
                 >
                   Continue
                 </button>
@@ -293,9 +305,19 @@ export default function OnboardingWizard() {
                   type="button"
                   onClick={() => submit()}
                   disabled={saving}
-                  className="rounded-xl bg-gtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-gtBlueHover disabled:opacity-60"
+                    className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
                 >
-                  {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Finish setup"}
+                  {saving ? (
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
+                  ) : (
+                    "Finish setup"
+                  )}
                 </button>
               )}
             </div>

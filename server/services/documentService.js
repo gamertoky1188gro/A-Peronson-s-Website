@@ -17,21 +17,73 @@ import { ensureCertificationForContract } from "./certificationService.js";
 import { markLeadConvertedFromContract } from "./leadService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
 
-
 const SIGNATURE_STATES = new Set(["pending", "signed"]);
 const ARTIFACT_STATES = new Set(["draft", "generated", "locked", "archived"]);
 const MEDIA_REVIEW_EXTENSIONS = new Set([
-  ".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif", ".apng",
-  ".bmp", ".tiff", ".tif", ".heic", ".heif", ".tga",
-  ".svg", ".dng", ".cr2", ".cr3", ".nef", ".arw", ".sr2",
-  ".orf", ".raf", ".psd", ".ai", ".xcf", ".cdr",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".avif",
+  ".gif",
+  ".apng",
+  ".bmp",
+  ".tiff",
+  ".tif",
+  ".heic",
+  ".heif",
+  ".tga",
+  ".svg",
+  ".dng",
+  ".cr2",
+  ".cr3",
+  ".nef",
+  ".arw",
+  ".sr2",
+  ".orf",
+  ".raf",
+  ".psd",
+  ".ai",
+  ".xcf",
+  ".cdr",
 ]);
 const VIDEO_EXTENSIONS = new Set([
-  ".mp4", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".rrc",
-  ".gifv", ".mng", ".mov", ".avi", ".qt", ".wmv", ".yuv", ".rm",
-  ".asf", ".amv", ".m4p", ".m4v", ".mpg", ".mp2", ".mpeg", ".mpe",
-  ".mpv", ".svi", ".3gp", ".3g2", ".mxf", ".roq", ".nsv", ".f4v",
-  ".f4p", ".f4a", ".f4b", ".mod",
+  ".mp4",
+  ".webm",
+  ".mkv",
+  ".flv",
+  ".vob",
+  ".ogv",
+  ".ogg",
+  ".rrc",
+  ".gifv",
+  ".mng",
+  ".mov",
+  ".avi",
+  ".qt",
+  ".wmv",
+  ".yuv",
+  ".rm",
+  ".asf",
+  ".amv",
+  ".m4p",
+  ".m4v",
+  ".mpg",
+  ".mp2",
+  ".mpeg",
+  ".mpe",
+  ".mpv",
+  ".svi",
+  ".3gp",
+  ".3g2",
+  ".mxf",
+  ".roq",
+  ".nsv",
+  ".f4v",
+  ".f4p",
+  ".f4a",
+  ".f4b",
+  ".mod",
 ]);
 const PROHIBITED_MEDIA_KEYWORDS = [
   "porn",
@@ -121,15 +173,71 @@ function sanitizeArtifactState(value, fallback = "draft") {
 function ensureAllowed(file) {
   const ext = path.extname(file.originalname || "").toLowerCase();
   const allowed = [
-    ".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".apng",
-    ".bmp", ".tiff", ".tif", ".heic", ".heif", ".dcm", ".tga",
-    ".svg", ".eps", ".pdf", ".dng", ".cr2", ".cr3", ".nef",
-    ".arw", ".sr2", ".orf", ".raf", ".psd", ".ai", ".xcf", ".cdr",
-    ".mp4", ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".rrc",
-    ".gifv", ".mng", ".mov", ".avi", ".qt", ".wmv", ".yuv", ".rm",
-    ".asf", ".amv", ".m4p", ".m4v", ".mpg", ".mp2", ".mpeg", ".mpe",
-    ".mpv", ".svi", ".3gp", ".3g2", ".mxf", ".roq", ".nsv", ".f4v",
-    ".f4p", ".f4a", ".f4b", ".mod",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".avif",
+    ".gif",
+    ".apng",
+    ".bmp",
+    ".tiff",
+    ".tif",
+    ".heic",
+    ".heif",
+    ".dcm",
+    ".tga",
+    ".svg",
+    ".eps",
+    ".pdf",
+    ".dng",
+    ".cr2",
+    ".cr3",
+    ".nef",
+    ".arw",
+    ".sr2",
+    ".orf",
+    ".raf",
+    ".psd",
+    ".ai",
+    ".xcf",
+    ".cdr",
+    ".mp4",
+    ".webm",
+    ".mkv",
+    ".flv",
+    ".vob",
+    ".ogv",
+    ".ogg",
+    ".rrc",
+    ".gifv",
+    ".mng",
+    ".mov",
+    ".avi",
+    ".qt",
+    ".wmv",
+    ".yuv",
+    ".rm",
+    ".asf",
+    ".amv",
+    ".m4p",
+    ".m4v",
+    ".mpg",
+    ".mp2",
+    ".mpeg",
+    ".mpe",
+    ".mpv",
+    ".svi",
+    ".3gp",
+    ".3g2",
+    ".mxf",
+    ".roq",
+    ".nsv",
+    ".f4v",
+    ".f4p",
+    ".f4a",
+    ".f4b",
+    ".mod",
   ];
   if (!allowed.includes(ext)) throw new Error("Invalid file type");
 }
@@ -207,7 +315,12 @@ function ensureAllowedUrl(url) {
     raw.includes("server/uploads/");
   if (!internal) throw new Error("Only internal media URLs are allowed");
   const ext = path.extname(raw).toLowerCase();
-  if (!MEDIA_REVIEW_EXTENSIONS.has(ext) && ext !== ".pdf" && ext !== ".eps" && ext !== ".dcm")
+  if (
+    !MEDIA_REVIEW_EXTENSIONS.has(ext) &&
+    ext !== ".pdf" &&
+    ext !== ".eps" &&
+    ext !== ".dcm"
+  )
     throw new Error("Unsupported image format");
 }
 
@@ -590,7 +703,9 @@ export async function listContractAudit(actor, contractId) {
   });
   if (!contract) return null;
   if (!canAccessContract(actor, contract)) return "forbidden";
-  const auditRows = await prisma.contractAudit.findMany({ where: { contract_id: id } });
+  const auditRows = await prisma.contractAudit.findMany({
+    where: { contract_id: id },
+  });
   const items = (Array.isArray(auditRows) ? auditRows : [])
     .filter((row) => String(row.contract_id || "") === id)
     .sort((a, b) =>

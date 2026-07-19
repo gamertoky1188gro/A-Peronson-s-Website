@@ -1,4 +1,9 @@
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+} from "framer-motion";
 import { useRef } from "react";
 
 export default function TextColorReveal({
@@ -16,11 +21,7 @@ export default function TextColorReveal({
     offset: ["start end", `start+=${scrollOffset[1]}`],
   });
 
-  const color = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [fromColor, toColor]
-  );
+  const color = useTransform(scrollYProgress, [0, 1], [fromColor, toColor]);
 
   if (reduceMotion) {
     const Tag = as;

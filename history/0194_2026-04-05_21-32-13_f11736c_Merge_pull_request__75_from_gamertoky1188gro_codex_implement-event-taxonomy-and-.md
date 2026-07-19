@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** f11736c4e99fe1470b2287fb0c328a9f93784f1b
 - **Parent:** 68cf50cfa6a7793c26947af9434e85a7447283c8 1a68ccb2f570e53a3194360513f5d2540bc31616
 - **Author:** Cyber Code Master
@@ -6,31 +7,35 @@
 - **Message:** Merge pull request #75 from gamertoky1188gro/codex/implement-event-taxonomy-and-ingestion-improvements
 
 ## Custom Title
+
 Merge pull request #75 from gamertoky1188gro/codex/implement-event-taxonomy-and-ingestion-improvements
 
 ## High-Level Summary
+
 Merge pull request #75 from gamertoky1188gro/codex/implement-event-taxonomy-and-ingestion-improvements
 
- 14 files changed, 394 insertions(+), 16 deletions(-)
+14 files changed, 394 insertions(+), 16 deletions(-)
 
 ## File-by-File Breakdown
- server/controllers/eventController.js    |  23 +++-
- server/server.js                         |   3 +
- server/services/boostService.js          |   2 +-
- server/services/documentService.js       |   2 +-
- server/services/eventIngestionService.js | 180 +++++++++++++++++++++++++++++++
- server/services/eventTrackingService.js  |  47 ++++++++
- server/services/feedService.js           |   2 +-
- server/services/leadReminderService.js   |   2 +-
- server/services/leadService.js           |   2 +-
- server/services/paymentProofService.js   |   2 +-
- server/services/productService.js        |   2 +-
- server/services/productViewService.js    |   2 +-
- shared/event-taxonomy.json               |  68 ++++++++++++
- src/lib/events.js                        |  73 ++++++++++++-
- 14 files changed, 394 insertions(+), 16 deletions(-)
+
+server/controllers/eventController.js | 23 +++-
+server/server.js | 3 +
+server/services/boostService.js | 2 +-
+server/services/documentService.js | 2 +-
+server/services/eventIngestionService.js | 180 +++++++++++++++++++++++++++++++
+server/services/eventTrackingService.js | 47 ++++++++
+server/services/feedService.js | 2 +-
+server/services/leadReminderService.js | 2 +-
+server/services/leadService.js | 2 +-
+server/services/paymentProofService.js | 2 +-
+server/services/productService.js | 2 +-
+server/services/productViewService.js | 2 +-
+shared/event-taxonomy.json | 68 ++++++++++++
+src/lib/events.js | 73 ++++++++++++-
+14 files changed, 394 insertions(+), 16 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/server/controllers/eventController.js b/server/controllers/eventController.js
 index 3798772..d09ab67 100644
@@ -41,11 +46,11 @@ index 3798772..d09ab67 100644
 +import { ingestEvent } from '../services/eventIngestionService.js'
  import { extractClientIp, locateIp } from '../services/geoService.js'
  import { sanitizeString } from '../utils/validators.js'
- 
+
 @@ -84,12 +84,27 @@ export async function postEvent(req, res) {
      user_agent: sanitizeString(String(req.headers['user-agent'] || ''), 180),
    }
- 
+
 -  await trackEvent({
 +  const allowUnknownTypes = String(process.env.EVENTS_ALLOW_UNKNOWN_TYPES || '').toLowerCase() === 'true'
 +  const result = await ingestEvent({
@@ -63,7 +68,7 @@ index 3798772..d09ab67 100644
 +      sessionId: sanitizeString(String(metadata.session_id || ''), 180) || 'unknown',
 +    },
 +  }, { allowUnknownTypes, sourceModule: 'event_controller' })
- 
+
 -  return res.status(201).json({ ok: true })
 +  if (!result.accepted) {
 +    if (result.reason === 'unknown_event_type') return res.status(400).json({ error: 'Unknown event type' })
@@ -82,18 +87,18 @@ index ec380af..5025c1d 100644
  import { runLeadReminderSweep } from './services/leadReminderService.js'
  import { refreshRates } from './services/currencyService.js'
 +import { startEventQualityReporter } from './services/eventIngestionService.js'
- 
+
  const app = express()
  const PORT = process.env.PORT || 4000
 @@ -70,6 +71,8 @@ setInterval(() => {
    refreshRates().catch(() => null)
  }, FX_REFRESH_INTERVAL_MS).unref()
- 
+
 +startEventQualityReporter()
 +
  app.use(cors())
  app.use(express.json({ limit: '5mb' }))
- 
+
 diff --git a/server/services/boostService.js b/server/services/boostService.js
 index 07e5243..7596499 100644
 --- a/server/services/boostService.js
@@ -104,9 +109,9 @@ index 07e5243..7596499 100644
  import { debitWallet } from './walletService.js'
 -import { trackEvent } from './analyticsService.js'
 +import { trackEvent } from './eventTrackingService.js'
- 
+
  const FILE = 'boosts.json'
- 
+
 diff --git a/server/services/documentService.js b/server/services/documentService.js
 index 170ba68..f2c18ca 100644
 --- a/server/services/documentService.js
@@ -119,7 +124,7 @@ index 170ba68..f2c18ca 100644
 +import { trackEvent } from './eventTrackingService.js'
  import { ensureCertificationForContract } from './certificationService.js'
  import { markLeadConvertedFromContract } from './leadService.js'
- 
+
 diff --git a/server/services/eventIngestionService.js b/server/services/eventIngestionService.js
 new file mode 100644
 index 0000000..53b33a6
@@ -371,7 +376,7 @@ index 57f8929..fdd1226 100644
 +import { trackEvent } from './eventTrackingService.js'
  import { logInfo } from '../utils/logger.js'
  import { getOrderCertificationMap } from './orderCertificationService.js'
- 
+
 diff --git a/server/services/leadReminderService.js b/server/services/leadReminderService.js
 index 33f94ee..e8c3167 100644
 --- a/server/services/leadReminderService.js
@@ -383,7 +388,7 @@ index 33f94ee..e8c3167 100644
 -import { trackEvent } from './analyticsService.js'
 +import { trackEvent } from './eventTrackingService.js'
  import { logError } from '../utils/logger.js'
- 
+
  const REMINDERS_FILE = 'lead_reminders.json'
 diff --git a/server/services/leadService.js b/server/services/leadService.js
 index 47f9d72..6c9ab1a 100644
@@ -395,7 +400,7 @@ index 47f9d72..6c9ab1a 100644
  import { getPlanForUser } from './entitlementService.js'
 -import { trackEvent } from './analyticsService.js'
 +import { trackEvent } from './eventTrackingService.js'
- 
+
  const LEADS_FILE = 'leads.json'
  const NOTES_FILE = 'lead_notes.json'
 diff --git a/server/services/paymentProofService.js b/server/services/paymentProofService.js
@@ -408,7 +413,7 @@ index 48a8aa9..6860a6f 100644
  import { createNotification } from './notificationService.js'
 -import { trackEvent } from './analyticsService.js'
 +import { trackEvent } from './eventTrackingService.js'
- 
+
  const FILE = 'payment_proofs.json'
  const DOCUMENTS_FILE = 'documents.json'
 diff --git a/server/services/productService.js b/server/services/productService.js
@@ -434,7 +439,7 @@ index f901bec..05d6035 100644
  import { sanitizeString } from '../utils/validators.js'
 -import { trackEvent } from './analyticsService.js'
 +import { trackEvent } from './eventTrackingService.js'
- 
+
  const FILE = 'product_views.json'
  const USERS_FILE = 'users.json'
 diff --git a/shared/event-taxonomy.json b/shared/event-taxonomy.json
@@ -518,7 +523,7 @@ index c4eafaa..1a13e9a 100644
 @@ -3,6 +3,54 @@ import { apiRequest, getToken } from './auth'
  const CLIENT_ID_KEY = 'gt_client_id'
  const SESSION_ID_KEY = 'gt_session_id'
- 
+
 +const CANONICAL_EVENTS = new Set([
 +  'boost_cancelled',
 +  'boost_purchase',
@@ -573,7 +578,7 @@ index c4eafaa..1a13e9a 100644
 @@ -13,6 +61,10 @@ function randomId() {
    return `cid_${Math.random().toString(16).slice(2)}_${Date.now()}`
  }
- 
+
 +function normalizeEventType(type) {
 +  return String(type || '').trim().toLowerCase().replace(/\s+/g, '_')
 +}
@@ -618,17 +623,22 @@ index c4eafaa..1a13e9a 100644
 ```
 
 ## Why This Change
+
 Merge pull request #75 from gamertoky1188gro/codex/implement-event-taxonomy-and-ingestion-improvements
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  14 files changed, 394 insertions(+), 16 deletions(-)
+
+- **Scope:** 14 files changed, 394 insertions(+), 16 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 194 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

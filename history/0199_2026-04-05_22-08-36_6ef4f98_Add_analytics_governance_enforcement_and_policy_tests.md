@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 6ef4f9822c78e34ba3a89e96988151654c4e19ac
 - **Parent:** 94fc77876f2a77973bbbf4c72bedcd488ab872b1
 - **Author:** Cyber Code Master
@@ -6,27 +7,31 @@
 - **Message:** Add analytics governance enforcement and policy tests
 
 ## Custom Title
+
 Add analytics governance enforcement and policy tests
 
 ## High-Level Summary
+
 Add analytics governance enforcement and policy tests
 
- 4 files changed, 90 insertions(+), 6 deletions(-)
+4 files changed, 90 insertions(+), 6 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 6ef4f9822c78e34ba3a89e96988151654c4e19ac
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Sun Apr 5 22:08:36 2026 +0600
+Date: Sun Apr 5 22:08:36 2026 +0600
 
     Add analytics governance enforcement and policy tests
 
- .../__tests__/analyticsGovernanceService.test.js   | 39 ++++++++++++++++++++--
- server/services/adminConfigService.js              |  2 ++
- server/services/analyticsGovernanceService.js      | 32 ++++++++++++++++++
- server/services/analyticsService.js                | 23 ++++++++++---
- 4 files changed, 90 insertions(+), 6 deletions(-)
+.../**tests**/analyticsGovernanceService.test.js | 39 ++++++++++++++++++++--
+server/services/adminConfigService.js | 2 ++
+server/services/analyticsGovernanceService.js | 32 ++++++++++++++++++
+server/services/analyticsService.js | 23 ++++++++++---
+4 files changed, 90 insertions(+), 6 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/server/services/__tests__/analyticsGovernanceService.test.js b/server/services/__tests__/analyticsGovernanceService.test.js
 index 342888f..d64334d 100644
@@ -35,15 +40,15 @@ index 342888f..d64334d 100644
 @@ -1,7 +1,7 @@
  import test from 'node:test'
  import assert from 'node:assert/strict'
- 
+
 -import { sanitizePlatformAnalytics } from '../analyticsGovernanceService.js'
 +import { checkAnalyticsAccessPolicy, sanitizePlatformAnalytics } from '../analyticsGovernanceService.js'
- 
+
  function baseReport() {
    return {
 @@ -57,7 +57,16 @@ test('suppresses cohorts below min cohort size', () => {
  })
- 
+
  test('strips denied identifier fields from nested metadata', () => {
 -  const { report } = sanitizePlatformAnalytics(baseReport(), {
 +  const reportWithLocation = baseReport()
@@ -67,7 +72,7 @@ index 342888f..d64334d 100644
 +  assert.equal(JSON.stringify(report).includes('exact_lng'), false)
 +  assert.equal(JSON.stringify(report).includes('ip_country'), false)
  })
- 
+
  test('keeps stable output schema under suppression', () => {
 @@ -94,3 +106,26 @@ test('keeps stable output schema under suppression', () => {
    assert.equal(Array.isArray(report.trending_search_categories), true)
@@ -123,7 +128,7 @@ index df2c959..5a386bf 100644
 +  view_allowed_roles: ['admin', 'owner'],
    date_granularity: 'month',
  })
- 
+
 @@ -25,6 +27,9 @@ export const DENIED_ANALYTICS_FIELDS = Object.freeze([
    'phone',
    'ip',
@@ -151,7 +156,7 @@ index df2c959..5a386bf 100644
 @@ -80,6 +89,29 @@ export async function getAnalyticsGovernanceConfig() {
    return normalizeGovernanceConfig(config?.analytics?.governance)
  }
- 
+
 +export function checkAnalyticsAccessPolicy(user, config = ANALYTICS_GOVERNANCE_DEFAULTS, { mode = 'view' } = {}) {
 +  const governance = normalizeGovernanceConfig(config)
 +  const role = String(user?.role || '').toLowerCase()
@@ -188,13 +193,13 @@ index 77fe347..e3c023e 100644
  import { appendAuditLog } from '../utils/auditStore.js'
 -import { getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analyticsGovernanceService.js'
 +import { checkAnalyticsAccessPolicy, getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analyticsGovernanceService.js'
- 
+
  const FILE = 'analytics.json'
  const SEARCH_TREND_MIN_EVENTS = 25
 @@ -588,6 +588,10 @@ export async function getCompanyAnalytics(user) {
  export async function getPlatformAnalytics(user) {
    ensureAnalyticsAdminAccess(user)
- 
+
 +  const governance = await getAnalyticsGovernanceConfig()
 +  const viewPolicy = checkAnalyticsAccessPolicy(user, governance, { mode: 'view' })
 +  if (!viewPolicy.allowed) throw forbiddenError('Analytics governance policy denied this request')
@@ -205,7 +210,7 @@ index 77fe347..e3c023e 100644
 @@ -599,8 +603,16 @@ export async function getPlatformAnalytics(user) {
    const globalCategories = {}
    const priceBuckets = {}
- 
+
 -  const requirementsRows = Array.isArray(requirements) ? requirements : []
 -  const eventRows = Array.isArray(events) ? events : []
 +  const retentionMs = Math.max(1, Number(governance.retention_days || 365)) * 24 * 60 * 60 * 1000
@@ -218,16 +223,16 @@ index 77fe347..e3c023e 100644
 +    const createdAt = new Date(row?.created_at || '').getTime()
 +    return Number.isFinite(createdAt) && createdAt >= retentionCutoff
 +  })
- 
+
    for (const req of requirementsRows) {
      const buyer = usersById.get(String(req.buyer_id || ''))
 @@ -716,7 +728,6 @@ export async function getPlatformAnalytics(user) {
      trending_search_categories: trendingCategories,
    }
- 
+
 -  const governance = await getAnalyticsGovernanceConfig()
    const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
- 
+
    appendAuditLog({
 @@ -729,6 +740,10 @@ export async function getPlatformAnalytics(user) {
      status: 200,
@@ -243,17 +248,22 @@ index 77fe347..e3c023e 100644
 ```
 
 ## Why This Change
+
 Add analytics governance enforcement and policy tests
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  4 files changed, 90 insertions(+), 6 deletions(-)
+
+- **Scope:** 4 files changed, 90 insertions(+), 6 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 199 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

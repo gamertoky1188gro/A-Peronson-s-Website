@@ -30,15 +30,36 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const imgMimes = new Set([
-      "image/jpeg", "image/png", "image/webp", "image/avif", "image/gif",
-      "image/apng", "image/bmp", "image/x-ms-bmp", "image/tiff",
-      "image/heic", "image/heif", "image/svg+xml", "image/x-tga",
-      "image/vnd.adobe.photoshop", "image/x-photoshop", "image/x-xcf",
-      "image/x-coreldraw", "image/x-adobe-dng", "image/x-canon-cr2",
-      "image/x-canon-cr3", "image/x-nikon-nef", "image/x-sony-arw",
-      "image/x-sony-sr2", "image/x-olympus-orf", "image/x-fuji-raf",
-      "image/x-eps", "application/postscript", "application/pdf",
-      "application/dicom", "application/x-coreldraw",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/avif",
+      "image/gif",
+      "image/apng",
+      "image/bmp",
+      "image/x-ms-bmp",
+      "image/tiff",
+      "image/heic",
+      "image/heif",
+      "image/svg+xml",
+      "image/x-tga",
+      "image/vnd.adobe.photoshop",
+      "image/x-photoshop",
+      "image/x-xcf",
+      "image/x-coreldraw",
+      "image/x-adobe-dng",
+      "image/x-canon-cr2",
+      "image/x-canon-cr3",
+      "image/x-nikon-nef",
+      "image/x-sony-arw",
+      "image/x-sony-sr2",
+      "image/x-olympus-orf",
+      "image/x-fuji-raf",
+      "image/x-eps",
+      "application/postscript",
+      "application/pdf",
+      "application/dicom",
+      "application/x-coreldraw",
     ]);
     if (imgMimes.has(file.mimetype)) {
       cb(null, true);
@@ -74,7 +95,8 @@ export function uploadSearchImage(req, res) {
         size: req.file.size,
         mimetype: req.file.mimetype,
       },
-      message: "Image received. Visual search indexes all product images — results will match by tags, category, and color similarity.",
+      message:
+        "Image received. Visual search indexes all product images — results will match by tags, category, and color similarity.",
     });
   });
 }
@@ -87,9 +109,10 @@ function levenshteinDistance(a, b) {
   for (let j = 0; j <= n; j++) dp[0][j] = j;
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      dp[i][j] = a[i - 1] === b[j - 1]
-        ? dp[i - 1][j - 1]
-        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
     }
   }
   return dp[m][n];
@@ -97,7 +120,9 @@ function levenshteinDistance(a, b) {
 
 export async function spellingSuggestions(req, res) {
   try {
-    const q = String(req.query.q || "").trim().toLowerCase();
+    const q = String(req.query.q || "")
+      .trim()
+      .toLowerCase();
     if (!q || q.length < 2) {
       return res.json({ suggestion: null });
     }
@@ -157,11 +182,15 @@ export async function searchHistoryList(req, res) {
     const seen = new Set();
     const history = [];
     for (const row of rows) {
-      const meta = (row.payload || {});
+      const meta = row.payload || {};
       const query = String(meta.query || "").trim();
       if (query && !seen.has(query)) {
         seen.add(query);
-        history.push({ query, filters: meta.filters || {}, searched_at: row.created_at });
+        history.push({
+          query,
+          filters: meta.filters || {},
+          searched_at: row.created_at,
+        });
       }
     }
     return res.json(history);
@@ -172,7 +201,9 @@ export async function searchHistoryList(req, res) {
 
 export async function trendingSearches(req, res) {
   try {
-    const currentQ = String(req.query.q || "").trim().toLowerCase();
+    const currentQ = String(req.query.q || "")
+      .trim()
+      .toLowerCase();
     const searchEvents = await prisma.eventLog.findMany({
       where: { event_type: "search_run" },
       select: { payload: true },
@@ -201,7 +232,18 @@ export async function trendingSearches(req, res) {
         ]),
       ];
       return res.json({
-        trending: fallback.length ? fallback : ["Wovens", "Knits", "Denim", "T-shirts", "Home Textiles", "Organic Cotton", "PPE", "Sustainable"],
+        trending: fallback.length
+          ? fallback
+          : [
+              "Wovens",
+              "Knits",
+              "Denim",
+              "T-shirts",
+              "Home Textiles",
+              "Organic Cotton",
+              "PPE",
+              "Sustainable",
+            ],
         source: "fallback",
         ...(currentQ ? { related: [] } : {}),
       });
@@ -211,25 +253,42 @@ export async function trendingSearches(req, res) {
     const relatedCounts = {};
     const currentQWords = currentQ ? currentQ.split(/\s+/).filter(Boolean) : [];
     searchEvents.forEach((e) => {
-      const meta = (e.payload || {});
-      const q = String(meta.query || meta.q || "").trim().toLowerCase();
+      const meta = e.payload || {};
+      const q = String(meta.query || meta.q || "")
+        .trim()
+        .toLowerCase();
       const cat = String(meta.category_primary || meta.category || "").trim();
       if (q && q.length > 1) queryCounts[q] = (queryCounts[q] || 0) + 1;
       if (cat) categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
       if (currentQWords.length && q) {
         const sharesWord = currentQWords.some((w) => q.includes(w));
-        if (sharesWord && q !== currentQ) relatedCounts[q] = (relatedCounts[q] || 0) + 1;
+        if (sharesWord && q !== currentQ)
+          relatedCounts[q] = (relatedCounts[q] || 0) + 1;
       }
     });
     const topQueries = Object.entries(queryCounts)
-      .sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label]) => label);
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([label]) => label);
     const topCategories = Object.entries(categoryCounts)
-      .sort((a, b) => b[1] - a[1]).slice(0, 4).map(([label]) => label);
-    const trending = [...new Set([...topQueries, ...topCategories])].slice(0, 10);
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([label]) => label);
+    const trending = [...new Set([...topQueries, ...topCategories])].slice(
+      0,
+      10,
+    );
     const related = currentQWords.length
-      ? Object.entries(relatedCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label]) => label)
+      ? Object.entries(relatedCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([label]) => label)
       : undefined;
-    return res.json({ trending, source: "events", ...(related ? { related } : {}) });
+    return res.json({
+      trending,
+      source: "events",
+      ...(related ? { related } : {}),
+    });
   } catch (error) {
     return handleControllerError(res, error);
   }
@@ -241,7 +300,9 @@ export async function searchAnalytics(req, res) {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     const [totalSearches, recentLogs, searchesByDay] = await Promise.all([
-      prisma.eventLog.count({ where: { event_type: "search_run", created_at: { gte: since } } }),
+      prisma.eventLog.count({
+        where: { event_type: "search_run", created_at: { gte: since } },
+      }),
       prisma.eventLog.findMany({
         where: { event_type: "search_run", created_at: { gte: since } },
         select: { payload: true },
@@ -253,13 +314,13 @@ export async function searchAnalytics(req, res) {
 
     let zeroResultSearches = 0;
     for (const log of recentLogs) {
-      const meta = (log.payload || {});
+      const meta = log.payload || {};
       if (String(meta.result_count) === "0") zeroResultSearches++;
     }
 
     const queryCounts = {};
     for (const log of recentLogs) {
-      const meta = (log.payload || {});
+      const meta = log.payload || {};
       const q = String(meta.query || meta.q || "").trim();
       if (q) queryCounts[q] = (queryCounts[q] || 0) + 1;
     }
@@ -271,7 +332,10 @@ export async function searchAnalytics(req, res) {
     return res.json({
       totalSearches,
       zeroResultSearches,
-      zeroResultRate: totalSearches > 0 ? Math.round((zeroResultSearches / totalSearches) * 100) : 0,
+      zeroResultRate:
+        totalSearches > 0
+          ? Math.round((zeroResultSearches / totalSearches) * 100)
+          : 0,
       topQueries,
       searchesByDay: Array.isArray(searchesByDay) ? searchesByDay : [],
     });
@@ -298,7 +362,7 @@ export async function batchSearch(req, res) {
     if (!Array.isArray(terms) || terms.length === 0) {
       return res.status(400).json({ error: "No search terms provided" });
     }
-    const trimmed = terms.map(t => String(t).trim()).filter(Boolean);
+    const trimmed = terms.map((t) => String(t).trim()).filter(Boolean);
     if (trimmed.length > 100) {
       return res.status(400).json({ error: "Maximum 100 terms allowed" });
     }
@@ -308,7 +372,7 @@ export async function batchSearch(req, res) {
     if (type === "all" || type === "requirements") {
       const reqs = await prisma.requirement.findMany({
         where: {
-          OR: trimmed.map(term => ({
+          OR: trimmed.map((term) => ({
             OR: [
               { title: { contains: term, mode: "insensitive" } },
               { category: { contains: term, mode: "insensitive" } },
@@ -324,7 +388,7 @@ export async function batchSearch(req, res) {
     if (type === "all" || type === "products") {
       const prods = await prisma.product.findMany({
         where: {
-          OR: trimmed.map(term => ({
+          OR: trimmed.map((term) => ({
             OR: [
               { title: { contains: term, mode: "insensitive" } },
               { name: { contains: term, mode: "insensitive" } },
@@ -364,7 +428,13 @@ export async function batchSearchCSV(req, res) {
         const firstColumn = trimmed.split(",")[0].trim();
         if (!firstColumn) continue;
         const lower = firstColumn.toLowerCase();
-        if (lower === "sku" || lower === "term" || lower === "terms" || lower === "product") continue;
+        if (
+          lower === "sku" ||
+          lower === "term" ||
+          lower === "terms" ||
+          lower === "product"
+        )
+          continue;
         terms.push(firstColumn);
       }
 
@@ -376,14 +446,18 @@ export async function batchSearchCSV(req, res) {
       req.body = { terms, type };
       return batchSearch(req, res);
     } catch (parseErr) {
-      return res.status(400).json({ error: "Failed to parse CSV file: " + parseErr.message });
+      return res
+        .status(400)
+        .json({ error: "Failed to parse CSV file: " + parseErr.message });
     }
   });
 }
 
 export async function searchSuggestions(req, res) {
   try {
-    const q = String(req.query.q || "").trim().toLowerCase();
+    const q = String(req.query.q || "")
+      .trim()
+      .toLowerCase();
     if (!q || q.length < 1) {
       return res.json({ suggestions: [] });
     }
@@ -440,7 +514,7 @@ export async function searchSuggestions(req, res) {
       if (r.material) addMatch(r.material);
     });
     eventRows.forEach((e) => {
-      const meta = (e.payload || {});
+      const meta = e.payload || {};
       const query = String(meta.query || meta.q || "").trim();
       if (query && query.toLowerCase().includes(q) && query.length > 1) {
         addMatch(query);

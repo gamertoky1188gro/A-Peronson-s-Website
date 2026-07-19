@@ -1,12 +1,12 @@
 # Commit 0578 — `b03f6c88a4e5`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `b03f6c88a4e529f52530ee8de4260b3924a0e209` |
-| Parent Hash | `92b93fa89fd57f952e90694aeddd0d0d52906e51` |
-| Author | gamertoky1188gro |
-| Date | 2026-06-08 20:55:17 +0600 |
-| Subject | fix: add min-w-0 and border to CrmSummaryPanel for full-width grid layout |
+| Field       | Value                                                                     |
+| ----------- | ------------------------------------------------------------------------- |
+| Commit Hash | `b03f6c88a4e529f52530ee8de4260b3924a0e209`                                |
+| Parent Hash | `92b93fa89fd57f952e90694aeddd0d0d52906e51`                                |
+| Author      | gamertoky1188gro                                                          |
+| Date        | 2026-06-08 20:55:17 +0600                                                 |
+| Subject     | fix: add min-w-0 and border to CrmSummaryPanel for full-width grid layout |
 
 ---
 
@@ -18,10 +18,10 @@ Adds `min-w-0` and border styling to `CrmSummaryPanel` and the FactoryProfile ma
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `src/components/profile/CrmSummaryPanel.jsx` | modified | 1 | 1 |
-| `src/pages/FactoryProfile.jsx` | modified | 1 | 1 |
+| File                                         | Status   | Insertions | Deletions |
+| -------------------------------------------- | -------- | ---------- | --------- |
+| `src/components/profile/CrmSummaryPanel.jsx` | modified | 1          | 1         |
+| `src/pages/FactoryProfile.jsx`               | modified | 1          | 1         |
 
 **2 files changed, 2 insertions, 2 deletions**
 
@@ -30,9 +30,11 @@ Adds `min-w-0` and border styling to `CrmSummaryPanel` and the FactoryProfile ma
 ## Detailed Diff Analysis
 
 ### `CrmSummaryPanel.jsx`
+
 - Added `min-w-0 border border-slate-200/70 dark:border-slate-800/80`.
 
 ### `FactoryProfile.jsx`
+
 - Changed `<main className="w-full space-y-6">` → `<main className="min-w-0 space-y-6">`.
 
 ---

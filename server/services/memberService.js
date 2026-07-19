@@ -70,15 +70,23 @@ function generateNextMemberId() {
 }
 
 function normalizeAgent(orgOwnerId, payload = {}, current = null) {
-  const name = String(payload.name ?? current?.name ?? "").trim().slice(0, 120);
-  const username = String(payload.username ?? current?.username ?? "").trim().slice(0, 64);
+  const name = String(payload.name ?? current?.name ?? "")
+    .trim()
+    .slice(0, 120);
+  const username = String(payload.username ?? current?.username ?? "")
+    .trim()
+    .slice(0, 64);
   const rawMemberId = String(
     payload.member_id ?? payload.account_id ?? current?.member_id ?? "",
-  ).trim().slice(0, 64);
+  )
+    .trim()
+    .slice(0, 64);
   const memberId = rawMemberId || generateNextMemberId();
 
   const role = "agent";
-  const rawStatus = String(payload.status ?? current?.status ?? "active").trim().slice(0, 32);
+  const rawStatus = String(payload.status ?? current?.status ?? "active")
+    .trim()
+    .slice(0, 32);
   const status = rawStatus || "active";
 
   const permissions =
@@ -97,7 +105,8 @@ function normalizeAgent(orgOwnerId, payload = {}, current = null) {
     (payload.email ?? current?.email ?? "").toString().trim().slice(0, 160) ||
     `agent-${memberId}@gartexhub.local`;
 
-  const messagingRaw = payload.messaging_restricted_until ??
+  const messagingRaw =
+    payload.messaging_restricted_until ??
     current?.messaging_restricted_until ??
     null;
   const messagingRestricted =
@@ -137,11 +146,12 @@ function normalizeAgent(orgOwnerId, payload = {}, current = null) {
       payload.performance_score ?? current?.performance_score ?? 0,
     ),
     password_reset_at: passwordResetAt,
-    created_at: current?.created_at instanceof Date
-      ? current.created_at
-      : current?.created_at
-        ? new Date(current.created_at)
-        : new Date(),
+    created_at:
+      current?.created_at instanceof Date
+        ? current.created_at
+        : current?.created_at
+          ? new Date(current.created_at)
+          : new Date(),
     updated_at: new Date(),
   };
 }
@@ -306,7 +316,12 @@ export async function updateMember(orgOwnerId, memberId, payload) {
     nextStatus: next.status,
   });
 
-  const { id: _id, created_at: _created_at, password_hash: _password_hash, ...updatable } = next;
+  const {
+    id: _id,
+    created_at: _created_at,
+    password_hash: _password_hash,
+    ...updatable
+  } = next;
 
   const updated = await prisma.user.update({
     where: { id: memberId },

@@ -246,76 +246,78 @@ export default function TaskTracker() {
         </div>
 
         <ScrollReveal as="section">
-        <div className="space-y-2">
-          {filteredTasks.map((task) => (
-            <div
-              key={task.id}
-              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
-            >
+          <div className="space-y-2">
+            {filteredTasks.map((task) => (
               <div
-                className="flex items-center gap-2 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                onClick={() => toggleRoot(task.id)}
+                key={task.id}
+                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
               >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleRoot(task.id);
-                  }}
-                  className="p-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded"
+                <div
+                  className="flex items-center gap-2 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                  onClick={() => toggleRoot(task.id)}
                 >
-                  {collapsedRoots[task.id] ? (
-                    <ChevronRight className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const allDone = task.children?.every((c) => c.isCompleted);
-                    task.children?.forEach((c) => toggleTask(c.id, !allDone));
-                  }}
-                  className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                    task.children?.every((c) => c.isCompleted)
-                      ? "bg-blue-600 border-blue-600 text-white"
-                      : task.isCompleted
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleRoot(task.id);
+                    }}
+                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded"
+                  >
+                    {collapsedRoots[task.id] ? (
+                      <ChevronRight className="w-5 h-5" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" />
+                    )}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const allDone = task.children?.every(
+                        (c) => c.isCompleted,
+                      );
+                      task.children?.forEach((c) => toggleTask(c.id, !allDone));
+                    }}
+                    className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                      task.children?.every((c) => c.isCompleted)
                         ? "bg-blue-600 border-blue-600 text-white"
-                        : "border-slate-300 dark:border-slate-600"
-                  }`}
-                >
-                  {(task.children?.every((c) => c.isCompleted) ||
-                    task.isCompleted) && <Check className="w-4 h-4" />}
-                </button>
-                <span className="font-semibold text-lg flex-1">
-                  {task.title}
-                </span>
-                <span className="text-sm text-slate-500 dark:text-slate-400">
-                  {task.children?.length || 0} tasks
-                </span>
-              </div>
-
-              {!collapsedRoots[task.id] && (
-                <div className="px-4 pb-4">
-                  {task.description && (
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 px-2">
-                      {task.description}
-                    </p>
-                  )}
-                  <div className="border-l border-slate-200 dark:border-slate-700 ml-3">
-                    {task.children?.map((child) => (
-                      <TreeNode
-                        key={child.id}
-                        task={child}
-                        onToggle={toggleTask}
-                        depth={1}
-                      />
-                    ))}
-                  </div>
+                        : task.isCompleted
+                          ? "bg-blue-600 border-blue-600 text-white"
+                          : "border-slate-300 dark:border-slate-600"
+                    }`}
+                  >
+                    {(task.children?.every((c) => c.isCompleted) ||
+                      task.isCompleted) && <Check className="w-4 h-4" />}
+                  </button>
+                  <span className="font-semibold text-lg flex-1">
+                    {task.title}
+                  </span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {task.children?.length || 0} tasks
+                  </span>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+
+                {!collapsedRoots[task.id] && (
+                  <div className="px-4 pb-4">
+                    {task.description && (
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 px-2">
+                        {task.description}
+                      </p>
+                    )}
+                    <div className="border-l border-slate-200 dark:border-slate-700 ml-3">
+                      {task.children?.map((child) => (
+                        <TreeNode
+                          key={child.id}
+                          task={child}
+                          onToggle={toggleTask}
+                          depth={1}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </ScrollReveal>
       </div>
     </div>

@@ -6,14 +6,17 @@
 **Date:** 2026-05-25 22:21:24 +0600
 
 ## High-Level Summary
+
 Moves "Owner Dashboard" and "Agent Dashboard" links from the separate "Management" dropdown into the "Core" dropdown group, then removes the "Management" dropdown entirely. Reduces the number of top-level nav groups.
 
 ## File-by-File Breakdown
-| File | Change |
-|------|--------|
+
+| File                        | Change                      |
+| --------------------------- | --------------------------- |
 | `src/components/NavBar.jsx` | 10 insertions, 16 deletions |
 
 ## Detailed Diff Analysis
+
 ```diff
        { to: "/verification", label: "Verification" },
 +      {
@@ -39,16 +42,21 @@ Moves "Owner Dashboard" and "Agent Dashboard" links from the separate "Managemen
 ```
 
 ## Why This Change
+
 Reduces nav complexity by consolidating related items. "Management" was a thin wrapper around two links that fit naturally under "Core."
 
 ## Was It Useful
+
 Yes — simplifies the navigation bar, reducing horizontal space usage critical for the flex-nowrap approach in 0436-0437.
 
 ## Impact Analysis
+
 **Low.** Structural navigation change only. No functional behavior change.
 
 ## Relationships
+
 Part of the NavBar simplification series (0436-0439).
 
 ## Confidence Notes
+
 High — mechanical move of items between arrays.

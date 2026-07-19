@@ -365,7 +365,9 @@ export async function listMatchesAdmin(req, res) {
 }
 
 export async function listRequirementsAdmin(req, res) {
-  const rows = await prisma.requirement.findMany({ orderBy: { created_at: "desc" } });
+  const rows = await prisma.requirement.findMany({
+    orderBy: { created_at: "desc" },
+  });
   return res.json({ items: rows });
 }
 

@@ -1,12 +1,12 @@
 # Commit 0559 — `9a20d281e30a`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `9a20d281e30a8c69f8a7b21b179e89b36ec89b42` |
-| Parent Hash | `ff1991f5c75a81e6f578bc91beac230912bd88d5` |
-| Author | gamertoky1188gro |
-| Date | 2026-06-06 22:22:34 +0600 |
-| Subject | fix: restore requireAuth import in feedRoutes |
+| Field       | Value                                         |
+| ----------- | --------------------------------------------- |
+| Commit Hash | `9a20d281e30a8c69f8a7b21b179e89b36ec89b42`    |
+| Parent Hash | `ff1991f5c75a81e6f578bc91beac230912bd88d5`    |
+| Author      | gamertoky1188gro                              |
+| Date        | 2026-06-06 22:22:34 +0600                     |
+| Subject     | fix: restore requireAuth import in feedRoutes |
 
 ---
 
@@ -18,9 +18,9 @@ Restores the `requireAuth` import that was accidentally removed in the previous 
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/routes/feedRoutes.js` | modified | 1 | 0 |
+| File                          | Status   | Insertions | Deletions |
+| ----------------------------- | -------- | ---------- | --------- |
+| `server/routes/feedRoutes.js` | modified | 1          | 0         |
 
 **1 file changed, 1 insertion**
 
@@ -29,6 +29,7 @@ Restores the `requireAuth` import that was accidentally removed in the previous 
 ## Detailed Diff Analysis
 
 ### `feedRoutes.js`
+
 - Added back the `import { requireAuth } from "../middleware/auth.js";` line.
 
 ---

@@ -20,10 +20,31 @@ export default function MarkdownReadme({ content = "" }) {
     const base = defaultSchema || {};
     return {
       ...base,
-      tagNames: [...(base.tagNames || []), "img", "ins", "mark", "sup", "sub", "abbr", "dl", "dt", "dd"],
+      tagNames: [
+        ...(base.tagNames || []),
+        "img",
+        "ins",
+        "mark",
+        "sup",
+        "sub",
+        "abbr",
+        "dl",
+        "dt",
+        "dd",
+      ],
       attributes: {
         ...(base.attributes || {}),
-        img: [...new Set([...(base.attributes?.img || []), "src", "alt", "title", "width", "height", "loading"])],
+        img: [
+          ...new Set([
+            ...(base.attributes?.img || []),
+            "src",
+            "alt",
+            "title",
+            "width",
+            "height",
+            "loading",
+          ]),
+        ],
       },
     };
   }, []);

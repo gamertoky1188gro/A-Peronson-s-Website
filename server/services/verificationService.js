@@ -238,7 +238,9 @@ export async function setVerificationSubscription(userId, endDate) {
   const remainingDays = diffDaysFromNow(nextEnd);
   const expiringSoon = remainingDays > 0 && remainingDays <= 7;
 
-  const existing = await prisma.verification.findUnique({ where: { user_id: userId } });
+  const existing = await prisma.verification.findUnique({
+    where: { user_id: userId },
+  });
 
   if (!existing) {
     return prisma.verification.create({
@@ -260,8 +262,12 @@ export async function setVerificationSubscription(userId, endDate) {
   }
 
   const verification_status = existing.verified
-    ? expiringSoon ? "expiring_soon" : "verified_active"
-    : remainingDays > 0 ? "pending_review" : "expired";
+    ? expiringSoon
+      ? "expiring_soon"
+      : "verified_active"
+    : remainingDays > 0
+      ? "pending_review"
+      : "expired";
 
   return prisma.verification.update({
     where: { user_id: userId },
@@ -337,7 +343,9 @@ export function getVerificationPublicSummary(user, record) {
 }
 
 export async function upsertVerification(user, documentsPatch) {
-  const existing = await prisma.verification.findUnique({ where: { user_id: user.id } });
+  const existing = await prisma.verification.findUnique({
+    where: { user_id: user.id },
+  });
 
   const docs = {
     ...(existing?.documents || emptyDocs()),
@@ -400,7 +408,9 @@ export async function upsertVerification(user, documentsPatch) {
 }
 
 export async function adminApproveVerification(userId) {
-  const existing = await prisma.verification.findUnique({ where: { user_id: userId } });
+  const existing = await prisma.verification.findUnique({
+    where: { user_id: userId },
+  });
   if (!existing) return null;
 
   const validSub = await isVerificationSubscriptionValid(userId);
@@ -444,7 +454,9 @@ export async function adminApproveVerification(userId) {
 }
 
 export async function adminRejectVerification(userId, reason = "") {
-  const existing = await prisma.verification.findUnique({ where: { user_id: userId } });
+  const existing = await prisma.verification.findUnique({
+    where: { user_id: userId },
+  });
   if (!existing) return null;
 
   logInfo("Verification rejected", { user_id: userId, reason });
@@ -601,7 +613,9 @@ export async function markVerificationExpiringSoon(
   remainingDays,
   thresholdDays = 7,
 ) {
-  const existing = await prisma.verification.findUnique({ where: { user_id: userId } });
+  const existing = await prisma.verification.findUnique({
+    where: { user_id: userId },
+  });
   if (!existing) return null;
 
   const nextRemainingDays = Math.max(0, Number(remainingDays) || 0);
@@ -611,7 +625,9 @@ export async function markVerificationExpiringSoon(
     nextRemainingDays <= thresholdDays;
 
   const verification_status = existing.verified
-    ? isExpiringSoon ? "expiring_soon" : "verified_active"
+    ? isExpiringSoon
+      ? "expiring_soon"
+      : "verified_active"
     : "expired";
 
   return prisma.verification.update({

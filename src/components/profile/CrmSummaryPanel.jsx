@@ -124,7 +124,9 @@ export default function CrmSummaryPanel({ targetId }) {
     <section className="mt-6 w-full min-w-0 rounded-2xl border border-slate-200/70 dark:border-slate-800/80 shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-950 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">CRM Timeline</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            CRM Timeline
+          </p>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
             {titleHint || "Visible only to your team"}
           </p>
@@ -139,7 +141,9 @@ export default function CrmSummaryPanel({ targetId }) {
 
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-3">
-          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Lead Status</p>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Lead Status
+          </p>
           <div className="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
             {Object.keys(leadStatus).length ? (
               Object.entries(leadStatus).map(([status, count]) => (
@@ -151,13 +155,17 @@ export default function CrmSummaryPanel({ targetId }) {
                 </div>
               ))
             ) : (
-              <div className="text-slate-400 dark:text-slate-500">No leads yet.</div>
+              <div className="text-slate-400 dark:text-slate-500">
+                No leads yet.
+              </div>
             )}
           </div>
         </div>
 
         <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-3">
-          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Messages</p>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Messages
+          </p>
           <div className="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
             <div className="flex items-center justify-between">
               <span>Total threads</span>
@@ -260,7 +268,9 @@ export default function CrmSummaryPanel({ targetId }) {
         </div>
 
         <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-800/60 p-3">
-          <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">To</label>
+          <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            To
+          </label>
           <input
             type="date"
             value={filterTo}
@@ -333,7 +343,9 @@ export default function CrmSummaryPanel({ targetId }) {
 
       {filterType === "all" || filterType === "calls" ? (
         <div className="mt-4">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Call History</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            Call History
+          </p>
           <div className="mt-2 space-y-2">
             {filteredCalls.length ? (
               filteredCalls.map((call) => (
@@ -357,7 +369,9 @@ export default function CrmSummaryPanel({ targetId }) {
                 </div>
               ))
             ) : (
-              <div className="text-xs text-slate-500 dark:text-slate-400">No call history yet.</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                No call history yet.
+              </div>
             )}
           </div>
         </div>
@@ -389,7 +403,9 @@ export default function CrmSummaryPanel({ targetId }) {
                 </div>
               ))
             ) : (
-              <div className="text-xs text-slate-500 dark:text-slate-400">No contracts yet.</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                No contracts yet.
+              </div>
             )}
           </div>
 
@@ -420,7 +436,9 @@ export default function CrmSummaryPanel({ targetId }) {
 
       {agentOutcomes.length ? (
         <div className="mt-4 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-4">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Agent Outcomes</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            Agent Outcomes
+          </p>
           <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
             <div className="grid grid-cols-6 gap-2 text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">
               <span className="col-span-2">Agent</span>

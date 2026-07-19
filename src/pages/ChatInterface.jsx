@@ -48,7 +48,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import NeonAtom from "../components/ui/NeonAtom";
-import { ThreeDot, Mosaic } from 'react-loading-indicators';
+import { ThreeDot, Mosaic } from "react-loading-indicators";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { uploadFile } from "../lib/upload";
 import UploadProgressBar from "../components/ui/UploadProgressBar";
@@ -231,17 +231,73 @@ function lockStatusLabel(lock, thread = null) {
 }
 
 const IMAGE_ATTACHMENT_EXTS = new Set([
-  "jpg", "jpeg", "png", "webp", "avif", "gif", "apng", "bmp",
-  "tiff", "tif", "heic", "heif", "dcm", "tga", "svg", "eps",
-  "pdf", "dng", "cr2", "cr3", "nef", "arw", "sr2", "orf",
-  "raf", "psd", "ai", "xcf", "cdr",
+  "jpg",
+  "jpeg",
+  "png",
+  "webp",
+  "avif",
+  "gif",
+  "apng",
+  "bmp",
+  "tiff",
+  "tif",
+  "heic",
+  "heif",
+  "dcm",
+  "tga",
+  "svg",
+  "eps",
+  "pdf",
+  "dng",
+  "cr2",
+  "cr3",
+  "nef",
+  "arw",
+  "sr2",
+  "orf",
+  "raf",
+  "psd",
+  "ai",
+  "xcf",
+  "cdr",
 ]);
 const VIDEO_ATTACHMENT_EXTS = new Set([
-  "mp4", "webm", "mkv", "flv", "vob", "ogv", "ogg", "rrc",
-  "gifv", "mng", "mov", "avi", "qt", "wmv", "yuv", "rm",
-  "asf", "amv", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe",
-  "mpv", "svi", "3gp", "3g2", "mxf", "roq", "nsv", "f4v",
-  "f4p", "f4a", "f4b", "mod",
+  "mp4",
+  "webm",
+  "mkv",
+  "flv",
+  "vob",
+  "ogv",
+  "ogg",
+  "rrc",
+  "gifv",
+  "mng",
+  "mov",
+  "avi",
+  "qt",
+  "wmv",
+  "yuv",
+  "rm",
+  "asf",
+  "amv",
+  "m4p",
+  "m4v",
+  "mpg",
+  "mp2",
+  "mpeg",
+  "mpe",
+  "mpv",
+  "svi",
+  "3gp",
+  "3g2",
+  "mxf",
+  "roq",
+  "nsv",
+  "f4v",
+  "f4p",
+  "f4a",
+  "f4b",
+  "mod",
 ]);
 
 function safeAttachmentExt(attachment) {
@@ -396,20 +452,12 @@ function friendCounterpartyId(matchId = "", currentUserId = "") {
 function linkPreviewMeta(url = "") {
   try {
     const parsed = new URL(url);
-    return {
-      host: parsed.hostname.replace(/^www\./i, ""),
-      title: parsed.hostname.replace(/^www\./i, ""),
-      description:
-        parsed.pathname && parsed.pathname !== "/"
-          ? parsed.pathname
-          : "Shared link",
-    };
+    const host = parsed.hostname.replace(/^www\./i, "");
+    const path =
+      parsed.pathname && parsed.pathname !== "/" ? parsed.pathname : "";
+    return { host, path };
   } catch {
-    return {
-      host: "link",
-      title: "Shared link",
-      description: url || "Open link",
-    };
+    return { host: "link", path: "" };
   }
 }
 
@@ -432,8 +480,9 @@ export default function ChatInterface() {
   const [callHistoryByThread, setCallHistoryByThread] = useState({});
   const [messagesByThread, setMessagesByThread] = useState({});
   const [draftMessage, setDraftMessage] = useState("");
-  const [isLiveMessagingEnabled] = useState(true);
-  const [, setChatConnectionStatus] = useState("offline");
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [grantUserId, setGrantUserId] = useState("");
+  const [grantMode, setGrantMode] = useState(""); // "grant" | "transfer"
   const [pageLoading, setPageLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
@@ -947,36 +996,18 @@ export default function ChatInterface() {
   }, [participantIds, refreshPresence]);
 
   useEffect(() => {
-    if (!isLiveMessagingEnabled) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setChatConnectionStatus("offline");
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-      if (reconnectTimerRef.current) {
-        window.clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
-      return undefined;
-    }
-
     let isActive = true;
 
     const connect = () => {
       const token = getToken();
-      if (!token) {
-        setChatConnectionStatus("offline");
-        return;
-      }
+      if (!token) return;
 
-      setChatConnectionStatus("connecting");
+      
       const ws = new WebSocket(WS_BASE);
       wsRef.current = ws;
 
       ws.onopen = () => {
         if (!isActive) return;
-        setChatConnectionStatus("online");
         ws.send(
           JSON.stringify({
             type: "identify",
@@ -1044,7 +1075,6 @@ export default function ChatInterface() {
         }
 
         if (payload.type === "chat_error") {
-          setChatConnectionStatus("online");
           const retryAfter = Number(payload.retry_after_seconds || 0);
           if (payload.reason || retryAfter > 0) {
             setPolicyFeedback({
@@ -1062,13 +1092,10 @@ export default function ChatInterface() {
         }
       };
 
-      ws.onerror = () => {
-        if (isActive) setChatConnectionStatus("online");
-      };
+      ws.onerror = () => {};
 
       ws.onclose = () => {
         if (!isActive) return;
-        setChatConnectionStatus("offline");
         if (reconnectTimerRef.current)
           window.clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = window.setTimeout(connect, 30000);
@@ -1088,10 +1115,9 @@ export default function ChatInterface() {
         wsRef.current = null;
       }
     };
-  }, [isLiveMessagingEnabled]);
+  }, []);
 
   useEffect(() => {
-    if (!isLiveMessagingEnabled) return;
     const token = getToken();
     const matchId = activeThread?.matchId || "";
     if (!token || !matchId) return;
@@ -1104,7 +1130,7 @@ export default function ChatInterface() {
         token,
       }),
     );
-  }, [isLiveMessagingEnabled, activeThread?.matchId]);
+  }, [activeThread?.matchId]);
 
   useEffect(() => {
     const token = getToken();
@@ -1399,8 +1425,8 @@ export default function ChatInterface() {
             <div className="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
               {meta.host}
             </div>
-            <div className="text-sm font-semibold">{meta.title}</div>
-            <div className="text-xs opacity-70">{meta.description}</div>
+            <div className="text-sm font-semibold">{meta.host}</div>
+            {meta.path ? <div className="text-xs opacity-70">{meta.path}</div> : null}
           </a>
         </div>
       );
@@ -1560,7 +1586,6 @@ export default function ChatInterface() {
       // Optimistic local append of the user's message so UI feels instant.
       // The server will still be the source of truth after `loadInbox()`.
       if (
-        isLiveMessagingEnabled &&
         wsRef.current &&
         wsRef.current.readyState === WebSocket.OPEN
       ) {
@@ -1672,59 +1697,46 @@ export default function ChatInterface() {
     }
   }
 
-  async function grantAccess() {
-    const token = getToken();
-    if (!token || !activeThread?.requestId) return;
-    const targetUserId = window.prompt("Grant access to user ID", "") || "";
-    if (!targetUserId.trim()) return;
-    try {
-      await apiRequest(
-        `/conversations/${encodeURIComponent(activeThread.requestId)}/grant`,
-        {
-          method: "POST",
-          token,
-          body: { target_user_id: targetUserId.trim() },
-        },
-      );
-      setNotice({
-        title: "Access granted",
-        message: `User ${targetUserId} can now join this conversation.`,
-        type: "info",
-      });
-      await loadInbox();
-    } catch (err) {
-      setNotice({
-        title: "Grant failed",
-        message: err.message || "Unable to grant access",
-        type: "error",
-      });
-    }
+  function openGrantModal() {
+    setGrantUserId("");
+    setGrantMode("grant");
+    setShowGrantModal(true);
   }
 
-  async function transferAccess() {
-    const token = getToken();
-    if (!token || !activeThread?.requestId) return;
-    const targetUserId = window.prompt("Transfer to agent/user ID", "") || "";
-    if (!targetUserId.trim()) return;
+  function openTransferModal() {
+    setGrantUserId("");
+    setGrantMode("transfer");
+    setShowGrantModal(true);
+  }
+
+  async function submitGrantOrTransfer() {
+    const t = getToken();
+    if (!t || !activeThread?.requestId || !grantUserId.trim()) return;
+    const mode = grantMode;
+    setShowGrantModal(false);
     try {
+      const endpoint = mode === "grant" ? "grant" : "transfer";
       await apiRequest(
-        `/conversations/${encodeURIComponent(activeThread.requestId)}/transfer`,
+        `/conversations/${encodeURIComponent(activeThread.requestId)}/${endpoint}`,
         {
           method: "POST",
-          token,
-          body: { target_user_id: targetUserId.trim() },
+          t,
+          body: { target_user_id: grantUserId.trim() },
         },
       );
       setNotice({
-        title: "Conversation transferred",
-        message: `Ownership moved to ${targetUserId}. You no longer have messaging access.`,
+        title: mode === "grant" ? "Access granted" : "Conversation transferred",
+        message:
+          mode === "grant"
+            ? `User ${grantUserId.trim()} can now join this conversation.`
+            : `Ownership moved to ${grantUserId.trim()}. You no longer have messaging access.`,
         type: "info",
       });
       await loadInbox();
     } catch (err) {
       setNotice({
-        title: "Transfer failed",
-        message: err.message || "Unable to transfer conversation",
+        title: mode === "grant" ? "Grant failed" : "Transfer failed",
+        message: err.message || `Unable to ${mode} conversation`,
         type: "error",
       });
     }
@@ -1949,9 +1961,18 @@ export default function ChatInterface() {
             </span>
           </div>
 
-          <div data-lenis-prevent className="h-[calc(100vh-250px)] overflow-auto pr-1 custom-scrollbar">
+          <div
+            data-lenis-prevent
+            className="h-[calc(100vh-250px)] overflow-auto pr-1 custom-scrollbar"
+          >
             {loading ? (
-              <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+              <Mosaic
+                color="#3b00ff"
+                size="large"
+                style={{ fontSize: "40px" }}
+                text=""
+                textColor=""
+              />
             ) : null}
             {!loading && visibleError ? (
               <div className="p-4 text-center text-sm text-red-400">
@@ -1960,7 +1981,9 @@ export default function ChatInterface() {
             ) : null}
             {!loading && !visibleError && allVisibleThreads.length > 0 ? (
               <List
-                height={typeof window !== 'undefined' ? window.innerHeight - 250 : 600}
+                height={
+                  typeof window !== "undefined" ? window.innerHeight - 250 : 600
+                }
                 itemCount={allVisibleThreads.length}
                 itemSize={82}
                 width="100%"
@@ -2131,13 +2154,13 @@ export default function ChatInterface() {
                         ? `/contracts?journey_match_id=${encodeURIComponent(activeThread.matchId)}`
                         : "/contracts"
                     }
-                    className="rounded-full bg-[#E8F3FF] px-3 py-1 text-[11px] font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]"
+                    className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40"
                   >
                     Contract draft
                   </Link>
                   {isLockOwner ? (
                     <button
-                      onClick={grantAccess}
+                      onClick={openGrantModal}
                       className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
                       title="Grant access to another member"
                     >
@@ -2146,7 +2169,7 @@ export default function ChatInterface() {
                   ) : null}
                   {isLockOwner || isAdminUser ? (
                     <button
-                      onClick={transferAccess}
+                      onClick={openTransferModal}
                       className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
                       title="Transfer this conversation to another agent"
                     >
@@ -2194,7 +2217,8 @@ export default function ChatInterface() {
                 </div>
               ) : null}
 
-              <div data-lenis-prevent
+              <div
+                data-lenis-prevent
                 className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar"
                 style={{ background: isLight ? "#f8fafc" : "transparent" }}
               >
@@ -2331,7 +2355,17 @@ export default function ChatInterface() {
                     disabled={aiSuggesting || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiSuggesting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Generate"}
+                    {aiSuggesting ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      "Generate"
+                    )}
                   </button>
                 </div>
                 {aiError ? (
@@ -2348,7 +2382,17 @@ export default function ChatInterface() {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading || !canSendMessage}
                   >
-                    {uploading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <Plus size={20} />}
+                    {uploading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      <Plus size={20} />
+                    )}
                   </button>
                   <textarea
                     rows={1}
@@ -2390,12 +2434,16 @@ export default function ChatInterface() {
                 {policyFeedback.reason ? (
                   <p className="mt-2 px-4 text-[11px] font-medium text-rose-500">
                     Blocked: {policyFeedback.reason}
-                {countdownSeconds > 0
-                  ? ` • Retry in ${countdownSeconds}s`
-                  : ""}
+                    {countdownSeconds > 0
+                      ? ` • Retry in ${countdownSeconds}s`
+                      : ""}
                   </p>
                 ) : null}
-                {uploading && <div className="px-4 mt-2"><UploadProgressBar progress={uploadProgress} /></div>}
+                {uploading && (
+                  <div className="px-4 mt-2">
+                    <UploadProgressBar progress={uploadProgress} />
+                  </div>
+                )}
                 {uploadStatus || scheduleStatus ? (
                   <p className="mt-2 px-4 text-[11px] font-medium text-gtBlue">
                     {uploadStatus || scheduleStatus}
@@ -2415,7 +2463,8 @@ export default function ChatInterface() {
           )}
         </main>
 
-        <aside data-lenis-prevent
+        <aside
+          data-lenis-prevent
           className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto shadow-borderless dark:shadow-borderlessDark"
           style={{ background: theme.panelBg, boxShadow: theme.shadow }}
         >
@@ -2448,7 +2497,13 @@ export default function ChatInterface() {
               </div>
 
               {leadLoading ? (
-                <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                <ThreeDot
+                  variant="bounce"
+                  color="#6100ff"
+                  size="small"
+                  text=""
+                  textColor=""
+                />
               ) : prequal ? (
                 <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
@@ -2475,7 +2530,17 @@ export default function ChatInterface() {
                     disabled={aiSummaryLoading || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiSummaryLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Refresh"}
+                    {aiSummaryLoading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      "Refresh"
+                    )}
                   </button>
                 </div>
                 {aiSummaryError ? (
@@ -2512,7 +2577,17 @@ export default function ChatInterface() {
                     disabled={aiNegotiationLoading || !activeThread?.matchId}
                     className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
                   >
-                    {aiNegotiationLoading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Generate"}
+                    {aiNegotiationLoading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      "Generate"
+                    )}
                   </button>
                 </div>
                 {aiNegotiationError ? (
@@ -2738,6 +2813,44 @@ export default function ChatInterface() {
           )}
         </aside>
       </div>
+
+      {showGrantModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-slate-950">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              {grantMode === "grant" ? "Grant access" : "Transfer conversation"}
+            </h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {grantMode === "grant"
+                ? "Enter the user ID to grant access to this conversation."
+                : "Enter the agent/user ID to transfer ownership."}
+            </p>
+            <input
+              value={grantUserId}
+              onChange={(e) => setGrantUserId(e.target.value)}
+              placeholder="User ID"
+              className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
+            />
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowGrantModal(false)}
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitGrantOrTransfer}
+                disabled={!grantUserId.trim()}
+                className="rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {grantMode === "grant" ? "Grant" : "Transfer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

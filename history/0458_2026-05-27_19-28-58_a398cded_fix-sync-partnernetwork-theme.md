@@ -6,14 +6,17 @@
 **Date:** 2026-05-27 19:28:58 +0600
 
 ## High-Level Summary
+
 Replaces the page-local `useState(true)` dark mode toggle with the shared `useTheme()` hook from `ThemeProvider`. Also removes the manual `dark` class toggle from the root div and two API endpoint hint strings.
 
 ## File-by-File Breakdown
-| File | Change |
-|------|--------|
+
+| File                           | Change                    |
+| ------------------------------ | ------------------------- |
 | `src/pages/PartnerNetwork.jsx` | 4 insertions, 9 deletions |
 
 ## Detailed Diff Analysis
+
 ```diff
  import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 +import { useTheme } from "../lib/ThemeProvider";
@@ -32,16 +35,21 @@ Replaces the page-local `useState(true)` dark mode toggle with the shared `useTh
 ```
 
 ## Why This Change
+
 Same reasoning as 0452 — the page-local theme was independent of the app-wide theme. Also removes developer-facing API endpoint text.
 
 ## Was It Useful
+
 Yes — fixes inconsistent theming and removes developer clutter.
 
 ## Impact Analysis
+
 **Low.** Dependency injection refactor + minor cleanup.
 
 ## Relationships
+
 Follows the exact same pattern as 0452 (BuyerRequestManagement ThemeContext sync).
 
 ## Confidence Notes
+
 High — identical pattern to 0452.

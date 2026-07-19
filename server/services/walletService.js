@@ -355,7 +355,9 @@ export async function createCouponCode(payload = {}) {
       amount_usd: normalized.amount_usd,
       active: normalized.active,
       max_redemptions: normalized.max_redemptions,
-      expires_at: normalized.expires_at ? new Date(normalized.expires_at) : null,
+      expires_at: normalized.expires_at
+        ? new Date(normalized.expires_at)
+        : null,
       created_by: normalized.created_by,
       marketing_source: normalized.marketing_source,
       created_at: new Date(),
@@ -380,15 +382,15 @@ export async function redeemCouponForUser({ userId, code }) {
     throw err;
   }
 
-  if ((coupon).requires_card && !user.profile?.payment_method_on_file) {
+  if (coupon.requires_card && !user.profile?.payment_method_on_file) {
     const err = new Error("Payment method required to redeem this coupon.");
     err.status = 402;
     err.code = "PAYMENT_METHOD_REQUIRED";
     throw err;
   }
 
-  const roleRestrictions = Array.isArray((coupon).role_restrictions)
-    ? (coupon).role_restrictions
+  const roleRestrictions = Array.isArray(coupon.role_restrictions)
+    ? coupon.role_restrictions
     : [];
   if (roleRestrictions.length) {
     const userRole = String(user.role || "").toLowerCase();
@@ -403,7 +405,7 @@ export async function redeemCouponForUser({ userId, code }) {
   const currentRestricted =
     Math.round(Number(user.wallet_restricted_usd || 0) * 100) / 100;
   const nextRestricted = Math.round((currentRestricted + amount) * 100) / 100;
-  const freeMonths = Number((coupon).verification_free_months || 0);
+  const freeMonths = Number(coupon.verification_free_months || 0);
   let nextProfile = user.profile || {};
   if (Number.isFinite(freeMonths) && freeMonths > 0) {
     const freeUntil = new Date();
@@ -435,7 +437,8 @@ export async function redeemCouponForUser({ userId, code }) {
     },
   });
 
-  const balanceAfter = Math.round(Number(user.wallet_balance_usd || 0) * 100) / 100;
+  const balanceAfter =
+    Math.round(Number(user.wallet_balance_usd || 0) * 100) / 100;
 
   await prisma.walletHistory.create({
     data: {
@@ -451,14 +454,14 @@ export async function redeemCouponForUser({ userId, code }) {
         restricted_balance_after_usd: nextRestricted,
         coupon_id: coupon.id,
         coupon_code: coupon.code,
-        marketing_source: (coupon).marketing_source || null,
-        campaign: (coupon).campaign || null,
-        role_restrictions: Array.isArray((coupon).role_restrictions)
-          ? (coupon).role_restrictions
+        marketing_source: coupon.marketing_source || null,
+        campaign: coupon.campaign || null,
+        role_restrictions: Array.isArray(coupon.role_restrictions)
+          ? coupon.role_restrictions
           : null,
         verification_free_months:
-          Number((coupon).verification_free_months || 0) || null,
-        requires_card: Boolean((coupon).requires_card),
+          Number(coupon.verification_free_months || 0) || null,
+        requires_card: Boolean(coupon.requires_card),
       },
     },
   });

@@ -1,12 +1,12 @@
 # Commit 0587 — `7ecc56e5c02b`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `7ecc56e5c02b58fc19843c111c750c9214424da6` |
-| Parent Hash | `a65ad743864d8e5a0624c6b786a612bd40dc6f78` |
-| Author | gamertoky1188gro |
-| Date | 2026-06-09 01:09:12 +0600 |
-| Subject | fix: replace CSS cp-hidden with direct JS opacity control on cursor elements; use documentElement for leave/enter |
+| Field       | Value                                                                                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| Commit Hash | `7ecc56e5c02b58fc19843c111c750c9214424da6`                                                                        |
+| Parent Hash | `a65ad743864d8e5a0624c6b786a612bd40dc6f78`                                                                        |
+| Author      | gamertoky1188gro                                                                                                  |
+| Date        | 2026-06-09 01:09:12 +0600                                                                                         |
+| Subject     | fix: replace CSS cp-hidden with direct JS opacity control on cursor elements; use documentElement for leave/enter |
 
 ---
 
@@ -18,9 +18,9 @@ Replaces the CSS `.cp-hidden` class approach with direct JS opacity manipulation
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `src/components/ui/CyberpunkCursor.jsx` | modified | 15 | 24 |
+| File                                    | Status   | Insertions | Deletions |
+| --------------------------------------- | -------- | ---------- | --------- |
+| `src/components/ui/CyberpunkCursor.jsx` | modified | 15         | 24        |
 
 **1 file changed, 15 insertions, 24 deletions**
 
@@ -29,6 +29,7 @@ Replaces the CSS `.cp-hidden` class approach with direct JS opacity manipulation
 ## Detailed Diff Analysis
 
 ### `CyberpunkCursor.jsx`
+
 - Created `cursorEls = [core, ring, glow, dot, spinner]` array.
 - Added `setCursorVisible(visible)` function that directly sets `el.style.opacity = "1"` or `"0"` on all cursor elements.
 - Replaced `body.classList.add("cp-hidden")` → `setCursorVisible(false)`.

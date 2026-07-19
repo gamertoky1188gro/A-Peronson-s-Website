@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0096 |
-| Hash | `dc9a7bb17e8a4a3eb19825de331a7b8d35cfebca` |
-| Parent Hash | `e8bfea769f3a64d8bbf88f0bbff27de4703e854b` |
-| Author | gamertoky1188gro |
-| Date/Time | 2026-03-04 00:17:20 |
-| Files Changed | 4 |
-| Lines Added | 509 |
-| Lines Deleted | 132 |
-| Net Change | +377 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0096                                       |
+| Hash          | `dc9a7bb17e8a4a3eb19825de331a7b8d35cfebca` |
+| Parent Hash   | `e8bfea769f3a64d8bbf88f0bbff27de4703e854b` |
+| Author        | gamertoky1188gro                           |
+| Date/Time     | 2026-03-04 00:17:20                        |
+| Files Changed | 4                                          |
+| Lines Added   | 509                                        |
+| Lines Deleted | 132                                        |
+| Net Change    | +377                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -33,16 +33,20 @@ Major expansion of `README.md` with detailed API endpoint documentation covering
 ## Detailed Diff Analysis
 
 ### Documentation Changes
+
 - README now documents 14 API groups with specific endpoints, HTTP methods, descriptions, and role restrictions.
 
 ### UI Component Changes
+
 - NavBar buttons received dark mode support classes (`dark:border-slate-700`, `dark:text-slate-300`, `dark:hover:bg-slate-800`).
 
 ### Page Content Changes
+
 - About page: Complete redesign with grid layout, styled sections, platform workflow list, and legal footer.
 - HelpCenter: Added `HELP_SECTIONS` constant with structured data. Admin FAQ management now conditionally renders based on role. Added anchor-navigation sidebar. FAQ search is now case-insensitive via `filteredFaqs`.
 
 ### State Management Changes
+
 - HelpCenter now uses `useEffect` to load FAQs on mount for admin/owners. Form submission no longer calls `await loadFaqs()` (changed to `loadFaqs()` without await).
 
 ## Why This Change May Have Been Needed

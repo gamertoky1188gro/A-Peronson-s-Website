@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0106 |
-| Hash | `e5bbf65f9601ea31d8dc6819e2de0448d57e8e82` |
-| Parent Hash | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
-| Author | Cyber Code Master |
-| Date/Time | 2026-03-06 14:35:43 |
-| Files Changed | 3 |
-| Lines Added | 375 |
-| Lines Deleted | 49 |
-| Net Change | +326 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0106                                       |
+| Hash          | `e5bbf65f9601ea31d8dc6819e2de0448d57e8e82` |
+| Parent Hash   | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
+| Author        | Cyber Code Master                          |
+| Date/Time     | 2026-03-06 14:35:43                        |
+| Files Changed | 3                                          |
+| Lines Added   | 375                                        |
+| Lines Deleted | 49                                         |
+| Net Change    | +326                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -32,12 +32,15 @@ Made the `/api/assistant/ask` endpoint publicly accessible (removed `requireAuth
 ## Detailed Diff Analysis
 
 ### Route Changes
+
 - `POST /ask` is now public (no auth middleware) — this is needed for the WS bridge to forward user questions without requiring a session token.
 
 ### Controller Changes
+
 - `orgIdFromUser` uses `'public_guest'` as fallback when no user object exists.
 
 ### Service Changes
+
 - Identical LLM pipeline to commit 0104 with logging, fallback, code-context, and RAG.
 
 ## Why This Change May Have Been Needed

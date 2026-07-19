@@ -18,7 +18,10 @@ export async function createReport({
       entity_id: sanitizeString(String(entity_id || ""), 160),
       reason: sanitizeString(String(reason || ""), 400),
       actor_id: sanitizeString(String(actor?.id || ""), 120),
-      actor_name: sanitizeString(String(actor?.name || actor?.email || ""), 120),
+      actor_name: sanitizeString(
+        String(actor?.name || actor?.email || ""),
+        120,
+      ),
       created_at: new Date(),
     },
   });

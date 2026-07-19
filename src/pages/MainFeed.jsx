@@ -5,7 +5,13 @@
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import useLocalStorageState from "../hooks/useLocalStorageState";
 import {
   apiRequest,
@@ -20,146 +26,30 @@ import PostDetailModal from "../components/feed/PostDetailModal";
 import NeonAtom from "../components/ui/NeonAtom";
 import ReportModal from "../components/feed/ReportModal";
 import { subscribeFeedRealtime } from "../lib/feedRealtime";
+import {
+  BadgeCheck,
+  Bell,
+  BriefcaseBusiness,
+  ChevronDown,
+  Filter,
+  Flag,
+  LayoutGrid,
+  MessageCircle,
+  MoonStar,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Send,
+  Share2,
+  SlidersHorizontal,
+  Sparkles,
+  SunMedium,
+  Upload,
+  UserCircle2,
+} from "lucide-react";
 import usePageMeta from "../lib/usePageMeta";
 
 const Motion = motion;
-
-// ====== ICONS (from template) ======
-const Icon = ({ children, className = "h-5 w-5" }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    {children}
-  </svg>
-);
-
-const SearchIcon = (p) => (
-  <Icon {...p}>
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </Icon>
-);
-const FilterIcon = (p) => (
-  <Icon {...p}>
-    <polygon points="22 3 2 3 10 12 10 19 14 21 14 12 22 3" />
-  </Icon>
-);
-const ChevronDown = (p) => (
-  <Icon {...p}>
-    <polyline points="6 9 12 15 18 9" />
-  </Icon>
-);
-const MessageCircle = (p) => (
-  <Icon {...p}>
-    <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.38 8.38 0 0 1-4-.98L3 21l1.98-5.5A8.5 8.5 0 1 1 21 11.5z" />
-  </Icon>
-);
-const Share2 = (p) => (
-  <Icon {...p}>
-    <circle cx="18" cy="5" r="3" />
-    <circle cx="6" cy="12" r="3" />
-    <circle cx="18" cy="19" r="3" />
-    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-  </Icon>
-);
-const Flag = (p) => (
-  <Icon {...p}>
-    <path d="M4 4v16" />
-    <path d="M4 4c5-2 7 2 12 0v8c-5 2-7-2-12 0" />
-  </Icon>
-);
-const Send = (p) => (
-  <Icon {...p}>
-    <line x1="22" y1="2" x2="11" y2="13" />
-    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-  </Icon>
-);
-const Sparkles = (p) => (
-  <Icon {...p}>
-    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z" />
-  </Icon>
-);
-const LayoutGrid = (p) => (
-  <Icon {...p}>
-    <rect x="3" y="3" width="7" height="7" />
-    <rect x="14" y="3" width="7" height="7" />
-    <rect x="14" y="14" width="7" height="7" />
-    <rect x="3" y="14" width="7" height="7" />
-  </Icon>
-);
-const BadgeCheck = (p) => (
-  <Icon {...p}>
-    <path d="M9 12l2 2 4-4" />
-    <circle cx="12" cy="12" r="10" />
-  </Icon>
-);
-const SunMedium = (p) => (
-  <Icon {...p}>
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-  </Icon>
-);
-const MoonStar = (p) => (
-  <Icon {...p}>
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </Icon>
-);
-const SlidersHorizontal = (p) => (
-  <Icon {...p}>
-    <line x1="4" y1="21" x2="4" y2="14" />
-    <line x1="4" y1="10" x2="4" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="12" />
-    <line x1="12" y1="8" x2="12" y2="3" />
-    <line x1="20" y1="21" x2="20" y2="16" />
-    <line x1="20" y1="12" x2="20" y2="3" />
-  </Icon>
-);
-const Plus = (p) => (
-  <Icon {...p}>
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <line x1="5" y1="12" x2="19" y2="12" />
-  </Icon>
-);
-const MoreHorizontal = (p) => (
-  <Icon {...p}>
-    <circle cx="12" cy="12" r="1" />
-    <circle cx="19" cy="12" r="1" />
-    <circle cx="5" cy="12" r="1" />
-  </Icon>
-);
-const Bell = (p) => (
-  <Icon {...p}>
-    <path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
-    <path d="M13.73 21a2 2 0 01-3.46 0" />
-  </Icon>
-);
-const UserCircle2 = (p) => (
-  <Icon {...p}>
-    <circle cx="12" cy="8" r="4" />
-    <path d="M6 20c0-4 12-4 12 0" />
-  </Icon>
-);
-const BriefcaseBusiness = (p) => (
-  <Icon {...p}>
-    <rect x="2" y="7" width="20" height="14" />
-    <path d="M16 3H8v4h8z" />
-  </Icon>
-);
-const Upload = (p) => (
-  <Icon {...p}>
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="17 8 12 3 7 8" />
-    <line x1="12" y1="3" x2="12" y2="15" />
-  </Icon>
-);
 
 const TABS = [
   "All",
@@ -246,15 +136,15 @@ function normalizeFeedItem(raw) {
     raw.author?.role ||
     raw.company_role ||
     (isBuyerRequest ? "buyer" : isUserFeedPost ? "member" : "factory");
-  const rolePath = raw.author?.rolePath || (
-    accountType === "buying_house"
+  const rolePath =
+    raw.author?.rolePath ||
+    (accountType === "buying_house"
       ? "buying-house"
       : accountType === "buyer"
         ? "buyer"
         : accountType === "factory"
           ? "factory"
-          : ""
-  );
+          : "");
 
   return {
     id: raw.id,
@@ -430,7 +320,11 @@ export default function MainFeed() {
   const loadFlags = useRef({ user: false, config: false, feed: false });
   const markLoaded = (key) => {
     loadFlags.current[key] = true;
-    if (loadFlags.current.user && loadFlags.current.config && loadFlags.current.feed) {
+    if (
+      loadFlags.current.user &&
+      loadFlags.current.config &&
+      loadFlags.current.feed
+    ) {
       setPageLoading(false);
     }
   };
@@ -439,6 +333,7 @@ export default function MainFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState({ type: "", message: "" });
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [commentsItem, setCommentsItem] = useState(null);
   const [reportItem, setReportItem] = useState(null);
@@ -452,10 +347,14 @@ export default function MainFeed() {
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
   const heroScale = useSpring(useTransform(scrollY, [0, 200], [1, 0.95]), {
-    stiffness: 80, damping: 20, restDelta: 0.001,
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001,
   });
   const bgParallax = useSpring(useTransform(scrollY, [0, 600], [0, -40]), {
-    stiffness: 80, damping: 20, restDelta: 0.001,
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001,
   });
 
   const canExpressInterest = useMemo(() => {
@@ -475,7 +374,8 @@ export default function MainFeed() {
   }, [token]);
 
   const loadFeedPage = useCallback(
-    async ({ reset }) => { // eslint-disable-line react-hooks/preserve-manual-memoization
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+    async ({ reset }) => {
       const limit = 12;
       const cursor = reset ? 0 : Number(nextCursor || 0);
 
@@ -622,7 +522,10 @@ export default function MainFeed() {
 
     const source = subscribeFeedRealtime({
       onNewPost(raw) {
-        const normalized = normalizeFeedItem({ ...raw, feed_type: "user_feed_post" });
+        const normalized = normalizeFeedItem({
+          ...raw,
+          feed_type: "user_feed_post",
+        });
         setItems((prev) => {
           if (prev.some((i) => i.id === normalized.id)) return prev;
           return [normalized, ...prev];
@@ -632,8 +535,13 @@ export default function MainFeed() {
         setItems((prev) => prev.filter((i) => i.id !== id));
       },
       onUpdatedPost(raw) {
-        const normalized = normalizeFeedItem({ ...raw, feed_type: "user_feed_post" });
-        setItems((prev) => prev.map((i) => (i.id === normalized.id ? normalized : i)));
+        const normalized = normalizeFeedItem({
+          ...raw,
+          feed_type: "user_feed_post",
+        });
+        setItems((prev) =>
+          prev.map((i) => (i.id === normalized.id ? normalized : i)),
+        );
       },
     });
 
@@ -643,8 +551,9 @@ export default function MainFeed() {
   useEffect(() => {
     if (!highlightKey || !items.length) return;
     const match = items.find((i) => `${i.entityType}:${i.id}` === highlightKey);
-    if (match) // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCommentsItem(match);
+    if (match)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCommentsItem(match);
   }, [highlightKey, items]);
 
   const _nowRef = useRef(null);
@@ -821,7 +730,10 @@ export default function MainFeed() {
       <div className="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
         <div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6">
           {/* ====== SIDEBAR ====== */}
-          <aside data-lenis-prevent className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto">
+          <aside
+            data-lenis-prevent
+            className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto"
+          >
             {/* Header */}
             <div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
               <div className="flex items-center justify-between">
@@ -839,7 +751,10 @@ export default function MainFeed() {
                   )}
                   <div>
                     <p className="text-sm/none font-medium opacity-90">
-                      {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ") : "User"}
+                      {user?.role
+                        ? user.role.charAt(0).toUpperCase() +
+                          user.role.slice(1).replace(/_/g, " ")
+                        : "User"}
                     </p>
                     <p className="text-xl font-semibold">
                       {user?.name || "Feed Center"}
@@ -852,9 +767,7 @@ export default function MainFeed() {
                 {user?.profile?.bio || feedConfig.labels.premium_badge}
               </div>
               {user?.email && (
-                <div className="mt-2 text-xs opacity-75">
-                  {user.email}
-                </div>
+                <div className="mt-2 text-xs opacity-75">{user.email}</div>
               )}
             </div>
 
@@ -900,7 +813,7 @@ export default function MainFeed() {
                 </span>
               </div>
               <div className="mt-4 relative">
-                <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -938,7 +851,10 @@ export default function MainFeed() {
           </aside>
 
           {/* ====== MAIN CONTENT ====== */}
-          <main data-lenis-prevent className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0">
+          <main
+            data-lenis-prevent
+            className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0"
+          >
             {/* Hero Section */}
             <motion.section
               className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6"
@@ -983,8 +899,11 @@ export default function MainFeed() {
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <button className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300">
-                    <FilterIcon className="h-4 w-4" />
+                  <button
+                    onClick={() => setFiltersOpen(v => !v)}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300"
+                  >
+                    <Filter className="h-4 w-4" />
                     Filters
                   </button>
                   <Link
@@ -1032,8 +951,6 @@ export default function MainFeed() {
 
             {/* Feed Items */}
             <section className="grid gap-5">
-
-
               {error ? (
                 <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
                   {error}

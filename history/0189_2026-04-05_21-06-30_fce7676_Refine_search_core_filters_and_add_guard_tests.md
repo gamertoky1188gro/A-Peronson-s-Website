@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** fce7676a0689a703e42d9f61b3480383a827840f
 - **Parent:** f3423db52dd83579efbf8401eb70d6085610a0c1
 - **Author:** Cyber Code Master
@@ -6,26 +7,30 @@
 - **Message:** Refine search core filters and add guard tests
 
 ## Custom Title
+
 Refine search core filters and add guard tests
 
 ## High-Level Summary
+
 Refine search core filters and add guard tests
 
- 3 files changed, 122 insertions(+), 51 deletions(-)
+3 files changed, 122 insertions(+), 51 deletions(-)
 
 ## File-by-File Breakdown
+
 commit fce7676a0689a703e42d9f61b3480383a827840f
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Sun Apr 5 21:06:30 2026 +0600
+Date: Sun Apr 5 21:06:30 2026 +0600
 
     Refine search core filters and add guard tests
 
- src/pages/SearchResults.jsx                     | 83 ++++++++++---------------
- src/pages/__tests__/searchFiltersConfig.test.js | 39 ++++++++++++
- src/pages/searchFiltersConfig.js                | 51 +++++++++++++++
- 3 files changed, 122 insertions(+), 51 deletions(-)
+src/pages/SearchResults.jsx | 83 ++++++++++---------------
+src/pages/**tests**/searchFiltersConfig.test.js | 39 ++++++++++++
+src/pages/searchFiltersConfig.js | 51 +++++++++++++++
+3 files changed, 122 insertions(+), 51 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/src/pages/SearchResults.jsx b/src/pages/SearchResults.jsx
 index f45576b..ba8617e 100644
@@ -36,13 +41,13 @@ index f45576b..ba8617e 100644
  import { recordLeadSource } from '../lib/leadSource'
  import L from 'leaflet'
 +import { ADVANCED_FILTER_KEYS, DEFAULT_CORE_FILTER_KEYS, validateCoreFilterRenderKeys } from './searchFiltersConfig'
- 
+
  const Motion = motion
- 
+
 @@ -162,33 +163,6 @@ function roleToProfileRoute(role, id) {
    return `/factory/${encodeURIComponent(id)}`
  }
- 
+
 -const CORE_FILTER_KEYS = ['industry', 'moqRange', 'priceRange', 'country', 'verifiedOnly', 'orgType', 'leadTimeMax', 'priorityOnly']
 -const ADVANCED_FILTER_KEYS = [
 -  'fabricType',
@@ -70,7 +75,7 @@ index f45576b..ba8617e 100644
 -  'locationLat',
 -  'locationLng',
 -]
- 
+
  function buildQueryString({ q, category, filters, includeAdvanced, includePriority = false }) {
    // Build URLSearchParams from UI state.
 @@ -389,6 +363,7 @@ export default function SearchResults() {
@@ -97,7 +102,7 @@ index f45576b..ba8617e 100644
 +      console.warn('[SearchResults] Invalid default core filter configuration.', validation)
 +    }
 +  }, [renderedDefaultCoreFilterKeys])
- 
+
    useEffect(() => {
      let alive = true
 @@ -775,7 +762,7 @@ export default function SearchResults() {
@@ -142,7 +147,7 @@ index f45576b..ba8617e 100644
 @@ -1250,7 +1223,7 @@ export default function SearchResults() {
                  </div>
                </div>
- 
+
 -              <div className={`rounded-2xl p-4 ring-1 shadow-sm${premiumLocked ? ' bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : ' bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
 +              <div className={`rounded-2xl p-4 ring-1 shadow-sm${premiumLocked ? ' bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : ' bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`} data-has-advanced-url-filters={hasAdvancedFiltersFromUrl ? 'true' : 'false'}>
                  <div className="flex items-center justify-between gap-2">
@@ -156,7 +161,7 @@ index f45576b..ba8617e 100644
 +                    {advancedFiltersOpen ? 'Hide filters' : 'More Filters'}
                    </button>
                  </div>
- 
+
                  {advancedFiltersOpen ? (
                    <div className="mt-3 grid grid-cols-1 gap-2">
 +                    <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
@@ -291,17 +296,22 @@ index 0000000..5ee7319
 ```
 
 ## Why This Change
+
 Refine search core filters and add guard tests
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  3 files changed, 122 insertions(+), 51 deletions(-)
+
+- **Scope:** 3 files changed, 122 insertions(+), 51 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 189 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

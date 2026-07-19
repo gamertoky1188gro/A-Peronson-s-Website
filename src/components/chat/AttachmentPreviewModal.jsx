@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Download, File, X } from "lucide-react";
-import { Atom } from 'react-loading-indicators'
+import { Atom } from "react-loading-indicators";
 import MarkdownMessage from "./MarkdownMessage";
 import Prism from "prismjs";
 
@@ -130,17 +130,73 @@ const PRISM_TOMORROW_CSS = `/**
 `;
 
 const IMAGE_EXTS = new Set([
-  "jpg", "jpeg", "png", "webp", "avif", "gif", "apng", "bmp",
-  "tiff", "tif", "heic", "heif", "dcm", "tga", "svg", "eps",
-  "pdf", "dng", "cr2", "cr3", "nef", "arw", "sr2", "orf",
-  "raf", "psd", "ai", "xcf", "cdr",
+  "jpg",
+  "jpeg",
+  "png",
+  "webp",
+  "avif",
+  "gif",
+  "apng",
+  "bmp",
+  "tiff",
+  "tif",
+  "heic",
+  "heif",
+  "dcm",
+  "tga",
+  "svg",
+  "eps",
+  "pdf",
+  "dng",
+  "cr2",
+  "cr3",
+  "nef",
+  "arw",
+  "sr2",
+  "orf",
+  "raf",
+  "psd",
+  "ai",
+  "xcf",
+  "cdr",
 ]);
 const VIDEO_EXTS = new Set([
-  "mp4", "webm", "mkv", "flv", "vob", "ogv", "ogg", "rrc",
-  "gifv", "mng", "mov", "avi", "qt", "wmv", "yuv", "rm",
-  "asf", "amv", "m4p", "m4v", "mpg", "mp2", "mpeg", "mpe",
-  "mpv", "svi", "3gp", "3g2", "mxf", "roq", "nsv", "f4v",
-  "f4p", "f4a", "f4b", "mod",
+  "mp4",
+  "webm",
+  "mkv",
+  "flv",
+  "vob",
+  "ogv",
+  "ogg",
+  "rrc",
+  "gifv",
+  "mng",
+  "mov",
+  "avi",
+  "qt",
+  "wmv",
+  "yuv",
+  "rm",
+  "asf",
+  "amv",
+  "m4p",
+  "m4v",
+  "mpg",
+  "mp2",
+  "mpeg",
+  "mpe",
+  "mpv",
+  "svi",
+  "3gp",
+  "3g2",
+  "mxf",
+  "roq",
+  "nsv",
+  "f4v",
+  "f4p",
+  "f4a",
+  "f4b",
+  "mod",
 ]);
 const MARKDOWN_EXTS = new Set(["md", "markdown"]);
 const OFFICE_EXTS = new Set(["doc", "docx"]);
@@ -416,6 +472,14 @@ function escapeHtml(value = "") {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function sanitizeHtml(html = "") {
+  return String(html || "")
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/\son\w+\s*=\s*[^\s>]+/gi, "");
 }
 
 function formatXml(xmlText = "") {
@@ -807,7 +871,13 @@ function AttachmentPreviewModal({
         try {
           ({ EMFJS, RTFJS, WMFJS } = await import("rtf.js"));
         } catch {
-          setRtfState({ loading: false, error: "RTF preview is not available (missing library). Please download the file.", html: "", meta: null });
+          setRtfState({
+            loading: false,
+            error:
+              "RTF preview is not available (missing library). Please download the file.",
+            html: "",
+            meta: null,
+          });
           return;
         }
 
@@ -1037,7 +1107,14 @@ function AttachmentPreviewModal({
           {kind === "pdf" ? (
             <div className="space-y-3">
               {pdfState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Loading preview..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {pdfState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1100,7 +1177,14 @@ function AttachmentPreviewModal({
           {kind === "spreadsheet" ? (
             <div className="space-y-3">
               {spreadsheetState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Loading preview..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {spreadsheetState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1167,7 +1251,14 @@ function AttachmentPreviewModal({
           {kind === "rtf" ? (
             <div className="space-y-3">
               {rtfState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Loading preview..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {rtfState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1178,7 +1269,7 @@ function AttachmentPreviewModal({
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-slate-100">
                   <div
                     className="prose prose-invert max-w-none text-[13px] leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: rtfState.html || "" }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(rtfState.html || "") }}
                   />
                 </div>
               ) : null}
@@ -1187,15 +1278,22 @@ function AttachmentPreviewModal({
 
           {kind === "odt" ? (
             <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-sm text-slate-200">
-              ODT preview isn't available in this build yet (WebODF isn't
-              bundled). Please download the file for now.
+              ODT preview requires WebODF, which is not included in this build.
+              Please download the file to view it.
             </div>
           ) : null}
 
           {kind === "html" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Loading preview..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1227,7 +1325,14 @@ function AttachmentPreviewModal({
           {kind === "xml" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Loading preview..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1235,7 +1340,14 @@ function AttachmentPreviewModal({
                 </div>
               ) : null}
               {highlightState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Formatting and highlighting..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Formatting and highlighting..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {highlightState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
@@ -1245,7 +1357,10 @@ function AttachmentPreviewModal({
               {!textState.loading &&
               !textState.error &&
               !highlightState.loading ? (
-                <pre data-lenis-prevent className="language-markup overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
+                <pre
+                  data-lenis-prevent
+                  className="language-markup overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100"
+                >
                   <code
                     dangerouslySetInnerHTML={{
                       __html:
@@ -1261,7 +1376,14 @@ function AttachmentPreviewModal({
           {kind === "code" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Loading preview..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1269,7 +1391,14 @@ function AttachmentPreviewModal({
                 </div>
               ) : null}
               {highlightState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Highlighting..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Highlighting..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {highlightState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
@@ -1279,7 +1408,8 @@ function AttachmentPreviewModal({
               {!textState.loading &&
               !textState.error &&
               !highlightState.loading ? (
-                <pre data-lenis-prevent
+                <pre
+                  data-lenis-prevent
                   className={`language-${highlightState.language || prismLanguageForExt(fileExt) || "markup"}overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100`}
                 >
                   <code
@@ -1297,7 +1427,14 @@ function AttachmentPreviewModal({
           {kind === "markdown" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Loading preview..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
@@ -1315,7 +1452,14 @@ function AttachmentPreviewModal({
           {kind === "text" ? (
             <div className="space-y-3">
               {textState.loading ? (
-                <div className="text-sm text-slate-300"><Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" /></div>
+                <div className="text-sm text-slate-300">
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Loading preview..."
+                    textColor="#94a3b8"
+                  />
+                </div>
               ) : null}
               {textState.error ? (
                 <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">

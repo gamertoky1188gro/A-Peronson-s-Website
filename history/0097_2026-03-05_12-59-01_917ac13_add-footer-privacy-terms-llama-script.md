@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0097 |
-| Hash | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
-| Parent Hash | `dc9a7bb17e8a4a3eb19825de331a7b8d35cfebca` |
-| Author | gamertoky1188gro |
-| Date/Time | 2026-03-05 12:59:01 |
-| Files Changed | 8 |
-| Lines Added | 843 |
-| Lines Deleted | 53 |
-| Net Change | +790 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0097                                       |
+| Hash          | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
+| Parent Hash   | `dc9a7bb17e8a4a3eb19825de331a7b8d35cfebca` |
+| Author        | gamertoky1188gro                           |
+| Date/Time     | 2026-03-05 12:59:01                        |
+| Files Changed | 8                                          |
+| Lines Added   | 843                                        |
+| Lines Deleted | 53                                         |
+| Net Change    | +790                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -37,18 +37,22 @@ Major content and infrastructure commit. Added a global Footer component across 
 ## Detailed Diff Analysis
 
 ### Infrastructure/DevOps
+
 - `setupLlama.js` provides an automated way to set up llama.cpp for AI inference on the server. It detects the OS, GPU capabilities, and downloads the matching prebuilt binary from GitHub releases.
 - `.gitignore` prevents llama artifacts from being committed.
 
 ### UI Components
+
 - Footer is a responsive 4-column grid with Links to key pages, social links, and copyright.
 - Privacy page: Uses a card layout with `bg-slate-50`, gradient headers, grid-based information collection lists, and a blue gradient fraud prevention section.
 - Terms page: Similar professional layout with numbered sections, a rose-gradient user conduct section, and a warning banner for liability.
 
 ### State Management
+
 - App.jsx wraps all routes with a `<Footer />` component.
 
 ### Dependency Changes
+
 - Added: `axios`, `tar`, `unzipper` (for llama.cpp download/extraction).
 - Moved: `electron` from deps to devDeps (correct packaging).
 

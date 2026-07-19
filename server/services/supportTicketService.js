@@ -100,7 +100,8 @@ export async function listSupportTicketsAdmin({
 } = {}) {
   const where = {};
   if (status) where.status = sanitizeString(String(status), 40).toLowerCase();
-  if (priority) where.priority = sanitizeString(String(priority), 40).toLowerCase();
+  if (priority)
+    where.priority = sanitizeString(String(priority), 40).toLowerCase();
   if (assignedTo) where.assigned_to = sanitizeString(String(assignedTo), 120);
 
   const start = Math.max(0, Number(offset) || 0);
@@ -126,7 +127,9 @@ export async function getSupportTicketById(ticketId) {
 }
 
 export async function appendSupportTicketMessage(ticketId, actor, message) {
-  const ticket = await prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
+  const ticket = await prisma.supportTicket.findUnique({
+    where: { id: String(ticketId) },
+  });
   if (!ticket) return null;
   if (String(ticket.user_id) !== String(actor?.id || "")) return "forbidden";
 
@@ -150,7 +153,9 @@ export async function appendSupportTicketMessage(ticketId, actor, message) {
 }
 
 export async function adminAssignSupportTicket(ticketId, assigneeId, _actorId) {
-  const ticket = await prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
+  const ticket = await prisma.supportTicket.findUnique({
+    where: { id: String(ticketId) },
+  });
   if (!ticket) return null;
 
   return prisma.supportTicket.update({
@@ -167,7 +172,9 @@ export async function adminUpdateSupportTicket(
   patch = {},
   _actorId = "",
 ) {
-  const ticket = await prisma.supportTicket.findUnique({ where: { id: String(ticketId) } });
+  const ticket = await prisma.supportTicket.findUnique({
+    where: { id: String(ticketId) },
+  });
   if (!ticket) return null;
 
   const nextStatus = patch.status

@@ -29,7 +29,12 @@ import prisma from "../utils/prisma.js";
 import { sanitizeString, unescapeHtml } from "../utils/validators.js";
 import { logError, logInfo } from "../utils/logger.js";
 import { updateLocalJson } from "../utils/localStore.js";
-import { saveOpencodeConfig, saveSessionMeta, deleteSessionMeta, loadSessionMeta } from "../utils/sessionStore.js";
+import {
+  saveOpencodeConfig,
+  saveSessionMeta,
+  deleteSessionMeta,
+  loadSessionMeta,
+} from "../utils/sessionStore.js";
 
 const _KNOWLEDGE_MODEL = "assistantKnowledge";
 const KNOWLEDGE_TYPES = {
@@ -269,7 +274,9 @@ If uncertain whether information is sensitive:
 Your purpose is to HELP users use GarTexHub safely — not expose how GarTexHub works internally.`;
 async function loadAssistantConfig() {
   try {
-    const row = await prisma.appState.findUnique({ where: { key: "assistant_config" } });
+    const row = await prisma.appState.findUnique({
+      where: { key: "assistant_config" },
+    });
     const data = row?.data || {};
     return {
       systemPrompt: data.systemPrompt || DEFAULT_SYSTEM_PROMPT,
@@ -315,7 +322,9 @@ async function loadAssistantConfig() {
 
 async function loadAssistantRules() {
   try {
-    const row = await prisma.appState.findUnique({ where: { key: "assistant_rules" } });
+    const row = await prisma.appState.findUnique({
+      where: { key: "assistant_rules" },
+    });
     const data = row?.data || {};
     return {
       globalRules: data.globalRules || [],
@@ -505,7 +514,9 @@ async function searchCodeContext(questionText) {
 
     const snippets = matches.slice(0, 8).map((m) => {
       const rawLines = m.lines;
-      const linesStr = Array.isArray(rawLines) ? rawLines.join("\n") : String(rawLines || "");
+      const linesStr = Array.isArray(rawLines)
+        ? rawLines.join("\n")
+        : String(rawLines || "");
       return {
         file: m.path || "",
         line: m.line_number || null,
@@ -642,12 +653,22 @@ function generateSessionTitle(text) {
   return words.slice(0, 6).join(" ") + "...";
 }
 
-async function buildAgentPrompt(questionText, codeContext, knowledgeContext, conversationHistory = []) {
+async function buildAgentPrompt(
+  questionText,
+  codeContext,
+  knowledgeContext,
+  conversationHistory = [],
+) {
   const config = await loadAssistantConfig();
-  const sections = [config.systemPrompt + "\n\nUse the following context — which may include code snippets from the codebase, as well as the conversation history — to answer the user's question accurately. If the answer isn't in the context, use your general knowledge but stay professional."];
+  const sections = [
+    config.systemPrompt +
+      "\n\nUse the following context — which may include code snippets from the codebase, as well as the conversation history — to answer the user's question accurately. If the answer isn't in the context, use your general knowledge but stay professional.",
+  ];
 
   if (conversationHistory.length > 0) {
-    sections.push(`CONVERSATION HISTORY:\n${formatConversationHistory(conversationHistory)}`);
+    sections.push(
+      `CONVERSATION HISTORY:\n${formatConversationHistory(conversationHistory)}`,
+    );
   }
 
   if (knowledgeContext) {
@@ -707,7 +728,12 @@ export async function callLlama(prompt, systemPromptOverride = null) {
   return null;
 }
 
-async function callAiProvider(provider, prompt, systemPrompt = null, userId = null) {
+async function callAiProvider(
+  provider,
+  prompt,
+  systemPrompt = null,
+  userId = null,
+) {
   switch (provider) {
     case AI_PROVIDERS.OLLAMA:
       return callOllama(prompt, systemPrompt);
@@ -769,9 +795,7 @@ async function callOllamaChat(
 
   if (!response.ok) return null;
   const payload = await response.json();
-  return (
-    unescapeHtml(payload?.choices?.[0]?.message?.content || "") || null
-  );
+  return unescapeHtml(payload?.choices?.[0]?.message?.content || "") || null;
 }
 
 async function callOllamaCompletion(prompt, signal) {
@@ -790,9 +814,7 @@ async function callOllamaCompletion(prompt, signal) {
 
   if (!response.ok) return null;
   const payload = await response.json();
-  return (
-    unescapeHtml(payload?.content || payload?.response || "") || null
-  );
+  return unescapeHtml(payload?.content || payload?.response || "") || null;
 }
 
 async function callOpenRouter(
@@ -839,9 +861,7 @@ async function callOpenRouter(
     }
 
     const payload = await response.json();
-    return (
-      unescapeHtml(payload?.choices?.[0]?.message?.content || "") || null
-    );
+    return unescapeHtml(payload?.choices?.[0]?.message?.content || "") || null;
   } catch (error) {
     if (error.name === "AbortError") {
       logError("OpenRouter request timed out");
@@ -896,9 +916,9 @@ let _opencodeServer = null;
 async function checkOpencodeRunning(port) {
   try {
     const testUrl = `http://localhost:${port}`;
-    const response = await fetch(`${testUrl}/api/global/health`, { 
+    const response = await fetch(`${testUrl}/api/global/health`, {
       method: "GET",
-      signal: AbortSignal.timeout(3000)
+      signal: AbortSignal.timeout(3000),
     });
     return response.ok;
   } catch {
@@ -950,11 +970,15 @@ async function ensureOpencodeServer() {
 
     try {
       logInfo("Starting opencode server...", { port });
-      
-      const child = spawn("opencode", ["serve", "--port", String(port), "--hostname", "127.0.0.1"], {
-        stdio: ["ignore", "pipe", "pipe"],
-        env: { ...process.env, OPENCODE_LOG_LEVEL: "DEBUG" },
-      });
+
+      const child = spawn(
+        "opencode",
+        ["serve", "--port", String(port), "--hostname", "127.0.0.1"],
+        {
+          stdio: ["ignore", "pipe", "pipe"],
+          env: { ...process.env, OPENCODE_LOG_LEVEL: "DEBUG" },
+        },
+      );
 
       let spawnError = null;
       child.on("error", (err) => {
@@ -998,7 +1022,10 @@ async function ensureOpencodeServer() {
       logInfo("Opencode server started", { port });
       return opencodePort;
     } catch (error) {
-      logError("Failed to start opencode on port", { port, error: error.message });
+      logError("Failed to start opencode on port", {
+        port,
+        error: error.message,
+      });
       continue;
     }
   }
@@ -1016,16 +1043,16 @@ export async function initOpencodeServer() {
   }
 
   logInfo("Opencode server ready, running test...", { port });
-  
+
   try {
     const testPrompt = "Hello";
     const client = createOpencodeClient({
       baseUrl: `http://localhost:${port}`,
       throwOnError: false,
     });
-    
+
     const initSessionId = "init-test-session";
-    
+
     const existingSession = await client.session.get({
       path: { id: initSessionId },
     });
@@ -1035,11 +1062,11 @@ export async function initOpencodeServer() {
       const createRes = await client.session.create({
         body: { title: "init-test", id: initSessionId },
       });
-      
+
       if (createRes?.error) {
-        logError("Opencode session create failed", { 
-          port, 
-          error: createRes.error 
+        logError("Opencode session create failed", {
+          port,
+          error: createRes.error,
         });
         return port;
       }
@@ -1063,29 +1090,31 @@ export async function initOpencodeServer() {
     });
 
     if (response?.error) {
-      logError("Opencode test response error", { 
-        port, 
+      logError("Opencode test response error", {
+        port,
         errorName: response.error.name,
         errorData: response.error.data,
         provider: aiConfig.opencode.providerID,
-        model: aiConfig.opencode.modelID
+        model: aiConfig.opencode.modelID,
       });
     } else {
       const parts = response?.data?.parts;
-      const textPart = Array.isArray(parts) ? parts.find(p => p.type === "text") : null;
+      const textPart = Array.isArray(parts)
+        ? parts.find((p) => p.type === "text")
+        : null;
       if (textPart?.text) {
-        logInfo("Opencode test successful", { 
-          port, 
-          response: textPart.text.substring(0, 100) 
+        logInfo("Opencode test successful", {
+          port,
+          response: textPart.text.substring(0, 100),
         });
       } else {
         logInfo("Opencode server is up and responding", { port });
       }
     }
   } catch (error) {
-    logError("Opencode test exception", { 
+    logError("Opencode test exception", {
       message: error.message,
-      stack: error.stack 
+      stack: error.stack,
     });
   }
 
@@ -1104,10 +1133,13 @@ export async function createUserOpencodeSession(userId) {
 
   try {
     const client = createOpencodeClient({ baseUrl, throwOnError: false });
-    
+
     const existing = await client.session.get({ path: { id: sessionId } });
     if (!existing?.error && existing?.data) {
-      logInfo("User session already exists", { userId, sessionId: existing.data.id });
+      logInfo("User session already exists", {
+        userId,
+        sessionId: existing.data.id,
+      });
       return existing.data.id;
     }
 
@@ -1116,13 +1148,16 @@ export async function createUserOpencodeSession(userId) {
     });
 
     if (createRes?.error) {
-      logError("Failed to create user session", { userId, error: createRes.error });
+      logError("Failed to create user session", {
+        userId,
+        error: createRes.error,
+      });
       return null;
     }
 
     const actualSessionId = createRes?.data?.id;
     logInfo("Created user session", { userId, actualSessionId });
-    
+
     if (userId && actualSessionId) {
       await saveSessionMeta(userId, {
         sessionId: actualSessionId,
@@ -1135,18 +1170,21 @@ export async function createUserOpencodeSession(userId) {
 
     return actualSessionId || sessionId;
   } catch (error) {
-    logError("Failed to create user opencode session", { userId, message: error.message });
+    logError("Failed to create user opencode session", {
+      userId,
+      message: error.message,
+    });
     return null;
   }
 }
 
 export async function initAllUserSessions() {
   logInfo("Initializing sessions for all users...");
-  
+
   try {
     const { listUsers } = await import("../services/userService.js");
     const users = await listUsers();
-    
+
     logInfo("Found users to initialize", { count: users.length });
 
     for (const user of users) {
@@ -1180,29 +1218,34 @@ export async function getOpencodeSessionMessages(userId) {
     const meta = await loadSessionMeta(userId);
     actualSessionId = meta?.sessionId || null;
   }
-  
+
   if (!actualSessionId) {
     actualSessionId = sessionIdKey;
   }
 
   try {
     const client = createOpencodeClient({ baseUrl, throwOnError: false });
-    const response = await client.session.messages({ path: { id: actualSessionId } });
-    
+    const response = await client.session.messages({
+      path: { id: actualSessionId },
+    });
+
     if (response?.error) {
-      logError("Opencode session messages error", { error: response.error, actualSessionId });
+      logError("Opencode session messages error", {
+        error: response.error,
+        actualSessionId,
+      });
       return [];
     }
 
     logInfo("Opencode session messages response", {
       baseUrl,
       actualSessionId,
-      hasData: !!response?.data
+      hasData: !!response?.data,
     });
 
     const rawData = response?.data;
     if (!rawData) return [];
-    
+
     const msgArray = Array.isArray(rawData) ? rawData : rawData.info || [];
     const messages = msgArray.map((msg) => ({
       role: msg.info?.role || msg.role || "user",
@@ -1229,8 +1272,8 @@ export async function getOpencodeSessionMessages(userId) {
 
     return { messages, title };
   } catch (error) {
-    logError("Failed to get opencode session messages", { 
-      message: error.message 
+    logError("Failed to get opencode session messages", {
+      message: error.message,
     });
     return [];
   }
@@ -1251,7 +1294,7 @@ export async function deleteOpencodeSession(userId) {
     const meta = await loadSessionMeta(userId);
     actualSessionId = meta?.sessionId || null;
   }
-  
+
   if (!actualSessionId) {
     actualSessionId = sessionIdKey;
   }
@@ -1282,28 +1325,28 @@ async function callOpencode(
 
   const baseUrl = `http://localhost:${port}`;
   const sessionIdKey = formatSessionId(userId);
-  
+
   let actualSessionId = null;
   if (userId) {
     const meta = await loadSessionMeta(userId);
     actualSessionId = meta?.sessionId || null;
   }
-  
+
   if (!actualSessionId && userId) {
     actualSessionId = await createUserOpencodeSession(userId);
   }
-  
+
   if (!actualSessionId) {
     actualSessionId = await createUserOpencodeSession(null);
   }
 
-  logInfo("Calling Opencode", { 
-    baseUrl, 
-    model: cfg.modelID, 
+  logInfo("Calling Opencode", {
+    baseUrl,
+    model: cfg.modelID,
     sessionId: actualSessionId,
     sessionIdKey,
     providerID: cfg.providerID,
-    promptLength: prompt?.length || 0 
+    promptLength: prompt?.length || 0,
   });
 
   try {
@@ -1367,24 +1410,33 @@ async function callOpencode(
       question: (prompt || "").substring(0, 500),
       answer: (text || "").substring(0, 2000),
       reasoning_count: reasoningParts.length,
-      reasoning: reasoningParts.map(p => (p.text || "").substring(0, 500)).join("\n---\n"),
-      text_parts: textParts.map(p => (p.text || "").substring(0, 500)).join("\n---\n"),
-      tool_calls: toolCallParts.map(p => ({
+      reasoning: reasoningParts
+        .map((p) => (p.text || "").substring(0, 500))
+        .join("\n---\n"),
+      text_parts: textParts
+        .map((p) => (p.text || "").substring(0, 500))
+        .join("\n---\n"),
+      tool_calls: toolCallParts.map((p) => ({
         tool: p.toolName || p.name || "unknown",
         args: JSON.stringify(p.args || p.input || {}).substring(0, 300),
       })),
-      tool_results: toolResultParts.map(p => ({
+      tool_results: toolResultParts.map((p) => ({
         tool: p.toolName || p.name || "unknown",
-        result: (typeof p.result === "string" ? p.result : JSON.stringify(p.result || {})).substring(0, 300),
+        result: (typeof p.result === "string"
+          ? p.result
+          : JSON.stringify(p.result || {})
+        ).substring(0, 300),
       })),
-      command_parts: commandParts.map(p => (typeof p === "string" ? p : JSON.stringify(p)).substring(0, 300)),
+      command_parts: commandParts.map((p) =>
+        (typeof p === "string" ? p : JSON.stringify(p)).substring(0, 300),
+      ),
       system_prompt_length: (systemPrompt || "").length,
       system_prompt_preview: (systemPrompt || "").substring(0, 300),
     });
 
     if (!text) {
-      logError("Opencode returned empty response", { 
-        partTypes: Array.isArray(parts) ? parts.map(p => p.type) : [],
+      logError("Opencode returned empty response", {
+        partTypes: Array.isArray(parts) ? parts.map((p) => p.type) : [],
         rawPreview: responseStr.substring(0, 500),
       });
     }
@@ -1400,7 +1452,9 @@ async function callOpencode(
     if (userId) {
       const meta = await loadSessionMeta(userId);
       if (!meta?.title) {
-        const questionMatch = (prompt || "").match(/USER QUESTION:\s*(.+?)\s*\nANSWER:/s);
+        const questionMatch = (prompt || "").match(
+          /USER QUESTION:\s*(.+?)\s*\nANSWER:/s,
+        );
         const questionText = questionMatch ? questionMatch[1].trim() : "";
         const title = generateSessionTitle(questionText);
         if (title) {
@@ -1429,10 +1483,10 @@ async function callOpencode(
 
     return unescapeHtml(text || "") || null;
   } catch (error) {
-    logError("Opencode call failed", { 
-      message: error.message, 
+    logError("Opencode call failed", {
+      message: error.message,
       stack: error.stack,
-      name: error.name 
+      name: error.name,
     });
     return null;
   }
@@ -1460,7 +1514,12 @@ async function generateDynamicAnswer(
     return null;
   }
 
-  const prompt = await buildAgentPrompt(questionText, codeContext, knowledgeContext, conversationHistory);
+  const prompt = await buildAgentPrompt(
+    questionText,
+    codeContext,
+    knowledgeContext,
+    conversationHistory,
+  );
   const primary = getPrimaryProvider();
   const fallback = getFallbackProvider();
 
@@ -1761,13 +1820,17 @@ async function fetchSessionHistory(userId, currentQuestion, baseUrl = null) {
 
     const url = baseUrl || `http://localhost:${opencodePort || 4096}`;
     const client = createOpencodeClient({ baseUrl: url, throwOnError: false });
-    const historyResponse = await client.session.messages({ path: { id: actualSessionId } });
+    const historyResponse = await client.session.messages({
+      path: { id: actualSessionId },
+    });
     const rawData = historyResponse?.data;
     const msgArray = Array.isArray(rawData) ? rawData : rawData?.info || [];
-    return msgArray.map((msg) => ({
-      role: msg.info?.role || msg.role || "user",
-      text: msg.parts?.[0]?.text || msg.text || "",
-    })).filter((m) => m.text && m.text !== currentQuestion);
+    return msgArray
+      .map((msg) => ({
+        role: msg.info?.role || msg.role || "user",
+        text: msg.parts?.[0]?.text || msg.text || "",
+      }))
+      .filter((m) => m.text && m.text !== currentQuestion);
   } catch {
     return [];
   }
@@ -1837,7 +1900,12 @@ export async function assistantReply(orgId, question = "", userId = null) {
   };
 }
 
-export async function streamOpencodeReply(question, userId, onChunk, onComplete) {
+export async function streamOpencodeReply(
+  question,
+  userId,
+  onChunk,
+  onComplete,
+) {
   const questionText = sanitizeString(question, 800);
   const codeContext = shouldSearchCodeContext(questionText)
     ? await searchCodeContext(questionText)
@@ -1847,7 +1915,8 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
   const systemPrompt = DEFAULT_SYSTEM_PROMPT;
 
   const cfg = aiConfig.opencode;
-  if (!cfg.baseUrl || !cfg.modelID) return onComplete(null, "AI not configured");
+  if (!cfg.baseUrl || !cfg.modelID)
+    return onComplete(null, "AI not configured");
 
   const port = await ensureOpencodeServer();
   if (!port) return onComplete(null, "AI server unavailable");
@@ -1864,9 +1933,18 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
   if (!sessionId) sessionId = await createUserOpencodeSession(null);
   if (!sessionId) return onComplete(null, "Could not create AI session");
 
-  const conversationHistory = await fetchSessionHistory(userId, questionText, baseUrl);
+  const conversationHistory = await fetchSessionHistory(
+    userId,
+    questionText,
+    baseUrl,
+  );
 
-  const prompt = await buildAgentPrompt(questionText, codeContext, knowledgeContext, conversationHistory);
+  const prompt = await buildAgentPrompt(
+    questionText,
+    codeContext,
+    knowledgeContext,
+    conversationHistory,
+  );
 
   const deadline = Date.now() + 120_000;
 
@@ -1891,7 +1969,11 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
       const stopStream = () => {
         aborted = true;
         if (streamObj?.controller?.abort) {
-          try { streamObj.controller.abort(); } catch { void 0; }
+          try {
+            streamObj.controller.abort();
+          } catch {
+            void 0;
+          }
         }
       };
 
@@ -1908,8 +1990,12 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
               }
             }
           }
-          if (event?.type === "session.status" || event?.type === "session.updated") {
-            const status = event.properties?.status || event.properties?.info?.status;
+          if (
+            event?.type === "session.status" ||
+            event?.type === "session.updated"
+          ) {
+            const status =
+              event.properties?.status || event.properties?.info?.status;
             if (status === "idle") break;
           }
         }
@@ -1925,36 +2011,52 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
     const blockingResult = await blockingPrompt;
     const parts = blockingResult?.data?.parts;
     if (Array.isArray(parts)) {
-      const textPart = parts.find(p => p.type === "text");
-      if (textPart?.text && (!fullText || textPart.text.length > fullText.length)) {
+      const textPart = parts.find((p) => p.type === "text");
+      if (
+        textPart?.text &&
+        (!fullText || textPart.text.length > fullText.length)
+      ) {
         fullText = textPart.text;
       }
     }
 
     if (fullText) {
       const streamUserId = userId || "guest";
-      const reasoningParts = (parts || []).filter(p => p.type === "reasoning");
-      const textParts = (parts || []).filter(p => p.type === "text");
-      const toolCallParts = (parts || []).filter(p => p.type === "tool-call");
-      const toolResultParts = (parts || []).filter(p => p.type === "tool-result");
-      const commandParts2 = (parts || []).filter(p => p.type === "command");
+      const reasoningParts = (parts || []).filter(
+        (p) => p.type === "reasoning",
+      );
+      const textParts = (parts || []).filter((p) => p.type === "text");
+      const toolCallParts = (parts || []).filter((p) => p.type === "tool-call");
+      const toolResultParts = (parts || []).filter(
+        (p) => p.type === "tool-result",
+      );
+      const commandParts2 = (parts || []).filter((p) => p.type === "command");
       logInfo("=== ASSISTANT INTERACTION (stream) ===", {
         user: streamUserId,
         session: sessionId,
         question: (prompt || "").substring(0, 500),
         answer: (fullText || "").substring(0, 2000),
         reasoning_count: reasoningParts.length,
-        reasoning: reasoningParts.map(p => (p.text || "").substring(0, 500)).join("\n---\n"),
-        text_parts: textParts.map(p => (p.text || "").substring(0, 500)).join("\n---\n"),
-        tool_calls: toolCallParts.map(p => ({
+        reasoning: reasoningParts
+          .map((p) => (p.text || "").substring(0, 500))
+          .join("\n---\n"),
+        text_parts: textParts
+          .map((p) => (p.text || "").substring(0, 500))
+          .join("\n---\n"),
+        tool_calls: toolCallParts.map((p) => ({
           tool: p.toolName || p.name || "unknown",
           args: JSON.stringify(p.args || p.input || {}).substring(0, 300),
         })),
-        tool_results: toolResultParts.map(p => ({
+        tool_results: toolResultParts.map((p) => ({
           tool: p.toolName || p.name || "unknown",
-          result: (typeof p.result === "string" ? p.result : JSON.stringify(p.result || {})).substring(0, 300),
+          result: (typeof p.result === "string"
+            ? p.result
+            : JSON.stringify(p.result || {})
+          ).substring(0, 300),
         })),
-        command_parts: commandParts2.map(p => (typeof p === "string" ? p : JSON.stringify(p)).substring(0, 300)),
+        command_parts: commandParts2.map((p) =>
+          (typeof p === "string" ? p : JSON.stringify(p)).substring(0, 300),
+        ),
         system_prompt_length: (systemPrompt || "").length,
         system_prompt_preview: (systemPrompt || "").substring(0, 300),
       });
@@ -1963,7 +2065,9 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
     if (fullText && userId) {
       const meta = await loadSessionMeta(userId);
       if (!meta?.title) {
-        const questionMatch = (prompt || "").match(/USER QUESTION:\s*(.+?)\s*\nANSWER:/s);
+        const questionMatch = (prompt || "").match(
+          /USER QUESTION:\s*(.+?)\s*\nANSWER:/s,
+        );
         const questionText = questionMatch ? questionMatch[1].trim() : "";
         const title = generateSessionTitle(questionText);
         if (title) {

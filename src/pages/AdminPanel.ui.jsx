@@ -3,7 +3,13 @@ import { ThreeDot, Mosaic } from "react-loading-indicators";
 export function SkeletonChart({ height = 320 }) {
   return (
     <div className={`flex items-center justify-center`} style={{ height }}>
-      <Mosaic color="#3b00ff" size="large" style={{ fontSize: "48px" }} text="" textColor="" />
+      <Mosaic
+        color="#3b00ff"
+        size="large"
+        style={{ fontSize: "48px" }}
+        text=""
+        textColor=""
+      />
     </div>
   );
 }
@@ -45,7 +51,14 @@ export function MetricCard({
             {label}
           </p>
           {loading ? (
-            <ThreeDot variant="bounce" color="#6100ff" size="medium" style={{ fontSize: "24px" }} text="" textColor="" />
+            <ThreeDot
+              variant="bounce"
+              color="#6100ff"
+              size="medium"
+              style={{ fontSize: "24px" }}
+              text=""
+              textColor=""
+            />
           ) : (
             <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
               {value}

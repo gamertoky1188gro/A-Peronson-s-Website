@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 1cac774dc741806a6e44cb612b6b26e30605f2a2
 - **Parent:** 7df459e3759e0707f14df2cf04641fd0b0d269ce
 - **Author:** gamertoky1188gro
@@ -6,12 +7,15 @@
 - **Message:** chore(ci): add CI helpers and fix contract audit ordering
 
 ## Custom Title
+
 Add CI helpers and fix contract audit ordering
 
 ## High-Level Summary
+
 Chore: Add CI helpers and fix contract audit ordering. Affects 148 files (63228 additions, 2 deletions).
 
 ## File-by-File Breakdown
+
 - **.env.example** — +30/-0 lines
 - **.github/workflows/ci.yml** — +43/-0 lines
 - **.github/workflows/nodejs-tests.yml** — +26/-0 lines
@@ -132,7 +136,7 @@ Chore: Add CI helpers and fix contract audit ordering. Affects 148 files (63228 
 - **src/pages/SearchResults.jsx** — +5017/-0 lines
 - **src/pages/SupportReports.jsx** — +682/-0 lines
 - **src/pages/TexHub.jsx** — +1866/-0 lines
-- **src/pages/__tests__/searchFiltersConfig.test.js** — +78/-0 lines
+- **src/pages/**tests**/searchFiltersConfig.test.js** — +78/-0 lines
 - **src/pages/searchFiltersConfig.js** — +107/-0 lines
 - **tests/integration/ai-postMessage-enforce.test.js** — +25/-0 lines
 - **tests/integration/ai-prefill-e2e.test.js** — +71/-0 lines
@@ -162,6 +166,7 @@ Chore: Add CI helpers and fix contract audit ordering. Affects 148 files (63228 
 - **tests/unit/verifyFilterMapping.test.js** — +16/-0 lines
 
 ## Detailed Diff Analysis
+
 @@ -0,0 +1,30 @@
 +# E-sign provider configuration
 +# Set ESIGN_PROVIDER_TYPE to 'http' to enable the HTTP provider adapter.
@@ -172,20 +177,16 @@ Chore: Add CI helpers and fix contract audit ordering. Affects 148 files (63228 
 +# API key or bearer token to call the provider (optional)
 +ESIGN_PROVIDER_API_KEY=changeme
 +# Where the provider should return users after signing (optional)
-+ESIGN_RETURN_URL=https://your-app.example/contracts/{contractId}/signed
-+
++ESIGN_RETURN_URL=https://your-app.example/contracts/{contractId}/signed +
 +# Example: Dropbox Sign (HelloSign) integration
 +# Set ESIGN_PROVIDER_TYPE to 'dropbox_sign' and configure the API key and URL
 +# ESIGN_PROVIDER_TYPE=dropbox_sign
 +# ESIGN_PROVIDER_URL=https://api.hellosign.com/v3
-+# ESIGN_DROPBOX_SIGN_API_KEY=changeme
-+
++# ESIGN_DROPBOX_SIGN_API_KEY=changeme +
 +# Webhook secret used to validate provider callbacks (kept for reference)
-+ESIGN_WEBHOOK_SECRET=changeme
-+
++ESIGN_WEBHOOK_SECRET=changeme +
 +# Application base URL (used to construct return URLs if not set)
-+APP_BASE_URL=http://localhost:4000
-+
++APP_BASE_URL=http://localhost:4000 +
 +# Webhook retry settings
 +# Interval in ms for retry worker to scan and retry failed callbacks
 +ESIGN_WEBHOOK_RETRY_INTERVAL_MS=60000
@@ -194,17 +195,22 @@ Chore: Add CI helpers and fix contract audit ordering. Affects 148 files (63228 
 +# Base backoff in ms (exponential backoff multiplier will be applied)
 
 ## Why This Change
+
 Maintenance task: chore(ci): add CI helpers and fix contract audit ordering.
 
 ## Was It Useful
+
 Yes — maintenance
 
 ## Impact Analysis
+
 - **Scope:** **148 files**, +63228/-2 lines
 - **Risk:** Medium
 
 ## Relationships
+
 CI/CD pipeline and testing infrastructure.
 
 ## Confidence Notes
+
 High. Clear commit message.

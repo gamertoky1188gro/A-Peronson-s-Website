@@ -80,7 +80,9 @@ export function startDbHeartbeat() {
       if (dbConnected) {
         dbConnected = false;
         dbError = "Connection lost";
-        console.warn(chalk.yellow("[db] Connection lost, will retry every 30s"));
+        console.warn(
+          chalk.yellow("[db] Connection lost, will retry every 30s"),
+        );
       }
     }
   }

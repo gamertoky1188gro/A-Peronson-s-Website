@@ -1,12 +1,12 @@
 # Commit 0544 — `f9fd7457a23c`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `f9fd7457a23c30dbc4fa2436a77829bb30a4c9b0` |
-| Parent Hash | `94eb7360f56d8f4e7189b81e0243b825f59c8a2a` |
-| Author | gamertoky1188gro |
-| Date | 2026-06-06 13:15:36 +0600 |
-| Subject | feat: nav search Enter navigates to /search, mobile search button, auto-execute from URL |
+| Field       | Value                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------- |
+| Commit Hash | `f9fd7457a23c30dbc4fa2436a77829bb30a4c9b0`                                               |
+| Parent Hash | `94eb7360f56d8f4e7189b81e0243b825f59c8a2a`                                               |
+| Author      | gamertoky1188gro                                                                         |
+| Date        | 2026-06-06 13:15:36 +0600                                                                |
+| Subject     | feat: nav search Enter navigates to /search, mobile search button, auto-execute from URL |
 
 ---
 
@@ -18,10 +18,10 @@ Three search UX improvements: pressing Enter in the nav search bar navigates to 
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `src/components/NavBar.jsx` | modified | 17 | 1 |
-| `src/pages/SearchResults.jsx` | modified | 3 | 0 |
+| File                          | Status   | Insertions | Deletions |
+| ----------------------------- | -------- | ---------- | --------- |
+| `src/components/NavBar.jsx`   | modified | 17         | 1         |
+| `src/pages/SearchResults.jsx` | modified | 3          | 0         |
 
 **2 files changed, 19 insertions, 1 deletion**
 
@@ -30,10 +30,12 @@ Three search UX improvements: pressing Enter in the nav search bar navigates to 
 ## Detailed Diff Analysis
 
 ### `src/components/NavBar.jsx`
+
 - Added `onKeyDown` handler to search input: Enter navigates to `/search?q=...`, collapses the search UI.
 - Added mobile search button (hidden on `md:` and up) that navigates to `/search`.
 
 ### `src/pages/SearchResults.jsx`
+
 - Added auto-execute: if `?q=` param exists in URL, triggers `executeSearchRef.current?.()` after 100ms delay.
 
 ---

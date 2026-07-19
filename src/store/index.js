@@ -6,7 +6,8 @@ import toastReducer from "./toastSlice";
 import userReducer from "./userSlice";
 import configReducer from "./configSlice";
 
-const isDev = typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
+const isDev =
+  typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
 
 export const store = configureStore({
   reducer: {

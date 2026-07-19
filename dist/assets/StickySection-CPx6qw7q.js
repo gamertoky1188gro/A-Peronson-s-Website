@@ -1,1 +1,59 @@
-import{r as l,b as j,u as x,c as g,j as c,m as p,e as y}from"./index-CNnTWoea.js";function R({children:s,className:o="",as:e="span",fromColor:a="rgb(14, 165, 233)",toColor:t="currentColor",scrollOffset:u=["0px","200px"]}){const r=l.useRef(null),n=j(),{scrollYProgress:i}=x({target:r,offset:["start end",`start+=${u[1]}`]}),f=g(i,[0,1],[a,t]);if(n){const d=e;return c.jsx(d,{className:o,children:s})}const m=p[e];return c.jsx(m,{ref:r,className:o,style:{color:f},children:s})}function v({children:s,className:o="",top:e=100,as:a="div",parallaxSpeed:t=0,...u}){const r=a,n=l.useRef(null),{scrollYProgress:i}=x({target:n,offset:["start end","end start"]}),f=y(g(i,[0,1],[t,-t]),{stiffness:100,damping:30,restDelta:.001});return c.jsx(r,{ref:n,className:"sticky z-10 "+o,style:{top:`${e}px`},...u,children:t!==0?c.jsx(p.div,{style:{y:f},children:s}):s})}export{v as S,R as T};
+import {
+  r as l,
+  b as j,
+  u as x,
+  c as g,
+  j as c,
+  m as p,
+  e as y,
+} from "./index-CNnTWoea.js";
+function R({
+  children: s,
+  className: o = "",
+  as: e = "span",
+  fromColor: a = "rgb(14, 165, 233)",
+  toColor: t = "currentColor",
+  scrollOffset: u = ["0px", "200px"],
+}) {
+  const r = l.useRef(null),
+    n = j(),
+    { scrollYProgress: i } = x({
+      target: r,
+      offset: ["start end", `start+=${u[1]}`],
+    }),
+    f = g(i, [0, 1], [a, t]);
+  if (n) {
+    const d = e;
+    return c.jsx(d, { className: o, children: s });
+  }
+  const m = p[e];
+  return c.jsx(m, { ref: r, className: o, style: { color: f }, children: s });
+}
+function v({
+  children: s,
+  className: o = "",
+  top: e = 100,
+  as: a = "div",
+  parallaxSpeed: t = 0,
+  ...u
+}) {
+  const r = a,
+    n = l.useRef(null),
+    { scrollYProgress: i } = x({
+      target: n,
+      offset: ["start end", "end start"],
+    }),
+    f = y(g(i, [0, 1], [t, -t]), {
+      stiffness: 100,
+      damping: 30,
+      restDelta: 0.001,
+    });
+  return c.jsx(r, {
+    ref: n,
+    className: "sticky z-10 " + o,
+    style: { top: `${e}px` },
+    ...u,
+    children: t !== 0 ? c.jsx(p.div, { style: { y: f }, children: s }) : s,
+  });
+}
+export { v as S, R as T };

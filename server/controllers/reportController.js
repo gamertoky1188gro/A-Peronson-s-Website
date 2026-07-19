@@ -43,7 +43,12 @@ export async function createProductAppealReportController(req, res) {
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    select: { id: true, company_id: true, title: true, content_review_status: true },
+    select: {
+      id: true,
+      company_id: true,
+      title: true,
+      content_review_status: true,
+    },
   });
   if (!product) return res.status(404).json({ error: "Product not found" });
   if (!canAppealProduct(req.user, product))

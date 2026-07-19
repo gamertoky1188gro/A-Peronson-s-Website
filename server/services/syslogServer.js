@@ -5,7 +5,8 @@ import { execSync } from "child_process";
 import { logInfo, logWarn, logError } from "../utils/logger.js";
 
 const SYSLOG_PORT = parseInt(process.env.SYSLOG_PORT || "6514", 10);
-const CERT_DIR = process.env.SYSLOG_CERT_DIR || path.join(process.cwd(), "server", "ssl");
+const CERT_DIR =
+  process.env.SYSLOG_CERT_DIR || path.join(process.cwd(), "server", "ssl");
 const LOG_DIR = path.join(process.cwd(), "server", "logs", "syslog");
 
 function ensureDir(p) {
@@ -23,7 +24,8 @@ function parseRfc5424(raw) {
     return { raw: str, pri: null, version: null, message: str };
   }
 
-  const [, pri, version, timestamp, hostname, appName, procId, msgId, , msg] = match;
+  const [, pri, version, timestamp, hostname, appName, procId, msgId, , msg] =
+    match;
   return {
     raw: str,
     pri: parseInt(pri, 10),
@@ -42,9 +44,15 @@ function parseRfc5424(raw) {
 function formatSyslogEntry(parsed) {
   if (!parsed) return "";
   const ts = parsed.timestamp || new Date().toISOString();
-  const sev = parsed.severity !== null ? ["emerg", "alert", "crit", "error", "warn", "notice", "info", "debug"][parsed.severity] : "info";
+  const sev =
+    parsed.severity !== null
+      ? ["emerg", "alert", "crit", "error", "warn", "notice", "info", "debug"][
+          parsed.severity
+        ]
+      : "info";
   const tag = parsed.appName ? `[${parsed.appName}]` : "";
-  const inst = parsed.procId && parsed.procId !== "-" ? `(${parsed.procId})` : "";
+  const inst =
+    parsed.procId && parsed.procId !== "-" ? `(${parsed.procId})` : "";
   return `[SYSLOG:${sev}] ${ts} ${tag}${inst} ${parsed.hostname || "-"}: ${parsed.message || parsed.raw || ""}`;
 }
 

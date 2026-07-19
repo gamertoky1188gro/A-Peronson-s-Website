@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0100 |
-| Hash | `bc4870e183d1c51495f9f636f1e56cb3d6b8edc0` |
-| Parent Hash | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
-| Author | gamertoky1188gro |
-| Date/Time | 2026-03-06 06:41:39 |
-| Files Changed | 14 |
-| Lines Added | 629 |
-| Lines Deleted | 71 |
-| Net Change | +558 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0100                                       |
+| Hash          | `bc4870e183d1c51495f9f636f1e56cb3d6b8edc0` |
+| Parent Hash   | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
+| Author        | gamertoky1188gro                           |
+| Date/Time     | 2026-03-06 06:41:39                        |
+| Files Changed | 14                                         |
+| Lines Added   | 629                                        |
+| Lines Deleted | 71                                         |
+| Net Change    | +558                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -43,6 +43,7 @@ A large commit making local changes across the stack. The assistant service was 
 ## Detailed Diff Analysis
 
 ### Service Changes
+
 - `assistantService.js`: Replaced the old keyword-scoring flow with a three-tier approach:
   1. Knowledge base match (threshold score > 1)
   2. AI fallback using llama.cpp with code-context scanning
@@ -51,18 +52,23 @@ A large commit making local changes across the stack. The assistant service was 
 - `discoverCodeContext` scans 4 predefined files for keyword matches and returns up to 800 chars of context.
 
 ### API Changes
+
 - `/api/assistant/ask` is now public (no auth required).
 
 ### WebSocket
+
 - New WS server on port 4000 handles real-time assistant queries.
 
 ### UI
+
 - FloatingAssistant now has a full chat interface with WebSocket connection, typewriter effect, animated typing indicator, suggestion chips.
 
 ### Route Changes
+
 - New route: `/:time/meow/:date/SignupUltra` renders `SignupUltra` — a time-gated registration page that validates the URL params against current time (within 2-minute window).
 
 ### Data
+
 - Database files seeded with a buyer user and 7 knowledge base entries.
 
 ## Why This Change May Have Been Needed

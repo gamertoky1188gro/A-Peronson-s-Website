@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** `b8d12e715211897c5c517d116f4af7c66889c23d`
 - **Parent:** `718b1006055c1ee06ca8f19acf5e8800b57712f7`
 - **Author:** Cyber Code Master
@@ -7,17 +8,21 @@
 - **Body:** (none)
 
 ## Custom Title
+
 Fix Content Width When Sidebar Collapsed on Mobile
 
 ## High-Level Summary
+
 Adjusts the main content width to fill the available space when the sidebar is collapsed on mobile. 1 insertion, 1 deletion.
 
 ## File-by-File
-| File | Change |
-|------|--------|
+
+| File                       | Change  |
+| -------------------------- | ------- |
 | `src/pages/AdminPanel.jsx` | +1 / -1 |
 
 ## Detailed Diff
+
 ```diff
 --- a/src/pages/AdminPanel.jsx
 +++ b/src/pages/AdminPanel.jsx
@@ -26,16 +31,21 @@ Adjusts the main content width to fill the available space when the sidebar is c
 ```
 
 ## Why
+
 When the sidebar is collapsed, the main content was still reserving space for it.
 
 ## Was It Useful
+
 Yes — fixed layout gap on mobile.
 
 ## Impact
+
 Minimal. 2 lines.
 
 ## Relationships
+
 Parent of 289.
 
 ## Confidence
+
 High

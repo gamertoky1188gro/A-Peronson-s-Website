@@ -453,9 +453,8 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
   const threadMessages = messages.filter(
     (m) => String(m.match_id || "") === matchId,
   );
-  const requestState = requests.find(
-    (r) => String(r.thread_id || "") === matchId,
-  ) || null;
+  const requestState =
+    requests.find((r) => String(r.thread_id || "") === matchId) || null;
 
   if (
     !shouldAttemptBot({ requestState, messageCount: threadMessages.length })

@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| **Commit Number** | 0148 |
-| **Commit Hash** | `cbf4aa377fc8dcd13a22ef8c5d1d0368182e87f9` |
-| **Parent Hash** | `d877261fdd52babeda7a74f4e2e0d2f7010f0c98` |
-| **Author** | gamertoky1188gro |
-| **Date/Time** | 2026-03-26 23:29:39 |
-| **Files Changed** | 4 |
-| **Additions** | 13 |
-| **Deletions** | 7 |
-| **Net Change** | +6 |
-| **Merge Commit** | No |
+| Field             | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Commit Number** | 0148                                       |
+| **Commit Hash**   | `cbf4aa377fc8dcd13a22ef8c5d1d0368182e87f9` |
+| **Parent Hash**   | `d877261fdd52babeda7a74f4e2e0d2f7010f0c98` |
+| **Author**        | gamertoky1188gro                           |
+| **Date/Time**     | 2026-03-26 23:29:39                        |
+| **Files Changed** | 4                                          |
+| **Additions**     | 13                                         |
+| **Deletions**     | 7                                          |
+| **Net Change**    | +6                                         |
+| **Merge Commit**  | No                                         |
 
 ## Custom Title
 
@@ -25,19 +25,22 @@ Updated all three deployment run scripts (`.bat`, `.ps1`, `.sh`) to invoke `node
 
 ## File-by-File Breakdown
 
-| File | Type | + | - | Δ |
-|------|------|---|---|---|
-| `scripts/run.bat` | Modified | 6 | 2 | +4 |
-| `scripts/run.ps1` | Modified | 6 | 2 | +4 |
-| `scripts/run.sh` | Modified | 6 | 2 | +4 |
-| `server/server.js` | Modified | 1 | 1 | 0 |
+| File               | Type     | +   | -   | Δ   |
+| ------------------ | -------- | --- | --- | --- |
+| `scripts/run.bat`  | Modified | 6   | 2   | +4  |
+| `scripts/run.ps1`  | Modified | 6   | 2   | +4  |
+| `scripts/run.sh`   | Modified | 6   | 2   | +4  |
+| `server/server.js` | Modified | 1   | 1   | 0   |
 
 ### Deployment Scripts
+
 In all three scripts:
+
 - Changed `npm run server` to `node server/server.js` for both `backend` and `ngrok` modes
 - Added `NODE_ENV=production` environment variable before starting the server
 
 ### `server/server.js`
+
 Changed the SPA wildcard from `app.get('/*', ...)` to `app.get(/.*/, ...)` — a regex pattern that matches any path.
 
 ## Detailed Diff Analysis

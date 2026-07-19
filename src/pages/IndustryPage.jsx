@@ -10,7 +10,15 @@
 import { Mosaic } from "react-loading-indicators";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Sparkles, ArrowUpRight, ShoppingCart, Package, Clock3, PackageOpen, Globe2 } from "lucide-react";
+import {
+  Sparkles,
+  ArrowUpRight,
+  ShoppingCart,
+  Package,
+  Clock3,
+  PackageOpen,
+  Globe2,
+} from "lucide-react";
 import { apiRequest, getToken } from "../lib/auth";
 import { trackClientEvent } from "../lib/events";
 import CountUp from "../components/CountUp";
@@ -22,25 +30,36 @@ function StatCard({ icon: Icon, label, value, caption }) {
     <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50">
       <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
         {Icon ? <Icon className="h-4 w-4" /> : null}
-        <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{label}</span>
+        <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          {label}
+        </span>
       </div>
       <div className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
         {isNumeric ? <CountUp value={value} /> : value}
       </div>
-      {caption ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{caption}</div> : null}
+      {caption ? (
+        <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          {caption}
+        </div>
+      ) : null}
     </div>
   );
 }
 
 function Pill({ children, tone = "default" }) {
   const tones = {
-    default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-    success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+    default:
+      "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+    success:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
     info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
-    warning: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+    warning:
+      "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
   };
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}
+    >
       {children}
     </span>
   );
@@ -153,7 +172,13 @@ export default function IndustryPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.22),transparent_30%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.16),transparent_32%),linear-gradient(180deg,rgba(248,250,252,1),rgba(239,246,255,1),rgba(248,250,252,1))] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_26%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.12),transparent_28%),linear-gradient(180deg,rgba(2,6,23,1),rgba(3,7,18,1),rgba(2,6,23,1))] p-6 text-slate-600 dark:text-slate-200 flex items-center justify-center">
-        <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+        <Mosaic
+          color="#3b00ff"
+          size="large"
+          style={{ fontSize: "40px" }}
+          text=""
+          textColor=""
+        />
       </div>
     );
   }
@@ -180,13 +205,16 @@ export default function IndustryPage() {
             <div>
               <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
                 <Globe2 className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Industry page</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                  Industry page
+                </span>
               </div>
               <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
                 {displayCategory}
               </h1>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Live marketplace snapshot for {displayCategory}. Pre-filtered search results below.
+                Live marketplace snapshot for {displayCategory}. Pre-filtered
+                search results below.
               </p>
             </div>
             <Link
@@ -199,17 +227,35 @@ export default function IndustryPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <StatCard icon={ShoppingCart} label="Buyer requests" value={summary?.counts?.requests ?? 0} />
-            <StatCard icon={Package} label="Products listed" value={summary?.counts?.products ?? 0} />
-            <StatCard icon={Clock3} label="Avg lead time (days)" value={stats.average_lead_time_days ?? "--"} />
+            <StatCard
+              icon={ShoppingCart}
+              label="Buyer requests"
+              value={summary?.counts?.requests ?? 0}
+            />
+            <StatCard
+              icon={Package}
+              label="Products listed"
+              value={summary?.counts?.products ?? 0}
+            />
+            <StatCard
+              icon={Clock3}
+              label="Avg lead time (days)"
+              value={stats.average_lead_time_days ?? "--"}
+            />
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <StatCard icon={PackageOpen} label="Avg MOQ" value={stats.average_moq ?? "--"} />
+            <StatCard
+              icon={PackageOpen}
+              label="Avg MOQ"
+              value={stats.average_moq ?? "--"}
+            />
             <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
               <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
                 <Globe2 className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Top buyer regions</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                  Top buyer regions
+                </span>
               </div>
               <div className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {topCountries.length
@@ -225,7 +271,9 @@ export default function IndustryPage() {
             <div>
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-sky-500" />
-                <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">AI auto-reply</h3>
+                <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">
+                  AI auto-reply
+                </h3>
               </div>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Generate a quick outreach message using live industry stats.
@@ -257,7 +305,9 @@ export default function IndustryPage() {
                 >
                   Copy
                 </button>
-                {copyStatus ? <span className="text-sky-600">{copyStatus}</span> : null}
+                {copyStatus ? (
+                  <span className="text-sky-600">{copyStatus}</span>
+                ) : null}
               </div>
             </div>
           ) : null}
@@ -267,7 +317,9 @@ export default function IndustryPage() {
           <div className="rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
             <div className="flex items-center gap-2 mb-3">
               <ShoppingCart className="h-4 w-4 text-sky-500" />
-              <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">Latest buyer requests</h3>
+              <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">
+                Latest buyer requests
+              </h3>
             </div>
             <div className="space-y-3">
               {(requests || []).slice(0, 6).map((req) => (
@@ -279,7 +331,8 @@ export default function IndustryPage() {
                     {req.title || req.category || "Buyer request"}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {req.category || "--"} - MOQ {req.moq || "--"} - Price {req.price_range || "--"}
+                    {req.category || "--"} - MOQ {req.moq || "--"} - Price{" "}
+                    {req.price_range || "--"}
                   </p>
                   <p className="mt-2 text-xs text-slate-500">
                     Buyer: {req.author?.name || req.buyer_name || "Buyer"}
@@ -287,7 +340,9 @@ export default function IndustryPage() {
                 </div>
               ))}
               {!requests.length ? (
-                <div className="text-sm text-slate-500 dark:text-slate-400">No requests yet.</div>
+                <div className="text-sm text-slate-500 dark:text-slate-400">
+                  No requests yet.
+                </div>
               ) : null}
             </div>
           </div>
@@ -295,7 +350,9 @@ export default function IndustryPage() {
           <div className="rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
             <div className="flex items-center gap-2 mb-3">
               <Package className="h-4 w-4 text-sky-500" />
-              <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">Top products</h3>
+              <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">
+                Top products
+              </h3>
             </div>
             <div className="space-y-3">
               {(products || []).slice(0, 6).map((product) => (
@@ -307,15 +364,19 @@ export default function IndustryPage() {
                     {product.title || "Product"}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {product.category || "--"} - MOQ {product.moq || "--"} - Lead time {product.lead_time_days || "--"}
+                    {product.category || "--"} - MOQ {product.moq || "--"} -
+                    Lead time {product.lead_time_days || "--"}
                   </p>
                   <p className="mt-2 text-xs text-slate-500">
-                    Company: {product.author?.name || product.company_name || "Company"}
+                    Company:{" "}
+                    {product.author?.name || product.company_name || "Company"}
                   </p>
                 </div>
               ))}
               {!products.length ? (
-                <div className="text-sm text-slate-500 dark:text-slate-400">No products yet.</div>
+                <div className="text-sm text-slate-500 dark:text-slate-400">
+                  No products yet.
+                </div>
               ) : null}
             </div>
           </div>

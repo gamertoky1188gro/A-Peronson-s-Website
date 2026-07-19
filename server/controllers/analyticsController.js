@@ -167,7 +167,9 @@ export async function analyticsViewers(req, res) {
       }
 
       const [events, users] = await Promise.all([
-        prisma.analyticsEvent.findMany({ where: { type: "profile_view", entity_id: id } }),
+        prisma.analyticsEvent.findMany({
+          where: { type: "profile_view", entity_id: id },
+        }),
         prisma.user.findMany(),
       ]);
       const rows = Array.isArray(events) ? events : [];
@@ -226,10 +228,9 @@ export async function analyticsViewers(req, res) {
         return res.status(403).json({ error: "Forbidden" });
       }
 
-      const viewers = (Array.isArray(views) ? views : [])
-        .sort((a, b) =>
-          String(b.viewed_at || "").localeCompare(String(a.viewed_at || "")),
-        );
+      const viewers = (Array.isArray(views) ? views : []).sort((a, b) =>
+        String(b.viewed_at || "").localeCompare(String(a.viewed_at || "")),
+      );
 
       const usersById = new Map(
         (Array.isArray(users) ? users : []).map((u) => [String(u.id), u]),

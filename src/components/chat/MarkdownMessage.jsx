@@ -33,7 +33,18 @@ function MarkdownMessage({ text = "" }) {
     return {
       ...base,
       tagNames: Array.from(
-        new Set([...(base.tagNames || []), ...EXTRA_ALLOWED_TAGS, "ins", "mark", "sup", "sub", "abbr", "dl", "dt", "dd"]),
+        new Set([
+          ...(base.tagNames || []),
+          ...EXTRA_ALLOWED_TAGS,
+          "ins",
+          "mark",
+          "sup",
+          "sub",
+          "abbr",
+          "dl",
+          "dt",
+          "dd",
+        ]),
       ),
       attributes: {
         ...(base.attributes || {}),

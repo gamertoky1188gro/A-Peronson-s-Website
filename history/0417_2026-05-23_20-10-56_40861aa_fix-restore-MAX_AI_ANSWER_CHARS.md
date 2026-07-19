@@ -1,12 +1,12 @@
 # Commit 0417 — `40861aa82fe`
 
-| Field | Value |
-|-------|-------|
+| Field       | Value                                      |
+| ----------- | ------------------------------------------ |
 | Commit Hash | `40861aa82fe3e910059ec86aae187c52ef3de24d` |
 | Parent Hash | `b294eb04768de80a5f8302246b89952cffb91b8a` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-23 20:10:56 +0600 |
-| Subject | fix: restore MAX_AI_ANSWER_CHARS constant |
+| Author      | gamertoky1188gro                           |
+| Date        | 2026-05-23 20:10:56 +0600                  |
+| Subject     | fix: restore MAX_AI_ANSWER_CHARS constant  |
 
 ---
 
@@ -18,9 +18,9 @@ Adds back the `MAX_AI_ANSWER_CHARS = 1200` constant that was also lost in the 04
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/assistantService.js` | modified | 1 | 0 |
+| File                                  | Status   | Insertions | Deletions |
+| ------------------------------------- | -------- | ---------- | --------- |
+| `server/services/assistantService.js` | modified | 1          | 0         |
 
 **1 file changed, 1 insertion**
 

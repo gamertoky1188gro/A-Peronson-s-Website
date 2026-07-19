@@ -278,9 +278,7 @@ function limitToPolicyConfigData(row) {
     max_outreach_per_window: Number(mc.outbound_per_window) || 12,
     outreach_window_minutes: Number(mc.window_minutes) || 15,
     cooldown_seconds: Number(mc.cooldown_seconds) || 30,
-    premium_boost: pm.premium
-      ? Math.round((Number(pm.premium) - 1) * 100)
-      : 20,
+    premium_boost: pm.premium ? Math.round((Number(pm.premium) - 1) * 100) : 20,
     verified_boost: pm.verified
       ? Math.round((Number(pm.verified) - 1) * 100)
       : 30,
@@ -302,7 +300,8 @@ async function writeConfigRows(rows) {
         org_id: row.org_id || null,
         message_caps: row.message_caps || DEFAULT_GLOBAL_CONFIG.message_caps,
         priority_multipliers:
-          row.priority_multipliers || DEFAULT_GLOBAL_CONFIG.priority_multipliers,
+          row.priority_multipliers ||
+          DEFAULT_GLOBAL_CONFIG.priority_multipliers,
         strictness_mode: row.strictness_mode || "balanced",
         spam_thresholds:
           row.spam_thresholds || DEFAULT_GLOBAL_CONFIG.spam_thresholds,
@@ -863,9 +862,7 @@ export async function listMessageQueueItems({ status = "" } = {}) {
     .trim()
     .toLowerCase();
 
-  const where = normalized
-    ? { queue_status: { equals: normalized } }
-    : {};
+  const where = normalized ? { queue_status: { equals: normalized } } : {};
 
   const queueRows = await prisma.messageQueueItem.findMany({
     where,

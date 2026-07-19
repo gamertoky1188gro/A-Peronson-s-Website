@@ -19,10 +19,7 @@ export default defineConfig({
     reportCompressedSize: false,
     sourcemap: process.env.NODE_ENV !== "production",
   },
-  plugins: [
-    tailwindcss(),
-    react(),
-  ],
+  plugins: [tailwindcss(), react()],
   server: {
     allowedHosts: ["habits-asia-occur-acute.trycloudflare.com"],
     proxy: {

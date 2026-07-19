@@ -112,9 +112,10 @@ export default function usePageMeta({
     setMeta(`${OG_PREFIX}:url`, url || window.location.href);
     setMeta(`${OG_PREFIX}:locale`, locale);
     if (localeAlternate) {
-      (Array.isArray(localeAlternate) ? localeAlternate : [localeAlternate]).forEach((l) =>
-        setMeta(`${OG_PREFIX}:locale:alternate`, l),
-      );
+      (Array.isArray(localeAlternate)
+        ? localeAlternate
+        : [localeAlternate]
+      ).forEach((l) => setMeta(`${OG_PREFIX}:locale:alternate`, l));
     }
     setMeta(`${OG_PREFIX}:site_name`, siteName);
     setMeta(`${OG_PREFIX}:determiner`, determiner);
@@ -125,7 +126,10 @@ export default function usePageMeta({
       const imgAbs = abs(img);
       setMeta(`${OG_PREFIX}:image`, imgAbs);
       setMeta(`${OG_PREFIX}:image:url`, imgAbs);
-      setMeta(`${OG_PREFIX}:image:secure_url`, imageSecureUrl ? abs(imageSecureUrl) : imgAbs);
+      setMeta(
+        `${OG_PREFIX}:image:secure_url`,
+        imageSecureUrl ? abs(imageSecureUrl) : imgAbs,
+      );
       setMeta(`${OG_PREFIX}:image:type`, imageType);
       setMeta(`${OG_PREFIX}:image:width`, imageWidth);
       setMeta(`${OG_PREFIX}:image:height`, imageHeight);
@@ -179,7 +183,9 @@ export default function usePageMeta({
         );
       }
       if (a.tag) {
-        (Array.isArray(a.tag) ? a.tag : [a.tag]).forEach((t) => setMeta("article:tag", t));
+        (Array.isArray(a.tag) ? a.tag : [a.tag]).forEach((t) =>
+          setMeta("article:tag", t),
+        );
       }
     }
 
@@ -193,7 +199,9 @@ export default function usePageMeta({
         );
       }
       if (b.tag) {
-        (Array.isArray(b.tag) ? b.tag : [b.tag]).forEach((t) => setMeta("book:tag", t));
+        (Array.isArray(b.tag) ? b.tag : [b.tag]).forEach((t) =>
+          setMeta("book:tag", t),
+        );
       }
     }
 
@@ -218,7 +226,9 @@ export default function usePageMeta({
         );
       }
       if (m.song) {
-        (Array.isArray(m.song) ? m.song : [m.song]).forEach((s) => setMeta("music:song", s));
+        (Array.isArray(m.song) ? m.song : [m.song]).forEach((s) =>
+          setMeta("music:song", s),
+        );
       }
       if (m.songDisc) setMeta("music:song:disc", m.songDisc);
       if (m.songTrack) setMeta("music:song:track", m.songTrack);
@@ -232,7 +242,8 @@ export default function usePageMeta({
       if (v.actor) {
         (Array.isArray(v.actor) ? v.actor : [v.actor]).forEach((a) => {
           setMeta("video:actor", typeof a === "string" ? a : a.profile);
-          if (typeof a === "object" && a.role) setMeta("video:actor:role", a.role);
+          if (typeof a === "object" && a.role)
+            setMeta("video:actor:role", a.role);
         });
       }
       if (v.director) {
@@ -246,7 +257,9 @@ export default function usePageMeta({
         );
       }
       if (v.tag) {
-        (Array.isArray(v.tag) ? v.tag : [v.tag]).forEach((t) => setMeta("video:tag", t));
+        (Array.isArray(v.tag) ? v.tag : [v.tag]).forEach((t) =>
+          setMeta("video:tag", t),
+        );
       }
       if (v.series) setMeta("video:series", v.series);
     }
@@ -272,10 +285,32 @@ export default function usePageMeta({
       });
     };
   }, [
-    title, type, description, url, image, imageUrl, imageSecureUrl,
-    imageType, imageWidth, imageHeight, imageAlt, audio, determiner,
-    locale, localeAlternate, siteName, video, fbAppId,
-    twitterCard, twitterSite, twitterCreator,
-    articleMeta, bookMeta, profileMeta, musicMeta, videoMeta, paymentMeta,
+    title,
+    type,
+    description,
+    url,
+    image,
+    imageUrl,
+    imageSecureUrl,
+    imageType,
+    imageWidth,
+    imageHeight,
+    imageAlt,
+    audio,
+    determiner,
+    locale,
+    localeAlternate,
+    siteName,
+    video,
+    fbAppId,
+    twitterCard,
+    twitterSite,
+    twitterCreator,
+    articleMeta,
+    bookMeta,
+    profileMeta,
+    musicMeta,
+    videoMeta,
+    paymentMeta,
   ]);
 }

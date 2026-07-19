@@ -1,11 +1,2231 @@
-import{a6 as rt,z as Te,r as n,j as e,w as lt,n as it,g as $e,k as nt,b as ot,u as dt,e as ct,c as xt,d as p,Z as mt,N as ht,f as q,y as R,a2 as M,A as bt,m as k,a4 as ut,a5 as ft,a7 as gt,X as pt}from"./index-CNnTWoea.js";import{a as vt}from"./useSecureUser-DoQht3Qe.js";import{r as jt}from"./leadSource-DB88KSZe.js";import{V as yt,C as kt}from"./CrmSummaryPanel-J_tFfFEK.js";import{H as wt}from"./HoverCard-CJ0AVagV.js";import{B as O}from"./badge-check-CaFeTPUp.js";import{S as Nt}from"./sparkles-DVBGTjg1.js";import{R as _t}from"./rocket-CTn5LVY_.js";import{C as Be}from"./chevron-left-BY_MYCfP.js";import{F as G}from"./factory-dwBkODaa.js";import{M as Ct}from"./map-pin-Dp9eWzEJ.js";import{L as Oe}from"./landmark-BQhVmiyr.js";import{C as H}from"./clipboard-list-GYmViMIP.js";import{E as W}from"./eye-DfSxjFuN.js";import{V as Z}from"./video-D4eN06Bi.js";import{U as Ve}from"./user-round-Bh67XmZR.js";import{C as Pt}from"./clock-3-CmBp6Ora.js";import{C as St}from"./camera-CCICZ2v4.js";import{E as Rt}from"./external-link-C36VE5bl.js";import{C as At}from"./calendar-days-C1cSNQQa.js";import{P as Mt}from"./pen-line-BGjHakA5.js";import{T as Et}from"./trash-2-JDuZV4rk.js";import{A as Lt}from"./arrow-left-CJ4bAA4u.js";import{A as $t}from"./arrow-right-C0cRUQ52.js";import"./shield-BScqrUK4.js";class Bt{constructor(){this.componentControls=new Set}subscribe(r){return this.componentControls.add(r),()=>this.componentControls.delete(r)}start(r,i){this.componentControls.forEach(o=>{o.start(r.nativeEvent||r,i)})}cancel(){this.componentControls.forEach(r=>{r.cancel()})}stop(){this.componentControls.forEach(r=>{r.stop()})}}const Ot=()=>new Bt;function Vt(){return rt(Ot)}/**
+import {
+  a6 as rt,
+  z as Te,
+  r as n,
+  j as e,
+  w as lt,
+  n as it,
+  g as $e,
+  k as nt,
+  b as ot,
+  u as dt,
+  e as ct,
+  c as xt,
+  d as p,
+  Z as mt,
+  N as ht,
+  f as q,
+  y as R,
+  a2 as M,
+  A as bt,
+  m as k,
+  a4 as ut,
+  a5 as ft,
+  a7 as gt,
+  X as pt,
+} from "./index-CNnTWoea.js";
+import { a as vt } from "./useSecureUser-DoQht3Qe.js";
+import { r as jt } from "./leadSource-DB88KSZe.js";
+import { V as yt, C as kt } from "./CrmSummaryPanel-J_tFfFEK.js";
+import { H as wt } from "./HoverCard-CJ0AVagV.js";
+import { B as O } from "./badge-check-CaFeTPUp.js";
+import { S as Nt } from "./sparkles-DVBGTjg1.js";
+import { R as _t } from "./rocket-CTn5LVY_.js";
+import { C as Be } from "./chevron-left-BY_MYCfP.js";
+import { F as G } from "./factory-dwBkODaa.js";
+import { M as Ct } from "./map-pin-Dp9eWzEJ.js";
+import { L as Oe } from "./landmark-BQhVmiyr.js";
+import { C as H } from "./clipboard-list-GYmViMIP.js";
+import { E as W } from "./eye-DfSxjFuN.js";
+import { V as Z } from "./video-D4eN06Bi.js";
+import { U as Ve } from "./user-round-Bh67XmZR.js";
+import { C as Pt } from "./clock-3-CmBp6Ora.js";
+import { C as St } from "./camera-CCICZ2v4.js";
+import { E as Rt } from "./external-link-C36VE5bl.js";
+import { C as At } from "./calendar-days-C1cSNQQa.js";
+import { P as Mt } from "./pen-line-BGjHakA5.js";
+import { T as Et } from "./trash-2-JDuZV4rk.js";
+import { A as Lt } from "./arrow-left-CJ4bAA4u.js";
+import { A as $t } from "./arrow-right-C0cRUQ52.js";
+import "./shield-BScqrUK4.js";
+class Bt {
+  constructor() {
+    this.componentControls = new Set();
+  }
+  subscribe(r) {
+    return (
+      this.componentControls.add(r),
+      () => this.componentControls.delete(r)
+    );
+  }
+  start(r, i) {
+    this.componentControls.forEach((o) => {
+      o.start(r.nativeEvent || r, i);
+    });
+  }
+  cancel() {
+    this.componentControls.forEach((r) => {
+      r.cancel();
+    });
+  }
+  stop() {
+    this.componentControls.forEach((r) => {
+      r.stop();
+    });
+  }
+}
+const Ot = () => new Bt();
+function Vt() {
+  return rt(Ot);
+}
+/**
  * @license lucide-react v0.575.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */const Ft=[["path",{d:"M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z",key:"lc1i9w"}],["path",{d:"m7 16.5-4.74-2.85",key:"1o9zyk"}],["path",{d:"m7 16.5 5-3",key:"va8pkn"}],["path",{d:"M7 16.5v5.17",key:"jnp8gn"}],["path",{d:"M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z",key:"8zsnat"}],["path",{d:"m17 16.5-5-3",key:"8arw3v"}],["path",{d:"m17 16.5 4.74-2.85",key:"8rfmw"}],["path",{d:"M17 16.5v5.17",key:"k6z78m"}],["path",{d:"M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z",key:"1xygjf"}],["path",{d:"M12 8 7.26 5.15",key:"1vbdud"}],["path",{d:"m12 8 4.74-2.85",key:"3rx089"}],["path",{d:"M12 13.5V8",key:"1io7kd"}]],K=Te("boxes",Ft);/**
+ */ const Ft = [
+    [
+      "path",
+      {
+        d: "M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z",
+        key: "lc1i9w",
+      },
+    ],
+    ["path", { d: "m7 16.5-4.74-2.85", key: "1o9zyk" }],
+    ["path", { d: "m7 16.5 5-3", key: "va8pkn" }],
+    ["path", { d: "M7 16.5v5.17", key: "jnp8gn" }],
+    [
+      "path",
+      {
+        d: "M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z",
+        key: "8zsnat",
+      },
+    ],
+    ["path", { d: "m17 16.5-5-3", key: "8arw3v" }],
+    ["path", { d: "m17 16.5 4.74-2.85", key: "8rfmw" }],
+    ["path", { d: "M17 16.5v5.17", key: "k6z78m" }],
+    [
+      "path",
+      {
+        d: "M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z",
+        key: "1xygjf",
+      },
+    ],
+    ["path", { d: "M12 8 7.26 5.15", key: "1vbdud" }],
+    ["path", { d: "m12 8 4.74-2.85", key: "3rx089" }],
+    ["path", { d: "M12 13.5V8", key: "1io7kd" }],
+  ],
+  K = Te("boxes", Ft);
+/**
  * @license lucide-react v0.575.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */const Tt=[["path",{d:"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z",key:"10ikf1"}]],Fe=Te("play",Tt);function zt({children:a,className:r="",snap:i=!0}){const o=n.useRef(null),[A,N]=n.useState(!1);return n.useEffect(()=>{const S=()=>{if(!o.current)return;const _=o.current,E=_.scrollWidth>_.clientWidth;N(E)};return S(),window.addEventListener("resize",S),()=>window.removeEventListener("resize",S)},[]),e.jsx("div",{ref:o,className:"flex gap-4 overflow-x-auto scrollbar-hide "+(i?"snap-x snap-mandatory ":"")+r,style:{scrollbarWidth:"none",msOverflowStyle:"none",WebkitOverflowScrolling:"touch",cursor:A?"grab":"default"},children:a})}function Dt(a,r){return r?a==="buyer"?`/buyer/${encodeURIComponent(r)}`:a==="buying_house"?`/buying-house/${encodeURIComponent(r)}`:`/factory/${encodeURIComponent(r)}`:"/feed"}function It(a){return!!(a!=null&&a.video_url)&&String((a==null?void 0:a.video_review_status)||"").toLowerCase()==="approved"&&!(a!=null&&a.video_restricted)}function Ut(a){if(!a||String(a.status||"").toLowerCase()!=="active")return!1;const r=Date.now(),i=new Date(a.starts_at).getTime(),o=new Date(a.ends_at).getTime();return!Number.isFinite(i)||!Number.isFinite(o)?!1:r>=i&&r<=o}function w({children:a,tone:r="default",title:i}){const o={default:"bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",success:"bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",info:"bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",warning:"bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",premium:"bg-gradient-to-r from-sky-500 to-cyan-500 text-white",danger:"bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"};return e.jsx("span",{title:i,className:`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${o[r]||o.default}`,children:a})}function V({label:a,value:r,helper:i}){return e.jsxs("div",{className:"rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40",children:[e.jsx("div",{className:"text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400",children:a}),e.jsx("div",{className:"mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100",children:r}),i?e.jsx("div",{className:"mt-1 text-xs text-slate-500 dark:text-slate-400",children:i}):null]})}function qt({name:a,imageUrl:r}){const i=o=>o?o.split(/\s+/).filter(Boolean).slice(0,2).map(A=>{var N;return(N=A[0])==null?void 0:N.toUpperCase()}).join(""):"?";return e.jsx("div",{className:"relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl",children:e.jsx("div",{className:"flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100",children:r?e.jsx("img",{src:r,alt:a||"Profile avatar",className:"h-full w-full object-cover"}):i(a)})})}function b({children:a,className:r=""}){return e.jsx("div",{className:`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${r}`,children:a})}function u({icon:a,title:r,subtitle:i,action:o}){return e.jsxs("div",{className:"mb-4 flex items-start justify-between gap-3",children:[e.jsxs("div",{children:[e.jsxs("div",{className:"flex items-center gap-2",children:[a?e.jsx(a,{className:"h-4 w-4 text-sky-500"}):null,e.jsx("h3",{className:"text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100",children:r})]}),i?e.jsx("p",{className:"mt-1 text-sm text-slate-500 dark:text-slate-400",children:i}):null]}),o]})}function f({icon:a,label:r,value:i,caption:o}){return e.jsxs("div",{className:"rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50",children:[e.jsxs("div",{className:"flex items-center gap-2 text-sky-600 dark:text-sky-400",children:[a?e.jsx(a,{className:"h-4 w-4"}):null,e.jsx("span",{className:"text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400",children:r})]}),e.jsx("div",{className:"mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100",children:i}),o?e.jsx("div",{className:"mt-1 text-xs text-slate-500 dark:text-slate-400",children:o}):null]})}function gs(){var me,he,be,ue,fe,ge,pe,ve,je,ye,ke,we,Ne,_e,Ce,Pe,Se,Re,Ae,Me,Ee,Le;const{id:a}=lt(),r=it(),i=n.useMemo(()=>$e(),[]),o=n.useMemo(()=>nt(),[]),{isPremium:A}=vt(),[N,S]=n.useState(!0),[_,E]=n.useState(""),[d,L]=n.useState(null),[h,Q]=n.useState(null),[C,X]=n.useState(null),[v,ze]=n.useState("overview"),[c,De]=n.useState([]),[Y,Ie]=n.useState(0),[J,Ue]=n.useState(null),[F,ee]=n.useState(!1),[qe,te]=n.useState(null);ot();const se=Vt(),[g,j]=n.useState(0),[Ge,$]=n.useState(!1),{scrollY:He}=dt();ct(xt(He,[0,400],[0,60]),{stiffness:80,damping:20,restDelta:.001});const s=(d==null?void 0:d.user)||null,We=(d==null?void 0:d.verification_summary)||null,T=(d==null?void 0:d.relationship)||{following:!1,friend_status:"none"},y=(d==null?void 0:d.viewer_permissions)||{is_self:!1,is_admin:!1},ae=A||String((s==null?void 0:s.subscription_status)||"").toLowerCase()==="premium"||(d==null?void 0:d.effective_plan)==="premium",m=y.is_self||y.is_admin?(d==null?void 0:d.profile_private)||(s==null?void 0:s.profile)||{}:{},Ze=!!(m.brand_name||m.brand_logo_url||m.brand_tagline||m.brand_website),Ke=!!(m.account_manager_name||m.account_manager_email||m.account_manager_phone),Qe=String((C==null?void 0:C.status)||"").toLowerCase()==="certified",re=n.useCallback(async()=>{var t;if(a){S(!0),E("");try{const l=await p(`/profiles/${encodeURIComponent(a)}`,{token:i});if((t=l==null?void 0:l.user)!=null&&t.role&&l.user.role!=="factory"){r(Dt(l.user.role,a),{replace:!0});return}L(l)}catch(l){E(l.message||"Failed to load profile"),L(null)}finally{S(!1)}}},[a,r,i]),B=n.useCallback(async()=>{if(a)try{const t=await p(`/ratings/profiles/user:${encodeURIComponent(a)}`,{token:""});Q(t||null)}catch{Q(null)}},[a]),le=n.useCallback(async()=>{if(!(!a||!i))try{const t=await p(`/certifications/org/${encodeURIComponent(a)}`,{token:i});X((t==null?void 0:t.summary)||null)}catch{X(null)}},[a,i]),z=n.useCallback(async({reset:t})=>{if(!a)return;const l=t?0:Y;ee(!0);try{const x=await p(`/profiles/${encodeURIComponent(a)}/products?cursor=${l}&limit=10`,{token:i}),P=Array.isArray(x==null?void 0:x.items)?x.items:[];De(at=>t?P:[...at,...P]),Ie(t?10:l+10),Ue((x==null?void 0:x.next_cursor)??null)}catch{}finally{ee(!1)}},[a,Y,i]);n.useEffect(()=>{re(),B(),le()},[re,B,le]),n.useEffect(()=>{s!=null&&s.id&&mt("profile_view",{entityType:"profile",entityId:s.id,metadata:{role:s.role||"factory"}})},[s==null?void 0:s.id,s==null?void 0:s.role]),n.useEffect(()=>{if(!y.is_self)return;const t=$e();t&&p("/boosts/me",{token:t}).then(l=>{const x=((l==null?void 0:l.items)||[]).find(P=>P.scope==="profile"&&Ut(P));te(x||null)}).catch(()=>te(null))},[y.is_self]),n.useEffect(()=>{["products","videos"].includes(v)&&(c.length||z({reset:!0}))},[v,z,c.length]);async function Xe(){if(a)try{const t=await p(`/users/${encodeURIComponent(a)}/follow`,{method:"POST",token:i});L(l=>l&&{...l,relationship:(t==null?void 0:t.relation)||l.relationship})}catch{}}async function Ye(){if(a)try{const t=await p(`/users/${encodeURIComponent(a)}/friend-request`,{method:"POST",token:i});L(l=>l&&{...l,relationship:(t==null?void 0:t.relation)||l.relationship})}catch{}}function Je(){a&&jt({type:"direct",id:`profile:${a}`,label:`Profile: ${(s==null?void 0:s.name)||"factory"}`}),r("/chat",{state:{notice:`Contacting ${(s==null?void 0:s.name)||"factory"}. If you are unverified, your first message may appear as a request.`}})}const ie=n.useMemo(()=>y.is_self||y.is_admin?c.filter(t=>t.video_url):c.filter(It),[c,y.is_admin,y.is_self]),et=!!qe;if(N)return e.jsx(ht,{fill:!0});if(_)return e.jsx("div",{className:"min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200",children:_});if(!s)return e.jsx("div",{className:"min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200",children:"Profile not found."});const D=(s==null?void 0:s.name)||"Factory profile",tt=((me=s==null?void 0:s.profile)==null?void 0:me.country)||"—",I=((he=s==null?void 0:s.profile)==null?void 0:he.industry)||"Garments & Textile",U=((be=s==null?void 0:s.profile)==null?void 0:be.organization_name)||((ue=s==null?void 0:s.profile)==null?void 0:ue.organization)||(s==null?void 0:s.name)||"—",ne=((fe=h==null?void 0:h.aggregate)==null?void 0:fe.average_score)??0,oe=((ge=h==null?void 0:h.aggregate)==null?void 0:ge.total_count)??0,de=(d==null?void 0:d.credibility_meter)??92,ce=ne,xe=oe;[s!=null&&s.verified?{label:"Verified",icon:q,tone:"info"}:null,Qe?{label:"Certified",icon:O,tone:"success"}:null,ae?{label:"Premium Reach",icon:Nt,tone:"premium",title:"Boosted visibility enabled for Premium"}:null,et?{label:"Boosted",icon:_t,tone:"success"}:null].filter(Boolean),(pe=s==null?void 0:s.profile)==null||pe.cover_image_url;const st=(ve=s==null?void 0:s.profile)==null?void 0:ve.profile_image;return e.jsxs("div",{className:"min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100",children:[e.jsxs("div",{className:"mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8",children:[e.jsxs("div",{className:"mb-5 flex items-center justify-between gap-3",children:[e.jsxs("button",{onClick:()=>r(-1),className:"inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300",children:[e.jsx(Be,{className:"h-4 w-4"})," Back"]}),e.jsxs("div",{className:"flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400",children:[e.jsx(q,{className:"h-3.5 w-3.5"})," Role: ",e.jsx("span",{className:"font-medium text-slate-700 dark:text-slate-200",children:"factory"})]})]}),e.jsxs("div",{className:"grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]",children:[e.jsxs("aside",{className:"space-y-6 xl:sticky xl:top-6 xl:self-start",children:[e.jsxs(b,{children:[e.jsx(u,{icon:G,title:"Factory Profile",subtitle:"Cover, identity, trust, and relationship actions",action:e.jsxs(w,{tone:"info",children:[e.jsx(G,{className:"mr-1 h-3.5 w-3.5"})," Factory"]})}),e.jsxs("div",{className:"overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100 dark:border-slate-800 dark:bg-slate-900",children:[e.jsx("div",{className:"h-28 bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600"}),e.jsxs("div",{className:"relative px-5 pb-5 pt-0",children:[e.jsxs("div",{className:"-mt-10 flex items-end gap-4",children:[e.jsx(qt,{name:D,imageUrl:st}),e.jsxs("div",{className:"pb-1",children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[e.jsx("h1",{className:"text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100",children:D}),s!=null&&s.verified?e.jsx(O,{className:"h-5 w-5 text-sky-500"}):null]}),e.jsx("p",{className:"mt-1 text-sm text-slate-500 dark:text-slate-400",children:U})]})]}),e.jsxs("div",{className:"mt-3 flex flex-wrap gap-2",children:[e.jsxs(w,{tone:"info",children:[e.jsx(Ct,{className:"h-3.5 w-3.5"})," ",tt]}),e.jsx(w,{tone:"info",children:I}),e.jsxs(w,{tone:"info",children:["Trust ",isNaN(de)?92:de,"%"]})]}),e.jsxs("div",{className:"mt-4 grid grid-cols-3 gap-2",children:[e.jsx("button",{onClick:Je,className:"rounded-2xl bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-sky-500/20 transition hover:-translate-y-0.5",children:"Contact"}),e.jsx("button",{onClick:Xe,className:"rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200",children:T.following?"Following":"Follow"}),e.jsx("button",{onClick:Ye,className:"rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200",children:T.friend_status==="friends"?"Connected":T.friend_status==="requested"?"Requested":"Connect"})]})]})]}),e.jsxs("div",{className:"mt-4 grid gap-3",children:[e.jsx(f,{icon:R,label:"Industry",value:I}),e.jsx(f,{icon:Oe,label:"Organization",value:U}),e.jsx(f,{icon:M,label:"Rating",value:`${ce.toFixed(1)} / 5`,caption:`${xe} reviews`}),e.jsx(f,{icon:K,label:"Monthly",value:((je=s==null?void 0:s.profile)==null?void 0:je.monthly_capacity)||"--",caption:"Capacity"}),e.jsx(f,{icon:H,label:"Declared",value:((ye=s==null?void 0:s.profile)==null?void 0:ye.moq)||"--",caption:"MOQ"})]})]}),e.jsxs(b,{children:[e.jsx(u,{icon:q,title:"Verification Panel",subtitle:"Shared trust and validation signals"}),e.jsx(yt,{summary:We})]}),C?e.jsxs(b,{children:[e.jsx(u,{icon:O,title:"Order Completion Certification",subtitle:"Signed contract record."}),e.jsxs("div",{className:"space-y-3",children:[e.jsxs("div",{className:"flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsxs("div",{children:[e.jsx("div",{className:"text-sm font-semibold text-slate-900 dark:text-slate-100",children:"Status"}),e.jsx("div",{className:"mt-1 text-sm text-slate-500 dark:text-slate-400",children:"Certification status"})]}),e.jsx(w,{tone:C.status==="certified"?"success":"default",children:C.status||"pending"})]}),e.jsx(V,{label:"Signed contracts",value:C.signed_contracts??0})]})]}):null]}),e.jsxs("main",{className:"min-w-0 space-y-6",children:[e.jsxs(b,{children:[e.jsx(u,{icon:G,title:D,subtitle:"Overview, products, approved media, work history, and reviews"}),e.jsx("div",{className:"flex flex-wrap gap-2 border-b border-slate-200 pb-4 dark:border-slate-800",children:[["overview","Overview",W],["products","Products",K],["videos","Video Gallery",Z],["work","Work History",H],["reviews","Reviews",M]].map(([t,l,x])=>e.jsxs("button",{onClick:()=>ze(t),className:`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${v===t?"bg-sky-500 text-white shadow-lg shadow-sky-500/20":"bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`,children:[e.jsx(x,{className:"h-4 w-4"})," ",l]},t))}),N?e.jsx("div",{className:"flex min-h-[280px] items-center justify-center text-slate-500 dark:text-slate-400",children:"Loading profile..."}):_?e.jsx("div",{className:"rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200",children:_}):e.jsx("div",{className:"pt-5",children:e.jsxs(bt,{mode:"wait",children:[v==="overview"&&e.jsxs(k.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},transition:{duration:.2},className:"space-y-6",children:[e.jsxs("div",{className:"grid gap-6 lg:grid-cols-[1.4fr_0.9fr]",children:[e.jsxs(b,{children:[e.jsx(u,{icon:W,title:"About",subtitle:"Factory overview and positioning."}),e.jsx("p",{className:"leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap",children:((ke=s==null?void 0:s.profile)==null?void 0:ke.about)||"No description added yet."})]}),Ze?e.jsxs(b,{children:[e.jsx(u,{icon:W,title:"Brand Kit",subtitle:"Visible only to self or admins."}),e.jsxs("div",{className:"flex items-center gap-3",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10",children:m.brand_logo_url?e.jsx("img",{src:m.brand_logo_url,alt:"Brand logo",className:"h-full w-full object-cover"}):e.jsx(R,{className:"h-5 w-5 text-sky-500"})}),e.jsxs("div",{className:"min-w-0",children:[e.jsx("div",{className:"truncate text-sm font-semibold text-slate-900 dark:text-slate-100",children:m.brand_name||(s==null?void 0:s.name)}),m.brand_tagline?e.jsx("div",{className:"text-xs text-slate-500 dark:text-slate-400",children:m.brand_tagline}):null,m.brand_website?e.jsx("div",{className:"text-xs text-slate-500 dark:text-slate-400",children:m.brand_website}):null]})]})]}):null]}),ae&&Ke?e.jsxs(b,{children:[e.jsx(u,{icon:Ve,title:"Dedicated Account Manager",subtitle:"Same pattern as Buyer"}),e.jsxs("div",{className:"flex items-center gap-4",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300",children:e.jsx(Ve,{className:"h-6 w-6"})}),e.jsxs("div",{children:[e.jsx("div",{className:"font-semibold",children:m.account_manager_name||"Assigned account manager"}),e.jsx("div",{className:"text-sm text-slate-500 dark:text-slate-400",children:m.account_manager_email||m.account_manager_phone||""})]})]})]}):null,e.jsxs("div",{className:"grid gap-4 md:grid-cols-3",children:[e.jsx(f,{icon:R,label:"Industry",value:I}),e.jsx(f,{icon:Oe,label:"Organization",value:U}),e.jsx(f,{icon:M,label:"Rating",value:`${ce.toFixed(1)} / 5`,caption:`${xe} reviews`})]}),e.jsxs("div",{className:"grid gap-4 md:grid-cols-3",children:[e.jsx(f,{icon:Pt,label:"Lead time (days)",value:((we=s==null?void 0:s.profile)==null?void 0:we.lead_time_days)||"--"}),e.jsx(f,{icon:O,label:"Certifications",value:(((Ne=s==null?void 0:s.profile)==null?void 0:Ne.certifications)||[]).join(", ")||"--"}),e.jsx(f,{icon:ut,label:"Employees",value:((_e=s==null?void 0:s.profile)==null?void 0:_e.employee_count)||"--"})]}),e.jsxs(b,{children:[e.jsx(u,{icon:R,title:"Companies Worked With",subtitle:"Same pattern as Buyer"}),(((Ce=s==null?void 0:s.profile)==null?void 0:Ce.companies_worked_with)||[]).length>0?e.jsx("div",{className:"grid gap-3 md:grid-cols-2",children:(s.profile.companies_worked_with||[]).map((t,l)=>e.jsxs("div",{className:"flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10",children:t.logo?e.jsx("img",{src:t.logo,alt:t.name||"Company",className:"h-full w-full object-cover"}):e.jsx(R,{className:"h-5 w-5 text-sky-500"})}),e.jsxs("div",{className:"min-w-0",children:[e.jsx("div",{className:"truncate text-sm font-semibold text-slate-900 dark:text-slate-100",children:t.name||"Untitled company"}),t.location?e.jsx("div",{className:"truncate text-xs text-slate-500 dark:text-slate-400",children:t.location}):null]})]},l))}):e.jsx("p",{className:"text-sm text-slate-500 dark:text-slate-400",children:"No companies listed yet."})]})]},"overview"),v==="products"&&e.jsx(k.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},transition:{duration:.2},className:"space-y-5",children:e.jsxs(b,{children:[e.jsx(u,{icon:K,title:"Products",subtitle:"Horizontal scroll gallery with fullscreen lightbox"}),c.length===0&&!F?e.jsx("div",{className:"rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400",children:"No products found."}):e.jsx(zt,{children:c.map(t=>e.jsx("div",{className:"w-[310px] snap-start",children:e.jsx(wt,{children:e.jsxs("div",{className:"overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950",children:[e.jsxs("button",{onClick:()=>{j(c.indexOf(t)),$(!0)},className:"group relative block h-48 w-full overflow-hidden bg-slate-200",children:[e.jsx("img",{src:t.cover_image_public_url||"https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",alt:t.title,className:"h-full w-full object-cover transition duration-500 group-hover:scale-105"}),e.jsx("div",{className:"absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent"}),e.jsxs("div",{className:"absolute left-3 top-3 flex gap-2",children:[e.jsx(w,{tone:t.status==="active"?"success":t.status==="in production"?"warning":"default",children:t.status||"published"}),t.hasVideo?e.jsxs(w,{tone:"info",children:[e.jsx(Fe,{className:"mr-1 h-3 w-3"})," Video"]}):null]}),e.jsx("div",{className:"absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur",children:"Open gallery"})]}),e.jsxs("div",{className:"space-y-3 p-4",children:[e.jsxs("div",{children:[e.jsxs("div",{className:"flex items-start justify-between gap-3",children:[e.jsx("h4",{className:"line-clamp-1 text-base font-semibold text-slate-900 dark:text-slate-100",children:t.title||"Product"}),e.jsx("button",{className:"rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-sky-300 hover:text-sky-600 dark:border-slate-800 dark:text-slate-400",onClick:()=>{j(c.indexOf(t)),$(!0)},"aria-label":`Open gallery for ${t.title}`,children:e.jsx(St,{className:"h-4 w-4"})})]}),e.jsx("p",{className:"mt-1 text-xs uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300",children:t.category||"Category"})]}),e.jsxs("div",{className:"flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400",children:[e.jsxs("span",{className:"rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900",children:["MOQ: ",t.moq??"--"]}),e.jsxs("span",{className:"rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900",children:["Lead time: ",t.lead_time_days??"--"," days"]})]}),e.jsx("p",{className:"line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300",children:t.description||""}),e.jsxs("div",{className:"flex items-center justify-between gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400",children:[e.jsx("span",{children:t.video_review_status?`Review: ${String(t.video_review_status).replace(/_/g," ")}`:"No review status"}),t.video_url?e.jsxs("span",{className:"inline-flex items-center gap-1 text-sky-600 dark:text-sky-300",children:[e.jsx(Z,{className:"h-3.5 w-3.5"})," Media"]}):null]})]})]})})},t.id))}),e.jsxs("div",{className:"mt-5 flex items-center justify-between gap-3",children:[e.jsx("div",{className:"text-sm text-slate-500 dark:text-slate-400",children:F?"Loading more products...":J!==null?"More items available.":"End of catalog."}),J!==null&&!F?e.jsx("button",{onClick:()=>z({reset:!1}),className:"inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900",children:"Load more"}):null]})]})},"products"),v==="videos"&&e.jsx(k.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},transition:{duration:.2},className:"space-y-5",children:e.jsxs(b,{children:[e.jsx(u,{icon:Z,title:"Video Gallery",subtitle:"Only approved media is public. Pending or restricted media remains hidden unless you are the profile owner or an admin."}),ie.length===0?e.jsx("div",{className:"rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400",children:"No public videos available."}):e.jsx("div",{className:"grid gap-4 md:grid-cols-2 xl:grid-cols-3",children:ie.map(t=>e.jsx("div",{className:"rounded-3xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950",children:e.jsxs("div",{className:"flex items-start gap-3",children:[e.jsx("div",{className:"rounded-2xl bg-sky-500/10 p-3 text-sky-600 dark:text-sky-300",children:e.jsx(Fe,{className:"h-5 w-5"})}),e.jsxs("div",{className:"min-w-0 flex-1",children:[e.jsx("div",{className:"font-semibold text-slate-900 dark:text-slate-100",children:t.title||"Video"}),e.jsx("div",{className:"mt-1 text-xs text-slate-500 dark:text-slate-400",children:String(t.video_review_status||"--").replace(/_/g," ")}),e.jsx("p",{className:"mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300",children:t.description||""}),t.video_url?e.jsxs("a",{href:t.video_url,target:"_blank",rel:"noreferrer",className:"mt-4 inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5",children:["Open video link ",e.jsx(Rt,{className:"h-4 w-4"})]}):null]})]})},t.id))})]})},"videos"),v==="work"&&e.jsx(k.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},transition:{duration:.2},className:"space-y-5",children:e.jsxs(b,{children:[e.jsx(u,{icon:H,title:"Work History",subtitle:"Same company list pattern"}),(((Pe=s==null?void 0:s.profile)==null?void 0:Pe.companies_worked_with)||[]).length>0?e.jsx("div",{className:"space-y-3",children:(s.profile.companies_worked_with||[]).map((t,l)=>e.jsxs("div",{className:"flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsxs("div",{className:"flex items-center gap-3 min-w-0",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10",children:t.logo?e.jsx("img",{src:t.logo,alt:t.name||"Company",className:"h-full w-full object-cover"}):e.jsx(R,{className:"h-5 w-5 text-sky-500"})}),e.jsxs("div",{className:"min-w-0",children:[e.jsx("div",{className:"truncate text-sm font-semibold text-slate-900 dark:text-slate-100",children:t.name||"Untitled company"}),e.jsx("div",{className:"truncate text-xs text-slate-500 dark:text-slate-400",children:t.role||"Partner"})]})]}),e.jsxs("div",{className:"flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400",children:[e.jsx(At,{className:"h-4 w-4"})," ",t.period||t.location||"Ongoing"]})]},l))}):e.jsx("div",{className:"rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",children:"No work history added yet."})]})},"work"),v==="reviews"&&e.jsxs(k.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},transition:{duration:.2},className:"space-y-5",children:[e.jsxs(b,{children:[e.jsx(u,{icon:M,title:"Rating summary",subtitle:"Public reviews and confidence scoring."}),e.jsxs("div",{className:"grid gap-4 md:grid-cols-3",children:[e.jsx(V,{label:"Average score",value:`${ne.toFixed(1)} / 5`}),e.jsx(V,{label:"Total reviews",value:oe}),e.jsx(V,{label:"Confidence",value:((Re=(Se=h==null?void 0:h.aggregate)==null?void 0:Se.reliability)==null?void 0:Re.confidence)||"low",helper:"Aggregate reliability"})]})]}),e.jsxs("div",{className:"rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100",children:[e.jsx("strong",{className:"font-semibold",children:"Review Policy:"})," Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust."]}),e.jsxs(b,{children:[e.jsx(u,{icon:ft,title:"Recent reviews",subtitle:"Public feedback from past collaborations."}),((h==null?void 0:h.recent_reviews)||[]).length>0?e.jsx("div",{className:"space-y-3",children:(h.recent_reviews||[]).map(t=>{const l=(o==null?void 0:o.id)&&String(o.id)===String(t.from_user_id||"");return e.jsx("div",{className:"rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",children:e.jsxs("div",{className:"flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",children:[e.jsxs("div",{className:"min-w-0",children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[e.jsxs(w,{tone:"warning",children:[e.jsx(M,{className:"h-3.5 w-3.5"})," ",Number(t.score||0).toFixed(1)]}),e.jsx("div",{className:"text-sm font-semibold text-slate-900 dark:text-slate-100",children:t.reviewer_name||"Anonymous"})]}),e.jsx("p",{className:"mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300",children:t.comment||"No comment provided."}),e.jsx("div",{className:"mt-2 text-xs text-slate-500 dark:text-slate-400",children:t.created_at?new Date(t.created_at).toLocaleDateString():""})]}),l?e.jsxs("div",{className:"flex items-center gap-2",children:[e.jsxs("button",{type:"button",className:"inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300",onClick:async()=>{const x=window.prompt("Update rating (1-5)",String(t.score||"5"));if(!x)return;const P=window.prompt("Update review comment",t.comment||"");try{await p(`/ratings/${t.id}`,{method:"PATCH",token:i,body:{score:Number(x),comment:P??""}}),await B()}catch{}},children:[e.jsx(Mt,{className:"h-4 w-4"})," Edit"]}),e.jsxs("button",{type:"button",className:"inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300",onClick:async()=>{if(window.confirm("Delete this review?"))try{await p(`/ratings/${t.id}`,{method:"DELETE",token:i}),await B()}catch{}},children:[e.jsx(Et,{className:"h-4 w-4"})," Delete"]})]}):null]})},t.id)})}):e.jsx("div",{className:"rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",children:"No reviews yet."})]})]},"reviews")]})})]}),e.jsx(kt,{targetId:s.id})]})]})]}),Ge&&c.length>0?e.jsx(k.div,{className:"fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm",initial:{opacity:0},animate:{opacity:1},exit:{opacity:0},onClick:()=>$(!1),role:"dialog","aria-modal":"true","aria-label":"Product gallery lightbox",children:e.jsxs(k.div,{className:"relative flex h-[86vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl",initial:{scale:.96,y:20},animate:{scale:1,y:0},exit:{scale:.96,y:20},transition:{type:"spring",stiffness:250,damping:24},onClick:t=>t.stopPropagation(),children:[e.jsxs("div",{className:"flex items-center justify-between border-b border-white/10 px-4 py-3 text-white",children:[e.jsxs("div",{className:"min-w-0",children:[e.jsx("div",{className:"truncate text-sm font-semibold",children:((Ae=c[g])==null?void 0:Ae.title)||"Product"}),e.jsxs("div",{className:"text-xs text-slate-400",children:[g+1," / ",c.length]})]}),e.jsxs("div",{className:"flex items-center gap-2",children:[e.jsx("button",{onClick:()=>j(t=>Math.max(0,t-1)),disabled:g===0,className:"rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 disabled:opacity-40","aria-label":"Previous image",children:e.jsx(Be,{className:"h-5 w-5"})}),e.jsx("button",{onClick:()=>j(t=>Math.min(c.length-1,t+1)),disabled:g===c.length-1,className:"rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 disabled:opacity-40","aria-label":"Next image",children:e.jsx(gt,{className:"h-5 w-5"})}),e.jsx("button",{onClick:()=>$(!1),className:"rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20","aria-label":"Close gallery",children:e.jsx(pt,{className:"h-5 w-5"})})]})]}),e.jsxs("div",{className:"relative flex-1 overflow-hidden",children:[e.jsx(k.div,{className:"flex h-full w-full items-center justify-center",drag:"x",dragControls:se,dragConstraints:{left:0,right:0},dragElastic:.12,onDragEnd:(t,l)=>{l.offset.x<-60&&j(x=>Math.min(c.length-1,x+1)),l.offset.x>60&&j(x=>Math.max(0,x-1))},onPointerDown:t=>se.start(t),children:e.jsx("img",{src:(Me=c[g])==null?void 0:Me.cover_image_public_url,alt:((Ee=c[g])==null?void 0:Ee.title)||"Gallery image",className:"max-h-full max-w-full select-none object-contain",draggable:!1})}),e.jsx("button",{onClick:()=>j(t=>Math.max(0,t-1)),disabled:g===0,className:"absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white backdrop-blur transition hover:bg-black/60 disabled:opacity-40","aria-label":"Previous image",children:e.jsx(Lt,{className:"h-5 w-5"})}),e.jsx("button",{onClick:()=>j(t=>Math.min(c.length-1,t+1)),disabled:g===c.length-1,className:"absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white backdrop-blur transition hover:bg-black/60 disabled:opacity-40","aria-label":"Next image",children:e.jsx($t,{className:"h-5 w-5"})})]}),e.jsx("div",{className:"border-t border-white/10 px-4 py-3 text-sm text-slate-300",children:e.jsxs("div",{className:"flex flex-wrap items-center justify-between gap-3",children:[e.jsx("div",{className:"truncate",children:((Le=c[g])==null?void 0:Le.description)||"Gallery preview"}),e.jsxs("div",{className:"text-xs text-slate-400",children:["Counter: ",g+1," / ",c.length]})]})})]})}):null]})}export{gs as default};
+ */ const Tt = [
+    [
+      "path",
+      {
+        d: "M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z",
+        key: "10ikf1",
+      },
+    ],
+  ],
+  Fe = Te("play", Tt);
+function zt({ children: a, className: r = "", snap: i = !0 }) {
+  const o = n.useRef(null),
+    [A, N] = n.useState(!1);
+  return (
+    n.useEffect(() => {
+      const S = () => {
+        if (!o.current) return;
+        const _ = o.current,
+          E = _.scrollWidth > _.clientWidth;
+        N(E);
+      };
+      return (
+        S(),
+        window.addEventListener("resize", S),
+        () => window.removeEventListener("resize", S)
+      );
+    }, []),
+    e.jsx("div", {
+      ref: o,
+      className:
+        "flex gap-4 overflow-x-auto scrollbar-hide " +
+        (i ? "snap-x snap-mandatory " : "") +
+        r,
+      style: {
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+        WebkitOverflowScrolling: "touch",
+        cursor: A ? "grab" : "default",
+      },
+      children: a,
+    })
+  );
+}
+function Dt(a, r) {
+  return r
+    ? a === "buyer"
+      ? `/buyer/${encodeURIComponent(r)}`
+      : a === "buying_house"
+        ? `/buying-house/${encodeURIComponent(r)}`
+        : `/factory/${encodeURIComponent(r)}`
+    : "/feed";
+}
+function It(a) {
+  return (
+    !!(a != null && a.video_url) &&
+    String((a == null ? void 0 : a.video_review_status) || "").toLowerCase() ===
+      "approved" &&
+    !(a != null && a.video_restricted)
+  );
+}
+function Ut(a) {
+  if (!a || String(a.status || "").toLowerCase() !== "active") return !1;
+  const r = Date.now(),
+    i = new Date(a.starts_at).getTime(),
+    o = new Date(a.ends_at).getTime();
+  return !Number.isFinite(i) || !Number.isFinite(o) ? !1 : r >= i && r <= o;
+}
+function w({ children: a, tone: r = "default", title: i }) {
+  const o = {
+    default:
+      "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+    success:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+    info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
+    warning:
+      "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+    premium: "bg-gradient-to-r from-sky-500 to-cyan-500 text-white",
+    danger: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
+  };
+  return e.jsx("span", {
+    title: i,
+    className: `inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${o[r] || o.default}`,
+    children: a,
+  });
+}
+function V({ label: a, value: r, helper: i }) {
+  return e.jsxs("div", {
+    className:
+      "rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40",
+    children: [
+      e.jsx("div", {
+        className:
+          "text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400",
+        children: a,
+      }),
+      e.jsx("div", {
+        className:
+          "mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100",
+        children: r,
+      }),
+      i
+        ? e.jsx("div", {
+            className: "mt-1 text-xs text-slate-500 dark:text-slate-400",
+            children: i,
+          })
+        : null,
+    ],
+  });
+}
+function qt({ name: a, imageUrl: r }) {
+  const i = (o) =>
+    o
+      ? o
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((A) => {
+            var N;
+            return (N = A[0]) == null ? void 0 : N.toUpperCase();
+          })
+          .join("")
+      : "?";
+  return e.jsx("div", {
+    className:
+      "relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl",
+    children: e.jsx("div", {
+      className:
+        "flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100",
+      children: r
+        ? e.jsx("img", {
+            src: r,
+            alt: a || "Profile avatar",
+            className: "h-full w-full object-cover",
+          })
+        : i(a),
+    }),
+  });
+}
+function b({ children: a, className: r = "" }) {
+  return e.jsx("div", {
+    className: `rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${r}`,
+    children: a,
+  });
+}
+function u({ icon: a, title: r, subtitle: i, action: o }) {
+  return e.jsxs("div", {
+    className: "mb-4 flex items-start justify-between gap-3",
+    children: [
+      e.jsxs("div", {
+        children: [
+          e.jsxs("div", {
+            className: "flex items-center gap-2",
+            children: [
+              a ? e.jsx(a, { className: "h-4 w-4 text-sky-500" }) : null,
+              e.jsx("h3", {
+                className:
+                  "text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100",
+                children: r,
+              }),
+            ],
+          }),
+          i
+            ? e.jsx("p", {
+                className: "mt-1 text-sm text-slate-500 dark:text-slate-400",
+                children: i,
+              })
+            : null,
+        ],
+      }),
+      o,
+    ],
+  });
+}
+function f({ icon: a, label: r, value: i, caption: o }) {
+  return e.jsxs("div", {
+    className:
+      "rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50",
+    children: [
+      e.jsxs("div", {
+        className: "flex items-center gap-2 text-sky-600 dark:text-sky-400",
+        children: [
+          a ? e.jsx(a, { className: "h-4 w-4" }) : null,
+          e.jsx("span", {
+            className:
+              "text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400",
+            children: r,
+          }),
+        ],
+      }),
+      e.jsx("div", {
+        className:
+          "mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100",
+        children: i,
+      }),
+      o
+        ? e.jsx("div", {
+            className: "mt-1 text-xs text-slate-500 dark:text-slate-400",
+            children: o,
+          })
+        : null,
+    ],
+  });
+}
+function gs() {
+  var me,
+    he,
+    be,
+    ue,
+    fe,
+    ge,
+    pe,
+    ve,
+    je,
+    ye,
+    ke,
+    we,
+    Ne,
+    _e,
+    Ce,
+    Pe,
+    Se,
+    Re,
+    Ae,
+    Me,
+    Ee,
+    Le;
+  const { id: a } = lt(),
+    r = it(),
+    i = n.useMemo(() => $e(), []),
+    o = n.useMemo(() => nt(), []),
+    { isPremium: A } = vt(),
+    [N, S] = n.useState(!0),
+    [_, E] = n.useState(""),
+    [d, L] = n.useState(null),
+    [h, Q] = n.useState(null),
+    [C, X] = n.useState(null),
+    [v, ze] = n.useState("overview"),
+    [c, De] = n.useState([]),
+    [Y, Ie] = n.useState(0),
+    [J, Ue] = n.useState(null),
+    [F, ee] = n.useState(!1),
+    [qe, te] = n.useState(null);
+  ot();
+  const se = Vt(),
+    [g, j] = n.useState(0),
+    [Ge, $] = n.useState(!1),
+    { scrollY: He } = dt();
+  ct(xt(He, [0, 400], [0, 60]), {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001,
+  });
+  const s = (d == null ? void 0 : d.user) || null,
+    We = (d == null ? void 0 : d.verification_summary) || null,
+    T = (d == null ? void 0 : d.relationship) || {
+      following: !1,
+      friend_status: "none",
+    },
+    y = (d == null ? void 0 : d.viewer_permissions) || {
+      is_self: !1,
+      is_admin: !1,
+    },
+    ae =
+      A ||
+      String(
+        (s == null ? void 0 : s.subscription_status) || "",
+      ).toLowerCase() === "premium" ||
+      (d == null ? void 0 : d.effective_plan) === "premium",
+    m =
+      y.is_self || y.is_admin
+        ? (d == null ? void 0 : d.profile_private) ||
+          (s == null ? void 0 : s.profile) ||
+          {}
+        : {},
+    Ze = !!(
+      m.brand_name ||
+      m.brand_logo_url ||
+      m.brand_tagline ||
+      m.brand_website
+    ),
+    Ke = !!(
+      m.account_manager_name ||
+      m.account_manager_email ||
+      m.account_manager_phone
+    ),
+    Qe =
+      String((C == null ? void 0 : C.status) || "").toLowerCase() ===
+      "certified",
+    re = n.useCallback(async () => {
+      var t;
+      if (a) {
+        (S(!0), E(""));
+        try {
+          const l = await p(`/profiles/${encodeURIComponent(a)}`, { token: i });
+          if (
+            (t = l == null ? void 0 : l.user) != null &&
+            t.role &&
+            l.user.role !== "factory"
+          ) {
+            r(Dt(l.user.role, a), { replace: !0 });
+            return;
+          }
+          L(l);
+        } catch (l) {
+          (E(l.message || "Failed to load profile"), L(null));
+        } finally {
+          S(!1);
+        }
+      }
+    }, [a, r, i]),
+    B = n.useCallback(async () => {
+      if (a)
+        try {
+          const t = await p(`/ratings/profiles/user:${encodeURIComponent(a)}`, {
+            token: "",
+          });
+          Q(t || null);
+        } catch {
+          Q(null);
+        }
+    }, [a]),
+    le = n.useCallback(async () => {
+      if (!(!a || !i))
+        try {
+          const t = await p(`/certifications/org/${encodeURIComponent(a)}`, {
+            token: i,
+          });
+          X((t == null ? void 0 : t.summary) || null);
+        } catch {
+          X(null);
+        }
+    }, [a, i]),
+    z = n.useCallback(
+      async ({ reset: t }) => {
+        if (!a) return;
+        const l = t ? 0 : Y;
+        ee(!0);
+        try {
+          const x = await p(
+              `/profiles/${encodeURIComponent(a)}/products?cursor=${l}&limit=10`,
+              { token: i },
+            ),
+            P = Array.isArray(x == null ? void 0 : x.items) ? x.items : [];
+          (De((at) => (t ? P : [...at, ...P])),
+            Ie(t ? 10 : l + 10),
+            Ue((x == null ? void 0 : x.next_cursor) ?? null));
+        } catch {
+        } finally {
+          ee(!1);
+        }
+      },
+      [a, Y, i],
+    );
+  (n.useEffect(() => {
+    (re(), B(), le());
+  }, [re, B, le]),
+    n.useEffect(() => {
+      s != null &&
+        s.id &&
+        mt("profile_view", {
+          entityType: "profile",
+          entityId: s.id,
+          metadata: { role: s.role || "factory" },
+        });
+    }, [s == null ? void 0 : s.id, s == null ? void 0 : s.role]),
+    n.useEffect(() => {
+      if (!y.is_self) return;
+      const t = $e();
+      t &&
+        p("/boosts/me", { token: t })
+          .then((l) => {
+            const x = ((l == null ? void 0 : l.items) || []).find(
+              (P) => P.scope === "profile" && Ut(P),
+            );
+            te(x || null);
+          })
+          .catch(() => te(null));
+    }, [y.is_self]),
+    n.useEffect(() => {
+      ["products", "videos"].includes(v) && (c.length || z({ reset: !0 }));
+    }, [v, z, c.length]));
+  async function Xe() {
+    if (a)
+      try {
+        const t = await p(`/users/${encodeURIComponent(a)}/follow`, {
+          method: "POST",
+          token: i,
+        });
+        L(
+          (l) =>
+            l && {
+              ...l,
+              relationship: (t == null ? void 0 : t.relation) || l.relationship,
+            },
+        );
+      } catch {}
+  }
+  async function Ye() {
+    if (a)
+      try {
+        const t = await p(`/users/${encodeURIComponent(a)}/friend-request`, {
+          method: "POST",
+          token: i,
+        });
+        L(
+          (l) =>
+            l && {
+              ...l,
+              relationship: (t == null ? void 0 : t.relation) || l.relationship,
+            },
+        );
+      } catch {}
+  }
+  function Je() {
+    (a &&
+      jt({
+        type: "direct",
+        id: `profile:${a}`,
+        label: `Profile: ${(s == null ? void 0 : s.name) || "factory"}`,
+      }),
+      r("/chat", {
+        state: {
+          notice: `Contacting ${(s == null ? void 0 : s.name) || "factory"}. If you are unverified, your first message may appear as a request.`,
+        },
+      }));
+  }
+  const ie = n.useMemo(
+      () =>
+        y.is_self || y.is_admin ? c.filter((t) => t.video_url) : c.filter(It),
+      [c, y.is_admin, y.is_self],
+    ),
+    et = !!qe;
+  if (N) return e.jsx(ht, { fill: !0 });
+  if (_)
+    return e.jsx("div", {
+      className:
+        "min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200",
+      children: _,
+    });
+  if (!s)
+    return e.jsx("div", {
+      className:
+        "min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200",
+      children: "Profile not found.",
+    });
+  const D = (s == null ? void 0 : s.name) || "Factory profile",
+    tt =
+      ((me = s == null ? void 0 : s.profile) == null ? void 0 : me.country) ||
+      "—",
+    I =
+      ((he = s == null ? void 0 : s.profile) == null ? void 0 : he.industry) ||
+      "Garments & Textile",
+    U =
+      ((be = s == null ? void 0 : s.profile) == null
+        ? void 0
+        : be.organization_name) ||
+      ((ue = s == null ? void 0 : s.profile) == null
+        ? void 0
+        : ue.organization) ||
+      (s == null ? void 0 : s.name) ||
+      "—",
+    ne =
+      ((fe = h == null ? void 0 : h.aggregate) == null
+        ? void 0
+        : fe.average_score) ?? 0,
+    oe =
+      ((ge = h == null ? void 0 : h.aggregate) == null
+        ? void 0
+        : ge.total_count) ?? 0,
+    de = (d == null ? void 0 : d.credibility_meter) ?? 92,
+    ce = ne,
+    xe = oe;
+  ([
+    s != null && s.verified
+      ? { label: "Verified", icon: q, tone: "info" }
+      : null,
+    Qe ? { label: "Certified", icon: O, tone: "success" } : null,
+    ae
+      ? {
+          label: "Premium Reach",
+          icon: Nt,
+          tone: "premium",
+          title: "Boosted visibility enabled for Premium",
+        }
+      : null,
+    et ? { label: "Boosted", icon: _t, tone: "success" } : null,
+  ].filter(Boolean),
+    (pe = s == null ? void 0 : s.profile) == null || pe.cover_image_url);
+  const st =
+    (ve = s == null ? void 0 : s.profile) == null ? void 0 : ve.profile_image;
+  return e.jsxs("div", {
+    className:
+      "min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100",
+    children: [
+      e.jsxs("div", {
+        className: "mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8",
+        children: [
+          e.jsxs("div", {
+            className: "mb-5 flex items-center justify-between gap-3",
+            children: [
+              e.jsxs("button", {
+                onClick: () => r(-1),
+                className:
+                  "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300",
+                children: [e.jsx(Be, { className: "h-4 w-4" }), " Back"],
+              }),
+              e.jsxs("div", {
+                className:
+                  "flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400",
+                children: [
+                  e.jsx(q, { className: "h-3.5 w-3.5" }),
+                  " Role: ",
+                  e.jsx("span", {
+                    className: "font-medium text-slate-700 dark:text-slate-200",
+                    children: "factory",
+                  }),
+                ],
+              }),
+            ],
+          }),
+          e.jsxs("div", {
+            className: "grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]",
+            children: [
+              e.jsxs("aside", {
+                className: "space-y-6 xl:sticky xl:top-6 xl:self-start",
+                children: [
+                  e.jsxs(b, {
+                    children: [
+                      e.jsx(u, {
+                        icon: G,
+                        title: "Factory Profile",
+                        subtitle:
+                          "Cover, identity, trust, and relationship actions",
+                        action: e.jsxs(w, {
+                          tone: "info",
+                          children: [
+                            e.jsx(G, { className: "mr-1 h-3.5 w-3.5" }),
+                            " Factory",
+                          ],
+                        }),
+                      }),
+                      e.jsxs("div", {
+                        className:
+                          "overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100 dark:border-slate-800 dark:bg-slate-900",
+                        children: [
+                          e.jsx("div", {
+                            className:
+                              "h-28 bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600",
+                          }),
+                          e.jsxs("div", {
+                            className: "relative px-5 pb-5 pt-0",
+                            children: [
+                              e.jsxs("div", {
+                                className: "-mt-10 flex items-end gap-4",
+                                children: [
+                                  e.jsx(qt, { name: D, imageUrl: st }),
+                                  e.jsxs("div", {
+                                    className: "pb-1",
+                                    children: [
+                                      e.jsxs("div", {
+                                        className:
+                                          "flex flex-wrap items-center gap-2",
+                                        children: [
+                                          e.jsx("h1", {
+                                            className:
+                                              "text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100",
+                                            children: D,
+                                          }),
+                                          s != null && s.verified
+                                            ? e.jsx(O, {
+                                                className:
+                                                  "h-5 w-5 text-sky-500",
+                                              })
+                                            : null,
+                                        ],
+                                      }),
+                                      e.jsx("p", {
+                                        className:
+                                          "mt-1 text-sm text-slate-500 dark:text-slate-400",
+                                        children: U,
+                                      }),
+                                    ],
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("div", {
+                                className: "mt-3 flex flex-wrap gap-2",
+                                children: [
+                                  e.jsxs(w, {
+                                    tone: "info",
+                                    children: [
+                                      e.jsx(Ct, { className: "h-3.5 w-3.5" }),
+                                      " ",
+                                      tt,
+                                    ],
+                                  }),
+                                  e.jsx(w, { tone: "info", children: I }),
+                                  e.jsxs(w, {
+                                    tone: "info",
+                                    children: [
+                                      "Trust ",
+                                      isNaN(de) ? 92 : de,
+                                      "%",
+                                    ],
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("div", {
+                                className: "mt-4 grid grid-cols-3 gap-2",
+                                children: [
+                                  e.jsx("button", {
+                                    onClick: Je,
+                                    className:
+                                      "rounded-2xl bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-sky-500/20 transition hover:-translate-y-0.5",
+                                    children: "Contact",
+                                  }),
+                                  e.jsx("button", {
+                                    onClick: Xe,
+                                    className:
+                                      "rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200",
+                                    children: T.following
+                                      ? "Following"
+                                      : "Follow",
+                                  }),
+                                  e.jsx("button", {
+                                    onClick: Ye,
+                                    className:
+                                      "rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200",
+                                    children:
+                                      T.friend_status === "friends"
+                                        ? "Connected"
+                                        : T.friend_status === "requested"
+                                          ? "Requested"
+                                          : "Connect",
+                                  }),
+                                ],
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      e.jsxs("div", {
+                        className: "mt-4 grid gap-3",
+                        children: [
+                          e.jsx(f, { icon: R, label: "Industry", value: I }),
+                          e.jsx(f, {
+                            icon: Oe,
+                            label: "Organization",
+                            value: U,
+                          }),
+                          e.jsx(f, {
+                            icon: M,
+                            label: "Rating",
+                            value: `${ce.toFixed(1)} / 5`,
+                            caption: `${xe} reviews`,
+                          }),
+                          e.jsx(f, {
+                            icon: K,
+                            label: "Monthly",
+                            value:
+                              ((je = s == null ? void 0 : s.profile) == null
+                                ? void 0
+                                : je.monthly_capacity) || "--",
+                            caption: "Capacity",
+                          }),
+                          e.jsx(f, {
+                            icon: H,
+                            label: "Declared",
+                            value:
+                              ((ye = s == null ? void 0 : s.profile) == null
+                                ? void 0
+                                : ye.moq) || "--",
+                            caption: "MOQ",
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  e.jsxs(b, {
+                    children: [
+                      e.jsx(u, {
+                        icon: q,
+                        title: "Verification Panel",
+                        subtitle: "Shared trust and validation signals",
+                      }),
+                      e.jsx(yt, { summary: We }),
+                    ],
+                  }),
+                  C
+                    ? e.jsxs(b, {
+                        children: [
+                          e.jsx(u, {
+                            icon: O,
+                            title: "Order Completion Certification",
+                            subtitle: "Signed contract record.",
+                          }),
+                          e.jsxs("div", {
+                            className: "space-y-3",
+                            children: [
+                              e.jsxs("div", {
+                                className:
+                                  "flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",
+                                children: [
+                                  e.jsxs("div", {
+                                    children: [
+                                      e.jsx("div", {
+                                        className:
+                                          "text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                        children: "Status",
+                                      }),
+                                      e.jsx("div", {
+                                        className:
+                                          "mt-1 text-sm text-slate-500 dark:text-slate-400",
+                                        children: "Certification status",
+                                      }),
+                                    ],
+                                  }),
+                                  e.jsx(w, {
+                                    tone:
+                                      C.status === "certified"
+                                        ? "success"
+                                        : "default",
+                                    children: C.status || "pending",
+                                  }),
+                                ],
+                              }),
+                              e.jsx(V, {
+                                label: "Signed contracts",
+                                value: C.signed_contracts ?? 0,
+                              }),
+                            ],
+                          }),
+                        ],
+                      })
+                    : null,
+                ],
+              }),
+              e.jsxs("main", {
+                className: "min-w-0 space-y-6",
+                children: [
+                  e.jsxs(b, {
+                    children: [
+                      e.jsx(u, {
+                        icon: G,
+                        title: D,
+                        subtitle:
+                          "Overview, products, approved media, work history, and reviews",
+                      }),
+                      e.jsx("div", {
+                        className:
+                          "flex flex-wrap gap-2 border-b border-slate-200 pb-4 dark:border-slate-800",
+                        children: [
+                          ["overview", "Overview", W],
+                          ["products", "Products", K],
+                          ["videos", "Video Gallery", Z],
+                          ["work", "Work History", H],
+                          ["reviews", "Reviews", M],
+                        ].map(([t, l, x]) =>
+                          e.jsxs(
+                            "button",
+                            {
+                              onClick: () => ze(t),
+                              className: `inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${v === t ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`,
+                              children: [
+                                e.jsx(x, { className: "h-4 w-4" }),
+                                " ",
+                                l,
+                              ],
+                            },
+                            t,
+                          ),
+                        ),
+                      }),
+                      N
+                        ? e.jsx("div", {
+                            className:
+                              "flex min-h-[280px] items-center justify-center text-slate-500 dark:text-slate-400",
+                            children: "Loading profile...",
+                          })
+                        : _
+                          ? e.jsx("div", {
+                              className:
+                                "rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200",
+                              children: _,
+                            })
+                          : e.jsx("div", {
+                              className: "pt-5",
+                              children: e.jsxs(bt, {
+                                mode: "wait",
+                                children: [
+                                  v === "overview" &&
+                                    e.jsxs(
+                                      k.div,
+                                      {
+                                        initial: { opacity: 0, y: 10 },
+                                        animate: { opacity: 1, y: 0 },
+                                        exit: { opacity: 0, y: -10 },
+                                        transition: { duration: 0.2 },
+                                        className: "space-y-6",
+                                        children: [
+                                          e.jsxs("div", {
+                                            className:
+                                              "grid gap-6 lg:grid-cols-[1.4fr_0.9fr]",
+                                            children: [
+                                              e.jsxs(b, {
+                                                children: [
+                                                  e.jsx(u, {
+                                                    icon: W,
+                                                    title: "About",
+                                                    subtitle:
+                                                      "Factory overview and positioning.",
+                                                  }),
+                                                  e.jsx("p", {
+                                                    className:
+                                                      "leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap",
+                                                    children:
+                                                      ((ke =
+                                                        s == null
+                                                          ? void 0
+                                                          : s.profile) == null
+                                                        ? void 0
+                                                        : ke.about) ||
+                                                      "No description added yet.",
+                                                  }),
+                                                ],
+                                              }),
+                                              Ze
+                                                ? e.jsxs(b, {
+                                                    children: [
+                                                      e.jsx(u, {
+                                                        icon: W,
+                                                        title: "Brand Kit",
+                                                        subtitle:
+                                                          "Visible only to self or admins.",
+                                                      }),
+                                                      e.jsxs("div", {
+                                                        className:
+                                                          "flex items-center gap-3",
+                                                        children: [
+                                                          e.jsx("div", {
+                                                            className:
+                                                              "flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10",
+                                                            children:
+                                                              m.brand_logo_url
+                                                                ? e.jsx("img", {
+                                                                    src: m.brand_logo_url,
+                                                                    alt: "Brand logo",
+                                                                    className:
+                                                                      "h-full w-full object-cover",
+                                                                  })
+                                                                : e.jsx(R, {
+                                                                    className:
+                                                                      "h-5 w-5 text-sky-500",
+                                                                  }),
+                                                          }),
+                                                          e.jsxs("div", {
+                                                            className:
+                                                              "min-w-0",
+                                                            children: [
+                                                              e.jsx("div", {
+                                                                className:
+                                                                  "truncate text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                                children:
+                                                                  m.brand_name ||
+                                                                  (s == null
+                                                                    ? void 0
+                                                                    : s.name),
+                                                              }),
+                                                              m.brand_tagline
+                                                                ? e.jsx("div", {
+                                                                    className:
+                                                                      "text-xs text-slate-500 dark:text-slate-400",
+                                                                    children:
+                                                                      m.brand_tagline,
+                                                                  })
+                                                                : null,
+                                                              m.brand_website
+                                                                ? e.jsx("div", {
+                                                                    className:
+                                                                      "text-xs text-slate-500 dark:text-slate-400",
+                                                                    children:
+                                                                      m.brand_website,
+                                                                  })
+                                                                : null,
+                                                            ],
+                                                          }),
+                                                        ],
+                                                      }),
+                                                    ],
+                                                  })
+                                                : null,
+                                            ],
+                                          }),
+                                          ae && Ke
+                                            ? e.jsxs(b, {
+                                                children: [
+                                                  e.jsx(u, {
+                                                    icon: Ve,
+                                                    title:
+                                                      "Dedicated Account Manager",
+                                                    subtitle:
+                                                      "Same pattern as Buyer",
+                                                  }),
+                                                  e.jsxs("div", {
+                                                    className:
+                                                      "flex items-center gap-4",
+                                                    children: [
+                                                      e.jsx("div", {
+                                                        className:
+                                                          "flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300",
+                                                        children: e.jsx(Ve, {
+                                                          className: "h-6 w-6",
+                                                        }),
+                                                      }),
+                                                      e.jsxs("div", {
+                                                        children: [
+                                                          e.jsx("div", {
+                                                            className:
+                                                              "font-semibold",
+                                                            children:
+                                                              m.account_manager_name ||
+                                                              "Assigned account manager",
+                                                          }),
+                                                          e.jsx("div", {
+                                                            className:
+                                                              "text-sm text-slate-500 dark:text-slate-400",
+                                                            children:
+                                                              m.account_manager_email ||
+                                                              m.account_manager_phone ||
+                                                              "",
+                                                          }),
+                                                        ],
+                                                      }),
+                                                    ],
+                                                  }),
+                                                ],
+                                              })
+                                            : null,
+                                          e.jsxs("div", {
+                                            className:
+                                              "grid gap-4 md:grid-cols-3",
+                                            children: [
+                                              e.jsx(f, {
+                                                icon: R,
+                                                label: "Industry",
+                                                value: I,
+                                              }),
+                                              e.jsx(f, {
+                                                icon: Oe,
+                                                label: "Organization",
+                                                value: U,
+                                              }),
+                                              e.jsx(f, {
+                                                icon: M,
+                                                label: "Rating",
+                                                value: `${ce.toFixed(1)} / 5`,
+                                                caption: `${xe} reviews`,
+                                              }),
+                                            ],
+                                          }),
+                                          e.jsxs("div", {
+                                            className:
+                                              "grid gap-4 md:grid-cols-3",
+                                            children: [
+                                              e.jsx(f, {
+                                                icon: Pt,
+                                                label: "Lead time (days)",
+                                                value:
+                                                  ((we =
+                                                    s == null
+                                                      ? void 0
+                                                      : s.profile) == null
+                                                    ? void 0
+                                                    : we.lead_time_days) ||
+                                                  "--",
+                                              }),
+                                              e.jsx(f, {
+                                                icon: O,
+                                                label: "Certifications",
+                                                value:
+                                                  (
+                                                    ((Ne =
+                                                      s == null
+                                                        ? void 0
+                                                        : s.profile) == null
+                                                      ? void 0
+                                                      : Ne.certifications) || []
+                                                  ).join(", ") || "--",
+                                              }),
+                                              e.jsx(f, {
+                                                icon: ut,
+                                                label: "Employees",
+                                                value:
+                                                  ((_e =
+                                                    s == null
+                                                      ? void 0
+                                                      : s.profile) == null
+                                                    ? void 0
+                                                    : _e.employee_count) ||
+                                                  "--",
+                                              }),
+                                            ],
+                                          }),
+                                          e.jsxs(b, {
+                                            children: [
+                                              e.jsx(u, {
+                                                icon: R,
+                                                title: "Companies Worked With",
+                                                subtitle:
+                                                  "Same pattern as Buyer",
+                                              }),
+                                              (
+                                                ((Ce =
+                                                  s == null
+                                                    ? void 0
+                                                    : s.profile) == null
+                                                  ? void 0
+                                                  : Ce.companies_worked_with) ||
+                                                []
+                                              ).length > 0
+                                                ? e.jsx("div", {
+                                                    className:
+                                                      "grid gap-3 md:grid-cols-2",
+                                                    children: (
+                                                      s.profile
+                                                        .companies_worked_with ||
+                                                      []
+                                                    ).map((t, l) =>
+                                                      e.jsxs(
+                                                        "div",
+                                                        {
+                                                          className:
+                                                            "flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",
+                                                          children: [
+                                                            e.jsx("div", {
+                                                              className:
+                                                                "flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10",
+                                                              children: t.logo
+                                                                ? e.jsx("img", {
+                                                                    src: t.logo,
+                                                                    alt:
+                                                                      t.name ||
+                                                                      "Company",
+                                                                    className:
+                                                                      "h-full w-full object-cover",
+                                                                  })
+                                                                : e.jsx(R, {
+                                                                    className:
+                                                                      "h-5 w-5 text-sky-500",
+                                                                  }),
+                                                            }),
+                                                            e.jsxs("div", {
+                                                              className:
+                                                                "min-w-0",
+                                                              children: [
+                                                                e.jsx("div", {
+                                                                  className:
+                                                                    "truncate text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                                  children:
+                                                                    t.name ||
+                                                                    "Untitled company",
+                                                                }),
+                                                                t.location
+                                                                  ? e.jsx(
+                                                                      "div",
+                                                                      {
+                                                                        className:
+                                                                          "truncate text-xs text-slate-500 dark:text-slate-400",
+                                                                        children:
+                                                                          t.location,
+                                                                      },
+                                                                    )
+                                                                  : null,
+                                                              ],
+                                                            }),
+                                                          ],
+                                                        },
+                                                        l,
+                                                      ),
+                                                    ),
+                                                  })
+                                                : e.jsx("p", {
+                                                    className:
+                                                      "text-sm text-slate-500 dark:text-slate-400",
+                                                    children:
+                                                      "No companies listed yet.",
+                                                  }),
+                                            ],
+                                          }),
+                                        ],
+                                      },
+                                      "overview",
+                                    ),
+                                  v === "products" &&
+                                    e.jsx(
+                                      k.div,
+                                      {
+                                        initial: { opacity: 0, y: 10 },
+                                        animate: { opacity: 1, y: 0 },
+                                        exit: { opacity: 0, y: -10 },
+                                        transition: { duration: 0.2 },
+                                        className: "space-y-5",
+                                        children: e.jsxs(b, {
+                                          children: [
+                                            e.jsx(u, {
+                                              icon: K,
+                                              title: "Products",
+                                              subtitle:
+                                                "Horizontal scroll gallery with fullscreen lightbox",
+                                            }),
+                                            c.length === 0 && !F
+                                              ? e.jsx("div", {
+                                                  className:
+                                                    "rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400",
+                                                  children:
+                                                    "No products found.",
+                                                })
+                                              : e.jsx(zt, {
+                                                  children: c.map((t) =>
+                                                    e.jsx(
+                                                      "div",
+                                                      {
+                                                        className:
+                                                          "w-[310px] snap-start",
+                                                        children: e.jsx(wt, {
+                                                          children: e.jsxs(
+                                                            "div",
+                                                            {
+                                                              className:
+                                                                "overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950",
+                                                              children: [
+                                                                e.jsxs(
+                                                                  "button",
+                                                                  {
+                                                                    onClick:
+                                                                      () => {
+                                                                        (j(
+                                                                          c.indexOf(
+                                                                            t,
+                                                                          ),
+                                                                        ),
+                                                                          $(
+                                                                            !0,
+                                                                          ));
+                                                                      },
+                                                                    className:
+                                                                      "group relative block h-48 w-full overflow-hidden bg-slate-200",
+                                                                    children: [
+                                                                      e.jsx(
+                                                                        "img",
+                                                                        {
+                                                                          src:
+                                                                            t.cover_image_public_url ||
+                                                                            "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",
+                                                                          alt: t.title,
+                                                                          className:
+                                                                            "h-full w-full object-cover transition duration-500 group-hover:scale-105",
+                                                                        },
+                                                                      ),
+                                                                      e.jsx(
+                                                                        "div",
+                                                                        {
+                                                                          className:
+                                                                            "absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent",
+                                                                        },
+                                                                      ),
+                                                                      e.jsxs(
+                                                                        "div",
+                                                                        {
+                                                                          className:
+                                                                            "absolute left-3 top-3 flex gap-2",
+                                                                          children:
+                                                                            [
+                                                                              e.jsx(
+                                                                                w,
+                                                                                {
+                                                                                  tone:
+                                                                                    t.status ===
+                                                                                    "active"
+                                                                                      ? "success"
+                                                                                      : t.status ===
+                                                                                          "in production"
+                                                                                        ? "warning"
+                                                                                        : "default",
+                                                                                  children:
+                                                                                    t.status ||
+                                                                                    "published",
+                                                                                },
+                                                                              ),
+                                                                              t.hasVideo
+                                                                                ? e.jsxs(
+                                                                                    w,
+                                                                                    {
+                                                                                      tone: "info",
+                                                                                      children:
+                                                                                        [
+                                                                                          e.jsx(
+                                                                                            Fe,
+                                                                                            {
+                                                                                              className:
+                                                                                                "mr-1 h-3 w-3",
+                                                                                            },
+                                                                                          ),
+                                                                                          " Video",
+                                                                                        ],
+                                                                                    },
+                                                                                  )
+                                                                                : null,
+                                                                            ],
+                                                                        },
+                                                                      ),
+                                                                      e.jsx(
+                                                                        "div",
+                                                                        {
+                                                                          className:
+                                                                            "absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur",
+                                                                          children:
+                                                                            "Open gallery",
+                                                                        },
+                                                                      ),
+                                                                    ],
+                                                                  },
+                                                                ),
+                                                                e.jsxs("div", {
+                                                                  className:
+                                                                    "space-y-3 p-4",
+                                                                  children: [
+                                                                    e.jsxs(
+                                                                      "div",
+                                                                      {
+                                                                        children:
+                                                                          [
+                                                                            e.jsxs(
+                                                                              "div",
+                                                                              {
+                                                                                className:
+                                                                                  "flex items-start justify-between gap-3",
+                                                                                children:
+                                                                                  [
+                                                                                    e.jsx(
+                                                                                      "h4",
+                                                                                      {
+                                                                                        className:
+                                                                                          "line-clamp-1 text-base font-semibold text-slate-900 dark:text-slate-100",
+                                                                                        children:
+                                                                                          t.title ||
+                                                                                          "Product",
+                                                                                      },
+                                                                                    ),
+                                                                                    e.jsx(
+                                                                                      "button",
+                                                                                      {
+                                                                                        className:
+                                                                                          "rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-sky-300 hover:text-sky-600 dark:border-slate-800 dark:text-slate-400",
+                                                                                        onClick:
+                                                                                          () => {
+                                                                                            (j(
+                                                                                              c.indexOf(
+                                                                                                t,
+                                                                                              ),
+                                                                                            ),
+                                                                                              $(
+                                                                                                !0,
+                                                                                              ));
+                                                                                          },
+                                                                                        "aria-label": `Open gallery for ${t.title}`,
+                                                                                        children:
+                                                                                          e.jsx(
+                                                                                            St,
+                                                                                            {
+                                                                                              className:
+                                                                                                "h-4 w-4",
+                                                                                            },
+                                                                                          ),
+                                                                                      },
+                                                                                    ),
+                                                                                  ],
+                                                                              },
+                                                                            ),
+                                                                            e.jsx(
+                                                                              "p",
+                                                                              {
+                                                                                className:
+                                                                                  "mt-1 text-xs uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300",
+                                                                                children:
+                                                                                  t.category ||
+                                                                                  "Category",
+                                                                              },
+                                                                            ),
+                                                                          ],
+                                                                      },
+                                                                    ),
+                                                                    e.jsxs(
+                                                                      "div",
+                                                                      {
+                                                                        className:
+                                                                          "flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400",
+                                                                        children:
+                                                                          [
+                                                                            e.jsxs(
+                                                                              "span",
+                                                                              {
+                                                                                className:
+                                                                                  "rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900",
+                                                                                children:
+                                                                                  [
+                                                                                    "MOQ: ",
+                                                                                    t.moq ??
+                                                                                      "--",
+                                                                                  ],
+                                                                              },
+                                                                            ),
+                                                                            e.jsxs(
+                                                                              "span",
+                                                                              {
+                                                                                className:
+                                                                                  "rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900",
+                                                                                children:
+                                                                                  [
+                                                                                    "Lead time: ",
+                                                                                    t.lead_time_days ??
+                                                                                      "--",
+                                                                                    " days",
+                                                                                  ],
+                                                                              },
+                                                                            ),
+                                                                          ],
+                                                                      },
+                                                                    ),
+                                                                    e.jsx("p", {
+                                                                      className:
+                                                                        "line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300",
+                                                                      children:
+                                                                        t.description ||
+                                                                        "",
+                                                                    }),
+                                                                    e.jsxs(
+                                                                      "div",
+                                                                      {
+                                                                        className:
+                                                                          "flex items-center justify-between gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400",
+                                                                        children:
+                                                                          [
+                                                                            e.jsx(
+                                                                              "span",
+                                                                              {
+                                                                                children:
+                                                                                  t.video_review_status
+                                                                                    ? `Review: ${String(t.video_review_status).replace(/_/g, " ")}`
+                                                                                    : "No review status",
+                                                                              },
+                                                                            ),
+                                                                            t.video_url
+                                                                              ? e.jsxs(
+                                                                                  "span",
+                                                                                  {
+                                                                                    className:
+                                                                                      "inline-flex items-center gap-1 text-sky-600 dark:text-sky-300",
+                                                                                    children:
+                                                                                      [
+                                                                                        e.jsx(
+                                                                                          Z,
+                                                                                          {
+                                                                                            className:
+                                                                                              "h-3.5 w-3.5",
+                                                                                          },
+                                                                                        ),
+                                                                                        " Media",
+                                                                                      ],
+                                                                                  },
+                                                                                )
+                                                                              : null,
+                                                                          ],
+                                                                      },
+                                                                    ),
+                                                                  ],
+                                                                }),
+                                                              ],
+                                                            },
+                                                          ),
+                                                        }),
+                                                      },
+                                                      t.id,
+                                                    ),
+                                                  ),
+                                                }),
+                                            e.jsxs("div", {
+                                              className:
+                                                "mt-5 flex items-center justify-between gap-3",
+                                              children: [
+                                                e.jsx("div", {
+                                                  className:
+                                                    "text-sm text-slate-500 dark:text-slate-400",
+                                                  children: F
+                                                    ? "Loading more products..."
+                                                    : J !== null
+                                                      ? "More items available."
+                                                      : "End of catalog.",
+                                                }),
+                                                J !== null && !F
+                                                  ? e.jsx("button", {
+                                                      onClick: () =>
+                                                        z({ reset: !1 }),
+                                                      className:
+                                                        "inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900",
+                                                      children: "Load more",
+                                                    })
+                                                  : null,
+                                              ],
+                                            }),
+                                          ],
+                                        }),
+                                      },
+                                      "products",
+                                    ),
+                                  v === "videos" &&
+                                    e.jsx(
+                                      k.div,
+                                      {
+                                        initial: { opacity: 0, y: 10 },
+                                        animate: { opacity: 1, y: 0 },
+                                        exit: { opacity: 0, y: -10 },
+                                        transition: { duration: 0.2 },
+                                        className: "space-y-5",
+                                        children: e.jsxs(b, {
+                                          children: [
+                                            e.jsx(u, {
+                                              icon: Z,
+                                              title: "Video Gallery",
+                                              subtitle:
+                                                "Only approved media is public. Pending or restricted media remains hidden unless you are the profile owner or an admin.",
+                                            }),
+                                            ie.length === 0
+                                              ? e.jsx("div", {
+                                                  className:
+                                                    "rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400",
+                                                  children:
+                                                    "No public videos available.",
+                                                })
+                                              : e.jsx("div", {
+                                                  className:
+                                                    "grid gap-4 md:grid-cols-2 xl:grid-cols-3",
+                                                  children: ie.map((t) =>
+                                                    e.jsx(
+                                                      "div",
+                                                      {
+                                                        className:
+                                                          "rounded-3xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950",
+                                                        children: e.jsxs(
+                                                          "div",
+                                                          {
+                                                            className:
+                                                              "flex items-start gap-3",
+                                                            children: [
+                                                              e.jsx("div", {
+                                                                className:
+                                                                  "rounded-2xl bg-sky-500/10 p-3 text-sky-600 dark:text-sky-300",
+                                                                children: e.jsx(
+                                                                  Fe,
+                                                                  {
+                                                                    className:
+                                                                      "h-5 w-5",
+                                                                  },
+                                                                ),
+                                                              }),
+                                                              e.jsxs("div", {
+                                                                className:
+                                                                  "min-w-0 flex-1",
+                                                                children: [
+                                                                  e.jsx("div", {
+                                                                    className:
+                                                                      "font-semibold text-slate-900 dark:text-slate-100",
+                                                                    children:
+                                                                      t.title ||
+                                                                      "Video",
+                                                                  }),
+                                                                  e.jsx("div", {
+                                                                    className:
+                                                                      "mt-1 text-xs text-slate-500 dark:text-slate-400",
+                                                                    children:
+                                                                      String(
+                                                                        t.video_review_status ||
+                                                                          "--",
+                                                                      ).replace(
+                                                                        /_/g,
+                                                                        " ",
+                                                                      ),
+                                                                  }),
+                                                                  e.jsx("p", {
+                                                                    className:
+                                                                      "mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300",
+                                                                    children:
+                                                                      t.description ||
+                                                                      "",
+                                                                  }),
+                                                                  t.video_url
+                                                                    ? e.jsxs(
+                                                                        "a",
+                                                                        {
+                                                                          href: t.video_url,
+                                                                          target:
+                                                                            "_blank",
+                                                                          rel: "noreferrer",
+                                                                          className:
+                                                                            "mt-4 inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5",
+                                                                          children:
+                                                                            [
+                                                                              "Open video link ",
+                                                                              e.jsx(
+                                                                                Rt,
+                                                                                {
+                                                                                  className:
+                                                                                    "h-4 w-4",
+                                                                                },
+                                                                              ),
+                                                                            ],
+                                                                        },
+                                                                      )
+                                                                    : null,
+                                                                ],
+                                                              }),
+                                                            ],
+                                                          },
+                                                        ),
+                                                      },
+                                                      t.id,
+                                                    ),
+                                                  ),
+                                                }),
+                                          ],
+                                        }),
+                                      },
+                                      "videos",
+                                    ),
+                                  v === "work" &&
+                                    e.jsx(
+                                      k.div,
+                                      {
+                                        initial: { opacity: 0, y: 10 },
+                                        animate: { opacity: 1, y: 0 },
+                                        exit: { opacity: 0, y: -10 },
+                                        transition: { duration: 0.2 },
+                                        className: "space-y-5",
+                                        children: e.jsxs(b, {
+                                          children: [
+                                            e.jsx(u, {
+                                              icon: H,
+                                              title: "Work History",
+                                              subtitle:
+                                                "Same company list pattern",
+                                            }),
+                                            (
+                                              ((Pe =
+                                                s == null
+                                                  ? void 0
+                                                  : s.profile) == null
+                                                ? void 0
+                                                : Pe.companies_worked_with) ||
+                                              []
+                                            ).length > 0
+                                              ? e.jsx("div", {
+                                                  className: "space-y-3",
+                                                  children: (
+                                                    s.profile
+                                                      .companies_worked_with ||
+                                                    []
+                                                  ).map((t, l) =>
+                                                    e.jsxs(
+                                                      "div",
+                                                      {
+                                                        className:
+                                                          "flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40",
+                                                        children: [
+                                                          e.jsxs("div", {
+                                                            className:
+                                                              "flex items-center gap-3 min-w-0",
+                                                            children: [
+                                                              e.jsx("div", {
+                                                                className:
+                                                                  "flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10",
+                                                                children: t.logo
+                                                                  ? e.jsx(
+                                                                      "img",
+                                                                      {
+                                                                        src: t.logo,
+                                                                        alt:
+                                                                          t.name ||
+                                                                          "Company",
+                                                                        className:
+                                                                          "h-full w-full object-cover",
+                                                                      },
+                                                                    )
+                                                                  : e.jsx(R, {
+                                                                      className:
+                                                                        "h-5 w-5 text-sky-500",
+                                                                    }),
+                                                              }),
+                                                              e.jsxs("div", {
+                                                                className:
+                                                                  "min-w-0",
+                                                                children: [
+                                                                  e.jsx("div", {
+                                                                    className:
+                                                                      "truncate text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                                    children:
+                                                                      t.name ||
+                                                                      "Untitled company",
+                                                                  }),
+                                                                  e.jsx("div", {
+                                                                    className:
+                                                                      "truncate text-xs text-slate-500 dark:text-slate-400",
+                                                                    children:
+                                                                      t.role ||
+                                                                      "Partner",
+                                                                  }),
+                                                                ],
+                                                              }),
+                                                            ],
+                                                          }),
+                                                          e.jsxs("div", {
+                                                            className:
+                                                              "flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400",
+                                                            children: [
+                                                              e.jsx(At, {
+                                                                className:
+                                                                  "h-4 w-4",
+                                                              }),
+                                                              " ",
+                                                              t.period ||
+                                                                t.location ||
+                                                                "Ongoing",
+                                                            ],
+                                                          }),
+                                                        ],
+                                                      },
+                                                      l,
+                                                    ),
+                                                  ),
+                                                })
+                                              : e.jsx("div", {
+                                                  className:
+                                                    "rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",
+                                                  children:
+                                                    "No work history added yet.",
+                                                }),
+                                          ],
+                                        }),
+                                      },
+                                      "work",
+                                    ),
+                                  v === "reviews" &&
+                                    e.jsxs(
+                                      k.div,
+                                      {
+                                        initial: { opacity: 0, y: 10 },
+                                        animate: { opacity: 1, y: 0 },
+                                        exit: { opacity: 0, y: -10 },
+                                        transition: { duration: 0.2 },
+                                        className: "space-y-5",
+                                        children: [
+                                          e.jsxs(b, {
+                                            children: [
+                                              e.jsx(u, {
+                                                icon: M,
+                                                title: "Rating summary",
+                                                subtitle:
+                                                  "Public reviews and confidence scoring.",
+                                              }),
+                                              e.jsxs("div", {
+                                                className:
+                                                  "grid gap-4 md:grid-cols-3",
+                                                children: [
+                                                  e.jsx(V, {
+                                                    label: "Average score",
+                                                    value: `${ne.toFixed(1)} / 5`,
+                                                  }),
+                                                  e.jsx(V, {
+                                                    label: "Total reviews",
+                                                    value: oe,
+                                                  }),
+                                                  e.jsx(V, {
+                                                    label: "Confidence",
+                                                    value:
+                                                      ((Re =
+                                                        (Se =
+                                                          h == null
+                                                            ? void 0
+                                                            : h.aggregate) ==
+                                                        null
+                                                          ? void 0
+                                                          : Se.reliability) ==
+                                                      null
+                                                        ? void 0
+                                                        : Re.confidence) ||
+                                                      "low",
+                                                    helper:
+                                                      "Aggregate reliability",
+                                                  }),
+                                                ],
+                                              }),
+                                            ],
+                                          }),
+                                          e.jsxs("div", {
+                                            className:
+                                              "rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100",
+                                            children: [
+                                              e.jsx("strong", {
+                                                className: "font-semibold",
+                                                children: "Review Policy:",
+                                              }),
+                                              " Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.",
+                                            ],
+                                          }),
+                                          e.jsxs(b, {
+                                            children: [
+                                              e.jsx(u, {
+                                                icon: ft,
+                                                title: "Recent reviews",
+                                                subtitle:
+                                                  "Public feedback from past collaborations.",
+                                              }),
+                                              (
+                                                (h == null
+                                                  ? void 0
+                                                  : h.recent_reviews) || []
+                                              ).length > 0
+                                                ? e.jsx("div", {
+                                                    className: "space-y-3",
+                                                    children: (
+                                                      h.recent_reviews || []
+                                                    ).map((t) => {
+                                                      const l =
+                                                        (o == null
+                                                          ? void 0
+                                                          : o.id) &&
+                                                        String(o.id) ===
+                                                          String(
+                                                            t.from_user_id ||
+                                                              "",
+                                                          );
+                                                      return e.jsx(
+                                                        "div",
+                                                        {
+                                                          className:
+                                                            "rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",
+                                                          children: e.jsxs(
+                                                            "div",
+                                                            {
+                                                              className:
+                                                                "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
+                                                              children: [
+                                                                e.jsxs("div", {
+                                                                  className:
+                                                                    "min-w-0",
+                                                                  children: [
+                                                                    e.jsxs(
+                                                                      "div",
+                                                                      {
+                                                                        className:
+                                                                          "flex flex-wrap items-center gap-2",
+                                                                        children:
+                                                                          [
+                                                                            e.jsxs(
+                                                                              w,
+                                                                              {
+                                                                                tone: "warning",
+                                                                                children:
+                                                                                  [
+                                                                                    e.jsx(
+                                                                                      M,
+                                                                                      {
+                                                                                        className:
+                                                                                          "h-3.5 w-3.5",
+                                                                                      },
+                                                                                    ),
+                                                                                    " ",
+                                                                                    Number(
+                                                                                      t.score ||
+                                                                                        0,
+                                                                                    ).toFixed(
+                                                                                      1,
+                                                                                    ),
+                                                                                  ],
+                                                                              },
+                                                                            ),
+                                                                            e.jsx(
+                                                                              "div",
+                                                                              {
+                                                                                className:
+                                                                                  "text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                                                children:
+                                                                                  t.reviewer_name ||
+                                                                                  "Anonymous",
+                                                                              },
+                                                                            ),
+                                                                          ],
+                                                                      },
+                                                                    ),
+                                                                    e.jsx("p", {
+                                                                      className:
+                                                                        "mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300",
+                                                                      children:
+                                                                        t.comment ||
+                                                                        "No comment provided.",
+                                                                    }),
+                                                                    e.jsx(
+                                                                      "div",
+                                                                      {
+                                                                        className:
+                                                                          "mt-2 text-xs text-slate-500 dark:text-slate-400",
+                                                                        children:
+                                                                          t.created_at
+                                                                            ? new Date(
+                                                                                t.created_at,
+                                                                              ).toLocaleDateString()
+                                                                            : "",
+                                                                      },
+                                                                    ),
+                                                                  ],
+                                                                }),
+                                                                l
+                                                                  ? e.jsxs(
+                                                                      "div",
+                                                                      {
+                                                                        className:
+                                                                          "flex items-center gap-2",
+                                                                        children:
+                                                                          [
+                                                                            e.jsxs(
+                                                                              "button",
+                                                                              {
+                                                                                type: "button",
+                                                                                className:
+                                                                                  "inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300",
+                                                                                onClick:
+                                                                                  async () => {
+                                                                                    const x =
+                                                                                      window.prompt(
+                                                                                        "Update rating (1-5)",
+                                                                                        String(
+                                                                                          t.score ||
+                                                                                            "5",
+                                                                                        ),
+                                                                                      );
+                                                                                    if (
+                                                                                      !x
+                                                                                    )
+                                                                                      return;
+                                                                                    const P =
+                                                                                      window.prompt(
+                                                                                        "Update review comment",
+                                                                                        t.comment ||
+                                                                                          "",
+                                                                                      );
+                                                                                    try {
+                                                                                      (await p(
+                                                                                        `/ratings/${t.id}`,
+                                                                                        {
+                                                                                          method:
+                                                                                            "PATCH",
+                                                                                          token:
+                                                                                            i,
+                                                                                          body: {
+                                                                                            score:
+                                                                                              Number(
+                                                                                                x,
+                                                                                              ),
+                                                                                            comment:
+                                                                                              P ??
+                                                                                              "",
+                                                                                          },
+                                                                                        },
+                                                                                      ),
+                                                                                        await B());
+                                                                                    } catch {}
+                                                                                  },
+                                                                                children:
+                                                                                  [
+                                                                                    e.jsx(
+                                                                                      Mt,
+                                                                                      {
+                                                                                        className:
+                                                                                          "h-4 w-4",
+                                                                                      },
+                                                                                    ),
+                                                                                    " Edit",
+                                                                                  ],
+                                                                              },
+                                                                            ),
+                                                                            e.jsxs(
+                                                                              "button",
+                                                                              {
+                                                                                type: "button",
+                                                                                className:
+                                                                                  "inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300",
+                                                                                onClick:
+                                                                                  async () => {
+                                                                                    if (
+                                                                                      window.confirm(
+                                                                                        "Delete this review?",
+                                                                                      )
+                                                                                    )
+                                                                                      try {
+                                                                                        (await p(
+                                                                                          `/ratings/${t.id}`,
+                                                                                          {
+                                                                                            method:
+                                                                                              "DELETE",
+                                                                                            token:
+                                                                                              i,
+                                                                                          },
+                                                                                        ),
+                                                                                          await B());
+                                                                                      } catch {}
+                                                                                  },
+                                                                                children:
+                                                                                  [
+                                                                                    e.jsx(
+                                                                                      Et,
+                                                                                      {
+                                                                                        className:
+                                                                                          "h-4 w-4",
+                                                                                      },
+                                                                                    ),
+                                                                                    " Delete",
+                                                                                  ],
+                                                                              },
+                                                                            ),
+                                                                          ],
+                                                                      },
+                                                                    )
+                                                                  : null,
+                                                              ],
+                                                            },
+                                                          ),
+                                                        },
+                                                        t.id,
+                                                      );
+                                                    }),
+                                                  })
+                                                : e.jsx("div", {
+                                                    className:
+                                                      "rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",
+                                                    children: "No reviews yet.",
+                                                  }),
+                                            ],
+                                          }),
+                                        ],
+                                      },
+                                      "reviews",
+                                    ),
+                                ],
+                              }),
+                            }),
+                    ],
+                  }),
+                  e.jsx(kt, { targetId: s.id }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      Ge && c.length > 0
+        ? e.jsx(k.div, {
+            className:
+              "fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm",
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            exit: { opacity: 0 },
+            onClick: () => $(!1),
+            role: "dialog",
+            "aria-modal": "true",
+            "aria-label": "Product gallery lightbox",
+            children: e.jsxs(k.div, {
+              className:
+                "relative flex h-[86vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl",
+              initial: { scale: 0.96, y: 20 },
+              animate: { scale: 1, y: 0 },
+              exit: { scale: 0.96, y: 20 },
+              transition: { type: "spring", stiffness: 250, damping: 24 },
+              onClick: (t) => t.stopPropagation(),
+              children: [
+                e.jsxs("div", {
+                  className:
+                    "flex items-center justify-between border-b border-white/10 px-4 py-3 text-white",
+                  children: [
+                    e.jsxs("div", {
+                      className: "min-w-0",
+                      children: [
+                        e.jsx("div", {
+                          className: "truncate text-sm font-semibold",
+                          children:
+                            ((Ae = c[g]) == null ? void 0 : Ae.title) ||
+                            "Product",
+                        }),
+                        e.jsxs("div", {
+                          className: "text-xs text-slate-400",
+                          children: [g + 1, " / ", c.length],
+                        }),
+                      ],
+                    }),
+                    e.jsxs("div", {
+                      className: "flex items-center gap-2",
+                      children: [
+                        e.jsx("button", {
+                          onClick: () => j((t) => Math.max(0, t - 1)),
+                          disabled: g === 0,
+                          className:
+                            "rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 disabled:opacity-40",
+                          "aria-label": "Previous image",
+                          children: e.jsx(Be, { className: "h-5 w-5" }),
+                        }),
+                        e.jsx("button", {
+                          onClick: () =>
+                            j((t) => Math.min(c.length - 1, t + 1)),
+                          disabled: g === c.length - 1,
+                          className:
+                            "rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 disabled:opacity-40",
+                          "aria-label": "Next image",
+                          children: e.jsx(gt, { className: "h-5 w-5" }),
+                        }),
+                        e.jsx("button", {
+                          onClick: () => $(!1),
+                          className:
+                            "rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20",
+                          "aria-label": "Close gallery",
+                          children: e.jsx(pt, { className: "h-5 w-5" }),
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                e.jsxs("div", {
+                  className: "relative flex-1 overflow-hidden",
+                  children: [
+                    e.jsx(k.div, {
+                      className:
+                        "flex h-full w-full items-center justify-center",
+                      drag: "x",
+                      dragControls: se,
+                      dragConstraints: { left: 0, right: 0 },
+                      dragElastic: 0.12,
+                      onDragEnd: (t, l) => {
+                        (l.offset.x < -60 &&
+                          j((x) => Math.min(c.length - 1, x + 1)),
+                          l.offset.x > 60 && j((x) => Math.max(0, x - 1)));
+                      },
+                      onPointerDown: (t) => se.start(t),
+                      children: e.jsx("img", {
+                        src:
+                          (Me = c[g]) == null
+                            ? void 0
+                            : Me.cover_image_public_url,
+                        alt:
+                          ((Ee = c[g]) == null ? void 0 : Ee.title) ||
+                          "Gallery image",
+                        className:
+                          "max-h-full max-w-full select-none object-contain",
+                        draggable: !1,
+                      }),
+                    }),
+                    e.jsx("button", {
+                      onClick: () => j((t) => Math.max(0, t - 1)),
+                      disabled: g === 0,
+                      className:
+                        "absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white backdrop-blur transition hover:bg-black/60 disabled:opacity-40",
+                      "aria-label": "Previous image",
+                      children: e.jsx(Lt, { className: "h-5 w-5" }),
+                    }),
+                    e.jsx("button", {
+                      onClick: () => j((t) => Math.min(c.length - 1, t + 1)),
+                      disabled: g === c.length - 1,
+                      className:
+                        "absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white backdrop-blur transition hover:bg-black/60 disabled:opacity-40",
+                      "aria-label": "Next image",
+                      children: e.jsx($t, { className: "h-5 w-5" }),
+                    }),
+                  ],
+                }),
+                e.jsx("div", {
+                  className:
+                    "border-t border-white/10 px-4 py-3 text-sm text-slate-300",
+                  children: e.jsxs("div", {
+                    className:
+                      "flex flex-wrap items-center justify-between gap-3",
+                    children: [
+                      e.jsx("div", {
+                        className: "truncate",
+                        children:
+                          ((Le = c[g]) == null ? void 0 : Le.description) ||
+                          "Gallery preview",
+                      }),
+                      e.jsxs("div", {
+                        className: "text-xs text-slate-400",
+                        children: ["Counter: ", g + 1, " / ", c.length],
+                      }),
+                    ],
+                  }),
+                }),
+              ],
+            }),
+          })
+        : null,
+    ],
+  });
+}
+export { gs as default };

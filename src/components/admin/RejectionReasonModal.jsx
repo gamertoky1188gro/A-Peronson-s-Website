@@ -11,7 +11,6 @@ const DEFAULT_REJECTION_REASONS = [
   "Other",
 ];
 
-const PRESET_REASONS = DEFAULT_REJECTION_REASONS;
 
 export default function RejectionReasonModal({
   open,

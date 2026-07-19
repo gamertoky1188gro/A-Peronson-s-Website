@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { motion, useReducedMotion, AnimatePresence, Reorder } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  Reorder,
+} from "framer-motion";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth";
 import { uploadFile } from "../lib/upload";
 import UploadProgressBar from "../components/ui/UploadProgressBar";
@@ -24,14 +28,13 @@ import {
   Clock3,
   FileText,
   BadgeCheck,
-  AlertTriangle,
   MoonStar,
   SunMedium,
   CheckCircle2,
   Eye,
   Rocket,
 } from "lucide-react";
-import { ThreeDot } from 'react-loading-indicators'
+import { ThreeDot } from "react-loading-indicators";
 
 const EMPTY_FORM = {
   title: "",
@@ -118,14 +121,13 @@ export default function ProductManagement() {
   const isDark = theme === "dark";
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [_error, setError] = useState("");
   const [notice, setNotice] = useState(
     "Drafts stay private until you publish them after media review.",
   );
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -145,12 +147,11 @@ export default function ProductManagement() {
   const loadMine = useCallback(async () => {
     if (!token) return;
     setLoading(true);
-    setError("");
     try {
       const data = await apiRequest("/products?mine=true", { token });
       setItems(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.message || "Failed to load products");
+      console.warn("Failed to load products:", err);
       setItems([]);
     } finally {
       setLoading(false);
@@ -162,13 +163,6 @@ export default function ProductManagement() {
     loadMine();
   }, [loadMine]);
 
-  useEffect(() => {
-    if (pageLoading && !loading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPageLoading(false);
-    }
-  }, [pageLoading, loading]);
-
   const stats = useMemo(() => {
     const published = items.filter((p) => p.status === "published").length;
     const drafts = items.filter((p) => p.status === "draft").length;
@@ -179,8 +173,6 @@ export default function ProductManagement() {
     // Close any existing modal first
     if (modalOpen) {
       setModalOpen(false);
-      // Wait a bit for modal to close
-      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     setEditing(null);
@@ -324,7 +316,6 @@ export default function ProductManagement() {
     }
 
     setSaving(true);
-    setError("");
     const saveBody = {
       ...form,
       status: nextStatus,
@@ -390,18 +381,14 @@ export default function ProductManagement() {
     }
   }
 
-  async function remove(productId) {
+  function promptDelete(productId) {
     if (!token || !productId) return;
-    const productToDelete = items.find((p) => p.id === productId);
-    if (!productToDelete) {
-      setNotice("Product not found in list.");
-      return;
-    }
-    const ok = window.confirm(
-      `Delete "${productToDelete.title || productToDelete.name || "this product"}"?`,
-    );
-    if (!ok) return;
-    setError("");
+    setDeleteConfirmId(productId);
+  }
+
+  async function confirmDelete() {
+    const productId = deleteConfirmId;
+    if (!token || !productId) return;
     setNotice("");
     try {
       await apiRequest(`/products/${encodeURIComponent(productId)}`, {
@@ -416,7 +403,13 @@ export default function ProductManagement() {
         err.message ||
           "Delete failed. The product may have already been deleted.",
       );
+    } finally {
+      setDeleteConfirmId(null);
     }
+  }
+
+  function cancelDelete() {
+    setDeleteConfirmId(null);
   }
 
   function toInternalUrl(filePath = "") {
@@ -587,6 +580,7 @@ export default function ProductManagement() {
       });
     } catch (err) {
       console.error("Sync media failed:", err);
+      setNotice(err.message || "Failed to sync media");
     }
   }
 
@@ -600,6 +594,7 @@ export default function ProductManagement() {
       });
     } catch (err) {
       console.error("Sync video failed:", err);
+      setNotice(err.message || "Failed to sync video");
     }
   }
 
@@ -613,11 +608,11 @@ export default function ProductManagement() {
     }));
   }
 
-  const isEditing = editing?.id !== null;
+  const isEditing = editing !== null && editing?.id != null;
   const inputCls =
     "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-400/40 dark:focus:ring-sky-400/15";
 
-  if (pageLoading) {
+  if (loading) {
     return <NeonAtom fill />;
   }
 
@@ -732,92 +727,107 @@ export default function ProductManagement() {
               <StaggerContainer className="grid gap-4">
                 {items.map((product) => (
                   <StaggerItem key={product.id}>
-                  <FlipCard
-                    flipOn="click"
-                    front={
-                      <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
-                        <div className="flex flex-col gap-4 h-full">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Badge
-                              tone={
-                                product.status === "published" ? "green" : "slate"
-                              }
-                            >
-                              Status: {product.status}
-                            </Badge>
-                            <Badge tone="blue">
-                              Video: {product.video_review_status || "approved"}
-                            </Badge>
-                            <Badge tone="blue">
-                              Content:{" "}
-                              {product.content_review_status || "approved"}
-                            </Badge>
-                          </div>
+                    <FlipCard
+                      flipOn="click"
+                      front={
+                        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
+                          <div className="flex flex-col gap-4 h-full">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge
+                                tone={
+                                  product.status === "published"
+                                    ? "green"
+                                    : "slate"
+                                }
+                              >
+                                Status: {product.status}
+                              </Badge>
+                              <Badge tone="blue">
+                                Video:{" "}
+                                {product.video_review_status || "pending"}
+                              </Badge>
+                              <Badge tone="blue">
+                                Content:{" "}
+                                {product.content_review_status || "pending"}
+                              </Badge>
+                            </div>
 
-                          <div>
-                            <h2 className="truncate text-2xl font-semibold text-slate-900 dark:text-white">
-                              {product.title || product.name}
-                            </h2>
-                            <div className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                              MOQ {product.moq || "--"} · Lead{" "}
-                              {product.lead_time_days || "--"}
+                            <div>
+                              <h2 className="truncate text-2xl font-semibold text-slate-900 dark:text-white">
+                                {product.title || product.name}
+                              </h2>
+                              <div className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                                MOQ {product.moq || "--"} · Lead{" "}
+                                {product.lead_time_days || "--"}
+                              </div>
+                            </div>
+
+                            <p className="flex-1 text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-4">
+                              {product.description}
+                            </p>
+
+                            <div className="text-xs text-slate-400 dark:text-slate-500">
+                              Click to flip for details
                             </div>
                           </div>
+                        </article>
+                      }
+                      back={
+                        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
+                          <div className="flex flex-col gap-4 h-full">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {[
+                                {
+                                  label: "Industry",
+                                  value: product.industry || "—",
+                                },
+                                {
+                                  label: "Category",
+                                  value: product.category || "—",
+                                },
+                                {
+                                  label: "Material",
+                                  value: product.material || "—",
+                                },
+                                {
+                                  label: "Media",
+                                  value: `${Array.isArray(product.image_urls) ? product.image_urls.length : 0} files`,
+                                },
+                              ].map((item) => (
+                                <div
+                                  key={item.label}
+                                  className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-900/50"
+                                >
+                                  <div className="text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
+                                    {item.label}
+                                  </div>
+                                  <div className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+                                    {item.value}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
 
-                          <p className="flex-1 text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-4">
-                            {product.description}
-                          </p>
-
-                          <div className="text-xs text-slate-400 dark:text-slate-500">
-                            Click to flip for details
-                          </div>
-                        </div>
-                      </article>
-                    }
-                    back={
-                      <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
-                        <div className="flex flex-col gap-4 h-full">
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            {[
-                              { label: "Industry", value: product.industry || "—" },
-                              { label: "Category", value: product.category || "—" },
-                              { label: "Material", value: product.material || "—" },
-                              { label: "Media", value: `${Array.isArray(product.image_urls) ? product.image_urls.length : 0} files` },
-                            ].map((item) => (
-                              <div
-                                key={item.label}
-                                className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-900/50"
+                            <div className="mt-auto flex flex-wrap gap-3">
+                              <button
+                                onClick={() => openEdit(product)}
+                                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                               >
-                                <div className="text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
-                                  {item.label}
-                                </div>
-                                <div className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                                  {item.value}
-                                </div>
-                              </div>
-                            ))}
+                                <Pencil className="h-4 w-4" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => promptDelete(product.id)}
+                                className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </button>
+                            </div>
                           </div>
-
-                          <div className="mt-auto flex flex-wrap gap-3">
-                            <button
-                              onClick={() => openEdit(product)}
-                              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                            >
-                              <Pencil className="h-4 w-4" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => remove(product.id)}
-                              className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </article>
-                    }
-                  />
+                        </article>
+                      }
+                    />
                   </StaggerItem>
                 ))}
               </StaggerContainer>
@@ -827,7 +837,10 @@ export default function ProductManagement() {
 
         {modalOpen ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8 backdrop-blur-sm dark:bg-slate-950/70">
-            <div data-lenis-prevent className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40">
+            <div
+              data-lenis-prevent
+              className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40"
+            >
               <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 px-6 py-5 backdrop-blur dark:border-white/10 dark:bg-slate-950/95">
                 <div>
                   <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -955,7 +968,11 @@ export default function ProductManagement() {
                       text={form.description}
                       limit={(() => {
                         const user = getCurrentUser();
-                        return String(user?.subscription_status || "").toLowerCase() === "premium" ? 1500 : 600;
+                        return String(
+                          user?.subscription_status || "",
+                        ).toLowerCase() === "premium"
+                          ? 1500
+                          : 600;
                       })()}
                     />
                     <button
@@ -1029,9 +1046,17 @@ export default function ProductManagement() {
                           >
                             <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
                               <ImageIcon className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                              {mediaBusy
-                                ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                                : "Click to upload images"}
+                              {mediaBusy ? (
+                                <ThreeDot
+                                  variant="bounce"
+                                  color="#6100ff"
+                                  size="small"
+                                  text=""
+                                  textColor=""
+                                />
+                              ) : (
+                                "Click to upload images"
+                              )}
                             </div>
                             <div className="mt-1 text-xs text-slate-400">
                               PNG, JPG up to 10MB each
@@ -1047,7 +1072,13 @@ export default function ProductManagement() {
                               disabled={mediaBusy}
                               className="hidden"
                             />
-                            {mediaBusy && <div className="mt-3"><UploadProgressBar progress={mediaUploadProgress} /></div>}
+                            {mediaBusy && (
+                              <div className="mt-3">
+                                <UploadProgressBar
+                                  progress={mediaUploadProgress}
+                                />
+                              </div>
+                            )}
                             {mediaGallery.length > 0 && (
                               <AnimatePresence mode="popLayout">
                                 <Reorder.Group
@@ -1071,7 +1102,10 @@ export default function ProductManagement() {
                                         initial={{ opacity: 0, scale: 0.92 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.85 }}
-                                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                                        transition={{
+                                          duration: 0.35,
+                                          ease: [0.16, 1, 0.3, 1],
+                                        }}
                                       />
                                       <div className="absolute bottom-0 left-0 right-0 bg-black/50">
                                         {getStatusBadge(entry.status)}
@@ -1088,12 +1122,22 @@ export default function ProductManagement() {
                           >
                             <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
                               <Video className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                              {videoBusy
-                                ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                                : "Click to upload video"}
+                              {videoBusy ? (
+                                <ThreeDot
+                                  variant="bounce"
+                                  color="#6100ff"
+                                  size="small"
+                                  text=""
+                                  textColor=""
+                                />
+                              ) : (
+                                "Click to upload video"
+                              )}
                             </div>
                             <div className="mt-1 text-xs text-slate-400">
-                              MP4, WEBM, MKV, AVI, MOV, FLV, MPEG, 3GP, WMV, OGV, M4V, AMV, ASF, VOB, OGG, MNG, 3G2, MXF, ROQ, RM, QT, SVI, NSV, YUV, F4V up to 50MB
+                              MP4, WEBM, MKV, AVI, MOV, FLV, MPEG, 3GP, WMV,
+                              OGV, M4V, AMV, ASF, VOB, OGG, MNG, 3G2, MXF, ROQ,
+                              RM, QT, SVI, NSV, YUV, F4V up to 50MB
                             </div>
                             <input
                               ref={videoInputRef}
@@ -1105,7 +1149,13 @@ export default function ProductManagement() {
                               disabled={videoBusy}
                               className="hidden"
                             />
-                            {videoBusy && <div className="mt-3"><UploadProgressBar progress={videoUploadProgress} /></div>}
+                            {videoBusy && (
+                              <div className="mt-3">
+                                <UploadProgressBar
+                                  progress={videoUploadProgress}
+                                />
+                              </div>
+                            )}
                           </div>
                         </>
                       )}
@@ -1169,7 +1219,17 @@ export default function ProductManagement() {
                         disabled={saving}
                         className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:scale-[1.01] hover:shadow-sky-500/35 disabled:opacity-60"
                       >
-                        {saving ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Publish"}
+                        {saving ? (
+                          <ThreeDot
+                            variant="bounce"
+                            color="#6100ff"
+                            size="small"
+                            text=""
+                            textColor=""
+                          />
+                        ) : (
+                          "Publish"
+                        )}
                       </button>
                     </div>
 
@@ -1179,6 +1239,31 @@ export default function ProductManagement() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {deleteConfirmId ? (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm dark:bg-slate-950/70">
+            <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Confirm Delete</h3>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Are you sure you want to delete this product? This action cannot be undone.
+              </p>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={cancelDelete}
+                  className="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/25 transition hover:bg-rose-700"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </div>

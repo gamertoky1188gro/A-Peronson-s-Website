@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** f8989d0cdc924913444832737c159c0d92f37955
 - **Parent:** 6ae3a68394f926f4bb60179906fdd75576ffcc3f 495910af223f55e60ad381eda376f933a93ff990
 - **Author:** Cyber Code Master
@@ -6,28 +7,32 @@
 - **Message:** Merge pull request #81 from gamertoky1188gro/codex/create-policy-engine-module-with-rules
 
 ## Custom Title
+
 Merge pull request #81 from gamertoky1188gro/codex/create-policy-engine-module-with-rules
 
 ## High-Level Summary
+
 Merge pull request #81 from gamertoky1188gro/codex/create-policy-engine-module-with-rules
 
- 11 files changed, 836 insertions(+), 4 deletions(-)
+11 files changed, 836 insertions(+), 4 deletions(-)
 
 ## File-by-File Breakdown
- .../migration.sql                                  |  74 ++++
- prisma/schema.prisma                               |  82 +++++
- server/controllers/messageController.js            |  59 +++-
- server/routes/messageRoutes.js                     |   9 +
- server/server.js                                   |  14 +-
- .../communicationPolicyService.contract.test.js    | 114 ++++++
- server/services/communicationPolicyService.js      | 392 +++++++++++++++++++++
- server/services/messageService.js                  |  43 +++
- server/utils/jsonStore.js                          |   4 +
- src/lib/auth.js                                    |   1 +
- src/pages/ChatInterface.jsx                        |  48 ++-
- 11 files changed, 836 insertions(+), 4 deletions(-)
+
+.../migration.sql | 74 ++++
+prisma/schema.prisma | 82 +++++
+server/controllers/messageController.js | 59 +++-
+server/routes/messageRoutes.js | 9 +
+server/server.js | 14 +-
+.../communicationPolicyService.contract.test.js | 114 ++++++
+server/services/communicationPolicyService.js | 392 +++++++++++++++++++++
+server/services/messageService.js | 43 +++
+server/utils/jsonStore.js | 4 +
+src/lib/auth.js | 1 +
+src/pages/ChatInterface.jsx | 48 ++-
+11 files changed, 836 insertions(+), 4 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/migrations/20260405183000_add_communication_policy_engine/migration.sql b/prisma/migrations/20260405183000_add_communication_policy_engine/migration.sql
 new file mode 100644
@@ -124,12 +129,12 @@ index bd5c3a2..ec19e9c 100644
 +  requires_human_review Boolean?
 +  queue_id          String?
    interactions      InteractionLog[]
- 
+
    @@map("messages")
 @@ -233,6 +239,82 @@ model MessageRequest {
    @@map("message_requests")
  }
- 
+
 +
 +
 +model MessageQueue {
@@ -224,7 +229,7 @@ index 7519267..ca1663c 100644
 +  upsertCommunicationPolicyConfig,
 +} from '../services/communicationPolicyService.js'
  import { readJson } from '../utils/jsonStore.js'
- 
+
  export async function sendMessage(req, res) {
 @@ -45,6 +51,9 @@ export async function sendMessage(req, res) {
        error: error.message || 'Unable to send message',
@@ -237,7 +242,7 @@ index 7519267..ca1663c 100644
    }
  }
 @@ -129,7 +138,12 @@ export async function uploadMessageAttachment(req, res) {
- 
+
      return res.status(201).json({ ...created, bot_reply: botReply })
    } catch (error) {
 -    return res.status(error.status || 400).json({ error: error.message || 'Unable to send message attachment' })
@@ -249,7 +254,7 @@ index 7519267..ca1663c 100644
 +    })
    }
  }
- 
+
 @@ -161,3 +175,46 @@ export async function rejectRequest(req, res) {
    const request = await rejectMessageRequest(req.params.threadId, req.user.id)
    return res.json({ ok: true, request })
@@ -310,7 +315,7 @@ index a2d5f48..c295f1c 100644
 +  updatePolicyConfig,
 +  weeklyPolicyDecisionQualityReport,
  } from '../controllers/messageController.js'
- 
+
  const router = Router()
 @@ -33,6 +37,11 @@ router.get('/inbox', requireAuth, inbox)
  router.post('/requests/:threadId/accept', requireAuth, acceptRequest)
@@ -355,7 +360,7 @@ index 7b16632..44ef459 100644
 +    })
    }
  }
- 
+
 diff --git a/server/services/__tests__/communicationPolicyService.contract.test.js b/server/services/__tests__/communicationPolicyService.contract.test.js
 new file mode 100644
 index 0000000..676b370
@@ -883,7 +888,7 @@ index 65772c0..317aadc 100644
  import { getRequirementById } from './requirementService.js'
  import { autoSummarizeMatch, resolveOrgOwnerFromMatch } from './aiConversationService.js'
 +import { attachMessageToQueue, evaluateMessagePolicy } from './communicationPolicyService.js'
- 
+
  const FILE = 'messages.json'
  const USERS_FILE = 'users.json'
 @@ -286,6 +287,12 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
@@ -897,12 +902,12 @@ index 65772c0..317aadc 100644
 +    requires_human_review: false,
 +    queue_id: null,
    }
- 
+
    const sender = users.find((u) => u.id === senderId)
 @@ -316,6 +323,38 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
- 
+
    await enforceConversationLock(matchId, sender)
- 
+
 +  const policyResult = await evaluateMessagePolicy({
 +    sender,
 +    matchId,
@@ -941,7 +946,7 @@ index 65772c0..317aadc 100644
 @@ -334,6 +373,10 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
    entry.moderation_reason = moderation.reason || ''
    messages.push(entry)
- 
+
 +  if (entry.queue_id) {
 +    await attachMessageToQueue(entry.queue_id, entry.id)
 +  }
@@ -962,7 +967,7 @@ index 7cca9f9..f729c5a 100644
 +  'sender_reputation.json': tableHandler('senderReputation', ['id']),
 +  'communication_policy_configs.json': tableHandler('communicationPolicyConfig', ['id']),
  }
- 
+
  const ratingsHandler = {
 diff --git a/src/lib/auth.js b/src/lib/auth.js
 index 7bc2061..7ac62ef 100644
@@ -1001,7 +1006,7 @@ index 540eab2..b68d7fd 100644
 +        retryAfterSeconds: Number(message.retry_after_seconds || existing.retryAfterSeconds || 0),
        })
      }
- 
+
 @@ -341,6 +349,7 @@ export default function ChatInterface() {
    const [, setChatConnectionStatus] = useState('offline')
    const [uploading, setUploading] = useState(false)
@@ -1011,7 +1016,7 @@ index 540eab2..b68d7fd 100644
    const [previewAttachment, setPreviewAttachment] = useState(null)
    const [accordionState, setAccordionState] = useState({
 @@ -803,6 +812,10 @@ export default function ChatInterface() {
- 
+
          if (payload.type === 'chat_error') {
            setChatConnectionStatus('online')
 +          const retryAfter = Number(payload.retry_after_seconds || 0)
@@ -1024,7 +1029,7 @@ index 540eab2..b68d7fd 100644
 @@ -1203,6 +1216,14 @@ export default function ChatInterface() {
      }
    }
- 
+
 +  useEffect(() => {
 +    if (!policyFeedback.retryAfter || policyFeedback.retryAfter <= 0) return undefined
 +    const timer = window.setInterval(() => {
@@ -1038,7 +1043,7 @@ index 540eab2..b68d7fd 100644
      if (!token || !activeThread?.matchId) return
 @@ -1283,9 +1304,13 @@ export default function ChatInterface() {
        }
- 
+
        setDraftMessage('')
 +      setPolicyFeedback({ reason: '', retryAfter: 0 })
        await loadInbox()
@@ -1097,17 +1102,22 @@ index 540eab2..b68d7fd 100644
 ```
 
 ## Why This Change
+
 Merge pull request #81 from gamertoky1188gro/codex/create-policy-engine-module-with-rules
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  11 files changed, 836 insertions(+), 4 deletions(-)
+
+- **Scope:** 11 files changed, 836 insertions(+), 4 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 206 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

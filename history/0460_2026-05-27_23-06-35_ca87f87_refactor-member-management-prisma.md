@@ -6,16 +6,20 @@
 **Date:** 2026-05-27 23:06:35 +0600
 
 ## High-Level Summary
+
 Split commit: (1) migrates `memberService.js` from JSON file storage (`users.json`, `members.json`) to Prisma/PostgreSQL, removing all `readJson`/`writeJson` dependencies and adding direct Prisma queries; (2) applies the new visual system to the `MemberManagement.jsx` page with lucide icons, `Modal` component redesign, `InfoCard`, `PermissionChips`, and `badgeClass` helpers.
 
 ## File-by-File Breakdown
-| File | Change |
-|------|--------|
+
+| File                               | Change                        |
+| ---------------------------------- | ----------------------------- |
 | `server/services/memberService.js` | 178 insertions, 220 deletions |
-| `src/pages/MemberManagement.jsx` | 413 insertions, 316 deletions |
+| `src/pages/MemberManagement.jsx`   | 413 insertions, 316 deletions |
 
 ## Detailed Diff Analysis
+
 **memberService.js:**
+
 - Removed `readJson`, `writeJson`, `sanitizeString` imports
 - Added `prisma` import
 - Removed `USERS_FILE`, `LEGACY_MEMBERS_FILE` constants
@@ -25,6 +29,7 @@ Split commit: (1) migrates `memberService.js` from JSON file storage (`users.jso
 - All function signatures preserved for API compatibility
 
 **MemberManagement.jsx:**
+
 - New components: `classNames()`, `badgeClass()`, `createBlankMatrix()`, `PermissionChips`, `Modal` (redesigned with header/footer), `InfoCard`
 - New imports: lucide icons, `forwardRef`, `useRef`
 - Modal redesigned with border, backdrop blur, close button, scrollable content
@@ -34,16 +39,21 @@ Split commit: (1) migrates `memberService.js` from JSON file storage (`users.jso
 - Overall layout uses the same gradient + frosted-glass pattern as other refactored pages
 
 ## Why This Change
+
 Part of the ongoing migration from JSON file storage to Prisma/PostgreSQL. The old `members.json`/`users.json` approach was not scalable and lacked transactional integrity.
 
 ## Was It Useful
+
 Yes — critical infrastructure migration. Prisma provides type safety, migrations, and transactional guarantees.
 
 ## Impact Analysis
+
 **High.** Backend data storage migration for the entire member management system. All CRUD operations now go through PostgreSQL. Risk of data loss if migration is not handled carefully (legacy JSON files still exist but are no longer written to).
 
 ## Relationships
+
 Final commit in this batch. Major infrastructure migration combined with visual refactor. Part of the broader JSON-to-Prisma migration effort.
 
 ## Confidence Notes
+
 Medium-high — large diff with significant backend changes. Functions preserved but storage backend completely replaced. The legacy JSON files remain as readonly fallbacks.

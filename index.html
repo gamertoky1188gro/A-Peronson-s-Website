@@ -5,7 +5,10 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="GarTexHub — The global marketplace connecting textile and garment buyers with verified factories, buying houses, and suppliers. Source products, post requirements, and manage your textile supply chain." />
+    <meta
+      name="description"
+      content="GarTexHub — The global marketplace connecting textile and garment buyers with verified factories, buying houses, and suppliers. Source products, post requirements, and manage your textile supply chain."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,55 +21,251 @@
       document.getElementById("gfont-preload").rel = "stylesheet";
     </script>
     <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap"
+      />
     </noscript>
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; frame-src 'self' blob: data: https://view.officeapps.live.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http://localhost:4000 http://127.0.0.1:4000 https://api.dicebear.com; connect-src 'self' http://localhost:4000 http://127.0.0.1:4000 ws://localhost:4000 ws://127.0.0.1:4000 ws://localhost:5173 ws://127.0.0.1:5173 https://accounts.google.com wss://*.cloudshell.dev https://ssh.cloud.google.com ws: wss:;"
     />
     <script>
-      (function() {
+      (function () {
         var theme = localStorage.getItem("theme");
-        if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        if (
+          theme === "dark" ||
+          (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)
+        ) {
           document.documentElement.classList.add("dark");
         }
       })();
     </script>
-    <style>html,body,#root{overflow-x:hidden!important;max-width:100vw!important;width:100%}</style>
+    <style>
+      html,
+      body,
+      #root {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        width: 100%;
+      }
+    </style>
     <title>GarTexHub</title>
   </head>
   <body>
     <div id="root">
-      <div id="root-loading" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#050212;background:radial-gradient(circle at center,#150833 0%,#050212 60%);flex-direction:column;gap:1.5rem;color:#94a3b8;font-family:sans-serif;font-size:0.875rem">
+      <div
+        id="root-loading"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          background: #050212;
+          background: radial-gradient(
+            circle at center,
+            #150833 0%,
+            #050212 60%
+          );
+          flex-direction: column;
+          gap: 1.5rem;
+          color: #94a3b8;
+          font-family: sans-serif;
+          font-size: 0.875rem;
+        "
+      >
         <div class="na-container">
           <div class="na-core"></div>
-          <div class="na-ring na-ring-1"><div class="na-particle na-particle-1"></div></div>
-          <div class="na-ring na-ring-2"><div class="na-particle na-particle-2"></div></div>
-          <div class="na-ring na-ring-3"><div class="na-particle na-particle-3"></div></div>
+          <div class="na-ring na-ring-1">
+            <div class="na-particle na-particle-1"></div>
+          </div>
+          <div class="na-ring na-ring-2">
+            <div class="na-particle na-particle-2"></div>
+          </div>
+          <div class="na-ring na-ring-3">
+            <div class="na-particle na-particle-3"></div>
+          </div>
         </div>
         <p class="na-text">Loading GarTexHub...</p>
       </div>
       <style>
-        .na-container{position:relative;width:120px;height:120px;perspective:800px;transform-style:preserve-3d;animation:na-float 3s ease-in-out infinite alternate}
-        .na-core{position:absolute;inset:0;margin:auto;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ff00ff,#8a2be2);z-index:10;animation:na-pulse 1.5s ease-in-out infinite alternate}
-        .na-ring{position:absolute;inset:0;margin:auto;width:106px;height:106px;border-radius:50%;border:1px solid rgba(255,255,255,0.05);transform-style:preserve-3d}
-        .na-particle{position:absolute;width:10px;height:10px;border-radius:50%;top:-5px;left:0;right:0;margin:0 auto;transform-origin:50% 50% 0}
-        .na-ring-1{border-color:rgba(0,255,255,0.3);box-shadow:inset 0 0 10px rgba(0,255,255,0.2),0 0 10px rgba(0,255,255,0.2);transform:rotateY(70deg) rotateZ(20deg);animation:na-orbit1 3s linear infinite}
-        .na-particle-1{background:#00ffff;box-shadow:0 0 10px #00ffff,0 0 16px #00bfff,0 0 22px #fff;transform:rotateZ(-20deg) rotateY(-70deg);animation:na-particle1 3s linear infinite}
-        .na-ring-2{border-color:rgba(255,0,255,0.3);box-shadow:inset 0 0 10px rgba(255,0,255,0.2),0 0 10px rgba(255,0,255,0.2);transform:rotateY(60deg) rotateX(60deg) rotateZ(-30deg);animation:na-orbit2 3s linear infinite}
-        .na-particle-2{background:#ff00ff;box-shadow:0 0 10px #ff00ff,0 0 16px #8a2be2,0 0 22px #fff;transform:rotateZ(30deg) rotateX(-60deg) rotateY(-60deg);animation:na-particle2 3s linear infinite}
-        .na-ring-3{border-color:rgba(0,191,255,0.3);box-shadow:inset 0 0 10px rgba(0,191,255,0.2),0 0 10px rgba(0,191,255,0.2);transform:rotateY(-60deg) rotateX(60deg) rotateZ(100deg);animation:na-orbit3 3s linear infinite}
-        .na-particle-3{background:#00bfff;box-shadow:0 0 10px #00bfff,0 0 16px #0040ff,0 0 22px #fff;transform:rotateZ(-100deg) rotateX(-60deg) rotateY(60deg);animation:na-particle3 3s linear infinite}
-        .na-text{text-transform:uppercase;letter-spacing:.1em;animation:na-pulse-text 2s ease-in-out infinite}
-        @keyframes na-float{0%{transform:translateY(-10px) rotateX(5deg) rotateY(5deg)}100%{transform:translateY(10px) rotateX(-5deg) rotateY(-5deg)}}
-        @keyframes na-pulse{0%{transform:scale(.9);box-shadow:0 0 10px #ff00ff,0 0 20px #8a2be2,0 0 30px #0040ff}100%{transform:scale(1.1);box-shadow:0 0 16px #ff00ff,0 0 32px #8a2be2,0 0 50px #00ffff}}
-        @keyframes na-pulse-text{0%,100%{opacity:.7}50%{opacity:1}}
-        @keyframes na-orbit1{0%{transform:rotateY(70deg) rotateZ(20deg)}100%{transform:rotateY(70deg) rotateZ(380deg)}}
-        @keyframes na-particle1{0%{transform:rotateZ(-20deg) rotateY(-70deg)}100%{transform:rotateZ(-380deg) rotateY(-70deg)}}
-        @keyframes na-orbit2{0%{transform:rotateY(60deg) rotateX(60deg) rotateZ(-30deg)}100%{transform:rotateY(60deg) rotateX(60deg) rotateZ(330deg)}}
-        @keyframes na-particle2{0%{transform:rotateZ(30deg) rotateX(-60deg) rotateY(-60deg)}100%{transform:rotateZ(-330deg) rotateX(-60deg) rotateY(-60deg)}}
-        @keyframes na-orbit3{0%{transform:rotateY(-60deg) rotateX(60deg) rotateZ(100deg)}100%{transform:rotateY(-60deg) rotateX(60deg) rotateZ(460deg)}}
-        @keyframes na-particle3{0%{transform:rotateZ(-100deg) rotateX(-60deg) rotateY(60deg)}100%{transform:rotateZ(-460deg) rotateX(-60deg) rotateY(60deg)}}
+        .na-container {
+          position: relative;
+          width: 120px;
+          height: 120px;
+          perspective: 800px;
+          transform-style: preserve-3d;
+          animation: na-float 3s ease-in-out infinite alternate;
+        }
+        .na-core {
+          position: absolute;
+          inset: 0;
+          margin: auto;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: radial-gradient(circle at 30% 30%, #ff00ff, #8a2be2);
+          z-index: 10;
+          animation: na-pulse 1.5s ease-in-out infinite alternate;
+        }
+        .na-ring {
+          position: absolute;
+          inset: 0;
+          margin: auto;
+          width: 106px;
+          height: 106px;
+          border-radius: 50%;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          transform-style: preserve-3d;
+        }
+        .na-particle {
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          top: -5px;
+          left: 0;
+          right: 0;
+          margin: 0 auto;
+          transform-origin: 50% 50% 0;
+        }
+        .na-ring-1 {
+          border-color: rgba(0, 255, 255, 0.3);
+          box-shadow:
+            inset 0 0 10px rgba(0, 255, 255, 0.2),
+            0 0 10px rgba(0, 255, 255, 0.2);
+          transform: rotateY(70deg) rotateZ(20deg);
+          animation: na-orbit1 3s linear infinite;
+        }
+        .na-particle-1 {
+          background: #00ffff;
+          box-shadow:
+            0 0 10px #00ffff,
+            0 0 16px #00bfff,
+            0 0 22px #fff;
+          transform: rotateZ(-20deg) rotateY(-70deg);
+          animation: na-particle1 3s linear infinite;
+        }
+        .na-ring-2 {
+          border-color: rgba(255, 0, 255, 0.3);
+          box-shadow:
+            inset 0 0 10px rgba(255, 0, 255, 0.2),
+            0 0 10px rgba(255, 0, 255, 0.2);
+          transform: rotateY(60deg) rotateX(60deg) rotateZ(-30deg);
+          animation: na-orbit2 3s linear infinite;
+        }
+        .na-particle-2 {
+          background: #ff00ff;
+          box-shadow:
+            0 0 10px #ff00ff,
+            0 0 16px #8a2be2,
+            0 0 22px #fff;
+          transform: rotateZ(30deg) rotateX(-60deg) rotateY(-60deg);
+          animation: na-particle2 3s linear infinite;
+        }
+        .na-ring-3 {
+          border-color: rgba(0, 191, 255, 0.3);
+          box-shadow:
+            inset 0 0 10px rgba(0, 191, 255, 0.2),
+            0 0 10px rgba(0, 191, 255, 0.2);
+          transform: rotateY(-60deg) rotateX(60deg) rotateZ(100deg);
+          animation: na-orbit3 3s linear infinite;
+        }
+        .na-particle-3 {
+          background: #00bfff;
+          box-shadow:
+            0 0 10px #00bfff,
+            0 0 16px #0040ff,
+            0 0 22px #fff;
+          transform: rotateZ(-100deg) rotateX(-60deg) rotateY(60deg);
+          animation: na-particle3 3s linear infinite;
+        }
+        .na-text {
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          animation: na-pulse-text 2s ease-in-out infinite;
+        }
+        @keyframes na-float {
+          0% {
+            transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+          }
+          100% {
+            transform: translateY(10px) rotateX(-5deg) rotateY(-5deg);
+          }
+        }
+        @keyframes na-pulse {
+          0% {
+            transform: scale(0.9);
+            box-shadow:
+              0 0 10px #ff00ff,
+              0 0 20px #8a2be2,
+              0 0 30px #0040ff;
+          }
+          100% {
+            transform: scale(1.1);
+            box-shadow:
+              0 0 16px #ff00ff,
+              0 0 32px #8a2be2,
+              0 0 50px #00ffff;
+          }
+        }
+        @keyframes na-pulse-text {
+          0%,
+          100% {
+            opacity: 0.7;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        @keyframes na-orbit1 {
+          0% {
+            transform: rotateY(70deg) rotateZ(20deg);
+          }
+          100% {
+            transform: rotateY(70deg) rotateZ(380deg);
+          }
+        }
+        @keyframes na-particle1 {
+          0% {
+            transform: rotateZ(-20deg) rotateY(-70deg);
+          }
+          100% {
+            transform: rotateZ(-380deg) rotateY(-70deg);
+          }
+        }
+        @keyframes na-orbit2 {
+          0% {
+            transform: rotateY(60deg) rotateX(60deg) rotateZ(-30deg);
+          }
+          100% {
+            transform: rotateY(60deg) rotateX(60deg) rotateZ(330deg);
+          }
+        }
+        @keyframes na-particle2 {
+          0% {
+            transform: rotateZ(30deg) rotateX(-60deg) rotateY(-60deg);
+          }
+          100% {
+            transform: rotateZ(-330deg) rotateX(-60deg) rotateY(-60deg);
+          }
+        }
+        @keyframes na-orbit3 {
+          0% {
+            transform: rotateY(-60deg) rotateX(60deg) rotateZ(100deg);
+          }
+          100% {
+            transform: rotateY(-60deg) rotateX(60deg) rotateZ(460deg);
+          }
+        }
+        @keyframes na-particle3 {
+          0% {
+            transform: rotateZ(-100deg) rotateX(-60deg) rotateY(60deg);
+          }
+          100% {
+            transform: rotateZ(-460deg) rotateX(-60deg) rotateY(60deg);
+          }
+        }
       </style>
     </div>
     <script type="module" src="./src/main.jsx"></script>

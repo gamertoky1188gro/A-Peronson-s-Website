@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import PasswordStrengthBar from "react-password-strength-bar";
 import PasswordChecklist from "react-password-checklist";
 import NeonAtom from "../../components/ui/NeonAtom";
-import { ThreeDot } from 'react-loading-indicators';
+import { ThreeDot } from "react-loading-indicators";
 import {
   apiRequest,
   getCurrentUser,
@@ -173,7 +173,8 @@ export default function Signup() {
   usePageMeta({
     title: "Create Account — GarTexHub",
     type: "website",
-    description: "Join GarTexHub — the B2B sourcing platform for garments and textiles. Create your account as a buyer, factory, or buying house.",
+    description:
+      "Join GarTexHub — the B2B sourcing platform for garments and textiles. Create your account as a buyer, factory, or buying house.",
     siteName: "GarTexHub",
     locale: "en_US",
   });
@@ -485,21 +486,32 @@ export default function Signup() {
                         </button>
                       </div>
                       {password && (
-                      <>
-                        <PasswordStrengthBar
-                          password={password}
-                          minLength={8}
-                          maxLength={32}
-                        />
-                        <PasswordChecklist
-                          value={password}
-                          valueAgain={confirmPassword}
-                          minLength={8}
-                          maxLength={32}
-                          rules={["minLength", "maxLength", "specialChar", "number", "capital", "letter", "lowercase", "match", "notEmpty", "noSpaces"]}
-                        />
-                      </>
-                    )}
+                        <>
+                          <PasswordStrengthBar
+                            password={password}
+                            minLength={8}
+                            maxLength={32}
+                          />
+                          <PasswordChecklist
+                            value={password}
+                            valueAgain={confirmPassword}
+                            minLength={8}
+                            maxLength={32}
+                            rules={[
+                              "minLength",
+                              "maxLength",
+                              "specialChar",
+                              "number",
+                              "capital",
+                              "letter",
+                              "lowercase",
+                              "match",
+                              "notEmpty",
+                              "noSpaces",
+                            ]}
+                          />
+                        </>
+                      )}
                     </div>
                   </FieldShell>
 
@@ -603,7 +615,10 @@ export default function Signup() {
                       required
                     />
                     {countryOpen ? (
-                      <div data-lenis-prevent className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
+                      <div
+                        data-lenis-prevent
+                        className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]"
+                      >
                         {filteredCountries.length ? (
                           filteredCountries.map((item) => (
                             <button
@@ -655,7 +670,10 @@ export default function Signup() {
                     </button>
 
                     {positionOpen ? (
-                      <div data-lenis-prevent className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
+                      <div
+                        data-lenis-prevent
+                        className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]"
+                      >
                         {POSITIONS.map((item) => (
                           <button
                             key={item}
@@ -687,7 +705,17 @@ export default function Signup() {
                   className="group relative mt-2 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-400 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_40px_rgba(14,165,233,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_60px_rgba(14,165,233,0.45)] disabled:opacity-60"
                 >
                   <span className="relative z-10">
-                    {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Create account"}
+                    {loading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      "Create account"
+                    )}
                   </span>
                   <span className="absolute inset-0 translate-x-[-120%] bg-white/20 transition-transform duration-700 group-hover:translate-x-[120%]" />
                 </button>

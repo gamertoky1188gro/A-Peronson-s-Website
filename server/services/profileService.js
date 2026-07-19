@@ -42,9 +42,16 @@ function cleanUserPublic(user) {
 }
 
 const BRAND_FIELDS = [
-  "brand_name", "brand_logo_url", "brand_tagline", "brand_website",
-  "brand_cover_url", "brand_color", "brand_accent",
-  "account_manager_name", "account_manager_email", "account_manager_phone",
+  "brand_name",
+  "brand_logo_url",
+  "brand_tagline",
+  "brand_website",
+  "brand_cover_url",
+  "brand_color",
+  "brand_accent",
+  "account_manager_name",
+  "account_manager_email",
+  "account_manager_phone",
 ];
 
 function extendProfileForOwner(profile, user) {
@@ -128,7 +135,11 @@ export async function getProfileOverview(viewerId, profileUserId) {
 
   const effectivePlan = await getPlanForUser(user);
 
-  if (effectivePlan === "premium" && user.role === "agent" && !safeUser.verified) {
+  if (
+    effectivePlan === "premium" &&
+    user.role === "agent" &&
+    !safeUser.verified
+  ) {
     safeUser.verified = true;
   }
 
@@ -247,10 +258,7 @@ export async function getProfilePartnerNetworkSummary(viewerId, profileUserId) {
     prisma.partnerRequest.findMany({
       where: {
         status: "connected",
-        OR: [
-          { requester_id: profileUserId },
-          { target_id: profileUserId },
-        ],
+        OR: [{ requester_id: profileUserId }, { target_id: profileUserId }],
       },
     }),
     prisma.user.findMany(),

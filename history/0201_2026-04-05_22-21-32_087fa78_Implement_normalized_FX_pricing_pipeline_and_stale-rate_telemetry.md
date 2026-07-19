@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 087fa7841c27fe619be75046a0ec0a06f63a86eb
 - **Parent:** 6001ca352351de033f851843145bd175af9e2df3
 - **Author:** Cyber Code Master
@@ -6,33 +7,37 @@
 - **Message:** Implement normalized FX pricing pipeline and stale-rate telemetry
 
 ## Custom Title
+
 Implement normalized FX pricing pipeline and stale-rate telemetry
 
 ## High-Level Summary
+
 Implement normalized FX pricing pipeline and stale-rate telemetry
 
- 10 files changed, 286 insertions(+), 122 deletions(-)
+10 files changed, 286 insertions(+), 122 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 087fa7841c27fe619be75046a0ec0a06f63a86eb
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Sun Apr 5 22:21:32 2026 +0600
+Date: Sun Apr 5 22:21:32 2026 +0600
 
     Implement normalized FX pricing pipeline and stale-rate telemetry
 
- prisma/schema.prisma                              |  22 ++-
- server/controllers/productController.js           |   7 +-
- server/controllers/requirementController.js       |   7 +-
- server/server.js                                  |   9 +-
- server/services/__tests__/currencyService.test.js |  30 +++-
- server/services/analyticsService.js               |  13 +-
- server/services/currencyService.js                | 202 ++++++++++++++++------
- server/services/openSearchService.js              |  40 ++---
- server/services/productService.js                 |  39 +++--
- server/services/requirementService.js             |  39 +++--
- 10 files changed, 286 insertions(+), 122 deletions(-)
+prisma/schema.prisma | 22 ++-
+server/controllers/productController.js | 7 +-
+server/controllers/requirementController.js | 7 +-
+server/server.js | 9 +-
+server/services/**tests**/currencyService.test.js | 30 +++-
+server/services/analyticsService.js | 13 +-
+server/services/currencyService.js | 202 ++++++++++++++++------
+server/services/openSearchService.js | 40 ++---
+server/services/productService.js | 39 +++--
+server/services/requirementService.js | 39 +++--
+10 files changed, 286 insertions(+), 122 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/schema.prisma b/prisma/schema.prisma
 index 0c5832a..aea6bdc 100644
@@ -68,7 +73,7 @@ index 0c5832a..aea6bdc 100644
    fabric_gsm             String?
 @@ -192,10 +198,10 @@ model FxRate {
  }
- 
+
  model CurrencyConfig {
 -  id                   String @id @default("default")
 -  defaultBaseCurrency  String @default("USD")
@@ -78,7 +83,7 @@ index 0c5832a..aea6bdc 100644
 +  baseCurrency           String   @default("USD")
 +  staleToleranceMinutes  Int      @default(1440)
 +  updatedAt              DateTime @updatedAt
- 
+
    @@map("currency_config")
  }
 diff --git a/server/controllers/productController.js b/server/controllers/productController.js
@@ -128,10 +133,10 @@ index 5025c1d..7b16632 100644
 -import { refreshRates } from './services/currencyService.js'
 +import { getFxHealth, refreshRates } from './services/currencyService.js'
  import { startEventQualityReporter } from './services/eventIngestionService.js'
- 
+
  const app = express()
  const PORT = process.env.PORT || 4000
- 
+
  const FX_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 +refreshRates().catch(() => null)
  setInterval(() => {
@@ -139,7 +144,7 @@ index 5025c1d..7b16632 100644
  }, FX_REFRESH_INTERVAL_MS).unref()
 @@ -92,7 +93,11 @@ if (serveDist && fs.existsSync(distRoot)) {
  app.use('/api', requestLogger({ timeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 45000) }))
- 
+
  app.get('/api/health', (req, res) => {
 -  res.json({ ok: true, service: 'textile-trust-verification-mvp' })
 +  res.json({
@@ -155,7 +160,7 @@ index 5543490..e96eb9f 100644
 --- a/server/services/__tests__/currencyService.test.js
 +++ b/server/services/__tests__/currencyService.test.js
 @@ -5,7 +5,7 @@ import { getRate, normalizeMoney } from '../currencyService.js'
- 
+
  function withMockedPrisma({ currencyConfig, fxRate, upsertImpl } = {}) {
    prisma.currencyConfig = {
 -    findFirst: async () => currencyConfig || { defaultBaseCurrency: 'USD', staleThresholdHours: 24 },
@@ -166,7 +171,7 @@ index 5543490..e96eb9f 100644
 @@ -13,7 +13,7 @@ function withMockedPrisma({ currencyConfig, fxRate, upsertImpl } = {}) {
    }
  }
- 
+
 -test('normalizeMoney converts from quote currency to base currency using latest FX', async () => {
 +test('normalizeMoney converts from quote currency to base currency using live FX', async () => {
    withMockedPrisma({ fxRate: null })
@@ -177,10 +182,10 @@ index 5543490..e96eb9f 100644
    assert.equal(converted.currency_from, 'EUR')
    assert.equal(converted.fx_stale, false)
 +  assert.equal(converted.warning, null)
- 
+
    global.fetch = originalFetch
  })
- 
+
 -test('getRate falls back to stale cached rate when provider fails', async () => {
 +test('getRate marks cached entry stale when expired', async () => {
    withMockedPrisma({
@@ -191,13 +196,13 @@ index 5543490..e96eb9f 100644
        fetchedAt: new Date('2026-03-01T00:00:00.000Z'),
        expiresAt: new Date('2026-03-02T00:00:00.000Z'),
 @@ -44,13 +45,30 @@ test('getRate falls back to stale cached rate when provider fails', async () =>
- 
+
    const originalFetch = global.fetch
    global.fetch = async () => {
 -    throw new Error('network_down')
 +    throw new Error('provider_down')
    }
- 
+
    const rate = await getRate('USD', 'GBP')
 -  assert.equal(rate.rate, 0.9)
 +  assert.equal(rate.rate, 0.92)
@@ -220,7 +225,7 @@ index 5543490..e96eb9f 100644
 +  assert.equal(converted.amount, null)
 +  assert.equal(converted.fx_stale, true)
 +  assert.equal(converted.warning?.code, 'fx_rate_unavailable')
- 
+
    global.fetch = originalFetch
  })
 diff --git a/server/services/analyticsService.js b/server/services/analyticsService.js
@@ -230,7 +235,7 @@ index e3c023e..bd3f1ca 100644
 @@ -126,6 +126,15 @@ function bucketNormalizedPrice(value) {
    return '50+'
  }
- 
+
 +function normalizedPriceForBucket(row = {}) {
 +  const min = Number(row?.priceBaseMin)
 +  const max = Number(row?.priceBaseMax)
@@ -246,15 +251,15 @@ index e3c023e..bd3f1ca 100644
 @@ -623,7 +632,7 @@ export async function getPlatformAnalytics(user) {
      byCountry[country][category] = (byCountry[country][category] || 0) + 1
      globalCategories[category] = (globalCategories[category] || 0) + 1
- 
+
 -    const bucket = bucketNormalizedPrice(req.priceNormalizedBase)
 +    const bucket = bucketNormalizedPrice(normalizedPriceForBucket(req))
      priceBuckets[bucket] = (priceBuckets[bucket] || 0) + 1
    }
- 
+
 @@ -793,7 +802,7 @@ export async function getPremiumInsights(user) {
      }, {})
- 
+
      const priceBuckets = myRequests.reduce((acc, r) => {
 -      const bucket = bucketNormalizedPrice(r.priceNormalizedBase)
 +      const bucket = bucketNormalizedPrice(normalizedPriceForBucket(r))
@@ -267,15 +272,15 @@ index 2c88d35..a26a85a 100644
 +++ b/server/services/currencyService.js
 @@ -2,12 +2,21 @@ import prisma from '../utils/prisma.js'
  import { readJson } from '../utils/jsonStore.js'
- 
+
  const DEFAULT_BASE = 'USD'
 -const DEFAULT_STALE_HOURS = 24
 +const DEFAULT_STALE_TOLERANCE_MINUTES = 24 * 60
  const FX_SOURCE = 'frankfurter'
  const HTTP_TIMEOUT_MS = 5000
- 
+
  const memoryRates = new Map()
- 
+
 +let fxHealth = {
 +  last_refresh_started_at: '',
 +  last_refresh_completed_at: '',
@@ -291,7 +296,7 @@ index 2c88d35..a26a85a 100644
 @@ -23,12 +32,13 @@ function parseNumberish(value) {
    return Number.isFinite(n) ? n : null
  }
- 
+
 -function parseFirstAmount(value) {
 -  const raw = String(value || '')
 -  const match = raw.match(/\d+(\.\d+)?/)
@@ -306,7 +311,7 @@ index 2c88d35..a26a85a 100644
 +  const max = parseNumberish(b)
 +  return { min, max }
  }
- 
+
  function isFuture(iso) {
 @@ -40,13 +50,16 @@ async function getCurrencyConfig() {
    try {
@@ -332,7 +337,7 @@ index 2c88d35..a26a85a 100644
 @@ -82,9 +95,9 @@ async function readCachedRate(base, quote) {
    }
  }
- 
+
 -async function persistRate(base, quote, rate, source, staleHours) {
 +async function persistRate(base, quote, rate, source, staleToleranceMinutes) {
    const fetchedAt = new Date()
@@ -348,7 +353,7 @@ index 2c88d35..a26a85a 100644
 +    warning: null,
    }
  }
- 
+
 -async function fetchLiveRate(base, quote, staleHours) {
 +async function fetchLiveRate(base, quote, staleToleranceMinutes) {
    const ctrl = new AbortController()
@@ -370,18 +375,18 @@ index 2c88d35..a26a85a 100644
 +      warning: null,
      }
    }
- 
+
    const cfg = await getCurrencyConfig()
 -  const staleHours = Math.max(1, Number(options.staleThresholdHours || cfg.staleThresholdHours || DEFAULT_STALE_HOURS))
 +  const staleToleranceMinutes = Math.max(
 +    1,
 +    Number(options.staleToleranceMinutes || cfg.staleToleranceMinutes || DEFAULT_STALE_TOLERANCE_MINUTES),
 +  )
- 
+
    const cached = await readCachedRate(normalizedBase, normalizedQuote)
 -  if (cached && !cached.stale) return { ...cached, fx_stale: false }
 +  if (cached && !cached.stale) return { ...cached, fx_stale: false, warning: null }
- 
+
    try {
 -    return await fetchLiveRate(normalizedBase, normalizedQuote, staleHours)
 +    return await fetchLiveRate(normalizedBase, normalizedQuote, staleToleranceMinutes)
@@ -415,7 +420,7 @@ index 2c88d35..a26a85a 100644
 +      warning: null,
 +    }
    }
- 
+
    const fromCurrency = toCurrency(from)
 @@ -188,6 +220,7 @@ export async function normalizeMoney(amount, from, toBase) {
        currency_from: fromCurrency,
@@ -424,7 +429,7 @@ index 2c88d35..a26a85a 100644
 +      warning: null,
      }
    }
- 
+
 @@ -199,6 +232,10 @@ export async function normalizeMoney(amount, from, toBase) {
        currency_from: fromCurrency,
        currency_base: baseCurrency,
@@ -435,7 +440,7 @@ index 2c88d35..a26a85a 100644
 +      },
      }
    }
- 
+
 @@ -209,59 +246,116 @@ export async function normalizeMoney(amount, from, toBase) {
      currency_from: fromCurrency,
      currency_base: baseCurrency,
@@ -457,13 +462,13 @@ index 2c88d35..a26a85a 100644
 +    warnings: [minConv.warning, maxConv.warning].filter(Boolean),
    }
  }
- 
+
  export async function getBaseCurrency() {
    const cfg = await getCurrencyConfig()
 -  return toCurrency(cfg.defaultBaseCurrency, DEFAULT_BASE)
 +  return toCurrency(cfg.baseCurrency, DEFAULT_BASE)
  }
- 
+
  export function extractOriginalPrice(payload = {}) {
 -  const currency = toCurrency(payload.currencyOriginal || payload.currency || payload.currency_original || DEFAULT_BASE)
 -  const direct = parseNumberish(payload.priceOriginal ?? payload.price)
@@ -482,7 +487,7 @@ index 2c88d35..a26a85a 100644
 +      currency,
 +    }
    }
- 
+
 -  const parsed = parseFirstAmount(payload.price_range || payload.priceRange || payload.target_price || payload.target_fob_price)
 +  const directSingle = parseNumberish(payload.priceOriginal ?? payload.price)
 +  if (Number.isFinite(directSingle)) {
@@ -502,7 +507,7 @@ index 2c88d35..a26a85a 100644
 +    currency,
    }
  }
- 
+
 +export function getFxHealth() {
 +  return { ...fxHealth }
 +}
@@ -532,14 +537,14 @@ index 2c88d35..a26a85a 100644
 +      const code = toCurrency(row?.currency || row?.currencyOriginal || row?.currency_original || '')
 +      if (code) currencies.add(code)
 +    })
- 
+
 -  const targets = [...currencies].filter((code) => code && code !== base)
 -  const refreshed = []
 -  let fx_stale = false
 +    const targets = [...currencies].filter((code) => code && code !== base)
 +    const refreshed = []
 +    let fx_stale = false
- 
+
 -  for (const quote of targets) {
 -    const entry = await getRate(base, quote)
 -    if (!entry) {
@@ -557,7 +562,7 @@ index 2c88d35..a26a85a 100644
 -    if (entry.fx_stale || entry.stale) fx_stale = true
 -    refreshed.push({ quote, rate: entry.rate, stale: Boolean(entry.fx_stale || entry.stale) })
 -  }
- 
+
 -  return {
 -    base,
 -    refreshed_count: refreshed.length,
@@ -612,7 +617,7 @@ index a672d95..ab4db70 100644
        base_currency: { type: 'keyword' },
 @@ -321,15 +317,15 @@ async function buildResponseTimeByOwner() {
  }
- 
+
  async function buildProductDoc(product, author = {}, responseMap = null) {
 -  const priceRange = parseRangeValue(product.price_range || '')
    const baseCurrency = await getBaseCurrency()
@@ -645,7 +650,7 @@ index a672d95..ab4db70 100644
      base_currency: baseCurrency,
 @@ -391,15 +385,15 @@ function shouldIndexProduct(product) {
  }
- 
+
  async function buildRequirementDoc(req, author = {}, responseMap = null) {
 -  const priceRange = parseRangeValue(req.price_range || req.target_price || '')
    const baseCurrency = await getBaseCurrency()
@@ -686,11 +691,11 @@ index e524cb1..75ff1c7 100644
  import { indexProduct, deleteProductIndex } from './openSearchService.js'
 -import { extractOriginalPrice, getBaseCurrency, normalizeMoney } from './currencyService.js'
 +import { extractOriginalPrice, getBaseCurrency, normalizePriceRange } from './currencyService.js'
- 
+
  const FILE = 'company_products.json'
  const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
 @@ -431,10 +431,18 @@ export async function createProduct(user, payload) {
- 
+
    const baseCurrency = await getBaseCurrency()
    const originalPrice = extractOriginalPrice(payload)
 -  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
@@ -709,11 +714,11 @@ index e524cb1..75ff1c7 100644
 +  row.priceBaseMin = normalizedPrice.priceBaseMin
 +  row.priceBaseMax = normalizedPrice.priceBaseMax
 +  row.priceNormalizedBase = normalizedPrice.priceBaseMin
- 
+
    // Trust & safety (project.md): strip outside-contact sharing / obscene content from descriptions.
    try {
 @@ -611,15 +619,24 @@ export async function updateProductById(actor, productId, patch = {}) {
- 
+
    const baseCurrency = await getBaseCurrency()
    const originalPrice = extractOriginalPrice({
 +    priceOriginalMin: patch.priceOriginalMin !== undefined ? patch.priceOriginalMin : existing.priceOriginalMin,
@@ -740,7 +745,7 @@ index e524cb1..75ff1c7 100644
 +  next.priceBaseMin = normalizedPrice.priceBaseMin
 +  next.priceBaseMax = normalizedPrice.priceBaseMax
 +  next.priceNormalizedBase = normalizedPrice.priceBaseMin
- 
+
    all[idx] = next
    await writeJson(FILE, all)
 diff --git a/server/services/requirementService.js b/server/services/requirementService.js
@@ -753,9 +758,9 @@ index 1100931..d0196b8 100644
  import { indexRequirement, deleteRequirementIndex } from './openSearchService.js'
 -import { extractOriginalPrice, getBaseCurrency, normalizeMoney } from './currencyService.js'
 +import { extractOriginalPrice, getBaseCurrency, normalizePriceRange } from './currencyService.js'
- 
+
  const FILE = 'requirements.json'
- 
+
 @@ -241,10 +241,18 @@ export async function createRequirement(buyerId, payload) {
    const requirement = normalizeRequirement(buyerId, payload)
    const baseCurrency = await getBaseCurrency()
@@ -780,7 +785,7 @@ index 1100931..d0196b8 100644
    if (plan === 'premium') {
      requirement.priority_tier = 'priority'
 @@ -408,15 +416,24 @@ export async function updateRequirement(requirementId, patch, actor) {
- 
+
    const baseCurrency = await getBaseCurrency()
    const originalPrice = extractOriginalPrice({
 +    priceOriginalMin: patch.priceOriginalMin !== undefined ? patch.priceOriginalMin : previous.priceOriginalMin,
@@ -807,23 +812,28 @@ index 1100931..d0196b8 100644
 +  next.priceBaseMin = normalizedPrice.priceBaseMin
 +  next.priceBaseMax = normalizedPrice.priceBaseMax
 +  next.priceNormalizedBase = normalizedPrice.priceBaseMin
- 
+
    assertRequiredFields({
      ...next,
 ```
 
 ## Why This Change
+
 Implement normalized FX pricing pipeline and stale-rate telemetry
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  10 files changed, 286 insertions(+), 122 deletions(-)
+
+- **Scope:** 10 files changed, 286 insertions(+), 122 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 201 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

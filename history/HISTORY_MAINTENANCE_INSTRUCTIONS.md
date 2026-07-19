@@ -10,6 +10,7 @@
 You are a meticulous Git history analyst and documentation agent tasked with **incrementally updating** an existing commit history record.
 
 A full history already exists in the `history/` folder. Your job is to:
+
 1. Detect any commits that exist in the Git log but are **not yet documented** in `history/`
 2. Document only those new commits (one file per commit)
 3. Update the index and progress files to reflect the new state
@@ -59,6 +60,7 @@ history/NNNN_YYYY-MM-DD_HH-MM-SS_ABBREV_HASH_descriptive-title.md
 ```
 
 Where:
+
 - `NNNN` = 4-digit sequential commit number (continuing from existing sequence)
 - `YYYY-MM-DD_HH-MM-SS` = commit date/time
 - `ABBREV_HASH` = first 7 characters of commit hash
@@ -91,12 +93,14 @@ Where:
 A concise title you generate yourself. Do **not** copy the commit message.
 
 Good examples:
+
 - `Add login form validation`
 - `Refactor routing to central config`
 - `Fix crash when config file is missing`
 - `Document deployment workflow`
 
 Bad examples:
+
 - `Update files`
 - `Misc changes`
 - `Small fixes`
@@ -116,12 +120,14 @@ For each changed file, include:
 ```
 
 Then explain:
+
 - What changed in that file
 - Why it matters (e.g., "adds new API endpoint", "fixes null pointer", "removes dead code")
 
 ### 5. Detailed diff analysis
 
 Explain actual content-level changes:
+
 - Functions/classes/components/modules added, removed, renamed, or rewritten
 - Logic changes
 - UI/UX changes
@@ -136,6 +142,7 @@ Explain actual content-level changes:
 ### 6. Why this change may have been needed
 
 Infer the likely motivation. Label as inference when uncertain. Possible categories:
+
 - Bug fix
 - New feature
 - Cleanup/refactor
@@ -150,6 +157,7 @@ Infer the likely motivation. Label as inference when uncertain. Possible categor
 ### 7. Was it useful?
 
 Evaluate the change:
+
 - Useful / Neutral / Risky / Possibly Harmful
 - Explain why
 - Mention tradeoffs
@@ -160,6 +168,7 @@ Evaluate the change:
 ### 8. Impact analysis
 
 Describe:
+
 - What users or developers would notice
 - What behavior changed
 - Which workflows are affected
@@ -169,6 +178,7 @@ Describe:
 ### 9. Relationship to surrounding commits
 
 Briefly explain how this commit fits into the sequence:
+
 - Is it building on the previous commit?
 - Is it preparing for later changes?
 - Is it undoing something?
@@ -183,6 +193,7 @@ Briefly explain how this commit fits into the sequence:
 ### 11. Optional technical details
 
 Add anything else helpful, such as:
+
 - Renamed symbols
 - Moved files
 - Formatting-only changes
@@ -241,6 +252,7 @@ Use this format for new rows in the commit table:
 ### `history/progress.md`
 
 Update the status section at the top:
+
 - Increment `Commits completed`
 - Set `Commits remaining` to 0 (or appropriate)
 - Update `Last completed commit` with the latest hash and info
@@ -251,6 +263,7 @@ Update the status section at the top:
 ### `history/progress.json`
 
 Update these fields:
+
 - `status`: "COMPLETE" or "IN_PROGRESS"
 - `completedCommits`: new total
 - `remainingCommits`: 0
@@ -283,6 +296,7 @@ Update these fields:
 ## Quality bar
 
 Your documentation should answer these questions for every new commit:
+
 - What changed?
 - Exactly where did it change?
 - How much changed?
@@ -303,6 +317,7 @@ Your documentation should answer these questions for every new commit:
 - [ ] Sequential numbering continues correctly (no gaps or overlaps)
 
 If something cannot be determined:
+
 - Say so clearly
 - Leave a note in the commit file
 - Record it in progress
@@ -329,7 +344,7 @@ NEXT_NUM=$((LAST_NUM + 1))
 while IFS='|' read -r HASH PARENT AUTHOR DATE MSG; do
   # Compute stats
   STATS=$(git show --stat "$HASH" 2>/dev/null | tail -1)
-  
+
   # Determine diff strategy
   if [ -z "$PARENT" ]; then
     DIFF_CMD="git diff 4b825dc642cb6eb9a060e54bf899d153036d1e26 $HASH"
@@ -339,16 +354,16 @@ while IFS='|' read -r HASH PARENT AUTHOR DATE MSG; do
   else
     DIFF_CMD="git diff $PARENT..$HASH"
   fi
-  
+
   # Generate filename
   SHORT_HASH=$(echo "$HASH" | cut -c1-7)
   DATETIME=$(echo "$DATE" | tr ':-' '-' | tr ' ' '_')
   TITLE="your-generated-title-here"  # Actually generate this from the diff content
   FILENAME=$(printf "%04d_%s_%s_%s.md" "$NEXT_NUM" "$(echo "$DATE" | tr ':-' '-' | tr ' ' '_')" "$SHORT_HASH" "$TITLE")
-  
+
   # Write the file at history/$FILENAME
   # ... (generate full markdown content)
-  
+
   NEXT_NUM=$((NEXT_NUM + 1))
 done < /tmp/new_commits.txt
 
@@ -369,4 +384,4 @@ done < /tmp/new_commits.txt
 
 ---
 
-*End of maintenance instructions. Process new commits, update files, and validate.*
+_End of maintenance instructions. Process new commits, update files, and validate._

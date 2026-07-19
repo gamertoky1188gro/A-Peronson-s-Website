@@ -1,1 +1,1967 @@
-import{b as ve,j as e,A as xe,m as $,n as Ne,r as i,g as me,k as ke,d as N,X as _e,a7 as Ce,L as he,o as Se,_ as Ae,ad as Re,ae as Ve,N as Me,$ as je,S as ee,l as qe,q as Te}from"./index-CNnTWoea.js";import{S as Le,a as Ie}from"./StaggerContainer-WchD9d0t.js";import{r as Pe}from"./leadSource-DB88KSZe.js";import{C as De}from"./chevron-left-BY_MYCfP.js";import{S as Ee}from"./sparkles-DVBGTjg1.js";import{F as $e}from"./factory-dwBkODaa.js";import{S as we}from"./shield-alert-CHc_BoYT.js";import{H as Ue}from"./history-CWEmmOuB.js";const Be={hidden:{opacity:0},visible:{opacity:1}},Oe={hidden:{opacity:0,scale:.92,y:20},visible:{opacity:1,scale:1,y:0,transition:{type:"spring",stiffness:350,damping:28,mass:.6}},exit:{opacity:0,scale:.95,y:10,transition:{duration:.2,ease:"easeIn"}}},Qe={hidden:{x:"100%"},visible:{x:0,transition:{type:"spring",stiffness:300,damping:28}},exit:{x:"100%",transition:{duration:.2,ease:"easeIn"}}};function ze({open:t,onClose:l,children:s,className:o="",variant:y="center",overlay:g=!0}){if(ve())return t?e.jsxs("div",{className:"fixed inset-0 z-50 flex items-center justify-center",children:[g&&e.jsx("div",{className:"absolute inset-0 bg-black/50",onClick:l}),e.jsx("div",{className:`relative ${o}`,children:s})]}):null;const u=y==="right"?Qe:Oe;return e.jsx(xe,{children:t&&e.jsxs("div",{className:"fixed inset-0 z-50 flex items-center justify-center",children:[g&&e.jsx($.div,{className:"absolute inset-0 bg-black/50",variants:Be,initial:"hidden",animate:"visible",exit:"hidden",onClick:l}),e.jsx($.div,{className:`relative ${o}`,variants:u,initial:"hidden",animate:"visible",exit:"exit",children:s})]})})}function Fe(t,l){if(!l)return"/feed";const s=String(t||"").toLowerCase();return s==="buyer"?`/buyer/${encodeURIComponent(l)}`:s==="buying_house"?`/buying-house/${encodeURIComponent(l)}`:`/factory/${encodeURIComponent(l)}`}function He({open:t,onClose:l,item:s,onViewed:o}){var C,ne,F,oe,q,H,ie,de,k,T,w,G,W,X,Y,J,K,Z;const y=Ne(),g=i.useMemo(()=>me(),[]),c=i.useMemo(()=>ke(),[]),u=i.useRef({productId:"",recorded:!1}),[b,v]=i.useState(""),[te,L]=i.useState(""),[A,R]=i.useState(0),m=((C=s==null?void 0:s.product)==null?void 0:C.id)||(s==null?void 0:s.id)||"",U=(s==null?void 0:s.company_id)||((ne=s==null?void 0:s.product)==null?void 0:ne.company_id)||((F=s==null?void 0:s.author)==null?void 0:F.id)||"",h=(s==null?void 0:s.author)||((oe=s==null?void 0:s.product)==null?void 0:oe.author)||null,_=String((s==null?void 0:s.content_review_status)||((q=s==null?void 0:s.product)==null?void 0:q.content_review_status)||"").toLowerCase(),B=(s==null?void 0:s.content_review_reason)||((H=s==null?void 0:s.product)==null?void 0:H.content_review_reason)||"",ae=String((c==null?void 0:c.role)||"").toLowerCase(),V=!!(c!=null&&c.id)&&String(c.id)===String(U),O=ae==="agent"&&String((c==null?void 0:c.org_owner_id)||"")===String(U),re=_==="rejected"&&(V||O),Q=(Array.isArray(s==null?void 0:s.image_gallery)?s.image_gallery:Array.isArray((ie=s==null?void 0:s.product)==null?void 0:ie.image_gallery)?s.product.image_gallery:[]).map(a=>a==null?void 0:a.url).filter(Boolean),I=(s==null?void 0:s.cover_image_public_url)||(s==null?void 0:s.cover_image_url)||((de=s==null?void 0:s.product)==null?void 0:de.cover_image_public_url)||((k=s==null?void 0:s.product)==null?void 0:k.cover_image_url)||Q[0]||"";if(i.useEffect(()=>{if(!t||!m||(R(0),u.current.productId!==m&&(u.current={productId:m,recorded:!1}),u.current.recorded))return;let r=!0;return N(`/products/${encodeURIComponent(m)}/view`,{method:"POST",token:g}).then(()=>{r&&(u.current={productId:m,recorded:!0},o&&o())}).catch(d=>{r&&v(d.message||"Could not record view")}),()=>{r=!1}},[t,o,m,g]),!t)return null;function M(){u.current={productId:"",recorded:!1},v(""),L(""),l==null||l()}function le(){var r;const a=(h==null?void 0:h.name)||"company";m&&Pe({type:"product",id:m,label:(s==null?void 0:s.title)||((r=s==null?void 0:s.product)==null?void 0:r.title)||"Product"}),y("/chat",{state:{notice:`Contacting ${a}. If you are unverified, your first message may appear as a request.`}}),M()}async function x(){if(!g||!m)return;const a=window.prompt("Explain why this product should be approved:")||"";if(a.trim()){v(""),L("");try{await N("/reports/product-appeal",{method:"POST",token:g,body:{product_id:m,reason:a}}),L("Appeal submitted. Our team will review it shortly.")}catch(r){v(r.message||"Unable to submit appeal.")}}}const P=h!=null&&h.id?Fe(h.role,h.id):"",j=I?[I,...Q.filter(a=>a!==I)]:Q,ue=j[A]||"";function z(){R(a=>(a+1)%j.length)}function D(){R(a=>(a-1+j.length)%j.length)}return e.jsx(ze,{open:t,onClose:M,className:"w-[92vw] max-w-2xl overflow-hidden",children:e.jsxs("div",{className:"bg-white dark:bg-slate-950 rounded-2xl",children:[e.jsxs("header",{className:"flex items-center justify-between gap-3 px-5 py-4 shadow-dividerB dark:shadow-dividerBDark",children:[e.jsxs("div",{className:"min-w-0",children:[e.jsx("p",{className:"text-sm font-bold text-slate-900 truncate",children:(s==null?void 0:s.title)||((T=s==null?void 0:s.product)==null?void 0:T.title)||"Product"}),h?e.jsxs("p",{className:"text-[11px] text-slate-500 truncate",children:[h.name," ",h.verified?e.jsx("span",{className:"ml-1 font-bold text-[#0A66C2]",children:"Verified"}):null," ",h.country?`- ${h.country}`:""]}):null]}),e.jsx("button",{type:"button",onClick:M,className:"rounded-full p-2 hover:bg-slate-100","aria-label":"Close",children:e.jsx(_e,{size:18})})]}),e.jsxs("div",{className:"p-5 grid grid-cols-1 md:grid-cols-2 gap-4",children:[e.jsxs("div",{className:"rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4",children:[j.length>0?e.jsxs("div",{className:"relative mb-4",children:[e.jsx(xe,{mode:"wait",children:e.jsx($.div,{drag:"x",dragConstraints:{left:0,right:0},dragElastic:.2,onDragEnd:(a,r)=>{r.offset.x<-50&&z(),r.offset.x>50&&D()},initial:{opacity:0,x:60},animate:{opacity:1,x:0},exit:{opacity:0,x:-60},transition:{duration:.3,ease:[.16,1,.3,1]},className:"h-40 w-full rounded-xl overflow-hidden",children:e.jsx("img",{src:ue,alt:"Product",className:"h-full w-full object-cover pointer-events-none"})},A)}),j.length>1?e.jsxs(e.Fragment,{children:[e.jsx("button",{type:"button",onClick:D,className:"absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900",children:e.jsx(De,{className:"h-4 w-4"})}),e.jsx("button",{type:"button",onClick:z,className:"absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900",children:e.jsx(Ce,{className:"h-4 w-4"})}),e.jsxs("div",{className:"absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white",children:[A+1," / ",j.length]})]}):null]}):e.jsx("div",{className:"h-40 w-full rounded-xl bg-slate-200 mb-4"}),j.length>1?e.jsx("div",{className:"flex gap-2 mb-4 overflow-x-auto pb-1",children:j.map((a,r)=>e.jsx("button",{type:"button",onClick:()=>R(r),className:`shrink-0 h-10 w-10 rounded-lg overflow-hidden border-2 transition ${r===A?"border-sky-500":"border-transparent opacity-60 hover:opacity-100"}`,children:e.jsx("img",{src:a,alt:"",className:"h-full w-full object-cover"})},a))}):null,e.jsx("p",{className:"text-xs font-bold text-slate-700",children:"Details"}),e.jsxs("div",{className:"mt-3 space-y-2 text-sm text-slate-700",children:[e.jsxs("div",{className:"flex items-start justify-between gap-3",children:[e.jsx("span",{className:"text-slate-500 text-xs",children:"Category"}),e.jsx("span",{className:"font-semibold text-right",children:(s==null?void 0:s.category)||((w=s==null?void 0:s.product)==null?void 0:w.category)||"--"})]}),e.jsxs("div",{className:"flex items-start justify-between gap-3",children:[e.jsx("span",{className:"text-slate-500 text-xs",children:"Material"}),e.jsx("span",{className:"font-semibold text-right",children:(s==null?void 0:s.material)||((G=s==null?void 0:s.product)==null?void 0:G.material)||"--"})]}),e.jsxs("div",{className:"flex items-start justify-between gap-3",children:[e.jsx("span",{className:"text-slate-500 text-xs",children:"MOQ"}),e.jsx("span",{className:"font-semibold text-right",children:(s==null?void 0:s.moq)||((W=s==null?void 0:s.product)==null?void 0:W.moq)||"--"})]}),e.jsxs("div",{className:"flex items-start justify-between gap-3",children:[e.jsx("span",{className:"text-slate-500 text-xs",children:"Lead time"}),e.jsx("span",{className:"font-semibold text-right",children:(s==null?void 0:s.lead_time_days)||((X=s==null?void 0:s.product)==null?void 0:X.lead_time_days)||"--"})]})]}),(s!=null&&s.hasVideo||(Y=s==null?void 0:s.product)!=null&&Y.hasVideo)&&(s!=null&&s.video_url||(J=s==null?void 0:s.product)!=null&&J.video_url)?e.jsx("a",{href:(s==null?void 0:s.video_url)||((K=s==null?void 0:s.product)==null?void 0:K.video_url),target:"_blank",rel:"noreferrer",className:"mt-4 inline-block text-xs font-semibold text-[#0A66C2] hover:underline",children:"Open video link"}):null]}),e.jsxs("div",{className:"rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4",children:[e.jsx("p",{className:"text-xs font-bold text-slate-700",children:"Description"}),e.jsx("p",{className:"mt-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed",children:(s==null?void 0:s.description)||((Z=s==null?void 0:s.product)==null?void 0:Z.description)||"No description provided."}),re?e.jsxs("div",{className:"mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-rose-50 px-3 py-3",children:[e.jsx("p",{className:"text-xs font-semibold text-rose-900",children:"This product was rejected."}),e.jsx("p",{className:"mt-1 text-xs text-rose-700",children:B||"This product needs changes to meet content standards."}),e.jsx("button",{type:"button",onClick:x,className:"mt-3 w-full rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white",children:"If you think this is a mistake, report it for review"})]}):null,b?e.jsx("p",{className:"mt-3 text-xs text-rose-700",children:b}):null,te?e.jsx("p",{className:"mt-3 text-xs text-emerald-700",children:te}):null]})]}),e.jsxs("footer",{className:"px-5 py-4 shadow-dividerT dark:shadow-dividerTDark bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3",children:[e.jsx("div",{className:"text-[11px] text-slate-500",children:"Views are private and help you revisit items quickly."}),e.jsxs("div",{className:"flex gap-2",children:[P?e.jsx(he,{to:P,onClick:M,className:"rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50",children:"View company profile"}):null,e.jsx("button",{type:"button",onClick:le,className:"rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]",children:"Contact"})]})]})]})})}const Ge=[{key:"all",label:"All",icon:je},{key:"smart_search_match",label:"Search Matches",icon:Ee},{key:"partner_request",label:"Partner Requests",icon:$e},{key:"conversation_lock",label:"Conversation Locks",icon:we},{key:"rating_feedback_request",label:"Rating Requests",icon:we},{key:"system",label:"System",icon:je},{key:"viewed",label:"Viewed Products",icon:Ue}],We={smart_search_match:"Search Match",partner_request:"Connection Request",conversation_lock:"Conversation Lock",rating_feedback_request:"Rating Request",monthly_summary:"Monthly Summary",system:"System"};function Xe(t,l){return!t||!l?"/feed":`/feed?item=${encodeURIComponent(`${t}:${l}`)}`}function n(...t){return t.filter(Boolean).join(" ")}function S({children:t,tone:l="slate"}){const s={emerald:"bg-emerald-500/10 text-emerald-300 ring-emerald-400/20",blue:"bg-sky-500/10 text-sky-300 ring-sky-400/20",rose:"bg-rose-500/10 text-rose-300 ring-rose-400/20",amber:"bg-amber-500/10 text-amber-300 ring-amber-400/20",slate:"bg-slate-500/10 text-slate-300 ring-slate-400/20",sky:"bg-cyan-500/10 text-cyan-300 ring-cyan-400/20"};return e.jsx("span",{className:n("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1",s[l]||s.slate),children:t})}function E({children:t,variant:l="primary",onClick:s}){const o={primary:"bg-sky-500 text-white shadow-lg shadow-sky-500/20 hover:bg-sky-400",ghost:"bg-white/5 text-slate-200 ring-1 ring-white/10 hover:bg-white/10",danger:"bg-rose-500/10 text-rose-200 ring-1 ring-rose-500/20 hover:bg-rose-500/15",success:"bg-emerald-500/10 text-emerald-200 ring-1 ring-emerald-500/20 hover:bg-emerald-500/15"};return e.jsx("button",{onClick:s,className:n("inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-200 active:scale-[0.98]",o[l]),children:t})}function Ye(t){switch(t){case"smart_search_match":return"emerald";case"partner_request":return"blue";case"conversation_lock":return"rose";case"rating_feedback_request":return"amber";case"viewed":return"sky";default:return"slate"}}function os(){var W,X,Y,J,K,Z;const t=i.useMemo(()=>me(),[]),l=i.useMemo(()=>ke(),[]),s=ve(),{theme:o,setTheme:y,toggleTheme:g}=Se(),[c,u]=i.useState("all"),[b,v]=i.useState(!1),[te,L]=i.useState(!0),[A,R]=i.useState(""),[m,U]=i.useState(!0),[h,_]=i.useState([]),[B,ae]=i.useState([]),[V,O]=i.useState([]),[re,ye]=i.useState(0),[Q,I]=i.useState(null),[M,le]=i.useState(!1),[x,P]=i.useState(null),[j,ue]=i.useState(!0),z=i.useCallback(async()=>{if(t){L(!0),R("");try{const a=await N("/notifications",{token:t});_(Array.isArray(a)?a:[])}catch(a){R(a.message||"Failed to load notifications"),_([])}finally{L(!1)}}},[t]),D=i.useCallback(async()=>{if(t)try{const a=await N("/notifications/search-alerts",{token:t});ae(Array.isArray(a)?a:[])}catch{ae([])}},[t]),C=i.useCallback(async({reset:a})=>{if(!t)return;const r=a?0:re;le(!0);try{const d=await N(`/products/views/me?cursor=${r}&limit=10`,{token:t}),p=Array.isArray(d==null?void 0:d.items)?d.items:[];O(f=>a?p:[...f,...p]),ye(a?10:r+10),I((d==null?void 0:d.next_cursor)??null)}catch{a&&O([]),I(null)}finally{le(!1)}},[t,re]);i.useEffect(()=>{let a=!1,r=!1,d=!1;function p(){a&&r&&d&&ue(!1)}(async()=>{try{await z()}finally{a=!0,p()}})(),(async()=>{try{await D()}finally{r=!0,p()}})(),(async()=>{try{await Ae(me())}finally{d=!0,p()}})()},[D,z]),i.useEffect(()=>t?(Re(t),Ve(r=>{var d;r&&(r.type==="notification_created"&&((d=r.notification)!=null&&d.id)&&_(p=>p.some(pe=>String(pe==null?void 0:pe.id)===String(r.notification.id))?p:[r.notification,...p]),r.type==="notification_read"&&r.id&&_(p=>p.map(f=>String(f==null?void 0:f.id)===String(r.id)?{...f,read:!0}:f)))})):void 0,[t]),i.useEffect(()=>{c==="viewed"&&(V.length||C({reset:!0}))},[C,c,V.length]);async function ne(a){!t||!a||(await N(`/notifications/${encodeURIComponent(a)}/read`,{method:"PATCH",token:t}),_(r=>r.map(d=>String(d==null?void 0:d.id)===String(a)?{...d,read:!0}:d)))}async function F(a,r,d){!t||!a||(await N(`/partners/requests/${encodeURIComponent(a)}/${r}`,{method:"POST",token:t}),d&&(await N(`/notifications/${encodeURIComponent(d)}/read`,{method:"PATCH",token:t}),_(p=>p.map(f=>String(f==null?void 0:f.id)===String(d)?{...f,read:!0}:f))))}async function oe(a){!t||!a||(await N(`/notifications/search-alerts/${encodeURIComponent(a)}`,{method:"DELETE",token:t}),await D())}const q=i.useMemo(()=>h.filter(a=>b&&a.read?!1:c==="all"?a.type!=="viewed":c==="viewed"?!1:a.type===c),[h,c,b]),H=h.filter(a=>!a.read).length,ie=()=>{O(a=>[...a]),U(!0),window.setTimeout(()=>U(!1),1200),C({reset:!0})},de=o==="dark"?"bg-[#07111f] text-slate-100":"bg-gradient-to-br from-sky-50 via-white to-cyan-50 text-slate-900",k=o==="dark"?"bg-white/5 border-white/10 shadow-2xl shadow-black/20":"bg-white/75 border-sky-100 shadow-xl shadow-sky-100/50 backdrop-blur",T=o==="dark"?"bg-white/5":"bg-slate-900/5",w=o==="dark"?"text-slate-400":"text-slate-600",G=o==="dark"?"text-slate-300":"text-slate-700";return j?e.jsx(Me,{fill:!0}):e.jsxs("div",{className:n("min-h-screen transition-colors duration-500",de),children:[e.jsxs("div",{className:"mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8",children:[e.jsx("div",{className:"absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-500/20 via-cyan-400/10 to-transparent blur-3xl"}),e.jsxs("div",{className:n("overflow-hidden rounded-[28px] border p-5 sm:p-6 lg:p-8",k),children:[e.jsxs("div",{className:"flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between",children:[e.jsxs("div",{className:"flex-1",children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-3",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30",children:e.jsxs("svg",{viewBox:"0 0 24 24",className:"h-6 w-6 fill-none stroke-current stroke-[2]",children:[e.jsx("path",{d:"M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"}),e.jsx("path",{d:"M9 17a3 3 0 0 0 6 0"})]})}),e.jsxs("div",{children:[e.jsx("h1",{className:"text-3xl font-black tracking-tight sm:text-4xl",children:"Notifications"}),e.jsx("p",{className:n("mt-1 text-sm sm:text-base",w),children:"Smart search matches, system alerts, and your viewed history."})]}),e.jsxs("div",{className:"flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-200",children:[e.jsx("span",{className:n("h-2 w-2 rounded-full",m?"animate-pulse bg-emerald-400":"bg-sky-400")}),"Live updates enabled"]})]}),e.jsxs("div",{className:"mt-5 flex flex-wrap items-center gap-3",children:[e.jsxs("label",{className:n("inline-flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium",T,o==="dark"?"border-white/10":"border-sky-100"),children:[e.jsx("input",{type:"checkbox",checked:b,onChange:a=>v(a.target.checked),className:"h-4 w-4 rounded border-sky-400 text-sky-500 focus:ring-sky-400"}),e.jsx("span",{children:"Unread only"}),e.jsx("span",{className:"rounded-full bg-sky-500/10 px-2 py-0.5 text-xs text-sky-300",children:H})]}),e.jsxs("div",{className:"ml-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1 shadow-lg shadow-black/10",children:[e.jsx("button",{onClick:()=>y("dark"),className:n("rounded-xl px-4 py-2 text-sm font-semibold transition",o==="dark"?"bg-sky-500 text-white":"text-slate-400 hover:text-slate-200"),children:"Dark"}),e.jsx("button",{onClick:()=>y("light"),className:n("rounded-xl px-4 py-2 text-sm font-semibold transition",o==="light"?"bg-sky-500 text-white":"text-slate-400 hover:text-slate-200"),children:"Light"})]})]}),e.jsx("div",{className:"mt-5 flex flex-wrap gap-2",children:Ge.map(a=>{const r=c===a.key,d=a.icon;return e.jsx($.button,{type:"button",onClick:()=>u(a.key),whileTap:s?void 0:{scale:.98},className:n("inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200",r?"border-sky-400/40 bg-sky-500 text-white shadow-lg shadow-sky-500/20":n("border-white/10",T,"hover:bg-white/10",G)),children:e.jsxs("span",{className:"relative inline-flex items-center gap-2",children:[e.jsx(d,{size:16}),a.label]})},a.key)})})]}),e.jsxs("div",{className:n("w-full max-w-sm rounded-3xl border p-5",T,o==="dark"?"border-white/10":"border-sky-100"),children:[e.jsxs("div",{className:"flex items-center justify-between",children:[e.jsxs("div",{children:[e.jsx("div",{className:"text-sm font-semibold text-sky-300",children:"Real-time feed"}),e.jsx("div",{className:n("mt-1 text-xs",w),children:"WebSocket updates appear instantly at the top."})]}),e.jsx("div",{className:"rounded-2xl bg-sky-500/10 p-3 text-sky-300 ring-1 ring-sky-400/20",children:e.jsxs("svg",{viewBox:"0 0 24 24",className:"h-5 w-5 fill-none stroke-current stroke-[2]",children:[e.jsx("path",{d:"M5 12h14"}),e.jsx("path",{d:"M13 5l7 7-7 7"})]})})]}),e.jsxs("div",{className:"mt-4 grid grid-cols-3 gap-3",children:[e.jsx(fe,{label:"Unread",value:String(H)}),e.jsx(fe,{label:"Alerts",value:String(B.length)}),e.jsx(fe,{label:"Viewed",value:String(V.length)})]})]})]}),e.jsxs("div",{className:"mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]",children:[e.jsxs("div",{className:"space-y-6",children:[e.jsx(ee,{as:"section",children:e.jsxs("section",{className:n("rounded-[28px] border p-4 sm:p-5",k),children:[e.jsxs("div",{className:"mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",children:[e.jsxs("div",{children:[e.jsx("h2",{className:"text-xl font-bold",children:"Notifications feed"}),e.jsx("p",{className:n("mt-1 text-sm",w),children:c==="viewed"?"Showing viewed products history from Quick View.":"All notification types except Viewed Products are grouped here."})]}),e.jsxs("div",{className:n("rounded-2xl px-4 py-2 text-sm",T,w),children:["Showing ",q.length," item",q.length===1?"":"s"]})]}),e.jsx(Le,{className:"space-y-3",children:te?e.jsx(qe,{color:"#3b00ff",size:"large",style:{fontSize:"40px"},text:"",textColor:""}):A?e.jsx("div",{className:"text-sm text-rose-300",children:A}):q.length===0?e.jsx(be,{title:"No notifications found",description:"Try changing the tab or turning off the unread-only filter."}):e.jsx(xe,{mode:"popLayout",children:q.map(a=>e.jsx(Ie,{children:e.jsx(Je,{item:a,theme:o,user:l,onMarkRead:()=>ne(a.id),onAccept:()=>{var r;return F(((r=a==null?void 0:a.meta)==null?void 0:r.request_id)||a.entity_id,"accept",a.id)},onReject:()=>{var r;return F(((r=a==null?void 0:a.meta)==null?void 0:r.request_id)||a.entity_id,"reject",a.id)}})},a.id))})})]})}),e.jsx(xe,{mode:"wait",children:c==="viewed"&&e.jsx(ee,{as:"section",children:e.jsxs("section",{className:n("rounded-[28px] border p-4 sm:p-5",k),children:[e.jsxs("div",{className:"flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",children:[e.jsxs("div",{children:[e.jsxs("div",{className:"flex items-center gap-3",children:[e.jsx("h2",{className:"text-xl font-bold",children:"Viewed Products"}),e.jsx(S,{tone:"sky",children:"Private to you"})]}),e.jsx("p",{className:n("mt-1 text-sm",w),children:"Recorded on Quick View. This history helps you revisit products quickly."})]}),e.jsxs("button",{onClick:ie,className:"inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-2.5 text-sm font-semibold text-sky-200 transition hover:bg-sky-500/15",children:[e.jsxs("svg",{viewBox:"0 0 24 24",className:"h-4 w-4 fill-none stroke-current stroke-[2]",children:[e.jsx("path",{d:"M20 12a8 8 0 1 1-2.34-5.66"}),e.jsx("path",{d:"M20 4v6h-6"})]}),"Refresh"]})]}),e.jsx("div",{className:"mt-5 space-y-3",children:M?e.jsx(Te,{variant:"bounce",color:"#6100ff",size:"small",text:"",textColor:""}):V.length===0?e.jsx(be,{title:"No viewed products yet",description:"View products from the search page to see them here."}):V.map(a=>e.jsx(Ke,{product:a,theme:o,onQuickView:()=>P({...a.product,author:a.author})},a.id))}),Q!==null&&!M&&e.jsx("div",{className:"mt-5 flex justify-center",children:e.jsx("button",{onClick:()=>C({reset:!1}),className:"rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400",children:"Load more"})})]})})})]}),e.jsxs("aside",{className:"space-y-6",children:[e.jsx(ee,{as:"section",children:e.jsxs("section",{className:n("rounded-[28px] border p-4 sm:p-5",k),children:[e.jsxs("div",{className:"flex items-start justify-between gap-3",children:[e.jsxs("div",{children:[e.jsx("h3",{className:"text-lg font-bold",children:"Saved Search Alerts"}),e.jsx("p",{className:n("mt-1 text-sm",w),children:"These power smart notifications for new matching posts."})]}),e.jsx(S,{tone:"blue",children:"Active"})]}),e.jsx("div",{className:"mt-4 space-y-3",children:B.length===0?e.jsx(be,{title:"No saved alerts yet.",description:"Save an alert from the search page.",compact:!0}):B.map(a=>e.jsxs("div",{className:n("flex items-center justify-between gap-4 rounded-2xl border p-4",o==="dark"?"border-white/10 bg-white/5":"border-sky-100 bg-white/80"),children:[e.jsxs("div",{children:[e.jsx("div",{className:"font-semibold text-slate-100 dark:text-slate-900",children:a.query}),e.jsxs("div",{className:n("mt-1 text-xs",w),children:["Updated"," ",new Date(a.updated_at||a.created_at).toLocaleDateString()]})]}),e.jsx("button",{onClick:()=>oe(a.id),className:"rounded-xl p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300","aria-label":"Delete alert",children:e.jsxs("svg",{viewBox:"0 0 24 24",className:"h-4 w-4 fill-none stroke-current stroke-[2]",children:[e.jsx("path",{d:"M3 6h18"}),e.jsx("path",{d:"M8 6V4h8v2"}),e.jsx("path",{d:"M6 6l1 14h10l1-14"}),e.jsx("path",{d:"M10 11v5"}),e.jsx("path",{d:"M14 11v5"})]})})]},a.id))})]})}),e.jsx(ee,{as:"section",children:e.jsxs("section",{className:n("rounded-[28px] border p-4 sm:p-5",k),children:[e.jsx("h3",{className:"text-lg font-bold",children:"Tips"}),e.jsxs("div",{className:"mt-4 space-y-3 text-sm leading-6",children:[e.jsx(ge,{tone:"emerald",text:"Smart matches trigger when new buyer requests or products match your saved alert keywords."}),e.jsx(ge,{tone:"blue",text:"Use verification and credibility signals to reduce fraud risk before accepting requests."}),e.jsx(ge,{tone:"sky",text:"Viewed history is private and helps you revisit products quickly without losing context."})]})]})}),e.jsx(ee,{as:"section",children:e.jsxs("section",{className:n("rounded-[28px] border p-4 sm:p-5",k),children:[e.jsx("h3",{className:"text-lg font-bold",children:"API endpoints"}),e.jsxs("div",{className:"mt-4 space-y-3 text-sm",children:[e.jsx(ce,{method:"GET",path:"/notifications"}),e.jsx(ce,{method:"PATCH",path:"/notifications/:id/read"}),e.jsx(ce,{method:"DELETE",path:"/notifications/search-alerts/:id"}),e.jsx(ce,{method:"GET",path:"/products/views/me"})]})]})})]})]})]})]}),x&&e.jsx("div",{className:"fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center",children:e.jsxs("div",{className:n("w-full max-w-2xl rounded-[28px] border p-5 shadow-2xl",o==="dark"?"border-white/10 bg-[#0b1324]":"border-sky-100 bg-white"),children:[e.jsxs("div",{className:"flex items-start justify-between gap-4",children:[e.jsxs("div",{children:[e.jsx("h3",{className:"text-2xl font-black",children:"Quick View"}),e.jsx("p",{className:n("mt-1 text-sm",w),children:"Full product details preview."})]}),e.jsx("button",{onClick:()=>P(null),className:"rounded-2xl bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10",children:"Close"})]}),e.jsxs("div",{className:n("mt-5 grid gap-4 rounded-3xl border p-5 sm:grid-cols-[1.6fr_1fr]",o==="dark"?"border-white/10 bg-white/5":"border-sky-100 bg-sky-50/50"),children:[e.jsxs("div",{children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[e.jsx(S,{tone:"sky",children:"Product"}),e.jsx(S,{tone:"blue",children:"Company profile"})]}),e.jsx("h4",{className:"mt-3 text-xl font-bold",children:((W=x.product)==null?void 0:W.title)||x.title||"Product"}),e.jsx("p",{className:n("mt-2 text-sm leading-6",G),children:((X=x.product)==null?void 0:X.description)||x.description||"--"}),e.jsxs("div",{className:"mt-4 flex gap-3",children:[e.jsx(E,{variant:"primary",children:"Quick view"}),e.jsx(E,{variant:"ghost",children:"Company page"})]})]}),e.jsxs("div",{className:n("rounded-3xl border p-4",o==="dark"?"border-white/10 bg-black/20":"border-sky-100 bg-white"),children:[e.jsx(se,{label:"Company",value:((Y=x.author)==null?void 0:Y.name)||x.companyName||"--"}),e.jsx(se,{label:"Viewed",value:x.viewed_at?new Date(x.viewed_at).toLocaleDateString():"--"}),e.jsx(se,{label:"Category",value:((J=x.product)==null?void 0:J.category)||x.category||"--"}),e.jsx(se,{label:"MOQ",value:((K=x.product)==null?void 0:K.moq)||x.moq||"--"}),e.jsx(se,{label:"Lead time",value:((Z=x.product)==null?void 0:Z.lead_time_days)||x.leadTime||"--"})]})]})]})}),e.jsx(He,{open:!!x,item:x,onClose:()=>P(null),onViewed:()=>C({reset:!0})})]})}function fe({label:t,value:l}){return e.jsxs("div",{className:"rounded-2xl border border-white/10 bg-white/5 p-3 text-center",children:[e.jsx("div",{className:"text-xl font-black text-sky-300",children:l}),e.jsx("div",{className:"mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400",children:t})]})}function ge({tone:t,text:l}){const s={emerald:"bg-emerald-400",blue:"bg-sky-400",sky:"bg-cyan-400"};return e.jsxs("div",{className:"flex gap-3",children:[e.jsx("span",{className:n("mt-2 h-2.5 w-2.5 rounded-full shrink-0",s[t]||s.sky)}),e.jsx("p",{className:"text-slate-300 dark:text-slate-700",children:l})]})}function ce({method:t,path:l}){return e.jsxs("div",{className:"flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5",children:[e.jsx("span",{className:"rounded-lg bg-sky-500/10 px-2.5 py-1 text-xs font-bold text-sky-300",children:t}),e.jsx("code",{className:"text-xs text-slate-300",children:l})]})}function be({title:t,description:l,compact:s=!1}){return e.jsxs("div",{className:n("rounded-3xl border border-dashed border-white/10 bg-white/5 text-center",s?"p-5":"p-8"),children:[e.jsx("div",{className:"mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-300",children:e.jsxs("svg",{viewBox:"0 0 24 24",className:"h-6 w-6 fill-none stroke-current stroke-[2]",children:[e.jsx("path",{d:"M12 4v16"}),e.jsx("path",{d:"M4 12h16"})]})}),e.jsx("h4",{className:"mt-4 text-base font-bold",children:t}),e.jsx("p",{className:"mt-2 text-sm text-slate-400",children:l})]})}function Je({item:t,theme:l,user:s,onMarkRead:o,onAccept:y,onReject:g}){var b,v;const c=Ye(t.type),u=l==="dark"?"border-white/10 bg-white/5":"border-sky-100 bg-white/80";return e.jsx($.div,{layout:!0,className:n("group rounded-3xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl",u,t.read?"":"ring-1 ring-sky-400/20"),children:e.jsxs("div",{className:"flex flex-col gap-4 md:flex-row md:items-start md:justify-between",children:[e.jsxs("div",{className:"min-w-0 flex-1",children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[e.jsx(S,{tone:c,children:We[t.type]||"Update"}),!t.read&&e.jsx(S,{tone:"emerald",children:"New"}),((b=t==null?void 0:t.meta)==null?void 0:b.request_id)&&e.jsx("span",{className:"rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-semibold text-slate-300 ring-1 ring-white/10",children:t.meta.request_id})]}),e.jsx("h3",{className:"mt-3 text-lg font-bold leading-7",children:t.message||t.title||"Notification"}),e.jsx("p",{className:n("mt-2 text-sm leading-6",l==="dark"?"text-slate-300":"text-slate-700"),children:t.message}),e.jsx("div",{className:n("mt-3 flex flex-wrap items-center gap-2 text-xs",l==="dark"?"text-slate-400":"text-slate-600"),children:e.jsx("span",{children:new Date(t.created_at).toLocaleString()})})]}),e.jsxs("div",{className:"flex shrink-0 flex-col gap-2 sm:flex-row md:flex-col lg:flex-row",children:[t.type==="partner_request"&&((s==null?void 0:s.role)==="factory"||(s==null?void 0:s.role)==="admin"||(s==null?void 0:s.role)==="owner")&&e.jsxs(e.Fragment,{children:[e.jsx(E,{variant:"success",onClick:y,children:"Accept"}),e.jsx(E,{variant:"danger",onClick:g,children:"Reject"})]}),t.type==="rating_feedback_request"?e.jsx(he,{to:`/ratings/feedback?profile_key=${encodeURIComponent((t==null?void 0:t.entity_id)||((v=t==null?void 0:t.meta)==null?void 0:v.profile_key)||"")}`,className:"rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center",children:"Rate now"}):t.entity_type?e.jsx(he,{to:Xe(t.entity_type,t.entity_id),className:"rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center",children:"View"}):null,!t.read&&e.jsx(E,{variant:"ghost",onClick:o,children:"Mark read"})]})]})})}function Ke({product:t,theme:l,onQuickView:s}){var o,y,g,c,u,b;return e.jsx($.div,{layout:!0,className:n("rounded-3xl border p-4",l==="dark"?"border-white/10 bg-white/5":"border-sky-100 bg-white/85"),children:e.jsxs("div",{className:"flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between",children:[e.jsxs("div",{children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[e.jsx(S,{tone:"sky",children:"Viewed"}),e.jsx(S,{tone:"blue",children:((o=t.product)==null?void 0:o.category)||t.category||"--"})]}),e.jsx("h3",{className:"mt-3 text-lg font-bold",children:((y=t.product)==null?void 0:y.title)||t.title||"Product"}),e.jsxs("div",{className:n("mt-1 text-sm",l==="dark"?"text-slate-300":"text-slate-700"),children:[((g=t.author)==null?void 0:g.name)||t.company||"--"," · Viewed"," ",new Date(t.viewed_at).toLocaleDateString()]}),e.jsxs("div",{className:"mt-3 flex flex-wrap gap-2 text-xs text-slate-400",children:[e.jsxs("span",{className:"rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10",children:["MOQ ",((c=t.product)==null?void 0:c.moq)||t.moq||"--"]}),e.jsxs("span",{className:"rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10",children:["Lead time"," ",((u=t.product)==null?void 0:u.lead_time_days)||t.leadTime||"--"]})]})]}),e.jsxs("div",{className:"flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row",children:[e.jsx(E,{variant:"primary",onClick:s,children:"Quick view"}),((b=t.author)==null?void 0:b.id)&&e.jsx(he,{to:t.author.role==="buying_house"?`/buying-house/${t.author.id}`:`/factory/${t.author.id}`,className:"rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center",children:"Company"})]})]})})}function se({label:t,value:l}){return e.jsxs("div",{className:"mb-3 flex items-center justify-between gap-4 border-b border-white/10 pb-3 last:mb-0 last:border-0 last:pb-0",children:[e.jsx("span",{className:"text-xs uppercase tracking-[0.2em] text-slate-400",children:t}),e.jsx("span",{className:"text-sm font-semibold text-slate-100 dark:text-slate-900",children:l})]})}export{os as default};
+import {
+  b as ve,
+  j as e,
+  A as xe,
+  m as $,
+  n as Ne,
+  r as i,
+  g as me,
+  k as ke,
+  d as N,
+  X as _e,
+  a7 as Ce,
+  L as he,
+  o as Se,
+  _ as Ae,
+  ad as Re,
+  ae as Ve,
+  N as Me,
+  $ as je,
+  S as ee,
+  l as qe,
+  q as Te,
+} from "./index-CNnTWoea.js";
+import { S as Le, a as Ie } from "./StaggerContainer-WchD9d0t.js";
+import { r as Pe } from "./leadSource-DB88KSZe.js";
+import { C as De } from "./chevron-left-BY_MYCfP.js";
+import { S as Ee } from "./sparkles-DVBGTjg1.js";
+import { F as $e } from "./factory-dwBkODaa.js";
+import { S as we } from "./shield-alert-CHc_BoYT.js";
+import { H as Ue } from "./history-CWEmmOuB.js";
+const Be = { hidden: { opacity: 0 }, visible: { opacity: 1 } },
+  Oe = {
+    hidden: { opacity: 0, scale: 0.92, y: 20 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { type: "spring", stiffness: 350, damping: 28, mass: 0.6 },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      y: 10,
+      transition: { duration: 0.2, ease: "easeIn" },
+    },
+  },
+  Qe = {
+    hidden: { x: "100%" },
+    visible: {
+      x: 0,
+      transition: { type: "spring", stiffness: 300, damping: 28 },
+    },
+    exit: { x: "100%", transition: { duration: 0.2, ease: "easeIn" } },
+  };
+function ze({
+  open: t,
+  onClose: l,
+  children: s,
+  className: o = "",
+  variant: y = "center",
+  overlay: g = !0,
+}) {
+  if (ve())
+    return t
+      ? e.jsxs("div", {
+          className: "fixed inset-0 z-50 flex items-center justify-center",
+          children: [
+            g &&
+              e.jsx("div", {
+                className: "absolute inset-0 bg-black/50",
+                onClick: l,
+              }),
+            e.jsx("div", { className: `relative ${o}`, children: s }),
+          ],
+        })
+      : null;
+  const u = y === "right" ? Qe : Oe;
+  return e.jsx(xe, {
+    children:
+      t &&
+      e.jsxs("div", {
+        className: "fixed inset-0 z-50 flex items-center justify-center",
+        children: [
+          g &&
+            e.jsx($.div, {
+              className: "absolute inset-0 bg-black/50",
+              variants: Be,
+              initial: "hidden",
+              animate: "visible",
+              exit: "hidden",
+              onClick: l,
+            }),
+          e.jsx($.div, {
+            className: `relative ${o}`,
+            variants: u,
+            initial: "hidden",
+            animate: "visible",
+            exit: "exit",
+            children: s,
+          }),
+        ],
+      }),
+  });
+}
+function Fe(t, l) {
+  if (!l) return "/feed";
+  const s = String(t || "").toLowerCase();
+  return s === "buyer"
+    ? `/buyer/${encodeURIComponent(l)}`
+    : s === "buying_house"
+      ? `/buying-house/${encodeURIComponent(l)}`
+      : `/factory/${encodeURIComponent(l)}`;
+}
+function He({ open: t, onClose: l, item: s, onViewed: o }) {
+  var C, ne, F, oe, q, H, ie, de, k, T, w, G, W, X, Y, J, K, Z;
+  const y = Ne(),
+    g = i.useMemo(() => me(), []),
+    c = i.useMemo(() => ke(), []),
+    u = i.useRef({ productId: "", recorded: !1 }),
+    [b, v] = i.useState(""),
+    [te, L] = i.useState(""),
+    [A, R] = i.useState(0),
+    m =
+      ((C = s == null ? void 0 : s.product) == null ? void 0 : C.id) ||
+      (s == null ? void 0 : s.id) ||
+      "",
+    U =
+      (s == null ? void 0 : s.company_id) ||
+      ((ne = s == null ? void 0 : s.product) == null
+        ? void 0
+        : ne.company_id) ||
+      ((F = s == null ? void 0 : s.author) == null ? void 0 : F.id) ||
+      "",
+    h =
+      (s == null ? void 0 : s.author) ||
+      ((oe = s == null ? void 0 : s.product) == null ? void 0 : oe.author) ||
+      null,
+    _ = String(
+      (s == null ? void 0 : s.content_review_status) ||
+        ((q = s == null ? void 0 : s.product) == null
+          ? void 0
+          : q.content_review_status) ||
+        "",
+    ).toLowerCase(),
+    B =
+      (s == null ? void 0 : s.content_review_reason) ||
+      ((H = s == null ? void 0 : s.product) == null
+        ? void 0
+        : H.content_review_reason) ||
+      "",
+    ae = String((c == null ? void 0 : c.role) || "").toLowerCase(),
+    V = !!(c != null && c.id) && String(c.id) === String(U),
+    O =
+      ae === "agent" &&
+      String((c == null ? void 0 : c.org_owner_id) || "") === String(U),
+    re = _ === "rejected" && (V || O),
+    Q = (
+      Array.isArray(s == null ? void 0 : s.image_gallery)
+        ? s.image_gallery
+        : Array.isArray(
+              (ie = s == null ? void 0 : s.product) == null
+                ? void 0
+                : ie.image_gallery,
+            )
+          ? s.product.image_gallery
+          : []
+    )
+      .map((a) => (a == null ? void 0 : a.url))
+      .filter(Boolean),
+    I =
+      (s == null ? void 0 : s.cover_image_public_url) ||
+      (s == null ? void 0 : s.cover_image_url) ||
+      ((de = s == null ? void 0 : s.product) == null
+        ? void 0
+        : de.cover_image_public_url) ||
+      ((k = s == null ? void 0 : s.product) == null
+        ? void 0
+        : k.cover_image_url) ||
+      Q[0] ||
+      "";
+  if (
+    (i.useEffect(() => {
+      if (
+        !t ||
+        !m ||
+        (R(0),
+        u.current.productId !== m &&
+          (u.current = { productId: m, recorded: !1 }),
+        u.current.recorded)
+      )
+        return;
+      let r = !0;
+      return (
+        N(`/products/${encodeURIComponent(m)}/view`, {
+          method: "POST",
+          token: g,
+        })
+          .then(() => {
+            r && ((u.current = { productId: m, recorded: !0 }), o && o());
+          })
+          .catch((d) => {
+            r && v(d.message || "Could not record view");
+          }),
+        () => {
+          r = !1;
+        }
+      );
+    }, [t, o, m, g]),
+    !t)
+  )
+    return null;
+  function M() {
+    ((u.current = { productId: "", recorded: !1 }),
+      v(""),
+      L(""),
+      l == null || l());
+  }
+  function le() {
+    var r;
+    const a = (h == null ? void 0 : h.name) || "company";
+    (m &&
+      Pe({
+        type: "product",
+        id: m,
+        label:
+          (s == null ? void 0 : s.title) ||
+          ((r = s == null ? void 0 : s.product) == null ? void 0 : r.title) ||
+          "Product",
+      }),
+      y("/chat", {
+        state: {
+          notice: `Contacting ${a}. If you are unverified, your first message may appear as a request.`,
+        },
+      }),
+      M());
+  }
+  async function x() {
+    if (!g || !m) return;
+    const a =
+      window.prompt("Explain why this product should be approved:") || "";
+    if (a.trim()) {
+      (v(""), L(""));
+      try {
+        (await N("/reports/product-appeal", {
+          method: "POST",
+          token: g,
+          body: { product_id: m, reason: a },
+        }),
+          L("Appeal submitted. Our team will review it shortly."));
+      } catch (r) {
+        v(r.message || "Unable to submit appeal.");
+      }
+    }
+  }
+  const P = h != null && h.id ? Fe(h.role, h.id) : "",
+    j = I ? [I, ...Q.filter((a) => a !== I)] : Q,
+    ue = j[A] || "";
+  function z() {
+    R((a) => (a + 1) % j.length);
+  }
+  function D() {
+    R((a) => (a - 1 + j.length) % j.length);
+  }
+  return e.jsx(ze, {
+    open: t,
+    onClose: M,
+    className: "w-[92vw] max-w-2xl overflow-hidden",
+    children: e.jsxs("div", {
+      className: "bg-white dark:bg-slate-950 rounded-2xl",
+      children: [
+        e.jsxs("header", {
+          className:
+            "flex items-center justify-between gap-3 px-5 py-4 shadow-dividerB dark:shadow-dividerBDark",
+          children: [
+            e.jsxs("div", {
+              className: "min-w-0",
+              children: [
+                e.jsx("p", {
+                  className: "text-sm font-bold text-slate-900 truncate",
+                  children:
+                    (s == null ? void 0 : s.title) ||
+                    ((T = s == null ? void 0 : s.product) == null
+                      ? void 0
+                      : T.title) ||
+                    "Product",
+                }),
+                h
+                  ? e.jsxs("p", {
+                      className: "text-[11px] text-slate-500 truncate",
+                      children: [
+                        h.name,
+                        " ",
+                        h.verified
+                          ? e.jsx("span", {
+                              className: "ml-1 font-bold text-[#0A66C2]",
+                              children: "Verified",
+                            })
+                          : null,
+                        " ",
+                        h.country ? `- ${h.country}` : "",
+                      ],
+                    })
+                  : null,
+              ],
+            }),
+            e.jsx("button", {
+              type: "button",
+              onClick: M,
+              className: "rounded-full p-2 hover:bg-slate-100",
+              "aria-label": "Close",
+              children: e.jsx(_e, { size: 18 }),
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className: "p-5 grid grid-cols-1 md:grid-cols-2 gap-4",
+          children: [
+            e.jsxs("div", {
+              className:
+                "rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4",
+              children: [
+                j.length > 0
+                  ? e.jsxs("div", {
+                      className: "relative mb-4",
+                      children: [
+                        e.jsx(xe, {
+                          mode: "wait",
+                          children: e.jsx(
+                            $.div,
+                            {
+                              drag: "x",
+                              dragConstraints: { left: 0, right: 0 },
+                              dragElastic: 0.2,
+                              onDragEnd: (a, r) => {
+                                (r.offset.x < -50 && z(),
+                                  r.offset.x > 50 && D());
+                              },
+                              initial: { opacity: 0, x: 60 },
+                              animate: { opacity: 1, x: 0 },
+                              exit: { opacity: 0, x: -60 },
+                              transition: {
+                                duration: 0.3,
+                                ease: [0.16, 1, 0.3, 1],
+                              },
+                              className:
+                                "h-40 w-full rounded-xl overflow-hidden",
+                              children: e.jsx("img", {
+                                src: ue,
+                                alt: "Product",
+                                className:
+                                  "h-full w-full object-cover pointer-events-none",
+                              }),
+                            },
+                            A,
+                          ),
+                        }),
+                        j.length > 1
+                          ? e.jsxs(e.Fragment, {
+                              children: [
+                                e.jsx("button", {
+                                  type: "button",
+                                  onClick: D,
+                                  className:
+                                    "absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900",
+                                  children: e.jsx(De, { className: "h-4 w-4" }),
+                                }),
+                                e.jsx("button", {
+                                  type: "button",
+                                  onClick: z,
+                                  className:
+                                    "absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900",
+                                  children: e.jsx(Ce, { className: "h-4 w-4" }),
+                                }),
+                                e.jsxs("div", {
+                                  className:
+                                    "absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white",
+                                  children: [A + 1, " / ", j.length],
+                                }),
+                              ],
+                            })
+                          : null,
+                      ],
+                    })
+                  : e.jsx("div", {
+                      className: "h-40 w-full rounded-xl bg-slate-200 mb-4",
+                    }),
+                j.length > 1
+                  ? e.jsx("div", {
+                      className: "flex gap-2 mb-4 overflow-x-auto pb-1",
+                      children: j.map((a, r) =>
+                        e.jsx(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => R(r),
+                            className: `shrink-0 h-10 w-10 rounded-lg overflow-hidden border-2 transition ${r === A ? "border-sky-500" : "border-transparent opacity-60 hover:opacity-100"}`,
+                            children: e.jsx("img", {
+                              src: a,
+                              alt: "",
+                              className: "h-full w-full object-cover",
+                            }),
+                          },
+                          a,
+                        ),
+                      ),
+                    })
+                  : null,
+                e.jsx("p", {
+                  className: "text-xs font-bold text-slate-700",
+                  children: "Details",
+                }),
+                e.jsxs("div", {
+                  className: "mt-3 space-y-2 text-sm text-slate-700",
+                  children: [
+                    e.jsxs("div", {
+                      className: "flex items-start justify-between gap-3",
+                      children: [
+                        e.jsx("span", {
+                          className: "text-slate-500 text-xs",
+                          children: "Category",
+                        }),
+                        e.jsx("span", {
+                          className: "font-semibold text-right",
+                          children:
+                            (s == null ? void 0 : s.category) ||
+                            ((w = s == null ? void 0 : s.product) == null
+                              ? void 0
+                              : w.category) ||
+                            "--",
+                        }),
+                      ],
+                    }),
+                    e.jsxs("div", {
+                      className: "flex items-start justify-between gap-3",
+                      children: [
+                        e.jsx("span", {
+                          className: "text-slate-500 text-xs",
+                          children: "Material",
+                        }),
+                        e.jsx("span", {
+                          className: "font-semibold text-right",
+                          children:
+                            (s == null ? void 0 : s.material) ||
+                            ((G = s == null ? void 0 : s.product) == null
+                              ? void 0
+                              : G.material) ||
+                            "--",
+                        }),
+                      ],
+                    }),
+                    e.jsxs("div", {
+                      className: "flex items-start justify-between gap-3",
+                      children: [
+                        e.jsx("span", {
+                          className: "text-slate-500 text-xs",
+                          children: "MOQ",
+                        }),
+                        e.jsx("span", {
+                          className: "font-semibold text-right",
+                          children:
+                            (s == null ? void 0 : s.moq) ||
+                            ((W = s == null ? void 0 : s.product) == null
+                              ? void 0
+                              : W.moq) ||
+                            "--",
+                        }),
+                      ],
+                    }),
+                    e.jsxs("div", {
+                      className: "flex items-start justify-between gap-3",
+                      children: [
+                        e.jsx("span", {
+                          className: "text-slate-500 text-xs",
+                          children: "Lead time",
+                        }),
+                        e.jsx("span", {
+                          className: "font-semibold text-right",
+                          children:
+                            (s == null ? void 0 : s.lead_time_days) ||
+                            ((X = s == null ? void 0 : s.product) == null
+                              ? void 0
+                              : X.lead_time_days) ||
+                            "--",
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                ((s != null && s.hasVideo) ||
+                  ((Y = s == null ? void 0 : s.product) != null &&
+                    Y.hasVideo)) &&
+                ((s != null && s.video_url) ||
+                  ((J = s == null ? void 0 : s.product) != null && J.video_url))
+                  ? e.jsx("a", {
+                      href:
+                        (s == null ? void 0 : s.video_url) ||
+                        ((K = s == null ? void 0 : s.product) == null
+                          ? void 0
+                          : K.video_url),
+                      target: "_blank",
+                      rel: "noreferrer",
+                      className:
+                        "mt-4 inline-block text-xs font-semibold text-[#0A66C2] hover:underline",
+                      children: "Open video link",
+                    })
+                  : null,
+              ],
+            }),
+            e.jsxs("div", {
+              className:
+                "rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4",
+              children: [
+                e.jsx("p", {
+                  className: "text-xs font-bold text-slate-700",
+                  children: "Description",
+                }),
+                e.jsx("p", {
+                  className:
+                    "mt-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed",
+                  children:
+                    (s == null ? void 0 : s.description) ||
+                    ((Z = s == null ? void 0 : s.product) == null
+                      ? void 0
+                      : Z.description) ||
+                    "No description provided.",
+                }),
+                re
+                  ? e.jsxs("div", {
+                      className:
+                        "mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-rose-50 px-3 py-3",
+                      children: [
+                        e.jsx("p", {
+                          className: "text-xs font-semibold text-rose-900",
+                          children: "This product was rejected.",
+                        }),
+                        e.jsx("p", {
+                          className: "mt-1 text-xs text-rose-700",
+                          children:
+                            B ||
+                            "This product needs changes to meet content standards.",
+                        }),
+                        e.jsx("button", {
+                          type: "button",
+                          onClick: x,
+                          className:
+                            "mt-3 w-full rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white",
+                          children:
+                            "If you think this is a mistake, report it for review",
+                        }),
+                      ],
+                    })
+                  : null,
+                b
+                  ? e.jsx("p", {
+                      className: "mt-3 text-xs text-rose-700",
+                      children: b,
+                    })
+                  : null,
+                te
+                  ? e.jsx("p", {
+                      className: "mt-3 text-xs text-emerald-700",
+                      children: te,
+                    })
+                  : null,
+              ],
+            }),
+          ],
+        }),
+        e.jsxs("footer", {
+          className:
+            "px-5 py-4 shadow-dividerT dark:shadow-dividerTDark bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3",
+          children: [
+            e.jsx("div", {
+              className: "text-[11px] text-slate-500",
+              children: "Views are private and help you revisit items quickly.",
+            }),
+            e.jsxs("div", {
+              className: "flex gap-2",
+              children: [
+                P
+                  ? e.jsx(he, {
+                      to: P,
+                      onClick: M,
+                      className:
+                        "rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50",
+                      children: "View company profile",
+                    })
+                  : null,
+                e.jsx("button", {
+                  type: "button",
+                  onClick: le,
+                  className:
+                    "rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]",
+                  children: "Contact",
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    }),
+  });
+}
+const Ge = [
+    { key: "all", label: "All", icon: je },
+    { key: "smart_search_match", label: "Search Matches", icon: Ee },
+    { key: "partner_request", label: "Partner Requests", icon: $e },
+    { key: "conversation_lock", label: "Conversation Locks", icon: we },
+    { key: "rating_feedback_request", label: "Rating Requests", icon: we },
+    { key: "system", label: "System", icon: je },
+    { key: "viewed", label: "Viewed Products", icon: Ue },
+  ],
+  We = {
+    smart_search_match: "Search Match",
+    partner_request: "Connection Request",
+    conversation_lock: "Conversation Lock",
+    rating_feedback_request: "Rating Request",
+    monthly_summary: "Monthly Summary",
+    system: "System",
+  };
+function Xe(t, l) {
+  return !t || !l ? "/feed" : `/feed?item=${encodeURIComponent(`${t}:${l}`)}`;
+}
+function n(...t) {
+  return t.filter(Boolean).join(" ");
+}
+function S({ children: t, tone: l = "slate" }) {
+  const s = {
+    emerald: "bg-emerald-500/10 text-emerald-300 ring-emerald-400/20",
+    blue: "bg-sky-500/10 text-sky-300 ring-sky-400/20",
+    rose: "bg-rose-500/10 text-rose-300 ring-rose-400/20",
+    amber: "bg-amber-500/10 text-amber-300 ring-amber-400/20",
+    slate: "bg-slate-500/10 text-slate-300 ring-slate-400/20",
+    sky: "bg-cyan-500/10 text-cyan-300 ring-cyan-400/20",
+  };
+  return e.jsx("span", {
+    className: n(
+      "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1",
+      s[l] || s.slate,
+    ),
+    children: t,
+  });
+}
+function E({ children: t, variant: l = "primary", onClick: s }) {
+  const o = {
+    primary:
+      "bg-sky-500 text-white shadow-lg shadow-sky-500/20 hover:bg-sky-400",
+    ghost: "bg-white/5 text-slate-200 ring-1 ring-white/10 hover:bg-white/10",
+    danger:
+      "bg-rose-500/10 text-rose-200 ring-1 ring-rose-500/20 hover:bg-rose-500/15",
+    success:
+      "bg-emerald-500/10 text-emerald-200 ring-1 ring-emerald-500/20 hover:bg-emerald-500/15",
+  };
+  return e.jsx("button", {
+    onClick: s,
+    className: n(
+      "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-200 active:scale-[0.98]",
+      o[l],
+    ),
+    children: t,
+  });
+}
+function Ye(t) {
+  switch (t) {
+    case "smart_search_match":
+      return "emerald";
+    case "partner_request":
+      return "blue";
+    case "conversation_lock":
+      return "rose";
+    case "rating_feedback_request":
+      return "amber";
+    case "viewed":
+      return "sky";
+    default:
+      return "slate";
+  }
+}
+function os() {
+  var W, X, Y, J, K, Z;
+  const t = i.useMemo(() => me(), []),
+    l = i.useMemo(() => ke(), []),
+    s = ve(),
+    { theme: o, setTheme: y, toggleTheme: g } = Se(),
+    [c, u] = i.useState("all"),
+    [b, v] = i.useState(!1),
+    [te, L] = i.useState(!0),
+    [A, R] = i.useState(""),
+    [m, U] = i.useState(!0),
+    [h, _] = i.useState([]),
+    [B, ae] = i.useState([]),
+    [V, O] = i.useState([]),
+    [re, ye] = i.useState(0),
+    [Q, I] = i.useState(null),
+    [M, le] = i.useState(!1),
+    [x, P] = i.useState(null),
+    [j, ue] = i.useState(!0),
+    z = i.useCallback(async () => {
+      if (t) {
+        (L(!0), R(""));
+        try {
+          const a = await N("/notifications", { token: t });
+          _(Array.isArray(a) ? a : []);
+        } catch (a) {
+          (R(a.message || "Failed to load notifications"), _([]));
+        } finally {
+          L(!1);
+        }
+      }
+    }, [t]),
+    D = i.useCallback(async () => {
+      if (t)
+        try {
+          const a = await N("/notifications/search-alerts", { token: t });
+          ae(Array.isArray(a) ? a : []);
+        } catch {
+          ae([]);
+        }
+    }, [t]),
+    C = i.useCallback(
+      async ({ reset: a }) => {
+        if (!t) return;
+        const r = a ? 0 : re;
+        le(!0);
+        try {
+          const d = await N(`/products/views/me?cursor=${r}&limit=10`, {
+              token: t,
+            }),
+            p = Array.isArray(d == null ? void 0 : d.items) ? d.items : [];
+          (O((f) => (a ? p : [...f, ...p])),
+            ye(a ? 10 : r + 10),
+            I((d == null ? void 0 : d.next_cursor) ?? null));
+        } catch {
+          (a && O([]), I(null));
+        } finally {
+          le(!1);
+        }
+      },
+      [t, re],
+    );
+  (i.useEffect(() => {
+    let a = !1,
+      r = !1,
+      d = !1;
+    function p() {
+      a && r && d && ue(!1);
+    }
+    ((async () => {
+      try {
+        await z();
+      } finally {
+        ((a = !0), p());
+      }
+    })(),
+      (async () => {
+        try {
+          await D();
+        } finally {
+          ((r = !0), p());
+        }
+      })(),
+      (async () => {
+        try {
+          await Ae(me());
+        } finally {
+          ((d = !0), p());
+        }
+      })());
+  }, [D, z]),
+    i.useEffect(
+      () =>
+        t
+          ? (Re(t),
+            Ve((r) => {
+              var d;
+              r &&
+                (r.type === "notification_created" &&
+                  (d = r.notification) != null &&
+                  d.id &&
+                  _((p) =>
+                    p.some(
+                      (pe) =>
+                        String(pe == null ? void 0 : pe.id) ===
+                        String(r.notification.id),
+                    )
+                      ? p
+                      : [r.notification, ...p],
+                  ),
+                r.type === "notification_read" &&
+                  r.id &&
+                  _((p) =>
+                    p.map((f) =>
+                      String(f == null ? void 0 : f.id) === String(r.id)
+                        ? { ...f, read: !0 }
+                        : f,
+                    ),
+                  ));
+            }))
+          : void 0,
+      [t],
+    ),
+    i.useEffect(() => {
+      c === "viewed" && (V.length || C({ reset: !0 }));
+    }, [C, c, V.length]));
+  async function ne(a) {
+    !t ||
+      !a ||
+      (await N(`/notifications/${encodeURIComponent(a)}/read`, {
+        method: "PATCH",
+        token: t,
+      }),
+      _((r) =>
+        r.map((d) =>
+          String(d == null ? void 0 : d.id) === String(a)
+            ? { ...d, read: !0 }
+            : d,
+        ),
+      ));
+  }
+  async function F(a, r, d) {
+    !t ||
+      !a ||
+      (await N(`/partners/requests/${encodeURIComponent(a)}/${r}`, {
+        method: "POST",
+        token: t,
+      }),
+      d &&
+        (await N(`/notifications/${encodeURIComponent(d)}/read`, {
+          method: "PATCH",
+          token: t,
+        }),
+        _((p) =>
+          p.map((f) =>
+            String(f == null ? void 0 : f.id) === String(d)
+              ? { ...f, read: !0 }
+              : f,
+          ),
+        )));
+  }
+  async function oe(a) {
+    !t ||
+      !a ||
+      (await N(`/notifications/search-alerts/${encodeURIComponent(a)}`, {
+        method: "DELETE",
+        token: t,
+      }),
+      await D());
+  }
+  const q = i.useMemo(
+      () =>
+        h.filter((a) =>
+          b && a.read
+            ? !1
+            : c === "all"
+              ? a.type !== "viewed"
+              : c === "viewed"
+                ? !1
+                : a.type === c,
+        ),
+      [h, c, b],
+    ),
+    H = h.filter((a) => !a.read).length,
+    ie = () => {
+      (O((a) => [...a]),
+        U(!0),
+        window.setTimeout(() => U(!1), 1200),
+        C({ reset: !0 }));
+    },
+    de =
+      o === "dark"
+        ? "bg-[#07111f] text-slate-100"
+        : "bg-gradient-to-br from-sky-50 via-white to-cyan-50 text-slate-900",
+    k =
+      o === "dark"
+        ? "bg-white/5 border-white/10 shadow-2xl shadow-black/20"
+        : "bg-white/75 border-sky-100 shadow-xl shadow-sky-100/50 backdrop-blur",
+    T = o === "dark" ? "bg-white/5" : "bg-slate-900/5",
+    w = o === "dark" ? "text-slate-400" : "text-slate-600",
+    G = o === "dark" ? "text-slate-300" : "text-slate-700";
+  return j
+    ? e.jsx(Me, { fill: !0 })
+    : e.jsxs("div", {
+        className: n("min-h-screen transition-colors duration-500", de),
+        children: [
+          e.jsxs("div", {
+            className: "mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8",
+            children: [
+              e.jsx("div", {
+                className:
+                  "absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-500/20 via-cyan-400/10 to-transparent blur-3xl",
+              }),
+              e.jsxs("div", {
+                className: n(
+                  "overflow-hidden rounded-[28px] border p-5 sm:p-6 lg:p-8",
+                  k,
+                ),
+                children: [
+                  e.jsxs("div", {
+                    className:
+                      "flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between",
+                    children: [
+                      e.jsxs("div", {
+                        className: "flex-1",
+                        children: [
+                          e.jsxs("div", {
+                            className: "flex flex-wrap items-center gap-3",
+                            children: [
+                              e.jsx("div", {
+                                className:
+                                  "flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30",
+                                children: e.jsxs("svg", {
+                                  viewBox: "0 0 24 24",
+                                  className:
+                                    "h-6 w-6 fill-none stroke-current stroke-[2]",
+                                  children: [
+                                    e.jsx("path", {
+                                      d: "M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5",
+                                    }),
+                                    e.jsx("path", { d: "M9 17a3 3 0 0 0 6 0" }),
+                                  ],
+                                }),
+                              }),
+                              e.jsxs("div", {
+                                children: [
+                                  e.jsx("h1", {
+                                    className:
+                                      "text-3xl font-black tracking-tight sm:text-4xl",
+                                    children: "Notifications",
+                                  }),
+                                  e.jsx("p", {
+                                    className: n(
+                                      "mt-1 text-sm sm:text-base",
+                                      w,
+                                    ),
+                                    children:
+                                      "Smart search matches, system alerts, and your viewed history.",
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("div", {
+                                className:
+                                  "flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-200",
+                                children: [
+                                  e.jsx("span", {
+                                    className: n(
+                                      "h-2 w-2 rounded-full",
+                                      m
+                                        ? "animate-pulse bg-emerald-400"
+                                        : "bg-sky-400",
+                                    ),
+                                  }),
+                                  "Live updates enabled",
+                                ],
+                              }),
+                            ],
+                          }),
+                          e.jsxs("div", {
+                            className: "mt-5 flex flex-wrap items-center gap-3",
+                            children: [
+                              e.jsxs("label", {
+                                className: n(
+                                  "inline-flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium",
+                                  T,
+                                  o === "dark"
+                                    ? "border-white/10"
+                                    : "border-sky-100",
+                                ),
+                                children: [
+                                  e.jsx("input", {
+                                    type: "checkbox",
+                                    checked: b,
+                                    onChange: (a) => v(a.target.checked),
+                                    className:
+                                      "h-4 w-4 rounded border-sky-400 text-sky-500 focus:ring-sky-400",
+                                  }),
+                                  e.jsx("span", { children: "Unread only" }),
+                                  e.jsx("span", {
+                                    className:
+                                      "rounded-full bg-sky-500/10 px-2 py-0.5 text-xs text-sky-300",
+                                    children: H,
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("div", {
+                                className:
+                                  "ml-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1 shadow-lg shadow-black/10",
+                                children: [
+                                  e.jsx("button", {
+                                    onClick: () => y("dark"),
+                                    className: n(
+                                      "rounded-xl px-4 py-2 text-sm font-semibold transition",
+                                      o === "dark"
+                                        ? "bg-sky-500 text-white"
+                                        : "text-slate-400 hover:text-slate-200",
+                                    ),
+                                    children: "Dark",
+                                  }),
+                                  e.jsx("button", {
+                                    onClick: () => y("light"),
+                                    className: n(
+                                      "rounded-xl px-4 py-2 text-sm font-semibold transition",
+                                      o === "light"
+                                        ? "bg-sky-500 text-white"
+                                        : "text-slate-400 hover:text-slate-200",
+                                    ),
+                                    children: "Light",
+                                  }),
+                                ],
+                              }),
+                            ],
+                          }),
+                          e.jsx("div", {
+                            className: "mt-5 flex flex-wrap gap-2",
+                            children: Ge.map((a) => {
+                              const r = c === a.key,
+                                d = a.icon;
+                              return e.jsx(
+                                $.button,
+                                {
+                                  type: "button",
+                                  onClick: () => u(a.key),
+                                  whileTap: s ? void 0 : { scale: 0.98 },
+                                  className: n(
+                                    "inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200",
+                                    r
+                                      ? "border-sky-400/40 bg-sky-500 text-white shadow-lg shadow-sky-500/20"
+                                      : n(
+                                          "border-white/10",
+                                          T,
+                                          "hover:bg-white/10",
+                                          G,
+                                        ),
+                                  ),
+                                  children: e.jsxs("span", {
+                                    className:
+                                      "relative inline-flex items-center gap-2",
+                                    children: [e.jsx(d, { size: 16 }), a.label],
+                                  }),
+                                },
+                                a.key,
+                              );
+                            }),
+                          }),
+                        ],
+                      }),
+                      e.jsxs("div", {
+                        className: n(
+                          "w-full max-w-sm rounded-3xl border p-5",
+                          T,
+                          o === "dark" ? "border-white/10" : "border-sky-100",
+                        ),
+                        children: [
+                          e.jsxs("div", {
+                            className: "flex items-center justify-between",
+                            children: [
+                              e.jsxs("div", {
+                                children: [
+                                  e.jsx("div", {
+                                    className:
+                                      "text-sm font-semibold text-sky-300",
+                                    children: "Real-time feed",
+                                  }),
+                                  e.jsx("div", {
+                                    className: n("mt-1 text-xs", w),
+                                    children:
+                                      "WebSocket updates appear instantly at the top.",
+                                  }),
+                                ],
+                              }),
+                              e.jsx("div", {
+                                className:
+                                  "rounded-2xl bg-sky-500/10 p-3 text-sky-300 ring-1 ring-sky-400/20",
+                                children: e.jsxs("svg", {
+                                  viewBox: "0 0 24 24",
+                                  className:
+                                    "h-5 w-5 fill-none stroke-current stroke-[2]",
+                                  children: [
+                                    e.jsx("path", { d: "M5 12h14" }),
+                                    e.jsx("path", { d: "M13 5l7 7-7 7" }),
+                                  ],
+                                }),
+                              }),
+                            ],
+                          }),
+                          e.jsxs("div", {
+                            className: "mt-4 grid grid-cols-3 gap-3",
+                            children: [
+                              e.jsx(fe, { label: "Unread", value: String(H) }),
+                              e.jsx(fe, {
+                                label: "Alerts",
+                                value: String(B.length),
+                              }),
+                              e.jsx(fe, {
+                                label: "Viewed",
+                                value: String(V.length),
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  e.jsxs("div", {
+                    className:
+                      "mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]",
+                    children: [
+                      e.jsxs("div", {
+                        className: "space-y-6",
+                        children: [
+                          e.jsx(ee, {
+                            as: "section",
+                            children: e.jsxs("section", {
+                              className: n(
+                                "rounded-[28px] border p-4 sm:p-5",
+                                k,
+                              ),
+                              children: [
+                                e.jsxs("div", {
+                                  className:
+                                    "mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
+                                  children: [
+                                    e.jsxs("div", {
+                                      children: [
+                                        e.jsx("h2", {
+                                          className: "text-xl font-bold",
+                                          children: "Notifications feed",
+                                        }),
+                                        e.jsx("p", {
+                                          className: n("mt-1 text-sm", w),
+                                          children:
+                                            c === "viewed"
+                                              ? "Showing viewed products history from Quick View."
+                                              : "All notification types except Viewed Products are grouped here.",
+                                        }),
+                                      ],
+                                    }),
+                                    e.jsxs("div", {
+                                      className: n(
+                                        "rounded-2xl px-4 py-2 text-sm",
+                                        T,
+                                        w,
+                                      ),
+                                      children: [
+                                        "Showing ",
+                                        q.length,
+                                        " item",
+                                        q.length === 1 ? "" : "s",
+                                      ],
+                                    }),
+                                  ],
+                                }),
+                                e.jsx(Le, {
+                                  className: "space-y-3",
+                                  children: te
+                                    ? e.jsx(qe, {
+                                        color: "#3b00ff",
+                                        size: "large",
+                                        style: { fontSize: "40px" },
+                                        text: "",
+                                        textColor: "",
+                                      })
+                                    : A
+                                      ? e.jsx("div", {
+                                          className: "text-sm text-rose-300",
+                                          children: A,
+                                        })
+                                      : q.length === 0
+                                        ? e.jsx(be, {
+                                            title: "No notifications found",
+                                            description:
+                                              "Try changing the tab or turning off the unread-only filter.",
+                                          })
+                                        : e.jsx(xe, {
+                                            mode: "popLayout",
+                                            children: q.map((a) =>
+                                              e.jsx(
+                                                Ie,
+                                                {
+                                                  children: e.jsx(Je, {
+                                                    item: a,
+                                                    theme: o,
+                                                    user: l,
+                                                    onMarkRead: () => ne(a.id),
+                                                    onAccept: () => {
+                                                      var r;
+                                                      return F(
+                                                        ((r =
+                                                          a == null
+                                                            ? void 0
+                                                            : a.meta) == null
+                                                          ? void 0
+                                                          : r.request_id) ||
+                                                          a.entity_id,
+                                                        "accept",
+                                                        a.id,
+                                                      );
+                                                    },
+                                                    onReject: () => {
+                                                      var r;
+                                                      return F(
+                                                        ((r =
+                                                          a == null
+                                                            ? void 0
+                                                            : a.meta) == null
+                                                          ? void 0
+                                                          : r.request_id) ||
+                                                          a.entity_id,
+                                                        "reject",
+                                                        a.id,
+                                                      );
+                                                    },
+                                                  }),
+                                                },
+                                                a.id,
+                                              ),
+                                            ),
+                                          }),
+                                }),
+                              ],
+                            }),
+                          }),
+                          e.jsx(xe, {
+                            mode: "wait",
+                            children:
+                              c === "viewed" &&
+                              e.jsx(ee, {
+                                as: "section",
+                                children: e.jsxs("section", {
+                                  className: n(
+                                    "rounded-[28px] border p-4 sm:p-5",
+                                    k,
+                                  ),
+                                  children: [
+                                    e.jsxs("div", {
+                                      className:
+                                        "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
+                                      children: [
+                                        e.jsxs("div", {
+                                          children: [
+                                            e.jsxs("div", {
+                                              className:
+                                                "flex items-center gap-3",
+                                              children: [
+                                                e.jsx("h2", {
+                                                  className:
+                                                    "text-xl font-bold",
+                                                  children: "Viewed Products",
+                                                }),
+                                                e.jsx(S, {
+                                                  tone: "sky",
+                                                  children: "Private to you",
+                                                }),
+                                              ],
+                                            }),
+                                            e.jsx("p", {
+                                              className: n("mt-1 text-sm", w),
+                                              children:
+                                                "Recorded on Quick View. This history helps you revisit products quickly.",
+                                            }),
+                                          ],
+                                        }),
+                                        e.jsxs("button", {
+                                          onClick: ie,
+                                          className:
+                                            "inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-2.5 text-sm font-semibold text-sky-200 transition hover:bg-sky-500/15",
+                                          children: [
+                                            e.jsxs("svg", {
+                                              viewBox: "0 0 24 24",
+                                              className:
+                                                "h-4 w-4 fill-none stroke-current stroke-[2]",
+                                              children: [
+                                                e.jsx("path", {
+                                                  d: "M20 12a8 8 0 1 1-2.34-5.66",
+                                                }),
+                                                e.jsx("path", {
+                                                  d: "M20 4v6h-6",
+                                                }),
+                                              ],
+                                            }),
+                                            "Refresh",
+                                          ],
+                                        }),
+                                      ],
+                                    }),
+                                    e.jsx("div", {
+                                      className: "mt-5 space-y-3",
+                                      children: M
+                                        ? e.jsx(Te, {
+                                            variant: "bounce",
+                                            color: "#6100ff",
+                                            size: "small",
+                                            text: "",
+                                            textColor: "",
+                                          })
+                                        : V.length === 0
+                                          ? e.jsx(be, {
+                                              title: "No viewed products yet",
+                                              description:
+                                                "View products from the search page to see them here.",
+                                            })
+                                          : V.map((a) =>
+                                              e.jsx(
+                                                Ke,
+                                                {
+                                                  product: a,
+                                                  theme: o,
+                                                  onQuickView: () =>
+                                                    P({
+                                                      ...a.product,
+                                                      author: a.author,
+                                                    }),
+                                                },
+                                                a.id,
+                                              ),
+                                            ),
+                                    }),
+                                    Q !== null &&
+                                      !M &&
+                                      e.jsx("div", {
+                                        className: "mt-5 flex justify-center",
+                                        children: e.jsx("button", {
+                                          onClick: () => C({ reset: !1 }),
+                                          className:
+                                            "rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400",
+                                          children: "Load more",
+                                        }),
+                                      }),
+                                  ],
+                                }),
+                              }),
+                          }),
+                        ],
+                      }),
+                      e.jsxs("aside", {
+                        className: "space-y-6",
+                        children: [
+                          e.jsx(ee, {
+                            as: "section",
+                            children: e.jsxs("section", {
+                              className: n(
+                                "rounded-[28px] border p-4 sm:p-5",
+                                k,
+                              ),
+                              children: [
+                                e.jsxs("div", {
+                                  className:
+                                    "flex items-start justify-between gap-3",
+                                  children: [
+                                    e.jsxs("div", {
+                                      children: [
+                                        e.jsx("h3", {
+                                          className: "text-lg font-bold",
+                                          children: "Saved Search Alerts",
+                                        }),
+                                        e.jsx("p", {
+                                          className: n("mt-1 text-sm", w),
+                                          children:
+                                            "These power smart notifications for new matching posts.",
+                                        }),
+                                      ],
+                                    }),
+                                    e.jsx(S, {
+                                      tone: "blue",
+                                      children: "Active",
+                                    }),
+                                  ],
+                                }),
+                                e.jsx("div", {
+                                  className: "mt-4 space-y-3",
+                                  children:
+                                    B.length === 0
+                                      ? e.jsx(be, {
+                                          title: "No saved alerts yet.",
+                                          description:
+                                            "Save an alert from the search page.",
+                                          compact: !0,
+                                        })
+                                      : B.map((a) =>
+                                          e.jsxs(
+                                            "div",
+                                            {
+                                              className: n(
+                                                "flex items-center justify-between gap-4 rounded-2xl border p-4",
+                                                o === "dark"
+                                                  ? "border-white/10 bg-white/5"
+                                                  : "border-sky-100 bg-white/80",
+                                              ),
+                                              children: [
+                                                e.jsxs("div", {
+                                                  children: [
+                                                    e.jsx("div", {
+                                                      className:
+                                                        "font-semibold text-slate-100 dark:text-slate-900",
+                                                      children: a.query,
+                                                    }),
+                                                    e.jsxs("div", {
+                                                      className: n(
+                                                        "mt-1 text-xs",
+                                                        w,
+                                                      ),
+                                                      children: [
+                                                        "Updated",
+                                                        " ",
+                                                        new Date(
+                                                          a.updated_at ||
+                                                            a.created_at,
+                                                        ).toLocaleDateString(),
+                                                      ],
+                                                    }),
+                                                  ],
+                                                }),
+                                                e.jsx("button", {
+                                                  onClick: () => oe(a.id),
+                                                  className:
+                                                    "rounded-xl p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300",
+                                                  "aria-label": "Delete alert",
+                                                  children: e.jsxs("svg", {
+                                                    viewBox: "0 0 24 24",
+                                                    className:
+                                                      "h-4 w-4 fill-none stroke-current stroke-[2]",
+                                                    children: [
+                                                      e.jsx("path", {
+                                                        d: "M3 6h18",
+                                                      }),
+                                                      e.jsx("path", {
+                                                        d: "M8 6V4h8v2",
+                                                      }),
+                                                      e.jsx("path", {
+                                                        d: "M6 6l1 14h10l1-14",
+                                                      }),
+                                                      e.jsx("path", {
+                                                        d: "M10 11v5",
+                                                      }),
+                                                      e.jsx("path", {
+                                                        d: "M14 11v5",
+                                                      }),
+                                                    ],
+                                                  }),
+                                                }),
+                                              ],
+                                            },
+                                            a.id,
+                                          ),
+                                        ),
+                                }),
+                              ],
+                            }),
+                          }),
+                          e.jsx(ee, {
+                            as: "section",
+                            children: e.jsxs("section", {
+                              className: n(
+                                "rounded-[28px] border p-4 sm:p-5",
+                                k,
+                              ),
+                              children: [
+                                e.jsx("h3", {
+                                  className: "text-lg font-bold",
+                                  children: "Tips",
+                                }),
+                                e.jsxs("div", {
+                                  className: "mt-4 space-y-3 text-sm leading-6",
+                                  children: [
+                                    e.jsx(ge, {
+                                      tone: "emerald",
+                                      text: "Smart matches trigger when new buyer requests or products match your saved alert keywords.",
+                                    }),
+                                    e.jsx(ge, {
+                                      tone: "blue",
+                                      text: "Use verification and credibility signals to reduce fraud risk before accepting requests.",
+                                    }),
+                                    e.jsx(ge, {
+                                      tone: "sky",
+                                      text: "Viewed history is private and helps you revisit products quickly without losing context.",
+                                    }),
+                                  ],
+                                }),
+                              ],
+                            }),
+                          }),
+                          e.jsx(ee, {
+                            as: "section",
+                            children: e.jsxs("section", {
+                              className: n(
+                                "rounded-[28px] border p-4 sm:p-5",
+                                k,
+                              ),
+                              children: [
+                                e.jsx("h3", {
+                                  className: "text-lg font-bold",
+                                  children: "API endpoints",
+                                }),
+                                e.jsxs("div", {
+                                  className: "mt-4 space-y-3 text-sm",
+                                  children: [
+                                    e.jsx(ce, {
+                                      method: "GET",
+                                      path: "/notifications",
+                                    }),
+                                    e.jsx(ce, {
+                                      method: "PATCH",
+                                      path: "/notifications/:id/read",
+                                    }),
+                                    e.jsx(ce, {
+                                      method: "DELETE",
+                                      path: "/notifications/search-alerts/:id",
+                                    }),
+                                    e.jsx(ce, {
+                                      method: "GET",
+                                      path: "/products/views/me",
+                                    }),
+                                  ],
+                                }),
+                              ],
+                            }),
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          x &&
+            e.jsx("div", {
+              className:
+                "fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center",
+              children: e.jsxs("div", {
+                className: n(
+                  "w-full max-w-2xl rounded-[28px] border p-5 shadow-2xl",
+                  o === "dark"
+                    ? "border-white/10 bg-[#0b1324]"
+                    : "border-sky-100 bg-white",
+                ),
+                children: [
+                  e.jsxs("div", {
+                    className: "flex items-start justify-between gap-4",
+                    children: [
+                      e.jsxs("div", {
+                        children: [
+                          e.jsx("h3", {
+                            className: "text-2xl font-black",
+                            children: "Quick View",
+                          }),
+                          e.jsx("p", {
+                            className: n("mt-1 text-sm", w),
+                            children: "Full product details preview.",
+                          }),
+                        ],
+                      }),
+                      e.jsx("button", {
+                        onClick: () => P(null),
+                        className:
+                          "rounded-2xl bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10",
+                        children: "Close",
+                      }),
+                    ],
+                  }),
+                  e.jsxs("div", {
+                    className: n(
+                      "mt-5 grid gap-4 rounded-3xl border p-5 sm:grid-cols-[1.6fr_1fr]",
+                      o === "dark"
+                        ? "border-white/10 bg-white/5"
+                        : "border-sky-100 bg-sky-50/50",
+                    ),
+                    children: [
+                      e.jsxs("div", {
+                        children: [
+                          e.jsxs("div", {
+                            className: "flex flex-wrap items-center gap-2",
+                            children: [
+                              e.jsx(S, { tone: "sky", children: "Product" }),
+                              e.jsx(S, {
+                                tone: "blue",
+                                children: "Company profile",
+                              }),
+                            ],
+                          }),
+                          e.jsx("h4", {
+                            className: "mt-3 text-xl font-bold",
+                            children:
+                              ((W = x.product) == null ? void 0 : W.title) ||
+                              x.title ||
+                              "Product",
+                          }),
+                          e.jsx("p", {
+                            className: n("mt-2 text-sm leading-6", G),
+                            children:
+                              ((X = x.product) == null
+                                ? void 0
+                                : X.description) ||
+                              x.description ||
+                              "--",
+                          }),
+                          e.jsxs("div", {
+                            className: "mt-4 flex gap-3",
+                            children: [
+                              e.jsx(E, {
+                                variant: "primary",
+                                children: "Quick view",
+                              }),
+                              e.jsx(E, {
+                                variant: "ghost",
+                                children: "Company page",
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      e.jsxs("div", {
+                        className: n(
+                          "rounded-3xl border p-4",
+                          o === "dark"
+                            ? "border-white/10 bg-black/20"
+                            : "border-sky-100 bg-white",
+                        ),
+                        children: [
+                          e.jsx(se, {
+                            label: "Company",
+                            value:
+                              ((Y = x.author) == null ? void 0 : Y.name) ||
+                              x.companyName ||
+                              "--",
+                          }),
+                          e.jsx(se, {
+                            label: "Viewed",
+                            value: x.viewed_at
+                              ? new Date(x.viewed_at).toLocaleDateString()
+                              : "--",
+                          }),
+                          e.jsx(se, {
+                            label: "Category",
+                            value:
+                              ((J = x.product) == null ? void 0 : J.category) ||
+                              x.category ||
+                              "--",
+                          }),
+                          e.jsx(se, {
+                            label: "MOQ",
+                            value:
+                              ((K = x.product) == null ? void 0 : K.moq) ||
+                              x.moq ||
+                              "--",
+                          }),
+                          e.jsx(se, {
+                            label: "Lead time",
+                            value:
+                              ((Z = x.product) == null
+                                ? void 0
+                                : Z.lead_time_days) ||
+                              x.leadTime ||
+                              "--",
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }),
+          e.jsx(He, {
+            open: !!x,
+            item: x,
+            onClose: () => P(null),
+            onViewed: () => C({ reset: !0 }),
+          }),
+        ],
+      });
+}
+function fe({ label: t, value: l }) {
+  return e.jsxs("div", {
+    className: "rounded-2xl border border-white/10 bg-white/5 p-3 text-center",
+    children: [
+      e.jsx("div", {
+        className: "text-xl font-black text-sky-300",
+        children: l,
+      }),
+      e.jsx("div", {
+        className: "mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400",
+        children: t,
+      }),
+    ],
+  });
+}
+function ge({ tone: t, text: l }) {
+  const s = {
+    emerald: "bg-emerald-400",
+    blue: "bg-sky-400",
+    sky: "bg-cyan-400",
+  };
+  return e.jsxs("div", {
+    className: "flex gap-3",
+    children: [
+      e.jsx("span", {
+        className: n("mt-2 h-2.5 w-2.5 rounded-full shrink-0", s[t] || s.sky),
+      }),
+      e.jsx("p", {
+        className: "text-slate-300 dark:text-slate-700",
+        children: l,
+      }),
+    ],
+  });
+}
+function ce({ method: t, path: l }) {
+  return e.jsxs("div", {
+    className:
+      "flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5",
+    children: [
+      e.jsx("span", {
+        className:
+          "rounded-lg bg-sky-500/10 px-2.5 py-1 text-xs font-bold text-sky-300",
+        children: t,
+      }),
+      e.jsx("code", { className: "text-xs text-slate-300", children: l }),
+    ],
+  });
+}
+function be({ title: t, description: l, compact: s = !1 }) {
+  return e.jsxs("div", {
+    className: n(
+      "rounded-3xl border border-dashed border-white/10 bg-white/5 text-center",
+      s ? "p-5" : "p-8",
+    ),
+    children: [
+      e.jsx("div", {
+        className:
+          "mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-300",
+        children: e.jsxs("svg", {
+          viewBox: "0 0 24 24",
+          className: "h-6 w-6 fill-none stroke-current stroke-[2]",
+          children: [
+            e.jsx("path", { d: "M12 4v16" }),
+            e.jsx("path", { d: "M4 12h16" }),
+          ],
+        }),
+      }),
+      e.jsx("h4", { className: "mt-4 text-base font-bold", children: t }),
+      e.jsx("p", { className: "mt-2 text-sm text-slate-400", children: l }),
+    ],
+  });
+}
+function Je({
+  item: t,
+  theme: l,
+  user: s,
+  onMarkRead: o,
+  onAccept: y,
+  onReject: g,
+}) {
+  var b, v;
+  const c = Ye(t.type),
+    u =
+      l === "dark"
+        ? "border-white/10 bg-white/5"
+        : "border-sky-100 bg-white/80";
+  return e.jsx($.div, {
+    layout: !0,
+    className: n(
+      "group rounded-3xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl",
+      u,
+      t.read ? "" : "ring-1 ring-sky-400/20",
+    ),
+    children: e.jsxs("div", {
+      className:
+        "flex flex-col gap-4 md:flex-row md:items-start md:justify-between",
+      children: [
+        e.jsxs("div", {
+          className: "min-w-0 flex-1",
+          children: [
+            e.jsxs("div", {
+              className: "flex flex-wrap items-center gap-2",
+              children: [
+                e.jsx(S, { tone: c, children: We[t.type] || "Update" }),
+                !t.read && e.jsx(S, { tone: "emerald", children: "New" }),
+                ((b = t == null ? void 0 : t.meta) == null
+                  ? void 0
+                  : b.request_id) &&
+                  e.jsx("span", {
+                    className:
+                      "rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-semibold text-slate-300 ring-1 ring-white/10",
+                    children: t.meta.request_id,
+                  }),
+              ],
+            }),
+            e.jsx("h3", {
+              className: "mt-3 text-lg font-bold leading-7",
+              children: t.message || t.title || "Notification",
+            }),
+            e.jsx("p", {
+              className: n(
+                "mt-2 text-sm leading-6",
+                l === "dark" ? "text-slate-300" : "text-slate-700",
+              ),
+              children: t.message,
+            }),
+            e.jsx("div", {
+              className: n(
+                "mt-3 flex flex-wrap items-center gap-2 text-xs",
+                l === "dark" ? "text-slate-400" : "text-slate-600",
+              ),
+              children: e.jsx("span", {
+                children: new Date(t.created_at).toLocaleString(),
+              }),
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className:
+            "flex shrink-0 flex-col gap-2 sm:flex-row md:flex-col lg:flex-row",
+          children: [
+            t.type === "partner_request" &&
+              ((s == null ? void 0 : s.role) === "factory" ||
+                (s == null ? void 0 : s.role) === "admin" ||
+                (s == null ? void 0 : s.role) === "owner") &&
+              e.jsxs(e.Fragment, {
+                children: [
+                  e.jsx(E, {
+                    variant: "success",
+                    onClick: y,
+                    children: "Accept",
+                  }),
+                  e.jsx(E, {
+                    variant: "danger",
+                    onClick: g,
+                    children: "Reject",
+                  }),
+                ],
+              }),
+            t.type === "rating_feedback_request"
+              ? e.jsx(he, {
+                  to: `/ratings/feedback?profile_key=${encodeURIComponent((t == null ? void 0 : t.entity_id) || ((v = t == null ? void 0 : t.meta) == null ? void 0 : v.profile_key) || "")}`,
+                  className:
+                    "rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center",
+                  children: "Rate now",
+                })
+              : t.entity_type
+                ? e.jsx(he, {
+                    to: Xe(t.entity_type, t.entity_id),
+                    className:
+                      "rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center",
+                    children: "View",
+                  })
+                : null,
+            !t.read &&
+              e.jsx(E, { variant: "ghost", onClick: o, children: "Mark read" }),
+          ],
+        }),
+      ],
+    }),
+  });
+}
+function Ke({ product: t, theme: l, onQuickView: s }) {
+  var o, y, g, c, u, b;
+  return e.jsx($.div, {
+    layout: !0,
+    className: n(
+      "rounded-3xl border p-4",
+      l === "dark"
+        ? "border-white/10 bg-white/5"
+        : "border-sky-100 bg-white/85",
+    ),
+    children: e.jsxs("div", {
+      className:
+        "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between",
+      children: [
+        e.jsxs("div", {
+          children: [
+            e.jsxs("div", {
+              className: "flex flex-wrap items-center gap-2",
+              children: [
+                e.jsx(S, { tone: "sky", children: "Viewed" }),
+                e.jsx(S, {
+                  tone: "blue",
+                  children:
+                    ((o = t.product) == null ? void 0 : o.category) ||
+                    t.category ||
+                    "--",
+                }),
+              ],
+            }),
+            e.jsx("h3", {
+              className: "mt-3 text-lg font-bold",
+              children:
+                ((y = t.product) == null ? void 0 : y.title) ||
+                t.title ||
+                "Product",
+            }),
+            e.jsxs("div", {
+              className: n(
+                "mt-1 text-sm",
+                l === "dark" ? "text-slate-300" : "text-slate-700",
+              ),
+              children: [
+                ((g = t.author) == null ? void 0 : g.name) || t.company || "--",
+                " · Viewed",
+                " ",
+                new Date(t.viewed_at).toLocaleDateString(),
+              ],
+            }),
+            e.jsxs("div", {
+              className: "mt-3 flex flex-wrap gap-2 text-xs text-slate-400",
+              children: [
+                e.jsxs("span", {
+                  className:
+                    "rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10",
+                  children: [
+                    "MOQ ",
+                    ((c = t.product) == null ? void 0 : c.moq) || t.moq || "--",
+                  ],
+                }),
+                e.jsxs("span", {
+                  className:
+                    "rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10",
+                  children: [
+                    "Lead time",
+                    " ",
+                    ((u = t.product) == null ? void 0 : u.lead_time_days) ||
+                      t.leadTime ||
+                      "--",
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className: "flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row",
+          children: [
+            e.jsx(E, {
+              variant: "primary",
+              onClick: s,
+              children: "Quick view",
+            }),
+            ((b = t.author) == null ? void 0 : b.id) &&
+              e.jsx(he, {
+                to:
+                  t.author.role === "buying_house"
+                    ? `/buying-house/${t.author.id}`
+                    : `/factory/${t.author.id}`,
+                className:
+                  "rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center",
+                children: "Company",
+              }),
+          ],
+        }),
+      ],
+    }),
+  });
+}
+function se({ label: t, value: l }) {
+  return e.jsxs("div", {
+    className:
+      "mb-3 flex items-center justify-between gap-4 border-b border-white/10 pb-3 last:mb-0 last:border-0 last:pb-0",
+    children: [
+      e.jsx("span", {
+        className: "text-xs uppercase tracking-[0.2em] text-slate-400",
+        children: t,
+      }),
+      e.jsx("span", {
+        className: "text-sm font-semibold text-slate-100 dark:text-slate-900",
+        children: l,
+      }),
+    ],
+  });
+}
+export { os as default };

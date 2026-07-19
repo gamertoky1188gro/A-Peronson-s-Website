@@ -8,7 +8,10 @@ export default function Footer() {
 
   if (!user) {
     return (
-      <ScrollReveal as="footer" className="shadow-dividerT dark:shadow-dividerTDark bg-white py-8 dark:bg-slate-950">
+      <ScrollReveal
+        as="footer"
+        className="shadow-dividerT dark:shadow-dividerTDark bg-white py-8 dark:bg-slate-950"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center gap-4 text-center">
             <div className="flex items-center gap-2">
@@ -37,7 +40,10 @@ export default function Footer() {
   }
 
   return (
-    <ScrollReveal as="footer" className="shadow-dividerT dark:shadow-dividerTDark bg-white pt-12 pb-8 dark:bg-slate-950">
+    <ScrollReveal
+      as="footer"
+      className="shadow-dividerT dark:shadow-dividerTDark bg-white pt-12 pb-8 dark:bg-slate-950"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Company Identity */}
@@ -123,16 +129,20 @@ export default function Footer() {
               Verification & Legal
             </h3>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              {isRouteValid("/verification") && <li>
-                <Link to="/verification" className="hover:text-gtBlue">
-                  Document Verification
-                </Link>
-              </li>}
-              {isRouteValid("/contracts") && <li>
-                <Link to="/contracts" className="hover:text-gtBlue">
-                  Digital Contract System
-                </Link>
-              </li>}
+              {isRouteValid("/verification") && (
+                <li>
+                  <Link to="/verification" className="hover:text-gtBlue">
+                    Document Verification
+                  </Link>
+                </li>
+              )}
+              {isRouteValid("/contracts") && (
+                <li>
+                  <Link to="/contracts" className="hover:text-gtBlue">
+                    Digital Contract System
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link to="/privacy" className="hover:text-gtBlue">
                   Privacy Policy
@@ -159,13 +169,19 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
               <li>
                 <span className="font-semibold">Email:</span>{" "}
-                <a href="mailto:gartexhub@gmail.com" className="text-gtBlue hover:underline">
+                <a
+                  href="mailto:gartexhub@gmail.com"
+                  className="text-gtBlue hover:underline"
+                >
                   gartexhub@gmail.com
                 </a>
               </li>
               <li>
                 <span className="font-semibold">Business:</span>{" "}
-                <a href="mailto:gartexhub@gmail.com" className="text-gtBlue hover:underline">
+                <a
+                  href="mailto:gartexhub@gmail.com"
+                  className="text-gtBlue hover:underline"
+                >
                   gartexhub@gmail.com
                 </a>
               </li>

@@ -2,12 +2,21 @@ import { motion, useReducedMotion } from "framer-motion";
 
 const easePremium = [0.16, 1, 0.3, 1];
 
-export default function ScrollReveal({ children, className = "", as: Tag = "div", ...rest }) {
+export default function ScrollReveal({
+  children,
+  className = "",
+  as: Tag = "div",
+  ...rest
+}) {
   const reduceMotion = useReducedMotion();
 
   if (reduceMotion) {
     const StaticTag = Tag;
-    return <StaticTag className={className} {...rest}>{children}</StaticTag>;
+    return (
+      <StaticTag className={className} {...rest}>
+        {children}
+      </StaticTag>
+    );
   }
 
   const MotionTag = motion[Tag];

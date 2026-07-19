@@ -67,7 +67,11 @@ export async function getSessionMessages(req, res) {
   const result = await getOpencodeSessionMessages(userId);
   const messages = result?.messages || [];
   const title = result?.title || null;
-  logInfo("Returning session messages", { count: messages.length, title, userId });
+  logInfo("Returning session messages", {
+    count: messages.length,
+    title,
+    userId,
+  });
   return res.json({ messages, title });
 }
 

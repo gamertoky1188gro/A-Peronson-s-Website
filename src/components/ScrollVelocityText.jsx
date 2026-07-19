@@ -13,7 +13,7 @@ export default function ScrollVelocityText({
   const translateX = useTransform(
     velocity,
     [-2000, 0, 2000],
-    [-maxTranslate, 0, maxTranslate]
+    [-maxTranslate, 0, maxTranslate],
   );
 
   const MotionTag = motion[as];

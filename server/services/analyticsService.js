@@ -215,8 +215,14 @@ export async function getDashboardAnalytics(user) {
     products,
     ratings,
   ] = await Promise.all([
-    prisma.analyticsEvent.findMany({ where: { created_at: { gte: days90 } }, take: 2000 }),
-    prisma.requirement.findMany({ where: { created_at: { gte: days90 } }, take: 500 }),
+    prisma.analyticsEvent.findMany({
+      where: { created_at: { gte: days90 } },
+      take: 2000,
+    }),
+    prisma.requirement.findMany({
+      where: { created_at: { gte: days90 } },
+      take: 500,
+    }),
     prisma.message.findMany({ take: 1000 }),
     prisma.match.findMany({ take: 500 }),
     prisma.document.findMany({ take: 500 }),
@@ -621,14 +627,23 @@ export async function getCompanyAnalytics(user) {
     leads,
     requirements,
   ] = await Promise.all([
-    prisma.analyticsEvent.findMany({ where: { created_at: { gte: days90 } }, take: 2000 }),
+    prisma.analyticsEvent.findMany({
+      where: { created_at: { gte: days90 } },
+      take: 2000,
+    }),
     prisma.product.findMany({ take: 500 }),
-    prisma.productView.findMany({ where: { created_at: { gte: days90 } }, take: 1000 }),
+    prisma.productView.findMany({
+      where: { created_at: { gte: days90 } },
+      take: 1000,
+    }),
     prisma.message.findMany({ take: 1000 }),
     prisma.document.findMany({ take: 500 }),
     prisma.user.findMany({ take: 500 }),
     prisma.lead.findMany({ take: 500 }),
-    prisma.requirement.findMany({ where: { created_at: { gte: days90 } }, take: 500 }),
+    prisma.requirement.findMany({
+      where: { created_at: { gte: days90 } },
+      take: 500,
+    }),
   ]);
 
   const actorRole = String(user?.role || "").toLowerCase();
@@ -857,9 +872,15 @@ async function buildPlatformAnalyticsSnapshot(governance) {
     Math.max(1, Number(governance.retention_days || 365)) * 24 * 60 * 60 * 1000;
   const cutoff = new Date(Date.now() - retentionMs);
   const [requirements, users, events] = await Promise.all([
-    prisma.requirement.findMany({ where: { created_at: { gte: cutoff } }, take: 2000 }),
+    prisma.requirement.findMany({
+      where: { created_at: { gte: cutoff } },
+      take: 2000,
+    }),
     prisma.user.findMany({ take: 1000 }),
-    prisma.analyticsEvent.findMany({ where: { created_at: { gte: cutoff } }, take: 5000 }),
+    prisma.analyticsEvent.findMany({
+      where: { created_at: { gte: cutoff } },
+      take: 5000,
+    }),
   ]);
 
   const usersById = new Map(
@@ -1359,14 +1380,20 @@ export async function getPremiumInsights(user) {
     products,
     productViews,
   ] = await Promise.all([
-    prisma.requirement.findMany({ where: { created_at: { gte: days90 } }, take: 1000 }),
+    prisma.requirement.findMany({
+      where: { created_at: { gte: days90 } },
+      take: 1000,
+    }),
     prisma.match.findMany({ take: 500 }),
     prisma.message.findMany({ take: 1000 }),
     prisma.document.findMany({ take: 500 }),
     prisma.user.findMany({ take: 500 }),
     prisma.lead.findMany({ take: 500 }),
     prisma.product.findMany({ take: 500 }),
-    prisma.productView.findMany({ where: { created_at: { gte: days90 } }, take: 1000 }),
+    prisma.productView.findMany({
+      where: { created_at: { gte: days90 } },
+      take: 1000,
+    }),
   ]);
 
   const docs = Array.isArray(documents) ? documents : [];

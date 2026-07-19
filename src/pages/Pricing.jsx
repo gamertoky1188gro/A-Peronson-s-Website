@@ -19,7 +19,14 @@
 */
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { Check } from "lucide-react";
 import { Atom, Mosaic } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
@@ -246,8 +253,13 @@ function SectionTitle({ eyebrow, title, subtitle }) {
         <TextColorReveal>{eyebrow}</TextColorReveal>
       </div>
       <h2 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-        {reduceMotion ? <TextColorReveal as="span">{title}</TextColorReveal> : (
-          <TextColorReveal as="span" className="inline-flex flex-wrap justify-center gap-x-[0.25em]">
+        {reduceMotion ? (
+          <TextColorReveal as="span">{title}</TextColorReveal>
+        ) : (
+          <TextColorReveal
+            as="span"
+            className="inline-flex flex-wrap justify-center gap-x-[0.25em]"
+          >
             {words.map((word, i) => (
               <motion.span
                 key={i}
@@ -255,7 +267,11 @@ function SectionTitle({ eyebrow, title, subtitle }) {
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.4, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                transition={{
+                  duration: 0.4,
+                  delay: i * 0.06,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
               >
                 {word}
               </motion.span>
@@ -379,12 +395,18 @@ function PlanCard({
         <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-400/20 blur-3xl" />
       )}
       {shouldFlip ? (
-        <div className="grid h-full" style={{ gridTemplateColumns: "1fr", gridTemplateRows: "1fr" }}>
+        <div
+          className="grid h-full"
+          style={{ gridTemplateColumns: "1fr", gridTemplateRows: "1fr" }}
+        >
           <div className="invisible grid" style={{ gridArea: "1 / 1" }}>
             <div className="flex flex-col p-6" style={{ gridArea: "1 / 1" }}>
               {headerSection}
             </div>
-            <div className="flex flex-col justify-between p-6" style={{ gridArea: "1 / 1" }}>
+            <div
+              className="flex flex-col justify-between p-6"
+              style={{ gridArea: "1 / 1" }}
+            >
               {featuresSection}
               <div className="mt-6">{buttonSection}</div>
             </div>
@@ -393,9 +415,7 @@ function PlanCard({
             <FlipCard
               className="h-full"
               front={
-                <div className="flex h-full flex-col p-6">
-                  {headerSection}
-                </div>
+                <div className="flex h-full flex-col p-6">{headerSection}</div>
               }
               back={
                 <div className="flex h-full flex-col justify-between p-6">
@@ -443,7 +463,13 @@ function AnalyticsCard({ tiles = [], loading = false, loadError = "" }) {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Atom color="#5900ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+              <Atom
+                color="#5900ff"
+                size="large"
+                style={{ fontSize: "40px" }}
+                text=""
+                textColor=""
+              />
             </div>
           ) : (
             displayMetrics.slice(0, 4).map((m) => (
@@ -463,7 +489,13 @@ function AnalyticsCard({ tiles = [], loading = false, loadError = "" }) {
         </div>
         {loadError && (
           <div className="flex h-64 items-center justify-center">
-            <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+            <Mosaic
+              color="#3b00ff"
+              size="large"
+              style={{ fontSize: "40px" }}
+              text=""
+              textColor=""
+            />
           </div>
         )}
       </div>
@@ -484,7 +516,12 @@ function ComparisonTable({ comparisonRows = [] }) {
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <StickySection as="thead" top={100} parallaxSpeed={16} className="bg-slate-50/80 text-slate-600 dark:bg-white/5 dark:text-slate-300">
+          <StickySection
+            as="thead"
+            top={100}
+            parallaxSpeed={16}
+            className="bg-slate-50/80 text-slate-600 dark:bg-white/5 dark:text-slate-300"
+          >
             <tr>
               <th className="px-6 py-4 font-medium">Feature</th>
               <th className="px-6 py-4 font-medium">Free</th>
@@ -683,12 +720,26 @@ export default function PricingPage() {
 
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
-  const bg1Y = useSpring(useTransform(scrollY, [0, 600], [0, -30]), { stiffness: 80, damping: 20, restDelta: 0.001 });
-  const bg2Y = useSpring(useTransform(scrollY, [0, 600], [0, -50]), { stiffness: 80, damping: 20, restDelta: 0.001 });
-  const bg3Y = useSpring(useTransform(scrollY, [0, 600], [0, -20]), { stiffness: 80, damping: 20, restDelta: 0.001 });
+  const bg1Y = useSpring(useTransform(scrollY, [0, 600], [0, -30]), {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001,
+  });
+  const bg2Y = useSpring(useTransform(scrollY, [0, 600], [0, -50]), {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001,
+  });
+  const bg3Y = useSpring(useTransform(scrollY, [0, 600], [0, -20]), {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001,
+  });
   const gradientAngle = useMotionValue(135);
-  const gradientBg = useTransform(gradientAngle, (angle) =>
-    `linear-gradient(${angle.toFixed(1)}deg, rgba(14,165,233,0.12), rgba(255,255,255,0.9), rgba(6,182,212,0.08))`
+  const gradientBg = useTransform(
+    gradientAngle,
+    (angle) =>
+      `linear-gradient(${angle.toFixed(1)}deg, rgba(14,165,233,0.12), rgba(255,255,255,0.9), rgba(6,182,212,0.08))`,
   );
   useEffect(() => {
     if (reduceMotion) return;
@@ -696,283 +747,303 @@ export default function PricingPage() {
     const id = setInterval(() => {
       if (running) gradientAngle.set((gradientAngle.get() + 0.4) % 360);
     }, 40);
-    return () => { running = false; clearInterval(id); };
+    return () => {
+      running = false;
+      clearInterval(id);
+    };
   }, [reduceMotion, gradientAngle]);
 
   if (loading) return <NeonAtom fill />;
 
   return (
     <div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
-        <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-          <motion.div style={{ y: reduceMotion ? 0 : bg1Y }} className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.14),transparent_34%)]" />
-          <motion.div style={{ y: reduceMotion ? 0 : bg2Y }} className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.16),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_30%)]" />
-          <motion.div style={{ y: reduceMotion ? 0 : bg3Y }} className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(14,165,233,0.12),transparent_28%)] dark:bg-[radial-gradient(circle_at_bottom,rgba(14,165,233,0.1),transparent_28%)]" />
-        </div>
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        <motion.div
+          style={{ y: reduceMotion ? 0 : bg1Y }}
+          className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.14),transparent_34%)]"
+        />
+        <motion.div
+          style={{ y: reduceMotion ? 0 : bg2Y }}
+          className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.16),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_30%)]"
+        />
+        <motion.div
+          style={{ y: reduceMotion ? 0 : bg3Y }}
+          className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(14,165,233,0.12),transparent_28%)] dark:bg-[radial-gradient(circle_at_bottom,rgba(14,165,233,0.1),transparent_28%)]"
+        />
+      </div>
 
-        <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          <ScrollReveal as="section" className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-sky-200">
-                <span>✔</span>
-                Pricing
-              </div>
-              <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
-                Clear plans for serious sourcing teams
-              </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-                Borderless surfaces, verified signals, and export-ready
-                reporting — built for buying houses and factories.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                {isLoggedIn ? (
-                  <>
-                    <Link
-                      to="/feed"
-                      className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-                    >
-                      Go to Dashboard
-                      <span>→</span>
-                    </Link>
-                    <Link
-                      to="#plans"
-                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
-                    >
-                      <span>🔍</span>
-                      View plans
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/signup"
-                      className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-                    >
-                      Create your organization
-                      <span>→</span>
-                    </Link>
-                    <Link
-                      to="#plans"
-                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
-                    >
-                      <span>🔍</span>
-                      View plans
-                    </Link>
-                  </>
-                )}
-              </div>
+      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <ScrollReveal
+          as="section"
+          className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center"
+        >
+          <div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-sky-200">
+              <span>✔</span>
+              Pricing
             </div>
+            <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
+              Clear plans for serious sourcing teams
+            </h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+              Borderless surfaces, verified signals, and export-ready reporting
+              — built for buying houses and factories.
+            </p>
 
-            <AnalyticsCard
-              tiles={pricing?.analytics?.tiles || []}
-              loading={loading}
-              loadError={loadError}
-            />
-          </ScrollReveal>
-
-          <ScrollReveal as="section" id="plans" className="mt-20 scroll-mt-24">
-            <SectionTitle
-              eyebrow="Simple, transparent pricing"
-              title="Choose the surface you need today — upgrade when your team scales."
-              subtitle="Role-specific plans keep workflows clean for buyers, factories, and buying houses. Start free, then move into premium when you need analytics, priority placement, export-ready reporting, and secure contract history."
-            />
-
-            <div className="mt-10 grid gap-6 xl:grid-cols-3">
-              {visibleSections.map((section) => {
-                const rolePlan =
-                  plansByRole[section.key] || plansByRole.neutral;
-                return (
-                  <React.Fragment key={section.key}>
-                    <PlanCard
-                      title={section.title}
-                      role={
-                        section.key === "buyer"
-                          ? "For direct buyers sourcing verified factories"
-                          : section.key === "factory"
-                            ? "For factories managing products and inbound buyer requests"
-                            : "For buying houses coordinating teams and partners"
-                      }
-                      price="$0"
-                      description="Start with essential workflow."
-                      features={rolePlan.Free}
-                      buttonLabel="Get started"
-                      icon={
-                        section.key === "buyer"
-                          ? "🏢"
-                          : section.key === "factory"
-                            ? "🏭"
-                            : "👥"
-                      }
-                      isLoggedIn={isLoggedIn}
-                      flip
-                    />
-                    <PlanCard
-                      title={`${section.title} Premium`}
-                      role="Verified active"
-                      price="$199"
-                      description="Built for buying houses & enterprise teams."
-                      features={rolePlan.Premium}
-                      buttonLabel="Choose premium"
-                      highlighted
-                      icon="✨"
-                      isLoggedIn={isLoggedIn}
-                      flip
-                    />
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal as="section" className="mt-20 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
-            <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]">
-              <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
-                Why enterprise matters
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-                When your team scales, structure beats noise. Premium keeps
-                workflows conflict-free and audit-ready.
-              </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {[
-                  "Team scale without limits",
-                  "Decision-ready visibility",
-                  "Secure contract trail",
-                  "Verified trust signals",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-4 text-sm font-medium text-slate-800 dark:border-white/10 dark:bg-white/5 dark:text-white"
+            <div className="mt-8 flex flex-wrap gap-3">
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    to="/feed"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
                   >
-                    {item}
-                  </div>
-                ))}
-              </div>
+                    Go to Dashboard
+                    <span>→</span>
+                  </Link>
+                  <Link
+                    to="#plans"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
+                  >
+                    <span>🔍</span>
+                    View plans
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/signup"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                  >
+                    Create your organization
+                    <span>→</span>
+                  </Link>
+                  <Link
+                    to="#plans"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
+                  >
+                    <span>🔍</span>
+                    View plans
+                  </Link>
+                </>
+              )}
             </div>
+          </div>
+
+          <AnalyticsCard
+            tiles={pricing?.analytics?.tiles || []}
+            loading={loading}
+            loadError={loadError}
+          />
+        </ScrollReveal>
+
+        <ScrollReveal as="section" id="plans" className="mt-20 scroll-mt-24">
+          <SectionTitle
+            eyebrow="Simple, transparent pricing"
+            title="Choose the surface you need today — upgrade when your team scales."
+            subtitle="Role-specific plans keep workflows clean for buyers, factories, and buying houses. Start free, then move into premium when you need analytics, priority placement, export-ready reporting, and secure contract history."
+          />
+
+          <div className="mt-10 grid gap-6 xl:grid-cols-3">
+            {visibleSections.map((section) => {
+              const rolePlan = plansByRole[section.key] || plansByRole.neutral;
+              return (
+                <React.Fragment key={section.key}>
+                  <PlanCard
+                    title={section.title}
+                    role={
+                      section.key === "buyer"
+                        ? "For direct buyers sourcing verified factories"
+                        : section.key === "factory"
+                          ? "For factories managing products and inbound buyer requests"
+                          : "For buying houses coordinating teams and partners"
+                    }
+                    price="$0"
+                    description="Start with essential workflow."
+                    features={rolePlan.Free}
+                    buttonLabel="Get started"
+                    icon={
+                      section.key === "buyer"
+                        ? "🏢"
+                        : section.key === "factory"
+                          ? "🏭"
+                          : "👥"
+                    }
+                    isLoggedIn={isLoggedIn}
+                    flip
+                  />
+                  <PlanCard
+                    title={`${section.title} Premium`}
+                    role="Verified active"
+                    price="$199"
+                    description="Built for buying houses & enterprise teams."
+                    features={rolePlan.Premium}
+                    buttonLabel="Choose premium"
+                    highlighted
+                    icon="✨"
+                    isLoggedIn={isLoggedIn}
+                    flip
+                  />
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal
+          as="section"
+          className="mt-20 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch"
+        >
+          <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]">
+            <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
+              Why enterprise matters
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+              When your team scales, structure beats noise. Premium keeps
+              workflows conflict-free and audit-ready.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                "Team scale without limits",
+                "Decision-ready visibility",
+                "Secure contract trail",
+                "Verified trust signals",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-4 text-sm font-medium text-slate-800 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+          <AnalyticsCard
+            tiles={pricing?.analytics?.tiles || []}
+            loading={loading}
+            loadError={loadError}
+          />
+        </ScrollReveal>
+
+        <ScrollReveal as="section" className="mt-20">
+          <SectionTitle
+            eyebrow="Premium feature deep dive"
+            title="A role-specific roundup of what the Premium plan unlocks."
+            subtitle="Buyer, Factory, and Buying House teams all get the right controls, analytics, and trust signals — without bloated UI or confusing add-ons."
+          />
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {premiumFeatures.map((bundle) => (
+              <div
+                key={bundle.title}
+                className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5"
+              >
+                <div className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">
+                  {bundle.title}
+                </div>
+                <FeatureList items={bundle.items} accent />
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal as="section" className="mt-20">
+          <SectionTitle
+            eyebrow="Analytics snapshot"
+            title="Decision-ready metrics without spreadsheet UI."
+            subtitle="Auto-sorted, calm, and clean — the data feels like part of the product instead of a separate dashboard."
+          />
+          <div className="mt-10">
             <AnalyticsCard
               tiles={pricing?.analytics?.tiles || []}
               loading={loading}
               loadError={loadError}
             />
-          </ScrollReveal>
+          </div>
+        </ScrollReveal>
 
-          <ScrollReveal as="section" className="mt-20">
-            <SectionTitle
-              eyebrow="Premium feature deep dive"
-              title="A role-specific roundup of what the Premium plan unlocks."
-              subtitle="Buyer, Factory, and Buying House teams all get the right controls, analytics, and trust signals — without bloated UI or confusing add-ons."
-            />
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
-              {premiumFeatures.map((bundle) => (
-                <div
-                  key={bundle.title}
-                  className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5"
-                >
-                  <div className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">
-                    {bundle.title}
-                  </div>
-                  <FeatureList items={bundle.items} accent />
-                </div>
-              ))}
-            </div>
-          </ScrollReveal>
+        <ScrollReveal as="section" className="mt-20">
+          <SectionTitle
+            eyebrow="Comparison"
+            title="Feature comparison"
+            subtitle="A clear line-by-line look at the Free and Premium surfaces."
+          />
+          <div className="mt-10">
+            <ComparisonTable comparisonRows={comparisonRows} />
+          </div>
+        </ScrollReveal>
 
-          <ScrollReveal as="section" className="mt-20">
-            <SectionTitle
-              eyebrow="Analytics snapshot"
-              title="Decision-ready metrics without spreadsheet UI."
-              subtitle="Auto-sorted, calm, and clean — the data feels like part of the product instead of a separate dashboard."
-            />
-            <div className="mt-10">
-              <AnalyticsCard
-                tiles={pricing?.analytics?.tiles || []}
-                loading={loading}
-                loadError={loadError}
-              />
-            </div>
-          </ScrollReveal>
+        <ScrollReveal as="section" className="mt-20">
+          <SectionTitle
+            eyebrow="FAQ"
+            title="Short answers, no sales noise."
+            subtitle="Everything important, kept simple."
+          />
+          <div className="mt-10 grid gap-4 lg:grid-cols-2">
+            {faqs.map((item) => (
+              <FAQItem key={item.q} q={item.q} a={item.a} />
+            ))}
+          </div>
+        </ScrollReveal>
 
-          <ScrollReveal as="section" className="mt-20">
-            <SectionTitle
-              eyebrow="Comparison"
-              title="Feature comparison"
-              subtitle="A clear line-by-line look at the Free and Premium surfaces."
-            />
-            <div className="mt-10">
-              <ComparisonTable comparisonRows={comparisonRows} />
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal as="section" className="mt-20">
-            <SectionTitle
-              eyebrow="FAQ"
-              title="Short answers, no sales noise."
-              subtitle="Everything important, kept simple."
-            />
-            <div className="mt-10 grid gap-4 lg:grid-cols-2">
-              {faqs.map((item) => (
-                <FAQItem key={item.q} q={item.q} a={item.a} />
-              ))}
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal as="section" className="relative overflow-hidden mt-20 rounded-[2rem] border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-white to-cyan-500/10 p-8 shadow-[0_24px_80px_rgba(14,165,233,0.12)] dark:from-sky-500/10 dark:via-slate-950 dark:to-cyan-500/10">
-            <motion.div
-              className="pointer-events-none absolute inset-0"
-              style={{ background: reduceMotion ? undefined : gradientBg }}
-            />
-            <div className="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-sky-200">
-                  <span>🛡️</span>
-                  Ready for serious sourcing
-                </div>
-                <h3 className="mt-5 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-                  Build a structured textile network today
-                </h3>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-                  Start free, upgrade when your org needs analytics, export, and
-                  secure contract management.
-                </p>
+        <ScrollReveal
+          as="section"
+          className="relative overflow-hidden mt-20 rounded-[2rem] border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-white to-cyan-500/10 p-8 shadow-[0_24px_80px_rgba(14,165,233,0.12)] dark:from-sky-500/10 dark:via-slate-950 dark:to-cyan-500/10"
+        >
+          <motion.div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: reduceMotion ? undefined : gradientBg }}
+          />
+          <div className="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-sky-200">
+                <span>🛡️</span>
+                Ready for serious sourcing
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
-                {isLoggedIn ? (
-                  <>
-                    <Link
-                      to="/feed"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-                    >
-                      Go to Dashboard
-                      <span>→</span>
-                    </Link>
-                    <Link
-                      to="#plans"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
-                    >
-                      View plans
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/signup"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
-                    >
-                      Create your organization
-                      <span>→</span>
-                    </Link>
-                    <Link
-                      to="#plans"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
-                    >
-                      Choose premium
-                    </Link>
-                  </>
-                )}
-              </div>
+              <h3 className="mt-5 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+                Build a structured textile network today
+              </h3>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
+                Start free, upgrade when your org needs analytics, export, and
+                secure contract management.
+              </p>
             </div>
-          </ScrollReveal>
-        </main>
+            <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    to="/feed"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                  >
+                    Go to Dashboard
+                    <span>→</span>
+                  </Link>
+                  <Link
+                    to="#plans"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
+                  >
+                    View plans
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/signup"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                  >
+                    Create your organization
+                    <span>→</span>
+                  </Link>
+                  <Link
+                    to="#plans"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-sky-400 dark:hover:text-sky-200"
+                  >
+                    Choose premium
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </ScrollReveal>
+      </main>
     </div>
   );
 }

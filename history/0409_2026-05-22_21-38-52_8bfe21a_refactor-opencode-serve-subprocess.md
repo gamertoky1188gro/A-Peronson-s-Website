@@ -1,12 +1,12 @@
 # Commit 0409 — `8bfe21a28ac`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `8bfe21a28aca957a783e024f9719e957d02260fb` |
-| Parent Hash | `3245ed576e72d5d2659b69333d6a1e810f4b601e` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-22 21:38:52 +0600 |
-| Subject | refactor: use opencode serve subprocess to capture internal logs |
+| Field       | Value                                                            |
+| ----------- | ---------------------------------------------------------------- |
+| Commit Hash | `8bfe21a28aca957a783e024f9719e957d02260fb`                       |
+| Parent Hash | `3245ed576e72d5d2659b69333d6a1e810f4b601e`                       |
+| Author      | gamertoky1188gro                                                 |
+| Date        | 2026-05-22 21:38:52 +0600                                        |
+| Subject     | refactor: use opencode serve subprocess to capture internal logs |
 
 ---
 
@@ -18,9 +18,9 @@ Major refactor of `ensureOpencodeServer()` — replaces `createOpencode()` SDK c
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/assistantService.js` | modified | 76 | 0 |
+| File                                  | Status   | Insertions | Deletions |
+| ------------------------------------- | -------- | ---------- | --------- |
+| `server/services/assistantService.js` | modified | 76         | 0         |
 
 **1 file changed, 43 insertions, 33 deletions**
 

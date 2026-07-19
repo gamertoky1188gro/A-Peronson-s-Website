@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useState } from "react";
-import { Atom } from 'react-loading-indicators'
+import { Atom } from "react-loading-indicators";
 
 const TEXT_EXTS = new Set([
   "txt",
@@ -364,9 +364,16 @@ function FileAttachmentCard({
               />
             ) : (
               <div className="px-3 text-[11px] font-semibold opacity-70">
-                {pdfPreview.loading
-                  ? <Atom color="#5900ff" size="small" text="Generating preview..." textColor="#94a3b8" />
-                  : pdfPreview.error || "Preview unavailable"}
+                {pdfPreview.loading ? (
+                  <Atom
+                    color="#5900ff"
+                    size="small"
+                    text="Generating preview..."
+                    textColor="#94a3b8"
+                  />
+                ) : (
+                  pdfPreview.error || "Preview unavailable"
+                )}
               </div>
             )}
           </div>
@@ -382,7 +389,12 @@ function FileAttachmentCard({
         >
           <div className="max-h-28 overflow-hidden p-3 text-left">
             {textPreview.loading ? (
-              <Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" />
+              <Atom
+                color="#5900ff"
+                size="small"
+                text="Loading preview..."
+                textColor="#94a3b8"
+              />
             ) : textPreview.error ? (
               <div className="text-[11px] font-semibold opacity-70">
                 {textPreview.error}

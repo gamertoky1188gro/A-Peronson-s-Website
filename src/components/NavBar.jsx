@@ -74,7 +74,7 @@ import {
 import { useTheme } from "../lib/ThemeProvider";
 import useScrollDirection from "../hooks/useScrollDirection";
 import SlideIn from "./SlideIn";
-import { ThreeDot } from 'react-loading-indicators'
+import { ThreeDot } from "react-loading-indicators";
 import { isRouteValid } from "../lib/routeHealthCheck";
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
@@ -85,7 +85,6 @@ const publicLinks = [
   { to: "/about", label: "About" },
   { to: "/help", label: "Help" },
   { to: "/support", label: "Support" },
-
 ];
 
 const ENTER_DELAY = 180;
@@ -108,32 +107,40 @@ function useSmartHover(containerRef) {
   const handlePointerMove = useCallback((e) => {
     setTrail((prev) => {
       const next = [...prev, { x: e.clientX, y: e.clientY, t: Date.now() }];
-      return next.length > TRAJECTORY_SAMPLE ? next.slice(-TRAJECTORY_SAMPLE) : next;
+      return next.length > TRAJECTORY_SAMPLE
+        ? next.slice(-TRAJECTORY_SAMPLE)
+        : next;
     });
   }, []);
 
-  const headingToward = useCallback((rect) => {
-    if (trail.length < 2) return false;
-    const prev = trail[trail.length - 2];
-    const curr = trail[trail.length - 1];
-    const dx = curr.x - prev.x;
-    const dy = curr.y - prev.y;
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const toCx = cx - curr.x;
-    const toCy = cy - curr.y;
-    const dot = dx * toCx + dy * toCy;
-    return dot > 0;
-  }, [trail]);
+  const headingToward = useCallback(
+    (rect) => {
+      if (trail.length < 2) return false;
+      const prev = trail[trail.length - 2];
+      const curr = trail[trail.length - 1];
+      const dx = curr.x - prev.x;
+      const dy = curr.y - prev.y;
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const toCx = cx - curr.x;
+      const toCy = cy - curr.y;
+      const dot = dx * toCx + dy * toCy;
+      return dot > 0;
+    },
+    [trail],
+  );
 
-  const onEnter = useCallback((rect) => {
-    clearTimers();
-    if (rect && headingToward(rect)) {
-      setIntent(true);
-      return;
-    }
-    enterTimer.current = setTimeout(() => setIntent(true), ENTER_DELAY);
-  }, [clearTimers, headingToward]);
+  const onEnter = useCallback(
+    (rect) => {
+      clearTimers();
+      if (rect && headingToward(rect)) {
+        setIntent(true);
+        return;
+      }
+      enterTimer.current = setTimeout(() => setIntent(true), ENTER_DELAY);
+    },
+    [clearTimers, headingToward],
+  );
 
   const onExit = useCallback(() => {
     clearTimers();
@@ -175,7 +182,6 @@ const navigationGroups = [
       { to: "/feed", label: "Feed" },
       { to: "/feed/manage", label: "Manage Listings" },
       { to: "/search", label: "Search" },
-      { to: "/contracts", label: "Contracts" },
       { to: "/verification", label: "Verification" },
       {
         to: "/owner",
@@ -233,11 +239,6 @@ const navigationGroups = [
         roles: ["owner", "admin", "buying_house", "factory"],
       },
       {
-        to: "/org-settings",
-        label: "Settings",
-        roles: ["owner", "admin", "buying_house", "factory"],
-      },
-      {
         to: "/insights",
         label: "Insights",
         roles: ["owner", "admin", "buying_house", "factory", "buyer"],
@@ -287,7 +288,7 @@ function MagneticNavLink({ to, label, active }) {
     "relative inline-flex items-center rounded-full px-1.5 xl:px-3 py-2 text-[0.65rem] xl:text-sm font-medium transition-colors whitespace-nowrap",
     active
       ? "text-sky-700 dark:text-sky-300"
-      : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+      : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white",
   );
 
   return (
@@ -340,7 +341,7 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
           to={to}
           className={cn(
             "relative inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:-translate-y-0.5 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-300",
-            active && "text-sky-600 dark:text-sky-300"
+            active && "text-sky-600 dark:text-sky-300",
           )}
           aria-label={label}
         >
@@ -356,7 +357,11 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
             {badgeCount > 0 ? (
               <Motion.span
                 animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 className="absolute right-0 top-0 rounded-full bg-cyan-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm"
               >
                 {badgeCount > 99 ? "99+" : badgeCount}
@@ -432,7 +437,7 @@ function NavDropdown({
     onMouseLeave?.();
   };
 
-  const show = isTouchDevice ? isOpen : (isOpen || hover.intent);
+  const show = isTouchDevice ? isOpen : isOpen || hover.intent;
 
   return (
     <div
@@ -448,14 +453,19 @@ function NavDropdown({
           "group inline-flex items-center gap-2 rounded-full px-1.5 xl:px-3 py-2 text-[0.65rem] xl:text-sm font-medium whitespace-nowrap transition",
           show
             ? "text-sky-700 bg-sky-500/10 ring-1 ring-sky-400/25 dark:text-sky-300"
-            : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+            : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white",
         )}
       >
         <span className="inline-flex items-center gap-2">
           {IconComponent && <IconComponent className="h-4 w-4" />}
           <span className="hidden lg:inline">{group.label}</span>
         </span>
-        <ChevronDown className={cn("h-4 w-4 transition-transform", show ? "rotate-180" : "")} />
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 transition-transform",
+            show ? "rotate-180" : "",
+          )}
+        />
       </button>
 
       {/* Invisible buffer zone between trigger and dropdown */}
@@ -471,8 +481,12 @@ function NavDropdown({
           "absolute left-0 top-full z-50 mt-2 min-w-72 overflow-hidden rounded-3xl border border-white/10 bg-white/80 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:bg-slate-950/85",
           "transition-opacity duration-150",
           isTouchDevice
-            ? isOpen ? "block" : "hidden"
-            : show ? "block animate-in fade-in" : "hidden"
+            ? isOpen
+              ? "block"
+              : "hidden"
+            : show
+              ? "block animate-in fade-in"
+              : "hidden",
         )}
       >
         <div className="px-3 pb-2 pt-1">
@@ -490,7 +504,9 @@ function NavDropdown({
         )}
         <div className="space-y-1">
           {visibleItems.map((item) => {
-            const isActive = location.pathname === item.to || location.pathname + "?" + location.search === item.to;
+            const isActive =
+              location.pathname === item.to ||
+              location.pathname + "?" + location.search === item.to;
             return (
               <Link
                 key={item.to}
@@ -500,32 +516,66 @@ function NavDropdown({
                   "group/item flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
                   isActive
                     ? "bg-sky-500/10 text-sky-700 ring-1 ring-sky-400/25 dark:text-sky-300"
-                    : "text-slate-600 hover:bg-slate-900/5 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                    : "text-slate-600 hover:bg-slate-900/5 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white",
                 )}
               >
                 <span className="flex items-center gap-3">
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900/5 text-slate-700 dark:bg-white/5 dark:text-slate-200">
-                    {item.label === "My Profile" && <Vote className="h-4 w-4" />}
-                    {item.label === "Feed" && <LayoutDashboard className="h-4 w-4" />}
-                    {item.label === "Manage Listings" && <Package className="h-4 w-4" />}
+                    {item.label === "My Profile" && (
+                      <Vote className="h-4 w-4" />
+                    )}
+                    {item.label === "Feed" && (
+                      <LayoutDashboard className="h-4 w-4" />
+                    )}
+                    {item.label === "Manage Listings" && (
+                      <Package className="h-4 w-4" />
+                    )}
                     {item.label === "Search" && <Search className="h-4 w-4" />}
-                    {item.label === "Contracts" && <FileText className="h-4 w-4" />}
-                    {item.label === "Verification" && <ShieldCheck className="h-4 w-4" />}
-                    {item.label === "Notifications" && <Bell className="h-4 w-4" />}
-                    {item.label === "Chat" && <MessageSquare className="h-4 w-4" />}
-                    {item.label === "Requests" && <FileText className="h-4 w-4" />}
-                    {item.label === "Products" && <Package className="h-4 w-4" />}
+                    {item.label === "Contracts" && (
+                      <FileText className="h-4 w-4" />
+                    )}
+                    {item.label === "Verification" && (
+                      <ShieldCheck className="h-4 w-4" />
+                    )}
+                    {item.label === "Notifications" && (
+                      <Bell className="h-4 w-4" />
+                    )}
+                    {item.label === "Chat" && (
+                      <MessageSquare className="h-4 w-4" />
+                    )}
+                    {item.label === "Requests" && (
+                      <FileText className="h-4 w-4" />
+                    )}
+                    {item.label === "Products" && (
+                      <Package className="h-4 w-4" />
+                    )}
                     {item.label === "Partners" && <Users className="h-4 w-4" />}
                     {item.label === "Ratings" && <Star className="h-4 w-4" />}
                     {item.label === "Members" && <Users className="h-4 w-4" />}
-                    {item.label === "Settings" && <Settings className="h-4 w-4" />}
-                    {item.label === "Insights" && <FileText className="h-4 w-4" />}
-                    {item.label === "Owner Dashboard" && <Star className="h-4 w-4" />}
-                    {item.label === "Agent Dashboard" && <Star className="h-4 w-4" />}
-                    {item.label === "Admin Panel" && <ShieldCheck className="h-4 w-4" />}
-                    {item.label === "Governance" && <Settings className="h-4 w-4" />}
-                    {item.label === "Support" && <Settings className="h-4 w-4" />}
-                    {item.label === "Onboarding" && <Star className="h-4 w-4" />}
+                    {item.label === "Settings" && (
+                      <Settings className="h-4 w-4" />
+                    )}
+                    {item.label === "Insights" && (
+                      <FileText className="h-4 w-4" />
+                    )}
+                    {item.label === "Owner Dashboard" && (
+                      <Star className="h-4 w-4" />
+                    )}
+                    {item.label === "Agent Dashboard" && (
+                      <Star className="h-4 w-4" />
+                    )}
+                    {item.label === "Admin Panel" && (
+                      <ShieldCheck className="h-4 w-4" />
+                    )}
+                    {item.label === "Governance" && (
+                      <Settings className="h-4 w-4" />
+                    )}
+                    {item.label === "Support" && (
+                      <Settings className="h-4 w-4" />
+                    )}
+                    {item.label === "Onboarding" && (
+                      <Star className="h-4 w-4" />
+                    )}
                   </span>
                   <span>{item.label}</span>
                 </span>
@@ -579,7 +629,11 @@ export default function NavBar() {
   const direction = useScrollDirection();
   const reduceMotion = useReducedMotion();
   const navTarget = reduceMotion ? 0 : direction === "down" ? -120 : 0;
-  const navY = useSpring(navTarget, { stiffness: 120, damping: 24, restDelta: 0.001 });
+  const navY = useSpring(navTarget, {
+    stiffness: 120,
+    damping: 24,
+    restDelta: 0.001,
+  });
 
   useEffect(() => {
     navY.set(navTarget);
@@ -617,7 +671,11 @@ export default function NavBar() {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (searchExpanded && searchRef.current && !searchRef.current.contains(e.target)) {
+      if (
+        searchExpanded &&
+        searchRef.current &&
+        !searchRef.current.contains(e.target)
+      ) {
         if (!searchQuery.trim()) {
           setSearchExpanded(false);
         }
@@ -923,7 +981,8 @@ export default function NavBar() {
 
   useEffect(() => {
     const html = document.documentElement;
-    html.style.transition = "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease";
+    html.style.transition =
+      "background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease";
     const timer = setTimeout(() => {
       html.style.transition = "";
     }, 400);
@@ -944,7 +1003,19 @@ export default function NavBar() {
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
                 aria-label="Go back"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
               </button>
             )}
             <Link
@@ -965,7 +1036,11 @@ export default function NavBar() {
               </span>
             </Link>
 
-            <SlideIn direction="down" as="div" className="hidden min-w-0 flex-shrink items-center gap-1 md:flex">
+            <SlideIn
+              direction="down"
+              as="div"
+              className="hidden min-w-0 flex-shrink items-center gap-1 md:flex"
+            >
               {!user
                 ? validPublicLinks.map(({ to, label }, idx) => (
                     <Motion.div
@@ -1012,16 +1087,19 @@ export default function NavBar() {
           </div>
 
           <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
-            <div ref={searchRef} className="relative hidden items-center md:flex">
+            <div
+              ref={searchRef}
+              className="relative hidden items-center md:flex"
+            >
               {searchExpanded ? (
                 <div
                   className={cn(
                     "relative flex w-[400px] max-w-[calc(100vw-2rem)] items-center rounded-full border border-white/10 bg-white/65 px-3 py-2 backdrop-blur-xl shadow-[0_20px_45px_rgba(14,165,233,0.12)] transition-[width,box-shadow] duration-300",
-                    "dark:bg-slate-950/70"
+                    "dark:bg-slate-950/70",
                   )}
                 >
                   <Search className="h-4 w-4 text-slate-400" />
-                   <input
+                  <input
                     ref={searchInputRef}
                     value={searchQuery}
                     onChange={(e) => {
@@ -1036,7 +1114,9 @@ export default function NavBar() {
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && searchQuery.trim()) {
-                        navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                        navigate(
+                          `/search?q=${encodeURIComponent(searchQuery.trim())}`,
+                        );
                         setSearchExpanded(false);
                         setSearchOpen(false);
                       }
@@ -1071,7 +1151,13 @@ export default function NavBar() {
               {user && searchOpen && searchQuery.trim().length >= 1 ? (
                 <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[360px] overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.16)] backdrop-blur-2xl dark:bg-slate-950/95">
                   {searchLoading ? (
-                    <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
                   ) : null}
                   {!searchLoading && searchError ? (
                     <p className="px-2 py-3 text-xs text-rose-500">
@@ -1151,13 +1237,21 @@ export default function NavBar() {
                             onClick={() => addFriend(result.id)}
                             className="inline-flex items-center rounded-xl bg-indigo-500/10 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
                           >
-                            {actionBusyKey === `friend:${result.id}`
-                              ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                              : result.is_self
-                                ? "Add Friend"
-                                : result.friend_status === "incoming"
-                                  ? "Accept"
-                                  : "Add Friend"}
+                            {actionBusyKey === `friend:${result.id}` ? (
+                              <ThreeDot
+                                variant="bounce"
+                                color="#6100ff"
+                                size="small"
+                                text=""
+                                textColor=""
+                              />
+                            ) : result.is_self ? (
+                              "Add Friend"
+                            ) : result.friend_status === "incoming" ? (
+                              "Accept"
+                            ) : (
+                              "Add Friend"
+                            )}
                           </button>
                           {result.friend_status === "friends" ? (
                             <>
@@ -1207,7 +1301,9 @@ export default function NavBar() {
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
-                <span className="hidden sm:inline">{dark ? "Light" : "Dark"}</span>
+                <span className="hidden sm:inline">
+                  {dark ? "Light" : "Dark"}
+                </span>
               </button>
 
               {user ? (
@@ -1239,7 +1335,11 @@ export default function NavBar() {
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white md:hidden"
                 aria-label={mobileOpen ? "Close menu" : "Open menu"}
               >
-                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {mobileOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -1248,202 +1348,215 @@ export default function NavBar() {
 
       <AnimatePresence>
         {mobileOpen && (
-        <Motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] bg-slate-950/35 backdrop-blur-sm md:hidden"
-        >
           <Motion.div
-            ref={mobileMenuRef}
-            initial={{ x: "-100%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "-100%", opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="mx-auto mt-16 w-[min(92vw,28rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-white/85 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-2xl dark:bg-slate-950/90"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-slate-950/35 backdrop-blur-sm md:hidden"
           >
-            <div className="flex items-center justify-between border-b border-slate-900/5 px-5 py-4 dark:border-white/10">
-              <div>
-                <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                  GarTexHub
-                </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  Navigation
-                </div>
-              </div>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="rounded-full p-2 text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
-                aria-label="Close menu"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div data-lenis-prevent className="max-h-[70vh] overflow-y-auto p-4">
-              <div className="space-y-3">
-                {!user
-                  ? validPublicLinks.map(({ to, label }) => (
-                      <Link
-                        key={to}
-                        to={to}
-                        onClick={() => setMobileOpen(false)}
-                        className={cn(
-                          "flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-medium transition",
-                          location.pathname === to
-                            ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
-                            : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
-                        )}
-                      >
-                        <span>{label}</span>
-                        <ChevronRight className="h-4 w-4 opacity-40" />
-                      </Link>
-                    ))
-                  : validNavGroups.map((group) => (
-                      <div
-                        key={group.label}
-                        className="rounded-3xl border border-slate-900/5 bg-white/70 p-3 dark:border-white/10 dark:bg-white/5"
-                      >
-                        <div className="mb-2 flex items-center gap-2 px-1 text-sm font-semibold text-slate-900 dark:text-white">
-                          <group.icon className="h-4 w-4 text-sky-500" />
-                          {group.label}
-                        </div>
-                        <div className="space-y-1">
-                          {group.items
-                            .filter(
-                              (item) =>
-                                !item.roles ||
-                                item.roles.includes(
-                                  String(user?.role || "").toLowerCase(),
-                                ),
-                            )
-                            .map((item) => {
-                              const ItemIcon = {
-                                "My Profile": Vote,
-                                Feed: LayoutDashboard,
-                                "Manage Listings": Package,
-                                Search: Search,
-                                Contracts: FileText,
-                                Verification: ShieldCheck,
-                                Notifications: Bell,
-                                Chat: MessageSquare,
-                                Requests: FileText,
-                                Products: Package,
-                                Partners: Users,
-                                Ratings: Star,
-                                Members: Users,
-                                Settings: Settings,
-                                Insights: FileText,
-                                "Owner Dashboard": Star,
-                                "Agent Dashboard": Star,
-                                "Admin Panel": ShieldCheck,
-                                Governance: Settings,
-                                Support: Settings,
-                                Onboarding: Star,
-                              }[item.label] || Settings;
-                              return (
-                              <Link
-                                key={item.to}
-                                to={item.to}
-                                onClick={() => setMobileOpen(false)}
-                                className={cn(
-                                  "flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
-                                  (location.pathname === item.to || location.pathname + "?" + location.search === item.to)
-                                    ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
-                                    : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
-                                )}
-                              >
-                                <span className="flex items-center gap-3">
-                                  <ItemIcon className="h-4 w-4" />
-                                  {item.label}
-                                </span>
-                                {item.badge &&
-                                  item.to === "/notifications" &&
-                                  unreadCount > 0 && (
-                                    <Motion.span
-                                      animate={{ scale: [1, 1.15, 1] }}
-                                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                                      className="rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-semibold text-white"
-                                    >
-                                      {unreadCount > 99 ? "99+" : unreadCount}
-                                    </Motion.span>
-                                  )}
-                                <ChevronRight className="h-4 w-4 opacity-40" />
-                              </Link>
-                              );
-                            })}
-                        </div>
-                      </div>
-                    ))}
-              </div>
-
-              {!user ? (
-                <div className="mt-4 rounded-3xl border border-sky-400/10 bg-gradient-to-br from-sky-500/10 to-cyan-500/10 p-4">
+            <Motion.div
+              ref={mobileMenuRef}
+              initial={{ x: "-100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "-100%", opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="mx-auto mt-16 w-[min(92vw,28rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-white/85 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-2xl dark:bg-slate-950/90"
+            >
+              <div className="flex items-center justify-between border-b border-slate-900/5 px-5 py-4 dark:border-white/10">
+                <div>
                   <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                    Guest access
+                    GarTexHub
                   </div>
-                  <div className="mt-3 flex flex-col gap-2">
-                    <Link
-                      to="/login"
-                      onClick={() => setMobileOpen(false)}
-                      className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/signup"
-                      onClick={() => setMobileOpen(false)}
-                      className="inline-flex items-center justify-center rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
-                    >
-                      Signup
-                    </Link>
-                    <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    Navigation
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-full p-2 text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div
+                data-lenis-prevent
+                className="max-h-[70vh] overflow-y-auto p-4"
+              >
+                <div className="space-y-3">
+                  {!user
+                    ? validPublicLinks.map(({ to, label }) => (
+                        <Link
+                          key={to}
+                          to={to}
+                          onClick={() => setMobileOpen(false)}
+                          className={cn(
+                            "flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-medium transition",
+                            location.pathname === to
+                              ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
+                              : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10",
+                          )}
+                        >
+                          <span>{label}</span>
+                          <ChevronRight className="h-4 w-4 opacity-40" />
+                        </Link>
+                      ))
+                    : validNavGroups.map((group) => (
+                        <div
+                          key={group.label}
+                          className="rounded-3xl border border-slate-900/5 bg-white/70 p-3 dark:border-white/10 dark:bg-white/5"
+                        >
+                          <div className="mb-2 flex items-center gap-2 px-1 text-sm font-semibold text-slate-900 dark:text-white">
+                            <group.icon className="h-4 w-4 text-sky-500" />
+                            {group.label}
+                          </div>
+                          <div className="space-y-1">
+                            {group.items
+                              .filter(
+                                (item) =>
+                                  !item.roles ||
+                                  item.roles.includes(
+                                    String(user?.role || "").toLowerCase(),
+                                  ),
+                              )
+                              .map((item) => {
+                                const ItemIcon =
+                                  {
+                                    "My Profile": Vote,
+                                    Feed: LayoutDashboard,
+                                    "Manage Listings": Package,
+                                    Search: Search,
+                                    Contracts: FileText,
+                                    Verification: ShieldCheck,
+                                    Notifications: Bell,
+                                    Chat: MessageSquare,
+                                    Requests: FileText,
+                                    Products: Package,
+                                    Partners: Users,
+                                    Ratings: Star,
+                                    Members: Users,
+                                    Settings: Settings,
+                                    Insights: FileText,
+                                    "Owner Dashboard": Star,
+                                    "Agent Dashboard": Star,
+                                    "Admin Panel": ShieldCheck,
+                                    Governance: Settings,
+                                    Support: Settings,
+                                    Onboarding: Star,
+                                  }[item.label] || Settings;
+                                return (
+                                  <Link
+                                    key={item.to}
+                                    to={item.to}
+                                    onClick={() => setMobileOpen(false)}
+                                    className={cn(
+                                      "flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
+                                      location.pathname === item.to ||
+                                        location.pathname +
+                                          "?" +
+                                          location.search ===
+                                          item.to
+                                        ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
+                                        : "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10",
+                                    )}
+                                  >
+                                    <span className="flex items-center gap-3">
+                                      <ItemIcon className="h-4 w-4" />
+                                      {item.label}
+                                    </span>
+                                    {item.badge &&
+                                      item.to === "/notifications" &&
+                                      unreadCount > 0 && (
+                                        <Motion.span
+                                          animate={{ scale: [1, 1.15, 1] }}
+                                          transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            ease: "easeInOut",
+                                          }}
+                                          className="rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-semibold text-white"
+                                        >
+                                          {unreadCount > 99
+                                            ? "99+"
+                                            : unreadCount}
+                                        </Motion.span>
+                                      )}
+                                    <ChevronRight className="h-4 w-4 opacity-40" />
+                                  </Link>
+                                );
+                              })}
+                          </div>
+                        </div>
+                      ))}
+                </div>
+
+                {!user ? (
+                  <div className="mt-4 rounded-3xl border border-sky-400/10 bg-gradient-to-br from-sky-500/10 to-cyan-500/10 p-4">
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                      Guest access
+                    </div>
+                    <div className="mt-3 flex flex-col gap-2">
                       <Link
-                        to="/terms"
+                        to="/login"
                         onClick={() => setMobileOpen(false)}
-                        className="hover:text-sky-600"
+                        className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
                       >
-                        Terms
+                        Login
                       </Link>
                       <Link
-                        to="/privacy"
+                        to="/signup"
                         onClick={() => setMobileOpen(false)}
-                        className="text-right hover:text-sky-600"
+                        className="inline-flex items-center justify-center rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
                       >
-                        Privacy
+                        Signup
                       </Link>
+                      <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <Link
+                          to="/terms"
+                          onClick={() => setMobileOpen(false)}
+                          className="hover:text-sky-600"
+                        >
+                          Terms
+                        </Link>
+                        <Link
+                          to="/privacy"
+                          onClick={() => setMobileOpen(false)}
+                          className="text-right hover:text-sky-600"
+                        >
+                          Privacy
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : null}
-            </div>
+                ) : null}
+              </div>
 
-            <div className="flex items-center justify-between border-t border-slate-900/5 px-5 py-4 dark:border-white/10">
-              <button
-                onClick={toggleTheme}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
-              >
-                {dark ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
-                {dark ? "Light mode" : "Dark mode"}
-              </button>
-              {user ? (
+              <div className="flex items-center justify-between border-t border-slate-900/5 px-5 py-4 dark:border-white/10">
                 <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
+                  onClick={toggleTheme}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
                 >
-                  Logout
+                  {dark ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                  {dark ? "Light mode" : "Dark mode"}
                 </button>
-              ) : null}
-            </div>
+                {user ? (
+                  <button
+                    onClick={handleLogout}
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
+                  >
+                    Logout
+                  </button>
+                ) : null}
+              </div>
+            </Motion.div>
           </Motion.div>
-        </Motion.div>
-      )}
+        )}
       </AnimatePresence>
     </Motion.nav>
   );
 }
-

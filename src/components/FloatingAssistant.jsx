@@ -4,7 +4,7 @@ import { motion, useReducedMotion, useSpring } from "framer-motion";
 import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
 import BotLogo from "./ui/BotLogo";
 import MarkdownMessage from "./chat/MarkdownMessage";
-import { ThreeDot } from 'react-loading-indicators';
+import { ThreeDot } from "react-loading-indicators";
 import useScrollDirection from "../hooks/useScrollDirection";
 
 function getUserId() {
@@ -69,7 +69,9 @@ export default function FloatingAssistant() {
   const reduceMotion = useReducedMotion();
   const buttonVisible = open || reduceMotion || scrollDir !== "down";
   const buttonOpacity = useSpring(buttonVisible ? 1 : 0, {
-    stiffness: 120, damping: 24, restDelta: 0.001,
+    stiffness: 120,
+    damping: 24,
+    restDelta: 0.001,
   });
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -77,6 +79,7 @@ export default function FloatingAssistant() {
   const [loading, setLoading] = useState(false);
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const [firstChunkReceived, setFirstChunkReceived] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
   const scrollRef = useRef(null);
   const socketRef = useRef(null);
   const requestSeqRef = useRef(1);
@@ -115,11 +118,13 @@ export default function FloatingAssistant() {
         setMessages(formatted);
         hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
       } else {
-        setMessages([{
-          role: "assistant",
-          text: "Hello! I am your GarTex Assistant. How can I help you with your textile business today?",
-          isNew: false,
-        }]);
+        setMessages([
+          {
+            role: "assistant",
+            text: "Hello! I am your GarTex Assistant. How can I help you with your textile business today?",
+            isNew: false,
+          },
+        ]);
       }
       if (t) setTitle(t);
       setSessionLoaded(true);
@@ -131,11 +136,13 @@ export default function FloatingAssistant() {
     if (userId) {
       await deleteSessionAPI();
     }
-    setMessages([{
-      role: "assistant",
-      text: "Chat cleared. How can I help you with your textile business today?",
-      isNew: false,
-    }]);
+    setMessages([
+      {
+        role: "assistant",
+        text: "Chat cleared. How can I help you with your textile business today?",
+        isNew: false,
+      },
+    ]);
     setTitle(null);
     setSessionLoaded(false);
     sessionLoadedRef.current = false;
@@ -169,7 +176,7 @@ export default function FloatingAssistant() {
     const socket = new WebSocket(wsUrlRef.current);
 
     socket.onopen = () => {
-      console.log("Assistant WS Connected");
+      setWsConnected(true);
       try {
         const token = typeof getToken === "function" ? getToken() : null;
         if (token) {
@@ -223,7 +230,8 @@ export default function FloatingAssistant() {
           const idx = prev.findLastIndex(
             (m) => m.role === "assistant" && m.request_id === rid,
           );
-          const text = data.answer || "I am sorry, I could not find an answer to that.";
+          const text =
+            data.answer || "I am sorry, I could not find an answer to that.";
           if (idx >= 0) {
             const updated = [...prev];
             updated[idx] = { ...updated[idx], text, isNew: false };
@@ -256,12 +264,11 @@ export default function FloatingAssistant() {
     };
 
     socket.onclose = () => {
-      console.log("Assistant WS Disconnected — reconnecting in 30s");
+      setWsConnected(false);
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
       }
       reconnectTimerRef.current = setTimeout(() => {
-        console.log("Assistant WS reconnecting...");
         connectWs();
       }, 30000);
     };
@@ -376,179 +383,192 @@ export default function FloatingAssistant() {
       </motion.div>
 
       {open ? (
-      <div
-        className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 flex flex-col overflow-x-hidden"
-      >
-        <div className="h-full w-full bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border-l border-slate-200/70 dark:border-slate-800/60 shadow-borderless dark:shadow-borderlessDark flex flex-col">
-          <div className="bg-gradient-to-r from-sky-500 via-sky-600 to-cyan-400 text-white flex items-center justify-between px-5 py-4 shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm shrink-0">
-                <BotLogo
-                  width={22}
-                  height={22}
-                  variant="glyph"
-                  className="text-white"
-                />
-              </div>
-              <div className="min-w-0">
-                <p className="font-bold tracking-tight text-[15px] truncate max-w-[200px]">
-                  {title || "GarTex Assistant"}
-                </p>
-                <div className="flex items-center gap-1.5">
-                  {loading ? (
-                    <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                  ) : (
-                    <>
-                      <span className="w-2 h-2 rounded-full bg-green-300"></span>
-                      <p className="text-[10px] uppercase tracking-wider text-white/80 font-semibold">Online</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-0.5 shrink-0">
-              <button
-                onClick={deleteSession}
-                aria-label="Delete session"
-                title="Delete session & start new chat"
-                type="button"
-                className="hover:bg-white/15 p-2 rounded-xl transition-colors"
-              >
-                <svg
-                  aria-hidden="true"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="text-white/80"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
+        <div className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 flex flex-col overflow-x-hidden">
+          <div className="h-full w-full bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border-l border-slate-200/70 dark:border-slate-800/60 shadow-borderless dark:shadow-borderlessDark flex flex-col">
+            <div className="bg-gradient-to-r from-sky-500 via-sky-600 to-cyan-400 text-white flex items-center justify-between px-5 py-4 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm shrink-0">
+                  <BotLogo
+                    width={22}
+                    height={22}
+                    variant="glyph"
+                    className="text-white"
                   />
-                </svg>
-              </button>
-              <button
-                onClick={() => setOpen(false)}
-                aria-label="Close assistant"
-                title="Close assistant"
-                type="button"
-                className="hover:bg-white/15 p-2 rounded-xl transition-colors"
-              >
-                <svg
-                  aria-hidden="true"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="text-white/80"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 6 L18 18 M6 18 L18 6"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div data-lenis-prevent
-            ref={scrollRef}
-            className="flex-1 overflow-y-auto px-4 py-5 space-y-4 scroll-smooth"
-          >
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-              >
-                <div
-                  className={`max-w-[88%] text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-gradient-to-br from-sky-500 to-cyan-400 text-white rounded-2xl rounded-br-none px-4 py-3 shadow-md shadow-sky-500/20"
-                      : "bg-white dark:bg-slate-900/80 text-slate-800 dark:text-slate-100 rounded-2xl rounded-bl-none px-4 py-3 border border-slate-200/60 dark:border-slate-700/50 shadow-sm"
-                  }`}
-                >
-                  {msg.role === "assistant" && msg.isNew ? (
-                    <TypewriterText
-                      text={msg.text}
-                      onComplete={() => markAsOld(i)}
-                    />
-                  ) : msg.role === "assistant" ? (
-                    <MarkdownMessage text={msg.text} />
-                  ) : (
-                    msg.text
-                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold tracking-tight text-[15px] truncate max-w-[200px]">
+                    {title || "GarTex Assistant"}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    {loading ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      <>
+                        <span className={`w-2 h-2 rounded-full ${wsConnected ? "bg-green-300" : "bg-amber-400"}`}></span>
+                        <p className="text-[10px] uppercase tracking-wider text-white/80 font-semibold">
+                          {wsConnected ? "Online" : "Connecting"}
+                        </p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-            ))}
-
-            {loading && !firstChunkReceived && (
-              <div className="flex justify-start animate-in fade-in duration-200">
-                <div className="bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl rounded-bl-none px-4 py-3.5 shadow-sm">
-                  <ThreeDot variant="bounce" color="#38bdf8" size="small" text="" textColor="" />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="px-4 pt-3 pb-5 border-t border-slate-200/60 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm shrink-0">
-            {messages.length < 3 && !loading && (
-              <div className="flex flex-wrap gap-2 mb-3 animate-in fade-in slide-in-from-bottom-1 duration-500">
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSend(s)}
-                    className="text-[11px] font-medium bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/50 px-3 py-1.5 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all hover:scale-105 active:scale-95 shadow-sm"
+              <div className="flex items-center gap-0.5 shrink-0">
+                <button
+                  onClick={deleteSession}
+                  aria-label="Delete session"
+                  title="Delete session & start new chat"
+                  type="button"
+                  className="hover:bg-white/15 p-2 rounded-xl transition-colors"
+                >
+                  <svg
+                    aria-hidden="true"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="text-white/80"
                   >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <div className="flex gap-2 items-center">
-              <div className="flex-1 relative">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Type your question..."
-                  className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/50"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => handleSend()}
-                disabled={loading || !input.trim()}
-                className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all hover:shadow-lg hover:shadow-sky-500/30 active:scale-90 shrink-0"
-              >
-                <svg
-                  className="w-5 h-5 rotate-45"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                    <path
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setOpen(false)}
+                  aria-label="Close assistant"
+                  title="Close assistant"
+                  type="button"
+                  className="hover:bg-white/15 p-2 rounded-xl transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2.5"
-                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                  ></path>
-                </svg>
-              </button>
+                  <svg
+                    aria-hidden="true"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="text-white/80"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 6 L18 18 M6 18 L18 6"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-3 font-medium">
-              GarTex AI Assistant
-            </p>
+
+            <div
+              data-lenis-prevent
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto px-4 py-5 space-y-4 scroll-smooth"
+            >
+              {messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                >
+                  <div
+                    className={`max-w-[88%] text-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-gradient-to-br from-sky-500 to-cyan-400 text-white rounded-2xl rounded-br-none px-4 py-3 shadow-md shadow-sky-500/20"
+                        : "bg-white dark:bg-slate-900/80 text-slate-800 dark:text-slate-100 rounded-2xl rounded-bl-none px-4 py-3 border border-slate-200/60 dark:border-slate-700/50 shadow-sm"
+                    }`}
+                  >
+                    {msg.role === "assistant" && msg.isNew ? (
+                      <TypewriterText
+                        text={msg.text}
+                        onComplete={() => markAsOld(i)}
+                      />
+                    ) : msg.role === "assistant" ? (
+                      <MarkdownMessage text={msg.text} />
+                    ) : (
+                      msg.text
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {loading && !firstChunkReceived && (
+                <div className="flex justify-start animate-in fade-in duration-200">
+                  <div className="bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl rounded-bl-none px-4 py-3.5 shadow-sm">
+                    <ThreeDot
+                      variant="bounce"
+                      color="#38bdf8"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="px-4 pt-3 pb-5 border-t border-slate-200/60 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm shrink-0">
+              {messages.length < 3 && !loading && (
+                <div className="flex flex-wrap gap-2 mb-3 animate-in fade-in slide-in-from-bottom-1 duration-500">
+                  {suggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSend(s)}
+                      className="text-[11px] font-medium bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/50 px-3 py-1.5 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 relative">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                    placeholder="Type your question..."
+                    className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/50"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSend()}
+                  disabled={loading || !input.trim()}
+                  className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all hover:shadow-lg hover:shadow-sky-500/30 active:scale-90 shrink-0"
+                >
+                  <svg
+                    className="w-5 h-5 rotate-45"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2.5"
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-3 font-medium">
+                GarTex AI Assistant
+              </p>
+            </div>
           </div>
         </div>
-      </div>
       ) : null}
     </>
   );

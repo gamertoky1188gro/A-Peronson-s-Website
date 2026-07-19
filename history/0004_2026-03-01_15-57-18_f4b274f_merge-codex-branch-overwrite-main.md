@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| **Commit Number** | 0004 |
-| **Commit Hash** | `f4b274f97b826ec0cc13a46d139c885425aed899` |
+| Field             | Value                                                               |
+| ----------------- | ------------------------------------------------------------------- |
+| **Commit Number** | 0004                                                                |
+| **Commit Hash**   | `f4b274f97b826ec0cc13a46d139c885425aed899`                          |
 | **Parent Hashes** | `eb33a13` (0002 — dark theme/docs), `6213071b` (0003 — Express API) |
-| **Author** | gamertoky1188gro |
-| **Date/Time** | 2026-03-01 15:57:18 (+0600) |
-| **Files Changed** | 37 (relative to first parent) |
-| **Additions** | 2,537 |
-| **Deletions** | 282 |
-| **Net Change** | +2,255 lines |
-| **Merge Commit** | Yes |
+| **Author**        | gamertoky1188gro                                                    |
+| **Date/Time**     | 2026-03-01 15:57:18 (+0600)                                         |
+| **Files Changed** | 37 (relative to first parent)                                       |
+| **Additions**     | 2,537                                                               |
+| **Deletions**     | 282                                                                 |
+| **Net Change**    | +2,255 lines                                                        |
+| **Merge Commit**  | Yes                                                                 |
 
 ## Custom Title
 
@@ -22,6 +22,7 @@
 ## High-Level Summary
 
 This is the first merge commit in the repository, combining two parallel development branches:
+
 - **Parent 1 (eb33a13)**: "Add global dark theme toggle, responsive nav, and page docs" (commit 0002)
 - **Parent 2 (6213071b)**: "Rebuild app into textile trust MVP with Express API" (commit 0003)
 
@@ -30,11 +31,13 @@ The merge used the strategy described in the message: "overwrite main with codex
 ## What Was Merged
 
 **From Parent 1 (0002 - dark theme/docs):**
+
 - 27 page specification documents in `docs/pages/`
 - README rewrite with GarTexHub-specific documentation
 - These were retained in the merge result
 
 **From Parent 2 (0003 - Express API):**
+
 - Complete Express.js backend (`server/` directory with 21+ files)
 - Monolithic `src/App.jsx` (JWT auth, requirements, messages, admin)
 - `src/App.css` and `src/index.css` changes

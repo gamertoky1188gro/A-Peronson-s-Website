@@ -3,7 +3,18 @@
 import { ThreeDot } from "react-loading-indicators";
 
 export function SkeletonLine({ className = "", size = 24 }) {
-  return <span className={`inline-block ${className}`}><ThreeDot variant="bounce" color="#6100ff" size="medium" style={{ fontSize: size + "px" }} text="" textColor="" /></span>;
+  return (
+    <span className={`inline-block ${className}`}>
+      <ThreeDot
+        variant="bounce"
+        color="#6100ff"
+        size="medium"
+        style={{ fontSize: size + "px" }}
+        text=""
+        textColor=""
+      />
+    </span>
+  );
 }
 
 export function Badge({ children, tone = "default" }) {

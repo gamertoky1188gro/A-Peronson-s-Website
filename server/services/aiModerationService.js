@@ -10,7 +10,9 @@ const HARAM_DETECTION_DIR = process.env.HARAM_DETECTION_DIR;
 const aiAvailable = Boolean(HARAM_DETECTION_DIR);
 
 if (!aiAvailable) {
-  console.warn("[AI Moderation] HARAM_DETECTION_DIR not set — AI moderation disabled");
+  console.warn(
+    "[AI Moderation] HARAM_DETECTION_DIR not set — AI moderation disabled",
+  );
 }
 
 let _dirChecked = false;
@@ -230,7 +232,10 @@ export async function analyzeBufferWithAI(buffer, filename = "image.jpg") {
   await ensureVenv();
   const tempDir = os.tmpdir();
   const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "");
-  const tempFile = path.join(tempDir, `haram_${crypto.randomUUID()}_${safeFilename}`);
+  const tempFile = path.join(
+    tempDir,
+    `haram_${crypto.randomUUID()}_${safeFilename}`,
+  );
 
   return new Promise((resolve, reject) => {
     try {

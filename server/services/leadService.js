@@ -25,13 +25,20 @@ const USE_SQL_CRM = isCrmSqlEnabled();
 async function readStore(fileName) {
   if (USE_SQL_CRM) {
     switch (fileName) {
-      case "leads.json": return prisma.lead.findMany();
-      case "lead_notes.json": return prisma.leadNote.findMany();
-      case "lead_reminders.json": return prisma.leadReminder.findMany();
-      case "lead_assignments.json": return prisma.leadAssignment.findMany();
-      case "users.json": return prisma.user.findMany();
-      case "requirements.json": return prisma.requirement.findMany();
-      default: return [];
+      case "leads.json":
+        return prisma.lead.findMany();
+      case "lead_notes.json":
+        return prisma.leadNote.findMany();
+      case "lead_reminders.json":
+        return prisma.leadReminder.findMany();
+      case "lead_assignments.json":
+        return prisma.leadAssignment.findMany();
+      case "users.json":
+        return prisma.user.findMany();
+      case "requirements.json":
+        return prisma.requirement.findMany();
+      default:
+        return [];
     }
   }
   return readLegacyJson(fileName);
@@ -362,22 +369,26 @@ export async function upsertLeadFromMessage({
   }
 
   await prisma.lead.createMany({
-    data: leads.filter((l) => !l._persisted).map((l) => ({
-      id: l.id,
-      org_owner_id: l.org_owner_id,
-      match_id: l.match_id,
-      counterparty_id: l.counterparty_id || null,
-      source: l.source || null,
-      status: l.status || "new",
-      assigned_agent_id: l.assigned_agent_id || null,
-      created_at: new Date(l.created_at),
-      updated_at: new Date(l.updated_at),
-      last_interaction_at: l.last_interaction_at ? new Date(l.last_interaction_at) : null,
-      source_type: l.source_type || null,
-      source_id: l.source_id || null,
-      source_label: l.source_label || null,
-      conversion_at: l.conversion_at ? new Date(l.conversion_at) : null,
-    })),
+    data: leads
+      .filter((l) => !l._persisted)
+      .map((l) => ({
+        id: l.id,
+        org_owner_id: l.org_owner_id,
+        match_id: l.match_id,
+        counterparty_id: l.counterparty_id || null,
+        source: l.source || null,
+        status: l.status || "new",
+        assigned_agent_id: l.assigned_agent_id || null,
+        created_at: new Date(l.created_at),
+        updated_at: new Date(l.updated_at),
+        last_interaction_at: l.last_interaction_at
+          ? new Date(l.last_interaction_at)
+          : null,
+        source_type: l.source_type || null,
+        source_id: l.source_id || null,
+        source_label: l.source_label || null,
+        conversion_at: l.conversion_at ? new Date(l.conversion_at) : null,
+      })),
     skipDuplicates: true,
   });
 

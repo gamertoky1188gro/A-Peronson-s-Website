@@ -29,7 +29,9 @@ function InfoItem({ label, value }) {
       <p className="text-xs font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
         {label}
       </p>
-      <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</p>
+      <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+        {value}
+      </p>
     </div>
   );
 }
@@ -96,7 +98,10 @@ export default function AccessDenied() {
                   </h1>
                   <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
                     You do not have permission to access{" "}
-                    <span className="font-semibold text-slate-900 dark:text-white">{attemptedRoute}</span>.
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {attemptedRoute}
+                    </span>
+                    .
                   </p>
                 </div>
               </div>
@@ -141,7 +146,10 @@ export default function AccessDenied() {
                 <InfoItem label="Account" value="Restricted" />
                 <InfoItem label="Status" value="No access" />
                 <InfoItem label="Action" value="Switch login" />
-                <InfoItem label="Route" value={location.state?.from ? attemptedRoute : "Unknown"} />
+                <InfoItem
+                  label="Route"
+                  value={location.state?.from ? attemptedRoute : "Unknown"}
+                />
               </div>
             </div>
           </section>
@@ -155,12 +163,14 @@ export default function AccessDenied() {
               Permission required
             </h2>
             <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-              This area is protected for authorized users only. Switch accounts or return to the feed to continue browsing.
+              This area is protected for authorized users only. Switch accounts
+              or return to the feed to continue browsing.
             </p>
 
             <div className="mt-6 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50">
               <p className="text-sm font-medium leading-7 text-slate-700 dark:text-slate-200">
-                Try signing in with the correct organization account or return to the feed to explore public content.
+                Try signing in with the correct organization account or return
+                to the feed to explore public content.
               </p>
             </div>
 
@@ -170,8 +180,12 @@ export default function AccessDenied() {
                   <ShieldAlert className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Session</p>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{isLoggedIn ? "Logged in" : "Guest"}</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                    Session
+                  </p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {isLoggedIn ? "Logged in" : "Guest"}
+                  </p>
                 </div>
               </div>
 
@@ -180,8 +194,12 @@ export default function AccessDenied() {
                   <Home className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Secondary route</p>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">/feed</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                    Secondary route
+                  </p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    /feed
+                  </p>
                 </div>
               </div>
             </div>

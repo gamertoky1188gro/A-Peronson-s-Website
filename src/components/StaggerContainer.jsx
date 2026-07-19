@@ -30,7 +30,11 @@ export function StaggerContainer({
   const reduceMotion = useReducedMotion();
   if (reduceMotion) {
     const Tag = as;
-    return <Tag className={className} {...rest}>{children}</Tag>;
+    return (
+      <Tag className={className} {...rest}>
+        {children}
+      </Tag>
+    );
   }
   const MotionTag = motion[as];
   return (
@@ -47,16 +51,15 @@ export function StaggerContainer({
   );
 }
 
-export function StaggerItem({
-  children,
-  className = "",
-  as = "div",
-  ...rest
-}) {
+export function StaggerItem({ children, className = "", as = "div", ...rest }) {
   const reduceMotion = useReducedMotion();
   if (reduceMotion) {
     const Tag = as;
-    return <Tag className={className} {...rest}>{children}</Tag>;
+    return (
+      <Tag className={className} {...rest}>
+        {children}
+      </Tag>
+    );
   }
   const MotionTag = motion[as];
   return (

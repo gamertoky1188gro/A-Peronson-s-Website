@@ -21,7 +21,6 @@ export const ADVANCED_FILTER_KEYS = [
   "sampleAvailable",
   "sampleLeadTime",
   "certifications",
-  "incoterms",
   "paymentTerms",
   "documentReady",
   "auditScoreMin",

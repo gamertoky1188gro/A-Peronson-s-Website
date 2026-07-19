@@ -1,12 +1,12 @@
 # Commit 0414 — `5e9af2e2c85`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `5e9af2e2c850cfb95d62f774cf97b468daf0ffec` |
-| Parent Hash | `1805a4f2b781e3dc1794b7f00647ab1d21b71c34` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-23 18:53:03 +0600 |
-| Subject | style: redesign FloatingAssistant with app theme (glassmorphism, sky-cyan gradient, dark mode) |
+| Field       | Value                                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| Commit Hash | `5e9af2e2c850cfb95d62f774cf97b468daf0ffec`                                                     |
+| Parent Hash | `1805a4f2b781e3dc1794b7f00647ab1d21b71c34`                                                     |
+| Author      | gamertoky1188gro                                                                               |
+| Date        | 2026-05-23 18:53:03 +0600                                                                      |
+| Subject     | style: redesign FloatingAssistant with app theme (glassmorphism, sky-cyan gradient, dark mode) |
 
 ---
 
@@ -18,9 +18,9 @@ Complete visual redesign of the `FloatingAssistant` component. Removes the old L
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `src/components/FloatingAssistant.jsx` | modified | 363 | 0 |
+| File                                   | Status   | Insertions | Deletions |
+| -------------------------------------- | -------- | ---------- | --------- |
+| `src/components/FloatingAssistant.jsx` | modified | 363        | 0         |
 
 **1 file changed, 155 insertions, 208 deletions**
 

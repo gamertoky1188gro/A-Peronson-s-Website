@@ -58,7 +58,10 @@ export async function getPartnerNetwork(user, { status } = {}) {
     throw err;
   }
 
-  const [requests, users] = await Promise.all([prisma.partnerRequest.findMany(), listUsers()]);
+  const [requests, users] = await Promise.all([
+    prisma.partnerRequest.findMany(),
+    listUsers(),
+  ]);
   const usersById = new Map(users.map((u) => [u.id, u]));
 
   const scoped = scopeRecordsForUser(user, requests, {
@@ -93,7 +96,10 @@ export async function getIncomingPartnerRequests(user) {
     throw err;
   }
 
-  const [requests, users] = await Promise.all([prisma.partnerRequest.findMany(), listUsers()]);
+  const [requests, users] = await Promise.all([
+    prisma.partnerRequest.findMany(),
+    listUsers(),
+  ]);
   const usersById = new Map(users.map((u) => [u.id, u]));
   const incoming = requests
     .filter(
@@ -242,7 +248,9 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
         ? "rejected"
         : "cancelled";
 
-  const current = await prisma.partnerRequest.findUnique({ where: { id: requestId } });
+  const current = await prisma.partnerRequest.findUnique({
+    where: { id: requestId },
+  });
   if (!current) {
     const err = new Error("Request not found");
     err.status = 404;
@@ -334,7 +342,9 @@ export async function removePartnerConnection(user, connectionId) {
     throw err;
   }
 
-  const current = await prisma.partnerRequest.findUnique({ where: { id: connectionId } });
+  const current = await prisma.partnerRequest.findUnique({
+    where: { id: connectionId },
+  });
   if (!current) {
     const err = new Error("Connection not found");
     err.status = 404;
@@ -351,9 +361,7 @@ export async function removePartnerConnection(user, connectionId) {
       String(current.requester_id || "") === String(user.id) ||
       String(current.target_id || "") === String(user.id);
     if (!mine) {
-      const err = new Error(
-        "You can only remove your own partner connections",
-      );
+      const err = new Error("You can only remove your own partner connections");
       err.status = 403;
       throw err;
     }

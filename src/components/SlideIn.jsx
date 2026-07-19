@@ -20,7 +20,11 @@ export default function SlideIn({
   const reduceMotion = useReducedMotion();
   if (reduceMotion) {
     const Tag = as;
-    return <Tag className={className} {...rest}>{children}</Tag>;
+    return (
+      <Tag className={className} {...rest}>
+        {children}
+      </Tag>
+    );
   }
   const base = directionMap[direction] || directionMap.up;
   const offset = { x: base.x * (distance / 40), y: base.y * (distance / 40) };

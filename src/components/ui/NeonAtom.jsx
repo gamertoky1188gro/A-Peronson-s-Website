@@ -1,4 +1,9 @@
-export default function NeonAtom({ size = 180, className = "", text = "", fill = false }) {
+export default function NeonAtom({
+  size = 180,
+  className = "",
+  text = "",
+  fill = false,
+}) {
   const s = fill ? 200 : size;
   const orbitSize = s * 0.89;
   const coreSize = s * 0.2;

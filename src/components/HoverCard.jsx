@@ -1,4 +1,9 @@
-import { motion, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useReducedMotion,
+} from "framer-motion";
 
 export default function HoverCard({
   children,
@@ -35,7 +40,9 @@ export default function HoverCard({
     <motion.div
       className={className}
       whileHover={reduceMotion ? {} : { scale, y: lift }}
-      style={tilt && !reduceMotion ? { rotateX: springY, rotateY: springX } : {}}
+      style={
+        tilt && !reduceMotion ? { rotateX: springY, rotateY: springX } : {}
+      }
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
       transition={{ type: "spring", stiffness: 300, damping: 20, mass: 0.6 }}

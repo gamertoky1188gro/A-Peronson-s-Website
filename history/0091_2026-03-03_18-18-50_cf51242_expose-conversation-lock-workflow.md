@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0091 |
-| Hash | `cf51242cfb90cc1071a4b05bb479195461c3119d` |
-| Parent Hash | `7208e182e7d87ef2034ccefe0e9271f853c711c5` |
-| Author | Cyber Code Master |
-| Date/Time | 2026-03-03 18:18:50 |
-| Files Changed | 6 |
-| Lines Added | 227 |
-| Lines Deleted | 58 |
-| Net Change | +169 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0091                                       |
+| Hash          | `cf51242cfb90cc1071a4b05bb479195461c3119d` |
+| Parent Hash   | `7208e182e7d87ef2034ccefe0e9271f853c711c5` |
+| Author        | Cyber Code Master                          |
+| Date/Time     | 2026-03-03 18:18:50                        |
+| Files Changed | 6                                          |
+| Lines Added   | 227                                        |
+| Lines Deleted | 58                                         |
+| Net Change    | +169                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -35,16 +35,19 @@ Integrated the conversation lock service into the production chat interface and 
 ## Detailed Diff Analysis
 
 ### Logic/Service Changes
+
 - Lock notifications persist to `notifications.json` with a structured schema (UUID, actor_id, entity references, timestamps).
 - `tieredInbox` now performs a per-user lock lookup, decorating each message with `conversation_lock` metadata.
 - Three-tier access model: owner (claimed), granted, and request-access states drive UI behavior.
 
 ### UI Changes
+
 - Thread list shows lock status below the sender name.
 - Active thread detail includes contextual buttons: "Request Access" for locked threads, or a member picker + "Grant Access" for threads the current user owns.
 - MainFeed "Express Interest" flow replaces the prior "Take Lead" with a full round-trip claiming UX including loading state and error handling for already-locked conversations.
 
 ### Config/Dependency Changes
+
 - None.
 
 ## Why This Change May Have Been Needed

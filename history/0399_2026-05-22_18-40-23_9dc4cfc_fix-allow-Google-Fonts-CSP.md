@@ -1,12 +1,12 @@
 # Commit 0399 — `9dc4cfc5aaa`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `9dc4cfc5aaa1d614a1ed72bcca82d6b0a9d23369` |
-| Parent Hash | `4b2eb135d2d235a00a5630b89c8fcc1e765e1d13` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-22 18:40:23 +0600 |
-| Subject | fix: allow Google Fonts in CSP, dynamic WS origin check |
+| Field       | Value                                                   |
+| ----------- | ------------------------------------------------------- |
+| Commit Hash | `9dc4cfc5aaa1d614a1ed72bcca82d6b0a9d23369`              |
+| Parent Hash | `4b2eb135d2d235a00a5630b89c8fcc1e765e1d13`              |
+| Author      | gamertoky1188gro                                        |
+| Date        | 2026-05-22 18:40:23 +0600                               |
+| Subject     | fix: allow Google Fonts in CSP, dynamic WS origin check |
 
 ---
 
@@ -18,9 +18,9 @@ Adds Google Fonts URLs (`fonts.googleapis.com`, `fonts.gstatic.com`) to the Helm
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/server.js` | modified | 7 | 0 |
+| File               | Status   | Insertions | Deletions |
+| ------------------ | -------- | ---------- | --------- |
+| `server/server.js` | modified | 7          | 0         |
 
 **1 file changed, 4 insertions, 3 deletions**
 

@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0104 |
-| Hash | `84e0fc318b7c90a147c9ba5c02aad0e04f732e5d` |
-| Parent Hash | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
-| Author | Cyber Code Master |
-| Date/Time | 2026-03-06 14:13:34 |
-| Files Changed | 2 |
-| Lines Added | 364 |
-| Lines Deleted | 49 |
-| Net Change | +315 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0104                                       |
+| Hash          | `84e0fc318b7c90a147c9ba5c02aad0e04f732e5d` |
+| Parent Hash   | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
+| Author        | Cyber Code Master                          |
+| Date/Time     | 2026-03-06 14:13:34                        |
+| Files Changed | 2                                          |
+| Lines Added   | 364                                        |
+| Lines Deleted | 49                                         |
+| Net Change    | +315                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -31,9 +31,11 @@ Extended the assistant system with request logging in the controller and added a
 ## Detailed Diff Analysis
 
 ### Controller Changes
+
 - Each `/ask` request is now logged with `org_id` and `question_chars`.
 
 ### Service Changes
+
 - Added `LOCAL_LLM_FALLBACK_ENDPOINT` (`http://127.0.0.1:8080/completion`) — if the primary endpoint fails, falls back to the legacy completion format.
 - `generateDynamicAnswer` now tries the primary endpoint first, then falls back.
 - Added `logInfo`/`logError` calls at key points: AI answer generated, AI call failed, no answer from AI.

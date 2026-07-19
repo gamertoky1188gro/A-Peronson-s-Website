@@ -8,10 +8,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import AccessDeniedState from "../components/AccessDeniedState";
-import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
+import {
+  API_BASE,
+  apiRequest,
+  getCurrentUser,
+  getToken,
+  syncUserFromApi,
+} from "../lib/auth";
+import { Package, LayoutDashboard, Bell, Plus, RefreshCw, Search, HelpCircle, MessageSquare, Lock, Download, Shield, Check, File, Phone, Calendar } from "lucide-react";
 import ScrollReveal from "../components/ScrollReveal";
 import CardStack from "../components/CardStack";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
+import { uploadFile } from "../lib/upload";
 
 const TIMELINE = [
   "Discovered",
@@ -31,15 +39,40 @@ function mapContract(c) {
     if (ls === "archived") return "Archived";
     if (artifactStatus === "locked") return "Archived";
     if (ls === "signed") return "Lock pending";
-    if (c.buyer_signature_state === "signed" && c.factory_signature_state === "signed") return "Generate PDF";
-    if (c.buyer_signature_state === "signed" || c.factory_signature_state === "signed") return "Other party sign";
+    if (
+      c.buyer_signature_state === "signed" &&
+      c.factory_signature_state === "signed"
+    )
+      return "Generate PDF";
+    if (
+      c.buyer_signature_state === "signed" ||
+      c.factory_signature_state === "signed"
+    )
+      return "Other party sign";
     return "Awaiting signatures";
   })();
-  const statusLabel = ls === "draft" ? "Draft" : ls === "pending_signature" ? "Pending" : ls === "signed" ? "Signed" : "Archived";
-  const pdfStatus = artifactStatus === "generated" || artifactStatus === "locked" ? "ready" : "pending";
+  const statusLabel =
+    ls === "draft"
+      ? "Draft"
+      : ls === "pending_signature"
+        ? "Pending"
+        : ls === "signed"
+          ? "Signed"
+          : "Archived";
+  const pdfStatus =
+    artifactStatus === "generated" || artifactStatus === "locked"
+      ? "ready"
+      : "pending";
   const buyerSign = c.buyer_signature_state || "pending";
   const factorySign = c.factory_signature_state || "pending";
-  const timelineIdx = ls === "archived" ? 7 : ls === "signed" ? 6 : ls === "pending_signature" ? 5 : 2;
+  const timelineIdx =
+    ls === "archived"
+      ? 7
+      : ls === "signed"
+        ? 6
+        : ls === "pending_signature"
+          ? 5
+          : 2;
   return {
     id: c.id,
     contract_number: c.contract_number || c.id,
@@ -62,88 +95,22 @@ function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-function Icon({ path, className = "", viewBox = "0 0 24 24" }) {
-  return (
-    <svg
-      viewBox={viewBox}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d={path} />
-    </svg>
-  );
-}
-
 const icons = {
-  vault: (props) => (
-    <Icon
-      {...props}
-      path="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5zM12 12v9M4 7.5l8 4.5 8-4.5"
-    />
-  ),
-  dashboard: (props) => (
-    <Icon
-      {...props}
-      path="M4 5h7v7H4zM13 5h7v4h-7zM13 11h7v8h-7zM4 14h7v5H4z"
-    />
-  ),
-  bell: (props) => (
-    <Icon
-      {...props}
-      path="M15 17H5l1.6-1.6A2 2 0 0 0 7 14v-3a5 5 0 0 1 10 0v3a2 2 0 0 0 .4 1.2L19 17h-4m-4 2a2 2 0 0 0 4 0"
-    />
-  ),
-  plus: (props) => <Icon {...props} path="M12 5v14M5 12h14" />,
-  refresh: (props) => (
-    <Icon {...props} path="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6" />
-  ),
-  search: (props) => (
-    <Icon
-      {...props}
-      path="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-    />
-  ),
-  help: (props) => (
-    <Icon {...props} path="M12 18h.01M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2-3 4" />
-  ),
-  chat: (props) => (
-    <Icon
-      {...props}
-      path="M21 15a4 4 0 0 1-4 4H9l-5 3V7a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4Z"
-    />
-  ),
-  lock: (props) => (
-    <Icon {...props} path="M7 11V8a5 5 0 0 1 10 0v3m-11 0h12v10H6z" />
-  ),
-  download: (props) => (
-    <Icon {...props} path="M12 3v10m0 0 4-4m-4 4-4-4M4 17v3h16v-3" />
-  ),
-  shield: (props) => (
-    <Icon {...props} path="M12 3 20 6v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6z" />
-  ),
-  check: (props) => <Icon {...props} path="M20 6 9 17l-5-5" />,
-  file: (props) => (
-    <Icon
-      {...props}
-      path="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"
-    />
-  ),
-  phone: (props) => (
-    <Icon
-      {...props}
-      path="M5 4h4l2 5-2 2c1.5 3 3.5 5 6 6l2-2 5 2v4c0 1.1-.9 2-2 2C10.5 21 3 13.5 3 5c0-1.1.9-2 2-2Z"
-    />
-  ),
-  calendar: (props) => (
-    <Icon
-      {...props}
-      path="M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
-    />
-  ),
+  vault: (props) => <Package {...props} />,
+  dashboard: (props) => <LayoutDashboard {...props} />,
+  bell: (props) => <Bell {...props} />,
+  plus: (props) => <Plus {...props} />,
+  refresh: (props) => <RefreshCw {...props} />,
+  search: (props) => <Search {...props} />,
+  help: (props) => <HelpCircle {...props} />,
+  chat: (props) => <MessageSquare {...props} />,
+  lock: (props) => <Lock {...props} />,
+  download: (props) => <Download {...props} />,
+  shield: (props) => <Shield {...props} />,
+  check: (props) => <Check {...props} />,
+  file: (props) => <File {...props} />,
+  phone: (props) => <Phone {...props} />,
+  calendar: (props) => <Calendar {...props} />,
 };
 
 function Pill({ children, tone = "default" }) {
@@ -392,6 +359,7 @@ export default function ContractVaultPage({ embedded = false }) {
   const [saving, setSaving] = useState(false);
   const [contracts, setContracts] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
+  const [feedback, setFeedback] = useState("");
   const [paymentForm, setPaymentForm] = useState({
     type: "bank_transfer",
     transaction_reference: "",
@@ -401,8 +369,17 @@ export default function ContractVaultPage({ embedded = false }) {
     transaction_date: "",
     amount: "",
     currency: "USD",
-    document_file: null,
   });
+  const PAYMENT_FORM_RESET = {
+    type: "bank_transfer",
+    transaction_reference: "",
+    bank_name: "",
+    sender_account_name: "",
+    receiver_account_name: "",
+    transaction_date: "",
+    amount: "",
+    currency: "USD",
+  };
 
   const mainRef = useRef(null);
   const [mainHeight, setMainHeight] = useState(null);
@@ -410,7 +387,9 @@ export default function ContractVaultPage({ embedded = false }) {
   useEffect(() => {
     const el = mainRef.current;
     if (!el || !embedded) return;
-    const ro = new ResizeObserver(([entry]) => setMainHeight(entry.contentRect.height));
+    const ro = new ResizeObserver(([entry]) =>
+      setMainHeight(entry.contentRect.height),
+    );
     ro.observe(el);
     return () => ro.disconnect();
   }, [embedded]);
@@ -428,13 +407,16 @@ export default function ContractVaultPage({ embedded = false }) {
 
     (async () => {
       try {
-        const data = await apiRequest("/documents/contracts", { token: getToken() });
+        const data = await apiRequest("/documents/contracts", {
+          token: getToken(),
+        });
         if (cancelled) return;
         const mapped = (Array.isArray(data) ? data : []).map(mapContract);
         setContracts(mapped);
         if (mapped.length > 0) setSelectedId(mapped[0].id);
       } catch (err) {
         console.warn("Failed to load contracts", err);
+        setFeedback("Failed to load contracts.");
       } finally {
         contractsDone = true;
         tryDone();
@@ -450,16 +432,101 @@ export default function ContractVaultPage({ embedded = false }) {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const contract = contracts.find((c) => c.id === selectedId) || contracts[0] || null;
+  const contract =
+    contracts.find((c) => c.id === selectedId) || contracts[0] || null;
   const currentUser = useMemo(() => getCurrentUser(), []);
   const navigate = useNavigate();
 
+  const [calls, setCalls] = useState([]);
+  const [paymentProofs, setPaymentProofs] = useState([]);
+
+  const loadContracts = async () => {
+    try {
+      const data = await apiRequest("/documents/contracts", {
+        token: getToken(),
+      });
+      const mapped = (Array.isArray(data) ? data : []).map(mapContract);
+      setContracts(mapped);
+    } catch (err) {
+      console.warn("Failed to load contracts", err);
+    }
+  };
+
+  const handleNewDraft = async () => {
+    try {
+      const newContract = await apiRequest("/contracts", {
+        method: "POST",
+        token: getToken(),
+        body: { status: "draft", title: "Untitled" },
+      });
+      await loadContracts();
+      if (newContract?.id) setSelectedId(newContract.id);
+    } catch (err) {
+      console.warn("Failed to create draft", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedId) return;
+    let cancelled = false;
+    apiRequest(`/contracts/${selectedId}/calls`, { token: getToken() })
+      .then((data) => {
+        if (!cancelled) setCalls(Array.isArray(data) ? data : []);
+      })
+      .catch(() => { if (!cancelled) setCalls([]); });
+    return () => { cancelled = true; };
+  }, [selectedId]);
+
+  const refreshPaymentProofs = async () => {
+    if (!contract?.id) return;
+    try {
+      const data = await apiRequest(`/contracts/${contract.id}/payment-proofs`, {
+        token: getToken(),
+      });
+      setPaymentProofs(Array.isArray(data) ? data : []);
+    } catch {
+      setPaymentProofs([]);
+    }
+  };
+
+  useEffect(() => {
+    if (!contract?.id) return;
+    let cancelled = false;
+    apiRequest(`/contracts/${contract.id}/payment-proofs`, { token: getToken() })
+      .then((data) => {
+        if (cancelled) return;
+        setPaymentProofs(Array.isArray(data) ? data : []);
+      })
+      .catch(() => { if (!cancelled) setPaymentProofs([]); });
+    return () => { cancelled = true; };
+  }, [contract?.id]);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !contract?.id) return;
+    try {
+      await uploadFile("/documents", { file, fields: { contract_id: contract.id, type: "payment_proof" } });
+      await refreshPaymentProofs();
+    } catch (err) {
+      console.warn("Failed to upload file", err);
+    }
+  };
+
   const filtered = useMemo(() => {
     return contracts.filter((c) => {
-      const matchesQuery = [c.id, c.contract_number, c.status, c.title, c.buyer, c.factory]
+      const matchesQuery = [
+        c.id,
+        c.contract_number,
+        c.status,
+        c.title,
+        c.buyer,
+        c.factory,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(query.toLowerCase());
@@ -572,562 +639,690 @@ export default function ContractVaultPage({ embedded = false }) {
           currency: paymentForm.currency,
         },
       });
+      setPaymentForm({ ...PAYMENT_FORM_RESET });
+      setFeedback("Payment proof submitted successfully.");
     }, "Failed to submit proof");
   };
 
   const canSign = currentUser && isOwnerLevel(currentUser);
 
   if (pageLoading) {
-    if (embedded) return <div className="flex items-center justify-center py-12"><NeonAtom /></div>;
+    if (embedded)
+      return (
+        <div className="flex items-center justify-center py-12">
+          <NeonAtom />
+        </div>
+      );
     return <NeonAtom fill />;
   }
   if (!contract) {
     if (embedded) {
-      return <div className="text-center py-12 text-slate-500 dark:text-slate-400">No contracts found.</div>;
+      return (
+        <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+          No contracts found.
+        </div>
+      );
     }
     return (
       <div className={shell}>
         <div className="flex min-h-screen items-center justify-center">
-          <p className="text-slate-500 dark:text-slate-400">No contracts found.</p>
+          <p className="text-slate-500 dark:text-slate-400">
+            No contracts found.
+          </p>
         </div>
       </div>
     );
   }
 
   const sidebarContent = (
-            <aside data-lenis-prevent className="flex flex-col overflow-y-auto scrollbar-hide max-h-full rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-950/70 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]">
-              <div className="flex items-center justify-between shrink-0">
-                <div>
-                  <div className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-sky-600 dark:text-sky-300">
-                    <icons.vault className="h-5 w-5" />
-                    Vault
+    <aside
+      data-lenis-prevent
+      className="flex flex-col overflow-y-auto scrollbar-hide max-h-full rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-950/70 dark:shadow-[0_20px_60px_rgba(2,8,23,0.4)]"
+    >
+      <div className="flex items-center justify-between shrink-0">
+        <div>
+          <div className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-sky-600 dark:text-sky-300">
+            <icons.vault className="h-5 w-5" />
+            Vault
+          </div>
+          <h1 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
+            Contract Vault
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Draft → Sign → PDF artifact → Lock → Archive
+          </p>
+        </div>
+        {!embedded && (
+          <button
+            onClick={() => {
+              toggleTheme();
+              window.dispatchEvent(new Event("theme-change"));
+            }}
+            className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+          >
+            {theme === "dark" ? "Light" : "Dark"}
+          </button>
+        )}
+      </div>
+
+      {!embedded && (
+        <div className="mt-6 grid gap-2 shrink-0">
+          <NavItem
+            icon={icons.dashboard}
+            label="Dashboard"
+            onClick={() => navigate("/owner")}
+          />
+          <NavItem
+            icon={icons.bell}
+            label="Notifications"
+            onClick={() => navigate("/notifications")}
+          />
+          <NavItem icon={icons.plus} label="New draft" onClick={handleNewDraft} />
+          <NavItem icon={icons.file} label="Contracts" active />
+          <NavItem icon={icons.refresh} label="Refresh" onClick={loadContracts} />
+        </div>
+      )}
+
+      <div className="shrink-0">
+        <ScrollReveal as="section">
+          <div className="mt-6 rounded-2xl border border-sky-500/15 bg-sky-500/5 p-4 dark:border-sky-400/20 dark:bg-sky-400/10">
+            <div className="flex items-center gap-2 text-sm font-semibold text-sky-700 dark:text-sky-200">
+              <icons.search className="h-4 w-4" />
+              Search by number, buyer, factory, title...
+            </div>
+            <div className="mt-3 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-white/10 dark:bg-slate-950">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search contracts"
+                aria-label="Search contracts"
+                className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              />
+              <span className="ml-3 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                Ctrl K
+              </span>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal as="section">
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["All", "Draft", "Pending", "Signed", "Archived"].map((item) => (
+              <button
+                key={item}
+                onClick={() => setTab(item)}
+                className={cn(
+                  "rounded-full px-3 py-2 text-sm font-medium transition",
+                  tab === item
+                    ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20"
+                    : "bg-slate-100 text-slate-700 hover:bg-sky-50 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10",
+                )}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </ScrollReveal>
+      </div>
+
+      <div className="flex-1 min-h-0 mt-6">
+        <StaggerContainer className="space-y-3">
+          {filtered.map((c) => (
+            <StaggerItem key={c.id}>
+              <button
+                layout
+                onClick={() => setSelectedId(c.id)}
+                className={cn(
+                  "w-full rounded-3xl border p-4 text-left transition hover:-translate-y-0.5",
+                  selectedId === c.id
+                    ? "border-sky-500/40 bg-sky-500/10 shadow-lg shadow-sky-500/10 dark:bg-sky-400/10"
+                    : "border-slate-200 bg-white/70 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8",
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {c.id}
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <Pill tone="green">{c.status}</Pill>
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {c.title}
+                      </span>
+                    </div>
                   </div>
-                  <h1 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
-                    Contract Vault
-                  </h1>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Draft → Sign → PDF artifact → Lock → Archive
-                  </p>
+                  <div className="text-right text-xs text-slate-500 dark:text-slate-400">
+                    {c.date}
+                  </div>
                 </div>
-                {!embedded && (
-                <button
-                  onClick={() => { toggleTheme(); window.dispatchEvent(new Event("theme-change")); }}
-                  className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
-                >
-                  {theme === "dark" ? "Light" : "Dark"}
-                </button>
-                )}
-              </div>
-
-              {!embedded && (
-              <div className="mt-6 grid gap-2 shrink-0">
-                <NavItem
-                  icon={icons.dashboard}
-                  label="Dashboard"
-                  onClick={() => navigate("/owner")}
-                />
-                <NavItem
-                  icon={icons.bell}
-                  label="Notifications"
-                  onClick={() => navigate("/notifications")}
-                />
-                <NavItem icon={icons.plus} label="New draft" />
-                <NavItem icon={icons.file} label="Contracts" active />
-                <NavItem icon={icons.refresh} label="Refresh" />
-              </div>
-              )}
-
-              <div className="shrink-0">
-              <ScrollReveal as="section">
-              <div className="mt-6 rounded-2xl border border-sky-500/15 bg-sky-500/5 p-4 dark:border-sky-400/20 dark:bg-sky-400/10">
-                <div className="flex items-center gap-2 text-sm font-semibold text-sky-700 dark:text-sky-200">
-                  <icons.search className="h-4 w-4" />
-                  Search by number, buyer, factory, title...
+                <div className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                  Buyer: {c.buyer} · Factory: {c.factory}
                 </div>
-                <div className="mt-3 flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-white/10 dark:bg-slate-950">
-                  <input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search contracts"
-                    className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                  />
-                  <span className="ml-3 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-                    Ctrl K
-                  </span>
+                <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-500 dark:text-slate-400 sm:grid-cols-3">
+                  <MetaChip label="Next" value={c.next} />
+                  <MetaChip label="Buyer" value={c.buyerSign} />
+                  <MetaChip label="Factory" value={c.factorySign} />
                 </div>
-              </div>
-              </ScrollReveal>
-
-              <ScrollReveal as="section">
-              <div className="mt-6 flex flex-wrap gap-2">
-                {["All", "Draft", "Pending", "Signed", "Archived"].map(
-                  (item) => (
-                    <button
-                      key={item}
-                      onClick={() => setTab(item)}
-                      className={cn(
-                        "rounded-full px-3 py-2 text-sm font-medium transition",
-                        tab === item
-                          ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20"
-                          : "bg-slate-100 text-slate-700 hover:bg-sky-50 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10",
-                      )}
-                    >
-                      {item}
-                    </button>
-                  ),
-                )}
-              </div>
-              </ScrollReveal>
-              </div>
-
-              <div className="flex-1 min-h-0 mt-6">
-              <StaggerContainer className="space-y-3">
-                {filtered.map((c) => (
-                  <StaggerItem key={c.id}>
-                  <button
-                    layout
-                    onClick={() => setSelectedId(c.id)}
-                    className={cn(
-                      "w-full rounded-3xl border p-4 text-left transition hover:-translate-y-0.5",
-                      selectedId === c.id
-                        ? "border-sky-500/40 bg-sky-500/10 shadow-lg shadow-sky-500/10 dark:bg-sky-400/10"
-                        : "border-slate-200 bg-white/70 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8",
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                          {c.id}
-                        </div>
-                        <div className="mt-1 flex items-center gap-2">
-                          <Pill tone="green">{c.status}</Pill>
-                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            {c.title}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right text-xs text-slate-500 dark:text-slate-400">
-                        {c.date}
-                      </div>
-                    </div>
-                    <div className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-                      Buyer: {c.buyer} · Factory: {c.factory}
-                    </div>
-                    <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-500 dark:text-slate-400 sm:grid-cols-3">
-                      <MetaChip label="Next" value={c.next} />
-                      <MetaChip label="Buyer" value={c.buyerSign} />
-                      <MetaChip label="Factory" value={c.factorySign} />
-                    </div>
-                  </button>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-              </div>
-            </aside>
+              </button>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+      </div>
+    </aside>
   );
 
   const vaultContent = (
-          <div className={cn(embedded ? "flex flex-col xl:flex-row max-h-full gap-4 items-start" : "grid max-h-full gap-4 xl:grid-cols-[280px_minmax(0,1fr)]")}>
-            {embedded ? <div className="w-full xl:w-[280px] shrink-0" style={{ maxHeight: mainHeight ? `${mainHeight}px` : undefined }}>{sidebarContent}</div> : <CardStack className="h-full">{sidebarContent}</CardStack>}
+    <div
+      className={cn(
+        embedded
+          ? "flex flex-col xl:flex-row max-h-full gap-4 items-start"
+          : "grid max-h-full gap-4 xl:grid-cols-[280px_minmax(0,1fr)]",
+      )}
+    >
+      {embedded ? (
+        <div
+          className="w-full xl:w-[280px] shrink-0"
+          style={{ maxHeight: mainHeight ? `${mainHeight}px` : undefined }}
+        >
+          {sidebarContent}
+        </div>
+      ) : (
+        <CardStack className="h-full">{sidebarContent}</CardStack>
+      )}
 
-            <main ref={mainRef} data-lenis-prevent className={cn(embedded ? "flex-1 min-w-0 min-h-0 overflow-y-auto scrollbar-hide max-h-full" : "grid overflow-y-auto scrollbar-hide max-h-full xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]")}>
-              <div className="space-y-4">
-                <ScrollReveal as="section">
-                <SectionCard
-                  title={contract.id}
-                  subtitle={`${contract.status} · ${contract.title}`}
-                  right={<Pill tone="green">{contract.status}</Pill>}
-                >
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                    <span>Buyer: {contract.buyer}</span>
-                    <span>•</span>
-                    <span>Factory: {contract.factory}</span>
-                  </div>
-                  <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                    <div className="rounded-3xl border border-slate-200/80 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                            Journey Timeline
-                          </div>
-                          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            Video calls are recommended before finalizing
-                            contracts. No recorded call is linked to this
-                            contract yet.
-                          </div>
-                        </div>
-                        <Pill tone="blue">Help</Pill>
+      {feedback && (
+        <div className="fixed top-4 right-4 z-50 rounded-2xl bg-sky-500 px-4 py-3 text-sm font-medium text-white shadow-lg">
+          {feedback}
+          <button onClick={() => setFeedback("")} className="ml-3 text-white/70 hover:text-white" aria-label="Dismiss">×</button>
+        </div>
+      )}
+
+      <main
+        ref={mainRef}
+        data-lenis-prevent
+        className={cn(
+          embedded
+            ? "flex-1 min-w-0 min-h-0 overflow-y-auto scrollbar-hide max-h-full"
+            : "grid overflow-y-auto scrollbar-hide max-h-full xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]",
+        )}
+      >
+        <div className="space-y-4">
+          <ScrollReveal as="section">
+            <SectionCard
+              title={contract.id}
+              subtitle={`${contract.status} · ${contract.title}`}
+              right={<Pill tone="green">{contract.status}</Pill>}
+            >
+              <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <span>Buyer: {contract.buyer}</span>
+                <span>•</span>
+                <span>Factory: {contract.factory}</span>
+              </div>
+              <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div className="rounded-3xl border border-slate-200/80 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                        Journey Timeline
                       </div>
-                      <div className="mt-4 space-y-0">
-                        {contract.timeline.map((step, idx) => (
-                          <Step
-                            key={step}
-                            label={step}
-                            done={idx < contract.timelineIdx}
-                            active={idx === contract.timelineIdx}
-                            last={idx === contract.timeline.length - 1}
+                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Video calls are recommended before finalizing contracts.
+                        No recorded call is linked to this contract yet.
+                      </div>
+                    </div>
+                    <Pill tone="blue">Help</Pill>
+                  </div>
+                  <div className="mt-4 space-y-0">
+                    {contract.timeline.map((step, idx) => (
+                      <Step
+                        key={step}
+                        label={step}
+                        done={idx < contract.timelineIdx}
+                        active={idx === contract.timelineIdx}
+                        last={idx === contract.timeline.length - 1}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => navigate("/chat")}
+                    className="mt-2 inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5"
+                  >
+                    <icons.chat className="h-4 w-4" />
+                    Open chat
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <DetailPanel
+                    icon={<icons.check className="h-4 w-4" />}
+                    title="Signatures"
+                    body={
+                      <>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <StatusCard
+                            label="Buyer"
+                            status={contract.buyerSign}
                           />
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => navigate("/chat")}
-                        className="mt-2 inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5"
-                      >
-                        <icons.chat className="h-4 w-4" />
-                        Open chat
-                      </button>
-                    </div>
+                          <StatusCard
+                            label="Factory"
+                            status={contract.factorySign}
+                          />
+                        </div>
+                        {contract?.raw?.payment_proof_accepted === false && (
+                        <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
+                          Warning: No accepted payment proof yet. You may
+                          continue, but proof is strongly recommended for
+                          safety.
+                        </div>
+                        )}
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <ActionButton
+                            icon={<icons.check className="h-4 w-4" />}
+                            title="Buyer sign"
+                            subtitle={
+                              canSign ? "Sign as buyer" : "Already signed."
+                            }
+                            disabled={
+                              !canSign || contract.buyerSign === "signed"
+                            }
+                            onClick={handleBuyerSign}
+                          />
+                          <ActionButton
+                            icon={<icons.shield className="h-4 w-4" />}
+                            title="Factory sign"
+                            subtitle={
+                              canSign ? "Sign as factory" : "Already signed."
+                            }
+                            disabled={
+                              !canSign || contract.factorySign === "signed"
+                            }
+                            onClick={handleFactorySign}
+                          />
+                          <ActionButton
+                            icon={<icons.check className="h-4 w-4" />}
+                            title="E-sign session"
+                            subtitle="Create signing session"
+                            disabled={saving}
+                            onClick={handleESign}
+                          />
+                          <ActionButton
+                            icon={<icons.shield className="h-4 w-4" />}
+                            title="Lock PDF"
+                            subtitle="Lock the PDF"
+                            disabled={saving}
+                            onClick={handleLockPdf}
+                          />
+                        </div>
+                      </>
+                    }
+                  />
 
-                    <div className="space-y-4">
-                      <DetailPanel
-                        icon={<icons.check className="h-4 w-4" />}
-                        title="Signatures"
-                        body={
-                          <>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                              <StatusCard
-                                label="Buyer"
-                                status={contract.buyerSign}
-                              />
-                              <StatusCard
-                                label="Factory"
-                                status={contract.factorySign}
-                              />
-                            </div>
-                            <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
-                              Warning: No accepted payment proof yet. You may
-                              continue, but proof is strongly recommended for
-                              safety.
-                            </div>
-                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                              <ActionButton
-                                icon={<icons.check className="h-4 w-4" />}
-                                title="Buyer sign"
-                                subtitle={
-                                  canSign ? "Sign as buyer" : "Already signed."
-                                }
-                                disabled={
-                                  !canSign || contract.buyerSign === "signed"
-                                }
-                                onClick={handleBuyerSign}
-                              />
-                              <ActionButton
-                                icon={<icons.shield className="h-4 w-4" />}
-                                title="Factory sign"
-                                subtitle={
-                                  canSign
-                                    ? "Sign as factory"
-                                    : "Already signed."
-                                }
-                                disabled={
-                                  !canSign || contract.factorySign === "signed"
-                                }
-                                onClick={handleFactorySign}
-                              />
-                              <ActionButton
-                                icon={<icons.check className="h-4 w-4" />}
-                                title="E-sign session"
-                                subtitle="Create signing session"
-                                disabled={saving}
-                                onClick={handleESign}
-                              />
-                              <ActionButton
-                                icon={<icons.shield className="h-4 w-4" />}
-                                title="Lock PDF"
-                                subtitle="Lock the PDF"
-                                disabled={saving}
-                                onClick={handleLockPdf}
-                              />
-                            </div>
-                          </>
+                  <DetailPanel
+                    icon={<icons.file className="h-4 w-4" />}
+                    title="Artifact (PDF)"
+                    body={
+                      <div>
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                          <Pill tone="blue">Status: {contract.pdf}</Pill>
+                          <span>
+                            PDF generates automatically after both signatures.
+                          </span>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          <ActionButton
+                            icon={<icons.lock className="h-4 w-4" />}
+                            title="Lock PDF"
+                            subtitle="Lock the PDF"
+                            disabled={saving}
+                            onClick={handleLockPdf}
+                          />
+                          <ActionButton
+                            icon={<icons.download className="h-4 w-4" />}
+                            title="Download PDF"
+                            subtitle="Ready to export"
+                            onClick={handleDownloadPdf}
+                          />
+                          <ActionButton
+                            icon={<icons.shield className="h-4 w-4" />}
+                            title="Archive"
+                            subtitle="Archive contract"
+                            disabled={saving}
+                            onClick={handleArchive}
+                          />
+                        </div>
+                      </div>
+                    }
+                  />
+                </div>
+              </div>
+            </SectionCard>
+          </ScrollReveal>
+
+          <ScrollReveal as="section">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <SectionCard
+                title="Banking references (optional)"
+                subtitle="For fraud prevention only. No direct payments are processed on-platform."
+                right={<Pill tone="violet">Visible</Pill>}
+              >
+                <div className="grid gap-3 text-sm text-slate-700 dark:text-slate-300">
+                  <Row
+                    label="Bank name"
+                    value={contract?.raw?.bank_name || "—"}
+                  />
+                  <Row
+                    label="Beneficiary"
+                    value={contract?.raw?.beneficiary_name || "—"}
+                  />
+                  <Row
+                    label="Transaction reference"
+                    value={contract?.raw?.transaction_reference || "—"}
+                  />
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                title="Payment proof workflow"
+                subtitle="Submit bank transfer or LC documents. Seller review sets status, disputes trigger internal admin review."
+                right={
+                  <button onClick={refreshPaymentProofs} className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                    Refresh
+                  </button>
+                }
+              >
+                <div className="grid gap-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Proof type
+                    </label>
+                    <select
+                      value={paymentForm.type}
+                      onChange={(e) =>
+                        setPaymentForm((p) => ({
+                          ...p,
+                          type: e.target.value,
+                        }))
+                      }
+                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
+                    >
+                      <option value="bank_transfer">Bank transfer</option>
+                      <option value="lc">Letter of credit (LC)</option>
+                    </select>
+                    <Input
+                      label="Transaction reference"
+                      value={paymentForm.transaction_reference}
+                      placeholder="Enter reference"
+                      onChange={(e) =>
+                        setPaymentForm((p) => ({
+                          ...p,
+                          transaction_reference: e.target.value,
+                        }))
+                      }
+                    />
+                    <Input
+                      label="Bank name"
+                      value={paymentForm.bank_name}
+                      placeholder="Bank name"
+                      onChange={(e) =>
+                        setPaymentForm((p) => ({
+                          ...p,
+                          bank_name: e.target.value,
+                        }))
+                      }
+                    />
+                    <Input
+                      label="Sender account name"
+                      value={paymentForm.sender_account_name}
+                      placeholder="Sender account"
+                      onChange={(e) =>
+                        setPaymentForm((p) => ({
+                          ...p,
+                          sender_account_name: e.target.value,
+                        }))
+                      }
+                    />
+                    <Input
+                      label="Receiver/company account name"
+                      value={paymentForm.receiver_account_name}
+                      placeholder="Receiver account"
+                      onChange={(e) =>
+                        setPaymentForm((p) => ({
+                          ...p,
+                          receiver_account_name: e.target.value,
+                        }))
+                      }
+                    />
+                    <Input
+                      label="mm/dd/yyyy"
+                      value={paymentForm.transaction_date}
+                      placeholder="Date"
+                      onChange={(e) =>
+                        setPaymentForm((p) => ({
+                          ...p,
+                          transaction_date: e.target.value,
+                        }))
+                      }
+                    />
+                    <Input
+                      label="Amount"
+                      value={paymentForm.amount}
+                      placeholder="USD"
+                      onChange={(e) =>
+                        setPaymentForm((p) => ({
+                          ...p,
+                          amount: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <label className="block rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 dark:border-white/15 dark:bg-white/5 dark:text-slate-300">
+                    <span className="mb-2 block font-medium">
+                      Upload proof document
+                    </span>
+                    <input type="file" onChange={handleFileUpload} aria-label="Upload payment proof file" className="block w-full text-sm" />
+                  </label>
+                  <button
+                    onClick={handleSubmitProof}
+                    disabled={saving}
+                    className="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 disabled:opacity-50"
+                  >
+                    Submit proof
+                  </button>
+                  {paymentProofs.length > 0 ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-white/10 dark:bg-slate-950">
+                      {paymentProofs.map((proof, idx) => (
+                        <div key={proof.id || idx} className="flex items-center justify-between py-1 text-slate-700 dark:text-slate-300">
+                          <span>{proof.type || proof.transaction_reference || `Proof ${idx + 1}`}</span>
+                          <Pill tone={proof.status === "accepted" ? "green" : proof.status === "rejected" ? "red" : "amber"}>
+                            {proof.status || "pending"}
+                          </Pill>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 dark:border-white/10 dark:bg-slate-950 dark:text-slate-400">
+                      No proofs submitted yet.
+                    </div>
+                  )}
+                </div>
+              </SectionCard>
+            </div>
+          </ScrollReveal>
+        </div>
+
+        <div className="space-y-4">
+          <ScrollReveal as="section">
+            <SectionCard
+              title="Contract Snapshot"
+              subtitle="Focused, premium, and ready for review"
+              right={<Pill tone="blue">Premium</Pill>}
+            >
+              <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+                <Row label="Status" value={contract.status} />
+                <Row label="Next" value={contract.next} />
+                <Row label="Buyer sign" value={contract.buyerSign} />
+                <Row label="Factory sign" value={contract.factorySign} />
+                <Row label="PDF" value={contract.pdf} />
+                <Row label="Date" value={contract.date} />
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Call recordings"
+              subtitle="Recorded calls are stored for dispute resolution and security (project.md)."
+            >
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-slate-900 dark:text-white">
+                    Call recordings
+                  </span>
+                  <icons.phone className="h-4 w-4 text-sky-500" />
+                </div>
+                {calls.length > 0 ? (
+                  <ul className="mt-2 space-y-2">
+                    {calls.map((call, idx) => (
+                      <li key={call.id || idx} className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm dark:bg-slate-950">
+                        <span className="text-slate-700 dark:text-slate-300">
+                          {call.title || call.id || `Call ${idx + 1}`}
+                        </span>
+                        {call.recording_url && (
+                          <a href={call.recording_url} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline dark:text-sky-400">
+                            Listen
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    No calls linked to this contract yet.
+                  </p>
+                )}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Artifact audit"
+              subtitle="Generated, versioned, and traceable"
+            >
+              <div className="grid gap-3 text-sm text-slate-700 dark:text-slate-300">
+                {(() => {
+                  const a = contract?.raw?.artifact || {};
+                  const signers = a?.signer_ids;
+                  const timestamps = a?.signature_timestamps;
+                  return (
+                    <>
+                      <Row label="Status" value={a?.status || "—"} />
+                      <Row
+                        label="Generated at"
+                        value={a?.generated_at || "—"}
+                      />
+                      <Row
+                        label="Version"
+                        value={a?.version != null ? String(a.version) : "—"}
+                      />
+                      <Row label="Hash" value={a?.pdf_hash || "—"} />
+                      <Row
+                        label="Signer IDs"
+                        value={
+                          signers
+                            ? `Buyer ${signers.buyer_id || "—"} · Factory ${signers.factory_id || "—"}`
+                            : "—"
                         }
                       />
+                      <Row
+                        label="Signature timestamps"
+                        value={
+                          timestamps
+                            ? `Buyer ${timestamps.buyer_signed_at || "—"} · Factory ${timestamps.factory_signed_at || "—"}`
+                            : "—"
+                        }
+                      />
+                    </>
+                  );
+                })()}
+              </div>
+            </SectionCard>
 
-                      <DetailPanel
-                        icon={<icons.file className="h-4 w-4" />}
-                        title="Artifact (PDF)"
-                        body={
-                          <div>
-                            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                              <Pill tone="blue">Status: {contract.pdf}</Pill>
-                              <span>
-                                PDF generates automatically after both
-                                signatures.
-                              </span>
-                            </div>
-                            <div className="mt-4 flex flex-wrap gap-3">
-                              <ActionButton
-                                icon={<icons.lock className="h-4 w-4" />}
-                                title="Lock PDF"
-                                subtitle="Lock the PDF"
-                                disabled={saving}
-                                onClick={handleLockPdf}
-                              />
-                              <ActionButton
-                                icon={<icons.download className="h-4 w-4" />}
-                                title="Download PDF"
-                                subtitle="Ready to export"
-                                onClick={handleDownloadPdf}
-                              />
-                              <ActionButton
-                                icon={<icons.shield className="h-4 w-4" />}
-                                title="Archive"
-                                subtitle="Archive contract"
-                                disabled={saving}
-                                onClick={handleArchive}
-                              />
+            <SectionCard
+              title="Contract Audit Trail"
+              subtitle="Premium access gate"
+            >
+              {(() => {
+                const cu = getCurrentUser();
+                const hasPremium = cu?.subscription_status === "premium" || cu?.plan === "premium" || cu?.role === "owner" || cu?.role === "admin";
+                if (hasPremium) {
+                  return (
+                    <div className="space-y-3">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        All actions on this contract are logged and timestamped.
+                      </p>
+                      {contract?.raw?.audit_log?.length > 0 ? (
+                        contract.raw.audit_log.slice(0, 10).map((entry, i) => (
+                          <div key={i} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-900">
+                            <div className="mt-0.5 h-2 w-2 rounded-full bg-sky-500 shrink-0" />
+                            <div>
+                              <p className="font-medium text-slate-900 dark:text-white">{entry.action}</p>
+                              <p className="text-xs text-slate-500">{entry.performed_by} · {entry.timestamp}</p>
                             </div>
                           </div>
-                        }
-                      />
+                        ))
+                      ) : (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">No audit trail entries yet.</p>
+                      )}
                     </div>
-                  </div>
-                </SectionCard>
-                </ScrollReveal>
-
-                <ScrollReveal as="section">
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <SectionCard
-                    title="Banking references (optional)"
-                    subtitle="For fraud prevention only. No direct payments are processed on-platform."
-                    right={<Pill tone="violet">Visible</Pill>}
-                  >
-                    <div className="grid gap-3 text-sm text-slate-700 dark:text-slate-300">
-                      <Row label="Bank name" value={contract?.raw?.bank_name || "—"} />
-                      <Row label="Beneficiary" value={contract?.raw?.beneficiary_name || "—"} />
-                      <Row label="Transaction reference" value={contract?.raw?.transaction_reference || "—"} />
-                    </div>
-                  </SectionCard>
-
-                  <SectionCard
-                    title="Payment proof workflow"
-                    subtitle="Submit bank transfer or LC documents. Seller review sets status, disputes trigger internal admin review."
-                    right={
-                      <button className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
-                        Refresh
-                      </button>
-                    }
-                  >
-                    <div className="grid gap-3">
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Proof type
-                        </label>
-                        <select
-                          value={paymentForm.type}
-                          onChange={(e) =>
-                            setPaymentForm((p) => ({
-                              ...p,
-                              type: e.target.value,
-                            }))
-                          }
-                          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
-                        >
-                          <option value="bank_transfer">Bank transfer</option>
-                          <option value="lc">Letter of credit (LC)</option>
-                        </select>
-                        <Input
-                          label="Transaction reference"
-                          value={paymentForm.transaction_reference}
-                          placeholder="Enter reference"
-                          onChange={(e) =>
-                            setPaymentForm((p) => ({
-                              ...p,
-                              transaction_reference: e.target.value,
-                            }))
-                          }
-                        />
-                        <Input
-                          label="Bank name"
-                          value={paymentForm.bank_name}
-                          placeholder="Bank name"
-                          onChange={(e) =>
-                            setPaymentForm((p) => ({
-                              ...p,
-                              bank_name: e.target.value,
-                            }))
-                          }
-                        />
-                        <Input
-                          label="Sender account name"
-                          value={paymentForm.sender_account_name}
-                          placeholder="Sender account"
-                          onChange={(e) =>
-                            setPaymentForm((p) => ({
-                              ...p,
-                              sender_account_name: e.target.value,
-                            }))
-                          }
-                        />
-                        <Input
-                          label="Receiver/company account name"
-                          value={paymentForm.receiver_account_name}
-                          placeholder="Receiver account"
-                          onChange={(e) =>
-                            setPaymentForm((p) => ({
-                              ...p,
-                              receiver_account_name: e.target.value,
-                            }))
-                          }
-                        />
-                        <Input
-                          label="mm/dd/yyyy"
-                          value={paymentForm.transaction_date}
-                          placeholder="Date"
-                          onChange={(e) =>
-                            setPaymentForm((p) => ({
-                              ...p,
-                              transaction_date: e.target.value,
-                            }))
-                          }
-                        />
-                        <Input
-                          label="Amount"
-                          value={paymentForm.amount}
-                          placeholder="USD"
-                          onChange={(e) =>
-                            setPaymentForm((p) => ({
-                              ...p,
-                              amount: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <label className="block rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 dark:border-white/15 dark:bg-white/5 dark:text-slate-300">
-                        <span className="mb-2 block font-medium">
-                          Upload proof document
-                        </span>
-                        <input type="file" className="block w-full text-sm" />
-                      </label>
-                      <button
-                        onClick={handleSubmitProof}
-                        disabled={saving}
-                        className="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 disabled:opacity-50"
-                      >
-                        Submit proof
-                      </button>
-                      <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 dark:border-white/10 dark:bg-slate-950 dark:text-slate-400">
-                        No proofs submitted yet.
-                      </div>
-                    </div>
-                  </SectionCard>
-              </div>
-                </ScrollReveal>
-              </div>
-
-              <div className="space-y-4">
-                <ScrollReveal as="section">
-                <SectionCard
-                  title="Contract Snapshot"
-                  subtitle="Focused, premium, and ready for review"
-                  right={<Pill tone="blue">Premium</Pill>}
-                >
-                  <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
-                    <Row label="Status" value={contract.status} />
-                    <Row label="Next" value={contract.next} />
-                    <Row label="Buyer sign" value={contract.buyerSign} />
-                    <Row label="Factory sign" value={contract.factorySign} />
-                    <Row label="PDF" value={contract.pdf} />
-                    <Row label="Date" value={contract.date} />
-                  </div>
-                </SectionCard>
-
-                <SectionCard
-                  title="Call recordings"
-                  subtitle="Recorded calls are stored for dispute resolution and security (project.md)."
-                >
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-slate-900 dark:text-white">
-                        Call recordings
-                      </span>
-                      <icons.phone className="h-4 w-4 text-sky-500" />
-                    </div>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                      No calls linked to this contract yet.
-                    </p>
-                  </div>
-                </SectionCard>
-
-                <SectionCard
-                  title="Artifact audit"
-                  subtitle="Generated, versioned, and traceable"
-                >
-                  <div className="grid gap-3 text-sm text-slate-700 dark:text-slate-300">
-                    {(() => {
-                      const a = contract?.raw?.artifact || {};
-                      const signers = a?.signer_ids;
-                      const timestamps = a?.signature_timestamps;
-                      return (
-                        <>
-                          <Row label="Status" value={a?.status || "—"} />
-                          <Row label="Generated at" value={a?.generated_at || "—"} />
-                          <Row label="Version" value={a?.version != null ? String(a.version) : "—"} />
-                          <Row label="Hash" value={a?.pdf_hash || "—"} />
-                          <Row label="Signer IDs" value={
-                            signers
-                              ? `Buyer ${signers.buyer_id || "—"} · Factory ${signers.factory_id || "—"}`
-                              : "—"
-                          } />
-                          <Row label="Signature timestamps" value={
-                            timestamps
-                              ? `Buyer ${timestamps.buyer_signed_at || "—"} · Factory ${timestamps.factory_signed_at || "—"}`
-                              : "—"
-                          } />
-                        </>
-                      );
-                    })()}
-                  </div>
-                </SectionCard>
-
-                <SectionCard
-                  title="Contract Audit Trail"
-                  subtitle="Premium access gate"
-                >
+                  );
+                }
+                return (
                   <div className="rounded-3xl border border-dashed border-sky-400/30 bg-sky-500/5 p-6 text-center">
-                    <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sky-600 text-white shadow-lg shadow-sky-500/20">
-                      <icons.lock className="h-5 w-5" />
-                    </div>
-                    <div className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
-                      Premium
-                    </div>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                      Premium plan required to view the contract audit trail.
-                    </p>
-                    <button className="mt-4 rounded-2xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20">
-                      Upgrade to Premium
-                    </button>
-                  </div>
-                </SectionCard>
-
-                <SectionCard
-                  title="Workflow summary"
-                  subtitle="Every single thing in one place"
-                >
-                  <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
-                    <SummaryRow step="Draft" done />
-                    <SummaryRow
-                      step="Buyer sign"
-                      done={contract.buyerSign === "signed"}
-                    />
-                    <SummaryRow
-                      step="Factory sign"
-                      done={contract.factorySign === "signed"}
-                    />
-                    <SummaryRow
-                      step="Lock PDF"
-                      done={contract?.raw?.artifact?.status === "locked" || contract?.raw?.artifact?.status === "archived"}
-                    />
-                    <SummaryRow
-                      step="Archive"
-                      done={contract?.raw?.lifecycle_status === "archived"}
-                    />
-                  </div>
-                </SectionCard>
-                </ScrollReveal>
+                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sky-600 text-white shadow-lg shadow-sky-500/20">
+                  <icons.lock className="h-5 w-5" />
+                </div>
+                <div className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
+                  Premium
+                </div>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  Premium plan required to view the contract audit trail.
+                </p>
+                <button onClick={() => navigate("/pricing")} className="mt-4 rounded-2xl bg-gradient-to-r from-sky-600 to-cyan-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20">
+                  Upgrade to Premium
+                </button>
               </div>
-            </main>
-          </div>
+            );
+          })()}
+            </SectionCard>
+
+            <SectionCard
+              title="Workflow summary"
+              subtitle="Every single thing in one place"
+            >
+              <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+                <SummaryRow step="Draft" done />
+                <SummaryRow
+                  step="Buyer sign"
+                  done={contract.buyerSign === "signed"}
+                />
+                <SummaryRow
+                  step="Factory sign"
+                  done={contract.factorySign === "signed"}
+                />
+                <SummaryRow
+                  step="Lock PDF"
+                  done={
+                    contract?.raw?.artifact?.status === "locked" ||
+                    contract?.raw?.artifact?.status === "archived"
+                  }
+                />
+                <SummaryRow
+                  step="Archive"
+                  done={contract?.raw?.lifecycle_status === "archived"}
+                />
+              </div>
+            </SectionCard>
+          </ScrollReveal>
+        </div>
+      </main>
+    </div>
   );
 
   if (embedded) return vaultContent;

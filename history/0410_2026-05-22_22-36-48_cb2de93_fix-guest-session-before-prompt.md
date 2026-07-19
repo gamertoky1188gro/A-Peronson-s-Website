@@ -1,12 +1,12 @@
 # Commit 0410 — `cb2de932482`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `cb2de9324826f3f19d42aac973ba553bde939d54` |
-| Parent Hash | `8bfe21a28aca957a783e024f9719e957d02260fb` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-22 22:36:48 +0600 |
-| Subject | fix: create guest session before prompting to avoid UnknownError |
+| Field       | Value                                                            |
+| ----------- | ---------------------------------------------------------------- |
+| Commit Hash | `cb2de9324826f3f19d42aac973ba553bde939d54`                       |
+| Parent Hash | `8bfe21a28aca957a783e024f9719e957d02260fb`                       |
+| Author      | gamertoky1188gro                                                 |
+| Date        | 2026-05-22 22:36:48 +0600                                        |
+| Subject     | fix: create guest session before prompting to avoid UnknownError |
 
 ---
 
@@ -18,9 +18,9 @@ Fixes a crash when prompting without a session — now creates a guest session (
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/assistantService.js` | modified | 6 | 0 |
+| File                                  | Status   | Insertions | Deletions |
+| ------------------------------------- | -------- | ---------- | --------- |
+| `server/services/assistantService.js` | modified | 6          | 0         |
 
 **1 file changed, 2 insertions, 4 deletions**
 

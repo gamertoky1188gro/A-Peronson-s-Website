@@ -1,12 +1,12 @@
 # Commit 0564 — `6b58ceece93a`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `6b58ceece93af80390d83386f216d9d9e6d3a60e` |
-| Parent Hash | `c5ba0a37e7e93be666f8520aa6e0ef194c60129d` |
-| Author | gamertoky1188gro |
-| Date | 2026-06-07 01:16:15 +0600 |
-| Subject | a11y: increase dot nav touch target to 48px via pseudo-element |
+| Field       | Value                                                          |
+| ----------- | -------------------------------------------------------------- |
+| Commit Hash | `6b58ceece93af80390d83386f216d9d9e6d3a60e`                     |
+| Parent Hash | `c5ba0a37e7e93be666f8520aa6e0ef194c60129d`                     |
+| Author      | gamertoky1188gro                                               |
+| Date        | 2026-06-07 01:16:15 +0600                                      |
+| Subject     | a11y: increase dot nav touch target to 48px via pseudo-element |
 
 ---
 
@@ -18,9 +18,9 @@ Adds a `::before` pseudo-element with `-inset-5` to the dot navigation items, ex
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `src/pages/TexHub.jsx` | modified | 1 | 1 |
+| File                   | Status   | Insertions | Deletions |
+| ---------------------- | -------- | ---------- | --------- |
+| `src/pages/TexHub.jsx` | modified | 1          | 1         |
 
 **1 file changed, 1 insertion, 1 deletion**
 
@@ -29,6 +29,7 @@ Adds a `::before` pseudo-element with `-inset-5` to the dot navigation items, ex
 ## Detailed Diff Analysis
 
 ### `TexHub.jsx`
+
 - Added `before:absolute before:-inset-5 before:content-['']` classes to dot nav `<a>` elements.
 
 ---

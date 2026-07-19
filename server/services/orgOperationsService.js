@@ -35,12 +35,18 @@ const DEFAULT_POLICY = {
 async function readStore(fileName) {
   if (USE_SQL_CRM) {
     switch (fileName) {
-      case "org_policies.json": return prisma.orgPolicy.findMany();
-      case "lead_assignments.json": return prisma.leadAssignment.findMany();
-      case "agent_capacity.json": return prisma.agentCapacity.findMany();
-      case "leads.json": return prisma.lead.findMany();
-      case "users.json": return prisma.user.findMany();
-      default: return [];
+      case "org_policies.json":
+        return prisma.orgPolicy.findMany();
+      case "lead_assignments.json":
+        return prisma.leadAssignment.findMany();
+      case "agent_capacity.json":
+        return prisma.agentCapacity.findMany();
+      case "leads.json":
+        return prisma.lead.findMany();
+      case "users.json":
+        return prisma.user.findMany();
+      default:
+        return [];
     }
   }
   return readLegacyJson(fileName);
@@ -566,7 +572,11 @@ export async function upsertAgentCapacity(actor, payload = {}) {
         data: {
           max_concurrent_leads: Math.max(
             1,
-            Number(payload.max_concurrent_leads || existing.max_concurrent_leads || 10),
+            Number(
+              payload.max_concurrent_leads ||
+                existing.max_concurrent_leads ||
+                10,
+            ),
           ),
           current_load: Math.max(
             0,
@@ -584,10 +594,7 @@ export async function upsertAgentCapacity(actor, payload = {}) {
             1,
             Number(payload.max_concurrent_leads || 10),
           ),
-          current_load: Math.max(
-            0,
-            Number(payload.current_load ?? 0),
-          ),
+          current_load: Math.max(0, Number(payload.current_load ?? 0)),
           updated_at: new Date(),
         },
       });

@@ -468,7 +468,10 @@ export async function createProduct(user, payload) {
       throw new Error(`${label} is required`);
     }
   }
-  if (!isDraft && (!Array.isArray(payload.image_urls) || payload.image_urls.length === 0)) {
+  if (
+    !isDraft &&
+    (!Array.isArray(payload.image_urls) || payload.image_urls.length === 0)
+  ) {
     throw new Error("At least one product image is required");
   }
 
@@ -634,7 +637,11 @@ export async function createProduct(user, payload) {
 
   const viewer = isAgent(user) ? { id: ownerId, role: ownerRole } : user;
 
-  indexProductQdrant(row, { ...(user?.profile || {}), id: ownerId, ...user }).catch(() => {});
+  indexProductQdrant(row, {
+    ...(user?.profile || {}),
+    id: ownerId,
+    ...user,
+  }).catch(() => {});
 
   return presentProduct(row, [], viewer);
 }
@@ -674,7 +681,10 @@ export async function listProducts(filters = {}) {
   const productIds = filteredProducts.map((p) => p.id);
   const documents = productIds.length
     ? await prisma.document.findMany({
-        where: { entity_type: "company_product", entity_id: { in: productIds } },
+        where: {
+          entity_type: "company_product",
+          entity_id: { in: productIds },
+        },
       })
     : [];
 
@@ -720,7 +730,8 @@ export async function updateProductById(actor, productId, patch = {}) {
       ? sanitizeString(patch.video_url || "", 260)
       : existing.video_url;
   const ownerId = String(existing.company_id || "");
-  const ownerRecord = await prisma.user.findUnique({ where: { id: ownerId } }) || actor;
+  const ownerRecord =
+    (await prisma.user.findUnique({ where: { id: ownerId } })) || actor;
   const addingVideo =
     !String(existing.video_url || "").trim() &&
     String(nextVideoUrl || "").trim();
@@ -747,7 +758,10 @@ export async function updateProductById(actor, productId, patch = {}) {
       category: { value: patch.category, label: "Category" },
       material: { value: patch.material, label: "Material" },
       price_range: { value: patch.price_range, label: "Price range" },
-      lead_time_days: { value: patch.lead_time_days, label: "Lead time (days)" },
+      lead_time_days: {
+        value: patch.lead_time_days,
+        label: "Lead time (days)",
+      },
       description: { value: patch.description, label: "Description" },
     };
     for (const [key, field] of Object.entries(requiredFields)) {

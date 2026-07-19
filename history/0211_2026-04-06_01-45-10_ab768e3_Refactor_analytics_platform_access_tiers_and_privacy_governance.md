@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** ab768e3a41eea9d064641fd730395ce033e54ba1
 - **Parent:** a8ada1166d4cecce836e44260893a7d1e6b05e19
 - **Author:** Cyber Code Master
@@ -6,30 +7,34 @@
 - **Message:** Refactor analytics platform access tiers and privacy governance
 
 ## Custom Title
+
 Refactor analytics platform access tiers and privacy governance
 
 ## High-Level Summary
+
 Refactor analytics platform access tiers and privacy governance
 
- 7 files changed, 348 insertions(+), 43 deletions(-)
+7 files changed, 348 insertions(+), 43 deletions(-)
 
 ## File-by-File Breakdown
+
 commit ab768e3a41eea9d064641fd730395ce033e54ba1
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Mon Apr 6 01:45:10 2026 +0600
+Date: Mon Apr 6 01:45:10 2026 +0600
 
     Refactor analytics platform access tiers and privacy governance
 
- server/controllers/analyticsController.js          |  40 ++++-
- server/routes/analyticsRoutes.js                   |  16 +-
- .../__tests__/analyticsGovernanceService.test.js   |  16 +-
- server/services/analyticsGovernanceService.js      |  98 ++++++++++-
- server/services/analyticsService.js                | 181 ++++++++++++++++++---
- src/hooks/useAnalyticsDashboard.js                 |  20 ++-
- src/pages/Insights.jsx                             |  20 ++-
- 7 files changed, 348 insertions(+), 43 deletions(-)
+server/controllers/analyticsController.js | 40 ++++-
+server/routes/analyticsRoutes.js | 16 +-
+.../**tests**/analyticsGovernanceService.test.js | 16 +-
+server/services/analyticsGovernanceService.js | 98 ++++++++++-
+server/services/analyticsService.js | 181 ++++++++++++++++++---
+src/hooks/useAnalyticsDashboard.js | 20 ++-
+src/pages/Insights.jsx | 20 ++-
+7 files changed, 348 insertions(+), 43 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/server/controllers/analyticsController.js b/server/controllers/analyticsController.js
 index 35df8c3..f43ba9e 100644
@@ -52,7 +57,7 @@ index 35df8c3..f43ba9e 100644
 @@ -45,10 +53,34 @@ export async function analyticsCompany(req, res) {
    }
  }
- 
+
 -export async function analyticsPlatform(req, res) {
 +export async function analyticsPlatformSummary(req, res) {
    try {
@@ -105,9 +110,9 @@ index f6c17b4..63ca23b 100644
 +  analyticsSummary,
 +  analyticsViewers,
 +} from '../controllers/analyticsController.js'
- 
+
  const router = Router()
- 
+
  router.get('/summary', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsSummary)
  router.get('/dashboard', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsDashboard)
  router.get('/company', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'agent'), analyticsCompany)
@@ -118,7 +123,7 @@ index f6c17b4..63ca23b 100644
 +router.get('/platform', requireAuth, allowRoles('owner', 'admin'), analyticsPlatformAdmin)
  router.get('/premium', requireAuth, allowRoles('owner', 'admin', 'buyer', 'factory', 'buying_house', 'agent'), analyticsPremium)
  router.get('/viewers', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'agent'), analyticsViewers)
- 
+
 diff --git a/server/services/__tests__/analyticsGovernanceService.test.js b/server/services/__tests__/analyticsGovernanceService.test.js
 index d64334d..23d5f56 100644
 --- a/server/services/__tests__/analyticsGovernanceService.test.js
@@ -126,10 +131,10 @@ index d64334d..23d5f56 100644
 @@ -1,7 +1,7 @@
  import test from 'node:test'
  import assert from 'node:assert/strict'
- 
+
 -import { checkAnalyticsAccessPolicy, sanitizePlatformAnalytics } from '../analyticsGovernanceService.js'
 +import { assertNoUnauthorizedAnalyticsJoin, checkAnalyticsAccessPolicy, sanitizePlatformAnalytics } from '../analyticsGovernanceService.js'
- 
+
  function baseReport() {
    return {
 @@ -129,3 +129,17 @@ test('policy denies raw export when allow_raw_exports is disabled', () => {
@@ -160,7 +165,7 @@ index 5a386bf..4f1ccfc 100644
    'search_category',
 +  'org_scope',
  ])
- 
+
  export const DENIED_ANALYTICS_FIELDS = Object.freeze([
 @@ -36,6 +37,18 @@ export const DENIED_ANALYTICS_FIELDS = Object.freeze([
    'longitude',
@@ -179,12 +184,12 @@ index 5a386bf..4f1ccfc 100644
 +  'ip',
 +  'country+category+month+price_bucket',
  ])
- 
+
  export const SENSITIVE_BUCKETING_RULES = Object.freeze({
 @@ -112,6 +125,58 @@ export function checkAnalyticsAccessPolicy(user, config = ANALYTICS_GOVERNANCE_D
    return { allowed: true, governance, mode, role }
  }
- 
+
 +export function assertNoUnauthorizedAnalyticsJoin(requestedDimensions = []) {
 +  const dims = Array.isArray(requestedDimensions)
 +    ? requestedDimensions.map((value) => String(value || '').trim().toLowerCase()).filter(Boolean)
@@ -243,7 +248,7 @@ index 5a386bf..4f1ccfc 100644
 @@ -245,7 +310,7 @@ export function sanitizePlatformAnalytics(raw = {}, config = ANALYTICS_GOVERNANC
      }
    }
- 
+
 -  const suppression = { suppressed_values: 0, suppressed_cohorts: 0 }
 +  const suppression = { suppressed_values: 0, suppressed_cohorts: 0, noise_injected: false }
    const monthlyTrend = (Array.isArray(raw.monthly_demand_trend) ? raw.monthly_demand_trend : [])
@@ -287,7 +292,7 @@ index 5a386bf..4f1ccfc 100644
 +      delta: Number(row.count || 0) - Number(row.previous || 0),
 +    })),
    }
- 
+
    return {
 diff --git a/server/services/analyticsService.js b/server/services/analyticsService.js
 index bd3f1ca..e2376dd 100644
@@ -304,17 +309,17 @@ index bd3f1ca..e2376dd 100644
 +  getAnalyticsGovernanceConfig,
 +  sanitizePlatformAnalytics,
 +} from './analyticsGovernanceService.js'
- 
+
  const FILE = 'analytics.json'
  const SEARCH_TREND_MIN_EVENTS = 25
 @@ -595,12 +600,17 @@ export async function getCompanyAnalytics(user) {
  }
- 
+
  export async function getPlatformAnalytics(user) {
 -  ensureAnalyticsAdminAccess(user)
 +  return getPlatformAnalyticsAdmin(user, {})
 +}
- 
+
 -  const governance = await getAnalyticsGovernanceConfig()
 -  const viewPolicy = checkAnalyticsAccessPolicy(user, governance, { mode: 'view' })
 -  if (!viewPolicy.allowed) throw forbiddenError('Analytics governance policy denied this request')
@@ -324,14 +329,14 @@ index bd3f1ca..e2376dd 100644
 +  if (role === 'buyer' || role === 'factory' || role === 'buying_house') return String(user?.id || '')
 +  return ''
 +}
- 
+
 +async function buildPlatformAnalyticsSnapshot(governance) {
    const [requirements, users, events] = await Promise.all([
      readJson('requirements.json'),
      readJson('users.json'),
 @@ -608,10 +618,6 @@ export async function getPlatformAnalytics(user) {
    ])
- 
+
    const usersById = new Map((Array.isArray(users) ? users : []).map((u) => [String(u.id), u]))
 -  const byCountry = {}
 -  const globalCategories = {}
@@ -343,7 +348,7 @@ index bd3f1ca..e2376dd 100644
 @@ -623,6 +629,14 @@ export async function getPlatformAnalytics(user) {
      return Number.isFinite(createdAt) && createdAt >= retentionCutoff
    })
- 
+
 +  return { usersById, requirementsRows, eventRows }
 +}
 +
@@ -356,18 +361,18 @@ index bd3f1ca..e2376dd 100644
      const buyer = usersById.get(String(req.buyer_id || ''))
      const country = String(buyer?.profile?.country || 'Unknown')
 @@ -665,8 +679,6 @@ export async function getPlatformAnalytics(user) {
- 
+
    const searchEvents = eventRows.filter((e) => String(e.type || '') === 'search_run')
    const searchEventCount = searchEvents.length
 -  const minEvents = await getSearchMinEvents()
 -  const searchDataReady = searchEventCount >= minEvents
    const searchByCountry = {}
    const searchGlobal = {}
- 
+
 @@ -715,40 +727,159 @@ export async function getPlatformAnalytics(user) {
      return { label: cat, delta: current - previous, current, previous }
    }).sort((a, b) => b.delta - a.delta).slice(0, 6)
- 
+
 -  const searchDataSource = searchDataReady ? 'search_events' : 'proxy_requests'
 -  const proxySearchByCountry = searchDataReady ? topSearchCategoriesByCountry : topCategoriesByCountry
 -  const proxySearchGlobal = searchDataReady ? topSearchCategoriesGlobal : topCategoriesGlobal
@@ -420,7 +425,7 @@ index bd3f1ca..e2376dd 100644
 +  rawReport.search_data_source = rawReport.search_data_ready ? 'search_events' : 'proxy_requests'
 +  rawReport.top_categories_by_country = []
 +  rawReport.top_search_categories_by_country = []
- 
+
    const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
 +  const response = toGovernedResponse(report, {
 +    scopeLevel: 'platform_summary_aggregated',
@@ -519,7 +524,7 @@ index bd3f1ca..e2376dd 100644
 +    suppression,
 +    privacyThresholdApplied: governance.enabled,
 +  })
- 
+
    appendAuditLog({
      id: crypto.randomUUID(),
      at: new Date().toISOString(),
@@ -540,11 +545,11 @@ index bd3f1ca..e2376dd 100644
 @@ -757,7 +888,7 @@ export async function getPlatformAnalytics(user) {
      },
    }).catch(() => null)
- 
+
 -  return report
 +  return response
  }
- 
+
  export async function getPremiumInsights(user) {
 diff --git a/src/hooks/useAnalyticsDashboard.js b/src/hooks/useAnalyticsDashboard.js
 index 2205601..9f54551 100644
@@ -554,22 +559,22 @@ index 2205601..9f54551 100644
  import { useEffect, useMemo, useState } from 'react'
 -import { apiRequest, getToken } from '../lib/auth'
 +import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
- 
+
  const ENTERPRISE_PLANS = new Set(['premium', 'enterprise'])
- 
+
 @@ -30,6 +30,8 @@ export default function useAnalyticsDashboard() {
          if (!alive) return
          setDashboard(dashboardData)
          setSubscription(subscriptionData)
 +        const currentUser = getCurrentUser()
 +        const role = String(currentUser?.role || '').toLowerCase()
- 
+
          apiRequest('/analytics/company', { token })
            .then((data) => {
 @@ -41,14 +43,24 @@ export default function useAnalyticsDashboard() {
              setCompanyAnalytics(null)
            })
- 
+
 -        apiRequest('/analytics/platform', { token })
 +        const platformPath = ['owner', 'admin'].includes(role)
 +          ? '/analytics/platform/admin'
@@ -592,7 +597,7 @@ index 2205601..9f54551 100644
 +              setPlatformAnalytics(null)
 +            }
            })
- 
+
          apiRequest('/analytics/premium', { token })
 diff --git a/src/pages/Insights.jsx b/src/pages/Insights.jsx
 index 7cb9176..46afb7a 100644
@@ -607,9 +612,9 @@ index 7cb9176..46afb7a 100644
 +  const privacyThresholdApplied = Boolean(platformAnalytics?.privacy_threshold_applied)
    const premiumRole = premiumInsights?.role || ''
    const canExportAnalytics = currentUser?.capabilities?.leads?.export !== false
- 
+
 @@ -460,6 +463,13 @@ export default function Insights() {
- 
+
              {platformAnalytics ? (
                <div className="mt-8 space-y-4">
 +                <div className="rounded-2xl bg-blue-50 p-4 text-xs text-blue-900 ring-1 ring-blue-200 dark:bg-blue-500/10 dark:text-blue-200 dark:ring-blue-500/30">
@@ -625,7 +630,7 @@ index 7cb9176..46afb7a 100644
 @@ -471,7 +481,8 @@ export default function Insights() {
                    <StatCard label="Top Categories" value={platformCategories.map((c) => c.label).slice(0, 3).join(', ') || '--'} />
                  </div>
- 
+
 -                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 +                {scopeLevel !== 'platform_summary_aggregated' ? (
 +                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -643,23 +648,28 @@ index 7cb9176..46afb7a 100644
 +                    Detailed geography and segment breakdowns are hidden for this role. Switch to organization-scoped or admin scope for deeper cuts.
 +                  </div>
 +                )}
- 
+
                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
 ```
 
 ## Why This Change
+
 Refactor analytics platform access tiers and privacy governance
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  7 files changed, 348 insertions(+), 43 deletions(-)
+
+- **Scope:** 7 files changed, 348 insertions(+), 43 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 211 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

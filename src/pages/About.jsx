@@ -52,7 +52,7 @@ import MagneticButton from "../components/ui/MagneticButton";
 import SpotlightCard from "../components/ui/SpotlightCard";
 import TextColorReveal from "../components/TextColorReveal";
 import ParallaxBackground from "../components/ParallaxBackground";
-import { ThreeDot } from 'react-loading-indicators';
+import { ThreeDot } from "react-loading-indicators";
 
 import usePageMeta from "../lib/usePageMeta";
 
@@ -112,7 +112,14 @@ const statusStyles = {
 
 const Skeleton = ({ className = "", size }) => (
   <div className={`flex items-center justify-center ${className}`}>
-    <ThreeDot variant="bounce" color="#6100ff" size="large" style={{ fontSize: (size || 48) + "px" }} text="" textColor="" />
+    <ThreeDot
+      variant="bounce"
+      color="#6100ff"
+      size="large"
+      style={{ fontSize: (size || 48) + "px" }}
+      text=""
+      textColor=""
+    />
   </div>
 );
 
@@ -399,7 +406,13 @@ export default function About() {
                     </div>
                   ) : loading ? (
                     <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
-                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
                       Loading...
                     </div>
                   ) : (
@@ -477,14 +490,14 @@ export default function About() {
                 </h2>
                 <div className="mt-3 space-y-4">
                   <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                      To simplify international garment sourcing by building a
-                      secure digital infrastructure that prioritizes credibility,
-                      transparency, and efficiency.
+                    To simplify international garment sourcing by building a
+                    secure digital infrastructure that prioritizes credibility,
+                    transparency, and efficiency.
                   </p>
                   <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
-                      To become a trusted digital bridge between global buyers
-                      and garment manufacturers, reducing negotiation friction
-                      and strengthening international trade relationships.
+                    To become a trusted digital bridge between global buyers and
+                    garment manufacturers, reducing negotiation friction and
+                    strengthening international trade relationships.
                   </p>
                 </div>
               </div>
@@ -578,15 +591,14 @@ export default function About() {
                   ) : (
                     <AnimatePresence initial={false}>
                       {(about.documents || []).map((doc, index) => {
-                        const style = statusStyles[doc.status] || statusStyles.Pending;
+                        const style =
+                          statusStyles[doc.status] || statusStyles.Pending;
                         const StatusIcon = style.icon;
                         return (
                           <motion.div
                             key={`${doc.name}-${doc.updatedAt}`}
                             initial={
-                              reduceMotion
-                                ? false
-                                : { opacity: 0, y: 10 }
+                              reduceMotion ? false : { opacity: 0, y: 10 }
                             }
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}

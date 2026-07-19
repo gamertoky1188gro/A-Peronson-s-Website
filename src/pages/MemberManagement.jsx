@@ -3,6 +3,7 @@ import NeonAtom from "../components/ui/NeonAtom";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import AccessDeniedState from "../components/AccessDeniedState";
 import ScrollReveal from "../components/ScrollReveal";
+import { Search, X } from "lucide-react";
 import {
   apiRequest,
   getCurrentUser,
@@ -12,22 +13,24 @@ import {
 
 const MEMBER_API_BASE = "/org/members";
 
-function generateMemberId(existingMembers = []) {
+function generateMemberId(existingMembers = [], prefix = "AGT") {
+  const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`^${escapedPrefix}-?(\\d+)$`, "i");
   const nums = existingMembers
     .map((m) => {
-      const match = String(m.member_id || "").match(/^AGT-?(\d+)$/i);
+      const match = String(m.member_id || "").match(pattern);
       return match ? parseInt(match[1], 10) : 0;
     })
     .filter((n) => n > 0);
   const next = nums.length ? Math.max(...nums) + 1 : 1;
-  return `AGT-${String(next).padStart(3, "0")}`;
+  return `${prefix}-${String(next).padStart(3, "0")}`;
 }
 
 const DEFAULT_CREATE_FORM = {
   name: "",
   username: "",
   member_id: "",
-  role: "agent",
+  role: "",
   password: "",
   permissions: [],
   permission_matrix: {},
@@ -74,19 +77,28 @@ function Modal({ title, children, onClose, footer }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
       <div className="w-full max-w-4xl rounded-3xl border border-white/10 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{title}</h3>
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+            {title}
+          </h3>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
             aria-label="Close modal"
           >
-            ✕
+            <X className="h-4 w-4" />
           </button>
         </div>
-        <div data-lenis-prevent className="max-h-[75vh] overflow-y-auto px-6 py-5">{children}</div>
+        <div
+          data-lenis-prevent
+          className="max-h-[75vh] overflow-y-auto px-6 py-5"
+        >
+          {children}
+        </div>
         {footer ? (
-          <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-800">{footer}</div>
+          <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+            {footer}
+          </div>
         ) : null}
       </div>
     </div>
@@ -96,8 +108,12 @@ function Modal({ title, children, onClose, footer }) {
 function InfoCard({ title, value }) {
   return (
     <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">{title}</div>
-      <div className="mt-2 text-sm font-medium text-slate-900 dark:text-white">{value}</div>
+      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
+        {title}
+      </div>
+      <div className="mt-2 text-sm font-medium text-slate-900 dark:text-white">
+        {value}
+      </div>
     </div>
   );
 }
@@ -137,6 +153,8 @@ export default function MemberManagement() {
     valid_permissions: [],
     permission_conflicts: [],
     permission_matrix_sections: [],
+    member_id_prefix: "AGT",
+    default_role: "agent",
   });
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -359,7 +377,7 @@ export default function MemberManagement() {
                   placeholder="Search members"
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pl-11 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                 />
-                <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">⌕</span>
+                <Search className="pointer-events-none absolute inset-y-0 left-4 h-4 w-4 text-slate-400" />
               </div>
               <button
                 type="button"
@@ -368,7 +386,7 @@ export default function MemberManagement() {
                   setSuccess("");
                   setCreateForm((prev) => ({
                     ...prev,
-                    member_id: generateMemberId(members),
+                    member_id: generateMemberId(members, constraints.member_id_prefix),
                   }));
                   setShowCreate(true);
                 }}
@@ -380,14 +398,29 @@ export default function MemberManagement() {
           </div>
 
           <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <InfoCard title="Plan" value={`${planLabel} • Free limit: ${constraints.free_member_limit} • Premium limit: ${premiumLimitLabel}`} />
-            <InfoCard title="Team access" value={canTeamAccess ? "Premium permissions enabled" : "Premium permissions locked"} />
-            <InfoCard title="Members" value={`${filtered.length} shown / ${members.length} total`} />
+            <InfoCard
+              title="Plan"
+              value={`${planLabel} • Free limit: ${constraints.free_member_limit} • Premium limit: ${premiumLimitLabel}`}
+            />
+            <InfoCard
+              title="Team access"
+              value={
+                canTeamAccess
+                  ? "Premium permissions enabled"
+                  : "Premium permissions locked"
+              }
+            />
+            <InfoCard
+              title="Members"
+              value={`${filtered.length} shown / ${members.length} total`}
+            />
           </div>
 
           {!canTeamAccess ? (
             <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-              Team/agent access management is a Premium feature. Upgrade to edit permissions and access controls.
+              Team/agent access management is a Premium feature on the{" "}
+              <strong>{String(constraints.plan || "current").toUpperCase()}</strong>{" "}
+              plan. Upgrade to edit permissions and access controls.
             </div>
           ) : null}
 
@@ -403,68 +436,120 @@ export default function MemberManagement() {
           ) : null}
 
           <ScrollReveal as="section">
-          <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                <thead className="bg-slate-50 dark:bg-slate-900/70">
-                  <tr>
-                    {["Name", "Username", "Member ID", "Role", "Status", "Actions"].map((h) => (
-                      <th
-                        key={h}
-                        className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
-                  {loading ? (
+            <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                  <thead className="bg-slate-50 dark:bg-slate-900/70">
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center">
-                        <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
-                      </td>
+                      {[
+                        "Name",
+                        "Username",
+                        "Member ID",
+                        "Role",
+                        "Status",
+                        "Actions",
+                      ].map((h) => (
+                        <th
+                          key={h}
+                          className="px-6 py-4 text-left text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400"
+                        >
+                          {h}
+                        </th>
+                      ))}
                     </tr>
-                  ) : filtered.length ? (
-                    filtered.map((m) => (
-                      <tr key={m.id} className="transition hover:bg-sky-50/50 dark:hover:bg-slate-900/60">
-                        <td className="px-6 py-5">
-                          <div>
-                            <div className="font-semibold text-slate-900 dark:text-white">{m.name}</div>
-                            <div className="mt-1">
-                              <PermissionChips permissions={m.permissions || []} />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">{m.username}</td>
-                        <td className="px-6 py-5 text-sm font-medium text-slate-700 dark:text-slate-200">{m.member_id || m.account_id}</td>
-                        <td className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">{m.role}</td>
-                        <td className="px-6 py-5">
-                          <span className={classNames("inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize", badgeClass(m.status))}>
-                            {m.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5">
-                          <div className="flex flex-wrap gap-2">
-                            <ActionButton label="Edit" onClick={() => setActivePermissionMember(m)} />
-                            <ActionButton label="Reset" onClick={() => handleResetPassword(m.id)} />
-                            <ActionButton label="Deactivate" onClick={() => handleDeactivateOrRemove(m.id, false)} variant="warning" />
-                            <ActionButton label="Remove" onClick={() => handleDeactivateOrRemove(m.id, true)} variant="danger" />
-                          </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <Mosaic
+                            color="#3b00ff"
+                            size="large"
+                            style={{ fontSize: "40px" }}
+                            text=""
+                            textColor=""
+                          />
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-                        No members found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    ) : filtered.length ? (
+                      filtered.map((m) => (
+                        <tr
+                          key={m.id}
+                          className="transition hover:bg-sky-50/50 dark:hover:bg-slate-900/60"
+                        >
+                          <td className="px-6 py-5">
+                            <div>
+                              <div className="font-semibold text-slate-900 dark:text-white">
+                                {m.name}
+                              </div>
+                              <div className="mt-1">
+                                <PermissionChips
+                                  permissions={m.permissions || []}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
+                            {m.username}
+                          </td>
+                          <td className="px-6 py-5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                            {m.member_id || m.account_id}
+                          </td>
+                          <td className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
+                            {m.role}
+                          </td>
+                          <td className="px-6 py-5">
+                            <span
+                              className={classNames(
+                                "inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize",
+                                badgeClass(m.status),
+                              )}
+                            >
+                              {m.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5">
+                            <div className="flex flex-wrap gap-2">
+                              <ActionButton
+                                label="Edit"
+                                onClick={() => setActivePermissionMember(m)}
+                              />
+                              <ActionButton
+                                label="Reset"
+                                onClick={() => handleResetPassword(m.id)}
+                              />
+                              <ActionButton
+                                label="Deactivate"
+                                onClick={() =>
+                                  handleDeactivateOrRemove(m.id, false)
+                                }
+                                variant="warning"
+                              />
+                              <ActionButton
+                                label="Remove"
+                                onClick={() =>
+                                  handleDeactivateOrRemove(m.id, true)
+                                }
+                                variant="danger"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400"
+                        >
+                          No members found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
           </ScrollReveal>
         </div>
       </div>
@@ -495,34 +580,48 @@ export default function MemberManagement() {
           <form className="space-y-6" onSubmit={handleCreateMember}>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Member name</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Member name
+                </span>
                 <input
                   value={createForm.name}
-                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, name: e.target.value })
+                  }
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                   placeholder="Enter member name"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Unique username</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Unique username
+                </span>
                 <input
                   value={createForm.username}
-                  onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, username: e.target.value })
+                  }
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                   placeholder="Enter username"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Member ID (auto-generated)</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Member ID (auto-generated)
+                </span>
                 <div className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-mono text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                  {createForm.member_id || "AGT-001"}
+                  {createForm.member_id || ""}
                 </div>
               </label>
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Initial password (optional)</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Initial password (optional)
+                </span>
                 <input
                   value={createForm.password}
-                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, password: e.target.value })
+                  }
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                   placeholder="Leave empty to auto-generate"
                 />
@@ -530,19 +629,26 @@ export default function MemberManagement() {
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Role is fixed to Agent. Agents login using their Member ID.</p>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Role: Agent (fixed)</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Role: {constraints.default_role || "agent"} (fixed)
+              </p>
               {!canTeamAccess ? (
                 <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
-                  Team/agent access management is a Premium feature. Upgrade to edit permissions and access controls.
+                  Team/agent access management requires the{" "}
+                  <strong>{String(constraints.plan || "current").toUpperCase()}</strong>{" "}
+                  plan. Upgrade to edit permissions and access controls.
                 </div>
               ) : null}
             </div>
 
             <div>
               <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-base font-semibold text-slate-900 dark:text-white">Permission matrix</h4>
-                <span className="text-sm text-slate-500 dark:text-slate-400">view/edit per module</span>
+                <h4 className="text-base font-semibold text-slate-900 dark:text-white">
+                  Permission matrix
+                </h4>
+                <span className="text-sm text-slate-500 dark:text-slate-400">
+                  view/edit per module
+                </span>
               </div>
               <PermissionMatrixEditor
                 matrix={createForm.permission_matrix}
@@ -590,7 +696,10 @@ export default function MemberManagement() {
                 type="button"
                 onClick={() => {
                   if (editFormRef.current) {
-                    handleUpdateMember(activePermissionMember.id, editFormRef.current);
+                    handleUpdateMember(
+                      activePermissionMember.id,
+                      editFormRef.current,
+                    );
                   }
                 }}
                 className="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2.5 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:brightness-110"
@@ -622,10 +731,15 @@ function PermissionSelector({
 }) {
   return (
     <div className={disabled ? " opacity-60" : ""}>
-      <div className="mb-3 text-base font-semibold text-slate-900 dark:text-white">Permissions</div>
+      <div className="mb-3 text-base font-semibold text-slate-900 dark:text-white">
+        Permissions
+      </div>
       <div className="grid grid-cols-2 gap-3">
         {validPermissions.map((perm) => (
-          <label key={perm} className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-sky-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
+          <label
+            key={perm}
+            className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-sky-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+          >
             <input
               type="checkbox"
               checked={permissions.includes(perm)}
@@ -747,7 +861,9 @@ const MemberEditor = forwardRef(function MemberEditor(
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Member name</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Member name
+          </span>
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -756,7 +872,9 @@ const MemberEditor = forwardRef(function MemberEditor(
           />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Username</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Username
+          </span>
           <input
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
@@ -765,7 +883,9 @@ const MemberEditor = forwardRef(function MemberEditor(
           />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Member ID</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Member ID
+          </span>
           <input
             value={form.member_id}
             onChange={(e) => setForm({ ...form, member_id: e.target.value })}
@@ -774,7 +894,9 @@ const MemberEditor = forwardRef(function MemberEditor(
           />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Status</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Status
+          </span>
           <select
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value })}
@@ -787,18 +909,26 @@ const MemberEditor = forwardRef(function MemberEditor(
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Role: Agent (fixed)</p>
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+          Role: {constraints.default_role || "agent"} (fixed)
+        </p>
         {!canTeamAccess ? (
           <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
-            Team/agent access management is a Premium feature. Upgrade to edit permissions and access controls.
+            Team/agent access management requires the{" "}
+            <strong>{String(constraints.plan || "current").toUpperCase()}</strong>{" "}
+            plan. Upgrade to edit permissions and access controls.
           </div>
         ) : null}
       </div>
 
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h4 className="text-base font-semibold text-slate-900 dark:text-white">Permission matrix</h4>
-          <span className="text-sm text-slate-500 dark:text-slate-400">view/edit per module</span>
+          <h4 className="text-base font-semibold text-slate-900 dark:text-white">
+            Permission matrix
+          </h4>
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            view/edit per module
+          </span>
         </div>
         <PermissionMatrixEditor
           matrix={form.permission_matrix}

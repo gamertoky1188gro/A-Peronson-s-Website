@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { X, MessageSquareText, Share2, Flag, Heart, Reply, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  X,
+  MessageSquareText,
+  Share2,
+  Flag,
+  Heart,
+  Reply,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { apiRequest, getToken } from "../../lib/auth";
 import { ThreeDot } from "react-loading-indicators";
 import PostPreview from "../ui/PostPreview";
@@ -21,6 +30,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
   const [expandedThreads, setExpandedThreads] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("post");
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -28,7 +38,9 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   const token = useMemo(() => getToken(), []);
@@ -147,8 +159,14 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 
   function avatarColors(name) {
     const colors = [
-      "bg-blue-500", "bg-emerald-500", "bg-violet-500", "bg-amber-500",
-      "bg-rose-500", "bg-cyan-500", "bg-pink-500", "bg-indigo-500",
+      "bg-blue-500",
+      "bg-emerald-500",
+      "bg-violet-500",
+      "bg-amber-500",
+      "bg-rose-500",
+      "bg-cyan-500",
+      "bg-pink-500",
+      "bg-indigo-500",
     ];
     let hash = 0;
     for (let i = 0; i < (name || "").length; i++) {
@@ -168,9 +186,15 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
       <div key={comment.id}>
         <div className="flex gap-2.5">
           {comment.actor_avatar ? (
-            <img src={comment.actor_avatar} alt="" className="mt-0.5 h-8 w-8 shrink-0 rounded-full object-cover" />
+            <img
+              src={comment.actor_avatar}
+              alt=""
+              className="mt-0.5 h-8 w-8 shrink-0 rounded-full object-cover"
+            />
           ) : (
-            <div className={`mt-0.5 h-8 w-8 shrink-0 rounded-full ${avatarColors(comment.actor_name)} flex items-center justify-center text-xs font-bold text-white`}>
+            <div
+              className={`mt-0.5 h-8 w-8 shrink-0 rounded-full ${avatarColors(comment.actor_name)} flex items-center justify-center text-xs font-bold text-white`}
+            >
               {getInitials(comment.actor_name)}
             </div>
           )}
@@ -181,7 +205,9 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                   {comment.actor_name || "User"}
                 </span>
                 {comment.actor_verified ? (
-                  <span className="text-[10px] text-[#0A66C2] font-bold">Verified</span>
+                  <span className="text-[10px] text-[#0A66C2] font-bold">
+                    Verified
+                  </span>
                 ) : null}
               </div>
               <p className="mt-0.5 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
@@ -194,7 +220,9 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
               </span>
               <button
                 type="button"
-                onClick={() => setReplyingTo(replyingTo === comment.id ? "" : comment.id)}
+                onClick={() =>
+                  setReplyingTo(replyingTo === comment.id ? "" : comment.id)
+                }
                 className="text-[11px] font-semibold text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400"
               >
                 Reply
@@ -206,7 +234,9 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                 <input
                   value={replyInput}
                   onChange={(e) => setReplyInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submitReply(comment.id)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && submitReply(comment.id)
+                  }
                   placeholder="Write a reply..."
                   className="flex-1 rounded-full bg-slate-100 dark:bg-slate-800 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
                 />
@@ -216,7 +246,17 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                   disabled={submitting || !replyInput.trim()}
                   className="rounded-full bg-[#0A66C2] text-white px-3.5 py-2 text-sm font-semibold disabled:opacity-50"
                 >
-                  {submitting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Send"}
+                  {submitting ? (
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
+                  ) : (
+                    "Send"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -240,9 +280,15 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                     className="flex items-center gap-1.5 text-xs font-semibold text-[#0A66C2] hover:text-[#084b8a]"
                   >
                     {expanded ? (
-                      <><ChevronUp size={14} /> Hide {children.length - 2} replies</>
+                      <>
+                        <ChevronUp size={14} /> Hide {children.length - 2}{" "}
+                        replies
+                      </>
                     ) : (
-                      <><ChevronDown size={14} /> View {children.length - 2} replies</>
+                      <>
+                        <ChevronDown size={14} /> View {children.length - 2}{" "}
+                        replies
+                      </>
                     )}
                   </button>
                 ) : null}
@@ -257,7 +303,10 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 pb-4 sm:pt-10" style={{ overflow: "hidden" }}>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-4 pb-4 sm:pt-10"
+      style={{ overflow: "hidden" }}
+    >
       <button
         type="button"
         aria-label="Close"
@@ -340,6 +389,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setShowReport(true)}
                   className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400"
                 >
                   <Flag size={18} />
@@ -351,10 +401,20 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 
           {activeTab === "comments" ? (
             <div className="flex flex-col h-full">
-              <div data-lenis-prevent className="flex-1 overflow-y-auto p-5 space-y-5">
+              <div
+                data-lenis-prevent
+                className="flex-1 overflow-y-auto p-5 space-y-5"
+              >
                 {loading ? (
                   <div className="flex justify-center py-8">
-                    <ThreeDot variant="bounce" color="#6100ff" size="large" style={{ fontSize: "36px" }} text="" textColor="" />
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="large"
+                      style={{ fontSize: "36px" }}
+                      text=""
+                      textColor=""
+                    />
                   </div>
                 ) : null}
                 {!loading && error ? (
@@ -364,13 +424,19 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                 ) : null}
                 {!loading && !error && comments.length === 0 ? (
                   <div className="text-sm text-slate-500 dark:text-slate-400 text-center py-12">
-                    <MessageSquareText size={32} className="mx-auto mb-3 opacity-40" />
+                    <MessageSquareText
+                      size={32}
+                      className="mx-auto mb-3 opacity-40"
+                    />
                     <p>No comments yet.</p>
-                    <p className="text-xs mt-1">Be the first to share your thoughts.</p>
+                    <p className="text-xs mt-1">
+                      Be the first to share your thoughts.
+                    </p>
                   </div>
                 ) : null}
 
-                {!loading && commentTree.map((node) => renderCommentNode(node, 0))}
+                {!loading &&
+                  commentTree.map((node) => renderCommentNode(node, 0))}
               </div>
 
               <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
@@ -388,7 +454,17 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
                     disabled={submitting || !input.trim()}
                     className="rounded-full bg-[#0A66C2] text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-[#084b8a] transition"
                   >
-                    {submitting ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "Post"}
+                    {submitting ? (
+                      <ThreeDot
+                        variant="bounce"
+                        color="#6100ff"
+                        size="small"
+                        text=""
+                        textColor=""
+                      />
+                    ) : (
+                      "Post"
+                    )}
                   </button>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 6ae3a68394f926f4bb60179906fdd75576ffcc3f
 - **Parent:** 2524ef4c270b1c521a6a31a6549ae7898559cb36 29493e37f0d685c6eba0fa2e1fa45955d7a0e094
 - **Author:** Cyber Code Master
@@ -6,32 +7,36 @@
 - **Message:** Merge pull request #80 from gamertoky1188gro/codex/add-org-operations-domain-module-and-apis
 
 ## Custom Title
+
 Merge pull request #80 from gamertoky1188gro/codex/add-org-operations-domain-module-and-apis
 
 ## High-Level Summary
+
 Merge pull request #80 from gamertoky1188gro/codex/add-org-operations-domain-module-and-apis
 
- 15 files changed, 892 insertions(+), 19 deletions(-)
+15 files changed, 892 insertions(+), 19 deletions(-)
 
 ## File-by-File Breakdown
- package.json                                       |   3 +-
- .../migration.sql                                  |  46 +++
- prisma/schema.prisma                               |  38 ++
- scripts/db/backfill-org-operations-policies.mjs    |  61 +++
- server/controllers/orgOperationsController.js      |  56 +++
- server/routes/orgOperationsRoutes.js               |  21 +
- server/routes/orgRoutes.js                         |   2 +
- server/services/leadService.js                     |  51 ++-
- server/services/orgOperationsService.js            | 425 +++++++++++++++++++++
- server/utils/jsonStore.js                          |   3 +
- server/utils/permissions.js                        |  15 +
- shared/event-taxonomy.json                         |   4 +
- src/components/leads/LeadManager.jsx               | 136 ++++++-
- src/pages/AgentDashboard.jsx                       |  23 +-
- src/pages/OwnerDashboard.jsx                       |  27 +-
- 15 files changed, 892 insertions(+), 19 deletions(-)
+
+package.json | 3 +-
+.../migration.sql | 46 +++
+prisma/schema.prisma | 38 ++
+scripts/db/backfill-org-operations-policies.mjs | 61 +++
+server/controllers/orgOperationsController.js | 56 +++
+server/routes/orgOperationsRoutes.js | 21 +
+server/routes/orgRoutes.js | 2 +
+server/services/leadService.js | 51 ++-
+server/services/orgOperationsService.js | 425 +++++++++++++++++++++
+server/utils/jsonStore.js | 3 +
+server/utils/permissions.js | 15 +
+shared/event-taxonomy.json | 4 +
+src/components/leads/LeadManager.jsx | 136 ++++++-
+src/pages/AgentDashboard.jsx | 23 +-
+src/pages/OwnerDashboard.jsx | 27 +-
+15 files changed, 892 insertions(+), 19 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/package.json b/package.json
 index 3f4caec..5db8d11 100644
@@ -110,7 +115,7 @@ index aea6bdc..bd5c3a2 100644
 +  leadAssignmentsByActor    LeadAssignment[] @relation("LeadAssignmentActor")
 +  leadAssignmentsTargeted   LeadAssignment[] @relation("LeadAssignmentTarget")
 +  agentCapacityRecords      AgentCapacity[]  @relation("AgentCapacityAgent")
- 
+
    @@map("users")
  }
 @@ -413,12 +416,44 @@ model Lead {
@@ -118,12 +123,12 @@ index aea6bdc..bd5c3a2 100644
    reminders           LeadReminder[]
    interactions        InteractionLog[]
 +  assignments         LeadAssignment[]
- 
+
    @@index([org_owner_id, status, updated_at])
    @@index([assigned_agent_id, updated_at])
    @@map("leads")
  }
- 
+
 +model LeadAssignment {
 +  id                String   @id
 +  lead_id           String
@@ -332,12 +337,12 @@ index cd4e4d4..ad3a699 100644
  import { Router } from 'express'
  import memberRoutes from './memberRoutes.js'
 +import orgOperationsRoutes from './orgOperationsRoutes.js'
- 
+
  const router = Router()
- 
+
  router.use('/members', memberRoutes)
 +router.use('/operations', orgOperationsRoutes)
- 
+
  export default router
 diff --git a/server/services/leadService.js b/server/services/leadService.js
 index f572b5a..16273d2 100644
@@ -354,7 +359,7 @@ index f572b5a..16273d2 100644
 @@ -435,7 +436,7 @@ export async function updateLead(actor, leadId, patch = {}) {
        if (!assignedAgent) throw forbiddenError()
      }
- 
+
 -    return prisma.lead.update({
 +    const updated = await prisma.lead.update({
        where: { id },
@@ -390,10 +395,10 @@ index f572b5a..16273d2 100644
 +    }
 +    return updated
    }
- 
+
    const leads = await readStore(LEADS_FILE)
 @@ -462,6 +488,29 @@ export async function updateLead(actor, leadId, patch = {}) {
- 
+
    leads[idx] = next
    await writeJson(LEADS_FILE, leads)
 +  if (!isAgent(actor) && patch.assigned_agent_id !== undefined && String(current.assigned_agent_id || '') !== String(next.assigned_agent_id || '')) {
@@ -421,7 +426,7 @@ index f572b5a..16273d2 100644
 +  }
    return next
  }
- 
+
 diff --git a/server/services/orgOperationsService.js b/server/services/orgOperationsService.js
 new file mode 100644
 index 0000000..4838036
@@ -874,7 +879,7 @@ index cce1958..2b83f55 100644
 @@ -48,6 +48,21 @@ export function canManageMembers(user) {
    return MEMBER_MANAGER_ROLES.has(user?.role)
  }
- 
+
 +export function canManageOrgPolicies(user) {
 +  if (isOwnerOrAdmin(user)) return true
 +  return Boolean(user?.permission_matrix?.org_operations?.policy_admin)
@@ -924,7 +929,7 @@ index b7c8a4c..d9792ba 100644
 @@ -18,7 +18,13 @@ function formatDate(value) {
    return d.toLocaleString()
  }
- 
+
 -export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true }) {
 +function statusBadgeClass(status = '') {
 +  if (status === 'breached') return 'bg-rose-100 text-rose-700'
@@ -941,7 +946,7 @@ index b7c8a4c..d9792ba 100644
    const [noteDraft, setNoteDraft] = useState('')
    const [saving, setSaving] = useState(false)
 +  const [queueMeta, setQueueMeta] = useState({ queue: [], team_queues: [], assignments: [], agent_capacity: [] })
- 
+
    const loadLeads = useCallback(async () => {
      if (!token) return
 @@ -38,7 +45,24 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true
@@ -967,7 +972,7 @@ index b7c8a4c..d9792ba 100644
 +
 +      const queueMap = new Map(operationsQueue.map((row) => [row.id, row]))
 +      setItems(nextItems.map((lead) => ({ ...lead, ...(queueMap.get(lead.id) || {}) })))
- 
+
        const ids = new Set()
        nextItems.forEach((lead) => {
 @@ -63,7 +87,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true
@@ -976,13 +981,13 @@ index b7c8a4c..d9792ba 100644
      }
 -  }, [token])
 +  }, [showOperations, token])
- 
+
    const loadLeadDetail = useCallback(async (leadId) => {
      if (!token || !leadId) return
 @@ -148,6 +172,42 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true
      }
    }
- 
+
 +  async function triggerRebalance() {
 +    if (!token) return
 +    setSaving(true)
@@ -1021,7 +1026,7 @@ index b7c8a4c..d9792ba 100644
 +
    const selectedCounterparty = selected?.counterparty_id ? lookup[selected.counterparty_id] : null
    const assignedAgent = selected?.assigned_agent_id ? lookup[selected.assigned_agent_id] : null
- 
+
 @@ -157,14 +217,26 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true
          <div className="lg:w-2/5">
            <div className="flex items-center justify-between gap-3 mb-3">
@@ -1055,7 +1060,7 @@ index b7c8a4c..d9792ba 100644
 +              </button>
 +            </div>
            </div>
- 
+
            {loading ? <div className="text-sm text-slate-500">Loading leads...</div> : null}
 @@ -201,6 +273,16 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true
                      </div>
@@ -1090,7 +1095,7 @@ index b7c8a4c..d9792ba 100644
 +                  ) : null}
                  </div>
                </div>
- 
+
 @@ -281,6 +373,14 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true
                  <div className="rounded-lg bg-slate-50 p-3">
                    <p className="text-xs uppercase tracking-widest text-slate-500">Updated</p>
@@ -1108,7 +1113,7 @@ index b7c8a4c..d9792ba 100644
                      onClick={createReminder}
 @@ -293,6 +393,19 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true
                </div>
- 
+
                <div className="mt-5">
 +                {showOperations ? (
 +                  <div className="mb-4 rounded-lg bg-slate-50 p-3">
@@ -1140,13 +1145,13 @@ index cf1cd4e..7846cd6 100644
    const [aiLoading, setAiLoading] = useState(false)
    const [aiError, setAiError] = useState('')
 +  const [queueSummary, setQueueSummary] = useState({ queue: [] })
- 
+
    async function generateAiReply() {
      const token = getToken()
 @@ -44,6 +45,17 @@ export default function AgentDashboard() {
      }
    }
- 
+
 +  async function refreshQueueSummary() {
 +    const token = getToken()
 +    if (!token) return
@@ -1177,7 +1182,7 @@ index cf1cd4e..7846cd6 100644
 +              </div>
              )}
            </div>
- 
+
 @@ -147,4 +167,3 @@ export default function AgentDashboard() {
      </div>
    )
@@ -1194,7 +1199,7 @@ index 7a10412..821ba47 100644
  import useAnalyticsDashboard from '../hooks/useAnalyticsDashboard'
  import LeadManager from '../components/leads/LeadManager'
 +import { apiRequest, getToken } from '../lib/auth'
- 
+
  function SeriesList({ title, items }) {
    return (
 @@ -26,9 +27,18 @@ function SeriesList({ title, items }) {
@@ -1202,9 +1207,9 @@ index 7a10412..821ba47 100644
    const [active, setActive] = useState('home')
    const { dashboard, subscription, isEnterprise, loading, error } = useAnalyticsDashboard()
 +  const [policy, setPolicy] = useState(null)
- 
+
    const totals = dashboard?.totals || {}
- 
+
 +  useEffect(() => {
 +    const token = getToken()
 +    if (!token) return
@@ -1235,7 +1240,7 @@ index 7a10412..821ba47 100644
 +            </div>
 +          )}
            {active === 'contracts' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Contracts Vault</h3><p className="text-sm text-[#5A5A5A]">Contracts uploaded: {totals.contracts ?? 0}. Total documents: {totals.documents ?? 0}.</p></div>}
- 
+
            {active === 'insights' && (
 @@ -91,4 +113,3 @@ export default function OwnerDashboard() {
      </div>
@@ -1245,17 +1250,22 @@ index 7a10412..821ba47 100644
 ```
 
 ## Why This Change
+
 Merge pull request #80 from gamertoky1188gro/codex/add-org-operations-domain-module-and-apis
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  15 files changed, 892 insertions(+), 19 deletions(-)
+
+- **Scope:** 15 files changed, 892 insertions(+), 19 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 204 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

@@ -108,7 +108,9 @@ export async function grantConversationAccess(requestId, actor, targetUserId) {
     { request_id: requestId, granted_by: actor?.id },
   );
 
-  return prisma.conversationLock.findUnique({ where: { request_id: requestId } });
+  return prisma.conversationLock.findUnique({
+    where: { request_id: requestId },
+  });
 }
 
 export async function requestConversationAccess(requestId, requester) {
@@ -190,5 +192,7 @@ export async function transferConversation(requestId, actor, targetUserId) {
     { request_id: requestId, transferred_to: targetUserId },
   );
 
-  return prisma.conversationLock.findUnique({ where: { request_id: requestId } });
+  return prisma.conversationLock.findUnique({
+    where: { request_id: requestId },
+  });
 }

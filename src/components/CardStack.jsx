@@ -1,4 +1,9 @@
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+} from "framer-motion";
 import { useRef } from "react";
 
 function CardStackItem({ child, scrollYProgress, index, count, overlap }) {
@@ -6,17 +11,17 @@ function CardStackItem({ child, scrollYProgress, index, count, overlap }) {
   const y = useTransform(
     scrollYProgress,
     [progress * 0.3, progress * 0.7],
-    [index * overlap, 0]
+    [index * overlap, 0],
   );
   const opacity = useTransform(
     scrollYProgress,
     [progress * 0.2, progress * 0.5],
-    [0.6, 1]
+    [0.6, 1],
   );
   const scale = useTransform(
     scrollYProgress,
     [progress * 0.2, progress * 0.5],
-    [0.92, 1]
+    [0.92, 1],
   );
   return (
     <motion.div

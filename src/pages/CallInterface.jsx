@@ -37,7 +37,7 @@ import { uploadFile } from "../lib/upload";
 import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { trackClientEvent } from "../lib/events";
 import MarkdownMessage from "../components/chat/MarkdownMessage";
-import { ThreeDot } from 'react-loading-indicators';
+import { ThreeDot } from "react-loading-indicators";
 import JourneyTimeline from "../components/JourneyTimeline";
 
 const WS_BASE = (() => {
@@ -60,9 +60,30 @@ const ICE_SERVERS = (() => {
 })();
 
 const QUICK_EMOJIS = [
-  "😀", "😁", "😂", "🤣", "😊", "😍", "😎", "🤝",
-  "👍", "👎", "🙏", "👏", "🎉", "🔥", "💯", "✅",
-  "⚡", "💡", "📝", "📎", "🧠", "🚀", "❤️", "✨",
+  "😀",
+  "😁",
+  "😂",
+  "🤣",
+  "😊",
+  "😍",
+  "😎",
+  "🤝",
+  "👍",
+  "👎",
+  "🙏",
+  "👏",
+  "🎉",
+  "🔥",
+  "💯",
+  "✅",
+  "⚡",
+  "💡",
+  "📝",
+  "📎",
+  "🧠",
+  "🚀",
+  "❤️",
+  "✨",
 ];
 
 function cx(...parts) {
@@ -71,27 +92,49 @@ function cx(...parts) {
 
 function Badge({ tone = "neutral", children, className = "" }) {
   const tones = {
-    neutral: "bg-slate-900/80 text-slate-100 ring-white/10 dark:bg-slate-950/80",
-    emerald: "bg-emerald-500/15 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300",
+    neutral:
+      "bg-slate-900/80 text-slate-100 ring-white/10 dark:bg-slate-950/80",
+    emerald:
+      "bg-emerald-500/15 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300",
     rose: "bg-rose-500/15 text-rose-700 ring-rose-500/20 dark:text-rose-300",
-    amber: "bg-amber-500/15 text-amber-700 ring-amber-500/20 dark:text-amber-300",
+    amber:
+      "bg-amber-500/15 text-amber-700 ring-amber-500/20 dark:text-amber-300",
     sky: "bg-sky-500/15 text-sky-700 ring-sky-500/20 dark:text-sky-300",
     blue: "bg-blue-500/15 text-blue-700 ring-blue-500/20 dark:text-blue-300",
-    violet: "bg-violet-500/15 text-violet-700 ring-violet-500/20 dark:text-violet-300",
+    violet:
+      "bg-violet-500/15 text-violet-700 ring-violet-500/20 dark:text-violet-300",
   };
   return (
-    <span className={cx("inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1", tones[tone], className)}>
+    <span
+      className={cx(
+        "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1",
+        tones[tone],
+        className,
+      )}
+    >
       {children}
     </span>
   );
 }
 
-function IconButton({ icon: Icon, label, active = false, onClick, className = "", disabled = false, tone = "default", badge }) {
+function IconButton({
+  icon: Icon,
+  label,
+  active = false,
+  onClick,
+  className = "",
+  disabled = false,
+  tone = "default",
+  badge,
+}) {
   const toneClasses = {
-    default: "bg-white/8 hover:bg-white/12 text-white ring-white/10 dark:bg-slate-950/70 dark:text-slate-100",
+    default:
+      "bg-white/8 hover:bg-white/12 text-white ring-white/10 dark:bg-slate-950/70 dark:text-slate-100",
     primary: "bg-sky-500/15 hover:bg-sky-500/20 text-sky-200 ring-sky-400/20",
-    danger: "bg-rose-500/15 hover:bg-rose-500/20 text-rose-200 ring-rose-400/20",
-    muted: "bg-slate-500/15 hover:bg-slate-500/20 text-slate-200 ring-slate-400/20",
+    danger:
+      "bg-rose-500/15 hover:bg-rose-500/20 text-rose-200 ring-rose-400/20",
+    muted:
+      "bg-slate-500/15 hover:bg-slate-500/20 text-slate-200 ring-slate-400/20",
   };
   return (
     <button
@@ -109,7 +152,9 @@ function IconButton({ icon: Icon, label, active = false, onClick, className = ""
     >
       <Icon className="h-5 w-5" />
       {badge ? (
-        <span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white shadow">{badge}</span>
+        <span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white shadow">
+          {badge}
+        </span>
       ) : null}
     </button>
   );
@@ -123,8 +168,12 @@ function MiniStat({ label, value, icon: Icon }) {
           <Icon className="h-4 w-4" />
         </div>
         <div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
-          <div className="text-sm font-semibold text-slate-900 dark:text-white">{value}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            {label}
+          </div>
+          <div className="text-sm font-semibold text-slate-900 dark:text-white">
+            {value}
+          </div>
         </div>
       </div>
     </div>
@@ -139,20 +188,32 @@ function ToastStack({ toasts, onDismiss }) {
           key={toast.id}
           className={cx(
             "pointer-events-auto rounded-2xl border p-4 shadow-2xl backdrop-blur-xl transition-all",
-            toast.type === "error" && "border-rose-500/20 bg-rose-500/12 text-rose-50",
-            toast.type === "success" && "border-emerald-500/20 bg-emerald-500/12 text-emerald-50",
-            toast.type === "info" && "border-slate-500/20 bg-slate-950/85 text-white",
+            toast.type === "error" &&
+              "border-rose-500/20 bg-rose-500/12 text-rose-50",
+            toast.type === "success" &&
+              "border-emerald-500/20 bg-emerald-500/12 text-emerald-50",
+            toast.type === "info" &&
+              "border-slate-500/20 bg-slate-950/85 text-white",
           )}
         >
           <div className="flex items-start gap-3">
             <div className="mt-0.5">
-              {toast.type === "error" ? <AlertTriangle className="h-5 w-5" /> : toast.type === "success" ? <CheckCircle2 className="h-5 w-5" /> : <CircleDot className="h-5 w-5" />}
+              {toast.type === "error" ? (
+                <AlertTriangle className="h-5 w-5" />
+              ) : toast.type === "success" ? (
+                <CheckCircle2 className="h-5 w-5" />
+              ) : (
+                <CircleDot className="h-5 w-5" />
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold">{toast.title}</div>
               <div className="mt-1 text-sm opacity-90">{toast.message}</div>
             </div>
-            <button onClick={() => onDismiss(toast.id)} className="rounded-lg p-1 opacity-70 hover:bg-white/10 hover:opacity-100">
+            <button
+              onClick={() => onDismiss(toast.id)}
+              className="rounded-lg p-1 opacity-70 hover:bg-white/10 hover:opacity-100"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -172,21 +233,47 @@ function MediaGate({ gate, onAction, onDismiss }) {
             <ShieldAlert className="h-7 w-7" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">{gate.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{gate.message}</p>
-            {gate.detail ? <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{gate.detail}</p> : null}
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+              {gate.title}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              {gate.message}
+            </p>
+            {gate.detail ? (
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                {gate.detail}
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-          <button onClick={onDismiss} className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5">Dismiss</button>
-          <button onClick={onAction} className="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20">{gate.actionLabel || "Try again"}</button>
+          <button
+            onClick={onDismiss}
+            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
+          >
+            Dismiss
+          </button>
+          <button
+            onClick={onAction}
+            className="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20"
+          >
+            {gate.actionLabel || "Try again"}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-const PulseSpinner = ({ className }) => <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />;
+const PulseSpinner = ({ className }) => (
+  <ThreeDot
+    variant="bounce"
+    color="#6100ff"
+    size="small"
+    text=""
+    textColor=""
+  />
+);
 
 export default function CallInterface() {
   const [searchParams] = useSearchParams();
@@ -283,7 +370,16 @@ export default function CallInterface() {
     callDetails?.title ||
     "Participant";
   const [recordingUploadProgress, setRecordingUploadProgress] = useState(0);
-  const recordingLabel = recordingState === "recording" ? "REC" : recordingState === "uploading" ? "Uploading" : recordingState === "available" ? "Saved" : recordingState === "failed" ? "Failed" : "Idle";
+  const recordingLabel =
+    recordingState === "recording"
+      ? "REC"
+      : recordingState === "uploading"
+        ? "Uploading"
+        : recordingState === "available"
+          ? "Saved"
+          : recordingState === "failed"
+            ? "Failed"
+            : "Idle";
 
   const userMap = useMemo(() => {
     const map = new Map();
@@ -314,12 +410,15 @@ export default function CallInterface() {
       ["checking"].includes(rtcIceState);
 
     if (!wsOnline) {
-      if (wsStatus === "connecting") return { tone: "amber", label: "Connecting", pulse: true };
+      if (wsStatus === "connecting")
+        return { tone: "amber", label: "Connecting", pulse: true };
       return { tone: "neutral", label: "Offline", pulse: false };
     }
-    if (rtcFailed) return { tone: "rose", label: "Connection issue", pulse: false };
+    if (rtcFailed)
+      return { tone: "rose", label: "Connection issue", pulse: false };
     if (rtcConnected) return { tone: "emerald", label: "Live", pulse: true };
-    if (rtcConnecting) return { tone: "amber", label: "Connecting", pulse: true };
+    if (rtcConnecting)
+      return { tone: "amber", label: "Connecting", pulse: true };
     return { tone: "sky", label: "Waiting", pulse: false };
   }, [rtcConnectionState, rtcIceState, wsStatus]);
 
@@ -354,7 +453,7 @@ export default function CallInterface() {
       return {
         title: "Camera/microphone blocked",
         message:
-          "Allow Camera + Microphone for this site (browser lock icon → Site settings), then click \"Try again\".",
+          'Allow Camera + Microphone for this site (browser lock icon → Site settings), then click "Try again".',
         actionLabel: "Try again",
       };
     }
@@ -363,7 +462,7 @@ export default function CallInterface() {
       return {
         title: "No camera/microphone found",
         message:
-          "Connect a camera/microphone (or enable it in OS settings), then click \"Try again\".",
+          'Connect a camera/microphone (or enable it in OS settings), then click "Try again".',
         actionLabel: "Try again",
       };
     }
@@ -372,7 +471,7 @@ export default function CallInterface() {
       return {
         title: "Camera/microphone is busy",
         message:
-          "Close other apps using your camera/microphone (Zoom/Meet/etc.), then click \"Try again\".",
+          'Close other apps using your camera/microphone (Zoom/Meet/etc.), then click "Try again".',
         actionLabel: "Try again",
       };
     }
@@ -885,8 +984,9 @@ export default function CallInterface() {
 
   useEffect(() => {
     isChatOpenRef.current = Boolean(isChatOpen);
-    if (isChatOpen) // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUnreadChatCount(0);
+    if (isChatOpen)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUnreadChatCount(0);
   }, [isChatOpen]);
 
   useEffect(() => {
@@ -1119,7 +1219,7 @@ export default function CallInterface() {
             setMediaGate({
               title: "Enable camera & microphone",
               message:
-                "Click \"Allow access\" to let this page use your camera/microphone for the call.",
+                'Click "Allow access" to let this page use your camera/microphone for the call.',
               actionLabel: "Allow access",
             });
             setHasLocalStream(false);
@@ -1229,7 +1329,7 @@ export default function CallInterface() {
               if (!mediaGateRef.current && mountedRef.current) {
                 setMediaGate({
                   title: "Enable camera & microphone",
-                  message: "Click \"Allow access\" to start the call.",
+                  message: 'Click "Allow access" to start the call.',
                   actionLabel: "Allow access",
                 });
               }
@@ -1299,7 +1399,7 @@ export default function CallInterface() {
               if (!mediaGateRef.current && mountedRef.current) {
                 setMediaGate({
                   title: "Enable camera & microphone",
-                  message: "Click \"Allow access\" to answer the call.",
+                  message: 'Click "Allow access" to answer the call.',
                   actionLabel: "Allow access",
                 });
               }
@@ -1803,7 +1903,12 @@ export default function CallInterface() {
 
   return (
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.30),transparent_28%),radial-gradient(circle_at_top_right,rgba(37,99,235,0.22),transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#e7f1ff_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.20),transparent_28%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_45%,#0b1728_100%)] dark:text-white">
-      <ToastStack toasts={toastQueue} onDismiss={(id) => setToastQueue((prev) => prev.filter((t) => t.id !== id))} />
+      <ToastStack
+        toasts={toastQueue}
+        onDismiss={(id) =>
+          setToastQueue((prev) => prev.filter((t) => t.id !== id))
+        }
+      />
 
       <div ref={stageRef} className="relative flex min-h-screen flex-col">
         <div className="pointer-events-none absolute inset-0 opacity-70">
@@ -1824,18 +1929,45 @@ export default function CallInterface() {
               </button>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-lg font-extrabold tracking-tight sm:text-xl">Live Call</h1>
+                  <h1 className="truncate text-lg font-extrabold tracking-tight sm:text-xl">
+                    Live Call
+                  </h1>
                   <Badge tone={conn.tone} className="gap-1.5">
-                    <span className={cx("h-2 w-2 rounded-full bg-current", conn.pulse && "animate-pulse")} />
+                    <span
+                      className={cx(
+                        "h-2 w-2 rounded-full bg-current",
+                        conn.pulse && "animate-pulse",
+                      )}
+                    />
                     {conn.label}
                   </Badge>
-                  <Badge tone={recordingState === "recording" ? "rose" : recordingState === "uploading" ? "amber" : recordingState === "available" ? "emerald" : recordingState === "failed" ? "rose" : "neutral"}>
+                  <Badge
+                    tone={
+                      recordingState === "recording"
+                        ? "rose"
+                        : recordingState === "uploading"
+                          ? "amber"
+                          : recordingState === "available"
+                            ? "emerald"
+                            : recordingState === "failed"
+                              ? "rose"
+                              : "neutral"
+                    }
+                  >
                     <Radio className="h-3.5 w-3.5" /> {recordingLabel}
                   </Badge>
-                  {recordingState === "uploading" && <UploadProgressBar progress={recordingUploadProgress} className="w-24" />}
+                  {recordingState === "uploading" && (
+                    <UploadProgressBar
+                      progress={recordingUploadProgress}
+                      className="w-24"
+                    />
+                  )}
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
-                  <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{timer}</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    {timer}
+                  </span>
                   <span className="hidden sm:inline">•</span>
                   <span className="truncate">{statusMessage}</span>
                 </div>
@@ -1851,51 +1983,89 @@ export default function CallInterface() {
               >
                 <Smile className="h-5 w-5" />
               </button>
-              <Badge tone={conn.tone}>
-                {conn.label}
-              </Badge>
+              <Badge tone={conn.tone}>{conn.label}</Badge>
             </div>
           </div>
         </header>
 
         <main className="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <section className={cx("flex min-w-0 flex-1 flex-col gap-4", isChatOpen ? "lg:pr-0" : "")}>
+          <section
+            className={cx(
+              "flex min-w-0 flex-1 flex-col gap-4",
+              isChatOpen ? "lg:pr-0" : "",
+            )}
+          >
             <div className="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
               <div className="rounded-[2rem] border border-white/12 bg-white/40 p-4 shadow-[0_25px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:bg-slate-950/50">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-base font-bold text-slate-900 dark:text-white">{remoteName}</h2>
+                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                        {remoteName}
+                      </h2>
                       <Badge tone="sky">{localName}</Badge>
-                      {isSpeaking ? <Badge tone="emerald">Speaking</Badge> : <Badge tone="neutral">Listening</Badge>}
+                      {isSpeaking ? (
+                        <Badge tone="emerald">Speaking</Badge>
+                      ) : (
+                        <Badge tone="neutral">Listening</Badge>
+                      )}
                     </div>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">{statusMessage || "Live call in progress."}</p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
+                      {statusMessage || "Live call in progress."}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <MiniStat label="Mic level" value={`${Math.round(micLevel * 100)}%`} icon={Mic} />
-                    <MiniStat label="Participants" value={String(Math.max(1, participants.length || 0))} icon={MessageSquare} />
+                    <MiniStat
+                      label="Mic level"
+                      value={`${Math.round(micLevel * 100)}%`}
+                      icon={Mic}
+                    />
+                    <MiniStat
+                      label="Participants"
+                      value={String(Math.max(1, participants.length || 0))}
+                      icon={MessageSquare}
+                    />
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-[1.6fr_0.9fr]">
                   <div className="relative overflow-hidden rounded-[2rem] border border-white/12 bg-slate-950 shadow-2xl shadow-slate-950/20">
                     <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
-                      <Badge tone="sky">{statusMessage || "Live call in progress."}</Badge>
-                      {recordingState === "recording" ? <Badge tone="rose">REC</Badge> : null}
+                      <Badge tone="sky">
+                        {statusMessage || "Live call in progress."}
+                      </Badge>
+                      {recordingState === "recording" ? (
+                        <Badge tone="rose">REC</Badge>
+                      ) : null}
                     </div>
                     <div className="absolute right-4 top-4 z-10 flex gap-2">
-                      <IconButton icon={isFullscreen ? ChevronDown : Maximize} label={isFullscreen ? "Exit fullscreen" : "Fullscreen"} onClick={toggleFullscreen} tone="default" />
+                      <IconButton
+                        icon={isFullscreen ? ChevronDown : Maximize}
+                        label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                        onClick={toggleFullscreen}
+                        tone="default"
+                      />
                     </div>
 
                     <div className="relative aspect-[16/10] w-full bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950">
-                      <video ref={remoteVideoRef} autoPlay playsInline muted={isSpeakerMuted} className="absolute inset-0 h-full w-full object-cover" />
+                      <video
+                        ref={remoteVideoRef}
+                        autoPlay
+                        playsInline
+                        muted={isSpeakerMuted}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
 
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-4 text-white">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-lg font-bold">{remoteName}</span>
-                              <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium backdrop-blur">{rtcConnectionState}</span>
+                              <span className="text-lg font-bold">
+                                {remoteName}
+                              </span>
+                              <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium backdrop-blur">
+                                {rtcConnectionState}
+                              </span>
                             </div>
                             <div className="mt-1 max-w-2xl text-sm text-white/80">
                               {statusMessage || "Call is ready."}
@@ -1905,7 +2075,15 @@ export default function CallInterface() {
                             <div className="flex h-9 items-end gap-1 rounded-2xl bg-white/10 px-3 py-2 ring-1 ring-white/10">
                               {[0, 1, 2, 3, 4].map((i) => {
                                 const active = micLevel * 5 > i;
-                                return <span key={i} className={cx("w-1.5 rounded-full bg-sky-300 transition-all", active ? "h-4" : "h-2 opacity-40")} />;
+                                return (
+                                  <span
+                                    key={i}
+                                    className={cx(
+                                      "w-1.5 rounded-full bg-sky-300 transition-all",
+                                      active ? "h-4" : "h-2 opacity-40",
+                                    )}
+                                  />
+                                );
                               })}
                             </div>
                             <span className="text-xs">Mic</span>
@@ -1935,39 +2113,127 @@ export default function CallInterface() {
                     <div className="rounded-[2rem] border border-white/12 bg-white/70 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/55">
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Call controls</h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Mic, camera, speaker, screen.</p>
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                            Call controls
+                          </h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Mic, camera, speaker, screen.
+                          </p>
                         </div>
-                        <Badge tone={isCameraOn ? "emerald" : "amber"}>{isCameraOn ? "Camera on" : "Camera off"}</Badge>
+                        <Badge tone={isCameraOn ? "emerald" : "amber"}>
+                          {isCameraOn ? "Camera on" : "Camera off"}
+                        </Badge>
                       </div>
 
                       <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 xl:grid-cols-3">
-                        <IconButton icon={PhoneOff} label="End call" onClick={endCall} tone="danger" className="col-span-2 sm:col-span-2 xl:col-span-3 w-full" />
-                        <IconButton icon={isMuted ? MicOff : Mic} label={isMuted ? "Unmute mic" : "Mute mic"} onClick={toggleMute} active={!isMuted} tone="default" />
-                        <IconButton icon={isSpeakerMuted ? VolumeX : Volume2} label={isSpeakerMuted ? "Unmute speaker" : "Mute speaker"} onClick={toggleSpeaker} active={!isSpeakerMuted} tone="default" />
-                        <IconButton icon={isCameraOn ? Camera : CameraOff} label={isCameraOn ? "Camera off" : "Camera on"} onClick={toggleCamera} active={isCameraOn} tone="default" />
-                        <IconButton icon={MessageSquare} label={isChatOpen ? "Hide chat" : "Show chat"} onClick={() => setIsChatOpen((v) => !v)} badge={!isChatOpen && unreadChatCount ? (unreadChatCount > 99 ? "99+" : String(unreadChatCount)) : null} tone="primary" />
-                        <IconButton icon={Ellipsis} label="More menu" onClick={() => setIsMoreOpen((prev) => !prev)} tone="default" />
+                        <IconButton
+                          icon={PhoneOff}
+                          label="End call"
+                          onClick={endCall}
+                          tone="danger"
+                          className="col-span-2 sm:col-span-2 xl:col-span-3 w-full"
+                        />
+                        <IconButton
+                          icon={isMuted ? MicOff : Mic}
+                          label={isMuted ? "Unmute mic" : "Mute mic"}
+                          onClick={toggleMute}
+                          active={!isMuted}
+                          tone="default"
+                        />
+                        <IconButton
+                          icon={isSpeakerMuted ? VolumeX : Volume2}
+                          label={
+                            isSpeakerMuted ? "Unmute speaker" : "Mute speaker"
+                          }
+                          onClick={toggleSpeaker}
+                          active={!isSpeakerMuted}
+                          tone="default"
+                        />
+                        <IconButton
+                          icon={isCameraOn ? Camera : CameraOff}
+                          label={isCameraOn ? "Camera off" : "Camera on"}
+                          onClick={toggleCamera}
+                          active={isCameraOn}
+                          tone="default"
+                        />
+                        <IconButton
+                          icon={MessageSquare}
+                          label={isChatOpen ? "Hide chat" : "Show chat"}
+                          onClick={() => setIsChatOpen((v) => !v)}
+                          badge={
+                            !isChatOpen && unreadChatCount
+                              ? unreadChatCount > 99
+                                ? "99+"
+                                : String(unreadChatCount)
+                              : null
+                          }
+                          tone="primary"
+                        />
+                        <IconButton
+                          icon={Ellipsis}
+                          label="More menu"
+                          onClick={() => setIsMoreOpen((prev) => !prev)}
+                          tone="default"
+                        />
                       </div>
 
                       <div className="mt-4 grid gap-3 md:grid-cols-3">
-                        <MiniStat label="Connection" value={conn.label} icon={conn.pulse ? PulseSpinner : WifiOff} />
-                        <MiniStat label="Chat" value={effectiveMatchId ? "Ready" : "Unavailable"} icon={MessageSquare} />
-                        <MiniStat label="Recording" value={recordingLabel} icon={Radio} />
+                        <MiniStat
+                          label="Connection"
+                          value={conn.label}
+                          icon={conn.pulse ? PulseSpinner : WifiOff}
+                        />
+                        <MiniStat
+                          label="Chat"
+                          value={effectiveMatchId ? "Ready" : "Unavailable"}
+                          icon={MessageSquare}
+                        />
+                        <MiniStat
+                          label="Recording"
+                          value={recordingLabel}
+                          icon={Radio}
+                        />
                       </div>
                     </div>
 
                     <div className="rounded-[2rem] border border-white/12 bg-white/70 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/55">
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Status</h3>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                        Status
+                      </h3>
                       <div className="mt-2 rounded-2xl border border-white/10 bg-white/60 p-3 text-sm text-slate-700 dark:bg-white/5 dark:text-slate-200">
                         {statusMessage || "Live call in progress."}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {["😀","🤝","🙏","👏","🎉","🔥","💯","✅","⚡","💡","📝","📎","🧠","🚀","❤️","✨"].map((emoji) => (
-                          <button key={emoji} type="button" onClick={() => {
-                            setChatDraft((prev) => `${prev}${emoji}`);
-                            if (chatInputRef.current) chatInputRef.current.focus();
-                          }} className="rounded-xl border border-white/10 bg-white/70 px-3 py-2 text-base hover:bg-sky-50 dark:bg-white/5 dark:hover:bg-white/10">{emoji}</button>
+                        {[
+                          "😀",
+                          "🤝",
+                          "🙏",
+                          "👏",
+                          "🎉",
+                          "🔥",
+                          "💯",
+                          "✅",
+                          "⚡",
+                          "💡",
+                          "📝",
+                          "📎",
+                          "🧠",
+                          "🚀",
+                          "❤️",
+                          "✨",
+                        ].map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              setChatDraft((prev) => `${prev}${emoji}`);
+                              if (chatInputRef.current)
+                                chatInputRef.current.focus();
+                            }}
+                            className="rounded-xl border border-white/10 bg-white/70 px-3 py-2 text-base hover:bg-sky-50 dark:bg-white/5 dark:hover:bg-white/10"
+                          >
+                            {emoji}
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -1984,45 +2250,112 @@ export default function CallInterface() {
 
               <div className="grid gap-4">
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                  <MiniStat label="Call ID" value={callId || "\u2014"} icon={Circle} />
-                  <MiniStat label="Match ID" value={effectiveMatchId || "\u2014"} icon={CircleDot} />
-                  <MiniStat label="Remote" value={remoteName} icon={CheckCircle2} />
-                  <MiniStat label="Local" value={localName} icon={CheckCircle2} />
+                  <MiniStat
+                    label="Call ID"
+                    value={callId || "\u2014"}
+                    icon={Circle}
+                  />
+                  <MiniStat
+                    label="Match ID"
+                    value={effectiveMatchId || "\u2014"}
+                    icon={CircleDot}
+                  />
+                  <MiniStat
+                    label="Remote"
+                    value={remoteName}
+                    icon={CheckCircle2}
+                  />
+                  <MiniStat
+                    label="Local"
+                    value={localName}
+                    icon={CheckCircle2}
+                  />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                  <MiniStat label="WebSocket" value={wsStatus === "online" ? "Online" : wsStatus} icon={WifiOff} />
-                  <MiniStat label="RTC" value={rtcConnectionState} icon={Radio} />
-                  <MiniStat label="Unread" value={unreadChatCount > 99 ? "99+" : String(unreadChatCount)} icon={MessageSquare} />
-                  <MiniStat label="Mic level" value={`${Math.round(micLevel * 100)}%`} icon={Mic} />
+                  <MiniStat
+                    label="WebSocket"
+                    value={wsStatus === "online" ? "Online" : wsStatus}
+                    icon={WifiOff}
+                  />
+                  <MiniStat
+                    label="RTC"
+                    value={rtcConnectionState}
+                    icon={Radio}
+                  />
+                  <MiniStat
+                    label="Unread"
+                    value={
+                      unreadChatCount > 99 ? "99+" : String(unreadChatCount)
+                    }
+                    icon={MessageSquare}
+                  />
+                  <MiniStat
+                    label="Mic level"
+                    value={`${Math.round(micLevel * 100)}%`}
+                    icon={Mic}
+                  />
                 </div>
               </div>
             </div>
           </section>
 
-          <aside className={cx(
-            "fixed inset-y-0 right-0 z-30 w-full max-w-[420px] border-l border-white/12 bg-white/80 shadow-2xl backdrop-blur-2xl transition-transform duration-300 dark:bg-slate-950/85 lg:static lg:z-auto lg:translate-x-0 lg:rounded-[2rem] lg:border lg:border-white/12",
-            isChatOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0",
-          )}>
+          <aside
+            className={cx(
+              "fixed inset-y-0 right-0 z-30 w-full max-w-[420px] border-l border-white/12 bg-white/80 shadow-2xl backdrop-blur-2xl transition-transform duration-300 dark:bg-slate-950/85 lg:static lg:z-auto lg:translate-x-0 lg:rounded-[2rem] lg:border lg:border-white/12",
+              isChatOpen
+                ? "translate-x-0"
+                : "translate-x-full lg:translate-x-0",
+            )}
+          >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Chat</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{effectiveMatchId ? "Connected to the call room" : "Waiting for match id"}</p>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Chat
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {effectiveMatchId
+                      ? "Connected to the call room"
+                      : "Waiting for match id"}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge tone={effectiveMatchId ? "emerald" : "rose"}>{effectiveMatchId ? "Live" : "Closed"}</Badge>
-                  <button onClick={() => setIsChatOpen(false)} className="rounded-xl border border-white/10 bg-white/60 p-2 text-slate-700 hover:bg-white/90 dark:bg-white/5 dark:text-slate-200 lg:hidden"><X className="h-4 w-4" /></button>
+                  <Badge tone={effectiveMatchId ? "emerald" : "rose"}>
+                    {effectiveMatchId ? "Live" : "Closed"}
+                  </Badge>
+                  <button
+                    onClick={() => setIsChatOpen(false)}
+                    className="rounded-xl border border-white/10 bg-white/60 p-2 text-slate-700 hover:bg-white/90 dark:bg-white/5 dark:text-slate-200 lg:hidden"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 
-              <div data-lenis-prevent ref={chatScrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+              <div
+                data-lenis-prevent
+                ref={chatScrollRef}
+                className="flex-1 space-y-3 overflow-y-auto p-4"
+              >
                 {sortedChatMessages.length > 0 ? (
                   sortedChatMessages.map((msg) => {
                     const isOwn = msg.sender_id === user?.id;
                     const sender = userMap.get(msg.sender_id);
-                    const senderName = msg.sender_name || sender?.name || sender?.email || "User";
+                    const senderName =
+                      msg.sender_name ||
+                      sender?.name ||
+                      sender?.email ||
+                      "User";
                     return (
-                      <div key={msg.id} className={cx("max-w-[88%] rounded-2xl px-4 py-3 shadow-sm", isOwn ? "ml-auto bg-gradient-to-r from-sky-500 to-blue-500 text-white" : "bg-white/70 text-slate-800 dark:bg-white/8 dark:text-slate-100")}>
+                      <div
+                        key={msg.id}
+                        className={cx(
+                          "max-w-[88%] rounded-2xl px-4 py-3 shadow-sm",
+                          isOwn
+                            ? "ml-auto bg-gradient-to-r from-sky-500 to-blue-500 text-white"
+                            : "bg-white/70 text-slate-800 dark:bg-white/8 dark:text-slate-100",
+                        )}
+                      >
                         <div className="flex items-center justify-between gap-3 text-[11px] font-semibold opacity-80">
                           <span>{isOwn ? "You" : senderName}</span>
                           <span>{formatMessageTime(msg.timestamp)}</span>
@@ -2050,7 +2383,10 @@ export default function CallInterface() {
                         setIsEmojiOpen((prev) => !prev);
                         setIsMoreOpen(false);
                       }}
-                      className={cx("flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200", isEmojiOpen ? "bg-slate-100 dark:bg-white/10" : "")}
+                      className={cx(
+                        "flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200",
+                        isEmojiOpen ? "bg-slate-100 dark:bg-white/10" : "",
+                      )}
                       title="Emoji"
                     >
                       <Smile size={20} />
@@ -2107,14 +2443,49 @@ export default function CallInterface() {
           </aside>
         </main>
 
-        <div className="fixed bottom-4 left-4 z-40 flex flex-wrap gap-2" data-more-menu>
+        <div
+          className="fixed bottom-4 left-4 z-40 flex flex-wrap gap-2"
+          data-more-menu
+        >
           <div className="relative">
             {isMoreOpen ? (
               <div className="absolute bottom-14 left-0 w-72 overflow-hidden rounded-3xl border border-white/12 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:bg-slate-950/95">
-                <button onClick={() => { copyCallLink(); setIsMoreOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"><Copy className="h-4 w-4" /> Copy call link</button>
-                <button onClick={() => { requestMediaPermissions(); setIsMoreOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"><Camera className="h-4 w-4" /> Request permissions</button>
-                <button onClick={() => { reconnectCall(); setIsMoreOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"><RefreshCw className="h-4 w-4" /> Reconnect</button>
-                <button onClick={() => { setIsChatOpen(false); setIsMoreOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"><MessageSquare className="h-4 w-4" /> Hide chat</button>
+                <button
+                  onClick={() => {
+                    copyCallLink();
+                    setIsMoreOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
+                >
+                  <Copy className="h-4 w-4" /> Copy call link
+                </button>
+                <button
+                  onClick={() => {
+                    requestMediaPermissions();
+                    setIsMoreOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
+                >
+                  <Camera className="h-4 w-4" /> Request permissions
+                </button>
+                <button
+                  onClick={() => {
+                    reconnectCall();
+                    setIsMoreOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
+                >
+                  <RefreshCw className="h-4 w-4" /> Reconnect
+                </button>
+                <button
+                  onClick={() => {
+                    setIsChatOpen(false);
+                    setIsMoreOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
+                >
+                  <MessageSquare className="h-4 w-4" /> Hide chat
+                </button>
               </div>
             ) : null}
           </div>

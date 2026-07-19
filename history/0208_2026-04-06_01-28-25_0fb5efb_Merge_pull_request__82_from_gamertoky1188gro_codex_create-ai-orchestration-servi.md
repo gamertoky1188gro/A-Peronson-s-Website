@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 0fb5efb7e3d4e49f04b201b7774e51568485c4d4
 - **Parent:** f8989d0cdc924913444832737c159c0d92f37955 13c9973de9674576a2317ecdc830fc087e62fb43
 - **Author:** Cyber Code Master
@@ -6,27 +7,31 @@
 - **Message:** Merge pull request #82 from gamertoky1188gro/codex/create-ai-orchestration-service-and-endpoints
 
 ## Custom Title
+
 Merge pull request #82 from gamertoky1188gro/codex/create-ai-orchestration-service-and-endpoints
 
 ## High-Level Summary
+
 Merge pull request #82 from gamertoky1188gro/codex/create-ai-orchestration-service-and-endpoints
 
- 10 files changed, 653 insertions(+), 13 deletions(-)
+10 files changed, 653 insertions(+), 13 deletions(-)
 
 ## File-by-File Breakdown
- package.json                                       |   3 +-
- scripts/run-ai-extraction-regression.mjs           |  34 +++
- server/controllers/aiController.js                 |  50 ++++
- server/evals/requirements_extraction_eval_set.json |  41 ++++
- server/routes/aiRoutes.js                          |  12 +
- server/server.js                                   |   2 +
- server/services/aiOrchestrationService.js          | 269 +++++++++++++++++++++
- shared/requirementsExtraction.schema.json          | 102 ++++++++
- src/pages/AgentDashboard.jsx                       |  84 ++++++-
- src/pages/BuyerRequestManagement.jsx               |  69 +++++-
- 10 files changed, 653 insertions(+), 13 deletions(-)
+
+package.json | 3 +-
+scripts/run-ai-extraction-regression.mjs | 34 +++
+server/controllers/aiController.js | 50 ++++
+server/evals/requirements_extraction_eval_set.json | 41 ++++
+server/routes/aiRoutes.js | 12 +
+server/server.js | 2 +
+server/services/aiOrchestrationService.js | 269 +++++++++++++++++++++
+shared/requirementsExtraction.schema.json | 102 ++++++++
+src/pages/AgentDashboard.jsx | 84 ++++++-
+src/pages/BuyerRequestManagement.jsx | 69 +++++-
+10 files changed, 653 insertions(+), 13 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/package.json b/package.json
 index 5db8d11..245f7e1 100644
@@ -619,7 +624,7 @@ index 7846cd6..3ce2bfe 100644
 +  const [approvalState, setApprovalState] = useState(null)
 +  const [sendState, setSendState] = useState(null)
    const [queueSummary, setQueueSummary] = useState({ queue: [] })
- 
+
    async function generateAiReply() {
 @@ -22,11 +26,15 @@ export default function AgentDashboard() {
      }
@@ -642,7 +647,7 @@ index 7846cd6..3ce2bfe 100644
 @@ -45,6 +53,52 @@ export default function AgentDashboard() {
      }
    }
- 
+
 +  async function approveSuggestion() {
 +    const token = getToken()
 +    if (!token || !aiSuggestion) return
@@ -736,13 +741,13 @@ index f05f127..243f21e 100644
 +  const [aiParsing, setAiParsing] = useState(false)
 +  const [aiParseWarnings, setAiParseWarnings] = useState([])
 +  const [aiParseFeedback, setAiParseFeedback] = useState('')
- 
+
    const [editingId, setEditingId] = useState('')
    const [editForm, setEditForm] = useState(EMPTY_FORM)
 @@ -426,6 +429,54 @@ export default function BuyerRequestManagement() {
      await createRequest('draft')
    }
- 
+
 +  async function parseDescriptionWithAi() {
 +    if (!token) return
 +    if (!form.customDescription.trim()) {
@@ -795,7 +800,7 @@ index f05f127..243f21e 100644
      setEditingId(req.id)
      setEditForm(requirementToForm(req))
 @@ -1029,6 +1080,22 @@ export default function BuyerRequestManagement() {
- 
+
                  <Field label="Custom description" hint="Use this for extra notes, design details, or negotiation context.">
                    <textarea className="w-full min-h-[140px] rounded-lg borderless-shadow px-3 py-2" value={form.customDescription} onChange={(e) => setForm({ ...form, customDescription: e.target.value })} />
 +                  <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -815,28 +820,33 @@ index f05f127..243f21e 100644
 +                    </div>
 +                  ) : null}
                  </Field>
- 
+
              </div>
 @@ -1406,5 +1473,3 @@ export default function BuyerRequestManagement() {
- 
- 
- 
+
+
+
 -
 -
 ```
 
 ## Why This Change
+
 Merge pull request #82 from gamertoky1188gro/codex/create-ai-orchestration-service-and-endpoints
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  10 files changed, 653 insertions(+), 13 deletions(-)
+
+- **Scope:** 10 files changed, 653 insertions(+), 13 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 208 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

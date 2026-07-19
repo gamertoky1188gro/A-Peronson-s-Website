@@ -591,7 +591,9 @@ export async function getProfileRatingsSummary(profileKey) {
 }
 
 export async function updateRating({ ratingId, actorId, score, comment }) {
-  const rating = await prisma.rating.findUnique({ where: { id: String(ratingId) } });
+  const rating = await prisma.rating.findUnique({
+    where: { id: String(ratingId) },
+  });
   if (!rating) return null;
   if (String(rating.from_user_id) !== String(actorId)) {
     const err = new Error("Only the reviewer can edit this rating");
@@ -607,9 +609,7 @@ export async function updateRating({ ratingId, actorId, score, comment }) {
           Math.max(1, Math.round(safeNumber(score, rating.score || 0))),
         );
   const nextComment =
-    comment === undefined
-      ? rating.comment
-      : sanitizeString(comment, 500);
+    comment === undefined ? rating.comment : sanitizeString(comment, 500);
 
   return prisma.rating.update({
     where: { id: String(ratingId) },
@@ -618,7 +618,9 @@ export async function updateRating({ ratingId, actorId, score, comment }) {
 }
 
 export async function deleteRating({ ratingId, actorId }) {
-  const rating = await prisma.rating.findUnique({ where: { id: String(ratingId) } });
+  const rating = await prisma.rating.findUnique({
+    where: { id: String(ratingId) },
+  });
   if (!rating) return null;
   if (String(rating.from_user_id) !== String(actorId)) {
     const err = new Error("Only the reviewer can delete this rating");

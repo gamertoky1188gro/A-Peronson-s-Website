@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0098 |
-| Hash | `fbb71a1120769b34463e25c4e999829ad8a31cba` |
-| Parent Hash | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
-| Author | Cyber Code Master |
-| Date/Time | 2026-03-06 06:37:25 |
-| Files Changed | 1 |
-| Lines Added | 164 |
-| Lines Deleted | 1 |
-| Net Change | +163 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0098                                       |
+| Hash          | `fbb71a1120769b34463e25c4e999829ad8a31cba` |
+| Parent Hash   | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
+| Author        | Cyber Code Master                          |
+| Date/Time     | 2026-03-06 06:37:25                        |
+| Files Changed | 1                                          |
+| Lines Added   | 164                                        |
+| Lines Deleted | 1                                          |
+| Net Change    | +163                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -25,7 +25,7 @@ Extended the `assistantService.js` with a code context retrieval system that ind
 
 ## File-by-File Breakdown
 
-- **server/services/assistantService.js** (+164/-1 line): 
+- **server/services/assistantService.js** (+164/-1 line):
   - Added file system imports (`fs/promises`, `path`).
   - Defined constants: `CODE_EXTENSIONS`, `SKIP_DIRECTORIES`, `MAX_FILES_TO_SCAN`, `MAX_FILE_BYTES`, `MAX_MATCHED_SNIPPETS`, `MAX_SNIPPET_LENGTH`, `MAX_CONTEXT_CHARS`.
   - Added `codeFileCache` with 60-second TTL.
@@ -40,6 +40,7 @@ Extended the `assistantService.js` with a code context retrieval system that ind
 ## Detailed Diff Analysis
 
 ### Service Changes
+
 - New code context pipeline: tokenize question → collect code files → score files by token matches → find best snippets → return structured context.
 - The context is attached to every assistant reply as `metadata.code_context` and, for unmatched queries, as `agent_prompt_context.compact_code_context`.
 - Tokenization uses the existing `tokenize` and `normalize` utility functions.

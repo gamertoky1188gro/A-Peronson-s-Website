@@ -20,7 +20,10 @@ async function loadConfig() {
     url: raw.url || envUrl || "http://127.0.0.1:11434",
     apiKey: raw.apiKey || envApiKey || "",
     model: raw.model || envModel || "bge-reranker-v2-m3",
-    timeout_ms: Math.max(1000, Math.min(120000, Number(raw.timeout_ms || 30000))),
+    timeout_ms: Math.max(
+      1000,
+      Math.min(120000, Number(raw.timeout_ms || 30000)),
+    ),
   };
   cachedConfig = { at: Date.now(), value: cfg };
   return cfg;
@@ -99,7 +102,9 @@ async function rerankViaHuggingFace(cfg, query, documents, model) {
     });
     if (!resp.ok) {
       const errText = await resp.text().catch(() => "");
-      console.warn(`[reranker] HuggingFace API error ${resp.status}: ${errText}`);
+      console.warn(
+        `[reranker] HuggingFace API error ${resp.status}: ${errText}`,
+      );
       return fallbackRerank(query, documents);
     }
     const data = await resp.json();
@@ -112,7 +117,9 @@ async function rerankViaHuggingFace(cfg, query, documents, model) {
     if (data.results) return data.results;
     return [];
   } catch (err) {
-    console.warn(`[reranker] HuggingFace failed: ${err.message}, using fallback`);
+    console.warn(
+      `[reranker] HuggingFace failed: ${err.message}, using fallback`,
+    );
     return fallbackRerank(query, documents);
   } finally {
     clearTimeout(timer);
@@ -125,18 +132,22 @@ function fallbackRerank(query, documents) {
 
   return documents
     .map((doc, index) => {
-      const docText = typeof doc === "string" ? doc : (doc.title || doc.text || String(doc));
+      const docText =
+        typeof doc === "string" ? doc : doc.title || doc.text || String(doc);
       const docLower = docText.toLowerCase();
 
       let score = 0;
       if (docLower === queryLower) score = 1;
       else if (docLower.includes(queryLower)) score = 0.9;
       else {
-        const matchCount = queryTokens.filter(t => docLower.includes(t)).length;
+        const matchCount = queryTokens.filter((t) =>
+          docLower.includes(t),
+        ).length;
         const totalTerms = queryTokens.length || 1;
-        const tokenScore = matchCount / totalTerms * 0.8;
+        const tokenScore = (matchCount / totalTerms) * 0.8;
 
-        const titleBoost = doc.title && doc.title.toLowerCase().includes(queryLower) ? 0.2 : 0;
+        const titleBoost =
+          doc.title && doc.title.toLowerCase().includes(queryLower) ? 0.2 : 0;
         score = Math.min(1, tokenScore + titleBoost);
       }
 
@@ -151,8 +162,9 @@ export async function rerankIds(query, items, _idField = "id") {
   const useReranker = await isRerankerConfigured();
   if (!useReranker) return items;
 
-  const documents = items.map(item =>
-    `${item.title || ""} ${item.category || ""} ${item.material || ""} ${item.description || ""}`
+  const documents = items.map(
+    (item) =>
+      `${item.title || ""} ${item.category || ""} ${item.material || ""} ${item.description || ""}`,
   );
 
   const maxDocs = 50;
@@ -162,7 +174,7 @@ export async function rerankIds(query, items, _idField = "id") {
   try {
     const results = await rerank({ query, documents: batch });
     const scoreMap = new Map();
-    results.forEach(r => scoreMap.set(r.index, r.relevance_score));
+    results.forEach((r) => scoreMap.set(r.index, r.relevance_score));
 
     const ranked = [...batchItems].sort((a, b) => {
       const aScore = scoreMap.get(batchItems.indexOf(a)) ?? 0;

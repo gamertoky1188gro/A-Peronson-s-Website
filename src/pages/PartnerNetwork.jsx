@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import NeonAtom from "../components/ui/NeonAtom";
-import { ThreeDot } from 'react-loading-indicators';
+import { ThreeDot } from "react-loading-indicators";
 import ScrollReveal from "../components/ScrollReveal";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import {
@@ -37,19 +37,33 @@ function StatusPill({ tone = "slate", children }) {
   const tones = {
     slate: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
     blue: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-200",
-    emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200",
-    amber: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200",
+    emerald:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200",
+    amber:
+      "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200",
     rose: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200",
-    violet: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200",
+    violet:
+      "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200",
   };
   return (
-    <span className={cls("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium", tones[tone])}>
+    <span
+      className={cls(
+        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
+        tones[tone],
+      )}
+    >
       {children}
     </span>
   );
 }
 
-function ActionButton({ children, onClick, variant = "primary", disabled = false, className = "" }) {
+function ActionButton({
+  children,
+  onClick,
+  variant = "primary",
+  disabled = false,
+  className = "",
+}) {
   const styles = {
     primary:
       "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25 hover:from-sky-400 hover:to-blue-500",
@@ -57,10 +71,8 @@ function ActionButton({ children, onClick, variant = "primary", disabled = false
       "bg-white/80 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-900/70 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-900",
     ghost:
       "bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5",
-    success:
-      "bg-emerald-500 text-white hover:bg-emerald-400",
-    danger:
-      "bg-rose-500 text-white hover:bg-rose-400",
+    success: "bg-emerald-500 text-white hover:bg-emerald-400",
+    danger: "bg-rose-500 text-white hover:bg-rose-400",
   };
   return (
     <button
@@ -98,8 +110,7 @@ export default function PartnerNetwork() {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("connected");
   const [targetAccountId, setTargetAccountId] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [rows, setRows] = useState([]);
   const [permissions, setPermissions] = useState({
@@ -134,13 +145,6 @@ export default function PartnerNetwork() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadNetwork(tab);
   }, [loadNetwork, tab]);
-
-  useEffect(() => {
-    if (pageLoading && !loading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPageLoading(false);
-    }
-  }, [pageLoading, loading]);
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -214,7 +218,7 @@ export default function PartnerNetwork() {
     { label: `Role ${capitalize(user?.role || "unknown")}`, tone: "blue" },
   ];
 
-  if (pageLoading) {
+  if (loading) {
     return <NeonAtom fill />;
   }
 
@@ -268,10 +272,7 @@ export default function PartnerNetwork() {
               </div>
             </Card>
 
-            <ActionButton
-              variant="secondary"
-              onClick={toggleTheme}
-            >
+            <ActionButton variant="secondary" onClick={toggleTheme}>
               {isDark ? (
                 <SunMedium className="h-4 w-4" />
               ) : (
@@ -285,111 +286,125 @@ export default function PartnerNetwork() {
         <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
           <div className="space-y-6">
             <ScrollReveal as="section">
-            <Card>
-              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                <ArrowRightLeft className="h-4 w-4 text-sky-500" />
-                Send Request
-              </div>
+              <Card>
+                <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <ArrowRightLeft className="h-4 w-4 text-sky-500" />
+                  Send Request
+                </div>
 
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Target account ID
-                </label>
-                <div className="flex gap-3">
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Target account ID
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      value={targetAccountId}
+                      onChange={(e) => setTargetAccountId(e.target.value)}
+                      placeholder="Target account ID"
+                      disabled={!canManage || loading}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-0 transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950/70 dark:text-white dark:placeholder:text-slate-500"
+                    />
+                    <ActionButton
+                      onClick={sendRequest}
+                      disabled={
+                        !canManage || loading || !targetAccountId.trim()
+                      }
+                      className="min-w-32"
+                    >
+                      {loading ? (
+                        <ThreeDot
+                          variant="bounce"
+                          color="#6100ff"
+                          size="small"
+                          text=""
+                          textColor=""
+                        />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      Send Request
+                    </ActionButton>
+                  </div>
+                </div>
+              </Card>
+            </ScrollReveal>
+
+            <ScrollReveal as="section">
+              <Card>
+                <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <Search className="h-4 w-4 text-sky-500" />
+                  Search and filter
+                </div>
+                <div className="space-y-3">
                   <input
-                    value={targetAccountId}
-                    onChange={(e) => setTargetAccountId(e.target.value)}
-                    placeholder="Target account ID"
-                    disabled={!canManage || loading}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-0 transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950/70 dark:text-white dark:placeholder:text-slate-500"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search partners"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 dark:border-slate-700 dark:bg-slate-950/70 dark:text-white dark:placeholder:text-slate-500"
                   />
-                  <ActionButton
-                    onClick={sendRequest}
-                    disabled={!canManage || loading || !targetAccountId.trim()}
-                    className="min-w-32"
-                  >
-                    {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <Sparkles className="h-4 w-4" />}
-                    Send Request
-                  </ActionButton>
+                  <div className="flex items-center justify-between rounded-2xl border border-dashed border-sky-300/50 bg-sky-50/70 px-4 py-3 text-sm text-slate-700 dark:border-sky-500/20 dark:bg-sky-500/5 dark:text-slate-300">
+                    <span className="inline-flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-sky-500" />
+                      Search by name or ID
+                    </span>
+                    <span className="font-medium">
+                      {filteredRows.length} visible
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
             </ScrollReveal>
 
             <ScrollReveal as="section">
-            <Card>
-              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                <Search className="h-4 w-4 text-sky-500" />
-                Search and filter
-              </div>
-              <div className="space-y-3">
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search partners"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 dark:border-slate-700 dark:bg-slate-950/70 dark:text-white dark:placeholder:text-slate-500"
-                />
-                <div className="flex items-center justify-between rounded-2xl border border-dashed border-sky-300/50 bg-sky-50/70 px-4 py-3 text-sm text-slate-700 dark:border-sky-500/20 dark:bg-sky-500/5 dark:text-slate-300">
-                  <span className="inline-flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-sky-500" />
-                    Search by name or ID
-                  </span>
-                  <span className="font-medium">
-                    {filteredRows.length} visible
-                  </span>
+              <Card className="bg-gradient-to-br from-sky-500/10 via-blue-500/5 to-transparent dark:from-sky-500/15 dark:via-blue-500/10">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <Shield className="h-4 w-4 text-sky-500" />
+                  Permission snapshot
                 </div>
-              </div>
-            </Card>
-            </ScrollReveal>
-
-            <ScrollReveal as="section">
-            <Card className="bg-gradient-to-br from-sky-500/10 via-blue-500/5 to-transparent dark:from-sky-500/15 dark:via-blue-500/10">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                <Shield className="h-4 w-4 text-sky-500" />
-                Permission snapshot
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-950/50">
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                    View access
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-950/50">
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      View access
+                    </div>
+                    <div className="mt-1 font-semibold">
+                      {permissions.view_only ? "Read only" : "Allowed"}
+                    </div>
                   </div>
-                  <div className="mt-1 font-semibold">Allowed</div>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-950/50">
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                    Manage access
-                  </div>
-                  <div className="mt-1 font-semibold">
-                    {canManage ? "Enabled" : "Read only"}
+                  <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-950/50">
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Manage access
+                    </div>
+                    <div className="mt-1 font-semibold">
+                      {canManage ? "Enabled" : "Read only"}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
             </ScrollReveal>
           </div>
 
           <div className="space-y-6">
             <ScrollReveal as="section">
-            <Card>
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  {STATUS_TABS.map((item) => (
-                    <button
-                      key={item.key}
-                      onClick={() => setTab(item.key)}
-                      className={cls(
-                        "rounded-2xl px-4 py-2.5 text-sm font-semibold transition-all",
-                        tab === item.key
-                          ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
-                      )}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+              <Card>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    {STATUS_TABS.map((item) => (
+                      <button
+                        key={item.key}
+                        onClick={() => setTab(item.key)}
+                        className={cls(
+                          "rounded-2xl px-4 py-2.5 text-sm font-semibold transition-all",
+                          tab === item.key
+                            ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
+                        )}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
             </ScrollReveal>
 
             {error && (
@@ -421,88 +436,86 @@ export default function PartnerNetwork() {
 
                     return (
                       <StaggerItem key={row.id}>
-                      <Card
-                        className="group relative overflow-hidden"
-                      >
-                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400" />
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                                {counterparty.name || "Unknown account"}
-                              </h3>
-                              {counterparty.verified && (
-                                <StatusPill tone="emerald">
-                                  <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                                  Verified
-                                </StatusPill>
-                              )}
+                        <Card className="group relative overflow-hidden">
+                          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400" />
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                                  {counterparty.name || "Unknown account"}
+                                </h3>
+                                {counterparty.verified && (
+                                  <StatusPill tone="emerald">
+                                    <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                                    Verified
+                                  </StatusPill>
+                                )}
+                              </div>
+                              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                Account ID: {counterparty.id}
+                              </p>
                             </div>
-                            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                              Account ID: {counterparty.id}
-                            </p>
+                            <StatusPill tone={tone}>
+                              {capitalize(row.status)}
+                            </StatusPill>
                           </div>
-                          <StatusPill tone={tone}>
-                            {capitalize(row.status)}
-                          </StatusPill>
-                        </div>
 
-                        <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                          <div className="rounded-2xl bg-slate-50 p-3 dark:bg-white/5">
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                              Role
+                          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                            <div className="rounded-2xl bg-slate-50 p-3 dark:bg-white/5">
+                              <div className="text-xs text-slate-500 dark:text-slate-400">
+                                Role
+                              </div>
+                              <div className="mt-1 font-semibold">
+                                {capitalize(counterparty.role || "unknown")}
+                              </div>
                             </div>
-                            <div className="mt-1 font-semibold">
-                              {capitalize(counterparty.role || "unknown")}
+                            <div className="rounded-2xl bg-slate-50 p-3 dark:bg-white/5">
+                              <div className="text-xs text-slate-500 dark:text-slate-400">
+                                Direction
+                              </div>
+                              <div className="mt-1 font-semibold">
+                                {capitalize(row.direction)}
+                              </div>
                             </div>
                           </div>
-                          <div className="rounded-2xl bg-slate-50 p-3 dark:bg-white/5">
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                              Direction
-                            </div>
-                            <div className="mt-1 font-semibold">
-                              {capitalize(row.direction)}
-                            </div>
-                          </div>
-                        </div>
 
-                        <div className="mt-5 flex flex-wrap gap-2">
-                          <Link to={counterpartyRoute}>
-                            <ActionButton variant="secondary">
-                              View Profile
-                            </ActionButton>
-                          </Link>
+                          <div className="mt-5 flex flex-wrap gap-2">
+                            <Link to={counterpartyRoute}>
+                              <ActionButton variant="secondary">
+                                View Profile
+                              </ActionButton>
+                            </Link>
 
-                          {isPending && canManage && isIncoming && (
-                            <>
+                            {isPending && canManage && isIncoming && (
+                              <>
+                                <ActionButton
+                                  variant="success"
+                                  onClick={() => applyAction(row.id, "accept")}
+                                  disabled={loading}
+                                >
+                                  Accept
+                                </ActionButton>
+                                <ActionButton
+                                  variant="danger"
+                                  onClick={() => applyAction(row.id, "reject")}
+                                  disabled={loading}
+                                >
+                                  Reject
+                                </ActionButton>
+                              </>
+                            )}
+
+                            {isPending && canManage && isMine && (
                               <ActionButton
-                                variant="success"
-                                onClick={() => applyAction(row.id, "accept")}
+                                variant="ghost"
+                                onClick={() => applyAction(row.id, "cancel")}
                                 disabled={loading}
                               >
-                                Accept
+                                Cancel
                               </ActionButton>
-                              <ActionButton
-                                variant="danger"
-                                onClick={() => applyAction(row.id, "reject")}
-                                disabled={loading}
-                              >
-                                Reject
-                              </ActionButton>
-                            </>
-                          )}
-
-                          {isPending && canManage && isMine && (
-                            <ActionButton
-                              variant="ghost"
-                              onClick={() => applyAction(row.id, "cancel")}
-                              disabled={loading}
-                            >
-                              Cancel
-                            </ActionButton>
-                          )}
-                        </div>
-                      </Card>
+                            )}
+                          </div>
+                        </Card>
                       </StaggerItem>
                     );
                   })
@@ -526,21 +539,17 @@ export default function PartnerNetwork() {
             </StaggerContainer>
 
             <ScrollReveal as="section">
-            <Card>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h4 className="font-semibold">API workflow notes</h4>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    POST request creation, status transitions, and connection
-                    removal are guarded by role pairing, ownership rules, and
-                    free-tier limits.
-                  </p>
+              <Card>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-semibold">Summary</h4>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {rows.filter((r) => r.status === tab).length} request(s) in
+                      the current tab.
+                    </p>
+                  </div>
                 </div>
-                <div className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 dark:bg-white/5 dark:text-slate-200">
-                  {rows.filter((r) => r.status === tab).length} total in tab
-                </div>
-              </div>
-            </Card>
+              </Card>
             </ScrollReveal>
           </div>
         </div>

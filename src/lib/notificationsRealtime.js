@@ -6,9 +6,14 @@ const WS_BASE = (() => {
   return `${protocol}//${window.location.host}/ws`;
 })();
 
+const HEARTBEAT_INTERVAL = 25000;
+const MAX_RECONNECT_DELAY = 120000;
+
 let socket = null;
 let currentToken = "";
 let reconnectTimer = null;
+let heartbeatTimer = null;
+let reconnectAttempts = 0;
 const listeners = new Set();
 
 function safeParse(raw) {
@@ -29,12 +34,37 @@ function emit(msg) {
   });
 }
 
+function startHeartbeat() {
+  stopHeartbeat();
+  heartbeatTimer = window.setInterval(() => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      try {
+        socket.send(JSON.stringify({ type: "ping" }));
+      } catch {
+        // connection will be handled by onclose
+      }
+    }
+  }, HEARTBEAT_INTERVAL);
+}
+
+function stopHeartbeat() {
+  if (heartbeatTimer) {
+    window.clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+}
+
 function scheduleReconnect(token) {
   if (reconnectTimer) return;
+  reconnectAttempts += 1;
+  const delay = Math.min(
+    1000 * 2 ** reconnectAttempts,
+    MAX_RECONNECT_DELAY,
+  );
   reconnectTimer = window.setTimeout(() => {
     reconnectTimer = null;
     connectNotificationsRealtime(token);
-  }, 30000);
+  }, delay);
 }
 
 export function subscribeNotificationsRealtime(cb) {
@@ -45,6 +75,8 @@ export function subscribeNotificationsRealtime(cb) {
 
 export function disconnectNotificationsRealtime() {
   currentToken = "";
+  reconnectAttempts = 0;
+  stopHeartbeat();
   if (reconnectTimer) {
     window.clearTimeout(reconnectTimer);
     reconnectTimer = null;
@@ -71,6 +103,7 @@ export function connectNotificationsRealtime(token = getToken()) {
     return;
 
   currentToken = nextToken;
+  reconnectAttempts = 0;
 
   try {
     if (socket) socket.close();
@@ -81,6 +114,8 @@ export function connectNotificationsRealtime(token = getToken()) {
   socket = new WebSocket(WS_BASE);
 
   socket.addEventListener("open", () => {
+    reconnectAttempts = 0;
+    startHeartbeat();
     try {
       socket.send(JSON.stringify({ type: "identify", token: nextToken }));
     } catch {
@@ -91,6 +126,7 @@ export function connectNotificationsRealtime(token = getToken()) {
   socket.addEventListener("message", (event) => {
     const msg = safeParse(event?.data);
     if (!msg) return;
+    if (msg.type === "pong") return;
     if (
       msg.type === "notification_created" ||
       msg.type === "notification_read"
@@ -100,11 +136,13 @@ export function connectNotificationsRealtime(token = getToken()) {
   });
 
   socket.addEventListener("close", () => {
+    stopHeartbeat();
     if (!currentToken) return;
     scheduleReconnect(currentToken);
   });
 
   socket.addEventListener("error", () => {
+    stopHeartbeat();
     if (!currentToken) return;
     scheduleReconnect(currentToken);
   });

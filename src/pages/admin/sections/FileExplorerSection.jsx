@@ -249,9 +249,11 @@ export function FileExplorerSection({ adminDark }) {
   const [viewMode, setViewMode] = useState("grid");
   const [contextMenu, setContextMenu] = useState(null);
   const [stats, setStats] = useState(null);
+  const [fileError, setFileError] = useState("");
 
   const loadFiles = async (folder) => {
     setLoading(true);
+    setFileError("");
     try {
       const token = getToken();
       const result = await apiRequest(
@@ -261,6 +263,7 @@ export function FileExplorerSection({ adminDark }) {
       setFiles(result.files || result || []);
     } catch (err) {
       console.error("Failed to load files:", err);
+      setFileError(err.message || "Failed to load files");
     } finally {
       setLoading(false);
     }
@@ -273,6 +276,7 @@ export function FileExplorerSection({ adminDark }) {
       setStats(result);
     } catch (err) {
       console.error("Failed to load stats:", err);
+      setFileError(err.message || "Failed to load stats");
     }
   };
 
@@ -355,10 +359,26 @@ export function FileExplorerSection({ adminDark }) {
           className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${adminDark ? "bg-slate-800 text-white hover:bg-slate-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
           disabled={loading}
         >
-          {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : <RefreshCw className="h-4 w-4" />}
+          {loading ? (
+            <ThreeDot
+              variant="bounce"
+              color="#6100ff"
+              size="small"
+              text=""
+              textColor=""
+            />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
           Refresh
         </button>
       </div>
+
+      {fileError ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+          {fileError}
+        </div>
+      ) : null}
 
       <div
         className={`flex gap-4 rounded-2xl ${panelBg} border ${borderColor} p-4`}
@@ -413,11 +433,18 @@ export function FileExplorerSection({ adminDark }) {
           </div>
 
           {loading ? (
-            <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+            <Mosaic
+              color="#3b00ff"
+              size="large"
+              style={{ fontSize: "40px" }}
+              text=""
+              textColor=""
+            />
           ) : filteredFiles.length === 0 ? (
             <EmptyState darkMode={adminDark} />
           ) : (
-            <div data-lenis-prevent
+            <div
+              data-lenis-prevent
               className={`grid gap-3 overflow-auto ${viewMode === "grid" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-1"}`}
               style={{ maxHeight: "70vh" }}
             >

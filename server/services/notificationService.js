@@ -166,10 +166,7 @@ function monthKey(date = new Date()) {
   return `${date.getFullYear()}-${month}`;
 }
 
-async function ensureMonthlySummary(
-  userId,
-  userNotifications = [],
-) {
+async function ensureMonthlySummary(userId, userNotifications = []) {
   const key = monthKey();
   const already = userNotifications.some(
     (n) => n.type === "monthly_summary" && String(n?.meta?.month || "") === key,

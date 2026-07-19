@@ -17,7 +17,9 @@ export async function initRedis() {
       url: redisUrl,
       socket: {
         reconnectStrategy: (retries) => {
-          console.log(chalk.yellow(`[redis] Reconnecting (attempt ${retries})...`));
+          console.log(
+            chalk.yellow(`[redis] Reconnecting (attempt ${retries})...`),
+          );
           return 30000;
         },
       },

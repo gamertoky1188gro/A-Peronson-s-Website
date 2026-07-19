@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 2d69ddaec9b6bb08496c8c28c8c0f48ea5482c73
 - **Parent:** 0c0019dca5b254250245af5bc5e735828cc080a3 df70a54db4c15ce0039922b734f2d9e2aaccf842
 - **Author:** Cyber Code Master
@@ -6,28 +7,32 @@
 - **Message:** Merge pull request #88 from gamertoky1188gro/codex/implement-enterprise-operations-service-and-ui
 
 ## Custom Title
+
 Merge pull request #88 from gamertoky1188gro/codex/implement-enterprise-operations-service-and-ui
 
 ## High-Level Summary
+
 Merge pull request #88 from gamertoky1188gro/codex/implement-enterprise-operations-service-and-ui
 
- 11 files changed, 820 insertions(+), 25 deletions(-)
+11 files changed, 820 insertions(+), 25 deletions(-)
 
 ## File-by-File Breakdown
- .../migration.sql                                  |  64 +++
- prisma/schema.prisma                               |  71 ++++
- server/controllers/orgOperationsController.js      |  55 ++-
- server/routes/orgOperationsRoutes.js               |  10 +
- server/routes/orgRoutes.js                         |   1 +
- server/services/enterpriseOpsService.js            | 446 +++++++++++++++++++++
- server/services/leadService.js                     |  35 +-
- server/utils/jsonStore.js                          |   4 +
- src/components/leads/LeadManager.jsx               | 105 ++++-
- src/pages/AgentDashboard.jsx                       |  16 +-
- src/pages/OwnerDashboard.jsx                       |  38 +-
- 11 files changed, 820 insertions(+), 25 deletions(-)
+
+.../migration.sql | 64 +++
+prisma/schema.prisma | 71 ++++
+server/controllers/orgOperationsController.js | 55 ++-
+server/routes/orgOperationsRoutes.js | 10 +
+server/routes/orgRoutes.js | 1 +
+server/services/enterpriseOpsService.js | 446 +++++++++++++++++++++
+server/services/leadService.js | 35 +-
+server/utils/jsonStore.js | 4 +
+src/components/leads/LeadManager.jsx | 105 ++++-
+src/pages/AgentDashboard.jsx | 16 +-
+src/pages/OwnerDashboard.jsx | 38 +-
+11 files changed, 820 insertions(+), 25 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/migrations/20260406153000_add_enterprise_ops_engine/migration.sql b/prisma/migrations/20260406153000_add_enterprise_ops_engine/migration.sql
 new file mode 100644
@@ -109,13 +114,13 @@ index 0cae528..1575859 100644
    assignments         LeadAssignment[]
 +  slaTimers           LeadSlaTimer[]
 +  escalations         LeadEscalation[]
- 
+
    @@index([org_owner_id, status, updated_at])
    @@index([assigned_agent_id, updated_at])
 @@ -536,6 +538,75 @@ model AgentCapacity {
    @@map("agent_capacity")
  }
- 
+
 +model OrgOpsPolicy {
 +  id                  String   @id
 +  org_owner_id        String
@@ -204,7 +209,7 @@ index 33e6834..21ff41f 100644
 +  updateOpsPolicies,
 +} from '../services/enterpriseOpsService.js'
  import { handleControllerError } from '../utils/permissions.js'
- 
+
  export async function getOperationsPolicies(req, res) {
    try {
 -    const policy = await getOrgPolicies(req.user)
@@ -214,7 +219,7 @@ index 33e6834..21ff41f 100644
      return handleControllerError(res, error)
 @@ -18,6 +25,24 @@ export async function getOperationsPolicies(req, res) {
  }
- 
+
  export async function putOperationsPolicies(req, res) {
 +  try {
 +    const policy = await updateOpsPolicies(req.user, req.body || {})
@@ -288,9 +293,9 @@ index fe53892..c767c4f 100644
 +  putLegacyOperationsPolicies,
    putOperationsPolicies,
  } from '../controllers/orgOperationsController.js'
- 
+
 @@ -14,8 +19,13 @@ router.use(requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory',
- 
+
  router.get('/policies', getOperationsPolicies)
  router.put('/policies', putOperationsPolicies)
 +router.get('/legacy-policies', getLegacyOperationsPolicies)
@@ -301,18 +306,18 @@ index fe53892..c767c4f 100644
 +router.get('/escalations', getOperationsEscalations)
 +router.post('/escalations/:leadId/resolve', postResolveEscalation)
 +router.get('/workload', getOperationsWorkload)
- 
+
  export default router
 diff --git a/server/routes/orgRoutes.js b/server/routes/orgRoutes.js
 index ad3a699..a23ea83 100644
 --- a/server/routes/orgRoutes.js
 +++ b/server/routes/orgRoutes.js
 @@ -6,5 +6,6 @@ const router = Router()
- 
+
  router.use('/members', memberRoutes)
  router.use('/operations', orgOperationsRoutes)
 +router.use('/ops', orgOperationsRoutes)
- 
+
  export default router
 diff --git a/server/services/enterpriseOpsService.js b/server/services/enterpriseOpsService.js
 new file mode 100644
@@ -775,11 +780,11 @@ index 16273d2..89e1412 100644
  import { getPlanForUser } from './entitlementService.js'
  import { trackEvent } from './eventTrackingService.js'
 +import { applyLeadOpsOnCreateOrUpdate, evaluateAndEscalateLeadIfBreached } from './enterpriseOpsService.js'
- 
+
  const LEADS_FILE = 'leads.json'
  const NOTES_FILE = 'lead_notes.json'
 @@ -234,7 +235,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
- 
+
      if (existingIndex >= 0) {
        const current = leads[existingIndex]
 -      leads[existingIndex] = {
@@ -802,7 +807,7 @@ index 16273d2..89e1412 100644
 @@ -256,7 +262,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
        continue
      }
- 
+
 -    const row = {
 +    const baseRow = {
        id: crypto.randomUUID(),
@@ -822,7 +827,7 @@ index 16273d2..89e1412 100644
      await trackEvent({ type: 'lead_created', actor_id: senderId || orgId, entity_id: row.id, metadata: { source_type: leadSourceType, source_id: leadSourceId } })
 @@ -286,6 +297,10 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
    }
- 
+
    await writeJson(LEADS_FILE, leads)
 +  await Promise.all(updated.map((lead) => evaluateAndEscalateLeadIfBreached({
 +    actor: sender || { id: lead.org_owner_id, org_owner_id: lead.org_owner_id, role: 'owner' },
@@ -830,11 +835,11 @@ index 16273d2..89e1412 100644
 +  })))
    return updated
  }
- 
+
 @@ -436,7 +451,7 @@ export async function updateLead(actor, leadId, patch = {}) {
        if (!assignedAgent) throw forbiddenError()
      }
- 
+
 -    const updated = await prisma.lead.update({
 +    let updated = await prisma.lead.update({
        where: { id },
@@ -863,11 +868,11 @@ index 16273d2..89e1412 100644
 +    await evaluateAndEscalateLeadIfBreached({ actor, lead: updated })
      return updated
    }
- 
+
 @@ -478,13 +503,14 @@ export async function updateLead(actor, leadId, patch = {}) {
    const current = leads[idx]
    ensureLeadWriteAccess(actor, current)
- 
+
 -  const next = {
 +  let next = {
      ...current,
@@ -877,7 +882,7 @@ index 16273d2..89e1412 100644
      updated_at: new Date().toISOString(),
    }
 +  next = await applyLeadOpsOnCreateOrUpdate({ actor, lead: next, trigger: 'update' })
- 
+
    leads[idx] = next
    await writeJson(LEADS_FILE, leads)
 @@ -511,6 +537,7 @@ export async function updateLead(actor, leadId, patch = {}) {
@@ -887,7 +892,7 @@ index 16273d2..89e1412 100644
 +  await evaluateAndEscalateLeadIfBreached({ actor, lead: next })
    return next
  }
- 
+
 diff --git a/server/utils/jsonStore.js b/server/utils/jsonStore.js
 index 338d9c3..1a338b6 100644
 --- a/server/utils/jsonStore.js
@@ -911,7 +916,7 @@ index d9792ba..14cfee1 100644
 @@ -24,6 +24,15 @@ function statusBadgeClass(status = '') {
    return 'bg-emerald-100 text-emerald-700'
  }
- 
+
 +function formatCountdown(deadlineAt) {
 +  if (!deadlineAt) return 'No SLA'
 +  const deadline = new Date(deadlineAt).getTime()
@@ -930,7 +935,7 @@ index d9792ba..14cfee1 100644
    const [saving, setSaving] = useState(false)
 -  const [queueMeta, setQueueMeta] = useState({ queue: [], team_queues: [], assignments: [], agent_capacity: [] })
 +  const [queueMeta, setQueueMeta] = useState({ queue: [], team_queues: [], assignments: [], agent_capacity: [], escalations: [], workload: [] })
- 
+
    const loadLeads = useCallback(async () => {
      if (!token) return
 @@ -48,16 +57,22 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
@@ -957,7 +962,7 @@ index d9792ba..14cfee1 100644
 +          setQueueMeta({ queue: [], team_queues: [], assignments: [], agent_capacity: [], escalations: [], workload: [] })
          }
        }
- 
+
 @@ -177,7 +192,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
      setSaving(true)
      setError('')
@@ -979,7 +984,7 @@ index d9792ba..14cfee1 100644
 @@ -208,6 +223,34 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
      }
    }
- 
+
 +  async function resolveEscalation(leadId) {
 +    if (!token || !leadId) return
 +    setSaving(true)
@@ -1010,7 +1015,7 @@ index d9792ba..14cfee1 100644
 +
    const selectedCounterparty = selected?.counterparty_id ? lookup[selected.counterparty_id] : null
    const assignedAgent = selected?.assigned_agent_id ? lookup[selected.assigned_agent_id] : null
- 
+
 @@ -274,9 +317,9 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                      <span className="text-[11px] uppercase tracking-widest text-slate-500">{(lead.status || 'new').replace(/_/g, ' ')}</span>
                    </div>
@@ -1085,7 +1090,7 @@ index d9792ba..14cfee1 100644
                  <p className="text-xs uppercase tracking-widest text-slate-500">Internal notes</p>
 @@ -437,6 +503,19 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                </div>
- 
+
                <div className="mt-5">
 +                {selectedAssignments.length ? (
 +                  <div className="mb-4">
@@ -1128,7 +1133,7 @@ index 3ce2bfe..cd8d5a1 100644
 +      setQueueSummary({ queue: [], escalations: [], workload: [] })
      }
    }
- 
+
 @@ -171,6 +179,8 @@ export default function AgentDashboard() {
                      <p>Queue ownership: <strong>{queueSummary.queue.length}</strong> leads</p>
                      <button type="button" className="text-xs px-2 py-1 rounded bg-white borderless-shadow" onClick={refreshQueueSummary}>Refresh queue</button>
@@ -1148,9 +1153,9 @@ index 821ba47..8257b60 100644
    const [policy, setPolicy] = useState(null)
 +  const [opsEscalations, setOpsEscalations] = useState([])
 +  const [opsWorkload, setOpsWorkload] = useState([])
- 
+
    const totals = dashboard?.totals || {}
- 
+
    useEffect(() => {
      const token = getToken()
      if (!token) return
@@ -1168,7 +1173,7 @@ index 821ba47..8257b60 100644
 +      })
        .catch(() => null)
    }, [])
- 
+
 @@ -87,10 +97,30 @@ export default function OwnerDashboard() {
                  <div className="bg-white rounded-xl shadow-md p-4 text-sm text-slate-700">
                    <h3 className="font-semibold mb-2">Org Operations Policy</h3>
@@ -1205,17 +1210,22 @@ index 821ba47..8257b60 100644
 ```
 
 ## Why This Change
+
 Merge pull request #88 from gamertoky1188gro/codex/implement-enterprise-operations-service-and-ui
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  11 files changed, 820 insertions(+), 25 deletions(-)
+
+- **Scope:** 11 files changed, 820 insertions(+), 25 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 220 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

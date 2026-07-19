@@ -1,12 +1,12 @@
 # Commit 0545 — `175514873ff2`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `175514873ff2b5b3a7e2ba7a01f750370ef3c8b0` |
-| Parent Hash | `f9fd7457a23c30dbc4fa2436a77829bb30a4c9b0` |
-| Author | gamertoky1188gro |
-| Date | 2026-06-06 13:46:32 +0600 |
-| Subject | feat: add edit option for feed posts on /feed/manage, fix markdown preview with remarkGfm |
+| Field       | Value                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| Commit Hash | `175514873ff2b5b3a7e2ba7a01f750370ef3c8b0`                                                |
+| Parent Hash | `f9fd7457a23c30dbc4fa2436a77829bb30a4c9b0`                                                |
+| Author      | gamertoky1188gro                                                                          |
+| Date        | 2026-06-06 13:46:32 +0600                                                                 |
+| Subject     | feat: add edit option for feed posts on /feed/manage, fix markdown preview with remarkGfm |
 
 ---
 
@@ -18,9 +18,9 @@ Adds full edit support to the feed management page: editing posts pre-populates 
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `src/pages/FeedManagement.jsx` | modified | 79 | 23 |
+| File                           | Status   | Insertions | Deletions |
+| ------------------------------ | -------- | ---------- | --------- |
+| `src/pages/FeedManagement.jsx` | modified | 79         | 23        |
 
 **1 file changed, 79 insertions, 23 deletions**
 
@@ -29,6 +29,7 @@ Adds full edit support to the feed management page: editing posts pre-populates 
 ## Detailed Diff Analysis
 
 ### `src/pages/FeedManagement.jsx`
+
 - Added `editingPost` state and `editPost(post)` function that fills all form fields from existing post data.
 - Changed create API call to conditionally use PATCH (edit) or POST (create).
 - Save button label changes: "Update post" vs "Save post"; editor title shows "Edit Post" + the post's title.

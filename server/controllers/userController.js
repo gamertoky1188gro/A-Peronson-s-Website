@@ -67,7 +67,9 @@ export async function updateMyProfile(req, res) {
 
 export async function searchUsersController(req, res) {
   const q = String(req.query?.q || "");
-  const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0;
+  const cursor = Number.isFinite(Number(req.query.cursor))
+    ? Math.max(0, Math.floor(Number(req.query.cursor)))
+    : 0;
   const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 12));
   res.set(
     "Cache-Control",

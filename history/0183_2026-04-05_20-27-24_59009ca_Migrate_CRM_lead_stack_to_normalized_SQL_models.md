@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 59009cad8a2c177d48d805b8cbc194a7ba4798a9
 - **Parent:** 5f6d7cfc670e637d0c7c89f1278e0aa7a72dcddb
 - **Author:** Cyber Code Master
@@ -6,33 +7,37 @@
 - **Message:** Migrate CRM lead stack to normalized SQL models
 
 ## Custom Title
+
 Migrate CRM lead stack to normalized SQL models
 
 ## High-Level Summary
+
 Migrate CRM lead stack to normalized SQL models
 
- 10 files changed, 651 insertions(+), 79 deletions(-)
+10 files changed, 651 insertions(+), 79 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 59009cad8a2c177d48d805b8cbc194a7ba4798a9
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Sun Apr 5 20:27:24 2026 +0600
+Date: Sun Apr 5 20:27:24 2026 +0600
 
     Migrate CRM lead stack to normalized SQL models
 
- .../migration.sql                                  | 127 +++++++++++
- prisma/schema.prisma                               |  27 ++-
- scripts/db/migrate-crm-json-to-sql.mjs             | 241 +++++++++++++++++++++
- server/services/analyticsService.js                |  32 +--
- server/services/crmService.js                      |  56 +++--
- server/services/leadReminderService.js             |  34 ++-
- server/services/leadService.js                     | 155 +++++++++++--
- server/services/messageService.js                  |  35 +--
- server/utils/crmFallbackStore.js                   |  22 ++
- server/utils/jsonStore.js                          |   1 +
- 10 files changed, 651 insertions(+), 79 deletions(-)
+.../migration.sql | 127 +++++++++++
+prisma/schema.prisma | 27 ++-
+scripts/db/migrate-crm-json-to-sql.mjs | 241 +++++++++++++++++++++
+server/services/analyticsService.js | 32 +--
+server/services/crmService.js | 56 +++--
+server/services/leadReminderService.js | 34 ++-
+server/services/leadService.js | 155 +++++++++++--
+server/services/messageService.js | 35 +--
+server/utils/crmFallbackStore.js | 22 ++
+server/utils/jsonStore.js | 1 +
+10 files changed, 651 insertions(+), 79 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/migrations/20260405100000_crm_normalized_models/migration.sql b/prisma/migrations/20260405100000_crm_normalized_models/migration.sql
 new file mode 100644
@@ -184,19 +189,19 @@ index 8744827..065e247 100644
    created_at           DateTime @default(now())
    updated_at           DateTime?
    last_interaction_at  DateTime?
- 
+
 +  @@index([org_owner_id, assigned_agent_id, counterparty_id, match_id, status, updated_at])
    @@map("leads")
  }
- 
+
 @@ -370,6 +375,7 @@ model LeadNote {
    note         String?
    created_at   DateTime @default(now())
- 
+
 +  @@index([lead_id, created_at])
    @@map("lead_notes")
  }
- 
+
 @@ -380,12 +386,31 @@ model LeadReminder {
    created_by   String
    remind_at    DateTime
@@ -205,11 +210,11 @@ index 8744827..065e247 100644
 +  done         Boolean  @default(false)
 +  notified_at  DateTime?
    created_at   DateTime @default(now())
- 
+
 +  @@index([lead_id, remind_at, done])
    @@map("lead_reminders")
  }
- 
+
 +model InteractionLog {
 +  id               String   @id
 +  org_owner_id     String
@@ -491,16 +496,16 @@ index 1383f48..40aabcf 100644
  import { canViewAnalytics, canViewAnalyticsAdmin, canViewAnalyticsDashboard, forbiddenError, scopeRecordsForUser } from '../utils/permissions.js'
  import { getPlanForUser } from './entitlementService.js'
 @@ -7,6 +9,7 @@ import { getOrderCertificationSummary } from './orderCertificationService.js'
- 
+
  const FILE = 'analytics.json'
  const SEARCH_TREND_MIN_EVENTS = 25
 +const CRM_SQL_ENABLED = isCrmSqlEnabled()
- 
+
  async function getSearchMinEvents() {
    try {
 @@ -19,16 +22,20 @@ async function getSearchMinEvents() {
  }
- 
+
  export async function trackEvent({ type, actor_id, entity_id, metadata = {} }) {
 -  const all = await readJson(FILE)
 -  all.push({
@@ -527,10 +532,10 @@ index 1383f48..40aabcf 100644
 +  }
 +  // Legacy fallback is intentionally read-only during the verification window.
  }
- 
+
  function ensureAnalyticsAccess(user) {
 @@ -60,7 +67,7 @@ function scopeAnalyticsRecords(user, records, idFields) {
- 
+
  export async function getAnalyticsSummary(user) {
    ensureAnalyticsAccess(user)
 -  const all = await readJson(FILE)
@@ -553,7 +558,7 @@ index 677152b..dab7edb 100644
 +import { isCrmSqlEnabled, readLegacyJson } from '../utils/crmFallbackStore.js'
  import { sanitizeString } from '../utils/validators.js'
  import { isOwnerOrAdmin } from '../utils/permissions.js'
- 
+
 @@ -11,6 +13,21 @@ function buildOrgMemberIds(users = [], orgId = '') {
    })
    return members
@@ -573,13 +578,13 @@ index 677152b..dab7edb 100644
 +  }
 +  return readLegacyJson(fileName)
 +}
- 
+
  function canViewCrm(actor, targetUser) {
    if (!actor || !targetUser) return false
 @@ -21,25 +38,6 @@ function canViewCrm(actor, targetUser) {
    return false
  }
- 
+
 -function compactThreadSummary(messages = []) {
 -  const byMatch = new Map()
 -  messages.forEach((msg) => {
@@ -604,7 +609,7 @@ index 677152b..dab7edb 100644
    if (parts.length !== 2) return null
 @@ -100,11 +98,11 @@ export async function getCrmProfileSummary(actor, targetId, options = {}) {
    if (!safeTarget) return { error: 'Target id required' }
- 
+
    const [users, messages, calls, documents, leads] = await Promise.all([
 -    readJson('users.json'),
 -    readJson('messages.json'),
@@ -617,11 +622,11 @@ index 677152b..dab7edb 100644
 +    readStore('documents.json'),
 +    readStore('leads.json'),
    ])
- 
+
    const targetUser = (Array.isArray(users) ? users : []).find((u) => String(u.id) === safeTarget) || null
 @@ -238,11 +236,11 @@ export async function getCrmRelationshipTimeline(actor, counterpartyId, options
    if (!actorOrgId) return { error: 'forbidden' }
- 
+
    const [users, messages, calls, documents, leads] = await Promise.all([
 -    readJson('users.json'),
 -    readJson('messages.json'),
@@ -634,7 +639,7 @@ index 677152b..dab7edb 100644
 +    readStore('documents.json'),
 +    readStore('leads.json'),
    ])
- 
+
    const allUsers = Array.isArray(users) ? users : []
 diff --git a/server/services/leadReminderService.js b/server/services/leadReminderService.js
 index b970f6e..33f94ee 100644
@@ -652,12 +657,12 @@ index b970f6e..33f94ee 100644
  const LEADS_FILE = 'leads.json'
  const USERS_FILE = 'users.json'
 +const CRM_SQL_ENABLED = isCrmSqlEnabled()
- 
+
  let sweepActive = false
- 
+
 @@ -31,11 +33,17 @@ export async function runLeadReminderSweep() {
    sweepActive = true
- 
+
    try {
 -    const [reminders, leads, users] = await Promise.all([
 -      readJson(REMINDERS_FILE),
@@ -675,13 +680,13 @@ index b970f6e..33f94ee 100644
 +        readLegacyJson(LEADS_FILE),
 +        readLegacyJson(USERS_FILE),
 +      ])
- 
+
      const reminderRows = Array.isArray(reminders) ? reminders : []
      const leadRows = Array.isArray(leads) ? leads : []
 @@ -99,8 +107,18 @@ export async function runLeadReminderSweep() {
        }
      })
- 
+
 -    if (processed > 0) {
 -      await writeJson(REMINDERS_FILE, nextReminders)
 +    if (processed > 0 && CRM_SQL_ENABLED) {
@@ -697,7 +702,7 @@ index b970f6e..33f94ee 100644
 +          })),
 +      )
      }
- 
+
      return { ok: true, processed }
 diff --git a/server/services/leadService.js b/server/services/leadService.js
 index eca66b0..47f9d72 100644
@@ -723,11 +728,11 @@ index eca66b0..47f9d72 100644
 +  }
 +  return readLegacyJson(fileName)
 +}
- 
+
  const LEAD_STATUSES = new Set([
    'new',
 @@ -55,7 +65,7 @@ function parseMarketplaceMatchId(matchId = '') {
- 
+
  async function resolveBuyerId(requirementId) {
    if (!requirementId) return ''
 -  const requirements = await readJson(REQUIREMENTS_FILE)
@@ -738,16 +743,16 @@ index eca66b0..47f9d72 100644
 @@ -130,7 +140,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
    const senderId = sanitizeString(sender_id || '', 120)
    if (!matchId) return null
- 
+
 -  const users = await readJson(USERS_FILE)
 +  const users = await readStore(USERS_FILE)
    const usersById = new Map(users.map((u) => [u.id, u]))
    const sender = usersById.get(senderId) || null
- 
+
 @@ -177,7 +187,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
- 
+
    if (orgTargets.size === 0) return null
- 
+
 -  const leads = await readJson(LEADS_FILE)
 +  const leads = await readStore(LEADS_FILE)
    const now = new Date().toISOString()
@@ -756,7 +761,7 @@ index eca66b0..47f9d72 100644
 @@ -284,7 +294,7 @@ export async function markLeadConvertedFromContract({ buyerId, factoryId, contra
    const safeContract = sanitizeString(String(contractId || ''), 120)
    if (!safeBuyer || !safeFactory || !safeContract) return []
- 
+
 -  const leads = await readJson(LEADS_FILE)
 +  const leads = await readStore(LEADS_FILE)
    let touched = false
@@ -764,7 +769,7 @@ index eca66b0..47f9d72 100644
    const updated = []
 @@ -314,7 +324,24 @@ export async function markLeadConvertedFromContract({ buyerId, factoryId, contra
  }
- 
+
  export async function listLeads(actor) {
 -  const leads = await readJson(LEADS_FILE)
 +  if (CRM_SQL_ENABLED) {
@@ -786,10 +791,10 @@ index eca66b0..47f9d72 100644
 +
 +  const leads = await readStore(LEADS_FILE)
    if (isOwnerOrAdmin(actor)) return leads.sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
- 
+
    const orgId = actorOrgOwnerId(actor)
 @@ -331,7 +358,21 @@ export async function listLeads(actor) {
- 
+
  export async function getLeadById(actor, leadId) {
    const id = sanitizeString(String(leadId || ''), 120)
 -  const leads = await readJson(LEADS_FILE)
@@ -828,14 +833,14 @@ index eca66b0..47f9d72 100644
 +    ])
 +    return { ...lead, notes, reminders }
 +  }
- 
+
 -  const leads = await readJson(LEADS_FILE)
 +  const leads = await readStore(LEADS_FILE)
    const lead = leads.find((row) => String(row.match_id || '') === id) || null
    if (!lead) return null
    ensureLeadAccess(actor, lead)
 @@ -363,7 +417,35 @@ export async function getLeadByMatch(actor, matchId) {
- 
+
  export async function updateLead(actor, leadId, patch = {}) {
    const id = sanitizeString(String(leadId || ''), 120)
 -  const leads = await readJson(LEADS_FILE)
@@ -870,9 +875,9 @@ index eca66b0..47f9d72 100644
 +  const leads = await readStore(LEADS_FILE)
    const idx = leads.findIndex((row) => String(row.id) === id)
    if (idx < 0) return null
- 
+
 @@ -385,12 +467,32 @@ export async function updateLead(actor, leadId, patch = {}) {
- 
+
  export async function addLeadNote(actor, leadId, noteText) {
    const id = sanitizeString(String(leadId || ''), 120)
 -  const leads = await readJson(LEADS_FILE)
@@ -900,14 +905,14 @@ index eca66b0..47f9d72 100644
    const lead = leads.find((row) => String(row.id) === id) || null
    if (!lead) return null
    ensureLeadWriteAccess(actor, lead)
- 
+
 -  const notes = await readJson(NOTES_FILE)
 +  const notes = await readStore(NOTES_FILE)
    const row = {
      id: crypto.randomUUID(),
      lead_id: id,
 @@ -406,7 +508,32 @@ export async function addLeadNote(actor, leadId, noteText) {
- 
+
  export async function addLeadReminder(actor, leadId, payload = {}) {
    const id = sanitizeString(String(leadId || ''), 120)
 -  const leads = await readJson(LEADS_FILE)
@@ -943,7 +948,7 @@ index eca66b0..47f9d72 100644
 @@ -414,7 +541,7 @@ export async function addLeadReminder(actor, leadId, payload = {}) {
    const remindAtRaw = payload?.remind_at ? new Date(payload.remind_at) : new Date(Date.now() + 24 * 60 * 60 * 1000)
    const remindAt = Number.isNaN(remindAtRaw.getTime()) ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : remindAtRaw.toISOString()
- 
+
 -  const reminders = await readJson(REMINDERS_FILE)
 +  const reminders = await readStore(REMINDERS_FILE)
    const row = {
@@ -952,14 +957,14 @@ index eca66b0..47f9d72 100644
 @@ -437,13 +564,13 @@ export async function addLeadNoteForMatch({ matchId, orgOwnerId, note, authorId
    const safeAuthor = sanitizeString(String(authorId || 'system'), 120)
    if (!safeMatchId || !safeOrgId || !safeNote) return null
- 
+
 -  const leads = await readJson(LEADS_FILE)
 +  const leads = await readStore(LEADS_FILE)
    const lead = leads.find((row) =>
      String(row.match_id || '') === safeMatchId && String(row.org_owner_id || '') === safeOrgId
    ) || null
    if (!lead) return null
- 
+
 -  const notes = await readJson(NOTES_FILE)
 +  const notes = await readStore(NOTES_FILE)
    const row = {
@@ -986,13 +991,13 @@ index 9a2d560..0dcff23 100644
 +  if (CRM_SQL_ENABLED) return readJson(fileName)
 +  return readLegacyJson(fileName)
 +}
- 
+
  function buildUsersById(users = []) {
    return new Map((Array.isArray(users) ? users : []).map((user) => [user.id, user]))
 @@ -75,7 +82,7 @@ export async function listFriendMatchIdsForUser(userId) {
    const connections = await listFriendConnectionsForUser(userId)
    const ids = new Set(connections.map((row) => row.match_id).filter(Boolean))
- 
+
 -  const messages = await readJson(FILE)
 +  const messages = await readStore(FILE)
    messages
@@ -1001,7 +1006,7 @@ index 9a2d560..0dcff23 100644
 @@ -127,7 +134,7 @@ async function enforceConversationLock(matchId, sender) {
    const requirement = await getRequirementById(requestId)
    if (requirement && String(requirement.buyer_id || '') === String(sender.id || '')) return null
- 
+
 -  const locks = await readJson(CONVERSATION_LOCKS_FILE)
 +  const locks = await readStore(CONVERSATION_LOCKS_FILE)
    const existing = locks.find((lock) => lock.request_id === requestId)
@@ -1009,7 +1014,7 @@ index 9a2d560..0dcff23 100644
      ? [...new Set([...(Array.isArray(existing.allowed_users) ? existing.allowed_users : []), ...(Array.isArray(existing.allowed_agents) ? existing.allowed_agents : [])])]
 @@ -260,10 +267,10 @@ function applyFriendThreadMeta(message, fallbackFriend, currentUserId) {
  }
- 
+
  export async function postMessage(matchId, senderId, message, type = 'text', attachment = null, options = {}) {
 -  const messages = await readJson(FILE)
 -  const users = await readJson(USERS_FILE)
@@ -1023,7 +1028,7 @@ index 9a2d560..0dcff23 100644
      url: sanitizeString(attachment?.url, 600),
 @@ -364,8 +371,8 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
  }
- 
+
  export async function listMessagesByMatch(matchId) {
 -  const messages = await readJson(FILE)
 -  const users = await readJson(USERS_FILE)
@@ -1034,7 +1039,7 @@ index 9a2d560..0dcff23 100644
      .filter((m) => m.match_id === matchId)
 @@ -373,12 +380,12 @@ export async function listMessagesByMatch(matchId) {
  }
- 
+
  export async function tieredInbox(matchIds, currentUserId) {
 -  const users = await readJson(USERS_FILE)
 +  const users = await readStore(USERS_FILE)
@@ -1049,11 +1054,11 @@ index 9a2d560..0dcff23 100644
 +  const messageReads = await readStore(MESSAGE_READS_FILE)
    const lockByRequestId = new Map(conversationLocks.map((lock) => [lock.request_id, lock]))
    const readByMatch = buildReadMap(messageReads, currentUserId)
- 
+
 @@ -455,7 +462,7 @@ export async function markThreadRead(matchId, userId) {
      throw err
    }
- 
+
 -  const rows = await readJson(MESSAGE_READS_FILE)
 +  const rows = await readStore(MESSAGE_READS_FILE)
    const nextRows = Array.isArray(rows) ? rows : []
@@ -1061,7 +1066,7 @@ index 9a2d560..0dcff23 100644
    const idx = nextRows.findIndex((row) => String(row.match_id) === safeMatchId && String(row.user_id) === String(userId))
 @@ -477,7 +484,7 @@ export async function markThreadRead(matchId, userId) {
  }
- 
+
  async function updateRequestStatus(threadId, status, actedBy) {
 -  const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
 +  const messageRequests = await readStore(MESSAGE_REQUESTS_FILE)
@@ -1111,17 +1116,22 @@ index 1a1665f..0e3ee38 100644
 ```
 
 ## Why This Change
+
 Migrate CRM lead stack to normalized SQL models
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  10 files changed, 651 insertions(+), 79 deletions(-)
+
+- **Scope:** 10 files changed, 651 insertions(+), 79 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 183 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

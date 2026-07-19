@@ -1,12 +1,12 @@
 # Commit 0392 — `563d75514ec`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `563d75514ec186c186484fe51f7f8543c60dfe56` |
-| Parent Hash | `e9d2615454722c4e9aa743b5cbe3e06a1f2d0084` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-22 13:20:45 +0600 |
-| Subject | fix: make HARAM_DETECTION_DIR optional so server starts without it |
+| Field       | Value                                                              |
+| ----------- | ------------------------------------------------------------------ |
+| Commit Hash | `563d75514ec186c186484fe51f7f8543c60dfe56`                         |
+| Parent Hash | `e9d2615454722c4e9aa743b5cbe3e06a1f2d0084`                         |
+| Author      | gamertoky1188gro                                                   |
+| Date        | 2026-05-22 13:20:45 +0600                                          |
+| Subject     | fix: make HARAM_DETECTION_DIR optional so server starts without it |
 
 ---
 
@@ -18,9 +18,9 @@ Changes the `HARAM_DETECTION_DIR` requirement from a hard `throw` to a warning l
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/aiModerationService.js` | modified | 13 | 2 |
+| File                                     | Status   | Insertions | Deletions |
+| ---------------------------------------- | -------- | ---------- | --------- |
+| `server/services/aiModerationService.js` | modified | 13         | 2         |
 
 **1 file changed, 11 insertions, 2 deletions**
 

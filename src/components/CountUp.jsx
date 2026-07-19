@@ -1,7 +1,12 @@
 import { motion, useSpring, useReducedMotion, useInView } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 
-export default function CountUp({ value, decimals = 0, suffix = "", className = "" }) {
+export default function CountUp({
+  value,
+  decimals = 0,
+  suffix = "",
+  className = "",
+}) {
   const reduceMotion = useReducedMotion();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
@@ -34,7 +39,8 @@ export default function CountUp({ value, decimals = 0, suffix = "", className = 
 
   return (
     <span ref={ref} className={className}>
-      {formatted}{suffix}
+      {formatted}
+      {suffix}
     </span>
   );
 }

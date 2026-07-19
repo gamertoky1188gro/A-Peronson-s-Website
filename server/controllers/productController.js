@@ -28,10 +28,7 @@ import {
   isOpenSearchConfigured,
   searchOpenSearch,
 } from "../services/openSearchService.js";
-import {
-  isQdrantConfigured,
-  searchQdrant,
-} from "../services/qdrantService.js";
+import { isQdrantConfigured, searchQdrant } from "../services/qdrantService.js";
 import {
   isRerankerConfigured,
   rerankIds,
@@ -435,9 +432,13 @@ export async function searchProducts(req, res) {
     }
   }
 
-  const sort = String(req.query.sort || "relevance").trim().toLowerCase();
+  const sort = String(req.query.sort || "relevance")
+    .trim()
+    .toLowerCase();
   const q = String(req.query.q || "").trim();
-  const field = String(req.query.field || "").trim().toLowerCase();
+  const field = String(req.query.field || "")
+    .trim()
+    .toLowerCase();
   const searchTokens = buildSearchTokens(q);
   const wantedIndustry = String(req.query.industry || "")
     .trim()
@@ -482,11 +483,17 @@ export async function searchProducts(req, res) {
     .trim()
     .toLowerCase();
   const wantedLanguage = parseList(req.query.languageSupport);
-  const wantedSeason = String(req.query.season || "").trim().toLowerCase();
+  const wantedSeason = String(req.query.season || "")
+    .trim()
+    .toLowerCase();
   const wantedMachinery = parseList(req.query.machinery);
-  const wantedStockStatus = String(req.query.stockStatus || "").trim().toLowerCase();
+  const wantedStockStatus = String(req.query.stockStatus || "")
+    .trim()
+    .toLowerCase();
   const minRating = parseFloat(String(req.query.minRating || "").trim());
-  const language = String(req.query.language || "").trim().toLowerCase();
+  const language = String(req.query.language || "")
+    .trim()
+    .toLowerCase();
   const wantedIncoterms = parseList(req.query.incoterms);
   const processes = parseList(req.query.processes);
   const yearsInBusinessMin = parseNumber(req.query.yearsInBusinessMin);
@@ -626,17 +633,26 @@ export async function searchProducts(req, res) {
         },
       })
     : null;
-  const qdrantIds = Array.isArray(qdrantResult?.ids) ? qdrantResult.ids.map(String) : [];
+  const qdrantIds = Array.isArray(qdrantResult?.ids)
+    ? qdrantResult.ids.map(String)
+    : [];
   const qdrantScoreMap = new Map();
   if (qdrantIds.length) {
-    qdrantIds.forEach((id, i) => qdrantScoreMap.set(id, qdrantResult.scores[i]));
+    qdrantIds.forEach((id, i) =>
+      qdrantScoreMap.set(id, qdrantResult.scores[i]),
+    );
   }
 
   const combinedIds = qdrantIds.length
     ? [...new Set([...openSearchIds, ...qdrantIds])]
     : openSearchIds;
   const combinedIdSet = combinedIds.length ? new Set(combinedIds) : null;
-  const engine = osEngine === "opensearch" && combinedIdSet ? "opensearch" : (qdrantResult?.engine === "qdrant" ? "qdrant" : osEngine);
+  const engine =
+    osEngine === "opensearch" && combinedIdSet
+      ? "opensearch"
+      : qdrantResult?.engine === "qdrant"
+        ? "qdrant"
+        : osEngine;
 
   if (estimateOnly && engine === "opensearch") {
     const resolvedFacets = openSearchResult?.facets
@@ -681,8 +697,12 @@ export async function searchProducts(req, res) {
   if (wantedCertifications.length) {
     where.certifications = { hasSome: wantedCertifications };
   }
-  const postedAfter = req.query.postedAfter ? new Date(req.query.postedAfter) : null;
-  const postedBefore = req.query.postedBefore ? new Date(req.query.postedBefore) : null;
+  const postedAfter = req.query.postedAfter
+    ? new Date(req.query.postedAfter)
+    : null;
+  const postedBefore = req.query.postedBefore
+    ? new Date(req.query.postedBefore)
+    : null;
   if (postedAfter || postedBefore) {
     where.created_at = {};
     if (postedAfter) where.created_at.gte = postedAfter;
@@ -690,8 +710,14 @@ export async function searchProducts(req, res) {
   }
   if (distanceFilterActive) {
     const offset = distanceKm / 111;
-    where.location_lat = { gte: locationLat - offset, lte: locationLat + offset };
-    where.location_lng = { gte: locationLng - offset, lte: locationLng + offset };
+    where.location_lat = {
+      gte: locationLat - offset,
+      lte: locationLat + offset,
+    };
+    where.location_lng = {
+      gte: locationLng - offset,
+      lte: locationLng + offset,
+    };
   }
   if (Number.isFinite(minRating) || language) {
     let candidateCompanyIds = null;
@@ -702,7 +728,9 @@ export async function searchProducts(req, res) {
         having: { score: { _avg: { gte: minRating } } },
       });
       candidateCompanyIds = new Set(
-        highRated.map(r => r.profile_key.replace(/^user:/, "")).filter(Boolean)
+        highRated
+          .map((r) => r.profile_key.replace(/^user:/, ""))
+          .filter(Boolean),
       );
     }
     if (language) {
@@ -710,9 +738,11 @@ export async function searchProducts(req, res) {
         where: { profile: { path: ["language"], equals: language } },
         select: { id: true },
       });
-      const langUserIds = new Set(matchingUsers.map(u => u.id));
+      const langUserIds = new Set(matchingUsers.map((u) => u.id));
       if (candidateCompanyIds) {
-        candidateCompanyIds = new Set([...candidateCompanyIds].filter(id => langUserIds.has(id)));
+        candidateCompanyIds = new Set(
+          [...candidateCompanyIds].filter((id) => langUserIds.has(id)),
+        );
       } else {
         candidateCompanyIds = langUserIds;
       }
@@ -723,10 +753,15 @@ export async function searchProducts(req, res) {
       where.company_id = { in: [] };
     }
   }
-  const all = await prisma.product.findMany({ where, orderBy: { created_at: "desc" } });
+  const all = await prisma.product.findMany({
+    where,
+    orderBy: { created_at: "desc" },
+  });
   const companyIds = [...new Set(all.map((p) => p.company_id))];
   const [users, messages, boostMap, orderCertMap] = await Promise.all([
-    companyIds.length ? prisma.user.findMany({ where: { id: { in: companyIds } } }) : [],
+    companyIds.length
+      ? prisma.user.findMany({ where: { id: { in: companyIds } } })
+      : [],
     prisma.message.findMany({ take: 0 }),
     getActiveBoostMap("feed"),
     getOrderCertificationMap(),
@@ -835,8 +870,12 @@ export async function searchProducts(req, res) {
           const hit = searchTokens.every((token) => nameText.includes(token));
           if (!hit) return false;
         } else if (field === "company") {
-          const companyText = normalizeSearchText(p.author?.name || p.author?.company_name || p.name || "");
-          const hit = searchTokens.every((token) => companyText.includes(token));
+          const companyText = normalizeSearchText(
+            p.author?.name || p.author?.company_name || p.name || "",
+          );
+          const hit = searchTokens.every((token) =>
+            companyText.includes(token),
+          );
           if (!hit) return false;
         } else {
           const searchText = normalizeSearchText(
@@ -937,13 +976,11 @@ export async function searchProducts(req, res) {
       }
       if (sampleAvailable) {
         const available = String(p.sample_available || "").toLowerCase();
-        if (
-          !(
-            available === "true" ||
-            available === "yes" ||
-            p.sample_lead_time_days
-          )
-        )
+        if (!(
+          available === "true" ||
+          available === "yes" ||
+          p.sample_lead_time_days
+        ))
           return false;
       }
       if (sampleLeadTimeMax !== null) {
@@ -1070,12 +1107,16 @@ export async function searchProducts(req, res) {
         if (season !== wantedSeason) return false;
       }
       if (wantedMachinery.length > 0) {
-        const machinery = String(p.machinery || p.equipment || p.author?.machinery || "").toLowerCase();
+        const machinery = String(
+          p.machinery || p.equipment || p.author?.machinery || "",
+        ).toLowerCase();
         const hit = wantedMachinery.some((m) => machinery.includes(m));
         if (!hit) return false;
       }
       if (wantedStockStatus) {
-        const status = String(p.stock_status || p.availability || p.author?.stock_status || "").toLowerCase();
+        const status = String(
+          p.stock_status || p.availability || p.author?.stock_status || "",
+        ).toLowerCase();
         if (status !== wantedStockStatus) return false;
       }
       return true;
@@ -1117,14 +1158,18 @@ export async function searchProducts(req, res) {
     if (!combinedIdSet && !qdrantScoreMap.size) return sortedResults;
 
     if (qdrantScoreMap.size && !combinedIdSet) {
-      return [...sortedResults].sort((a, b) => (qdrantScoreMap.get(b.id) || 0) - (qdrantScoreMap.get(a.id) || 0));
+      return [...sortedResults].sort(
+        (a, b) =>
+          (qdrantScoreMap.get(b.id) || 0) - (qdrantScoreMap.get(a.id) || 0),
+      );
     }
 
     const byId = new Map(sortedResults.map((row) => [String(row.id), row]));
     return combinedIds.map((id) => byId.get(String(id))).filter(Boolean);
   })();
 
-  const useReranker = q && orderedResults.length > 1 ? await isRerankerConfigured() : false;
+  const useReranker =
+    q && orderedResults.length > 1 ? await isRerankerConfigured() : false;
   const rerankedResults = useReranker
     ? await rerankIds(q, orderedResults)
     : orderedResults;
@@ -1256,10 +1301,12 @@ export async function searchProducts(req, res) {
       countryCounts[country] = (countryCounts[country] || 0) + 1;
     });
     facetCounts.categories = Object.entries(catCounts)
-      .sort((a, b) => b[1] - a[1]).slice(0, 20)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
       .map(([value, count]) => ({ value, count }));
     facetCounts.countries = Object.entries(countryCounts)
-      .sort((a, b) => b[1] - a[1]).slice(0, 20)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
       .map(([value, count]) => ({ value, count }));
   }
 

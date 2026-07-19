@@ -166,7 +166,9 @@ export async function purchaseBoost(userId, payload = {}) {
 }
 
 export async function cancelBoost(userId, boostId) {
-  const boost = await prisma.boost.findUnique({ where: { id: String(boostId) } });
+  const boost = await prisma.boost.findUnique({
+    where: { id: String(boostId) },
+  });
   if (!boost) return null;
   if (String(boost.user_id) !== String(userId || "")) return "forbidden";
 

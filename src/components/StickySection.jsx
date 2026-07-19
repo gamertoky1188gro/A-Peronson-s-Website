@@ -17,7 +17,7 @@ export default function StickySection({
   });
   const parallaxY = useSpring(
     useTransform(scrollYProgress, [0, 1], [parallaxSpeed, -parallaxSpeed]),
-    { stiffness: 100, damping: 30, restDelta: 0.001 }
+    { stiffness: 100, damping: 30, restDelta: 0.001 },
   );
 
   return (

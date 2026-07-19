@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0108 |
-| Hash | `e8b9de7e820c1486734fc2159e4336e5f8ba0a20` |
-| Parent Hash | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
-| Author | Cyber Code Master |
-| Date/Time | 2026-03-06 14:52:00 |
-| Files Changed | 4 |
-| Lines Added | 457 |
-| Lines Deleted | 51 |
-| Net Change | +406 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0108                                       |
+| Hash          | `e8b9de7e820c1486734fc2159e4336e5f8ba0a20` |
+| Parent Hash   | `917ac133c72d1b80a02ec5b19fbe29569ad95929` |
+| Author        | Cyber Code Master                          |
+| Date/Time     | 2026-03-06 14:52:00                        |
+| Files Changed | 4                                          |
+| Lines Added   | 457                                        |
+| Lines Deleted | 51                                         |
+| Net Change    | +406                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -33,11 +33,13 @@ Major commit adding WebSocket-based assistant handling in `server.js`, making th
 ## Detailed Diff Analysis
 
 ### WebSocket Changes
+
 - Server now creates a `WebSocketServer` on the existing HTTP server.
 - Handles `'ask'` messages: parses JSON, calls `assistantReply('public_guest', question)`, sends back `{ type: 'reply', question, answer, source, metadata }`.
 - Error handling with `logError`.
 
 ### Other Changes
+
 - Same as commits 0104/0106 for the service and controller.
 
 ## Why This Change May Have Been Needed

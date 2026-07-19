@@ -156,7 +156,9 @@ export async function listInteractions(entityType, entityId) {
   });
 
   const comments = rows.filter((x) => x.interaction_type === "comment");
-  const commentActorIds = [...new Set(comments.filter((c) => c.actor_id).map((c) => c.actor_id))];
+  const commentActorIds = [
+    ...new Set(comments.filter((c) => c.actor_id).map((c) => c.actor_id)),
+  ];
   if (commentActorIds.length) {
     const users = await prisma.user.findMany({
       where: { id: { in: commentActorIds } },

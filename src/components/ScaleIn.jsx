@@ -12,7 +12,11 @@ export default function ScaleIn({
   const reduceMotion = useReducedMotion();
   if (reduceMotion) {
     const Tag = as;
-    return <Tag className={className} {...rest}>{children}</Tag>;
+    return (
+      <Tag className={className} {...rest}>
+        {children}
+      </Tag>
+    );
   }
   const MotionTag = motion[as];
   return (

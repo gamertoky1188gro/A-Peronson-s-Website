@@ -19,16 +19,25 @@ export default function FlipCard({
   return (
     <div
       className={`group perspective-[1000px] ${className}`}
-      onClick={!isControlled && flipOn === "click" ? () => onFlip?.() : undefined}
+      onClick={
+        !isControlled && flipOn === "click" ? () => onFlip?.() : undefined
+      }
     >
       <motion.div
         className="relative w-full h-full preserve-3d"
         style={{ transformStyle: "preserve-3d" }}
-        animate={{ rotateY: isControlled ? (controlledFlip ? 180 : 0) : undefined }}
-        whileHover={!isControlled && flipOn === "hover" ? { rotateY: 180 } : undefined}
+        animate={{
+          rotateY: isControlled ? (controlledFlip ? 180 : 0) : undefined,
+        }}
+        whileHover={
+          !isControlled && flipOn === "hover" ? { rotateY: 180 } : undefined
+        }
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="absolute inset-0" style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}>
+        <div
+          className="absolute inset-0"
+          style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
+        >
           {front}
         </div>
         <div

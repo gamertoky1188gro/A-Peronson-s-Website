@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 81d58965662d0f5ecad81617d522e38276ea3fc8
 - **Parent:** 0fb5efb7e3d4e49f04b201b7774e51568485c4d4
 - **Author:** Cyber Code Master
@@ -6,41 +7,45 @@
 - **Message:** Add unified deal journey lifecycle, tracking, UI timeline, and E2E matrix
 
 ## Custom Title
+
 Add unified deal journey lifecycle, tracking, UI timeline, and E2E matrix
 
 ## High-Level Summary
+
 Add unified deal journey lifecycle, tracking, UI timeline, and E2E matrix
 
- 18 files changed, 653 insertions(+), 8 deletions(-)
+18 files changed, 653 insertions(+), 8 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 81d58965662d0f5ecad81617d522e38276ea3fc8
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Mon Apr 6 01:39:01 2026 +0600
+Date: Mon Apr 6 01:39:01 2026 +0600
 
     Add unified deal journey lifecycle, tracking, UI timeline, and E2E matrix
 
- server/controllers/dealJourneyController.js |  52 ++++++
- server/controllers/productController.js     |   7 +-
- server/controllers/requirementController.js |   7 +-
- server/routes/dealJourneyRoutes.js          |  17 ++
- server/server.js                            |   2 +
- server/services/callSessionService.js       |  13 ++
- server/services/dealJourneyService.js       | 261 ++++++++++++++++++++++++++++
- server/services/documentService.js          |   9 +
- server/services/matchingService.js          |   5 +
- server/services/messageService.js           |   3 +
- shared/dealLifecycle.js                     |  83 +++++++++
- src/components/journey/JourneyTimeline.jsx  |  95 ++++++++++
- src/pages/BuyerProfile.jsx                  |  11 +-
- src/pages/ChatInterface.jsx                 |  13 +-
- src/pages/ContractVault.jsx                 |   9 +
- src/pages/SearchResults.jsx                 |  14 +-
- tests/e2e/deal-journey-matrix.cypress.cy.js |  14 ++
- tests/e2e/deal-journey-matrix.spec.ts       |  46 +++++
- 18 files changed, 653 insertions(+), 8 deletions(-)
+server/controllers/dealJourneyController.js | 52 ++++++
+server/controllers/productController.js | 7 +-
+server/controllers/requirementController.js | 7 +-
+server/routes/dealJourneyRoutes.js | 17 ++
+server/server.js | 2 +
+server/services/callSessionService.js | 13 ++
+server/services/dealJourneyService.js | 261 ++++++++++++++++++++++++++++
+server/services/documentService.js | 9 +
+server/services/matchingService.js | 5 +
+server/services/messageService.js | 3 +
+shared/dealLifecycle.js | 83 +++++++++
+src/components/journey/JourneyTimeline.jsx | 95 ++++++++++
+src/pages/BuyerProfile.jsx | 11 +-
+src/pages/ChatInterface.jsx | 13 +-
+src/pages/ContractVault.jsx | 9 +
+src/pages/SearchResults.jsx | 14 +-
+tests/e2e/deal-journey-matrix.cypress.cy.js | 14 ++
+tests/e2e/deal-journey-matrix.spec.ts | 46 +++++
+18 files changed, 653 insertions(+), 8 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/server/controllers/dealJourneyController.js b/server/controllers/dealJourneyController.js
 new file mode 100644
@@ -109,13 +114,13 @@ index 0ffb3c1..775477b 100644
  import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
  import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
 +import { recordJourneyEvent } from '../services/dealJourneyService.js'
- 
+
  function parseNumber(value) {
    if (value === undefined || value === null) return null
 @@ -93,7 +94,7 @@ function rangesOverlap(filterRange, valueRange) {
    return true
  }
- 
+
 -function numberInsideRange(value, rangeRaw) {
 +function _numberInsideRange(value, rangeRaw) {
    const range = parseRange(rangeRaw)
@@ -123,7 +128,7 @@ index 0ffb3c1..775477b 100644
    if (range.min !== null && value < range.min) return false
 @@ -271,6 +272,10 @@ export async function getProducts(req, res) {
  }
- 
+
  export async function searchProducts(req, res) {
 +  await recordJourneyEvent('search_open', {
 +    search_source: 'products_search',
@@ -141,13 +146,13 @@ index b477437..23a71ce 100644
  import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
  import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
 +import { recordJourneyEvent } from '../services/dealJourneyService.js'
- 
+
  function redactRequirementForBuyer(requirement) {
    return {
 @@ -119,7 +120,7 @@ function rangesOverlap(filterRange, valueRange) {
    return true
  }
- 
+
 -function numberInsideRange(value, rangeRaw) {
 +function _numberInsideRange(value, rangeRaw) {
    const range = parseRange(rangeRaw)
@@ -155,7 +160,7 @@ index b477437..23a71ce 100644
    if (range.min !== null && value < range.min) return false
 @@ -274,6 +275,10 @@ export async function getRequirements(req, res) {
  }
- 
+
  export async function browseRequirements(req, res) {
 +  await recordJourneyEvent('search_open', {
 +    search_source: 'requirements_search',
@@ -216,11 +221,11 @@ index a860c7c..638fc33 100644
  import { sanitizeString } from '../utils/validators.js'
  import { recordMilestone } from './ratingsService.js'
 +import { recordJourneyEvent } from './dealJourneyService.js'
- 
+
  const FILE = 'call_sessions.json'
  const RECORDING_VIEWS_FILE = 'call_recording_views.json'
 @@ -113,6 +114,12 @@ export async function createScheduledCallSession(userId, payload = {}) {
- 
+
    calls.push(row)
    await writeJson(FILE, calls)
 +  await recordJourneyEvent('call_scheduled', {
@@ -231,10 +236,10 @@ index a860c7c..638fc33 100644
 +  }, { actor_id: userId, scheduled_for: row.scheduled_for }).catch(() => null)
    return row
  }
- 
+
 @@ -221,6 +228,12 @@ export async function markRecording(callId, userId, payload = {}) {
    await writeJson(FILE, calls)
- 
+
    if (shouldComplete) {
 +    await recordJourneyEvent('call_completed', {
 +      match_id: call.match_id,
@@ -521,7 +526,7 @@ index f2c18ca..792a4a7 100644
  import { ensureCertificationForContract } from './certificationService.js'
  import { markLeadConvertedFromContract } from './leadService.js'
 +import { recordJourneyEvent } from './dealJourneyService.js'
- 
+
  const FILE = 'documents.json'
  const CONTRACT_AUDIT_FILE = 'contract_audit.json'
 @@ -404,6 +405,13 @@ export async function createDraftContract(actor, payload = {}) {
@@ -537,7 +542,7 @@ index f2c18ca..792a4a7 100644
 +  }, { actor_id: actor.id }).catch(() => null)
    return contract
  }
- 
+
 @@ -489,6 +497,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
      await trackEvent({ type: 'contract_signed', actor_id: actor.id, entity_id: next.id })
      await ensureCertificationForContract(next)
@@ -554,20 +559,20 @@ index be938ac..006c9fb 100644
  import { readJson, writeJson } from '../utils/jsonStore.js'
  import { trackTransition } from '../utils/metrics.js'
 +import { recordJourneyEvent } from './dealJourneyService.js'
- 
+
  const USERS_FILE = 'users.json'
  const MATCHES_FILE = 'matches.json'
 @@ -43,6 +44,10 @@ export async function generateMatchesForRequirement(requirement) {
    const withoutOld = matches.filter((m) => m.requirement_id !== requirement.id)
    await writeJson(MATCHES_FILE, [...withoutOld, ...ranked])
- 
+
 +  if (ranked.length > 0) {
 +    await recordJourneyEvent('match_confirmed', { requirement_id: requirement.id }, { match_count: ranked.length }).catch(() => null)
 +  }
 +
    return ranked
  }
- 
+
 diff --git a/server/services/messageService.js b/server/services/messageService.js
 index 317aadc..4243f83 100644
 --- a/server/services/messageService.js
@@ -577,13 +582,13 @@ index 317aadc..4243f83 100644
  import { autoSummarizeMatch, resolveOrgOwnerFromMatch } from './aiConversationService.js'
  import { attachMessageToQueue, evaluateMessagePolicy } from './communicationPolicyService.js'
 +import { recordJourneyEvent } from './dealJourneyService.js'
- 
+
  const FILE = 'messages.json'
  const USERS_FILE = 'users.json'
 @@ -401,6 +402,8 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
- 
+
    await trackTransition(matchId, 'matched', 'first_message_sent', { sender_id: senderId })
- 
+
 +  await recordJourneyEvent('message_start', { match_id: matchId, chat_thread_id: matchId }, { sender_id: senderId }).catch(() => null)
 +
    try {
@@ -796,9 +801,9 @@ index 2d480c2..104486a 100644
  import VerificationPanel from '../components/profile/VerificationPanel'
  import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
 +import JourneyTimeline from '../components/journey/JourneyTimeline'
- 
+
  const Motion = motion
- 
+
 @@ -56,6 +57,7 @@ function isBoostActive(boost) {
  export default function BuyerProfile() {
    const { id } = useParams()
@@ -806,17 +811,17 @@ index 2d480c2..104486a 100644
 +  const location = useLocation()
    const token = useMemo(() => getToken(), [])
    const currentUser = useMemo(() => getCurrentUser(), [])
- 
+
 @@ -72,6 +74,7 @@ export default function BuyerProfile() {
    const [loadingRequests, setLoadingRequests] = useState(false)
    const [profileBoost, setProfileBoost] = useState(null)
    const reduceMotion = useReducedMotion()
 +  const journeyParams = useMemo(() => new URLSearchParams(location.search), [location.search])
- 
+
    const user = profile?.user || null
    const verification = profile?.verification_summary || null
 @@ -322,6 +325,12 @@ export default function BuyerProfile() {
- 
+
          <main className="col-span-12 lg:col-span-8 space-y-4">
            <CrmSummaryPanel targetId={user.id} />
 +          <JourneyTimeline
@@ -837,7 +842,7 @@ index b68d7fd..dbcc01c 100644
  import MarkdownMessage from '../components/chat/MarkdownMessage'
  import FileAttachmentCard from '../components/chat/FileAttachmentCard'
 +import JourneyTimeline from '../components/journey/JourneyTimeline'
- 
+
  const WS_BASE = (() => {
    if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
 @@ -419,7 +420,11 @@ export default function ChatInterface() {
@@ -850,9 +855,9 @@ index b68d7fd..dbcc01c 100644
 +    const matchId = params.get('match_id')
 +    if (matchId) pendingMatchIdRef.current = String(matchId)
 +  }, [location.state, location.pathname, location.search, navigate])
- 
+
    const loadInbox = useCallback(async () => {
- 
+
 @@ -1603,6 +1608,7 @@ export default function ChatInterface() {
                      onClick={() => setActiveThreadId(thread.id)}
                    >
@@ -872,7 +877,7 @@ index b68d7fd..dbcc01c 100644
 @@ -1714,6 +1721,10 @@ export default function ChatInterface() {
                  </div>
                </div>
- 
+
 +              <div className="px-6 pb-3">
 +                <JourneyTimeline title="Journey Timeline" matchId={activeThread?.matchId || ''} />
 +              </div>
@@ -889,12 +894,12 @@ index ef4303d..e919548 100644
  import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
  import { trackClientEvent } from '../lib/events'
 +import JourneyTimeline from '../components/journey/JourneyTimeline'
- 
+
  const Motion = motion
- 
+
 @@ -664,6 +665,14 @@ export default function ContractVault() {
        </div>
- 
+
        {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
 +      <div className="mt-4">
 +        <JourneyTimeline title="Journey Timeline" contractId={selected.id} />
@@ -914,7 +919,7 @@ index 7657960..eecb5a6 100644
 @@ -1123,7 +1123,7 @@ export default function SearchResults() {
      setAutoSaveCandidate(null)
    }
- 
+
 -  function openChatNotice(name, leadSource) {
 +  function openChatNotice(name, leadSource, journeyContext = {}) {
      if (leadSource?.type && leadSource?.id) {
@@ -933,7 +938,7 @@ index 7657960..eecb5a6 100644
 +    const query = params.toString()
 +    navigate(`/chat${query ? `?${query}` : ''}`, { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
    }
- 
+
    const activeFilterChips = useMemo(() => {
 @@ -2015,7 +2021,7 @@ export default function SearchResults() {
                                    type: 'buyer_request',
@@ -1028,17 +1033,22 @@ index 0000000..79dd72f
 ```
 
 ## Why This Change
+
 Add unified deal journey lifecycle, tracking, UI timeline, and E2E matrix
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  18 files changed, 653 insertions(+), 8 deletions(-)
+
+- **Scope:** 18 files changed, 653 insertions(+), 8 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 209 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

@@ -62,6 +62,29 @@ export default function LeadManager({
     workload: [],
   });
 
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
+  const [reminderDate, setReminderDate] = useState("");
+  const [reminderMessage, setReminderMessage] = useState("");
+  const [escalationModalOpen, setEscalationModalOpen] = useState(false);
+  const [escalationReason, setEscalationReason] = useState("");
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignAgentId, setAssignAgentId] = useState("");
+  const [assignReason, setAssignReason] = useState("");
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === "Escape") {
+        setReminderModalOpen(false);
+        setEscalationModalOpen(false);
+        setAssignModalOpen(false);
+      }
+    }
+    if (reminderModalOpen || escalationModalOpen || assignModalOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [reminderModalOpen, escalationModalOpen, assignModalOpen]);
+
   const loadLeads = useCallback(async () => {
     if (!token) return;
     setLoading(true);
@@ -221,26 +244,25 @@ export default function LeadManager({
     }
   }
 
-  async function createReminder() {
-    if (!token || !selectedId) return;
-    const remindAt = window.prompt(
-      "Reminder date/time (ISO or YYYY-MM-DD HH:mm)",
+  function openReminderModal() {
+    setReminderDate(
       new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     );
-    if (!remindAt) return;
-    const message =
-      window.prompt("Reminder note (optional)", "Follow up") || "Follow up";
+    setReminderMessage("Follow up");
+    setReminderModalOpen(true);
+  }
 
+  async function handleConfirmReminder() {
+    if (!token || !selectedId) return;
+    const remindAt = reminderDate;
+    if (!remindAt) return;
+    const message = reminderMessage || "Follow up";
     setSaving(true);
     setError("");
     try {
       const created = await apiRequest(
         `/leads/${encodeURIComponent(selectedId)}/reminders`,
-        {
-          method: "POST",
-          token,
-          body: { remind_at: remindAt, message },
-        },
+        { method: "POST", token, body: { remind_at: remindAt, message } },
       );
       setSelected((prev) =>
         prev
@@ -251,6 +273,7 @@ export default function LeadManager({
       setError(err.message || "Failed to create reminder");
     } finally {
       setSaving(false);
+      setReminderModalOpen(false);
     }
   }
 
@@ -273,19 +296,20 @@ export default function LeadManager({
     }
   }
 
-  async function escalateLead(leadId) {
-    if (!token || !leadId) return;
-    const reason = window.prompt("Escalation reason", "SLA risk") || "SLA risk";
+  function openEscalationModal() {
+    setEscalationReason("SLA risk");
+    setEscalationModalOpen(true);
+  }
+
+  async function handleConfirmEscalation() {
+    if (!token || !selectedId) return;
+    const reason = escalationReason || "SLA risk";
     setSaving(true);
     setError("");
     try {
       const updated = await apiRequest(
-        `/org/ops/escalate/${encodeURIComponent(leadId)}`,
-        {
-          method: "POST",
-          token,
-          body: { reason },
-        },
+        `/org/ops/escalate/${encodeURIComponent(selectedId)}`,
+        { method: "POST", token, body: { reason } },
       );
       setItems((prev) =>
         prev.map((lead) =>
@@ -298,6 +322,7 @@ export default function LeadManager({
       setError(err.message || "Failed to escalate lead");
     } finally {
       setSaving(false);
+      setEscalationModalOpen(false);
     }
   }
 
@@ -348,6 +373,7 @@ export default function LeadManager({
     : null;
 
   return (
+    <>
     <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
       <div className="flex flex-col gap-4 lg:flex-row">
         <div className="lg:w-2/5">
@@ -376,13 +402,22 @@ export default function LeadManager({
           </div>
 
           {loading ? (
-            <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+            <Mosaic
+              color="#3b00ff"
+              size="large"
+              style={{ fontSize: "40px" }}
+              text=""
+              textColor=""
+            />
           ) : null}
           {error ? (
             <div className="mt-2 text-sm text-rose-600">{error}</div>
           ) : null}
 
-          <div data-lenis-prevent className="mt-3 space-y-2 max-h-[520px] overflow-auto pr-1">
+          <div
+            data-lenis-prevent
+            className="mt-3 space-y-2 max-h-[520px] overflow-auto pr-1"
+          >
             {items.length === 0 && !loading ? (
               <div className="text-sm text-slate-500">
                 No leads yet. Leads are created automatically when chats start.
@@ -420,7 +455,10 @@ export default function LeadManager({
                           initial={{ opacity: 0, scale: 0.9 }}
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
-                          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{
+                            duration: 0.35,
+                            ease: [0.16, 1, 0.3, 1],
+                          }}
                           className="h-8 w-8 shrink-0"
                         >
                           <img
@@ -560,7 +598,7 @@ export default function LeadManager({
                       type="button"
                       className="rounded-md bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-400"
                       disabled={saving || !selectedId}
-                      onClick={() => escalateLead(selectedId)}
+                      onClick={openEscalationModal}
                     >
                       Escalate
                     </button>
@@ -582,20 +620,9 @@ export default function LeadManager({
                     <button
                       type="button"
                       onClick={() => {
-                        const assignedAgentId =
-                          window.prompt(
-                            "Assign/reassign to agent id (user id)",
-                            selected?.assigned_agent_id || "",
-                          ) || "";
-                        const assignmentReason =
-                          window.prompt(
-                            "Assignment reason (audit trail)",
-                            "manual_reassignment",
-                          ) || "manual_reassignment";
-                        updateLead({
-                          assigned_agent_id: assignedAgentId,
-                          assignment_reason: assignmentReason,
-                        });
+                        setAssignAgentId(selected?.assigned_agent_id || "");
+                        setAssignReason("manual_reassignment");
+                        setAssignModalOpen(true);
                       }}
                       className="mt-2 text-sm text-gtBlue hover:underline"
                       disabled={saving}
@@ -643,7 +670,7 @@ export default function LeadManager({
                   ) : null}
                   <button
                     type="button"
-                    onClick={createReminder}
+                    onClick={openReminderModal}
                     className="mt-2 text-sm text-gtBlue hover:underline"
                     disabled={saving}
                   >
@@ -716,7 +743,10 @@ export default function LeadManager({
                   </button>
                 </div>
 
-                <div data-lenis-prevent className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1">
+                <div
+                  data-lenis-prevent
+                  className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1"
+                >
                   {(selected?.notes || []).length === 0 ? (
                     <div className="text-sm text-slate-500">No notes yet.</div>
                   ) : null}
@@ -789,5 +819,151 @@ export default function LeadManager({
         </div>
       </div>
     </div>
+
+      {/* Reminder modal */}
+      {reminderModalOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setReminderModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg dark:bg-slate-800"
+            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <p className="mb-3 text-sm font-medium">Set reminder</p>
+            <label className="mb-1 block text-xs text-slate-500">
+              Date/time (ISO or YYYY-MM-DD HH:mm)
+            </label>
+            <input
+              value={reminderDate}
+              onChange={(e) => setReminderDate(e.target.value)}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              autoFocus
+            />
+            <label className="mt-3 mb-1 block text-xs text-slate-500">
+              Note
+            </label>
+            <input
+              value={reminderMessage}
+              onChange={(e) => setReminderMessage(e.target.value)}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setReminderModalOpen(false)}
+                className="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReminder}
+                className="rounded-md bg-gtBlue px-3 py-1.5 text-sm text-white hover:bg-gtBlueHover"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Escalation modal */}
+      {escalationModalOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setEscalationModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg dark:bg-slate-800"
+            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <p className="mb-3 text-sm font-medium">Escalation reason</p>
+            <input
+              value={escalationReason}
+              onChange={(e) => setEscalationReason(e.target.value)}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              autoFocus
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEscalationModalOpen(false)}
+                className="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmEscalation}
+                className="rounded-md bg-amber-500 px-3 py-1.5 text-sm text-white hover:bg-amber-400"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Assign modal */}
+      {assignModalOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setAssignModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg dark:bg-slate-800"
+            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <p className="mb-3 text-sm font-medium">Assign / Reassign agent</p>
+            <label className="mb-1 block text-xs text-slate-500">
+              Agent ID (user id)
+            </label>
+            <input
+              value={assignAgentId}
+              onChange={(e) => setAssignAgentId(e.target.value)}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              autoFocus
+            />
+            <label className="mt-3 mb-1 block text-xs text-slate-500">
+              Reason (audit trail)
+            </label>
+            <input
+              value={assignReason}
+              onChange={(e) => setAssignReason(e.target.value)}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setAssignModalOpen(false)}
+                className="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  updateLead({
+                    assigned_agent_id: assignAgentId,
+                    assignment_reason: assignReason,
+                  });
+                  setAssignModalOpen(false);
+                }}
+                className="rounded-md bg-gtBlue px-3 py-1.5 text-sm text-white hover:bg-gtBlueHover"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

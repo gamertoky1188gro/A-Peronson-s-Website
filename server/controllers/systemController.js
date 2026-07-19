@@ -36,7 +36,13 @@ function titleCase(value) {
 }
 
 export async function systemHome(req, res) {
-  const [factories, messageCount, metricCount, productCategories, reqCategories] = await Promise.all([
+  const [
+    factories,
+    messageCount,
+    metricCount,
+    productCategories,
+    reqCategories,
+  ] = await Promise.all([
     prisma.user.findMany({
       where: { role: "factory" },
       select: { id: true, name: true, verified: true },
@@ -577,9 +583,7 @@ export async function systemAbout(req, res) {
     prisma.metricTransition.count(),
   ]);
 
-  const verifiedFactories = factories.filter((u) =>
-    Boolean(u.verified),
-  ).length;
+  const verifiedFactories = factories.filter((u) => Boolean(u.verified)).length;
 
   const countriesCovered = 18 + (metricCount % 22);
   const avgResponseMinutes = 85 + (messageCount % 120);

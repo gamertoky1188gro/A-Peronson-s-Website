@@ -1,6 +1,9 @@
 import crypto from "crypto";
 import prisma from "../utils/prisma.js";
-import { isCrmSqlEnabled, readLegacyJson as _readLegacyJson } from "../utils/crmFallbackStore.js";
+import {
+  isCrmSqlEnabled,
+  readLegacyJson as _readLegacyJson,
+} from "../utils/crmFallbackStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import { trackTransition } from "../utils/metrics.js";
 import {
@@ -155,7 +158,9 @@ async function enforceConversationLock(matchId, sender) {
   )
     return null;
 
-  const existing = await prisma.conversationLock.findUnique({ where: { request_id: requestId } });
+  const existing = await prisma.conversationLock.findUnique({
+    where: { request_id: requestId },
+  });
   const allowed = existing
     ? [
         ...new Set([
@@ -319,7 +324,9 @@ export async function postMessage(
   const usersById = new Map();
   usersById.set(sender.id, sender);
   if (sender.org_owner_id) {
-    const owner = await prisma.user.findUnique({ where: { id: String(sender.org_owner_id) } });
+    const owner = await prisma.user.findUnique({
+      where: { id: String(sender.org_owner_id) },
+    });
     if (owner) usersById.set(owner.id, owner);
   }
 
@@ -383,8 +390,7 @@ export async function postMessage(
         },
       });
       if (
-        recentCount >=
-        Number(orgSettings.auto_reply_rate_limit_per_hour || 20)
+        recentCount >= Number(orgSettings.auto_reply_rate_limit_per_hour || 20)
       ) {
         const err = new Error(
           "Auto-reply rate limit exceeded for this organization.",
@@ -528,31 +534,50 @@ export async function postMessage(
 }
 
 export async function listMessagesByMatch(matchId) {
-  const messages = await prisma.message.findMany({ where: { match_id: matchId } });
-  const senderIds = [...new Set(messages.map((m) => m.sender_id).filter(Boolean))];
-  const users = senderIds.length > 0
-    ? await prisma.user.findMany({ where: { id: { in: senderIds } } })
-    : [];
+  const messages = await prisma.message.findMany({
+    where: { match_id: matchId },
+  });
+  const senderIds = [
+    ...new Set(messages.map((m) => m.sender_id).filter(Boolean)),
+  ];
+  const users =
+    senderIds.length > 0
+      ? await prisma.user.findMany({ where: { id: { in: senderIds } } })
+      : [];
   const usersById = buildUsersById(users);
   return messages.map((message) => enrichMessage(message, usersById));
 }
 
 export async function tieredInbox(matchIds, currentUserId) {
-  const requestIds = [...new Set(matchIds.map(requestIdFromMatchId).filter(Boolean))];
+  const requestIds = [
+    ...new Set(matchIds.map(requestIdFromMatchId).filter(Boolean)),
+  ];
 
-  const [messages, messageRequests, conversationLocks, messageReads] = await Promise.all([
-    prisma.message.findMany({ where: { match_id: { in: matchIds } } }),
-    prisma.messageRequest.findMany({ where: { thread_id: { in: matchIds } } }),
-    prisma.conversationLock.findMany({ where: { request_id: { in: requestIds } } }),
-    prisma.messageRead.findMany({ where: { match_id: { in: matchIds }, user_id: currentUserId } }),
-  ]);
+  const [messages, messageRequests, conversationLocks, messageReads] =
+    await Promise.all([
+      prisma.message.findMany({ where: { match_id: { in: matchIds } } }),
+      prisma.messageRequest.findMany({
+        where: { thread_id: { in: matchIds } },
+      }),
+      prisma.conversationLock.findMany({
+        where: { request_id: { in: requestIds } },
+      }),
+      prisma.messageRead.findMany({
+        where: { match_id: { in: matchIds }, user_id: currentUserId },
+      }),
+    ]);
 
-  const senderIds = [...new Set(messages.map((m) => m.sender_id).filter(Boolean))];
-  const lockOwnerIds = [...new Set(conversationLocks.map((l) => l.locked_by).filter(Boolean))];
+  const senderIds = [
+    ...new Set(messages.map((m) => m.sender_id).filter(Boolean)),
+  ];
+  const lockOwnerIds = [
+    ...new Set(conversationLocks.map((l) => l.locked_by).filter(Boolean)),
+  ];
   const allUserIds = [...new Set([...senderIds, ...lockOwnerIds])];
-  const users = allUserIds.length > 0
-    ? await prisma.user.findMany({ where: { id: { in: allUserIds } } })
-    : [];
+  const users =
+    allUserIds.length > 0
+      ? await prisma.user.findMany({ where: { id: { in: allUserIds } } })
+      : [];
   const usersById = buildUsersById(users);
   const lockByRequestId = new Map(
     conversationLocks.map((lock) => [lock.request_id, lock]),

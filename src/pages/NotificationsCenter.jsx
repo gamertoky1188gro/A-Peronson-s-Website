@@ -22,21 +22,29 @@
     - GET /api/products/views/me (for the "Viewed Products" tab)
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";
 import ScrollReveal from "../components/ScrollReveal";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import {
+  ArrowRight,
   Bell,
   Factory,
   History,
+  Plus,
+  RefreshCw,
   ShieldAlert,
   Sparkles,
   Trash2,
 } from "lucide-react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
-import { apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
+import {
+  apiRequest,
+  getCurrentUser,
+  getToken,
+  syncUserFromApi,
+} from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import ProductQuickViewModal from "../components/products/ProductQuickViewModal";
 import {
@@ -68,16 +76,6 @@ const TYPE_LABELS = {
   monthly_summary: "Monthly Summary",
   system: "System",
 };
-
-function _typeAccent(type = "") {
-  const key = String(type || "").toLowerCase();
-  if (key === "partner_request") return "bg-[#0A66C2]";
-  if (key === "smart_search_match") return "bg-emerald-500";
-  if (key === "rating_feedback_request") return "bg-amber-500";
-  if (key === "monthly_summary") return "bg-indigo-500";
-  if (key === "conversation_lock") return "bg-rose-500";
-  return "bg-slate-400";
-}
 
 function feedLinkForEntity(entityType, entityId) {
   if (!entityType || !entityId) return "/feed";
@@ -153,7 +151,7 @@ export default function NotificationsCenter() {
   const token = useMemo(() => getToken(), []);
   const user = useMemo(() => getCurrentUser(), []);
   const reduceMotion = useReducedMotion();
-  const { theme, setTheme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [tab, setTab] = useState("all");
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -169,6 +167,8 @@ export default function NotificationsCenter() {
   const [loadingViews, setLoadingViews] = useState(false);
   const [quickViewItem, setQuickViewItem] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
+  const [loadingAlerts, setLoadingAlerts] = useState(true);
+  const navigate = useNavigate();
 
   const loadNotifications = useCallback(async () => {
     if (!token) return;
@@ -187,11 +187,15 @@ export default function NotificationsCenter() {
 
   const loadAlerts = useCallback(async () => {
     if (!token) return;
+    setLoadingAlerts(true);
     try {
       const data = await apiRequest("/notifications/search-alerts", { token });
       setAlerts(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      console.warn("Failed to load search alerts:", err);
       setAlerts([]);
+    } finally {
+      setLoadingAlerts(false);
     }
   }, [token]);
 
@@ -209,7 +213,8 @@ export default function NotificationsCenter() {
         setViews((prev) => (reset ? rows : [...prev, ...rows]));
         setViewsCursor(reset ? 10 : cursor + 10);
         setViewsNext(data?.next_cursor ?? null);
-      } catch {
+      } catch (err) {
+        console.warn("Failed to load views:", err);
         if (reset) setViews([]);
         setViewsNext(null);
       } finally {
@@ -227,16 +232,28 @@ export default function NotificationsCenter() {
       if (notifsDone && alertsDone && userDone) setPageLoading(false);
     }
     (async () => {
-      try { await loadNotifications(); }
-      finally { notifsDone = true; tryDone(); }
+      try {
+        await loadNotifications();
+      } finally {
+        notifsDone = true;
+        tryDone();
+      }
     })();
     (async () => {
-      try { await loadAlerts(); }
-      finally { alertsDone = true; tryDone(); }
+      try {
+        await loadAlerts();
+      } finally {
+        alertsDone = true;
+        tryDone();
+      }
     })();
     (async () => {
-      try { await syncUserFromApi(getToken()); }
-      finally { userDone = true; tryDone(); }
+      try {
+        await syncUserFromApi(getToken());
+      } finally {
+        userDone = true;
+        tryDone();
+      }
     })();
   }, [loadAlerts, loadNotifications]);
 
@@ -360,13 +377,7 @@ export default function NotificationsCenter() {
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-6 w-6 fill-none stroke-current stroke-[2]"
-                  >
-                    <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5" />
-                    <path d="M9 17a3 3 0 0 0 6 0" />
-                  </svg>
+                  <Bell className="h-6 w-6" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
@@ -483,13 +494,7 @@ export default function NotificationsCenter() {
                   </div>
                 </div>
                 <div className="rounded-2xl bg-sky-500/10 p-3 text-sky-300 ring-1 ring-sky-400/20">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5 fill-none stroke-current stroke-[2]"
-                  >
-                    <path d="M5 12h14" />
-                    <path d="M13 5l7 7-7 7" />
-                  </svg>
+                  <ArrowRight className="h-5 w-5" />
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-3">
@@ -503,249 +508,250 @@ export default function NotificationsCenter() {
           <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="space-y-6">
               <ScrollReveal as="section">
-              <section
-                className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
-              >
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold">Notifications feed</h2>
-                    <p className={cn("mt-1 text-sm", subtleText)}>
-                      {tab === "viewed"
-                        ? "Showing viewed products history from Quick View."
-                        : "All notification types except Viewed Products are grouped here."}
-                    </p>
-                  </div>
-                  <div
-                    className={cn(
-                      "rounded-2xl px-4 py-2 text-sm",
-                      softBg,
-                      subtleText,
-                    )}
-                  >
-                    Showing {filteredItems.length} item
-                    {filteredItems.length === 1 ? "" : "s"}
-                  </div>
-                </div>
-
-                <StaggerContainer className="space-y-3">
-                    {loading ? (
-                    <Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
-                  ) : error ? (
-                    <div className="text-sm text-rose-300">{error}</div>
-                  ) : filteredItems.length === 0 ? (
-                    <EmptyState
-                      title="No notifications found"
-                      description="Try changing the tab or turning off the unread-only filter."
-                    />
-                  ) : (
-                    <AnimatePresence mode="popLayout">
-                    {filteredItems.map((item) => (
-                      <StaggerItem key={item.id}>
-                      <NotificationCard
-                        item={item}
-                        theme={theme}
-                        user={user}
-                        onMarkRead={() => markRead(item.id)}
-                        onAccept={() =>
-                          respondPartnerRequest(
-                            item?.meta?.request_id || item.entity_id,
-                            "accept",
-                            item.id,
-                          )
-                        }
-                        onReject={() =>
-                          respondPartnerRequest(
-                            item?.meta?.request_id || item.entity_id,
-                            "reject",
-                            item.id,
-                          )
-                        }
-                      />
-                      </StaggerItem>
-                    ))}
-                    </AnimatePresence>
-                  )}
-                </StaggerContainer>
-              </section>
-              </ScrollReveal>
-
-              <AnimatePresence mode="wait">
-              {tab === "viewed" && (
-                <ScrollReveal as="section">
                 <section
                   className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
                 >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-bold">Viewed Products</h2>
-                        <Badge tone="sky">Private to you</Badge>
-                      </div>
+                      <h2 className="text-xl font-bold">Notifications feed</h2>
                       <p className={cn("mt-1 text-sm", subtleText)}>
-                        Recorded on Quick View. This history helps you revisit
-                        products quickly.
+                        {tab === "viewed"
+                          ? "Showing viewed products history from Quick View."
+                          : "All notification types except Viewed Products are grouped here."}
                       </p>
                     </div>
-                    <button
-                      onClick={refreshViewed}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-2.5 text-sm font-semibold text-sky-200 transition hover:bg-sky-500/15"
+                    <div
+                      className={cn(
+                        "rounded-2xl px-4 py-2 text-sm",
+                        softBg,
+                        subtleText,
+                      )}
                     >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4 fill-none stroke-current stroke-[2]"
-                      >
-                        <path d="M20 12a8 8 0 1 1-2.34-5.66" />
-                        <path d="M20 4v6h-6" />
-                      </svg>
-                      Refresh
-                    </button>
+                      Showing {filteredItems.length} item
+                      {filteredItems.length === 1 ? "" : "s"}
+                    </div>
                   </div>
 
-                  <div className="mt-5 space-y-3">
-                    {loadingViews ? (
-                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                    ) : views.length === 0 ? (
+                  <StaggerContainer className="space-y-3">
+                    {loading ? (
+                      <Mosaic
+                        color="#3b00ff"
+                        size="large"
+                        style={{ fontSize: "40px" }}
+                        text=""
+                        textColor=""
+                      />
+                    ) : error ? (
+                      <div className="text-sm text-rose-300">{error}</div>
+                    ) : filteredItems.length === 0 ? (
                       <EmptyState
-                        title="No viewed products yet"
-                        description="View products from the search page to see them here."
+                        title="No notifications found"
+                        description="Try changing the tab or turning off the unread-only filter."
                       />
                     ) : (
-                      views.map((row) => (
-                        <ViewedCard
-                          key={row.id}
-                          product={row}
-                          theme={theme}
-                          onQuickView={() =>
-                            setQuickViewItem({
-                              ...row.product,
-                              author: row.author,
-                            })
-                          }
-                        />
-                      ))
+                      <AnimatePresence mode="popLayout">
+                        {filteredItems.map((item) => (
+                          <StaggerItem key={item.id}>
+                            <NotificationCard
+                              item={item}
+                              theme={theme}
+                              user={user}
+                              onMarkRead={() => markRead(item.id)}
+                              onAccept={() =>
+                                respondPartnerRequest(
+                                  item?.meta?.request_id || item.entity_id,
+                                  "accept",
+                                  item.id,
+                                )
+                              }
+                              onReject={() =>
+                                respondPartnerRequest(
+                                  item?.meta?.request_id || item.entity_id,
+                                  "reject",
+                                  item.id,
+                                )
+                              }
+                            />
+                          </StaggerItem>
+                        ))}
+                      </AnimatePresence>
                     )}
-                  </div>
-
-                  {viewsNext !== null && !loadingViews && (
-                    <div className="mt-5 flex justify-center">
-                      <button
-                        onClick={() => loadViews({ reset: false })}
-                        className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400"
-                      >
-                        Load more
-                      </button>
-                    </div>
-                  )}
+                  </StaggerContainer>
                 </section>
-                </ScrollReveal>
-              )}
+              </ScrollReveal>
+
+              <AnimatePresence mode="wait">
+                {tab === "viewed" && (
+                  <ScrollReveal as="section">
+                    <section
+                      className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <h2 className="text-xl font-bold">
+                              Viewed Products
+                            </h2>
+                            <Badge tone="sky">Private to you</Badge>
+                          </div>
+                          <p className={cn("mt-1 text-sm", subtleText)}>
+                            Recorded on Quick View. This history helps you
+                            revisit products quickly.
+                          </p>
+                        </div>
+                        <button
+                          onClick={refreshViewed}
+                          className="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-2.5 text-sm font-semibold text-sky-200 transition hover:bg-sky-500/15"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          Refresh
+                        </button>
+                      </div>
+
+                      <div className="mt-5 space-y-3">
+                        {loadingViews ? (
+                          <ThreeDot
+                            variant="bounce"
+                            color="#6100ff"
+                            size="small"
+                            text=""
+                            textColor=""
+                          />
+                        ) : views.length === 0 ? (
+                          <EmptyState
+                            title="No viewed products yet"
+                            description="View products from the search page to see them here."
+                          />
+                        ) : (
+                          views.map((row) => (
+                            <ViewedCard
+                              key={row.id}
+                              product={row}
+                              theme={theme}
+                              onQuickView={() =>
+                                setQuickViewItem({
+                                  ...row.product,
+                                  author: row.author,
+                                })
+                              }
+                            />
+                          ))
+                        )}
+                      </div>
+
+                      {viewsNext !== null && !loadingViews && (
+                        <div className="mt-5 flex justify-center">
+                          <button
+                            onClick={() => loadViews({ reset: false })}
+                            className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400"
+                          >
+                            Load more
+                          </button>
+                        </div>
+                      )}
+                    </section>
+                  </ScrollReveal>
+                )}
               </AnimatePresence>
             </div>
 
             <aside className="space-y-6">
               <ScrollReveal as="section">
-              <section
-                className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-lg font-bold">Saved Search Alerts</h3>
-                    <p className={cn("mt-1 text-sm", subtleText)}>
-                      These power smart notifications for new matching posts.
-                    </p>
+                <section
+                  className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-bold">Saved Search Alerts</h3>
+                      <p className={cn("mt-1 text-sm", subtleText)}>
+                        These power smart notifications for new matching posts.
+                      </p>
+                    </div>
+                    <Badge tone="blue">Active</Badge>
                   </div>
-                  <Badge tone="blue">Active</Badge>
-                </div>
 
-                <div className="mt-4 space-y-3">
-                  {alerts.length === 0 ? (
-                    <EmptyState
-                      title="No saved alerts yet."
-                      description="Save an alert from the search page."
-                      compact
-                    />
-                  ) : (
-                    alerts.map((alert) => (
-                      <div
-                        key={alert.id}
-                        className={cn(
-                          "flex items-center justify-between gap-4 rounded-2xl border p-4",
-                          theme === "dark"
-                            ? "border-white/10 bg-white/5"
-                            : "border-sky-100 bg-white/80",
-                        )}
-                      >
-                        <div>
-                          <div className="font-semibold text-slate-100 dark:text-slate-900">
-                            {alert.query}
-                          </div>
-                          <div className={cn("mt-1 text-xs", subtleText)}>
-                            Updated{" "}
-                            {new Date(
-                              alert.updated_at || alert.created_at,
-                            ).toLocaleDateString()}
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => deleteAlert(alert.id)}
-                          className="rounded-xl p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
-                          aria-label="Delete alert"
+                  <div className="mt-4 space-y-3">
+                    {loadingAlerts ? (
+                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                    ) : alerts.length === 0 ? (
+                      <EmptyState
+                        title="No saved alerts yet."
+                        description="Save an alert from the search page."
+                        compact
+                      />
+                    ) : (
+                      alerts.map((alert) => (
+                        <div
+                          key={alert.id}
+                          className={cn(
+                            "flex items-center justify-between gap-4 rounded-2xl border p-4",
+                            theme === "dark"
+                              ? "border-white/10 bg-white/5"
+                              : "border-sky-100 bg-white/80",
+                          )}
                         >
-                          <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4 fill-none stroke-current stroke-[2]"
+                          <div>
+                            <div className="font-semibold text-slate-100 dark:text-slate-900">
+                              {alert.query}
+                            </div>
+                            <div className={cn("mt-1 text-xs", subtleText)}>
+                              Updated{" "}
+                              {new Date(
+                                alert.updated_at || alert.created_at,
+                              ).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => deleteAlert(alert.id)}
+                            className="rounded-xl p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
+                            aria-label="Delete alert"
                           >
-                            <path d="M3 6h18" />
-                            <path d="M8 6V4h8v2" />
-                            <path d="M6 6l1 14h10l1-14" />
-                            <path d="M10 11v5" />
-                            <path d="M14 11v5" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </section>
+                          <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </section>
               </ScrollReveal>
 
               <ScrollReveal as="section">
-              <section
-                className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
-              >
-                <h3 className="text-lg font-bold">Tips</h3>
-                <div className="mt-4 space-y-3 text-sm leading-6">
-                  <TipItem
-                    tone="emerald"
-                    text="Smart matches trigger when new buyer requests or products match your saved alert keywords."
-                  />
-                  <TipItem
-                    tone="blue"
-                    text="Use verification and credibility signals to reduce fraud risk before accepting requests."
-                  />
-                  <TipItem
-                    tone="sky"
-                    text="Viewed history is private and helps you revisit products quickly without losing context."
-                  />
-                </div>
-              </section>
+                <section
+                  className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
+                >
+                  <h3 className="text-lg font-bold">Tips</h3>
+                  <div className="mt-4 space-y-3 text-sm leading-6">
+                    <TipItem
+                      tone="emerald"
+                      text="Smart matches trigger when new buyer requests or products match your saved alert keywords."
+                    />
+                    <TipItem
+                      tone="blue"
+                      text="Use verification and credibility signals to reduce fraud risk before accepting requests."
+                    />
+                    <TipItem
+                      tone="sky"
+                      text="Viewed history is private and helps you revisit products quickly without losing context."
+                    />
+                  </div>
+                </section>
               </ScrollReveal>
 
               <ScrollReveal as="section">
-              <section
-                className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
-              >
-                <h3 className="text-lg font-bold">API endpoints</h3>
-                <div className="mt-4 space-y-3 text-sm">
-                  <ApiChip method="GET" path="/notifications" />
-                  <ApiChip method="PATCH" path="/notifications/:id/read" />
-                  <ApiChip
-                    method="DELETE"
-                    path="/notifications/search-alerts/:id"
-                  />
-                  <ApiChip method="GET" path="/products/views/me" />
-                </div>
-              </section>
+                <section
+                  className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}
+                >
+                  <h3 className="text-lg font-bold">API endpoints</h3>
+                  <div className="mt-4 space-y-3 text-sm">
+                    <ApiChip method="GET" path="/notifications" />
+                    <ApiChip method="PATCH" path="/notifications/:id/read" />
+                    <ApiChip
+                      method="DELETE"
+                      path="/notifications/search-alerts/:id"
+                    />
+                    <ApiChip method="GET" path="/products/views/me" />
+                  </div>
+                </section>
               </ScrollReveal>
             </aside>
           </div>
@@ -802,7 +808,22 @@ export default function NotificationsCenter() {
                 </p>
                 <div className="mt-4 flex gap-3">
                   <ActionButton variant="primary">Quick view</ActionButton>
-                  <ActionButton variant="ghost">Company page</ActionButton>
+                  <ActionButton
+                    variant="ghost"
+                    onClick={() => {
+                      const author = quickViewItem.author;
+                      if (author?.id) {
+                        const route =
+                          author.role === "buying_house"
+                            ? `/buying-house/${author.id}`
+                            : `/factory/${author.id}`;
+                        navigate(route);
+                        setQuickViewItem(null);
+                      }
+                    }}
+                  >
+                    Company page
+                  </ActionButton>
                 </div>
               </div>
               <div
@@ -917,13 +938,7 @@ function EmptyState({ title, description, compact = false }) {
       )}
     >
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-300">
-        <svg
-          viewBox="0 0 24 24"
-          className="h-6 w-6 fill-none stroke-current stroke-[2]"
-        >
-          <path d="M12 4v16" />
-          <path d="M4 12h16" />
-        </svg>
+        <Plus className="h-6 w-6" />
       </div>
       <h4 className="mt-4 text-base font-bold">{title}</h4>
       <p className="mt-2 text-sm text-slate-400">{description}</p>
@@ -1003,14 +1018,14 @@ function NotificationCard({
           {item.type === "rating_feedback_request" ? (
             <Link
               to={`/ratings/feedback?profile_key=${encodeURIComponent(item?.entity_id || item?.meta?.profile_key || "")}`}
-              className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
+              className="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
             >
               Rate now
             </Link>
           ) : item.entity_type ? (
             <Link
               to={feedLinkForEntity(item.entity_type, item.entity_id)}
-              className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
+              className="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
             >
               View
             </Link>
@@ -1078,7 +1093,7 @@ function ViewedCard({ product, theme, onQuickView }) {
                   ? `/buying-house/${product.author.id}`
                   : `/factory/${product.author.id}`
               }
-              className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
+              className="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
             >
               Company
             </Link>

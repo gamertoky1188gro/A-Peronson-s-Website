@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 4a64668efabc69b08a544e74992dd1d8677e01e7
 - **Parent:** c6ff2cba21f122c8bf058001640342ad4bc6e373
 - **Author:** Cyber Code Master
@@ -6,27 +7,31 @@
 - **Message:** Add analytics governance sanitization and audit logging
 
 ## Custom Title
+
 Add analytics governance sanitization and audit logging
 
 ## High-Level Summary
+
 Add analytics governance sanitization and audit logging
 
- 4 files changed, 380 insertions(+), 1 deletion(-)
+4 files changed, 380 insertions(+), 1 deletion(-)
 
 ## File-by-File Breakdown
+
 commit 4a64668efabc69b08a544e74992dd1d8677e01e7
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Sun Apr 5 20:38:57 2026 +0600
+Date: Sun Apr 5 20:38:57 2026 +0600
 
     Add analytics governance sanitization and audit logging
 
- .../__tests__/analyticsGovernanceService.test.js   |  96 ++++++++
- server/services/adminConfigService.js              |   7 +
- server/services/analyticsGovernanceService.js      | 255 +++++++++++++++++++++
- server/services/analyticsService.js                |  23 +-
- 4 files changed, 380 insertions(+), 1 deletion(-)
+.../**tests**/analyticsGovernanceService.test.js | 96 ++++++++
+server/services/adminConfigService.js | 7 +
+server/services/analyticsGovernanceService.js | 255 +++++++++++++++++++++
+server/services/analyticsService.js | 23 +-
+4 files changed, 380 insertions(+), 1 deletion(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/server/services/__tests__/analyticsGovernanceService.test.js b/server/services/__tests__/analyticsGovernanceService.test.js
 new file mode 100644
@@ -419,13 +424,13 @@ index 40aabcf..bc9071f 100644
  import { getOrderCertificationSummary } from './orderCertificationService.js'
 +import { appendAuditLog } from '../utils/auditStore.js'
 +import { getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analyticsGovernanceService.js'
- 
+
  const FILE = 'analytics.json'
  const SEARCH_TREND_MIN_EVENTS = 25
 @@ -719,7 +721,7 @@ export async function getPlatformAnalytics(user) {
    const proxySearchByCountry = searchDataReady ? topSearchCategoriesByCountry : topCategoriesByCountry
    const proxySearchGlobal = searchDataReady ? topSearchCategoriesGlobal : topCategoriesGlobal
- 
+
 -  return {
 +  const rawReport = {
      totals: {
@@ -455,22 +460,27 @@ index 40aabcf..bc9071f 100644
 +
 +  return report
  }
- 
+
  export async function getPremiumInsights(user) {
 ```
 
 ## Why This Change
+
 Add analytics governance sanitization and audit logging
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  4 files changed, 380 insertions(+), 1 deletion(-)
+
+- **Scope:** 4 files changed, 380 insertions(+), 1 deletion(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 185 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

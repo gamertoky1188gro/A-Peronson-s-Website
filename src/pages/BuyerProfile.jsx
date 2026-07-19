@@ -21,7 +21,13 @@
 */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { usePremiumCheck } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
@@ -79,15 +85,21 @@ function isBoostActive(boost) {
 
 function Pill({ children, tone = "default", title }) {
   const tones = {
-    default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-    success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+    default:
+      "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+    success:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
     info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
-    warning: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+    warning:
+      "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
     premium: "bg-gradient-to-r from-sky-500 to-cyan-500 text-white",
     danger: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
   };
   return (
-    <span title={title} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}>
+    <span
+      title={title}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}
+    >
       {children}
     </span>
   );
@@ -96,9 +108,17 @@ function Pill({ children, tone = "default", title }) {
 function Metric({ label, value, helper }) {
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
-      <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
-      {helper ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
+      <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {label}
+      </div>
+      <div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+        {value}
+      </div>
+      {helper ? (
+        <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          {helper}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -106,13 +126,22 @@ function Metric({ label, value, helper }) {
 function AvatarFallback({ name, imageUrl }) {
   const initials = (n) => {
     if (!n) return "?";
-    return n.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
+    return n
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("");
   };
   return (
     <div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
       <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
         {imageUrl ? (
-          <img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
+          <img
+            src={imageUrl}
+            alt={name || "Profile avatar"}
+            className="h-full w-full object-cover"
+          />
         ) : (
           initials(name)
         )}
@@ -123,7 +152,9 @@ function AvatarFallback({ name, imageUrl }) {
 
 function SoftCard({ children, className = "" }) {
   return (
-    <div className={`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${className}`}>
+    <div
+      className={`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${className}`}
+    >
       {children}
     </div>
   );
@@ -135,9 +166,15 @@ function SectionTitle({ icon: Icon, title, subtitle, action }) {
       <div>
         <div className="flex items-center gap-2">
           {Icon ? <Icon className="h-4 w-4 text-sky-500" /> : null}
-          <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">{title}</h3>
+          <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">
+            {title}
+          </h3>
         </div>
-        {subtitle ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p> : null}
+        {subtitle ? (
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {subtitle}
+          </p>
+        ) : null}
       </div>
       {action}
     </div>
@@ -167,7 +204,9 @@ export default function BuyerProfile() {
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
   const coverParallax = useSpring(useTransform(scrollY, [0, 400], [0, 60]), {
-    stiffness: 80, damping: 20, restDelta: 0.001,
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001,
   });
   const journeyParams = useMemo(
     () => new URLSearchParams(location.search),
@@ -184,6 +223,8 @@ export default function BuyerProfile() {
     is_self: false,
     is_admin: false,
   };
+  const [reviewEditModal, setReviewEditModal] = useState({ open: false, id: null, score: 5, comment: "" });
+  const [reviewDeleteId, setReviewDeleteId] = useState(null);
   const isBoosted = Boolean(profileBoost);
   const isPremium =
     isPremiumFromApi ||
@@ -191,7 +232,7 @@ export default function BuyerProfile() {
     profile?.effective_plan === "premium";
   const isSelfOrAdmin = viewerPerms.is_self || viewerPerms.is_admin;
   const brandProfile = isSelfOrAdmin
-    ? (profile?.profile_private || user?.profile || {})
+    ? profile?.profile_private || user?.profile || {}
     : {};
   const hasBrandKit = Boolean(
     brandProfile.brand_name ||
@@ -236,7 +277,8 @@ export default function BuyerProfile() {
         { token: "" },
       );
       setRatingSummary(data || null);
-    } catch {
+    } catch (err) {
+      console.warn("API error:", err);
       setRatingSummary(null);
     }
   }, [id]);
@@ -249,7 +291,8 @@ export default function BuyerProfile() {
         { token },
       );
       setCertification(data?.summary || null);
-    } catch {
+    } catch (err) {
+      console.warn("API error:", err);
       setCertification(null);
     }
   }, [id, token]);
@@ -268,8 +311,8 @@ export default function BuyerProfile() {
         setRequests((prev) => (reset ? rows : [...prev, ...rows]));
         setRequestsCursor(reset ? 10 : cursor + 10);
         setRequestsNext(data?.next_cursor ?? null);
-      } catch {
-        void 0;
+      } catch (err) {
+        console.warn("API error:", err);
       } finally {
         setLoadingRequests(false);
       }
@@ -278,11 +321,51 @@ export default function BuyerProfile() {
   );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadProfile();
-    loadRatings();
-    loadCertification();
-  }, [loadProfile, loadRatings, loadCertification]);
+    if (!id) return;
+    let cancelled = false;
+
+    apiRequest(`/profiles/${encodeURIComponent(id)}`, { token })
+      .then((data) => {
+        if (cancelled) return;
+        setError("");
+        if (data?.user?.role && data.user.role !== "buyer") {
+          navigate(roleToRoute(data.user.role, id), { replace: true });
+          return;
+        }
+        setProfile(data);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || "Failed to load profile");
+          setProfile(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, { token: "" })
+      .then((data) => {
+        if (!cancelled) setRatingSummary(data || null);
+      })
+      .catch((err) => {
+        console.warn("API error:", err);
+        if (!cancelled) setRatingSummary(null);
+      });
+
+    if (token) {
+      apiRequest(`/certifications/org/${encodeURIComponent(id)}`, { token })
+        .then((data) => {
+          if (!cancelled) setCertification(data?.summary || null);
+        })
+        .catch((err) => {
+          console.warn("API error:", err);
+          if (!cancelled) setCertification(null);
+        });
+    }
+
+    return () => { cancelled = true; };
+  }, [id, navigate, token]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -310,9 +393,28 @@ export default function BuyerProfile() {
   useEffect(() => {
     if (activeTab !== "requests") return;
     if (requests.length) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadRequests({ reset: true });
-  }, [activeTab, loadRequests, requests.length]);
+    if (!id) return;
+    let cancelled = false;
+
+    queueMicrotask(() => { if (!cancelled) setLoadingRequests(true); });
+
+    apiRequest(`/profiles/${encodeURIComponent(id)}/requests?cursor=0&limit=10`, { token })
+      .then((data) => {
+        if (cancelled) return;
+        const rows = Array.isArray(data?.items) ? data.items : [];
+        setRequests(rows);
+        setRequestsCursor(10);
+        setRequestsNext(data?.next_cursor ?? null);
+      })
+      .catch((err) => {
+        console.warn("API error:", err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingRequests(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [activeTab, requests.length, id, token]);
 
   async function follow() {
     if (!id) return;
@@ -326,8 +428,8 @@ export default function BuyerProfile() {
           ? { ...prev, relationship: res?.relation || prev.relationship }
           : prev,
       );
-    } catch {
-      void 0;
+    } catch (err) {
+      console.warn("API error:", err);
     }
   }
 
@@ -343,8 +445,8 @@ export default function BuyerProfile() {
           ? { ...prev, relationship: res?.relation || prev.relationship }
           : prev,
       );
-    } catch {
-      void 0;
+    } catch (err) {
+      console.warn("API error:", err);
     }
   }
 
@@ -353,12 +455,12 @@ export default function BuyerProfile() {
       recordLeadSource({
         type: "direct",
         id: `profile:${id}`,
-        label: `Profile: ${user?.name || "buyer"}`,
+        label: `Profile: ${user?.name || roleLabel}`,
       });
     }
     navigate("/chat", {
       state: {
-        notice: `Contacting ${user?.name || "buyer"}. If you are unverified, your first message may appear as a request.`,
+        notice: `Contacting ${user?.name || roleLabel}. If you are unverified, your first message may appear as a request.`,
       },
     });
   }
@@ -379,19 +481,39 @@ export default function BuyerProfile() {
     );
   }
 
-  const displayName = user?.name || "Buyer profile";
+  const roleLabel = user?.role
+    ? user.role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Buyer";
+  const displayName = user?.name || roleLabel;
   const country = user?.profile?.country || "—";
-  const industry = user?.profile?.industry || "Garments & Textile";
-  const organization = user?.profile?.organization_name || user?.profile?.organization || user?.name || "—";
+  const industry = user?.profile?.industry || "";
+  const organization =
+    user?.profile?.organization_name ||
+    user?.profile?.organization ||
+    user?.name ||
+    "—";
   const avg = ratingSummary?.aggregate?.average_score ?? 0;
   const totalRatings = ratingSummary?.aggregate?.total_count ?? 0;
   const totalRequests = profile?.counts?.requests ?? 0;
-  const joinedYear = user?.created_at ? new Date(user.created_at).getFullYear() : "—";
+  const joinedYear = user?.created_at
+    ? new Date(user.created_at).getFullYear()
+    : "—";
 
   const badges = [
-    user?.verified ? { label: "Verified", icon: ShieldCheck, tone: "info" } : null,
-    isCertified ? { label: "Certified", icon: BadgeCheck, tone: "success" } : null,
-    isPremium ? { label: "Premium Reach", icon: Sparkles, tone: "premium", title: "Boosted visibility enabled for Premium" } : null,
+    user?.verified
+      ? { label: "Verified", icon: ShieldCheck, tone: "info" }
+      : null,
+    isCertified
+      ? { label: "Certified", icon: BadgeCheck, tone: "success" }
+      : null,
+    isPremium
+      ? {
+          label: "Premium Reach",
+          icon: Sparkles,
+          tone: "premium",
+          title: "Boosted visibility enabled for Premium",
+        }
+      : null,
     isBoosted ? { label: "Boosted", icon: Rocket, tone: "success" } : null,
   ].filter(Boolean);
 
@@ -409,7 +531,10 @@ export default function BuyerProfile() {
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <ShieldCheck className="h-3.5 w-3.5" /> Role: <span className="font-medium text-slate-700 dark:text-slate-200">buyer</span>
+            <ShieldCheck className="h-3.5 w-3.5" /> Role:{" "}
+            <span className="font-medium text-slate-700 dark:text-slate-200">
+              {roleLabel}
+            </span>
           </div>
         </div>
 
@@ -437,20 +562,33 @@ export default function BuyerProfile() {
                   <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="flex items-end gap-4">
                       <div className="-mb-10 sm:-mb-12">
-                        <AvatarFallback name={displayName} imageUrl={avatarImage} />
+                        <AvatarFallback
+                          name={displayName}
+                          imageUrl={avatarImage}
+                        />
                       </div>
                       <div className="pb-1 text-white">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{displayName}</h1>
-                          <Pill tone="info">Buyer</Pill>
+                          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                            {displayName}
+                          </h1>
+                          <Pill tone="info">{roleLabel}</Pill>
                           {country !== "—" ? (
-                            <Pill tone="info"><MapPin className="h-3.5 w-3.5" /> {country}</Pill>
+                            <Pill tone="info">
+                              <MapPin className="h-3.5 w-3.5" /> {country}
+                            </Pill>
                           ) : null}
                         </div>
-                        <p className="mt-1 text-sm text-slate-200/90">{organization}</p>
+                        <p className="mt-1 text-sm text-slate-200/90">
+                          {organization}
+                        </p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {badges.map((badge) => (
-                            <Pill key={badge.label} tone={badge.tone} title={badge.title}>
+                            <Pill
+                              key={badge.label}
+                              tone={badge.tone}
+                              title={badge.title}
+                            >
                               {badge.label}
                             </Pill>
                           ))}
@@ -468,13 +606,21 @@ export default function BuyerProfile() {
                         onClick={follow}
                         className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
                       >
-                        <Heart className={`h-4 w-4 ${relationship.following ? "fill-white" : ""}`} /> {relationship.following ? "Following" : "Follow"}
+                        <Heart
+                          className={`h-4 w-4 ${relationship.following ? "fill-white" : ""}`}
+                        />{" "}
+                        {relationship.following ? "Following" : "Follow"}
                       </button>
                       <button
                         onClick={connect}
                         className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
                       >
-                        <Users className="h-4 w-4" /> {relationship.friend_status === "friends" ? "Connected" : relationship.friend_status === "requested" ? "Requested" : "Connect"}
+                        <Users className="h-4 w-4" />{" "}
+                        {relationship.friend_status === "friends"
+                          ? "Connected"
+                          : relationship.friend_status === "requested"
+                            ? "Requested"
+                            : "Connect"}
                       </button>
                     </div>
                   </div>
@@ -482,10 +628,44 @@ export default function BuyerProfile() {
               </div>
 
               <div className="grid gap-4 p-5 pt-12 sm:grid-cols-2 lg:grid-cols-4 lg:pt-14">
-                <Metric label="Trust" value={<span className="inline-flex items-center gap-2">{user?.verified ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <CircleDashed className="h-4 w-4 text-slate-400" />} {user?.verified ? "Verified" : "Unverified"}</span>} helper="Identity signal" />
-                <Metric label="Rating" value={<span className="inline-flex items-center gap-1"><Star className="h-4 w-4 text-amber-500" /> {avg.toFixed(1)} / 5</span>} helper={`${totalRatings} reviews`} />
-                <Metric label="Requests" value={`${totalRequests} request${totalRequests === 1 ? "" : "s"}`} helper="Posted on the platform" />
-                <Metric label="Joined" value={joinedYear} helper={profile?.effective_plan ? `Plan: ${profile.effective_plan}` : "Account age"} />
+                <Metric
+                  label="Trust"
+                  value={
+                    <span className="inline-flex items-center gap-2">
+                      {user?.verified ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      ) : (
+                        <CircleDashed className="h-4 w-4 text-slate-400" />
+                      )}{" "}
+                      {user?.verified ? "Verified" : "Unverified"}
+                    </span>
+                  }
+                  helper="Identity signal"
+                />
+                <Metric
+                  label="Rating"
+                  value={
+                    <span className="inline-flex items-center gap-1">
+                      <Star className="h-4 w-4 text-amber-500" />{" "}
+                      {avg.toFixed(1)} / 5
+                    </span>
+                  }
+                  helper={`${totalRatings} reviews`}
+                />
+                <Metric
+                  label="Requests"
+                  value={`${totalRequests} request${totalRequests === 1 ? "" : "s"}`}
+                  helper="Posted on the platform"
+                />
+                <Metric
+                  label="Joined"
+                  value={joinedYear}
+                  helper={
+                    profile?.effective_plan
+                      ? `Plan: ${profile.effective_plan}`
+                      : "Account age"
+                  }
+                />
               </div>
             </motion.div>
 
@@ -493,7 +673,14 @@ export default function BuyerProfile() {
               <div className="flex flex-wrap gap-2">
                 {["overview", "requests", "work", "reviews"].map((tab) => {
                   const active = activeTab === tab;
-                  const label = tab === "overview" ? "Overview" : tab === "work" ? "Work History" : tab === "requests" ? "Requests" : "Reviews";
+                  const label =
+                    tab === "overview"
+                      ? "Overview"
+                      : tab === "work"
+                        ? "Work History"
+                        : tab === "requests"
+                          ? "Requests"
+                          : "Reviews";
                   return (
                     <button
                       key={tab}
@@ -509,9 +696,19 @@ export default function BuyerProfile() {
 
             <AnimatePresence mode="wait">
               {activeTab === "overview" ? (
-                <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                <motion.div
+                  key="overview"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
                   <SoftCard>
-                    <SectionTitle icon={Eye} title="About" subtitle="Buyer profile summary and positioning." />
+                    <SectionTitle
+                      icon={Eye}
+                      title="About"
+                      subtitle="Buyer profile summary and positioning."
+                    />
                     <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
                       {user?.profile?.about || "No description added yet."}
                     </p>
@@ -519,46 +716,110 @@ export default function BuyerProfile() {
 
                   <div className="grid gap-6 lg:grid-cols-2">
                     <SoftCard>
-                      <SectionTitle icon={ClipboardList} title="Core Profile" subtitle="Quick facts and profile metadata." />
+                      <SectionTitle
+                        icon={ClipboardList}
+                        title="Core Profile"
+                        subtitle="Quick facts and profile metadata."
+                      />
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <Metric label="Country" value={user?.profile?.country || "—"} />
-                        <Metric label="Certifications" value={(user?.profile?.certifications || []).join(", ") || "—"} />
-                        <Metric label="Active Since" value={user?.profile?.active_since || new Date().getFullYear()} />
-                        <Metric label="Role" value="Buyer" />
+                        <Metric
+                          label="Country"
+                          value={user?.profile?.country || "—"}
+                        />
+                        <Metric
+                          label="Certifications"
+                          value={
+                            (user?.profile?.certifications || []).join(", ") ||
+                            "—"
+                          }
+                        />
+                        <Metric
+                          label="Active Since"
+                          value={
+                            user?.profile?.active_since ||
+                            new Date().getFullYear()
+                          }
+                        />
+                        <Metric label="Role" value={roleLabel} />
                       </div>
                     </SoftCard>
 
                     <SoftCard>
-                      <SectionTitle icon={BriefcaseBusiness} title="Trust Indicators" subtitle="Verification and commercial status." />
+                      <SectionTitle
+                        icon={BriefcaseBusiness}
+                        title="Trust Indicators"
+                        subtitle="Verification and commercial status."
+                      />
                       <div className="space-y-3">
                         <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
                           <div>
-                            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Verification Panel</div>
-                            <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Status and credibility snapshot.</div>
+                            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                              Verification Panel
+                            </div>
+                            <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                              Status and credibility snapshot.
+                            </div>
                           </div>
-                          <Pill tone={certification?.status === "certified" ? "success" : "default"}>{certification?.status || "Unknown"}</Pill>
+                          <Pill
+                            tone={
+                              certification?.status === "certified"
+                                ? "success"
+                                : "default"
+                            }
+                          >
+                            {certification?.status || "Unknown"}
+                          </Pill>
                         </div>
-                        <Metric label="Signed contracts" value={certification?.signed_contracts ?? 0} />
-                        <Metric label="Premium status" value={isPremium ? "Enabled" : "Standard"} helper={isBoosted ? "Boosted visibility active" : "No active profile boost"} />
+                        <Metric
+                          label="Signed contracts"
+                          value={certification?.signed_contracts ?? 0}
+                        />
+                        <Metric
+                          label="Premium status"
+                          value={isPremium ? "Enabled" : "Standard"}
+                          helper={
+                            isBoosted
+                              ? "Boosted visibility active"
+                              : "No active profile boost"
+                          }
+                        />
                       </div>
                     </SoftCard>
                   </div>
 
                   {hasBrandKit ? (
                     <SoftCard>
-                      <SectionTitle icon={Eye} title="Brand Kit" subtitle="Visible only to self or admins." />
+                      <SectionTitle
+                        icon={Eye}
+                        title="Brand Kit"
+                        subtitle="Visible only to self or admins."
+                      />
                       <div className="flex items-center gap-3">
                         <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
                           {brandProfile.brand_logo_url ? (
-                            <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-full w-full object-cover" />
+                            <img
+                              src={brandProfile.brand_logo_url}
+                              alt="Brand logo"
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
                             <Building className="h-5 w-5 text-sky-500" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{brandProfile.brand_name || user?.name}</div>
-                          {brandProfile.brand_tagline ? <div className="text-xs text-slate-500 dark:text-slate-400">{brandProfile.brand_tagline}</div> : null}
-                          {brandProfile.brand_website ? <div className="text-xs text-slate-500 dark:text-slate-400">{brandProfile.brand_website}</div> : null}
+                          <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                            {brandProfile.brand_name || user?.name}
+                          </div>
+                          {brandProfile.brand_tagline ? (
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              {brandProfile.brand_tagline}
+                            </div>
+                          ) : null}
+                          {brandProfile.brand_website ? (
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              {brandProfile.brand_website}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     </SoftCard>
@@ -566,77 +827,171 @@ export default function BuyerProfile() {
 
                   {isPremium && hasAccountManager ? (
                     <SoftCard>
-                      <SectionTitle icon={Users} title="Dedicated Account Manager" subtitle="Premium support contact." />
+                      <SectionTitle
+                        icon={Users}
+                        title="Dedicated Account Manager"
+                        subtitle="Premium support contact."
+                      />
                       <div className="grid gap-4 md:grid-cols-3">
-                        <Metric label="Name" value={brandProfile.account_manager_name || "Assigned manager"} />
-                        <Metric label="Email" value={brandProfile.account_manager_email || "—"} />
-                        <Metric label="Phone" value={brandProfile.account_manager_phone || "—"} />
+                        <Metric
+                          label="Name"
+                          value={
+                            brandProfile.account_manager_name ||
+                            "Assigned manager"
+                          }
+                        />
+                        <Metric
+                          label="Email"
+                          value={brandProfile.account_manager_email || "—"}
+                        />
+                        <Metric
+                          label="Phone"
+                          value={brandProfile.account_manager_phone || "—"}
+                        />
                       </div>
                     </SoftCard>
                   ) : null}
 
                   <SoftCard>
-                    <SectionTitle icon={Building} title="Companies Worked With" subtitle="Selected brand and organizational history." />
+                    <SectionTitle
+                      icon={Building}
+                      title="Companies Worked With"
+                      subtitle="Selected brand and organizational history."
+                    />
                     {(user?.profile?.companies_worked_with || []).length > 0 ? (
                       <div className="grid gap-3 md:grid-cols-2">
-                        {(user.profile.companies_worked_with || []).map((company, idx) => (
-                          <div key={idx} className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-                            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
-                              {company.logo ? (
-                                <img src={company.logo} alt={company.name || "Company"} className="h-full w-full object-cover" />
-                              ) : (
-                                <Building2 className="h-5 w-5 text-sky-500" />
-                              )}
+                        {(user.profile.companies_worked_with || []).map(
+                          (company, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+                            >
+                              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
+                                {company.logo ? (
+                                  <img
+                                    src={company.logo}
+                                    alt={company.name || "Company"}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <Building2 className="h-5 w-5 text-sky-500" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                  {company.name || "Untitled company"}
+                                </div>
+                                {company.location ? (
+                                  <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                    {company.location}
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{company.name || "Untitled company"}</div>
-                              {company.location ? <div className="truncate text-xs text-slate-500 dark:text-slate-400">{company.location}</div> : null}
-                            </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                     ) : (
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No companies listed yet.</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        No companies listed yet.
+                      </p>
                     )}
                   </SoftCard>
                 </motion.div>
               ) : null}
 
               {activeTab === "requests" ? (
-                <motion.div key="requests" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                <motion.div
+                  key="requests"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
                   <SoftCard>
-                    <SectionTitle icon={ClipboardList} title="Requests" subtitle="Buyer sourcing demand and procurement details." action={<Pill tone="info">{totalRequests} request{totalRequests === 1 ? "" : "s"}</Pill>} />
+                    <SectionTitle
+                      icon={ClipboardList}
+                      title="Requests"
+                      subtitle="Buyer sourcing demand and procurement details."
+                      action={
+                        <Pill tone="info">
+                          {totalRequests} request
+                          {totalRequests === 1 ? "" : "s"}
+                        </Pill>
+                      }
+                    />
                     {viewerPerms.is_self || viewerPerms.is_admin ? (
                       <>
                         <div className="space-y-3">
                           {requests.map((r) => (
-                            <div key={r.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                            <div
+                              key={r.id}
+                              className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+                            >
                               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                                 <div className="min-w-0">
                                   <div className="flex flex-wrap items-center gap-2">
-                                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.category || "Request"}</div>
-                                    <Pill tone={r.status === "active" ? "success" : r.status === "pending" ? "warning" : "default"}>{r.status || "Unknown"}</Pill>
+                                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                      {r.category || "Request"}
+                                    </div>
+                                    <Pill
+                                      tone={
+                                        r.status === "active"
+                                          ? "success"
+                                          : r.status === "pending"
+                                            ? "warning"
+                                            : "default"
+                                      }
+                                    >
+                                      {r.status || "Unknown"}
+                                    </Pill>
                                   </div>
-                                  <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ""}</p>
+                                  <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+                                    {r.custom_description || ""}
+                                  </p>
                                 </div>
-                                <button onClick={contact} className="inline-flex shrink-0 items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300">
+                                <button
+                                  onClick={contact}
+                                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300"
+                                >
                                   <MessageSquare className="h-4 w-4" /> Contact
                                 </button>
                               </div>
                               <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                                <Metric label="Quantity" value={r.quantity || "-"} />
-                                <Metric label="Timeline" value={r.timeline_days || "-"} helper="days" />
-                                <Metric label="Material" value={r.material || "-"} />
-                                <Metric label="Status" value={r.status || "-"} />
+                                <Metric
+                                  label="Quantity"
+                                  value={r.quantity || "-"}
+                                />
+                                <Metric
+                                  label="Timeline"
+                                  value={r.timeline_days || "-"}
+                                  helper="days"
+                                />
+                                <Metric
+                                  label="Material"
+                                  value={r.material || "-"}
+                                />
+                                <Metric
+                                  label="Status"
+                                  value={r.status || "-"}
+                                />
                               </div>
                             </div>
                           ))}
                           {loadingRequests ? (
-                            <Atom color="#5900ff" size="large" style={{ fontSize: "32px" }} text="" textColor="" />
+                            <Atom
+                              color="#5900ff"
+                              size="large"
+                              style={{ fontSize: "32px" }}
+                              text=""
+                              textColor=""
+                            />
                           ) : null}
                           {requestsNext !== null && !loadingRequests ? (
                             <div className="flex items-center justify-between gap-3">
-                              <div className="text-sm text-slate-500 dark:text-slate-400">Cursor-based pagination, limit 10.</div>
+                              <div className="text-sm text-slate-500 dark:text-slate-400">
+                                Cursor-based pagination, limit 10.
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => loadRequests({ reset: false })}
@@ -656,12 +1011,18 @@ export default function BuyerProfile() {
                     ) : (
                       <div className="space-y-4">
                         <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Request details are private</div>
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                            Request details are private
+                          </div>
                           <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
-                            Only the buyer can view detailed request information to protect business privacy.
+                            Only the buyer can view detailed request information
+                            to protect business privacy.
                           </p>
                         </div>
-                        <Metric label="Total requests posted" value={`${totalRequests} request${totalRequests === 1 ? "" : "s"}`} />
+                        <Metric
+                          label="Total requests posted"
+                          value={`${totalRequests} request${totalRequests === 1 ? "" : "s"}`}
+                        />
                       </div>
                     )}
                   </SoftCard>
@@ -669,31 +1030,57 @@ export default function BuyerProfile() {
               ) : null}
 
               {activeTab === "work" ? (
-                <motion.div key="work" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                <motion.div
+                  key="work"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
                   <SoftCard>
-                    <SectionTitle icon={BriefcaseBusiness} title="Work History & Portfolio" subtitle="Previously worked companies and engagement history." />
+                    <SectionTitle
+                      icon={BriefcaseBusiness}
+                      title="Work History & Portfolio"
+                      subtitle="Previously worked companies and engagement history."
+                    />
                     {(user?.profile?.companies_worked_with || []).length > 0 ? (
                       <div className="space-y-3">
-                        {(user.profile.companies_worked_with || []).map((company, idx) => (
-                          <div key={idx} className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10">
-                                {company.logo ? (
-                                  <img src={company.logo} alt={company.name || "Company"} className="h-full w-full object-cover" />
-                                ) : (
-                                  <Building2 className="h-5 w-5 text-sky-500" />
-                                )}
+                        {(user.profile.companies_worked_with || []).map(
+                          (company, idx) => (
+                            <div
+                              key={idx}
+                              className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10">
+                                  {company.logo ? (
+                                    <img
+                                      src={company.logo}
+                                      alt={company.name || "Company"}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <Building2 className="h-5 w-5 text-sky-500" />
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                    {company.name || "Untitled company"}
+                                  </div>
+                                  <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                    {company.role || "Role not specified"}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="min-w-0">
-                                <div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{company.name || "Untitled company"}</div>
-                                <div className="truncate text-xs text-slate-500 dark:text-slate-400">{company.role || "Role not specified"}</div>
+                              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                                <CalendarDays className="h-4 w-4" />{" "}
+                                {company.period ||
+                                  company.location ||
+                                  "Period not specified"}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                              <CalendarDays className="h-4 w-4" /> {company.period || company.location || "Period not specified"}
-                            </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                     ) : (
                       <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
@@ -705,37 +1092,81 @@ export default function BuyerProfile() {
               ) : null}
 
               {activeTab === "reviews" ? (
-                <motion.div key="reviews" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                <motion.div
+                  key="reviews"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
                   <SoftCard>
-                    <SectionTitle icon={Star} title="Rating summary" subtitle="Public reviews and confidence scoring." />
+                    <SectionTitle
+                      icon={Star}
+                      title="Rating summary"
+                      subtitle="Public reviews and confidence scoring."
+                    />
                     <div className="grid gap-4 md:grid-cols-3">
-                      <Metric label="Average score" value={`${avg.toFixed(1)} / 5`} />
+                      <Metric
+                        label="Average score"
+                        value={`${avg.toFixed(1)} / 5`}
+                      />
                       <Metric label="Total reviews" value={totalRatings} />
-                      <Metric label="Confidence" value={ratingSummary?.aggregate?.reliability?.confidence || "low"} helper="Aggregate reliability" />
+                      <Metric
+                        label="Confidence"
+                        value={
+                          ratingSummary?.aggregate?.reliability?.confidence ||
+                          "low"
+                        }
+                        helper="Aggregate reliability"
+                      />
                     </div>
                   </SoftCard>
 
                   <div className="rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100">
-                    <strong className="font-semibold">Review Policy:</strong> Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.
+                    <strong className="font-semibold">Review Policy:</strong>{" "}
+                    Reviews can only be edited or deleted by the person who
+                    wrote them. Profile owners cannot delete reviews to maintain
+                    transparency and trust.
                   </div>
 
                   <SoftCard>
-                    <SectionTitle icon={MessageSquare} title="Recent reviews" subtitle="Public feedback from past collaborations." />
+                    <SectionTitle
+                      icon={MessageSquare}
+                      title="Recent reviews"
+                      subtitle="Public feedback from past collaborations."
+                    />
                     {(ratingSummary?.recent_reviews || []).length > 0 ? (
                       <div className="space-y-3">
                         {(ratingSummary.recent_reviews || []).map((review) => {
-                          const canEdit = currentUser?.id && String(currentUser.id) === String(review.from_user_id || "");
+                          const canEdit =
+                            currentUser?.id &&
+                            String(currentUser.id) ===
+                              String(review.from_user_id || "");
                           return (
-                            <div key={review.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+                            <div
+                              key={review.id}
+                              className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+                            >
                               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="min-w-0">
                                   <div className="flex flex-wrap items-center gap-2">
-                                    <Pill tone="warning"><Star className="h-3.5 w-3.5" /> {Number(review.score || 0).toFixed(1)}</Pill>
-                                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{review.reviewer_name || "Anonymous"}</div>
+                                    <Pill tone="warning">
+                                      <Star className="h-3.5 w-3.5" />{" "}
+                                      {Number(review.score || 0).toFixed(1)}
+                                    </Pill>
+                                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                      {review.reviewer_name || "Anonymous"}
+                                    </div>
                                   </div>
-                                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">{review.comment || "No comment provided."}</p>
+                                  <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                                    {review.comment || "No comment provided."}
+                                  </p>
                                   <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                                    {review.created_at ? new Date(review.created_at).toLocaleDateString() : ""}
+                                    {review.created_at
+                                      ? new Date(
+                                          review.created_at,
+                                        ).toLocaleDateString()
+                                      : ""}
                                   </div>
                                 </div>
                                 {canEdit ? (
@@ -743,18 +1174,13 @@ export default function BuyerProfile() {
                                     <button
                                       type="button"
                                       className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
-                                      onClick={async () => {
-                                        const score = window.prompt("Update rating (1-5)", String(review.score || "5"));
-                                        if (!score) return;
-                                        const comment = window.prompt("Update review comment", review.comment || "");
-                                        try {
-                                          await apiRequest(`/ratings/${review.id}`, {
-                                            method: "PATCH",
-                                            token,
-                                            body: { score: Number(score), comment: comment ?? "" },
-                                          });
-                                          await loadRatings();
-                                        } catch { void 0; }
+                                      onClick={() => {
+                                        setReviewEditModal({
+                                          open: true,
+                                          id: review.id,
+                                          score: Number(review.score || 5),
+                                          comment: review.comment || "",
+                                        });
                                       }}
                                     >
                                       <Edit3 className="h-4 w-4" /> Edit
@@ -762,12 +1188,8 @@ export default function BuyerProfile() {
                                     <button
                                       type="button"
                                       className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300"
-                                      onClick={async () => {
-                                        if (!window.confirm("Delete this review?")) return;
-                                        try {
-                                          await apiRequest(`/ratings/${review.id}`, { method: "DELETE", token });
-                                          await loadRatings();
-                                        } catch { void 0; }
+                                      onClick={() => {
+                                        setReviewDeleteId(review.id);
                                       }}
                                     >
                                       <Trash2 className="h-4 w-4" /> Delete
@@ -805,28 +1227,154 @@ export default function BuyerProfile() {
 
           <div className="space-y-6 xl:sticky xl:top-6 xl:h-fit">
             <SoftCard>
-              <SectionTitle icon={ShieldCheck} title="Verification Panel" subtitle="Shared trust and compliance component." />
+              <SectionTitle
+                icon={ShieldCheck}
+                title="Verification Panel"
+                subtitle="Shared trust and compliance component."
+              />
               <VerificationPanel summary={verification} />
             </SoftCard>
 
             {certification ? (
               <SoftCard>
-                <SectionTitle icon={BadgeCheck} title="Order Completion Certification" subtitle="Signed contract record." />
+                <SectionTitle
+                  icon={BadgeCheck}
+                  title="Order Completion Certification"
+                  subtitle="Signed contract record."
+                />
                 <div className="space-y-3">
                   <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
                     <div>
-                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Status</div>
-                      <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">Certification status</div>
+                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        Status
+                      </div>
+                      <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        Certification status
+                      </div>
                     </div>
-                    <Pill tone={certification.status === "certified" ? "success" : "default"}>{certification.status || "pending"}</Pill>
+                    <Pill
+                      tone={
+                        certification.status === "certified"
+                          ? "success"
+                          : "default"
+                      }
+                    >
+                      {certification.status || "pending"}
+                    </Pill>
                   </div>
-                  <Metric label="Signed contracts" value={certification.signed_contracts ?? 0} />
+                  <Metric
+                    label="Signed contracts"
+                    value={certification.signed_contracts ?? 0}
+                  />
                 </div>
               </SoftCard>
             ) : null}
           </div>
         </div>
       </div>
+
+      {reviewEditModal.open ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+          onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
+          onKeyDown={(e) => e.key === "Escape" && setReviewEditModal({ ...reviewEditModal, open: false })}
+          tabIndex={-1}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Review</h3>
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Score (1-5)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={reviewEditModal.score}
+                  onChange={(e) => setReviewEditModal({ ...reviewEditModal, score: Number(e.target.value) })}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Comment</label>
+                <textarea
+                  value={reviewEditModal.comment}
+                  onChange={(e) => setReviewEditModal({ ...reviewEditModal, comment: e.target.value })}
+                  rows={3}
+                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await apiRequest(`/ratings/${reviewEditModal.id}`, {
+                      method: "PATCH",
+                      token,
+                      body: { score: reviewEditModal.score, comment: reviewEditModal.comment },
+                    });
+                    await loadRatings();
+                  } catch (err) {
+                    console.warn("API error:", err);
+                  }
+                  setReviewEditModal({ open: false, id: null, score: 5, comment: "" });
+                }}
+                className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {reviewDeleteId ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+          onClick={() => setReviewDeleteId(null)}
+          onKeyDown={(e) => e.key === "Escape" && setReviewDeleteId(null)}
+          tabIndex={-1}
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete Review</h3>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Are you sure you want to delete this review? This action cannot be undone.</p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setReviewDeleteId(null)}
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await apiRequest(`/ratings/${reviewDeleteId}`, { method: "DELETE", token });
+                    await loadRatings();
+                  } catch (err) {
+                    console.warn("API error:", err);
+                  }
+                  setReviewDeleteId(null);
+                }}
+                className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-400"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

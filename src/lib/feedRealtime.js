@@ -2,7 +2,11 @@ import { getToken } from "./auth";
 
 const BASE = import.meta.env.VITE_API_URL || "";
 
-export function subscribeFeedRealtime({ onNewPost, onUpdatedPost, onDeletedPost }) {
+export function subscribeFeedRealtime({
+  onNewPost,
+  onUpdatedPost,
+  onDeletedPost,
+}) {
   const token = getToken();
   if (!token) return null;
 
@@ -13,21 +17,27 @@ export function subscribeFeedRealtime({ onNewPost, onUpdatedPost, onDeletedPost 
     try {
       const post = JSON.parse(e.data);
       onNewPost?.(post);
-    } catch { /* ignore parse errors */ }
+    } catch {
+      /* ignore parse errors */
+    }
   });
 
   source.addEventListener("updated_post", (e) => {
     try {
       const post = JSON.parse(e.data);
       onUpdatedPost?.(post);
-    } catch { /* ignore parse errors */ }
+    } catch {
+      /* ignore parse errors */
+    }
   });
 
   source.addEventListener("deleted_post", (e) => {
     try {
       const { id } = JSON.parse(e.data);
       onDeletedPost?.(id);
-    } catch { /* ignore parse errors */ }
+    } catch {
+      /* ignore parse errors */
+    }
   });
 
   source.onerror = () => {

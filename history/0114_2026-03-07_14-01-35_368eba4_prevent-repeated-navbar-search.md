@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| Commit Number | 0114 |
-| Hash | `368eba42db49385f9da7e1a6eea03bb99a30bd52` |
-| Parent Hash | `35076144d9497cbd3a992b9a4c9c1b4082b5370b` |
-| Author | Cyber Code Master |
-| Date/Time | 2026-03-07 14:01:35 |
-| Files Changed | 7 |
-| Lines Added | 318 |
-| Lines Deleted | 13 |
-| Net Change | +305 |
-| Merge | No |
+| Field         | Value                                      |
+| ------------- | ------------------------------------------ |
+| Commit Number | 0114                                       |
+| Hash          | `368eba42db49385f9da7e1a6eea03bb99a30bd52` |
+| Parent Hash   | `35076144d9497cbd3a992b9a4c9c1b4082b5370b` |
+| Author        | Cyber Code Master                          |
+| Date/Time     | 2026-03-07 14:01:35                        |
+| Files Changed | 7                                          |
+| Lines Added   | 318                                        |
+| Lines Deleted | 13                                         |
+| Net Change    | +305                                       |
+| Merge         | No                                         |
 
 ## Custom Title
 
@@ -36,13 +36,16 @@ Optimized the NavBar to avoid excessive API calls on re-renders by implementing 
 ## Detailed Diff Analysis
 
 ### NavBar Optimization
+
 - User search now debounces input and caches results to prevent API calls on every render.
 - Search state management refactored with proper `useCallback`/`useMemo` usage.
 
 ### New Service
+
 - `userService.js`: Functions for searching users by name/email/role, with connection status.
 
 ### API
+
 - New endpoint for user search, likely `/api/users/search` or similar.
 
 ## Why This Change May Have Been Needed

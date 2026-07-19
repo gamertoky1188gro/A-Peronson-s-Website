@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 97eddbb81a832c9c7ab7280666ee837ba79cc453
 - **Parent:** f3948e953905d5ff656212acccd7c904c6914058
 - **Author:** Cyber Code Master
@@ -6,40 +7,44 @@
 - **Message:** Add centralized org authorization service and capability-aware UI
 
 ## Custom Title
+
 Add centralized org authorization service and capability-aware UI
 
 ## High-Level Summary
+
 Add centralized org authorization service and capability-aware UI
 
- 10 files changed, 452 insertions(+), 17 deletions(-)
+10 files changed, 452 insertions(+), 17 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 97eddbb81a832c9c7ab7280666ee837ba79cc453
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Sun Apr 5 21:16:49 2026 +0600
+Date: Sun Apr 5 21:16:49 2026 +0600
 
     Add centralized org authorization service and capability-aware UI
 
- prisma/schema.prisma                               |  70 ++++++
- server/controllers/analyticsController.js          |   4 +
- server/controllers/leadController.js               |  18 +-
- server/controllers/memberController.js             |  16 ++
- server/controllers/userController.js               |  14 +-
- .../authorizationService.integration.test.js       |  57 +++++
- server/services/authorizationService.js            | 264 +++++++++++++++++++++
- src/components/leads/LeadManager.jsx               |   9 +-
- src/pages/Insights.jsx                             |   9 +-
- src/pages/MemberManagement.jsx                     |   8 +-
- 10 files changed, 452 insertions(+), 17 deletions(-)
+prisma/schema.prisma | 70 ++++++
+server/controllers/analyticsController.js | 4 +
+server/controllers/leadController.js | 18 +-
+server/controllers/memberController.js | 16 ++
+server/controllers/userController.js | 14 +-
+.../authorizationService.integration.test.js | 57 +++++
+server/services/authorizationService.js | 264 +++++++++++++++++++++
+src/components/leads/LeadManager.jsx | 9 +-
+src/pages/Insights.jsx | 9 +-
+src/pages/MemberManagement.jsx | 8 +-
+10 files changed, 452 insertions(+), 17 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/schema.prisma b/prisma/schema.prisma
 index 00e6b3e..89bde8c 100644
 --- a/prisma/schema.prisma
 +++ b/prisma/schema.prisma
 @@ -688,3 +688,73 @@ model AppState {
- 
+
    @@map("app_state")
  }
 +
@@ -121,7 +126,7 @@ index 4a665b0..35df8c3 100644
  import { readJson } from '../utils/jsonStore.js'
  import { sanitizeString } from '../utils/validators.js'
 +import { ACTIONS, authorize } from '../services/authorizationService.js'
- 
+
  function isOwnerOrAdmin(user) {
    return ['owner', 'admin'].includes(String(user?.role || '').toLowerCase())
 @@ -36,6 +37,7 @@ export async function analyticsDashboard(req, res) {
@@ -133,7 +138,7 @@ index 4a665b0..35df8c3 100644
      return res.json(report)
    } catch (error) {
 @@ -45,6 +47,7 @@ export async function analyticsCompany(req, res) {
- 
+
  export async function analyticsPlatform(req, res) {
    try {
 +    await authorize(req.user, ACTIONS.ANALYTICS_VIEW_ORG, { scope: 'platform' })
@@ -156,12 +161,12 @@ index 5ed6ae1..c1bab42 100644
  import { addLeadNote, addLeadReminder, getLeadById, getLeadByMatch, listLeads, updateLead } from '../services/leadService.js'
 +import { ACTIONS, authorize } from '../services/authorizationService.js'
 +import { handleControllerError } from '../utils/permissions.js'
- 
+
  export async function getLeads(req, res) {
    const items = await listLeads(req.user)
 @@ -18,9 +20,19 @@ export async function getLeadForMatch(req, res) {
  }
- 
+
  export async function patchLead(req, res) {
 -  const updated = await updateLead(req.user, req.params.leadId, req.body || {})
 -  if (!updated) return res.status(404).json({ error: 'Lead not found' })
@@ -180,7 +185,7 @@ index 5ed6ae1..c1bab42 100644
 +    return handleControllerError(res, error)
 +  }
  }
- 
+
  export async function postLeadNote(req, res) {
 diff --git a/server/controllers/memberController.js b/server/controllers/memberController.js
 index cc8e500..10786c2 100644
@@ -191,7 +196,7 @@ index cc8e500..10786c2 100644
  import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
  import { ensureEntitlement } from '../services/entitlementService.js'
 +import { ACTIONS, authorize } from '../services/authorizationService.js'
- 
+
  function orgOwnerIdFromUser(user) {
    return user?.org_owner_id || user?.org_id || user?.organization_id || user?.id
 @@ -21,6 +22,16 @@ function handleError(res, error) {
@@ -260,7 +265,7 @@ index 8beb9b9..fdd2564 100644
  import { getEntitlements } from '../services/entitlementService.js'
  import { ensureEntitlement } from '../services/entitlementService.js'
 +import { ACTIONS, authorize, buildCapabilityPayload } from '../services/authorizationService.js'
- 
+
  export async function me(req, res) {
    const user = await findUserById(req.user.id)
    if (!user) return res.status(404).json({ error: 'User not found' })
@@ -270,7 +275,7 @@ index 8beb9b9..fdd2564 100644
 +  const capabilities = buildCapabilityPayload(user)
 +  return res.json({ ...safeUser, entitlements, capabilities })
  }
- 
+
  export async function updateMyProfile(req, res) {
 -  const user = await updateProfile(req.user.id, req.body || {})
 +  const actor = await findUserById(req.user.id)
@@ -627,11 +632,11 @@ index 6ea1e29..b7c8a4c 100644
  import { useNavigate } from 'react-router-dom'
 -import { apiRequest, getToken } from '../../lib/auth'
 +import { apiRequest, getCurrentUser, getToken } from '../../lib/auth'
- 
+
  const STATUS_OPTIONS = [
    { key: 'new', label: 'New' },
 @@ -20,6 +20,7 @@ function formatDate(value) {
- 
+
  export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true }) {
    const token = useMemo(() => getToken(), [])
 +  const canAssignLeads = Boolean(getCurrentUser()?.capabilities?.leads?.assign)
@@ -660,7 +665,7 @@ index 6ea1e29..b7c8a4c 100644
 @@ -341,4 +345,3 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true
    )
  }
- 
+
 -
 diff --git a/src/pages/Insights.jsx b/src/pages/Insights.jsx
 index f0c7354..7cb9176 100644
@@ -673,12 +678,12 @@ index f0c7354..7cb9176 100644
 -  const searchDataSource = platformAnalytics?.search_data_source || 'search_events'
    const premiumRole = premiumInsights?.role || ''
 +  const canExportAnalytics = currentUser?.capabilities?.leads?.export !== false
- 
+
    useEffect(() => {
      const role = String(premiumRole || '').toLowerCase()
 @@ -175,9 +175,10 @@ export default function Insights() {
                    </div>
- 
+
                    <div className="mt-4 flex gap-2">
 -                    <button className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800">Export CSV</button>
 -                    <button className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800">Download PDF Report</button>
@@ -714,13 +719,13 @@ index c50869e..b56b55c 100644
 -          <button className="px-4 py-2 bg-[#0A66C2] text-white rounded-md" onClick={() => setShowCreate(true)}>+ Add New Member</button>
 +          <button className="px-4 py-2 bg-[#0A66C2] text-white rounded-md disabled:opacity-50" onClick={() => setShowCreate(true)} disabled={!canManageMembers}>+ Add New Member</button>
          </div>
- 
+
          {!!error && <div className="mb-3 text-sm text-red-700 bg-red-50 borderless-shadow rounded p-2">{error}</div>}
          {!!success && <div className="mb-3 text-sm text-green-700 bg-green-50 borderless-shadow rounded p-2">{success}</div>}
- 
+
 -        {forbidden ? <AccessDeniedState message="You do not have permission to manage members for this organization." /> : null}
 +        {forbidden || !canManageMembers ? <AccessDeniedState message="You do not have permission to manage members for this organization." /> : null}
- 
+
 -        {forbidden ? null : (
 +        {forbidden || !canManageMembers ? null : (
            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-sm borderless-shadow p-4">
@@ -734,17 +739,22 @@ index c50869e..b56b55c 100644
 ```
 
 ## Why This Change
+
 Add centralized org authorization service and capability-aware UI
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  10 files changed, 452 insertions(+), 17 deletions(-)
+
+- **Scope:** 10 files changed, 452 insertions(+), 17 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 191 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

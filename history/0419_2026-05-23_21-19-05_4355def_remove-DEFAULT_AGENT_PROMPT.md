@@ -1,12 +1,12 @@
 # Commit 0419 — `4355def62d7`
 
-| Field | Value |
-|-------|-------|
+| Field       | Value                                      |
+| ----------- | ------------------------------------------ |
 | Commit Hash | `4355def62d702004f9f14571b7e686c6368e6544` |
 | Parent Hash | `d76b0be0e945deffc08e829c15f4a364419ae61a` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-23 21:19:05 +0600 |
-| Subject | remove DEFAULT_AGENT_PROMPT |
+| Author      | gamertoky1188gro                           |
+| Date        | 2026-05-23 21:19:05 +0600                  |
+| Subject     | remove DEFAULT_AGENT_PROMPT                |
 
 ---
 
@@ -18,9 +18,9 @@ Removes the `DEFAULT_AGENT_PROMPT` constant (13 lines) and its references. `buil
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/assistantService.js` | modified | 1 | 12 |
+| File                                  | Status   | Insertions | Deletions |
+| ------------------------------------- | -------- | ---------- | --------- |
+| `server/services/assistantService.js` | modified | 1          | 12        |
 
 **1 file changed, 1 insertion, 12 deletions**
 

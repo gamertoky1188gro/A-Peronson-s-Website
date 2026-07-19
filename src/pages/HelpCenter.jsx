@@ -31,7 +31,12 @@ import ScrollReveal from "../components/ScrollReveal";
 import NeonAtom from "../components/ui/NeonAtom";
 import AnimatedAccordion from "../components/AnimatedAccordion";
 import { useMemo, useState, useEffect, useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import {
   Search,
   Sun,
@@ -186,7 +191,8 @@ export default function HelpCenterPage() {
   usePageMeta({
     title: "Help Center — GarTexHub",
     type: "website",
-    description: "Get help with GarTexHub. Browse FAQs, documentation, and submit support tickets.",
+    description:
+      "Get help with GarTexHub. Browse FAQs, documentation, and submit support tickets.",
     siteName: "GarTexHub",
     locale: "en_US",
   });
@@ -330,7 +336,10 @@ export default function HelpCenterPage() {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="mb-6 overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/70 shadow-[0_24px_120px_rgba(15,23,42,0.1)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
           <div className="relative px-6 py-6 sm:px-8 sm:py-8">
-            <motion.div style={{ y: reduceMotion ? 0 : headerGradientY }} className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.16),transparent_40%,rgba(59,130,246,0.08))]" />
+            <motion.div
+              style={{ y: reduceMotion ? 0 : headerGradientY }}
+              className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.16),transparent_40%,rgba(59,130,246,0.08))]"
+            />
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-sky-500/10 px-4 py-2 text-xs font-semibold tracking-[0.24em] text-sky-700 uppercase dark:border-sky-400/20 dark:text-sky-200">
@@ -434,7 +443,11 @@ export default function HelpCenterPage() {
                     key={id}
                     variants={{
                       hidden: { opacity: 0, x: -12 },
-                      visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+                      visible: {
+                        opacity: 1,
+                        x: 0,
+                        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+                      },
                     }}
                     onClick={() => jumpTo(id)}
                     className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm transition ${
@@ -443,13 +456,19 @@ export default function HelpCenterPage() {
                         : "text-slate-700 hover:bg-sky-500/10 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
                     }`}
                   >
-                    <Icon className={`h-4 w-4 transition group-hover:scale-110 ${
-                      activeSection === id ? "text-sky-600" : "text-sky-500"
-                    }`} />
+                    <Icon
+                      className={`h-4 w-4 transition group-hover:scale-110 ${
+                        activeSection === id ? "text-sky-600" : "text-sky-500"
+                      }`}
+                    />
                     <span className="flex-1">{label}</span>
-                    <ChevronRight className={`h-4 w-4 transition ${
-                      activeSection === id ? "translate-x-0.5 text-sky-500" : "text-slate-400"
-                    }`} />
+                    <ChevronRight
+                      className={`h-4 w-4 transition ${
+                        activeSection === id
+                          ? "translate-x-0.5 text-sky-500"
+                          : "text-slate-400"
+                      }`}
+                    />
                   </motion.button>
                 ))}
               </motion.div>
@@ -466,503 +485,524 @@ export default function HelpCenterPage() {
               </div>
             )}
 
-            <ScrollReveal><HelpSection
-              id="quick-start"
-              icon={Sparkles}
-              title="1. Quick Start Guide"
-              subtitle="Fast setup for buyers, factories, and buying houses."
-              accent="from-sky-400/18 to-cyan-400/10"
-            >
-              <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-3">
-                {[
-                  {
-                    n: "Step 1",
-                    title: "Create an account",
-                    text: "Choose Buyer, Factory, or Buying House.",
-                    icon: Users,
-                  },
-                  {
-                    n: "Step 2",
-                    title: "Complete basic profile setup",
-                    text: "Add Organization Name, Category, and Profile Image.",
-                    icon: Building2,
-                  },
-                  {
-                    n: "Step 3",
-                    title: "Explore the feed",
-                    text: "Use the Main Feed or Search to find relevant posts.",
-                    icon: ScanSearch,
-                  },
-                  {
-                    n: "Step 4",
-                    title: "Start conversations",
-                    text: "Message users or post Buyer Requests / Products.",
-                    icon: MessageSquareMore,
-                  },
-                  {
-                    n: "Step 5",
-                    title: "Upgrade when needed",
-                    text: "Premium unlocks advanced visibility and analytics.",
-                    icon: ArrowUpRight,
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.n}
-                    className="min-w-[260px] snap-start md:min-w-0 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
-                  >
-                    <div className="mb-3 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-                        <item.icon className="h-5 w-5" />
+            <ScrollReveal>
+              <HelpSection
+                id="quick-start"
+                icon={Sparkles}
+                title="1. Quick Start Guide"
+                subtitle="Fast setup for buyers, factories, and buying houses."
+                accent="from-sky-400/18 to-cyan-400/10"
+              >
+                <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-3">
+                  {[
+                    {
+                      n: "Step 1",
+                      title: "Create an account",
+                      text: "Choose Buyer, Factory, or Buying House.",
+                      icon: Users,
+                    },
+                    {
+                      n: "Step 2",
+                      title: "Complete basic profile setup",
+                      text: "Add Organization Name, Category, and Profile Image.",
+                      icon: Building2,
+                    },
+                    {
+                      n: "Step 3",
+                      title: "Explore the feed",
+                      text: "Use the Main Feed or Search to find relevant posts.",
+                      icon: ScanSearch,
+                    },
+                    {
+                      n: "Step 4",
+                      title: "Start conversations",
+                      text: "Message users or post Buyer Requests / Products.",
+                      icon: MessageSquareMore,
+                    },
+                    {
+                      n: "Step 5",
+                      title: "Upgrade when needed",
+                      text: "Premium unlocks advanced visibility and analytics.",
+                      icon: ArrowUpRight,
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.n}
+                      className="min-w-[260px] snap-start md:min-w-0 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
+                    >
+                      <div className="mb-3 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+                          <item.icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
+                            {item.n}
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {item.title}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        {item.text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </HelpSection>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <HelpSection
+                id="account-types"
+                icon={Users}
+                title="2. Account Types"
+                subtitle="Clear roles, clear permissions."
+                accent="from-blue-400/18 to-sky-400/10"
+              >
+                <div className="grid gap-4 xl:grid-cols-3">
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+                        <Building2 className="h-5 w-5" />
                       </div>
                       <div>
-                        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
-                          {item.n}
-                        </div>
-                        <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                          {item.title}
-                        </div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          Buyer Account
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          For sourcing and requests
+                        </p>
                       </div>
                     </div>
-                    <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-                      {item.text}
-                    </p>
+                    <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      <li>Post detailed Buyer Requests</li>
+                      <li>Search and filter factories</li>
+                      <li>Send direct messages</li>
+                      <li>Schedule calls</li>
+                    </ul>
                   </div>
-                ))}
-              </div>
-            </HelpSection>
-          </ScrollReveal>
 
-            <ScrollReveal><HelpSection
-              id="account-types"
-              icon={Users}
-              title="2. Account Types"
-              subtitle="Clear roles, clear permissions."
-              accent="from-blue-400/18 to-sky-400/10"
-            >
-              <div className="grid gap-4 xl:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-                      <Building2 className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        Buyer Account
-                      </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        For sourcing and requests
-                      </p>
-                    </div>
-                  </div>
-                  <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    <li>Post detailed Buyer Requests</li>
-                    <li>Search and filter factories</li>
-                    <li>Send direct messages</li>
-                    <li>Schedule calls</li>
-                  </ul>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-                      <Factory className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        Factory Account
-                      </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        For production and product posts
-                      </p>
-                    </div>
-                  </div>
-                  <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    <li>Upload product posts and videos</li>
-                    <li>Respond to Buyer Requests</li>
-                    <li>Accept connection requests from Buying Houses</li>
-                    <li>Manage sub-accounts (Agents)</li>
-                  </ul>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-                      <BriefcaseBusiness className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        Buying House Account
-                      </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        For multi-agent deal flow
-                      </p>
-                    </div>
-                  </div>
-                  <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    <li>Manage multiple agents</li>
-                    <li>Connect with multiple factories</li>
-                    <li>Assign Buyer Requests to specific agents</li>
-                    <li>Monitor deals and analytics (Premium)</li>
-                  </ul>
-                </div>
-              </div>
-            </HelpSection>
-          </ScrollReveal>
-
-            <ScrollReveal><HelpSection
-              id="verification"
-              icon={BadgeCheck}
-              title="3. Verification Process"
-              subtitle="Verified status is document-based and requires backend approval. It is subscription-based and renewed monthly."
-              accent="from-cyan-400/18 to-sky-400/10"
-            >
-              <div className="grid gap-4 xl:grid-cols-3">
-                <StatCard
-                  icon={FileCheck2}
-                  title="Factories must submit"
-                  text="Company Registration, Trade License, TIN, Authorized Person NID, Company Bank Proof, ERC (Export Registration Certificate)."
-                />
-                <StatCard
-                  icon={FileCheck2}
-                  title="Buying Houses must submit"
-                  text="Company Registration, Trade License, TIN, Authorized Person NID, Company Bank Proof."
-                />
-                <StatCard
-                  icon={Globe2}
-                  title="International Buyers (EU / USA)"
-                  text="Business Registration, VAT (EU) or EIN (USA), EORI (EU) or IOR (USA), Bank Proof."
-                />
-              </div>
-              <div className="mt-4 rounded-2xl border border-sky-200/70 bg-sky-500/10 p-4 text-sm leading-6 text-slate-700 dark:border-sky-500/20 dark:text-slate-200">
-                The more verified documentation a company provides, the stronger
-                its credibility.
-              </div>
-            </HelpSection>
-          </ScrollReveal>
-
-            <ScrollReveal><HelpSection
-              id="messaging"
-              icon={MessagesSquare}
-              title="4. Messaging & Conversation Rules"
-              subtitle="Conflict-free team conversations with verification-aware routing and a buying-house conversation lock."
-              accent="from-sky-400/18 to-blue-400/10"
-            >
-              <div className="grid gap-4 xl:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-                      <BadgeCheck className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        Verified Users
-                      </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Direct inbox delivery
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Messages go directly to inbox.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-                      <MessageSquareMore className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        Unverified Users
-                      </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Message Requests first
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Messages appear in "Message Requests."
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-                      <Lock className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        Buying House Conversation Lock
-                      </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Agent ownership control
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    When an Agent starts a conversation, it is assigned to that
-                    Agent. Other Agents cannot message unless permission is
-                    granted. This prevents internal conflict.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
-                <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white dark:bg-sky-400 dark:text-slate-950">
-                  <Lock className="h-3.5 w-3.5" />
-                  Locked
-                </div>
-                <span className="text-sm text-slate-600 dark:text-slate-300">
-                  Teammates need permission.
-                </span>
-                <button className="ml-auto rounded-full border border-sky-200 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-500/15 dark:border-sky-500/20 dark:text-sky-200">
-                  Grant permission
-                </button>
-              </div>
-            </HelpSection>
-          </ScrollReveal>
-
-            <ScrollReveal><HelpSection
-              id="subscription"
-              icon={ShieldCheck}
-              title="5. Subscription Plans"
-              subtitle="Two plans available: Free and Premium. Feature visibility varies by account type."
-              accent="from-blue-400/18 to-cyan-400/10"
-            >
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
-                  <div className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                    Free
-                  </div>
-                  <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
-                    Core access
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Essential profile, messaging, and basic discovery.
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-sky-500/12 to-blue-500/10 p-6 shadow-[0_12px_60px_rgba(14,165,233,0.12)] dark:border-sky-500/20 dark:from-sky-500/12 dark:to-slate-900/20">
-                  <div className="text-sm font-semibold text-sky-700 dark:text-sky-200">
-                    Premium
-                  </div>
-                  <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
-                    Advanced access
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Increased profile visibility, advanced analytics for
-                    eligible accounts, and extended management capabilities.
-                  </p>
-                </div>
-              </div>
-            </HelpSection>
-          </ScrollReveal>
-
-            <ScrollReveal><HelpSection
-              id="calls"
-              icon={PhoneCall}
-              title="6. Video & Audio Calls"
-              subtitle="Calls can be started from chat, scheduled, and recorded with prior user notification."
-              accent="from-cyan-400/18 to-sky-400/10"
-            >
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard
-                  icon={Video}
-                  title="Direct from chat"
-                  text="Initiate calls without leaving the conversation."
-                />
-                <StatCard
-                  icon={PlayCircle}
-                  title="Optional scheduling"
-                  text="Plan meetings ahead of time for better coordination."
-                />
-                <StatCard
-                  icon={Mic}
-                  title="Audio support"
-                  text="Use audio-only or video-enabled communication."
-                />
-                <StatCard
-                  icon={RadioTower}
-                  title="Recording notice"
-                  text="Calls may be recorded for security and compliance, and users are notified before recording begins."
-                />
-              </div>
-            </HelpSection>
-          </ScrollReveal>
-
-            <ScrollReveal><HelpSection
-              id="contracts"
-              icon={FileText}
-              title="7. Contracts & Legal Vault"
-              subtitle="Secure digital contracts with audit-ready history. GarTexHub does not process direct financial transactions."
-              accent="from-blue-400/18 to-sky-400/10"
-            >
-              <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-                <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
-                  <ul className="space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    <li>
-                      Digital contracts can be signed through the platform.
-                    </li>
-                    <li>PDF copies are stored securely in the Legal Vault.</li>
-                    <li>Both parties can access their contract history.</li>
-                    <li className="font-medium text-slate-800 dark:text-slate-200">
-                      GarTexHub does not process direct financial transactions.
-                    </li>
-                  </ul>
-                </div>
-                <div className="rounded-3xl border border-sky-200/70 bg-sky-500/10 p-6 dark:border-sky-500/20 dark:bg-sky-500/10">
-                  <div className="flex items-center gap-3">
-                    <FileSignature className="h-6 w-6 text-sky-600 dark:text-sky-300" />
-                    <div>
-                      <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                        Legal Vault
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+                        <Factory className="h-5 w-5" />
                       </div>
-                      <div className="text-sm text-slate-600 dark:text-slate-300">
-                        Contracts · history · records
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          Factory Account
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          For production and product posts
+                        </p>
                       </div>
                     </div>
+                    <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      <li>Upload product posts and videos</li>
+                      <li>Respond to Buyer Requests</li>
+                      <li>Accept connection requests from Buying Houses</li>
+                      <li>Manage sub-accounts (Agents)</li>
+                    </ul>
                   </div>
-                  <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Store and review signed PDFs in one secure place with a
-                    clean audit trail.
-                  </p>
+
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+                        <BriefcaseBusiness className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          Buying House Account
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          For multi-agent deal flow
+                        </p>
+                      </div>
+                    </div>
+                    <ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      <li>Manage multiple agents</li>
+                      <li>Connect with multiple factories</li>
+                      <li>Assign Buyer Requests to specific agents</li>
+                      <li>Monitor deals and analytics (Premium)</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            </HelpSection>
-          </ScrollReveal>
+              </HelpSection>
+            </ScrollReveal>
 
-            <ScrollReveal><HelpSection
-              id="security"
-              icon={Shield}
-              title="8. Security & Data Protection"
-              subtitle="Documents are securely stored, approval is backend-driven, and expired licenses may remove verified status."
-              accent="from-sky-400/18 to-blue-400/10"
-            >
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard
-                  icon={FileCheck2}
-                  title="Documents stored securely"
-                  text="Uploaded documents are protected with secure storage controls."
-                />
-                <StatCard
-                  icon={BadgeCheck}
-                  title="Backend approval"
-                  text="Verification status requires backend approval before activation."
-                />
-                <StatCard
-                  icon={CircleDot}
-                  title="Expiry handling"
-                  text="Expired licenses may remove verified status."
-                />
-                <StatCard
-                  icon={Lock}
-                  title="Encrypted systems"
-                  text="Financial details are protected through encrypted systems."
-                />
-              </div>
-            </HelpSection>
-          </ScrollReveal>
-
-            <ScrollReveal><HelpSection
-              id="assistant"
-              icon={Bot}
-              title="9. Floating AI Assistant"
-              subtitle="The assistant helps users understand settings, navigate dashboards, access help articles, and connect to support. It does not handle negotiations."
-              accent="from-cyan-400/18 to-sky-400/10"
-            ></HelpSection>
-          </ScrollReveal>
-
-            <ScrollReveal><HelpSection
-              id="faq"
-              icon={Info}
-              title="10. Frequently Asked Questions (FAQ)"
-              subtitle="Searchable answers, no fluff."
-              accent="from-sky-400/18 to-blue-400/10"
-            >
-              <div className="mb-5 rounded-3xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    value={faqQuery}
-                    onChange={(e) => setFaqQuery(e.target.value)}
-                    placeholder="Search FAQs..."
-                    className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
+            <ScrollReveal>
+              <HelpSection
+                id="verification"
+                icon={BadgeCheck}
+                title="3. Verification Process"
+                subtitle="Verified status is document-based and requires backend approval. It is subscription-based and renewed monthly."
+                accent="from-cyan-400/18 to-sky-400/10"
+              >
+                <div className="grid gap-4 xl:grid-cols-3">
+                  <StatCard
+                    icon={FileCheck2}
+                    title="Factories must submit"
+                    text="Company Registration, Trade License, TIN, Authorized Person NID, Company Bank Proof, ERC (Export Registration Certificate)."
+                  />
+                  <StatCard
+                    icon={FileCheck2}
+                    title="Buying Houses must submit"
+                    text="Company Registration, Trade License, TIN, Authorized Person NID, Company Bank Proof."
+                  />
+                  <StatCard
+                    icon={Globe2}
+                    title="International Buyers (EU / USA)"
+                    text="Business Registration, VAT (EU) or EIN (USA), EORI (EU) or IOR (USA), Bank Proof."
                   />
                 </div>
-              </div>
-              <div className="space-y-3">
-                {filteredFaq.length > 0 ? (
-                  <motion.div
-                    variants={{
-                      hidden: { opacity: 0 },
-                      visible: {
-                        opacity: 1,
-                        transition: { staggerChildren: 0.05, delayChildren: 0.1 },
-                      },
-                    }}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-40px" }}
-                  >
-                    <AnimatedAccordion
-                      items={filteredFaq.map((item, idx) => ({
-                        id: item.q || item.question || String(idx),
-                        title: "Q: " + (item.q || item.question),
-                        content: (
-                          <>
-                            <div className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-                              A: {item.a || item.answer}
-                            </div>
-                            {item.keywords && (
-                              <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                                Keywords: {item.keywords}
-                              </div>
-                            )}
-                          </>
-                        ),
-                      }))}
+                <div className="mt-4 rounded-2xl border border-sky-200/70 bg-sky-500/10 p-4 text-sm leading-6 text-slate-700 dark:border-sky-500/20 dark:text-slate-200">
+                  The more verified documentation a company provides, the
+                  stronger its credibility.
+                </div>
+              </HelpSection>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <HelpSection
+                id="messaging"
+                icon={MessagesSquare}
+                title="4. Messaging & Conversation Rules"
+                subtitle="Conflict-free team conversations with verification-aware routing and a buying-house conversation lock."
+                accent="from-sky-400/18 to-blue-400/10"
+              >
+                <div className="grid gap-4 xl:grid-cols-3">
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+                        <BadgeCheck className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          Verified Users
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          Direct inbox delivery
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      Messages go directly to inbox.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+                        <MessageSquareMore className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          Unverified Users
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          Message Requests first
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      Messages appear in "Message Requests."
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+                        <Lock className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          Buying House Conversation Lock
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          Agent ownership control
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      When an Agent starts a conversation, it is assigned to
+                      that Agent. Other Agents cannot message unless permission
+                      is granted. This prevents internal conflict.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white dark:bg-sky-400 dark:text-slate-950">
+                    <Lock className="h-3.5 w-3.5" />
+                    Locked
+                  </div>
+                  <span className="text-sm text-slate-600 dark:text-slate-300">
+                    Teammates need permission.
+                  </span>
+                  <button className="ml-auto rounded-full border border-sky-200 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-500/15 dark:border-sky-500/20 dark:text-sky-200">
+                    Grant permission
+                  </button>
+                </div>
+              </HelpSection>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <HelpSection
+                id="subscription"
+                icon={ShieldCheck}
+                title="5. Subscription Plans"
+                subtitle="Two plans available: Free and Premium. Feature visibility varies by account type."
+                accent="from-blue-400/18 to-cyan-400/10"
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
+                    <div className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                      Free
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+                      Core access
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      Essential profile, messaging, and basic discovery.
+                    </p>
+                  </div>
+                  <div className="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-sky-500/12 to-blue-500/10 p-6 shadow-[0_12px_60px_rgba(14,165,233,0.12)] dark:border-sky-500/20 dark:from-sky-500/12 dark:to-slate-900/20">
+                    <div className="text-sm font-semibold text-sky-700 dark:text-sky-200">
+                      Premium
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+                      Advanced access
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      Increased profile visibility, advanced analytics for
+                      eligible accounts, and extended management capabilities.
+                    </p>
+                  </div>
+                </div>
+              </HelpSection>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <HelpSection
+                id="calls"
+                icon={PhoneCall}
+                title="6. Video & Audio Calls"
+                subtitle="Calls can be started from chat, scheduled, and recorded with prior user notification."
+                accent="from-cyan-400/18 to-sky-400/10"
+              >
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <StatCard
+                    icon={Video}
+                    title="Direct from chat"
+                    text="Initiate calls without leaving the conversation."
+                  />
+                  <StatCard
+                    icon={PlayCircle}
+                    title="Optional scheduling"
+                    text="Plan meetings ahead of time for better coordination."
+                  />
+                  <StatCard
+                    icon={Mic}
+                    title="Audio support"
+                    text="Use audio-only or video-enabled communication."
+                  />
+                  <StatCard
+                    icon={RadioTower}
+                    title="Recording notice"
+                    text="Calls may be recorded for security and compliance, and users are notified before recording begins."
+                  />
+                </div>
+              </HelpSection>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <HelpSection
+                id="contracts"
+                icon={FileText}
+                title="7. Contracts & Legal Vault"
+                subtitle="Secure digital contracts with audit-ready history. GarTexHub does not process direct financial transactions."
+                accent="from-blue-400/18 to-sky-400/10"
+              >
+                <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
+                    <ul className="space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      <li>
+                        Digital contracts can be signed through the platform.
+                      </li>
+                      <li>
+                        PDF copies are stored securely in the Legal Vault.
+                      </li>
+                      <li>Both parties can access their contract history.</li>
+                      <li className="font-medium text-slate-800 dark:text-slate-200">
+                        GarTexHub does not process direct financial
+                        transactions.
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="rounded-3xl border border-sky-200/70 bg-sky-500/10 p-6 dark:border-sky-500/20 dark:bg-sky-500/10">
+                    <div className="flex items-center gap-3">
+                      <FileSignature className="h-6 w-6 text-sky-600 dark:text-sky-300" />
+                      <div>
+                        <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                          Legal Vault
+                        </div>
+                        <div className="text-sm text-slate-600 dark:text-slate-300">
+                          Contracts · history · records
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      Store and review signed PDFs in one secure place with a
+                      clean audit trail.
+                    </p>
+                  </div>
+                </div>
+              </HelpSection>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <HelpSection
+                id="security"
+                icon={Shield}
+                title="8. Security & Data Protection"
+                subtitle="Documents are securely stored, approval is backend-driven, and expired licenses may remove verified status."
+                accent="from-sky-400/18 to-blue-400/10"
+              >
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <StatCard
+                    icon={FileCheck2}
+                    title="Documents stored securely"
+                    text="Uploaded documents are protected with secure storage controls."
+                  />
+                  <StatCard
+                    icon={BadgeCheck}
+                    title="Backend approval"
+                    text="Verification status requires backend approval before activation."
+                  />
+                  <StatCard
+                    icon={CircleDot}
+                    title="Expiry handling"
+                    text="Expired licenses may remove verified status."
+                  />
+                  <StatCard
+                    icon={Lock}
+                    title="Encrypted systems"
+                    text="Financial details are protected through encrypted systems."
+                  />
+                </div>
+              </HelpSection>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <HelpSection
+                id="assistant"
+                icon={Bot}
+                title="9. Floating AI Assistant"
+                subtitle="The assistant helps users understand settings, navigate dashboards, access help articles, and connect to support. It does not handle negotiations."
+                accent="from-cyan-400/18 to-sky-400/10"
+              ></HelpSection>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <HelpSection
+                id="faq"
+                icon={Info}
+                title="10. Frequently Asked Questions (FAQ)"
+                subtitle="Searchable answers, no fluff."
+                accent="from-sky-400/18 to-blue-400/10"
+              >
+                <div className="mb-5 rounded-3xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      value={faqQuery}
+                      onChange={(e) => setFaqQuery(e.target.value)}
+                      placeholder="Search FAQs..."
+                      className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
                     />
-                  </motion.div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
-                    No FAQ matches found.
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {filteredFaq.length > 0 ? (
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                          opacity: 1,
+                          transition: {
+                            staggerChildren: 0.05,
+                            delayChildren: 0.1,
+                          },
+                        },
+                      }}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true, margin: "-40px" }}
+                    >
+                      <AnimatedAccordion
+                        items={filteredFaq.map((item, idx) => ({
+                          id: item.q || item.question || String(idx),
+                          title: "Q: " + (item.q || item.question),
+                          content: (
+                            <>
+                              <div className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                A: {item.a || item.answer}
+                              </div>
+                              {item.keywords && (
+                                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                  Keywords: {item.keywords}
+                                </div>
+                              )}
+                            </>
+                          ),
+                        }))}
+                      />
+                    </motion.div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
+                      No FAQ matches found.
+                    </div>
+                  )}
+                </div>
+
+                {isAdmin && (
+                  <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+                    <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+                      <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                        Admin: Manage Knowledge Base FAQ
+                      </div>
+                      <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                        Owner/Admin · Question · Answer · Keywords (comma
+                        separated) · Add FAQ
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                      <button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-sky-400 dark:text-slate-950 dark:hover:bg-sky-300">
+                        <LifeBuoy className="h-4 w-4" />
+                        Open support ticket
+                      </button>
+                      <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500/30">
+                        <MessagesSquare className="h-4 w-4" />
+                        Live chat
+                      </button>
+                    </div>
                   </div>
                 )}
-              </div>
+              </HelpSection>
+            </ScrollReveal>
 
-              {isAdmin && (
-                <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-                  <div className="rounded-3xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                      Admin: Manage Knowledge Base FAQ
-                    </div>
-                    <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                      Owner/Admin · Question · Answer · Keywords (comma
-                      separated) · Add FAQ
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                    <button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-sky-400 dark:text-slate-950 dark:hover:bg-sky-300">
-                      <LifeBuoy className="h-4 w-4" />
-                      Open support ticket
-                    </button>
-                    <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500/30">
-                      <MessagesSquare className="h-4 w-4" />
-                      Live chat
-                    </button>
+            <ScrollReveal>
+              <section className="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="flex flex-wrap gap-3 lg:justify-end lg:self-center">
+                    <a
+                      href="mailto:gartexhub@gmail.com"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500/30"
+                    >
+                      <Headphones className="h-4 w-4" />
+                      Contact support team
+                    </a>
                   </div>
                 </div>
-              )}
-            </HelpSection>
-          </ScrollReveal>
-
-            <ScrollReveal><section className="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
-              <div className="grid gap-4 lg:grid-cols-2">
-                <div className="flex flex-wrap gap-3 lg:justify-end lg:self-center">
-                  <a href="mailto:gartexhub@gmail.com" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500/30">
-                    <Headphones className="h-4 w-4" />
-                    Contact support team
-                  </a>
-                </div>
-              </div>
-            </section></ScrollReveal>
+              </section>
+            </ScrollReveal>
           </main>
         </div>
       </div>

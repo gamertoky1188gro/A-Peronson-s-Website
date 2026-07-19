@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| **Commit Number** | 0149 |
-| **Commit Hash** | `e2d30f47c539f397b198471b258d8f41db8a8235` |
-| **Parent Hash** | `cbf4aa377fc8dcd13a22ef8c5d1d0368182e87f9` |
-| **Author** | gamertoky1188gro |
-| **Date/Time** | 2026-03-27 00:24:19 |
-| **Files Changed** | 1 |
-| **Additions** | 10 |
-| **Deletions** | 0 |
-| **Net Change** | +10 |
-| **Merge Commit** | No |
+| Field             | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Commit Number** | 0149                                       |
+| **Commit Hash**   | `e2d30f47c539f397b198471b258d8f41db8a8235` |
+| **Parent Hash**   | `cbf4aa377fc8dcd13a22ef8c5d1d0368182e87f9` |
+| **Author**        | gamertoky1188gro                           |
+| **Date/Time**     | 2026-03-27 00:24:19                        |
+| **Files Changed** | 1                                          |
+| **Additions**     | 10                                         |
+| **Deletions**     | 0                                          |
+| **Net Change**    | +10                                        |
+| **Merge Commit**  | No                                         |
 
 ## Custom Title
 
@@ -25,9 +25,9 @@ Enhanced the `ensureDatabaseConnection` function in `server/utils/db.js` with st
 
 ## File-by-File Breakdown
 
-| File | Type | + | - | Δ |
-|------|------|---|---|---|
-| `server/utils/db.js` | Modified | 10 | 0 | +10 |
+| File                 | Type     | +   | -   | Δ   |
+| -------------------- | -------- | --- | --- | --- |
+| `server/utils/db.js` | Modified | 10  | 0   | +10 |
 
 Added a try/catch block that parses the DATABASE_URL using the `URL` constructor, masks the password portion, and logs the sanitized URL. If parsing fails, it logs a generic redacted message.
 
@@ -35,12 +35,12 @@ Added a try/catch block that parses the DATABASE_URL using the `URL` constructor
 
 ```javascript
 try {
-  const safeUrl = new URL(process.env.DATABASE_URL)
-  const maskedPass = safeUrl.password ? '***' : ''
-  const safe = `${safeUrl.protocol}//${safeUrl.username}${maskedPass ? `:${maskedPass}` : ''}@${safeUrl.host}${safeUrl.pathname}`
-  console.log('[db] Using DATABASE_URL:', safe)
+  const safeUrl = new URL(process.env.DATABASE_URL);
+  const maskedPass = safeUrl.password ? "***" : "";
+  const safe = `${safeUrl.protocol}//${safeUrl.username}${maskedPass ? `:${maskedPass}` : ""}@${safeUrl.host}${safeUrl.pathname}`;
+  console.log("[db] Using DATABASE_URL:", safe);
 } catch {
-  console.log('[db] Using DATABASE_URL (unparsed):', '[redacted]')
+  console.log("[db] Using DATABASE_URL (unparsed):", "[redacted]");
 }
 ```
 

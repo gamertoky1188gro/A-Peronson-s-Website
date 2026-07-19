@@ -1,11 +1,1669 @@
-import{z as Ce,w as We,n as Ye,i as Ke,r as o,g as fe,k as Qe,b as Ge,u as Ze,e as Xe,c as et,d as f,Z as tt,j as e,N as st,f as A,m as N,a4 as pe,a2 as I,y as je,a5 as ve,B as at}from"./index-CNnTWoea.js";import{a as rt}from"./useSecureUser-DoQht3Qe.js";import{r as lt}from"./leadSource-DB88KSZe.js";import{C as it,V as nt}from"./CrmSummaryPanel-J_tFfFEK.js";import{J as ot}from"./JourneyTimeline-BAfivOWO.js";import{B as ye}from"./badge-check-CaFeTPUp.js";import{S as dt}from"./sparkles-DVBGTjg1.js";import{R as ct}from"./rocket-CTn5LVY_.js";import{C as mt}from"./chevron-left-BY_MYCfP.js";import{M as xt}from"./map-pin-Dp9eWzEJ.js";import{M as ut}from"./mail-DRMcVdBt.js";import{H as bt}from"./heart-CPEgbE4X.js";import{C as ht}from"./circle-check-CcIEJQvk.js";import{E as ke}from"./eye-DfSxjFuN.js";import{C as we}from"./clipboard-list-GYmViMIP.js";import{B as Ne}from"./briefcase-business-wCBCYx9A.js";import{C as gt}from"./calendar-days-C1cSNQQa.js";import{P as ft}from"./pen-line-BGjHakA5.js";import{T as pt}from"./trash-2-JDuZV4rk.js";import"./shield-BScqrUK4.js";/**
+import {
+  z as Ce,
+  w as We,
+  n as Ye,
+  i as Ke,
+  r as o,
+  g as fe,
+  k as Qe,
+  b as Ge,
+  u as Ze,
+  e as Xe,
+  c as et,
+  d as f,
+  Z as tt,
+  j as e,
+  N as st,
+  f as A,
+  m as N,
+  a4 as pe,
+  a2 as I,
+  y as je,
+  a5 as ve,
+  B as at,
+} from "./index-CNnTWoea.js";
+import { a as rt } from "./useSecureUser-DoQht3Qe.js";
+import { r as lt } from "./leadSource-DB88KSZe.js";
+import { C as it, V as nt } from "./CrmSummaryPanel-J_tFfFEK.js";
+import { J as ot } from "./JourneyTimeline-BAfivOWO.js";
+import { B as ye } from "./badge-check-CaFeTPUp.js";
+import { S as dt } from "./sparkles-DVBGTjg1.js";
+import { R as ct } from "./rocket-CTn5LVY_.js";
+import { C as mt } from "./chevron-left-BY_MYCfP.js";
+import { M as xt } from "./map-pin-Dp9eWzEJ.js";
+import { M as ut } from "./mail-DRMcVdBt.js";
+import { H as bt } from "./heart-CPEgbE4X.js";
+import { C as ht } from "./circle-check-CcIEJQvk.js";
+import { E as ke } from "./eye-DfSxjFuN.js";
+import { C as we } from "./clipboard-list-GYmViMIP.js";
+import { B as Ne } from "./briefcase-business-wCBCYx9A.js";
+import { C as gt } from "./calendar-days-C1cSNQQa.js";
+import { P as ft } from "./pen-line-BGjHakA5.js";
+import { T as pt } from "./trash-2-JDuZV4rk.js";
+import "./shield-BScqrUK4.js";
+/**
  * @license lucide-react v0.575.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */const jt=[["path",{d:"M12 10h.01",key:"1nrarc"}],["path",{d:"M12 14h.01",key:"1etili"}],["path",{d:"M12 6h.01",key:"1vi96p"}],["path",{d:"M16 10h.01",key:"1m94wz"}],["path",{d:"M16 14h.01",key:"1gbofw"}],["path",{d:"M16 6h.01",key:"1x0f13"}],["path",{d:"M8 10h.01",key:"19clt8"}],["path",{d:"M8 14h.01",key:"6423bh"}],["path",{d:"M8 6h.01",key:"1dz90k"}],["path",{d:"M9 22v-3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3",key:"cabbwy"}],["rect",{x:"4",y:"2",width:"16",height:"20",rx:"2",key:"1uxh74"}]],_e=Ce("building",jt);/**
+ */ const jt = [
+    ["path", { d: "M12 10h.01", key: "1nrarc" }],
+    ["path", { d: "M12 14h.01", key: "1etili" }],
+    ["path", { d: "M12 6h.01", key: "1vi96p" }],
+    ["path", { d: "M16 10h.01", key: "1m94wz" }],
+    ["path", { d: "M16 14h.01", key: "1gbofw" }],
+    ["path", { d: "M16 6h.01", key: "1x0f13" }],
+    ["path", { d: "M8 10h.01", key: "19clt8" }],
+    ["path", { d: "M8 14h.01", key: "6423bh" }],
+    ["path", { d: "M8 6h.01", key: "1dz90k" }],
+    ["path", { d: "M9 22v-3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3", key: "cabbwy" }],
+    [
+      "rect",
+      { x: "4", y: "2", width: "16", height: "20", rx: "2", key: "1uxh74" },
+    ],
+  ],
+  _e = Ce("building", jt);
+/**
  * @license lucide-react v0.575.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */const vt=[["path",{d:"M10.1 2.182a10 10 0 0 1 3.8 0",key:"5ilxe3"}],["path",{d:"M13.9 21.818a10 10 0 0 1-3.8 0",key:"11zvb9"}],["path",{d:"M17.609 3.721a10 10 0 0 1 2.69 2.7",key:"1iw5b2"}],["path",{d:"M2.182 13.9a10 10 0 0 1 0-3.8",key:"c0bmvh"}],["path",{d:"M20.279 17.609a10 10 0 0 1-2.7 2.69",key:"1ruxm7"}],["path",{d:"M21.818 10.1a10 10 0 0 1 0 3.8",key:"qkgqxc"}],["path",{d:"M3.721 6.391a10 10 0 0 1 2.7-2.69",key:"1mcia2"}],["path",{d:"M6.391 20.279a10 10 0 0 1-2.69-2.7",key:"1fvljs"}]],yt=Ce("circle-dashed",vt);function kt(a,i){return i?a==="buyer"?`/buyer/${encodeURIComponent(i)}`:a==="buying_house"?`/buying-house/${encodeURIComponent(i)}`:`/factory/${encodeURIComponent(i)}`:"/feed"}function wt(a){if(!a||String(a.status||"").toLowerCase()!=="active")return!1;const i=Date.now(),x=new Date(a.starts_at).getTime(),n=new Date(a.ends_at).getTime();return!Number.isFinite(x)||!Number.isFinite(n)?!1:i>=x&&i<=n}function p({children:a,tone:i="default",title:x}){const n={default:"bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",success:"bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",info:"bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",warning:"bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",premium:"bg-gradient-to-r from-sky-500 to-cyan-500 text-white",danger:"bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"};return e.jsx("span",{title:x,className:`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${n[i]||n.default}`,children:a})}function d({label:a,value:i,helper:x}){return e.jsxs("div",{className:"rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40",children:[e.jsx("div",{className:"text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400",children:a}),e.jsx("div",{className:"mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100",children:i}),x?e.jsx("div",{className:"mt-1 text-xs text-slate-500 dark:text-slate-400",children:x}):null]})}function Nt({name:a,imageUrl:i}){const x=n=>n?n.split(/\s+/).filter(Boolean).slice(0,2).map(y=>{var _;return(_=y[0])==null?void 0:_.toUpperCase()}).join(""):"?";return e.jsx("div",{className:"relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl",children:e.jsx("div",{className:"flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100",children:i?e.jsx("img",{src:i,alt:a||"Profile avatar",className:"h-full w-full object-cover"}):x(a)})})}function h({children:a,className:i=""}){return e.jsx("div",{className:`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${i}`,children:a})}function g({icon:a,title:i,subtitle:x,action:n}){return e.jsxs("div",{className:"mb-4 flex items-start justify-between gap-3",children:[e.jsxs("div",{children:[e.jsxs("div",{className:"flex items-center gap-2",children:[a?e.jsx(a,{className:"h-4 w-4 text-sky-500"}):null,e.jsx("h3",{className:"text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100",children:i})]}),x?e.jsx("p",{className:"mt-1 text-sm text-slate-500 dark:text-slate-400",children:x}):null]}),n]})}function Jt(){var ee,te,se,ae,re,le,ie,ne,oe,de,ce,me,xe,ue,be,he,ge;const{id:a}=We(),i=Ye(),x=Ke(),n=o.useMemo(()=>fe(),[]),y=o.useMemo(()=>Qe(),[]),{isPremium:_}=rt(),[Pe,U]=o.useState(!0),[E,L]=o.useState(""),[l,C]=o.useState(null),[b,D]=o.useState(null),[m,F]=o.useState(null),[j,Re]=o.useState("overview"),[P,qe]=o.useState([]),[z,Se]=o.useState(0),[Me,Be]=o.useState(null),[M,V]=o.useState(!1),[$e,O]=o.useState(null),B=Ge(),{scrollY:Te}=Ze(),Ae=Xe(et(Te,[0,400],[0,60]),{stiffness:80,damping:20,restDelta:.001}),R=o.useMemo(()=>new URLSearchParams(x.search),[x.search]),t=(l==null?void 0:l.user)||null,Ie=(l==null?void 0:l.verification_summary)||null,q=(l==null?void 0:l.relationship)||{following:!1,friend_status:"none"},k=(l==null?void 0:l.viewer_permissions)||{is_self:!1,is_admin:!1},H=!!$e,$=_||String((t==null?void 0:t.subscription_status)||"").toLowerCase()==="premium"||(l==null?void 0:l.effective_plan)==="premium",c=k.is_self||k.is_admin?(l==null?void 0:l.profile_private)||(t==null?void 0:t.profile)||{}:{},Ue=!!(c.brand_name||c.brand_logo_url||c.brand_tagline||c.brand_website),Ee=!!(c.account_manager_name||c.account_manager_email||c.account_manager_phone),Le=String((m==null?void 0:m.status)||"").toLowerCase()==="certified",J=o.useCallback(async()=>{var s;if(a){U(!0),L("");try{const r=await f(`/profiles/${encodeURIComponent(a)}`,{token:n});if((s=r==null?void 0:r.user)!=null&&s.role&&r.user.role!=="buyer"){i(kt(r.user.role,a),{replace:!0});return}C(r)}catch(r){L(r.message||"Failed to load profile"),C(null)}finally{U(!1)}}},[a,i,n]),S=o.useCallback(async()=>{if(a)try{const s=await f(`/ratings/profiles/user:${encodeURIComponent(a)}`,{token:""});D(s||null)}catch{D(null)}},[a]),W=o.useCallback(async()=>{if(!(!a||!n))try{const s=await f(`/certifications/org/${encodeURIComponent(a)}`,{token:n});F((s==null?void 0:s.summary)||null)}catch{F(null)}},[a,n]),T=o.useCallback(async({reset:s})=>{if(!a)return;const r=s?0:z;V(!0);try{const u=await f(`/profiles/${encodeURIComponent(a)}/requests?cursor=${r}&limit=10`,{token:n}),v=Array.isArray(u==null?void 0:u.items)?u.items:[];qe(Je=>s?v:[...Je,...v]),Se(s?10:r+10),Be((u==null?void 0:u.next_cursor)??null)}catch{}finally{V(!1)}},[a,z,n]);o.useEffect(()=>{J(),S(),W()},[J,S,W]),o.useEffect(()=>{t!=null&&t.id&&tt("profile_view",{entityType:"profile",entityId:t.id,metadata:{role:t.role||"buyer"}})},[t==null?void 0:t.id,t==null?void 0:t.role]),o.useEffect(()=>{if(!k.is_self)return;const s=fe();s&&f("/boosts/me",{token:s}).then(r=>{const u=((r==null?void 0:r.items)||[]).find(v=>v.scope==="profile"&&wt(v));O(u||null)}).catch(()=>O(null))},[k.is_self]),o.useEffect(()=>{j==="requests"&&(P.length||T({reset:!0}))},[j,T,P.length]);async function De(){if(a)try{const s=await f(`/users/${encodeURIComponent(a)}/follow`,{method:"POST",token:n});C(r=>r&&{...r,relationship:(s==null?void 0:s.relation)||r.relationship})}catch{}}async function Fe(){if(a)try{const s=await f(`/users/${encodeURIComponent(a)}/friend-request`,{method:"POST",token:n});C(r=>r&&{...r,relationship:(s==null?void 0:s.relation)||r.relationship})}catch{}}function Y(){a&&lt({type:"direct",id:`profile:${a}`,label:`Profile: ${(t==null?void 0:t.name)||"buyer"}`}),i("/chat",{state:{notice:`Contacting ${(t==null?void 0:t.name)||"buyer"}. If you are unverified, your first message may appear as a request.`}})}if(Pe)return e.jsx(st,{fill:!0});if(E)return e.jsx("div",{className:"min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200",children:E});if(!t)return e.jsx("div",{className:"min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200",children:"Profile not found."});const K=(t==null?void 0:t.name)||"Buyer profile",Q=((ee=t==null?void 0:t.profile)==null?void 0:ee.country)||"—";(te=t==null?void 0:t.profile)!=null&&te.industry;const ze=((se=t==null?void 0:t.profile)==null?void 0:se.organization_name)||((ae=t==null?void 0:t.profile)==null?void 0:ae.organization)||(t==null?void 0:t.name)||"—",G=((re=b==null?void 0:b.aggregate)==null?void 0:re.average_score)??0,Z=((le=b==null?void 0:b.aggregate)==null?void 0:le.total_count)??0,w=((ie=l==null?void 0:l.counts)==null?void 0:ie.requests)??0,Ve=t!=null&&t.created_at?new Date(t.created_at).getFullYear():"—",Oe=[t!=null&&t.verified?{label:"Verified",icon:A,tone:"info"}:null,Le?{label:"Certified",icon:ye,tone:"success"}:null,$?{label:"Premium Reach",icon:dt,tone:"premium",title:"Boosted visibility enabled for Premium"}:null,H?{label:"Boosted",icon:ct,tone:"success"}:null].filter(Boolean),X=(ne=t==null?void 0:t.profile)==null?void 0:ne.cover_image_url,He=(oe=t==null?void 0:t.profile)==null?void 0:oe.profile_image;return e.jsx("div",{className:"min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100",children:e.jsxs("div",{className:"mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8",children:[e.jsxs("div",{className:"mb-5 flex items-center justify-between gap-3",children:[e.jsxs("button",{onClick:()=>i(-1),className:"inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300",children:[e.jsx(mt,{className:"h-4 w-4"})," Back"]}),e.jsxs("div",{className:"flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400",children:[e.jsx(A,{className:"h-3.5 w-3.5"})," Role: ",e.jsx("span",{className:"font-medium text-slate-700 dark:text-slate-200",children:"buyer"})]})]}),e.jsxs("div",{className:"grid grid-cols-1 gap-6 xl:grid-cols-[1.55fr_0.85fr]",children:[e.jsxs("div",{className:"w-full space-y-6",children:[e.jsxs(N.div,{initial:B?!1:{opacity:0,y:16},animate:B?!1:{opacity:1,y:0},transition:{duration:.45},className:"overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_100px_rgba(14,165,233,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70",children:[e.jsxs("div",{className:"relative h-[280px] overflow-hidden sm:h-[340px]",children:[X?e.jsx(N.img,{src:X,alt:"Cover",className:"absolute inset-0 h-full w-full object-cover",style:{y:B?0:Ae}}):e.jsx("div",{className:"absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.35),transparent_25%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.22),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(14,165,233,0.3))]"}),e.jsx("div",{className:"absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent"}),e.jsx("div",{className:"absolute inset-x-0 bottom-0 p-5 sm:p-7",children:e.jsxs("div",{className:"flex flex-col gap-4 md:flex-row md:items-end md:justify-between",children:[e.jsxs("div",{className:"flex items-end gap-4",children:[e.jsx("div",{className:"-mb-10 sm:-mb-12",children:e.jsx(Nt,{name:K,imageUrl:He})}),e.jsxs("div",{className:"pb-1 text-white",children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[e.jsx("h1",{className:"text-2xl font-semibold tracking-tight sm:text-3xl",children:K}),e.jsx(p,{tone:"info",children:"Buyer"}),Q!=="—"?e.jsxs(p,{tone:"info",children:[e.jsx(xt,{className:"h-3.5 w-3.5"})," ",Q]}):null]}),e.jsx("p",{className:"mt-1 text-sm text-slate-200/90",children:ze}),e.jsx("div",{className:"mt-3 flex flex-wrap gap-2",children:Oe.map(s=>e.jsx(p,{tone:s.tone,title:s.title,children:s.label},s.label))})]})]}),e.jsxs("div",{className:"flex flex-wrap items-center gap-2 pb-1",children:[e.jsxs("button",{onClick:Y,className:"inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400",children:[e.jsx(ut,{className:"h-4 w-4"})," Contact"]}),e.jsxs("button",{onClick:De,className:"inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15",children:[e.jsx(bt,{className:`h-4 w-4 ${q.following?"fill-white":""}`})," ",q.following?"Following":"Follow"]}),e.jsxs("button",{onClick:Fe,className:"inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15",children:[e.jsx(pe,{className:"h-4 w-4"})," ",q.friend_status==="friends"?"Connected":q.friend_status==="requested"?"Requested":"Connect"]})]})]})})]}),e.jsxs("div",{className:"grid gap-4 p-5 pt-12 sm:grid-cols-2 lg:grid-cols-4 lg:pt-14",children:[e.jsx(d,{label:"Trust",value:e.jsxs("span",{className:"inline-flex items-center gap-2",children:[t!=null&&t.verified?e.jsx(ht,{className:"h-4 w-4 text-emerald-500"}):e.jsx(yt,{className:"h-4 w-4 text-slate-400"})," ",t!=null&&t.verified?"Verified":"Unverified"]}),helper:"Identity signal"}),e.jsx(d,{label:"Rating",value:e.jsxs("span",{className:"inline-flex items-center gap-1",children:[e.jsx(I,{className:"h-4 w-4 text-amber-500"})," ",G.toFixed(1)," / 5"]}),helper:`${Z} reviews`}),e.jsx(d,{label:"Requests",value:`${w} request${w===1?"":"s"}`,helper:"Posted on the platform"}),e.jsx(d,{label:"Joined",value:Ve,helper:l!=null&&l.effective_plan?`Plan: ${l.effective_plan}`:"Account age"})]})]}),e.jsx(h,{children:e.jsx("div",{className:"flex flex-wrap gap-2",children:["overview","requests","work","reviews"].map(s=>{const r=j===s,u=s==="overview"?"Overview":s==="work"?"Work History":s==="requests"?"Requests":"Reviews";return e.jsx("button",{onClick:()=>Re(s),className:`rounded-full px-4 py-2 text-sm font-semibold transition ${r?"bg-sky-500 text-white shadow-lg shadow-sky-500/20":"bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`,children:u},s)})})}),e.jsxs(AnimatePresence,{mode:"wait",children:[j==="overview"?e.jsxs(N.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},className:"space-y-6",children:[e.jsxs(h,{children:[e.jsx(g,{icon:ke,title:"About",subtitle:"Buyer profile summary and positioning."}),e.jsx("p",{className:"text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap",children:((de=t==null?void 0:t.profile)==null?void 0:de.about)||"No description added yet."})]}),e.jsxs("div",{className:"grid gap-6 lg:grid-cols-2",children:[e.jsxs(h,{children:[e.jsx(g,{icon:we,title:"Core Profile",subtitle:"Quick facts and profile metadata."}),e.jsxs("div",{className:"grid gap-3 sm:grid-cols-2",children:[e.jsx(d,{label:"Country",value:((ce=t==null?void 0:t.profile)==null?void 0:ce.country)||"—"}),e.jsx(d,{label:"Certifications",value:(((me=t==null?void 0:t.profile)==null?void 0:me.certifications)||[]).join(", ")||"—"}),e.jsx(d,{label:"Active Since",value:((xe=t==null?void 0:t.profile)==null?void 0:xe.active_since)||new Date().getFullYear()}),e.jsx(d,{label:"Role",value:"Buyer"})]})]}),e.jsxs(h,{children:[e.jsx(g,{icon:Ne,title:"Trust Indicators",subtitle:"Verification and commercial status."}),e.jsxs("div",{className:"space-y-3",children:[e.jsxs("div",{className:"flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsxs("div",{children:[e.jsx("div",{className:"text-sm font-semibold text-slate-900 dark:text-slate-100",children:"Verification Panel"}),e.jsx("div",{className:"mt-1 text-sm text-slate-500 dark:text-slate-400",children:"Status and credibility snapshot."})]}),e.jsx(p,{tone:(m==null?void 0:m.status)==="certified"?"success":"default",children:(m==null?void 0:m.status)||"Unknown"})]}),e.jsx(d,{label:"Signed contracts",value:(m==null?void 0:m.signed_contracts)??0}),e.jsx(d,{label:"Premium status",value:$?"Enabled":"Standard",helper:H?"Boosted visibility active":"No active profile boost"})]})]})]}),Ue?e.jsxs(h,{children:[e.jsx(g,{icon:ke,title:"Brand Kit",subtitle:"Visible only to self or admins."}),e.jsxs("div",{className:"flex items-center gap-3",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10",children:c.brand_logo_url?e.jsx("img",{src:c.brand_logo_url,alt:"Brand logo",className:"h-full w-full object-cover"}):e.jsx(_e,{className:"h-5 w-5 text-sky-500"})}),e.jsxs("div",{className:"min-w-0",children:[e.jsx("div",{className:"truncate text-sm font-semibold text-slate-900 dark:text-slate-100",children:c.brand_name||(t==null?void 0:t.name)}),c.brand_tagline?e.jsx("div",{className:"text-xs text-slate-500 dark:text-slate-400",children:c.brand_tagline}):null,c.brand_website?e.jsx("div",{className:"text-xs text-slate-500 dark:text-slate-400",children:c.brand_website}):null]})]})]}):null,$&&Ee?e.jsxs(h,{children:[e.jsx(g,{icon:pe,title:"Dedicated Account Manager",subtitle:"Premium support contact."}),e.jsxs("div",{className:"grid gap-4 md:grid-cols-3",children:[e.jsx(d,{label:"Name",value:c.account_manager_name||"Assigned manager"}),e.jsx(d,{label:"Email",value:c.account_manager_email||"—"}),e.jsx(d,{label:"Phone",value:c.account_manager_phone||"—"})]})]}):null,e.jsxs(h,{children:[e.jsx(g,{icon:_e,title:"Companies Worked With",subtitle:"Selected brand and organizational history."}),(((ue=t==null?void 0:t.profile)==null?void 0:ue.companies_worked_with)||[]).length>0?e.jsx("div",{className:"grid gap-3 md:grid-cols-2",children:(t.profile.companies_worked_with||[]).map((s,r)=>e.jsxs("div",{className:"flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10",children:s.logo?e.jsx("img",{src:s.logo,alt:s.name||"Company",className:"h-full w-full object-cover"}):e.jsx(je,{className:"h-5 w-5 text-sky-500"})}),e.jsxs("div",{className:"min-w-0",children:[e.jsx("div",{className:"truncate text-sm font-semibold text-slate-900 dark:text-slate-100",children:s.name||"Untitled company"}),s.location?e.jsx("div",{className:"truncate text-xs text-slate-500 dark:text-slate-400",children:s.location}):null]})]},r))}):e.jsx("p",{className:"text-sm text-slate-500 dark:text-slate-400",children:"No companies listed yet."})]})]},"overview"):null,j==="requests"?e.jsx(N.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},className:"space-y-6",children:e.jsxs(h,{children:[e.jsx(g,{icon:we,title:"Requests",subtitle:"Buyer sourcing demand and procurement details.",action:e.jsxs(p,{tone:"info",children:[w," request",w===1?"":"s"]})}),k.is_self||k.is_admin?e.jsx(e.Fragment,{children:e.jsxs("div",{className:"space-y-3",children:[P.map(s=>e.jsxs("div",{className:"rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsxs("div",{className:"flex flex-col gap-3 md:flex-row md:items-start md:justify-between",children:[e.jsxs("div",{className:"min-w-0",children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[e.jsx("div",{className:"text-sm font-semibold text-slate-900 dark:text-slate-100",children:s.category||"Request"}),e.jsx(p,{tone:s.status==="active"?"success":s.status==="pending"?"warning":"default",children:s.status||"Unknown"})]}),e.jsx("p",{className:"mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap",children:s.custom_description||""})]}),e.jsxs("button",{onClick:Y,className:"inline-flex shrink-0 items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300",children:[e.jsx(ve,{className:"h-4 w-4"})," Contact"]})]}),e.jsxs("div",{className:"mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4",children:[e.jsx(d,{label:"Quantity",value:s.quantity||"-"}),e.jsx(d,{label:"Timeline",value:s.timeline_days||"-",helper:"days"}),e.jsx(d,{label:"Material",value:s.material||"-"}),e.jsx(d,{label:"Status",value:s.status||"-"})]})]},s.id)),M?e.jsx(at,{color:"#5900ff",size:"large",style:{fontSize:"32px"},text:"",textColor:""}):null,Me!==null&&!M?e.jsxs("div",{className:"flex items-center justify-between gap-3",children:[e.jsx("div",{className:"text-sm text-slate-500 dark:text-slate-400",children:"Cursor-based pagination, limit 10."}),e.jsx("button",{type:"button",onClick:()=>T({reset:!1}),className:"inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200",children:"Load more"})]}):null,!P.length&&!M?e.jsx("div",{className:"rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",children:"No requests found."}):null]})}):e.jsxs("div",{className:"space-y-4",children:[e.jsxs("div",{className:"rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsx("div",{className:"text-sm font-semibold text-slate-900 dark:text-slate-100",children:"Request details are private"}),e.jsx("p",{className:"mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300",children:"Only the buyer can view detailed request information to protect business privacy."})]}),e.jsx(d,{label:"Total requests posted",value:`${w} request${w===1?"":"s"}`})]})]})},"requests"):null,j==="work"?e.jsx(N.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},className:"space-y-6",children:e.jsxs(h,{children:[e.jsx(g,{icon:Ne,title:"Work History & Portfolio",subtitle:"Previously worked companies and engagement history."}),(((be=t==null?void 0:t.profile)==null?void 0:be.companies_worked_with)||[]).length>0?e.jsx("div",{className:"space-y-3",children:(t.profile.companies_worked_with||[]).map((s,r)=>e.jsxs("div",{className:"flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsxs("div",{className:"flex items-center gap-3 min-w-0",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10",children:s.logo?e.jsx("img",{src:s.logo,alt:s.name||"Company",className:"h-full w-full object-cover"}):e.jsx(je,{className:"h-5 w-5 text-sky-500"})}),e.jsxs("div",{className:"min-w-0",children:[e.jsx("div",{className:"truncate text-sm font-semibold text-slate-900 dark:text-slate-100",children:s.name||"Untitled company"}),e.jsx("div",{className:"truncate text-xs text-slate-500 dark:text-slate-400",children:s.role||"Role not specified"})]})]}),e.jsxs("div",{className:"flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400",children:[e.jsx(gt,{className:"h-4 w-4"})," ",s.period||s.location||"Period not specified"]})]},r))}):e.jsx("div",{className:"rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",children:"No work history added yet."})]})},"work"):null,j==="reviews"?e.jsxs(N.div,{initial:{opacity:0,y:10},animate:{opacity:1,y:0},exit:{opacity:0,y:-10},className:"space-y-6",children:[e.jsxs(h,{children:[e.jsx(g,{icon:I,title:"Rating summary",subtitle:"Public reviews and confidence scoring."}),e.jsxs("div",{className:"grid gap-4 md:grid-cols-3",children:[e.jsx(d,{label:"Average score",value:`${G.toFixed(1)} / 5`}),e.jsx(d,{label:"Total reviews",value:Z}),e.jsx(d,{label:"Confidence",value:((ge=(he=b==null?void 0:b.aggregate)==null?void 0:he.reliability)==null?void 0:ge.confidence)||"low",helper:"Aggregate reliability"})]})]}),e.jsxs("div",{className:"rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100",children:[e.jsx("strong",{className:"font-semibold",children:"Review Policy:"})," Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust."]}),e.jsxs(h,{children:[e.jsx(g,{icon:ve,title:"Recent reviews",subtitle:"Public feedback from past collaborations."}),((b==null?void 0:b.recent_reviews)||[]).length>0?e.jsx("div",{className:"space-y-3",children:(b.recent_reviews||[]).map(s=>{const r=(y==null?void 0:y.id)&&String(y.id)===String(s.from_user_id||"");return e.jsx("div",{className:"rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",children:e.jsxs("div",{className:"flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",children:[e.jsxs("div",{className:"min-w-0",children:[e.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[e.jsxs(p,{tone:"warning",children:[e.jsx(I,{className:"h-3.5 w-3.5"})," ",Number(s.score||0).toFixed(1)]}),e.jsx("div",{className:"text-sm font-semibold text-slate-900 dark:text-slate-100",children:s.reviewer_name||"Anonymous"})]}),e.jsx("p",{className:"mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300",children:s.comment||"No comment provided."}),e.jsx("div",{className:"mt-2 text-xs text-slate-500 dark:text-slate-400",children:s.created_at?new Date(s.created_at).toLocaleDateString():""})]}),r?e.jsxs("div",{className:"flex items-center gap-2",children:[e.jsxs("button",{type:"button",className:"inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300",onClick:async()=>{const u=window.prompt("Update rating (1-5)",String(s.score||"5"));if(!u)return;const v=window.prompt("Update review comment",s.comment||"");try{await f(`/ratings/${s.id}`,{method:"PATCH",token:n,body:{score:Number(u),comment:v??""}}),await S()}catch{}},children:[e.jsx(ft,{className:"h-4 w-4"})," Edit"]}),e.jsxs("button",{type:"button",className:"inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300",onClick:async()=>{if(window.confirm("Delete this review?"))try{await f(`/ratings/${s.id}`,{method:"DELETE",token:n}),await S()}catch{}},children:[e.jsx(pt,{className:"h-4 w-4"})," Delete"]})]}):null]})},s.id)})}):e.jsx("div",{className:"rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",children:"No reviews yet."})]})]},"reviews"):null]}),e.jsx(ot,{title:"Journey Timeline",matchId:R.get("match_id")||R.get("journey_match_id")||"",contractId:R.get("contract_id")||"",requirementId:R.get("requirement_id")||""}),e.jsx(it,{targetId:t.id})]}),e.jsxs("div",{className:"space-y-6 xl:sticky xl:top-6 xl:h-fit",children:[e.jsxs(h,{children:[e.jsx(g,{icon:A,title:"Verification Panel",subtitle:"Shared trust and compliance component."}),e.jsx(nt,{summary:Ie})]}),m?e.jsxs(h,{children:[e.jsx(g,{icon:ye,title:"Order Completion Certification",subtitle:"Signed contract record."}),e.jsxs("div",{className:"space-y-3",children:[e.jsxs("div",{className:"flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",children:[e.jsxs("div",{children:[e.jsx("div",{className:"text-sm font-semibold text-slate-900 dark:text-slate-100",children:"Status"}),e.jsx("div",{className:"mt-1 text-sm text-slate-500 dark:text-slate-400",children:"Certification status"})]}),e.jsx(p,{tone:m.status==="certified"?"success":"default",children:m.status||"pending"})]}),e.jsx(d,{label:"Signed contracts",value:m.signed_contracts??0})]})]}):null]})]})]})})}export{Jt as default};
+ */ const vt = [
+    ["path", { d: "M10.1 2.182a10 10 0 0 1 3.8 0", key: "5ilxe3" }],
+    ["path", { d: "M13.9 21.818a10 10 0 0 1-3.8 0", key: "11zvb9" }],
+    ["path", { d: "M17.609 3.721a10 10 0 0 1 2.69 2.7", key: "1iw5b2" }],
+    ["path", { d: "M2.182 13.9a10 10 0 0 1 0-3.8", key: "c0bmvh" }],
+    ["path", { d: "M20.279 17.609a10 10 0 0 1-2.7 2.69", key: "1ruxm7" }],
+    ["path", { d: "M21.818 10.1a10 10 0 0 1 0 3.8", key: "qkgqxc" }],
+    ["path", { d: "M3.721 6.391a10 10 0 0 1 2.7-2.69", key: "1mcia2" }],
+    ["path", { d: "M6.391 20.279a10 10 0 0 1-2.69-2.7", key: "1fvljs" }],
+  ],
+  yt = Ce("circle-dashed", vt);
+function kt(a, i) {
+  return i
+    ? a === "buyer"
+      ? `/buyer/${encodeURIComponent(i)}`
+      : a === "buying_house"
+        ? `/buying-house/${encodeURIComponent(i)}`
+        : `/factory/${encodeURIComponent(i)}`
+    : "/feed";
+}
+function wt(a) {
+  if (!a || String(a.status || "").toLowerCase() !== "active") return !1;
+  const i = Date.now(),
+    x = new Date(a.starts_at).getTime(),
+    n = new Date(a.ends_at).getTime();
+  return !Number.isFinite(x) || !Number.isFinite(n) ? !1 : i >= x && i <= n;
+}
+function p({ children: a, tone: i = "default", title: x }) {
+  const n = {
+    default:
+      "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+    success:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+    info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
+    warning:
+      "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+    premium: "bg-gradient-to-r from-sky-500 to-cyan-500 text-white",
+    danger: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
+  };
+  return e.jsx("span", {
+    title: x,
+    className: `inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${n[i] || n.default}`,
+    children: a,
+  });
+}
+function d({ label: a, value: i, helper: x }) {
+  return e.jsxs("div", {
+    className:
+      "rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40",
+    children: [
+      e.jsx("div", {
+        className:
+          "text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400",
+        children: a,
+      }),
+      e.jsx("div", {
+        className:
+          "mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100",
+        children: i,
+      }),
+      x
+        ? e.jsx("div", {
+            className: "mt-1 text-xs text-slate-500 dark:text-slate-400",
+            children: x,
+          })
+        : null,
+    ],
+  });
+}
+function Nt({ name: a, imageUrl: i }) {
+  const x = (n) =>
+    n
+      ? n
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((y) => {
+            var _;
+            return (_ = y[0]) == null ? void 0 : _.toUpperCase();
+          })
+          .join("")
+      : "?";
+  return e.jsx("div", {
+    className:
+      "relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl",
+    children: e.jsx("div", {
+      className:
+        "flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100",
+      children: i
+        ? e.jsx("img", {
+            src: i,
+            alt: a || "Profile avatar",
+            className: "h-full w-full object-cover",
+          })
+        : x(a),
+    }),
+  });
+}
+function h({ children: a, className: i = "" }) {
+  return e.jsx("div", {
+    className: `rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${i}`,
+    children: a,
+  });
+}
+function g({ icon: a, title: i, subtitle: x, action: n }) {
+  return e.jsxs("div", {
+    className: "mb-4 flex items-start justify-between gap-3",
+    children: [
+      e.jsxs("div", {
+        children: [
+          e.jsxs("div", {
+            className: "flex items-center gap-2",
+            children: [
+              a ? e.jsx(a, { className: "h-4 w-4 text-sky-500" }) : null,
+              e.jsx("h3", {
+                className:
+                  "text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100",
+                children: i,
+              }),
+            ],
+          }),
+          x
+            ? e.jsx("p", {
+                className: "mt-1 text-sm text-slate-500 dark:text-slate-400",
+                children: x,
+              })
+            : null,
+        ],
+      }),
+      n,
+    ],
+  });
+}
+function Jt() {
+  var ee, te, se, ae, re, le, ie, ne, oe, de, ce, me, xe, ue, be, he, ge;
+  const { id: a } = We(),
+    i = Ye(),
+    x = Ke(),
+    n = o.useMemo(() => fe(), []),
+    y = o.useMemo(() => Qe(), []),
+    { isPremium: _ } = rt(),
+    [Pe, U] = o.useState(!0),
+    [E, L] = o.useState(""),
+    [l, C] = o.useState(null),
+    [b, D] = o.useState(null),
+    [m, F] = o.useState(null),
+    [j, Re] = o.useState("overview"),
+    [P, qe] = o.useState([]),
+    [z, Se] = o.useState(0),
+    [Me, Be] = o.useState(null),
+    [M, V] = o.useState(!1),
+    [$e, O] = o.useState(null),
+    B = Ge(),
+    { scrollY: Te } = Ze(),
+    Ae = Xe(et(Te, [0, 400], [0, 60]), {
+      stiffness: 80,
+      damping: 20,
+      restDelta: 0.001,
+    }),
+    R = o.useMemo(() => new URLSearchParams(x.search), [x.search]),
+    t = (l == null ? void 0 : l.user) || null,
+    Ie = (l == null ? void 0 : l.verification_summary) || null,
+    q = (l == null ? void 0 : l.relationship) || {
+      following: !1,
+      friend_status: "none",
+    },
+    k = (l == null ? void 0 : l.viewer_permissions) || {
+      is_self: !1,
+      is_admin: !1,
+    },
+    H = !!$e,
+    $ =
+      _ ||
+      String(
+        (t == null ? void 0 : t.subscription_status) || "",
+      ).toLowerCase() === "premium" ||
+      (l == null ? void 0 : l.effective_plan) === "premium",
+    c =
+      k.is_self || k.is_admin
+        ? (l == null ? void 0 : l.profile_private) ||
+          (t == null ? void 0 : t.profile) ||
+          {}
+        : {},
+    Ue = !!(
+      c.brand_name ||
+      c.brand_logo_url ||
+      c.brand_tagline ||
+      c.brand_website
+    ),
+    Ee = !!(
+      c.account_manager_name ||
+      c.account_manager_email ||
+      c.account_manager_phone
+    ),
+    Le =
+      String((m == null ? void 0 : m.status) || "").toLowerCase() ===
+      "certified",
+    J = o.useCallback(async () => {
+      var s;
+      if (a) {
+        (U(!0), L(""));
+        try {
+          const r = await f(`/profiles/${encodeURIComponent(a)}`, { token: n });
+          if (
+            (s = r == null ? void 0 : r.user) != null &&
+            s.role &&
+            r.user.role !== "buyer"
+          ) {
+            i(kt(r.user.role, a), { replace: !0 });
+            return;
+          }
+          C(r);
+        } catch (r) {
+          (L(r.message || "Failed to load profile"), C(null));
+        } finally {
+          U(!1);
+        }
+      }
+    }, [a, i, n]),
+    S = o.useCallback(async () => {
+      if (a)
+        try {
+          const s = await f(`/ratings/profiles/user:${encodeURIComponent(a)}`, {
+            token: "",
+          });
+          D(s || null);
+        } catch {
+          D(null);
+        }
+    }, [a]),
+    W = o.useCallback(async () => {
+      if (!(!a || !n))
+        try {
+          const s = await f(`/certifications/org/${encodeURIComponent(a)}`, {
+            token: n,
+          });
+          F((s == null ? void 0 : s.summary) || null);
+        } catch {
+          F(null);
+        }
+    }, [a, n]),
+    T = o.useCallback(
+      async ({ reset: s }) => {
+        if (!a) return;
+        const r = s ? 0 : z;
+        V(!0);
+        try {
+          const u = await f(
+              `/profiles/${encodeURIComponent(a)}/requests?cursor=${r}&limit=10`,
+              { token: n },
+            ),
+            v = Array.isArray(u == null ? void 0 : u.items) ? u.items : [];
+          (qe((Je) => (s ? v : [...Je, ...v])),
+            Se(s ? 10 : r + 10),
+            Be((u == null ? void 0 : u.next_cursor) ?? null));
+        } catch {
+        } finally {
+          V(!1);
+        }
+      },
+      [a, z, n],
+    );
+  (o.useEffect(() => {
+    (J(), S(), W());
+  }, [J, S, W]),
+    o.useEffect(() => {
+      t != null &&
+        t.id &&
+        tt("profile_view", {
+          entityType: "profile",
+          entityId: t.id,
+          metadata: { role: t.role || "buyer" },
+        });
+    }, [t == null ? void 0 : t.id, t == null ? void 0 : t.role]),
+    o.useEffect(() => {
+      if (!k.is_self) return;
+      const s = fe();
+      s &&
+        f("/boosts/me", { token: s })
+          .then((r) => {
+            const u = ((r == null ? void 0 : r.items) || []).find(
+              (v) => v.scope === "profile" && wt(v),
+            );
+            O(u || null);
+          })
+          .catch(() => O(null));
+    }, [k.is_self]),
+    o.useEffect(() => {
+      j === "requests" && (P.length || T({ reset: !0 }));
+    }, [j, T, P.length]));
+  async function De() {
+    if (a)
+      try {
+        const s = await f(`/users/${encodeURIComponent(a)}/follow`, {
+          method: "POST",
+          token: n,
+        });
+        C(
+          (r) =>
+            r && {
+              ...r,
+              relationship: (s == null ? void 0 : s.relation) || r.relationship,
+            },
+        );
+      } catch {}
+  }
+  async function Fe() {
+    if (a)
+      try {
+        const s = await f(`/users/${encodeURIComponent(a)}/friend-request`, {
+          method: "POST",
+          token: n,
+        });
+        C(
+          (r) =>
+            r && {
+              ...r,
+              relationship: (s == null ? void 0 : s.relation) || r.relationship,
+            },
+        );
+      } catch {}
+  }
+  function Y() {
+    (a &&
+      lt({
+        type: "direct",
+        id: `profile:${a}`,
+        label: `Profile: ${(t == null ? void 0 : t.name) || "buyer"}`,
+      }),
+      i("/chat", {
+        state: {
+          notice: `Contacting ${(t == null ? void 0 : t.name) || "buyer"}. If you are unverified, your first message may appear as a request.`,
+        },
+      }));
+  }
+  if (Pe) return e.jsx(st, { fill: !0 });
+  if (E)
+    return e.jsx("div", {
+      className:
+        "min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200",
+      children: E,
+    });
+  if (!t)
+    return e.jsx("div", {
+      className:
+        "min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200",
+      children: "Profile not found.",
+    });
+  const K = (t == null ? void 0 : t.name) || "Buyer profile",
+    Q =
+      ((ee = t == null ? void 0 : t.profile) == null ? void 0 : ee.country) ||
+      "—";
+  (te = t == null ? void 0 : t.profile) != null && te.industry;
+  const ze =
+      ((se = t == null ? void 0 : t.profile) == null
+        ? void 0
+        : se.organization_name) ||
+      ((ae = t == null ? void 0 : t.profile) == null
+        ? void 0
+        : ae.organization) ||
+      (t == null ? void 0 : t.name) ||
+      "—",
+    G =
+      ((re = b == null ? void 0 : b.aggregate) == null
+        ? void 0
+        : re.average_score) ?? 0,
+    Z =
+      ((le = b == null ? void 0 : b.aggregate) == null
+        ? void 0
+        : le.total_count) ?? 0,
+    w =
+      ((ie = l == null ? void 0 : l.counts) == null ? void 0 : ie.requests) ??
+      0,
+    Ve = t != null && t.created_at ? new Date(t.created_at).getFullYear() : "—",
+    Oe = [
+      t != null && t.verified
+        ? { label: "Verified", icon: A, tone: "info" }
+        : null,
+      Le ? { label: "Certified", icon: ye, tone: "success" } : null,
+      $
+        ? {
+            label: "Premium Reach",
+            icon: dt,
+            tone: "premium",
+            title: "Boosted visibility enabled for Premium",
+          }
+        : null,
+      H ? { label: "Boosted", icon: ct, tone: "success" } : null,
+    ].filter(Boolean),
+    X =
+      (ne = t == null ? void 0 : t.profile) == null
+        ? void 0
+        : ne.cover_image_url,
+    He =
+      (oe = t == null ? void 0 : t.profile) == null ? void 0 : oe.profile_image;
+  return e.jsx("div", {
+    className:
+      "min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100",
+    children: e.jsxs("div", {
+      className: "mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8",
+      children: [
+        e.jsxs("div", {
+          className: "mb-5 flex items-center justify-between gap-3",
+          children: [
+            e.jsxs("button", {
+              onClick: () => i(-1),
+              className:
+                "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300",
+              children: [e.jsx(mt, { className: "h-4 w-4" }), " Back"],
+            }),
+            e.jsxs("div", {
+              className:
+                "flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400",
+              children: [
+                e.jsx(A, { className: "h-3.5 w-3.5" }),
+                " Role: ",
+                e.jsx("span", {
+                  className: "font-medium text-slate-700 dark:text-slate-200",
+                  children: "buyer",
+                }),
+              ],
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className: "grid grid-cols-1 gap-6 xl:grid-cols-[1.55fr_0.85fr]",
+          children: [
+            e.jsxs("div", {
+              className: "w-full space-y-6",
+              children: [
+                e.jsxs(N.div, {
+                  initial: B ? !1 : { opacity: 0, y: 16 },
+                  animate: B ? !1 : { opacity: 1, y: 0 },
+                  transition: { duration: 0.45 },
+                  className:
+                    "overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_100px_rgba(14,165,233,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70",
+                  children: [
+                    e.jsxs("div", {
+                      className:
+                        "relative h-[280px] overflow-hidden sm:h-[340px]",
+                      children: [
+                        X
+                          ? e.jsx(N.img, {
+                              src: X,
+                              alt: "Cover",
+                              className:
+                                "absolute inset-0 h-full w-full object-cover",
+                              style: { y: B ? 0 : Ae },
+                            })
+                          : e.jsx("div", {
+                              className:
+                                "absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.35),transparent_25%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.22),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(14,165,233,0.3))]",
+                            }),
+                        e.jsx("div", {
+                          className:
+                            "absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent",
+                        }),
+                        e.jsx("div", {
+                          className: "absolute inset-x-0 bottom-0 p-5 sm:p-7",
+                          children: e.jsxs("div", {
+                            className:
+                              "flex flex-col gap-4 md:flex-row md:items-end md:justify-between",
+                            children: [
+                              e.jsxs("div", {
+                                className: "flex items-end gap-4",
+                                children: [
+                                  e.jsx("div", {
+                                    className: "-mb-10 sm:-mb-12",
+                                    children: e.jsx(Nt, {
+                                      name: K,
+                                      imageUrl: He,
+                                    }),
+                                  }),
+                                  e.jsxs("div", {
+                                    className: "pb-1 text-white",
+                                    children: [
+                                      e.jsxs("div", {
+                                        className:
+                                          "flex flex-wrap items-center gap-2",
+                                        children: [
+                                          e.jsx("h1", {
+                                            className:
+                                              "text-2xl font-semibold tracking-tight sm:text-3xl",
+                                            children: K,
+                                          }),
+                                          e.jsx(p, {
+                                            tone: "info",
+                                            children: "Buyer",
+                                          }),
+                                          Q !== "—"
+                                            ? e.jsxs(p, {
+                                                tone: "info",
+                                                children: [
+                                                  e.jsx(xt, {
+                                                    className: "h-3.5 w-3.5",
+                                                  }),
+                                                  " ",
+                                                  Q,
+                                                ],
+                                              })
+                                            : null,
+                                        ],
+                                      }),
+                                      e.jsx("p", {
+                                        className:
+                                          "mt-1 text-sm text-slate-200/90",
+                                        children: ze,
+                                      }),
+                                      e.jsx("div", {
+                                        className: "mt-3 flex flex-wrap gap-2",
+                                        children: Oe.map((s) =>
+                                          e.jsx(
+                                            p,
+                                            {
+                                              tone: s.tone,
+                                              title: s.title,
+                                              children: s.label,
+                                            },
+                                            s.label,
+                                          ),
+                                        ),
+                                      }),
+                                    ],
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("div", {
+                                className:
+                                  "flex flex-wrap items-center gap-2 pb-1",
+                                children: [
+                                  e.jsxs("button", {
+                                    onClick: Y,
+                                    className:
+                                      "inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400",
+                                    children: [
+                                      e.jsx(ut, { className: "h-4 w-4" }),
+                                      " Contact",
+                                    ],
+                                  }),
+                                  e.jsxs("button", {
+                                    onClick: De,
+                                    className:
+                                      "inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15",
+                                    children: [
+                                      e.jsx(bt, {
+                                        className: `h-4 w-4 ${q.following ? "fill-white" : ""}`,
+                                      }),
+                                      " ",
+                                      q.following ? "Following" : "Follow",
+                                    ],
+                                  }),
+                                  e.jsxs("button", {
+                                    onClick: Fe,
+                                    className:
+                                      "inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15",
+                                    children: [
+                                      e.jsx(pe, { className: "h-4 w-4" }),
+                                      " ",
+                                      q.friend_status === "friends"
+                                        ? "Connected"
+                                        : q.friend_status === "requested"
+                                          ? "Requested"
+                                          : "Connect",
+                                    ],
+                                  }),
+                                ],
+                              }),
+                            ],
+                          }),
+                        }),
+                      ],
+                    }),
+                    e.jsxs("div", {
+                      className:
+                        "grid gap-4 p-5 pt-12 sm:grid-cols-2 lg:grid-cols-4 lg:pt-14",
+                      children: [
+                        e.jsx(d, {
+                          label: "Trust",
+                          value: e.jsxs("span", {
+                            className: "inline-flex items-center gap-2",
+                            children: [
+                              t != null && t.verified
+                                ? e.jsx(ht, {
+                                    className: "h-4 w-4 text-emerald-500",
+                                  })
+                                : e.jsx(yt, {
+                                    className: "h-4 w-4 text-slate-400",
+                                  }),
+                              " ",
+                              t != null && t.verified
+                                ? "Verified"
+                                : "Unverified",
+                            ],
+                          }),
+                          helper: "Identity signal",
+                        }),
+                        e.jsx(d, {
+                          label: "Rating",
+                          value: e.jsxs("span", {
+                            className: "inline-flex items-center gap-1",
+                            children: [
+                              e.jsx(I, { className: "h-4 w-4 text-amber-500" }),
+                              " ",
+                              G.toFixed(1),
+                              " / 5",
+                            ],
+                          }),
+                          helper: `${Z} reviews`,
+                        }),
+                        e.jsx(d, {
+                          label: "Requests",
+                          value: `${w} request${w === 1 ? "" : "s"}`,
+                          helper: "Posted on the platform",
+                        }),
+                        e.jsx(d, {
+                          label: "Joined",
+                          value: Ve,
+                          helper:
+                            l != null && l.effective_plan
+                              ? `Plan: ${l.effective_plan}`
+                              : "Account age",
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                e.jsx(h, {
+                  children: e.jsx("div", {
+                    className: "flex flex-wrap gap-2",
+                    children: ["overview", "requests", "work", "reviews"].map(
+                      (s) => {
+                        const r = j === s,
+                          u =
+                            s === "overview"
+                              ? "Overview"
+                              : s === "work"
+                                ? "Work History"
+                                : s === "requests"
+                                  ? "Requests"
+                                  : "Reviews";
+                        return e.jsx(
+                          "button",
+                          {
+                            onClick: () => Re(s),
+                            className: `rounded-full px-4 py-2 text-sm font-semibold transition ${r ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`,
+                            children: u,
+                          },
+                          s,
+                        );
+                      },
+                    ),
+                  }),
+                }),
+                e.jsxs(AnimatePresence, {
+                  mode: "wait",
+                  children: [
+                    j === "overview"
+                      ? e.jsxs(
+                          N.div,
+                          {
+                            initial: { opacity: 0, y: 10 },
+                            animate: { opacity: 1, y: 0 },
+                            exit: { opacity: 0, y: -10 },
+                            className: "space-y-6",
+                            children: [
+                              e.jsxs(h, {
+                                children: [
+                                  e.jsx(g, {
+                                    icon: ke,
+                                    title: "About",
+                                    subtitle:
+                                      "Buyer profile summary and positioning.",
+                                  }),
+                                  e.jsx("p", {
+                                    className:
+                                      "text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap",
+                                    children:
+                                      ((de = t == null ? void 0 : t.profile) ==
+                                      null
+                                        ? void 0
+                                        : de.about) ||
+                                      "No description added yet.",
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("div", {
+                                className: "grid gap-6 lg:grid-cols-2",
+                                children: [
+                                  e.jsxs(h, {
+                                    children: [
+                                      e.jsx(g, {
+                                        icon: we,
+                                        title: "Core Profile",
+                                        subtitle:
+                                          "Quick facts and profile metadata.",
+                                      }),
+                                      e.jsxs("div", {
+                                        className: "grid gap-3 sm:grid-cols-2",
+                                        children: [
+                                          e.jsx(d, {
+                                            label: "Country",
+                                            value:
+                                              ((ce =
+                                                t == null
+                                                  ? void 0
+                                                  : t.profile) == null
+                                                ? void 0
+                                                : ce.country) || "—",
+                                          }),
+                                          e.jsx(d, {
+                                            label: "Certifications",
+                                            value:
+                                              (
+                                                ((me =
+                                                  t == null
+                                                    ? void 0
+                                                    : t.profile) == null
+                                                  ? void 0
+                                                  : me.certifications) || []
+                                              ).join(", ") || "—",
+                                          }),
+                                          e.jsx(d, {
+                                            label: "Active Since",
+                                            value:
+                                              ((xe =
+                                                t == null
+                                                  ? void 0
+                                                  : t.profile) == null
+                                                ? void 0
+                                                : xe.active_since) ||
+                                              new Date().getFullYear(),
+                                          }),
+                                          e.jsx(d, {
+                                            label: "Role",
+                                            value: "Buyer",
+                                          }),
+                                        ],
+                                      }),
+                                    ],
+                                  }),
+                                  e.jsxs(h, {
+                                    children: [
+                                      e.jsx(g, {
+                                        icon: Ne,
+                                        title: "Trust Indicators",
+                                        subtitle:
+                                          "Verification and commercial status.",
+                                      }),
+                                      e.jsxs("div", {
+                                        className: "space-y-3",
+                                        children: [
+                                          e.jsxs("div", {
+                                            className:
+                                              "flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",
+                                            children: [
+                                              e.jsxs("div", {
+                                                children: [
+                                                  e.jsx("div", {
+                                                    className:
+                                                      "text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                    children:
+                                                      "Verification Panel",
+                                                  }),
+                                                  e.jsx("div", {
+                                                    className:
+                                                      "mt-1 text-sm text-slate-500 dark:text-slate-400",
+                                                    children:
+                                                      "Status and credibility snapshot.",
+                                                  }),
+                                                ],
+                                              }),
+                                              e.jsx(p, {
+                                                tone:
+                                                  (m == null
+                                                    ? void 0
+                                                    : m.status) === "certified"
+                                                    ? "success"
+                                                    : "default",
+                                                children:
+                                                  (m == null
+                                                    ? void 0
+                                                    : m.status) || "Unknown",
+                                              }),
+                                            ],
+                                          }),
+                                          e.jsx(d, {
+                                            label: "Signed contracts",
+                                            value:
+                                              (m == null
+                                                ? void 0
+                                                : m.signed_contracts) ?? 0,
+                                          }),
+                                          e.jsx(d, {
+                                            label: "Premium status",
+                                            value: $ ? "Enabled" : "Standard",
+                                            helper: H
+                                              ? "Boosted visibility active"
+                                              : "No active profile boost",
+                                          }),
+                                        ],
+                                      }),
+                                    ],
+                                  }),
+                                ],
+                              }),
+                              Ue
+                                ? e.jsxs(h, {
+                                    children: [
+                                      e.jsx(g, {
+                                        icon: ke,
+                                        title: "Brand Kit",
+                                        subtitle:
+                                          "Visible only to self or admins.",
+                                      }),
+                                      e.jsxs("div", {
+                                        className: "flex items-center gap-3",
+                                        children: [
+                                          e.jsx("div", {
+                                            className:
+                                              "flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10",
+                                            children: c.brand_logo_url
+                                              ? e.jsx("img", {
+                                                  src: c.brand_logo_url,
+                                                  alt: "Brand logo",
+                                                  className:
+                                                    "h-full w-full object-cover",
+                                                })
+                                              : e.jsx(_e, {
+                                                  className:
+                                                    "h-5 w-5 text-sky-500",
+                                                }),
+                                          }),
+                                          e.jsxs("div", {
+                                            className: "min-w-0",
+                                            children: [
+                                              e.jsx("div", {
+                                                className:
+                                                  "truncate text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                children:
+                                                  c.brand_name ||
+                                                  (t == null ? void 0 : t.name),
+                                              }),
+                                              c.brand_tagline
+                                                ? e.jsx("div", {
+                                                    className:
+                                                      "text-xs text-slate-500 dark:text-slate-400",
+                                                    children: c.brand_tagline,
+                                                  })
+                                                : null,
+                                              c.brand_website
+                                                ? e.jsx("div", {
+                                                    className:
+                                                      "text-xs text-slate-500 dark:text-slate-400",
+                                                    children: c.brand_website,
+                                                  })
+                                                : null,
+                                            ],
+                                          }),
+                                        ],
+                                      }),
+                                    ],
+                                  })
+                                : null,
+                              $ && Ee
+                                ? e.jsxs(h, {
+                                    children: [
+                                      e.jsx(g, {
+                                        icon: pe,
+                                        title: "Dedicated Account Manager",
+                                        subtitle: "Premium support contact.",
+                                      }),
+                                      e.jsxs("div", {
+                                        className: "grid gap-4 md:grid-cols-3",
+                                        children: [
+                                          e.jsx(d, {
+                                            label: "Name",
+                                            value:
+                                              c.account_manager_name ||
+                                              "Assigned manager",
+                                          }),
+                                          e.jsx(d, {
+                                            label: "Email",
+                                            value:
+                                              c.account_manager_email || "—",
+                                          }),
+                                          e.jsx(d, {
+                                            label: "Phone",
+                                            value:
+                                              c.account_manager_phone || "—",
+                                          }),
+                                        ],
+                                      }),
+                                    ],
+                                  })
+                                : null,
+                              e.jsxs(h, {
+                                children: [
+                                  e.jsx(g, {
+                                    icon: _e,
+                                    title: "Companies Worked With",
+                                    subtitle:
+                                      "Selected brand and organizational history.",
+                                  }),
+                                  (
+                                    ((ue = t == null ? void 0 : t.profile) ==
+                                    null
+                                      ? void 0
+                                      : ue.companies_worked_with) || []
+                                  ).length > 0
+                                    ? e.jsx("div", {
+                                        className: "grid gap-3 md:grid-cols-2",
+                                        children: (
+                                          t.profile.companies_worked_with || []
+                                        ).map((s, r) =>
+                                          e.jsxs(
+                                            "div",
+                                            {
+                                              className:
+                                                "flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",
+                                              children: [
+                                                e.jsx("div", {
+                                                  className:
+                                                    "flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10",
+                                                  children: s.logo
+                                                    ? e.jsx("img", {
+                                                        src: s.logo,
+                                                        alt:
+                                                          s.name || "Company",
+                                                        className:
+                                                          "h-full w-full object-cover",
+                                                      })
+                                                    : e.jsx(je, {
+                                                        className:
+                                                          "h-5 w-5 text-sky-500",
+                                                      }),
+                                                }),
+                                                e.jsxs("div", {
+                                                  className: "min-w-0",
+                                                  children: [
+                                                    e.jsx("div", {
+                                                      className:
+                                                        "truncate text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                      children:
+                                                        s.name ||
+                                                        "Untitled company",
+                                                    }),
+                                                    s.location
+                                                      ? e.jsx("div", {
+                                                          className:
+                                                            "truncate text-xs text-slate-500 dark:text-slate-400",
+                                                          children: s.location,
+                                                        })
+                                                      : null,
+                                                  ],
+                                                }),
+                                              ],
+                                            },
+                                            r,
+                                          ),
+                                        ),
+                                      })
+                                    : e.jsx("p", {
+                                        className:
+                                          "text-sm text-slate-500 dark:text-slate-400",
+                                        children: "No companies listed yet.",
+                                      }),
+                                ],
+                              }),
+                            ],
+                          },
+                          "overview",
+                        )
+                      : null,
+                    j === "requests"
+                      ? e.jsx(
+                          N.div,
+                          {
+                            initial: { opacity: 0, y: 10 },
+                            animate: { opacity: 1, y: 0 },
+                            exit: { opacity: 0, y: -10 },
+                            className: "space-y-6",
+                            children: e.jsxs(h, {
+                              children: [
+                                e.jsx(g, {
+                                  icon: we,
+                                  title: "Requests",
+                                  subtitle:
+                                    "Buyer sourcing demand and procurement details.",
+                                  action: e.jsxs(p, {
+                                    tone: "info",
+                                    children: [
+                                      w,
+                                      " request",
+                                      w === 1 ? "" : "s",
+                                    ],
+                                  }),
+                                }),
+                                k.is_self || k.is_admin
+                                  ? e.jsx(e.Fragment, {
+                                      children: e.jsxs("div", {
+                                        className: "space-y-3",
+                                        children: [
+                                          P.map((s) =>
+                                            e.jsxs(
+                                              "div",
+                                              {
+                                                className:
+                                                  "rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",
+                                                children: [
+                                                  e.jsxs("div", {
+                                                    className:
+                                                      "flex flex-col gap-3 md:flex-row md:items-start md:justify-between",
+                                                    children: [
+                                                      e.jsxs("div", {
+                                                        className: "min-w-0",
+                                                        children: [
+                                                          e.jsxs("div", {
+                                                            className:
+                                                              "flex flex-wrap items-center gap-2",
+                                                            children: [
+                                                              e.jsx("div", {
+                                                                className:
+                                                                  "text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                                children:
+                                                                  s.category ||
+                                                                  "Request",
+                                                              }),
+                                                              e.jsx(p, {
+                                                                tone:
+                                                                  s.status ===
+                                                                  "active"
+                                                                    ? "success"
+                                                                    : s.status ===
+                                                                        "pending"
+                                                                      ? "warning"
+                                                                      : "default",
+                                                                children:
+                                                                  s.status ||
+                                                                  "Unknown",
+                                                              }),
+                                                            ],
+                                                          }),
+                                                          e.jsx("p", {
+                                                            className:
+                                                              "mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap",
+                                                            children:
+                                                              s.custom_description ||
+                                                              "",
+                                                          }),
+                                                        ],
+                                                      }),
+                                                      e.jsxs("button", {
+                                                        onClick: Y,
+                                                        className:
+                                                          "inline-flex shrink-0 items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300",
+                                                        children: [
+                                                          e.jsx(ve, {
+                                                            className:
+                                                              "h-4 w-4",
+                                                          }),
+                                                          " Contact",
+                                                        ],
+                                                      }),
+                                                    ],
+                                                  }),
+                                                  e.jsxs("div", {
+                                                    className:
+                                                      "mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4",
+                                                    children: [
+                                                      e.jsx(d, {
+                                                        label: "Quantity",
+                                                        value:
+                                                          s.quantity || "-",
+                                                      }),
+                                                      e.jsx(d, {
+                                                        label: "Timeline",
+                                                        value:
+                                                          s.timeline_days ||
+                                                          "-",
+                                                        helper: "days",
+                                                      }),
+                                                      e.jsx(d, {
+                                                        label: "Material",
+                                                        value:
+                                                          s.material || "-",
+                                                      }),
+                                                      e.jsx(d, {
+                                                        label: "Status",
+                                                        value: s.status || "-",
+                                                      }),
+                                                    ],
+                                                  }),
+                                                ],
+                                              },
+                                              s.id,
+                                            ),
+                                          ),
+                                          M
+                                            ? e.jsx(at, {
+                                                color: "#5900ff",
+                                                size: "large",
+                                                style: { fontSize: "32px" },
+                                                text: "",
+                                                textColor: "",
+                                              })
+                                            : null,
+                                          Me !== null && !M
+                                            ? e.jsxs("div", {
+                                                className:
+                                                  "flex items-center justify-between gap-3",
+                                                children: [
+                                                  e.jsx("div", {
+                                                    className:
+                                                      "text-sm text-slate-500 dark:text-slate-400",
+                                                    children:
+                                                      "Cursor-based pagination, limit 10.",
+                                                  }),
+                                                  e.jsx("button", {
+                                                    type: "button",
+                                                    onClick: () =>
+                                                      T({ reset: !1 }),
+                                                    className:
+                                                      "inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200",
+                                                    children: "Load more",
+                                                  }),
+                                                ],
+                                              })
+                                            : null,
+                                          !P.length && !M
+                                            ? e.jsx("div", {
+                                                className:
+                                                  "rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",
+                                                children: "No requests found.",
+                                              })
+                                            : null,
+                                        ],
+                                      }),
+                                    })
+                                  : e.jsxs("div", {
+                                      className: "space-y-4",
+                                      children: [
+                                        e.jsxs("div", {
+                                          className:
+                                            "rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40",
+                                          children: [
+                                            e.jsx("div", {
+                                              className:
+                                                "text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                              children:
+                                                "Request details are private",
+                                            }),
+                                            e.jsx("p", {
+                                              className:
+                                                "mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300",
+                                              children:
+                                                "Only the buyer can view detailed request information to protect business privacy.",
+                                            }),
+                                          ],
+                                        }),
+                                        e.jsx(d, {
+                                          label: "Total requests posted",
+                                          value: `${w} request${w === 1 ? "" : "s"}`,
+                                        }),
+                                      ],
+                                    }),
+                              ],
+                            }),
+                          },
+                          "requests",
+                        )
+                      : null,
+                    j === "work"
+                      ? e.jsx(
+                          N.div,
+                          {
+                            initial: { opacity: 0, y: 10 },
+                            animate: { opacity: 1, y: 0 },
+                            exit: { opacity: 0, y: -10 },
+                            className: "space-y-6",
+                            children: e.jsxs(h, {
+                              children: [
+                                e.jsx(g, {
+                                  icon: Ne,
+                                  title: "Work History & Portfolio",
+                                  subtitle:
+                                    "Previously worked companies and engagement history.",
+                                }),
+                                (
+                                  ((be = t == null ? void 0 : t.profile) == null
+                                    ? void 0
+                                    : be.companies_worked_with) || []
+                                ).length > 0
+                                  ? e.jsx("div", {
+                                      className: "space-y-3",
+                                      children: (
+                                        t.profile.companies_worked_with || []
+                                      ).map((s, r) =>
+                                        e.jsxs(
+                                          "div",
+                                          {
+                                            className:
+                                              "flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40",
+                                            children: [
+                                              e.jsxs("div", {
+                                                className:
+                                                  "flex items-center gap-3 min-w-0",
+                                                children: [
+                                                  e.jsx("div", {
+                                                    className:
+                                                      "flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10",
+                                                    children: s.logo
+                                                      ? e.jsx("img", {
+                                                          src: s.logo,
+                                                          alt:
+                                                            s.name || "Company",
+                                                          className:
+                                                            "h-full w-full object-cover",
+                                                        })
+                                                      : e.jsx(je, {
+                                                          className:
+                                                            "h-5 w-5 text-sky-500",
+                                                        }),
+                                                  }),
+                                                  e.jsxs("div", {
+                                                    className: "min-w-0",
+                                                    children: [
+                                                      e.jsx("div", {
+                                                        className:
+                                                          "truncate text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                        children:
+                                                          s.name ||
+                                                          "Untitled company",
+                                                      }),
+                                                      e.jsx("div", {
+                                                        className:
+                                                          "truncate text-xs text-slate-500 dark:text-slate-400",
+                                                        children:
+                                                          s.role ||
+                                                          "Role not specified",
+                                                      }),
+                                                    ],
+                                                  }),
+                                                ],
+                                              }),
+                                              e.jsxs("div", {
+                                                className:
+                                                  "flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400",
+                                                children: [
+                                                  e.jsx(gt, {
+                                                    className: "h-4 w-4",
+                                                  }),
+                                                  " ",
+                                                  s.period ||
+                                                    s.location ||
+                                                    "Period not specified",
+                                                ],
+                                              }),
+                                            ],
+                                          },
+                                          r,
+                                        ),
+                                      ),
+                                    })
+                                  : e.jsx("div", {
+                                      className:
+                                        "rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",
+                                      children: "No work history added yet.",
+                                    }),
+                              ],
+                            }),
+                          },
+                          "work",
+                        )
+                      : null,
+                    j === "reviews"
+                      ? e.jsxs(
+                          N.div,
+                          {
+                            initial: { opacity: 0, y: 10 },
+                            animate: { opacity: 1, y: 0 },
+                            exit: { opacity: 0, y: -10 },
+                            className: "space-y-6",
+                            children: [
+                              e.jsxs(h, {
+                                children: [
+                                  e.jsx(g, {
+                                    icon: I,
+                                    title: "Rating summary",
+                                    subtitle:
+                                      "Public reviews and confidence scoring.",
+                                  }),
+                                  e.jsxs("div", {
+                                    className: "grid gap-4 md:grid-cols-3",
+                                    children: [
+                                      e.jsx(d, {
+                                        label: "Average score",
+                                        value: `${G.toFixed(1)} / 5`,
+                                      }),
+                                      e.jsx(d, {
+                                        label: "Total reviews",
+                                        value: Z,
+                                      }),
+                                      e.jsx(d, {
+                                        label: "Confidence",
+                                        value:
+                                          ((ge =
+                                            (he =
+                                              b == null
+                                                ? void 0
+                                                : b.aggregate) == null
+                                              ? void 0
+                                              : he.reliability) == null
+                                            ? void 0
+                                            : ge.confidence) || "low",
+                                        helper: "Aggregate reliability",
+                                      }),
+                                    ],
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("div", {
+                                className:
+                                  "rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100",
+                                children: [
+                                  e.jsx("strong", {
+                                    className: "font-semibold",
+                                    children: "Review Policy:",
+                                  }),
+                                  " Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.",
+                                ],
+                              }),
+                              e.jsxs(h, {
+                                children: [
+                                  e.jsx(g, {
+                                    icon: ve,
+                                    title: "Recent reviews",
+                                    subtitle:
+                                      "Public feedback from past collaborations.",
+                                  }),
+                                  (
+                                    (b == null ? void 0 : b.recent_reviews) ||
+                                    []
+                                  ).length > 0
+                                    ? e.jsx("div", {
+                                        className: "space-y-3",
+                                        children: (b.recent_reviews || []).map(
+                                          (s) => {
+                                            const r =
+                                              (y == null ? void 0 : y.id) &&
+                                              String(y.id) ===
+                                                String(s.from_user_id || "");
+                                            return e.jsx(
+                                              "div",
+                                              {
+                                                className:
+                                                  "rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",
+                                                children: e.jsxs("div", {
+                                                  className:
+                                                    "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
+                                                  children: [
+                                                    e.jsxs("div", {
+                                                      className: "min-w-0",
+                                                      children: [
+                                                        e.jsxs("div", {
+                                                          className:
+                                                            "flex flex-wrap items-center gap-2",
+                                                          children: [
+                                                            e.jsxs(p, {
+                                                              tone: "warning",
+                                                              children: [
+                                                                e.jsx(I, {
+                                                                  className:
+                                                                    "h-3.5 w-3.5",
+                                                                }),
+                                                                " ",
+                                                                Number(
+                                                                  s.score || 0,
+                                                                ).toFixed(1),
+                                                              ],
+                                                            }),
+                                                            e.jsx("div", {
+                                                              className:
+                                                                "text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                                              children:
+                                                                s.reviewer_name ||
+                                                                "Anonymous",
+                                                            }),
+                                                          ],
+                                                        }),
+                                                        e.jsx("p", {
+                                                          className:
+                                                            "mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300",
+                                                          children:
+                                                            s.comment ||
+                                                            "No comment provided.",
+                                                        }),
+                                                        e.jsx("div", {
+                                                          className:
+                                                            "mt-2 text-xs text-slate-500 dark:text-slate-400",
+                                                          children: s.created_at
+                                                            ? new Date(
+                                                                s.created_at,
+                                                              ).toLocaleDateString()
+                                                            : "",
+                                                        }),
+                                                      ],
+                                                    }),
+                                                    r
+                                                      ? e.jsxs("div", {
+                                                          className:
+                                                            "flex items-center gap-2",
+                                                          children: [
+                                                            e.jsxs("button", {
+                                                              type: "button",
+                                                              className:
+                                                                "inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300",
+                                                              onClick:
+                                                                async () => {
+                                                                  const u =
+                                                                    window.prompt(
+                                                                      "Update rating (1-5)",
+                                                                      String(
+                                                                        s.score ||
+                                                                          "5",
+                                                                      ),
+                                                                    );
+                                                                  if (!u)
+                                                                    return;
+                                                                  const v =
+                                                                    window.prompt(
+                                                                      "Update review comment",
+                                                                      s.comment ||
+                                                                        "",
+                                                                    );
+                                                                  try {
+                                                                    (await f(
+                                                                      `/ratings/${s.id}`,
+                                                                      {
+                                                                        method:
+                                                                          "PATCH",
+                                                                        token:
+                                                                          n,
+                                                                        body: {
+                                                                          score:
+                                                                            Number(
+                                                                              u,
+                                                                            ),
+                                                                          comment:
+                                                                            v ??
+                                                                            "",
+                                                                        },
+                                                                      },
+                                                                    ),
+                                                                      await S());
+                                                                  } catch {}
+                                                                },
+                                                              children: [
+                                                                e.jsx(ft, {
+                                                                  className:
+                                                                    "h-4 w-4",
+                                                                }),
+                                                                " Edit",
+                                                              ],
+                                                            }),
+                                                            e.jsxs("button", {
+                                                              type: "button",
+                                                              className:
+                                                                "inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300",
+                                                              onClick:
+                                                                async () => {
+                                                                  if (
+                                                                    window.confirm(
+                                                                      "Delete this review?",
+                                                                    )
+                                                                  )
+                                                                    try {
+                                                                      (await f(
+                                                                        `/ratings/${s.id}`,
+                                                                        {
+                                                                          method:
+                                                                            "DELETE",
+                                                                          token:
+                                                                            n,
+                                                                        },
+                                                                      ),
+                                                                        await S());
+                                                                    } catch {}
+                                                                },
+                                                              children: [
+                                                                e.jsx(pt, {
+                                                                  className:
+                                                                    "h-4 w-4",
+                                                                }),
+                                                                " Delete",
+                                                              ],
+                                                            }),
+                                                          ],
+                                                        })
+                                                      : null,
+                                                  ],
+                                                }),
+                                              },
+                                              s.id,
+                                            );
+                                          },
+                                        ),
+                                      })
+                                    : e.jsx("div", {
+                                        className:
+                                          "rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400",
+                                        children: "No reviews yet.",
+                                      }),
+                                ],
+                              }),
+                            ],
+                          },
+                          "reviews",
+                        )
+                      : null,
+                  ],
+                }),
+                e.jsx(ot, {
+                  title: "Journey Timeline",
+                  matchId: R.get("match_id") || R.get("journey_match_id") || "",
+                  contractId: R.get("contract_id") || "",
+                  requirementId: R.get("requirement_id") || "",
+                }),
+                e.jsx(it, { targetId: t.id }),
+              ],
+            }),
+            e.jsxs("div", {
+              className: "space-y-6 xl:sticky xl:top-6 xl:h-fit",
+              children: [
+                e.jsxs(h, {
+                  children: [
+                    e.jsx(g, {
+                      icon: A,
+                      title: "Verification Panel",
+                      subtitle: "Shared trust and compliance component.",
+                    }),
+                    e.jsx(nt, { summary: Ie }),
+                  ],
+                }),
+                m
+                  ? e.jsxs(h, {
+                      children: [
+                        e.jsx(g, {
+                          icon: ye,
+                          title: "Order Completion Certification",
+                          subtitle: "Signed contract record.",
+                        }),
+                        e.jsxs("div", {
+                          className: "space-y-3",
+                          children: [
+                            e.jsxs("div", {
+                              className:
+                                "flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40",
+                              children: [
+                                e.jsxs("div", {
+                                  children: [
+                                    e.jsx("div", {
+                                      className:
+                                        "text-sm font-semibold text-slate-900 dark:text-slate-100",
+                                      children: "Status",
+                                    }),
+                                    e.jsx("div", {
+                                      className:
+                                        "mt-1 text-sm text-slate-500 dark:text-slate-400",
+                                      children: "Certification status",
+                                    }),
+                                  ],
+                                }),
+                                e.jsx(p, {
+                                  tone:
+                                    m.status === "certified"
+                                      ? "success"
+                                      : "default",
+                                  children: m.status || "pending",
+                                }),
+                              ],
+                            }),
+                            e.jsx(d, {
+                              label: "Signed contracts",
+                              value: m.signed_contracts ?? 0,
+                            }),
+                          ],
+                        }),
+                      ],
+                    })
+                  : null,
+              ],
+            }),
+          ],
+        }),
+      ],
+    }),
+  });
+}
+export { Jt as default };

@@ -48,7 +48,9 @@ export default function LinkPreviewCard({ url, preview }) {
               src={favicon}
               alt=""
               className="h-4 w-4 rounded"
-              onError={(e) => { e.target.style.display = "none"; }}
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
             />
           ) : null}
           <span className="truncate">{domain}</span>

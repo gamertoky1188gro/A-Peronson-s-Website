@@ -21,7 +21,10 @@ export async function getLinkPreview(url) {
   }
 
   const existing = await prisma.linkPreview.findUnique({ where: { url } });
-  if (existing && Date.now() - new Date(existing.updated_at).getTime() < CACHE_TTL_MS) {
+  if (
+    existing &&
+    Date.now() - new Date(existing.updated_at).getTime() < CACHE_TTL_MS
+  ) {
     return existing;
   }
 
@@ -30,7 +33,8 @@ export async function getLinkPreview(url) {
       timeout: 5000,
       followRedirects: "follow",
       headers: {
-        "user-agent": "Mozilla/5.0 (compatible; GartexHub/1.0; +https://gartexhub.com)",
+        "user-agent":
+          "Mozilla/5.0 (compatible; GartexHub/1.0; +https://gartexhub.com)",
         "Accept-Language": "en-US",
       },
     });
@@ -39,8 +43,14 @@ export async function getLinkPreview(url) {
       url: result.url || url,
       title: result.title || null,
       description: result.description || null,
-      image: Array.isArray(result.images) && result.images.length ? result.images[0] : null,
-      favicon: Array.isArray(result.favicons) && result.favicons.length ? result.favicons[0] : null,
+      image:
+        Array.isArray(result.images) && result.images.length
+          ? result.images[0]
+          : null,
+      favicon:
+        Array.isArray(result.favicons) && result.favicons.length
+          ? result.favicons[0]
+          : null,
       site_name: result.siteName || null,
       domain: parseDomain(result.url || url),
     };
@@ -51,10 +61,20 @@ export async function getLinkPreview(url) {
     return prisma.linkPreview.create({ data });
   } catch (_err) {
     const domain = parseDomain(url);
-    const fallback = { url, title: domain, description: null, image: null, favicon: null, site_name: null, domain };
+    const fallback = {
+      url,
+      title: domain,
+      description: null,
+      image: null,
+      favicon: null,
+      site_name: null,
+      domain,
+    };
 
     if (existing) {
-      return prisma.linkPreview.update({ where: { url }, data: fallback }).catch(() => fallback);
+      return prisma.linkPreview
+        .update({ where: { url }, data: fallback })
+        .catch(() => fallback);
     }
     return prisma.linkPreview.create({ data: fallback }).catch(() => fallback);
   }

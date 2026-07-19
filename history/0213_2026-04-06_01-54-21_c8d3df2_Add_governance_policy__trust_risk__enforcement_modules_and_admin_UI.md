@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** c8d3df2b7a282aaae70a0ce9c736eb1748264a43
 - **Parent:** 1ef7fbd8038601907806106fac042981af3d4abf
 - **Author:** Cyber Code Master
@@ -6,32 +7,36 @@
 - **Message:** Add governance policy, trust risk, enforcement modules and admin UI
 
 ## Custom Title
+
 Add governance policy, trust risk, enforcement modules and admin UI
 
 ## High-Level Summary
+
 Add governance policy, trust risk, enforcement modules and admin UI
 
- 9 files changed, 1181 insertions(+)
+9 files changed, 1181 insertions(+)
 
 ## File-by-File Breakdown
+
 commit c8d3df2b7a282aaae70a0ce9c736eb1748264a43
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Mon Apr 6 01:54:21 2026 +0600
+Date: Mon Apr 6 01:54:21 2026 +0600
 
     Add governance policy, trust risk, enforcement modules and admin UI
 
- .../migration.sql                                  | 119 +++++++++
- prisma/schema.prisma                               | 142 ++++++++++
- server/controllers/governanceController.js         | 137 ++++++++++
- server/routes/adminRoutes.js                       |  29 +++
- server/services/enforcementService.js              | 285 +++++++++++++++++++++
- server/services/policyRegistryService.js           | 143 +++++++++++
- server/services/trustRiskScoringService.js         | 110 ++++++++
- src/App.jsx                                        |   2 +
- src/pages/AdminGovernance.jsx                      | 214 ++++++++++++++++
- 9 files changed, 1181 insertions(+)
+.../migration.sql | 119 +++++++++
+prisma/schema.prisma | 142 ++++++++++
+server/controllers/governanceController.js | 137 ++++++++++
+server/routes/adminRoutes.js | 29 +++
+server/services/enforcementService.js | 285 +++++++++++++++++++++
+server/services/policyRegistryService.js | 143 +++++++++++
+server/services/trustRiskScoringService.js | 110 ++++++++
+src/App.jsx | 2 +
+src/pages/AdminGovernance.jsx | 214 ++++++++++++++++
+9 files changed, 1181 insertions(+)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/migrations/20260405203000_add_governance_modules/migration.sql b/prisma/migrations/20260405203000_add_governance_modules/migration.sql
 new file mode 100644
@@ -474,13 +479,13 @@ index b7403ea..80a2d7d 100644
 +  trustSignalsController,
 +  upsertGovernancePolicyController,
 +} from '../controllers/governanceController.js'
- 
+
  const router = Router()
- 
+
 @@ -123,6 +138,20 @@ router.get('/integrations/opensearch/status', requireAuth, requireAdminSecurity,
  router.get('/integrations/email/status', requireAuth, requireAdminSecurity, adminAuditLogger(), integrationEmailStatusController)
  router.post('/integrations/actions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), integrationActionController)
- 
+
 +router.get('/governance/policies', requireAuth, requireAdminSecurity, adminAuditLogger(), listGovernancePoliciesController)
 +router.post('/governance/policies', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), upsertGovernancePolicyController)
 +router.post('/governance/policy-versions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), createGovernancePolicyVersionController)
@@ -1071,7 +1076,7 @@ index 0782c92..f8b5639 100644
        <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin', 'agent']}><AgentDashboard /></ProtectedRoute>} />
        <Route path="/admin" element={<ProtectedRoute roles={['owner', 'admin']}><AdminPanel /></ProtectedRoute>} />
 +      <Route path="/admin/governance" element={<ProtectedRoute roles={['owner', 'admin']}><AdminGovernance /></ProtectedRoute>} />
- 
+
        <Route path="/mvp" element={<MvpDashboard />} />
        <Route path="*" element={<Navigate to="/" replace />} />
 diff --git a/src/pages/AdminGovernance.jsx b/src/pages/AdminGovernance.jsx
@@ -1297,17 +1302,22 @@ index 0000000..df2009a
 ```
 
 ## Why This Change
+
 Add governance policy, trust risk, enforcement modules and admin UI
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  9 files changed, 1181 insertions(+)
+
+- **Scope:** 9 files changed, 1181 insertions(+)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 213 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

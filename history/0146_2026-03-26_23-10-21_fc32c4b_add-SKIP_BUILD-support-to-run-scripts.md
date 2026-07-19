@@ -2,18 +2,18 @@
 
 ## Commit Metadata
 
-| Field | Value |
-|-------|-------|
-| **Commit Number** | 0146 |
-| **Commit Hash** | `fc32c4b791acd84e4bdce9770dc2edf4e46b28a1` |
-| **Parent Hash** | `0fcdb85907c97a524b687549baab8db53da07ab0` |
-| **Author** | gamertoky1188gro |
-| **Date/Time** | 2026-03-26 23:10:21 |
-| **Files Changed** | 3 |
-| **Additions** | 49 |
-| **Deletions** | 16 |
-| **Net Change** | +33 |
-| **Merge Commit** | No |
+| Field             | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Commit Number** | 0146                                       |
+| **Commit Hash**   | `fc32c4b791acd84e4bdce9770dc2edf4e46b28a1` |
+| **Parent Hash**   | `0fcdb85907c97a524b687549baab8db53da07ab0` |
+| **Author**        | gamertoky1188gro                           |
+| **Date/Time**     | 2026-03-26 23:10:21                        |
+| **Files Changed** | 3                                          |
+| **Additions**     | 49                                         |
+| **Deletions**     | 16                                         |
+| **Net Change**    | +33                                        |
+| **Merge Commit**  | No                                         |
 
 ## Custom Title
 
@@ -25,19 +25,22 @@ Enhanced all three deployment run scripts (`run.sh`, `run.bat`, `run.ps1`) with 
 
 ## File-by-File Breakdown
 
-| File | Type | + | - | Δ |
-|------|------|---|---|---|
-| `scripts/run.sh` | Modified | 20 | 4 | +16 |
-| `scripts/run.bat` | Modified | 22 | 6 | +16 |
-| `scripts/run.ps1` | Modified | 7 | 6 | +1 |
+| File              | Type     | +   | -   | Δ   |
+| ----------------- | -------- | --- | --- | --- |
+| `scripts/run.sh`  | Modified | 20  | 4   | +16 |
+| `scripts/run.bat` | Modified | 22  | 6   | +16 |
+| `scripts/run.ps1` | Modified | 7   | 6   | +1  |
 
 ### `scripts/run.sh`
+
 Added an `is_skip_build()` shell function that checks the `SKIP_BUILD` env var for truthy values (`true`, `1`, `yes`, `y`, case-insensitive). Wrapped both `backend` and `ngrok` mode build commands in `if ! is_skip_build; then ... fi` guards. Added an info echo line to print the current `SKIP_BUILD` setting.
 
 ### `scripts/run.bat`
+
 Added equivalent skip-build logic for Windows batch. Guarded `npm run build` calls in `backend` and `ngrok` modes.
 
 ### `scripts/run.ps1`
+
 Added equivalent skip-build logic for PowerShell. Guarded build calls in both deployment modes.
 
 ## Detailed Diff Analysis

@@ -44,11 +44,16 @@ export default function WordleInput({
   placeholder = "●",
 }) {
   const reduceMotion = useReducedMotion();
-  const chars = value.split("").concat(Array(maxLength - value.length).fill(""));
+  const chars = value
+    .split("")
+    .concat(Array(maxLength - value.length).fill(""));
   const filled = value.length === maxLength;
 
   function handleChange(e) {
-    const val = e.target.value.replace(/\s/g, "").toUpperCase().slice(0, maxLength);
+    const val = e.target.value
+      .replace(/\s/g, "")
+      .toUpperCase()
+      .slice(0, maxLength);
     onChange?.(val);
     if (val.length === maxLength) onSubmit?.(val);
   }

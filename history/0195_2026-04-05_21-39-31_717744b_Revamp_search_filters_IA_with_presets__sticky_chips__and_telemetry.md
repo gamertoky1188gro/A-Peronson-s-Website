@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** 717744bc07eaa1b674b5283bcfe8fabcac30d34d
 - **Parent:** f11736c4e99fe1470b2287fb0c328a9f93784f1b
 - **Author:** Cyber Code Master
@@ -6,34 +7,38 @@
 - **Message:** Revamp search filters IA with presets, sticky chips, and telemetry
 
 ## Custom Title
+
 Revamp search filters IA with presets, sticky chips, and telemetry
 
 ## High-Level Summary
+
 Revamp search filters IA with presets, sticky chips, and telemetry
 
- 2 files changed, 311 insertions(+), 96 deletions(-)
+2 files changed, 311 insertions(+), 96 deletions(-)
 
 ## File-by-File Breakdown
+
 commit 717744bc07eaa1b674b5283bcfe8fabcac30d34d
 Author: Cyber Code Master <148459541+gamertoky1188gro@users.noreply.github.com>
-Date:   Sun Apr 5 21:39:31 2026 +0600
+Date: Sun Apr 5 21:39:31 2026 +0600
 
     Revamp search filters IA with presets, sticky chips, and telemetry
 
- docs/pages/SearchResults.md |  41 ++++-
- src/pages/SearchResults.jsx | 366 ++++++++++++++++++++++++++++++++------------
- 2 files changed, 311 insertions(+), 96 deletions(-)
+docs/pages/SearchResults.md | 41 ++++-
+src/pages/SearchResults.jsx | 366 ++++++++++++++++++++++++++++++++------------
+2 files changed, 311 insertions(+), 96 deletions(-)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/docs/pages/SearchResults.md b/docs/pages/SearchResults.md
 index e3f77e1..ba3c27d 100644
 --- a/docs/pages/SearchResults.md
 +++ b/docs/pages/SearchResults.md
 @@ -3,6 +3,46 @@
- 
+
  **Access:** Protected (Login required). **Roles:** buyer, buying_house, factory, owner, admin, agent
- 
+
 +## IA + Control Map (2026-04 UX pass)
 +
 +### Top-level filter sections
@@ -75,7 +80,7 @@ index e3f77e1..ba3c27d 100644
 +- First interaction path now prioritizes high-signal, low-friction controls.
 +
  ## 1) Purpose
- 
+
  - **Why it exists:** See the route header comment in `src/pages/SearchResults.jsx`.
 @@ -3927,4 +3967,3 @@
    - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
@@ -134,13 +139,13 @@ index ba8617e..7657960 100644
 +    locationLng: searchParams.get('locationLng') || '',
 +  }
 +}
- 
+
  function parseCsvParam(value) {
    return String(value || '')
 @@ -212,11 +256,6 @@ function buildQueryString({ q, category, filters, includeAdvanced, includePriori
    return params.toString()
  }
- 
+
 -function formatMoqRangeLabel(value) {
 -  if (!value) return 'Any'
 -  return value
@@ -165,7 +170,7 @@ index ba8617e..7657960 100644
 @@ -384,41 +428,7 @@ export default function SearchResults() {
      return raw === true || String(raw).toLowerCase() === 'true'
    })
- 
+
 -  const [filters, setFilters] = useState(() => ({
 -    industry: searchParams.get('industry') || '',
 -    moqRange: searchParams.get('moqRange') || '',
@@ -208,7 +213,7 @@ index ba8617e..7657960 100644
 @@ -468,6 +478,19 @@ export default function SearchResults() {
      return canPriorityAccessRequests && canPriorityAccessCompanies
    }, [activeTab, canPriorityAccessRequests, canPriorityAccessCompanies])
- 
+
 +  useEffect(() => {
 +    const storedPreset = normalizePresetKey(localStorage.getItem(PRESET_STORAGE_KEY))
 +    if (storedPreset) {
@@ -231,7 +236,7 @@ index ba8617e..7657960 100644
    const autoSaveKeyRef = useRef('')
 +  const lastSearchMetadataRef = useRef({ searched: false, preset: '' })
 +  const dirtyFilterSinceSearchRef = useRef(false)
- 
+
    const autoSaveAlert = useCallback(async (candidate) => {
      if (!autoSaveAlertsEnabled) return
 @@ -583,6 +608,8 @@ export default function SearchResults() {
@@ -240,7 +245,7 @@ index ba8617e..7657960 100644
        const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : prodItems.length
 +      lastSearchMetadataRef.current = { searched: true, preset: activePreset || '' }
 +      dirtyFilterSinceSearchRef.current = false
- 
+
        setRequests(reqItems)
        setCompanies(prodItems)
 @@ -622,6 +649,15 @@ export default function SearchResults() {
@@ -265,13 +270,13 @@ index ba8617e..7657960 100644
      }
 -  }, [activeTab, autoSaveAlert, category, filters, hasAdvancedAccess, query, setSearchParams, token])
 +  }, [activePreset, activeTab, autoSaveAlert, category, filters, hasAdvancedAccess, query, setSearchParams, token])
- 
+
    useEffect(() => {
      const handler = (e) => {
 @@ -679,6 +715,19 @@ export default function SearchResults() {
      }
    }, [category, filters, query, runSearch])
- 
+
 +  useEffect(() => {
 +    if (!activePreset) return
 +    if (autoSearchRef.current) return
@@ -298,7 +303,7 @@ index ba8617e..7657960 100644
 +          ? reqFacets
 +          : (activeTab === 'companies' ? prodFacets : mergeFacetCounts(reqFacets, prodFacets))
 +        if (Object.keys(mergedFacets || {}).length) setFacets(mergedFacets)
- 
+
          const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities
          if (mergedCapabilities) setCapabilities(mergedCapabilities)
 @@ -750,8 +805,9 @@ export default function SearchResults() {
@@ -312,11 +317,11 @@ index ba8617e..7657960 100644
 +        }
        }
      }, 450)
- 
+
 @@ -789,6 +845,37 @@ export default function SearchResults() {
      return () => window.clearTimeout(timer)
    }, [activeTab, category, filters, hasAdvancedAccess, query])
- 
+
 +  useEffect(() => {
 +    const depth = supplierAdvancedOpen || productAdvancedOpen
 +      ? 3
@@ -354,7 +359,7 @@ index ba8617e..7657960 100644
 @@ -945,6 +1032,15 @@ export default function SearchResults() {
      setFilters((prev) => ({ ...prev, priorityOnly: value }))
    }
- 
+
 +  function clearAllFilters() {
 +    setQuery('')
 +    setCategory([])
@@ -377,7 +382,7 @@ index ba8617e..7657960 100644
        // ignore storage failures
      }
    }
- 
+
 +  function presetFallback(presetKey) {
 +    if (presetKey === 'buyer') {
 +      return { query: '', category: [], filters: { industry: 'garments', orgType: 'factory', verifiedOnly: true } }
@@ -417,7 +422,7 @@ index ba8617e..7657960 100644
 @@ -1026,6 +1134,18 @@ export default function SearchResults() {
      navigate('/chat', { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
    }
- 
+
 +  const activeFilterChips = useMemo(() => {
 +    const chips = []
 +    if (query.trim()) chips.push({ key: 'query', label: `Query: ${query.trim()}`, onRemove: () => setQuery('') })
@@ -436,7 +441,7 @@ index ba8617e..7657960 100644
 @@ -1115,6 +1235,28 @@ export default function SearchResults() {
              ))}
            </div>
- 
+
 +          <div className="sticky top-2 z-20 mt-3 rounded-xl bg-white/90 p-2 ring-1 ring-slate-200/70 backdrop-blur dark:bg-slate-950/70 dark:ring-white/10">
 +            <div className="flex flex-wrap items-center gap-2">
 +              {activeFilterChips.length ? activeFilterChips.map((chip) => (
@@ -594,7 +599,7 @@ index ba8617e..7657960 100644
 +                    </select>
 +                  ) : null}
                  </div>
- 
+
                  {advancedFiltersOpen ? (
 @@ -1270,8 +1435,16 @@ export default function SearchResults() {
                          Supplier Filters
@@ -607,7 +612,7 @@ index ba8617e..7657960 100644
 +                    >
 +                      {(filterMode === 'product' ? productAdvancedOpen : supplierAdvancedOpen) ? 'Hide advanced block' : 'Open advanced block'}
 +                    </button>
- 
+
                      {filterMode === 'product' ? (
 +                      productAdvancedOpen ? (
                        <>
@@ -634,17 +639,22 @@ index ba8617e..7657960 100644
 ```
 
 ## Why This Change
+
 Revamp search filters IA with presets, sticky chips, and telemetry
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  2 files changed, 311 insertions(+), 96 deletions(-)
+
+- **Scope:** 2 files changed, 311 insertions(+), 96 deletions(-)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 195 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

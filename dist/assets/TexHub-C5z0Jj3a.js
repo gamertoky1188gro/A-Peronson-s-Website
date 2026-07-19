@@ -1,1 +1,1738 @@
-import{u as me,a as C,r as d,b as A,c as k,m as n,j as e,g as Le,d as Ve,e as q,N as Me,S as f,f as re,h as ie,L as Te}from"./index-CNnTWoea.js";import{u as Pe}from"./usePageMeta-Bj0pssG4.js";import{T as le,S as Re}from"./StickySection-CPx6qw7q.js";import{C as De}from"./CardStack-DRC4jBKM.js";import{A as ne}from"./arrow-right-C0cRUQ52.js";import{L as oe}from"./lock-keyhole-C0HeDHeq.js";import{B as Ee}from"./badge-check-CaFeTPUp.js";import{C as de}from"./circle-check-CcIEJQvk.js";import{F as ce}from"./file-pen-line-DYaqzfFe.js";import{S as U}from"./sparkles-DVBGTjg1.js";import{C as xe}from"./clipboard-list-GYmViMIP.js";import{L as He}from"./layers-DHzbiSyF.js";import{B as Ge}from"./briefcase-business-wCBCYx9A.js";import{U as ze}from"./users-round-DFfy4yK9.js";function Ue(){const{scrollY:i}=me(),o=C(0),a=C(0),s=C(0);return d.useEffect(()=>{s.set(Date.now())},[s]),d.useEffect(()=>{const x=()=>{const m=Date.now(),g=Math.max(16,m-s.get()),u=(i.get()-a.get())/g*1e3;o.set(u),a.set(i.get()),s.set(m)},c=i.on("change",x);return()=>c()},[i,o,a]),o}function We({children:i,className:o="",as:a="span",speedFactor:s=.5,maxTranslate:x=30}){A();const c=Ue(),m=k(c,[-2e3,0,2e3],[-x,0,x]),g=n[a];return e.jsx(g,{className:"inline-block "+o,style:{x:m},children:i})}const Ye={hidden:{},visible:{transition:{staggerChildren:.12}}},_={hidden:{opacity:0,y:20},visible:{opacity:1,y:0,transition:{duration:.6,ease:[.16,1,.3,1]}}},Oe=i=>({duration:.6,ease:[.16,1,.3,1],delay:i});function j({eyebrow:i,title:o,text:a}){const s=A(),x=String(o||"").split(" ");return e.jsxs("div",{className:"max-w-3xl",children:[e.jsx(We,{children:e.jsxs("div",{className:"inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300",children:[e.jsx(U,{className:"h-3.5 w-3.5"}),i]})}),e.jsx("h2",{className:"mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl",children:s?o:e.jsx("span",{className:"inline-flex flex-wrap gap-x-[0.25em]",children:x.map((c,m)=>e.jsx(n.span,{className:"inline-block",initial:{opacity:0,y:12},whileInView:{opacity:1,y:0},viewport:{once:!0,margin:"-60px"},transition:{duration:.4,delay:m*.06,ease:[.16,1,.3,1]},children:c},m))})}),e.jsx("p",{className:"mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base",children:a})]})}function T({children:i}){return e.jsx("div",{className:"rounded-full border border-slate-200/50 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:border-white/10 dark:bg-white/10 dark:text-white/85",children:i})}function p({className:i="",children:o}){return e.jsx(n.div,{className:"rounded-3xl border border-slate-200/70 bg-white shadow-[0_20px_70px_-30px_rgba(2,132,199,0.35)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 "+i,whileHover:{scale:1.02,y:-4},transition:{type:"spring",stiffness:200,damping:18,mass:.5},layout:!0,children:o})}function $e({label:i="Verified"}){return e.jsxs("span",{className:"inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]",title:"Verified",children:[e.jsx("span",{className:"h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]"}),i]})}function Xe({index:i,className:o="",children:a}){return A()?e.jsx("div",{className:o,children:a}):e.jsx(n.div,{className:o,initial:{opacity:0,y:20,scale:.985},animate:{opacity:1,y:0,scale:1},transition:{duration:.5,ease:[.16,1,.3,1],delay:i*.1},children:a})}function Ke({text:i,className:o=""}){if(A())return e.jsx("span",{className:o,children:i});const s=String(i).split(" ");let x=0;return e.jsxs("span",{className:o,children:[e.jsx("span",{className:"sr-only",children:i}),e.jsx("span",{"aria-hidden":"true",children:s.map((c,m)=>{const g=Array.from(c);return e.jsxs("span",{children:[e.jsx("span",{className:"inline-block whitespace-nowrap",children:g.map((y,u)=>{const B=x++;return e.jsx(n.span,{className:"inline-block",initial:{opacity:0,y:10},animate:{opacity:1,y:0},transition:{duration:.8,ease:"easeOut",delay:B*.012},children:y},`${y}-${u}`)})}),m<s.length-1?" ":""]},`${c}-${m}`)})})]})}function b({to:i,className:o="",children:a}){const s=A(),x=C(0),c=C(0),m=q(x,{stiffness:300,damping:20,mass:.4}),g=q(c,{stiffness:300,damping:20,mass:.4}),y=9,u=d.useRef(null);function B(F){if(s||u.current)return;const I=F.currentTarget,{clientX:L,clientY:R}=F;u.current=requestAnimationFrame(()=>{u.current=null;const v=I.getBoundingClientRect(),D=(L-v.left)/v.width,V=(R-v.top)/v.height,E=(D-.5)*2,w=(V-.5)*2;x.set(E*y),c.set(w*y)})}function P(){x.set(0),c.set(0)}return e.jsx(Te,{to:i,className:"inline-flex",children:e.jsx(n.span,{className:o,style:{x:m,y:g},onMouseMove:B,onMouseLeave:P,whileHover:s?void 0:{y:-4},transition:{type:"spring",stiffness:300,damping:20},children:a})})}function xt(){var Y,O,$,X,K,J,Q,Z,ee,te,se,ae;Pe({title:"GarTexHub — B2B Textile & Garment Sourcing Platform",type:"website",description:"A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, and connect with verified partners.",siteName:"GarTexHub",locale:"en_US",twitterSite:"@gartexhub"});const[i,o]=d.useState(!1);d.useEffect(()=>{const t=Le();o(!!t)},[]);const a=d.useMemo(()=>({hero:{headline:"Where global buyers, factories, and buying houses connect with clarity",subheadline:"A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.",presentation_rule:"Strategic presentation rule: GartexHub must be presented in a way that makes business workflow stronger, more transparent, more efficient, and more trusted. It cannot be marketed with a destructive message against any group.",value_props:["Structured buyer request system","Factory product visibility engine","Buying house team-based workflow","AI-assisted communication + verification"],trust_points:["Organization-based verification","Digital signature + PDF contract record","Audit-ready activity history","Controlled communication flow"],buyerRequest:{label:"Buyer Request",title:"No live buyer requests yet",badge:"Live",fields:[]},verifiedFactories:{title:"Verified factories",subtitle:"Matched by compliance",factories:[]}},bento:{professionalFeed:{title:"Professional feed",description:"A calm, LinkedIn-style surface where posts stay readable without heavy frames.",lanes:[{label:"Buyer Requests",meta:"Auto-sorted"},{label:"Factory Updates",meta:"Auto-sorted"},{label:"Buying House Notes",meta:"Auto-sorted"}]},structuredBuyerRequests:{title:"Structured buyer requests",description:"Perfectly aligned fields so teams compare requirements instantly.",badge:"Aligned",fields:[]},contractVault:{title:"Contract Vault",description:"A secure room vibe for agreements, compliance docs, and audit-ready records.",items:["Draft → Signed","Version history","Team access control"],badge:"Encrypted storage"},enterpriseAnalytics:{title:"Enterprise analytics",description:"Decision-ready reporting for buying houses -- without turning the UI into a spreadsheet.",stats:[]},agentLock:{title:"Internal Agent Lock System",description:"Subtle, conflict-free lead ownership across multi-agent buying house teams.",requestLabel:"No active request yet",status:"Idle",note:"Live request locks will appear here once teams start claiming leads."}},marketing:{sections:[]},whyCards:[{title:"Structured buyer request system",text:"Clear requirements reduce noise and help teams compare responses faster."},{title:"Factory product visibility engine",text:"Show products, capacity, and proof points in a calm, organized format."},{title:"Buying house team-based workflow",text:"Assign leads, coordinate follow-ups, and keep everyone aligned."},{title:"AI-assisted communication + verification",text:"Summaries, suggested replies, and trust signals help teams move with confidence."}],workflow:[{step:"Step 1",title:"Post or search",text:"Buyers post structured requirements. Factories publish products and capacity."},{step:"Step 2",title:"Smart matching + claim lead",text:"Agents claim requests. AI summarizes context so the team moves fast without noise."},{step:"Step 3",title:"Chat, call, contract",text:"Communicate, schedule meetings, and store agreements inside the Contract Vault."}],platformFeatures:[{title:"Professional feed",text:"A calm, LinkedIn-style surface where posts stay readable without heavy frames.",meta:"Buyer Requests • Factory Updates • Buying House Notes"},{title:"Structured buyer requests",text:"Perfectly aligned fields so teams compare requirements instantly.",meta:"Aligned • Clean • Fast"},{title:"Contract Vault",text:"A secure room vibe for agreements, compliance docs, and audit-ready records.",meta:"Draft → Signed • Version history • Team access control"},{title:"Enterprise analytics",text:"Decision-ready reporting for buying houses without turning the UI into a spreadsheet.",meta:"Active leads • Verified matches • Avg. response"}],categories:["Shirts","Pants","Knitwear","Woven","Denim","T-shirts","Home Textiles","Organic Cotton"],audience:[{title:"For Buyers",text:"Post clear requirements. Get structured replies. Search Bangladesh-centric but global-facing suppliers.",points:["Structured buyer request posting","Fast supplier comparison + clearer requirements","Reduced irrelevant communication","Contract history + audit-ready records"]},{title:"For Factories",text:"Show products + capabilities. Receive better leads. Build trust through verification.",points:["Product posts with specs, media, and capacity highlights","Clearer inquiries (less back-and-forth)","AI-assisted responses for repeated questions","Verification + visibility signals that build trust"]},{title:"For Buying Houses",text:"Run sourcing as an organization with team seats, lead assignment, and multi-factory coordination.",points:["Team seats + sub-accounts","Lead assignment + internal CRM timeline","Multi-factory coordination in one inbox","Enterprise analytics (agent outcomes + conversions)"]}],aiWorkflow:{eyebrow:"AI Guided Workflow",title:"Clear positioning, calm surfaces, and stronger business workflow.",text:"GarTexHub is presented to strengthen sourcing operations, improve transparency, make communication more efficient, and build trust — without destructive messaging toward any group.",features:["Professional feed","Verified factories","Digital Contract Vault","AI guided workflow"]},timeline:[{label:"No live buyer requests yet",status:"Live",icon:"Search"},{label:"Verified factories",status:"Matched by compliance",icon:"ShieldCheck"},{label:"Internal Agent Lock System",status:"Idle",icon:"LockKeyhole"}]}),[]),[s,x]=d.useState(a),[c,m]=d.useState(""),[g,y]=d.useState(!0),[u,B]=d.useState("professional"),P={Search:ie,ShieldCheck:re,LockKeyhole:oe},F={ClipboardList:xe,Sparkles:U,FileSignature:ce};d.useEffect(()=>{let t=!0;const r=new AbortController;return Ve("/system/home",{signal:r.signal}).then(l=>{t&&l!=null&&l.ok&&l!=null&&l.hero&&l!=null&&l.bento&&x(S=>({...S,...l}))}).catch(l=>{t&&(l==null?void 0:l.name)!=="AbortError"&&m(String((l==null?void 0:l.message)||"Failed to load"))}).finally(()=>{t&&y(!1)}),()=>{t=!1,r.abort()}},[a]);const I=((Y=s==null?void 0:s.hero)==null?void 0:Y.buyerRequest)||a.hero.buyerRequest,L=((O=s==null?void 0:s.hero)==null?void 0:O.verifiedFactories)||a.hero.verifiedFactories,R=(($=s==null?void 0:s.hero)==null?void 0:$.headline)||a.hero.headline,v=((X=s==null?void 0:s.hero)==null?void 0:X.subheadline)||a.hero.subheadline,D=((K=s==null?void 0:s.hero)==null?void 0:K.short_description)||a.hero.short_description,V=((J=s==null?void 0:s.hero)==null?void 0:J.presentation_rule)||a.hero.presentation_rule,E=Array.isArray((Q=s==null?void 0:s.hero)==null?void 0:Q.value_props)?s.hero.value_props:a.hero.value_props,w=(s==null?void 0:s.bento)||a.bento,W=Array.isArray((Z=s==null?void 0:s.marketing)==null?void 0:Z.sections)?s.marketing.sections:((ee=a==null?void 0:a.marketing)==null?void 0:ee.sections)||[],ue=(s==null?void 0:s.whyCards)||a.whyCards,he=(s==null?void 0:s.workflow)||a.workflow,pe=(s==null?void 0:s.platformFeatures)||a.platformFeatures,ge=(s==null?void 0:s.categories)||a.categories,fe=(s==null?void 0:s.audience)||a.audience,M=(s==null?void 0:s.aiWorkflow)||a.aiWorkflow,be=(s==null?void 0:s.timeline)||a.timeline,ye=((se=(te=s==null?void 0:s.bento)==null?void 0:te.enterpriseAnalytics)==null?void 0:se.stats)||a.bento.enterpriseAnalytics.stats||[{label:"Active leads",value:"120"},{label:"Verified matches",value:"60"},{label:"Avg. response",value:"1h 30m"}],we=((ae=s==null?void 0:s.hero)==null?void 0:ae.trust_points)||a.hero.trust_points,H=d.useMemo(()=>u==="professional"?w:{...w,professionalFeed:{...w.professionalFeed,title:"Diverse feed",description:"A broader surface for discovery -- still structured and readable.",lanes:[{label:"Market Updates",meta:"Auto-sorted"},{label:"New Suppliers",meta:"Auto-sorted"},{label:"Opportunities",meta:"Auto-sorted"}]},structuredBuyerRequests:{...w.structuredBuyerRequests,badge:"Verified"}},[w,u]),h=A(),{scrollY:N}=me(),je=k(N,[0,800],[0,-60]),ke=k(N,[0,800],[0,-100]),ve=k(N,[0,800],[0,-80]),Ne=q(je,{stiffness:80,damping:20,restDelta:.01}),Se=q(ke,{stiffness:80,damping:20,restDelta:.01}),Ae=q(ve,{stiffness:80,damping:20,restDelta:.01}),_e=k(N,[0,600],[0,-20]),Ce=k(N,[0,600],[0,-60]),qe=k(N,[0,600],[0,-10]),G=d.useMemo(()=>["why","workflow","platform","trust"],[]),Be=["Why","Workflow","Platform","Trust"],[Fe,Ie]=d.useState(""),z=d.useRef(null);return d.useEffect(()=>{z.current=new IntersectionObserver(t=>{for(const r of t)r.isIntersecting&&Ie(r.target.id)},{rootMargin:"-40% 0px -40% 0px"});for(const t of G){const r=document.getElementById(t);r&&z.current.observe(r)}return()=>{var t;return(t=z.current)==null?void 0:t.disconnect()}},[G]),g?e.jsx(Me,{fill:!0,size:64,text:"Loading..."}):e.jsxs("div",{className:"relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white",children:[!h&&e.jsx("nav",{className:"fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block","aria-label":"Section navigation",children:e.jsx("div",{className:"flex flex-col items-center gap-3",children:G.map((t,r)=>e.jsx("a",{href:`#${t}`,onClick:l=>{var S;l.preventDefault(),(S=document.getElementById(t))==null||S.scrollIntoView({behavior:"smooth"})},className:"flex items-center justify-center min-w-[48px] min-h-[48px] rounded-full","aria-label":Be[r],children:e.jsx("span",{className:`block rounded-full transition-all duration-300 ${Fe===t?"h-3 w-3 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]":"h-2 w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-400"}`})},t))})}),e.jsxs("div",{className:"absolute inset-0 -z-10 overflow-hidden",children:[e.jsx("div",{className:"absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 max-sm:h-[360px] max-sm:w-[360px] animate-blob-spin-1",children:e.jsx(n.div,{style:{y:h?0:Ne,backgroundImage:"conic-gradient(from 0deg, rgba(14,165,233,0.25), rgba(99,102,241,0.15), transparent 70%)"},className:"h-full w-full rounded-full blur-3xl"})}),e.jsx("div",{className:"absolute right-[-80px] top-[260px] h-[360px] w-[360px] max-sm:hidden animate-blob-spin-2",children:e.jsx(n.div,{style:{y:h?0:Se,backgroundImage:"conic-gradient(from 120deg, rgba(59,130,246,0.20), rgba(99,102,241,0.12), transparent 70%)"},className:"h-full w-full rounded-full blur-3xl"})}),e.jsx("div",{className:"absolute left-[-120px] top-[760px] h-[280px] w-[280px] max-sm:hidden animate-blob-spin-3",children:e.jsx(n.div,{style:{y:h?0:Ae,backgroundImage:"conic-gradient(from 240deg, rgba(6,182,212,0.18), rgba(14,165,233,0.10), transparent 70%)"},className:"h-full w-full rounded-full blur-3xl"})}),e.jsxs("svg",{className:"absolute inset-0 h-full w-full opacity-[0.04] pointer-events-none",xmlns:"http://www.w3.org/2000/svg",children:[e.jsx("defs",{children:e.jsxs("filter",{id:"noiseFilter",children:[e.jsx("feTurbulence",{type:"fractalNoise",baseFrequency:"0.65",numOctaves:"3",stitchTiles:"stitch"}),e.jsx("feColorMatrix",{type:"matrix",values:"1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.05 0"})]})}),e.jsx("rect",{width:"100%",height:"100%",filter:"url(#noiseFilter)"})]})]}),e.jsxs("main",{className:"mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8",children:[e.jsxs(f,{as:"section",transition:Oe(0),className:"grid items-center gap-8 lg:grid-cols-[1.25fr_0.95fr]",children:[e.jsxs(n.div,{variants:Ye,initial:"hidden",whileInView:"visible",viewport:{once:!0,margin:"-60px"},children:[e.jsxs(n.div,{variants:_,className:"flex flex-wrap gap-2",children:[e.jsx(T,{children:"Bangladesh-centric"}),e.jsx(T,{children:"Global-facing"}),e.jsx(T,{children:"Garments"}),e.jsx(T,{children:"Textiles"})]}),e.jsx(n.h1,{variants:_,className:"mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl",children:e.jsx(Ke,{text:R})}),e.jsxs(n.div,{variants:_,children:[e.jsx("p",{className:"mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg",children:v}),e.jsx("p",{className:"mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400",children:D}),V?e.jsx("p",{className:"mt-2 max-w-2xl text-xs italic text-slate-500 dark:text-slate-400",children:V}):null]}),e.jsx(n.div,{variants:_,className:"mt-8 flex flex-wrap gap-3",children:i?e.jsxs(e.Fragment,{children:[e.jsxs(b,{to:"/feed",className:"inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5",children:["Go to Dashboard ",e.jsx(ne,{className:"h-4 w-4"})]}),e.jsx(b,{to:"/search",className:"inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200",children:"Browse Suppliers"})]}):e.jsxs(e.Fragment,{children:[e.jsxs(b,{to:"/signup",className:"inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5",children:["Create Buyer Account ",e.jsx(ne,{className:"h-4 w-4"})]}),e.jsx(b,{to:"/signup",className:"inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200",children:"Register Factory"}),e.jsx(b,{to:"/login",className:"inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10",children:"View enterprise plans"})]})}),e.jsx(n.div,{variants:_,className:"mt-8 grid gap-3 sm:grid-cols-3",children:ye.map(t=>e.jsxs(p,{className:"p-4",children:[e.jsx("div",{className:"text-sm text-slate-500 dark:text-slate-400",children:t.label}),e.jsx("div",{className:"mt-2 text-2xl font-semibold tracking-tight",children:t.value})]},t.label))})]}),e.jsx("div",{className:"relative",children:e.jsx(p,{className:"overflow-hidden p-5",children:e.jsxs("div",{className:"rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 shadow-2xl shadow-sky-200/30 dark:from-slate-950 dark:to-sky-950 dark:text-white dark:shadow-sky-950/25",children:[e.jsxs("div",{className:"flex items-center justify-between",children:[e.jsxs("div",{children:[e.jsx("div",{className:"text-sm font-medium text-sky-600/80 dark:text-sky-100/80",children:"Buyer Request"}),e.jsx("div",{className:"mt-1 text-xl font-semibold",children:I.title})]}),e.jsx($e,{label:I.badge})]}),e.jsx("div",{className:"mt-6 grid gap-3",children:be.map(t=>{const r=P[t.icon]||ie;return e.jsxs("div",{className:"flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5",children:[e.jsx("div",{className:"flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/10",children:e.jsx(r,{className:"h-5 w-5 text-sky-600 dark:text-sky-200"})}),e.jsxs("div",{className:"flex-1",children:[e.jsx("div",{className:"text-sm font-medium",children:t.label}),e.jsx("div",{className:"text-xs text-slate-600 dark:text-sky-200/90",children:t.status})]})]},t.label)})}),e.jsxs("div",{className:"mt-5 rounded-3xl border border-slate-200 bg-slate-100 p-4 dark:border-white/10 dark:bg-white/10",children:[e.jsxs("div",{className:"flex items-center justify-between",children:[e.jsxs("div",{className:"flex items-center gap-2 text-sm font-medium",children:[e.jsx(Ee,{className:"h-4 w-4 text-cyan-600 dark:text-cyan-200"})," ",L.title]}),e.jsx("div",{className:"text-xs text-slate-600 dark:text-sky-200/90",children:L.subtitle})]}),e.jsx("div",{className:"mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2 dark:text-sky-200",children:E.slice(0,4).map(t=>e.jsx("div",{className:"rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5",children:t},t))})]})]})})})]}),e.jsxs(f,{as:"section",id:"why",className:"mt-20",children:[e.jsx(j,{eyebrow:"Why GarTexHub",title:"A sourcing workflow network built only for garments and textiles.",text:"Low noise, structured requests, and trust by design. Designed to strengthen business workflow, increase transparency, improve efficiency, and build trust."}),e.jsx(De,{children:e.jsx("div",{className:"mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4",children:ue.map(t=>e.jsxs(p,{className:"p-6",children:[e.jsx("div",{className:"flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300",children:e.jsx(de,{className:"h-6 w-6"})}),e.jsx("h3",{className:"mt-4 text-lg font-semibold",children:t.title}),e.jsx("p",{className:"mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",children:t.text})]},t.title))})})]}),e.jsxs(f,{as:"section",id:"workflow",className:"mt-20",children:[e.jsx(j,{eyebrow:"How GarTexHub works",title:"A simple flow that stays structured end-to-end.",text:"From the first request to the final agreement, every step is organized to keep sourcing calm, clear, and fast."}),e.jsx("div",{className:"mt-8 flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-3",children:he.map((t,r)=>{const l=F[t.icon]||xe,S=h?{}:{y:[_e,Ce,qe][r]||0};return e.jsx(n.div,{style:S,children:e.jsxs(p,{className:"min-w-[280px] snap-start lg:min-w-0 p-6",children:[e.jsxs("div",{className:"flex items-center justify-between",children:[e.jsx("div",{className:"rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300",children:e.jsx(le,{fromColor:"rgb(14,165,233)",toColor:"rgb(99,102,241)",children:t.step})}),e.jsx("div",{className:"flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-100",children:e.jsx(l,{className:"h-5 w-5"})})]}),e.jsx("h3",{className:"mt-5 text-xl font-semibold",children:t.title}),e.jsx("p",{className:"mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",children:t.text})]})},t.title)})})]}),e.jsxs(f,{as:"section",id:"platform",className:"mt-20",children:[e.jsx(j,{eyebrow:"Platform features",title:"Borderless surfaces, clean hierarchy, and strong trust indicators.",text:"Professional feed, structured buyer requests, contract vault, enterprise analytics, a subtle lock system, and a premium AI assistant — all aligned around clarity."}),e.jsx("div",{className:"mt-8 grid gap-4 lg:grid-cols-2",children:pe.map(t=>e.jsxs(p,{className:"p-6",children:[e.jsxs("div",{className:"flex items-start justify-between gap-4",children:[e.jsxs("div",{children:[e.jsx("h3",{className:"text-xl font-semibold",children:t.title}),e.jsx("p",{className:"mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300",children:t.text})]}),e.jsx("div",{className:"rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 p-3 text-white shadow-lg shadow-sky-500/20",children:e.jsx(He,{className:"h-5 w-5"})})]}),e.jsx("div",{className:"mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300",children:t.meta})]},t.title))})]}),e.jsxs(f,{as:"section",className:"mt-20 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]",children:[e.jsxs(p,{className:"p-6",id:"trust",children:[e.jsx(j,{eyebrow:"Trust",title:"Verified and documented by design.",text:"GarTexHub increases trust with organization-based verification, controlled communication flow, and secure contract records."}),e.jsxs(Re,{top:120,children:[e.jsx("div",{className:"mt-6 space-y-3",children:we.map((t,r)=>e.jsxs(n.div,{initial:h?{}:{opacity:0,x:-10},whileInView:h?{}:{opacity:1,x:0},viewport:{once:!0,margin:"-40px"},transition:{delay:r*.1,duration:.4,ease:[.16,1,.3,1]},className:"flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5",children:[e.jsx(n.div,{initial:h?{}:{scale:0},whileInView:h?{}:{scale:1},viewport:{once:!0},transition:{delay:r*.1+.2,type:"spring",stiffness:300,damping:15},children:e.jsx(re,{className:"h-5 w-5 text-sky-500"})}),e.jsx("div",{className:"text-sm text-slate-700 dark:text-slate-200",children:t})]},t))}),!h&&e.jsx("div",{className:"mt-4 grid grid-cols-8 gap-1",children:Array.from({length:32}).map((t,r)=>e.jsx(n.div,{className:`aspect-square rounded-md ${r%3===0?"bg-emerald-400/30":r%3===1?"bg-sky-400/20":"bg-slate-200/30 dark:bg-slate-700/30"}`,initial:{opacity:0,scale:.5},whileInView:{opacity:1,scale:1},viewport:{once:!0},transition:{delay:.3+r*.02,duration:.3}},r))})]})]}),e.jsx(p,{className:"overflow-hidden p-0",children:e.jsxs("div",{className:"grid gap-0 lg:grid-cols-2",children:[e.jsxs("div",{className:"flex h-full flex-col bg-gradient-to-br from-sky-500 to-blue-700 p-6 text-white",children:[e.jsxs("div",{className:"inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium",children:[e.jsx(oe,{className:"h-3.5 w-3.5"})," Internal Agent Lock System"]}),e.jsx("div",{className:"mt-4 text-2xl font-semibold tracking-tight",children:"Subtle, conflict-free lead ownership"}),e.jsx("p",{className:"mt-3 text-sm leading-6 text-sky-50/90",children:"Multi-agent buying house teams can claim leads, avoid overlap, and keep ownership visible without friction."}),e.jsxs("div",{className:"mt-6 rounded-3xl border border-white/15 bg-white/10 p-4",children:[e.jsxs("div",{className:"flex items-center justify-between text-sm",children:[e.jsx("span",{children:H.agentLock.requestLabel}),e.jsx("span",{className:"rounded-full bg-white/15 px-3 py-1 text-xs",children:H.agentLock.status})]}),e.jsx("p",{className:"mt-3 text-xs leading-5 text-sky-50/85",children:H.agentLock.note})]})]}),e.jsxs("div",{className:"flex h-full flex-col bg-white p-6 dark:bg-slate-950/70",children:[e.jsxs("div",{className:"flex items-center justify-between",children:[e.jsxs("div",{children:[e.jsx("div",{className:"text-sm font-medium text-slate-500 dark:text-slate-400",children:"Unique toggle"}),e.jsx("div",{className:"mt-1 text-xl font-semibold",children:"A tactile switch for diverse content modes"})]}),e.jsx("button",{type:"button",disabled:!0,"aria-label":"Toggle content mode",className:"relative h-8 w-16 cursor-not-allowed rounded-full bg-slate-200 p-1 opacity-50 dark:bg-slate-800",children:e.jsx(n.div,{layout:!0,className:"absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow-md transition-transform dark:bg-sky-400",animate:{x:u==="professional"?0:32}})})]}),e.jsxs("div",{className:"mt-6 flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5",children:[e.jsx("div",{className:"text-sm font-medium",children:u==="professional"?"Professional":"Diverse"}),e.jsx("div",{className:"mt-2 text-sm text-slate-600 dark:text-slate-300",children:"Factory video gallery"}),e.jsx("div",{className:"mt-4 flex-1 grid grid-cols-3 auto-rows-fr gap-2",children:Array.from({length:6}).map((t,r)=>e.jsx(n.div,{layout:!0,transition:{type:"spring",stiffness:300,damping:25},className:"rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700"},r))})]})]})]})})]}),e.jsxs(f,{as:"section",className:"mt-20",children:[e.jsx(j,{eyebrow:"Built for growing buying houses",title:"Enterprise control, dedicated analytics, and organization-level workflow.",text:"Unlimited sub-accounts, dedicated analytics, organization control, and contract management designed for serious sourcing teams."}),e.jsxs("div",{className:"mt-8 grid gap-4 lg:grid-cols-2",children:[e.jsxs(p,{className:"p-6",children:[e.jsxs("div",{className:"flex items-center justify-between",children:[e.jsx("div",{className:"text-lg font-semibold",children:"Enterprise analytics"}),e.jsx(Ge,{className:"h-5 w-5 text-sky-500"})]}),e.jsx("p",{className:"mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",children:"Decision-ready reporting for buying houses — without turning the UI into a spreadsheet."}),e.jsx("div",{className:"mt-6 grid gap-3 sm:grid-cols-3",children:[["Active leads","120"],["Verified matches","60"],["Avg. response","1h 30m"]].map(([t,r])=>e.jsxs("div",{className:"rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5",children:[e.jsx("div",{className:"text-xs text-slate-500 dark:text-slate-400",children:t}),e.jsx("div",{className:"mt-2 text-2xl font-semibold",children:r})]},t))})]}),e.jsxs(p,{className:"p-6",children:[e.jsxs("div",{className:"flex items-center justify-between",children:[e.jsx("div",{className:"text-lg font-semibold",children:"Platform features"}),e.jsx(ze,{className:"h-5 w-5 text-sky-500"})]}),e.jsx("p",{className:"mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",children:"Focused only on garments and textiles. Clear categories help the right people find the right partners."}),e.jsx("div",{className:"mt-6 flex flex-wrap gap-2",children:ge.map((t,r)=>e.jsx(n.span,{initial:h?{}:{opacity:0,y:6},whileInView:h?{}:{opacity:1,y:0},viewport:{once:!0},transition:{delay:r*.04,duration:.3,ease:[.16,1,.3,1]},className:"rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200",children:t},t))}),e.jsxs("div",{className:"mt-6 rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 dark:from-slate-950 dark:to-sky-950 dark:text-white",children:[e.jsx("div",{className:"text-sm text-sky-600/75 dark:text-sky-100/75",children:"Start connecting with the right partners"}),e.jsx("div",{className:"mt-1 text-lg font-semibold",children:"Create account • Login"}),e.jsx("div",{className:"mt-4 flex gap-3",children:i?e.jsxs(e.Fragment,{children:[e.jsx(b,{to:"/feed",className:"rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900",children:"Go to Dashboard"}),e.jsx(b,{to:"/search",className:"rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white",children:"Browse Suppliers"})]}):e.jsxs(e.Fragment,{children:[e.jsx(b,{to:"/signup",className:"rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900",children:"Create account"}),e.jsx(b,{to:"/login",className:"rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white",children:"Login"})]})})]})]})]})]}),e.jsxs(f,{as:"section",className:"mt-20",children:[e.jsx(j,{eyebrow:"Audience",title:"Clear surfaces and structured workflows for every role in the sourcing chain.",text:"Buyers, factories, and buying houses each get a focused experience that keeps the system calm at scale."}),e.jsx("div",{className:"mt-8 grid gap-4 xl:grid-cols-3",children:fe.map(t=>e.jsxs(p,{className:"p-6",children:[e.jsx("h3",{className:"text-xl font-semibold",children:t.title}),e.jsx("p",{className:"mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",children:e.jsx(le,{children:t.text})}),e.jsx("div",{className:"mt-5 space-y-3",children:t.points.map(r=>e.jsxs("div",{className:"flex items-start gap-3 text-sm text-slate-700 dark:text-slate-200",children:[e.jsx(de,{className:"mt-0.5 h-4 w-4 text-sky-500"}),e.jsx("span",{children:r})]},r))})]},t.title))})]}),W.length?e.jsxs(f,{as:"section",className:"mt-20",children:[e.jsx(j,{eyebrow:"More",title:"Additional features and capabilities.",text:"Explore more ways GarTexHub supports your sourcing workflow."}),e.jsx("div",{className:"mt-8 grid gap-6 md:grid-cols-2",children:W.map((t,r)=>e.jsx(Xe,{index:r,className:"md:col-span-1",children:e.jsxs(p,{className:"p-7",children:[t.eyebrow?e.jsx("p",{className:"text-xs font-semibold text-slate-500 dark:text-slate-400",children:t.eyebrow}):null,e.jsx("h3",{className:"mt-2 text-base font-bold tracking-tight text-slate-900 dark:text-white",children:t.title}),t.description?e.jsx("p",{className:"mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300",children:t.description}):null,Array.isArray(t.bullets)&&t.bullets.length?e.jsx("ul",{className:"mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-300",children:t.bullets.map(l=>e.jsxs("li",{className:"flex items-start gap-2",children:[e.jsx("span",{className:"mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500"}),e.jsx("span",{className:"leading-relaxed",children:l})]},l))}):null]})},t.id||t.title||String(r)))})]}):null,e.jsx(f,{as:"section",className:"mt-20 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500 to-blue-800 p-8 text-white shadow-2xl shadow-sky-500/20 md:p-10",children:e.jsxs("div",{className:"grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center",children:[e.jsxs("div",{children:[e.jsxs("div",{className:"inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium",children:[e.jsx(U,{className:"h-3.5 w-3.5"})," ",M.eyebrow]}),e.jsx("h2",{className:"mt-4 text-3xl font-semibold tracking-tight md:text-4xl",children:M.title}),e.jsx("p",{className:"mt-4 max-w-2xl text-sm leading-6 text-sky-50/90 md:text-base",children:M.text})]}),e.jsxs("div",{className:"rounded-[1.75rem] border border-white/15 bg-white/10 p-5 backdrop-blur",children:[e.jsxs("div",{className:"flex items-center justify-between text-sm font-medium",children:[e.jsx("span",{children:"Focused only on garments & textile"}),e.jsx(ce,{className:"h-4 w-4"})]}),e.jsx("div",{className:"mt-4 grid gap-2 text-sm text-sky-50/85",children:M.features.map(t=>e.jsx("div",{className:"rounded-2xl bg-white/10 px-4 py-3",children:t},t))})]})]})}),c?e.jsx("p",{className:"mt-8 text-center text-xs text-amber-700 dark:text-amber-300",children:c}):null]})]})}export{xt as default};
+import {
+  u as me,
+  a as C,
+  r as d,
+  b as A,
+  c as k,
+  m as n,
+  j as e,
+  g as Le,
+  d as Ve,
+  e as q,
+  N as Me,
+  S as f,
+  f as re,
+  h as ie,
+  L as Te,
+} from "./index-CNnTWoea.js";
+import { u as Pe } from "./usePageMeta-Bj0pssG4.js";
+import { T as le, S as Re } from "./StickySection-CPx6qw7q.js";
+import { C as De } from "./CardStack-DRC4jBKM.js";
+import { A as ne } from "./arrow-right-C0cRUQ52.js";
+import { L as oe } from "./lock-keyhole-C0HeDHeq.js";
+import { B as Ee } from "./badge-check-CaFeTPUp.js";
+import { C as de } from "./circle-check-CcIEJQvk.js";
+import { F as ce } from "./file-pen-line-DYaqzfFe.js";
+import { S as U } from "./sparkles-DVBGTjg1.js";
+import { C as xe } from "./clipboard-list-GYmViMIP.js";
+import { L as He } from "./layers-DHzbiSyF.js";
+import { B as Ge } from "./briefcase-business-wCBCYx9A.js";
+import { U as ze } from "./users-round-DFfy4yK9.js";
+function Ue() {
+  const { scrollY: i } = me(),
+    o = C(0),
+    a = C(0),
+    s = C(0);
+  return (
+    d.useEffect(() => {
+      s.set(Date.now());
+    }, [s]),
+    d.useEffect(() => {
+      const x = () => {
+          const m = Date.now(),
+            g = Math.max(16, m - s.get()),
+            u = ((i.get() - a.get()) / g) * 1e3;
+          (o.set(u), a.set(i.get()), s.set(m));
+        },
+        c = i.on("change", x);
+      return () => c();
+    }, [i, o, a]),
+    o
+  );
+}
+function We({
+  children: i,
+  className: o = "",
+  as: a = "span",
+  speedFactor: s = 0.5,
+  maxTranslate: x = 30,
+}) {
+  A();
+  const c = Ue(),
+    m = k(c, [-2e3, 0, 2e3], [-x, 0, x]),
+    g = n[a];
+  return e.jsx(g, {
+    className: "inline-block " + o,
+    style: { x: m },
+    children: i,
+  });
+}
+const Ye = { hidden: {}, visible: { transition: { staggerChildren: 0.12 } } },
+  _ = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+    },
+  },
+  Oe = (i) => ({ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: i });
+function j({ eyebrow: i, title: o, text: a }) {
+  const s = A(),
+    x = String(o || "").split(" ");
+  return e.jsxs("div", {
+    className: "max-w-3xl",
+    children: [
+      e.jsx(We, {
+        children: e.jsxs("div", {
+          className:
+            "inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300",
+          children: [e.jsx(U, { className: "h-3.5 w-3.5" }), i],
+        }),
+      }),
+      e.jsx("h2", {
+        className:
+          "mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl",
+        children: s
+          ? o
+          : e.jsx("span", {
+              className: "inline-flex flex-wrap gap-x-[0.25em]",
+              children: x.map((c, m) =>
+                e.jsx(
+                  n.span,
+                  {
+                    className: "inline-block",
+                    initial: { opacity: 0, y: 12 },
+                    whileInView: { opacity: 1, y: 0 },
+                    viewport: { once: !0, margin: "-60px" },
+                    transition: {
+                      duration: 0.4,
+                      delay: m * 0.06,
+                      ease: [0.16, 1, 0.3, 1],
+                    },
+                    children: c,
+                  },
+                  m,
+                ),
+              ),
+            }),
+      }),
+      e.jsx("p", {
+        className:
+          "mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base",
+        children: a,
+      }),
+    ],
+  });
+}
+function T({ children: i }) {
+  return e.jsx("div", {
+    className:
+      "rounded-full border border-slate-200/50 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:border-white/10 dark:bg-white/10 dark:text-white/85",
+    children: i,
+  });
+}
+function p({ className: i = "", children: o }) {
+  return e.jsx(n.div, {
+    className:
+      "rounded-3xl border border-slate-200/70 bg-white shadow-[0_20px_70px_-30px_rgba(2,132,199,0.35)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 " +
+      i,
+    whileHover: { scale: 1.02, y: -4 },
+    transition: { type: "spring", stiffness: 200, damping: 18, mass: 0.5 },
+    layout: !0,
+    children: o,
+  });
+}
+function $e({ label: i = "Verified" }) {
+  return e.jsxs("span", {
+    className:
+      "inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]",
+    title: "Verified",
+    children: [
+      e.jsx("span", {
+        className:
+          "h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]",
+      }),
+      i,
+    ],
+  });
+}
+function Xe({ index: i, className: o = "", children: a }) {
+  return A()
+    ? e.jsx("div", { className: o, children: a })
+    : e.jsx(n.div, {
+        className: o,
+        initial: { opacity: 0, y: 20, scale: 0.985 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: i * 0.1 },
+        children: a,
+      });
+}
+function Ke({ text: i, className: o = "" }) {
+  if (A()) return e.jsx("span", { className: o, children: i });
+  const s = String(i).split(" ");
+  let x = 0;
+  return e.jsxs("span", {
+    className: o,
+    children: [
+      e.jsx("span", { className: "sr-only", children: i }),
+      e.jsx("span", {
+        "aria-hidden": "true",
+        children: s.map((c, m) => {
+          const g = Array.from(c);
+          return e.jsxs(
+            "span",
+            {
+              children: [
+                e.jsx("span", {
+                  className: "inline-block whitespace-nowrap",
+                  children: g.map((y, u) => {
+                    const B = x++;
+                    return e.jsx(
+                      n.span,
+                      {
+                        className: "inline-block",
+                        initial: { opacity: 0, y: 10 },
+                        animate: { opacity: 1, y: 0 },
+                        transition: {
+                          duration: 0.8,
+                          ease: "easeOut",
+                          delay: B * 0.012,
+                        },
+                        children: y,
+                      },
+                      `${y}-${u}`,
+                    );
+                  }),
+                }),
+                m < s.length - 1 ? " " : "",
+              ],
+            },
+            `${c}-${m}`,
+          );
+        }),
+      }),
+    ],
+  });
+}
+function b({ to: i, className: o = "", children: a }) {
+  const s = A(),
+    x = C(0),
+    c = C(0),
+    m = q(x, { stiffness: 300, damping: 20, mass: 0.4 }),
+    g = q(c, { stiffness: 300, damping: 20, mass: 0.4 }),
+    y = 9,
+    u = d.useRef(null);
+  function B(F) {
+    if (s || u.current) return;
+    const I = F.currentTarget,
+      { clientX: L, clientY: R } = F;
+    u.current = requestAnimationFrame(() => {
+      u.current = null;
+      const v = I.getBoundingClientRect(),
+        D = (L - v.left) / v.width,
+        V = (R - v.top) / v.height,
+        E = (D - 0.5) * 2,
+        w = (V - 0.5) * 2;
+      (x.set(E * y), c.set(w * y));
+    });
+  }
+  function P() {
+    (x.set(0), c.set(0));
+  }
+  return e.jsx(Te, {
+    to: i,
+    className: "inline-flex",
+    children: e.jsx(n.span, {
+      className: o,
+      style: { x: m, y: g },
+      onMouseMove: B,
+      onMouseLeave: P,
+      whileHover: s ? void 0 : { y: -4 },
+      transition: { type: "spring", stiffness: 300, damping: 20 },
+      children: a,
+    }),
+  });
+}
+function xt() {
+  var Y, O, $, X, K, J, Q, Z, ee, te, se, ae;
+  Pe({
+    title: "GarTexHub — B2B Textile & Garment Sourcing Platform",
+    type: "website",
+    description:
+      "A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, and connect with verified partners.",
+    siteName: "GarTexHub",
+    locale: "en_US",
+    twitterSite: "@gartexhub",
+  });
+  const [i, o] = d.useState(!1);
+  d.useEffect(() => {
+    const t = Le();
+    o(!!t);
+  }, []);
+  const a = d.useMemo(
+      () => ({
+        hero: {
+          headline:
+            "Where global buyers, factories, and buying houses connect with clarity",
+          subheadline:
+            "A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.",
+          presentation_rule:
+            "Strategic presentation rule: GartexHub must be presented in a way that makes business workflow stronger, more transparent, more efficient, and more trusted. It cannot be marketed with a destructive message against any group.",
+          value_props: [
+            "Structured buyer request system",
+            "Factory product visibility engine",
+            "Buying house team-based workflow",
+            "AI-assisted communication + verification",
+          ],
+          trust_points: [
+            "Organization-based verification",
+            "Digital signature + PDF contract record",
+            "Audit-ready activity history",
+            "Controlled communication flow",
+          ],
+          buyerRequest: {
+            label: "Buyer Request",
+            title: "No live buyer requests yet",
+            badge: "Live",
+            fields: [],
+          },
+          verifiedFactories: {
+            title: "Verified factories",
+            subtitle: "Matched by compliance",
+            factories: [],
+          },
+        },
+        bento: {
+          professionalFeed: {
+            title: "Professional feed",
+            description:
+              "A calm, LinkedIn-style surface where posts stay readable without heavy frames.",
+            lanes: [
+              { label: "Buyer Requests", meta: "Auto-sorted" },
+              { label: "Factory Updates", meta: "Auto-sorted" },
+              { label: "Buying House Notes", meta: "Auto-sorted" },
+            ],
+          },
+          structuredBuyerRequests: {
+            title: "Structured buyer requests",
+            description:
+              "Perfectly aligned fields so teams compare requirements instantly.",
+            badge: "Aligned",
+            fields: [],
+          },
+          contractVault: {
+            title: "Contract Vault",
+            description:
+              "A secure room vibe for agreements, compliance docs, and audit-ready records.",
+            items: ["Draft → Signed", "Version history", "Team access control"],
+            badge: "Encrypted storage",
+          },
+          enterpriseAnalytics: {
+            title: "Enterprise analytics",
+            description:
+              "Decision-ready reporting for buying houses -- without turning the UI into a spreadsheet.",
+            stats: [],
+          },
+          agentLock: {
+            title: "Internal Agent Lock System",
+            description:
+              "Subtle, conflict-free lead ownership across multi-agent buying house teams.",
+            requestLabel: "No active request yet",
+            status: "Idle",
+            note: "Live request locks will appear here once teams start claiming leads.",
+          },
+        },
+        marketing: { sections: [] },
+        whyCards: [
+          {
+            title: "Structured buyer request system",
+            text: "Clear requirements reduce noise and help teams compare responses faster.",
+          },
+          {
+            title: "Factory product visibility engine",
+            text: "Show products, capacity, and proof points in a calm, organized format.",
+          },
+          {
+            title: "Buying house team-based workflow",
+            text: "Assign leads, coordinate follow-ups, and keep everyone aligned.",
+          },
+          {
+            title: "AI-assisted communication + verification",
+            text: "Summaries, suggested replies, and trust signals help teams move with confidence.",
+          },
+        ],
+        workflow: [
+          {
+            step: "Step 1",
+            title: "Post or search",
+            text: "Buyers post structured requirements. Factories publish products and capacity.",
+          },
+          {
+            step: "Step 2",
+            title: "Smart matching + claim lead",
+            text: "Agents claim requests. AI summarizes context so the team moves fast without noise.",
+          },
+          {
+            step: "Step 3",
+            title: "Chat, call, contract",
+            text: "Communicate, schedule meetings, and store agreements inside the Contract Vault.",
+          },
+        ],
+        platformFeatures: [
+          {
+            title: "Professional feed",
+            text: "A calm, LinkedIn-style surface where posts stay readable without heavy frames.",
+            meta: "Buyer Requests • Factory Updates • Buying House Notes",
+          },
+          {
+            title: "Structured buyer requests",
+            text: "Perfectly aligned fields so teams compare requirements instantly.",
+            meta: "Aligned • Clean • Fast",
+          },
+          {
+            title: "Contract Vault",
+            text: "A secure room vibe for agreements, compliance docs, and audit-ready records.",
+            meta: "Draft → Signed • Version history • Team access control",
+          },
+          {
+            title: "Enterprise analytics",
+            text: "Decision-ready reporting for buying houses without turning the UI into a spreadsheet.",
+            meta: "Active leads • Verified matches • Avg. response",
+          },
+        ],
+        categories: [
+          "Shirts",
+          "Pants",
+          "Knitwear",
+          "Woven",
+          "Denim",
+          "T-shirts",
+          "Home Textiles",
+          "Organic Cotton",
+        ],
+        audience: [
+          {
+            title: "For Buyers",
+            text: "Post clear requirements. Get structured replies. Search Bangladesh-centric but global-facing suppliers.",
+            points: [
+              "Structured buyer request posting",
+              "Fast supplier comparison + clearer requirements",
+              "Reduced irrelevant communication",
+              "Contract history + audit-ready records",
+            ],
+          },
+          {
+            title: "For Factories",
+            text: "Show products + capabilities. Receive better leads. Build trust through verification.",
+            points: [
+              "Product posts with specs, media, and capacity highlights",
+              "Clearer inquiries (less back-and-forth)",
+              "AI-assisted responses for repeated questions",
+              "Verification + visibility signals that build trust",
+            ],
+          },
+          {
+            title: "For Buying Houses",
+            text: "Run sourcing as an organization with team seats, lead assignment, and multi-factory coordination.",
+            points: [
+              "Team seats + sub-accounts",
+              "Lead assignment + internal CRM timeline",
+              "Multi-factory coordination in one inbox",
+              "Enterprise analytics (agent outcomes + conversions)",
+            ],
+          },
+        ],
+        aiWorkflow: {
+          eyebrow: "AI Guided Workflow",
+          title:
+            "Clear positioning, calm surfaces, and stronger business workflow.",
+          text: "GarTexHub is presented to strengthen sourcing operations, improve transparency, make communication more efficient, and build trust — without destructive messaging toward any group.",
+          features: [
+            "Professional feed",
+            "Verified factories",
+            "Digital Contract Vault",
+            "AI guided workflow",
+          ],
+        },
+        timeline: [
+          {
+            label: "No live buyer requests yet",
+            status: "Live",
+            icon: "Search",
+          },
+          {
+            label: "Verified factories",
+            status: "Matched by compliance",
+            icon: "ShieldCheck",
+          },
+          {
+            label: "Internal Agent Lock System",
+            status: "Idle",
+            icon: "LockKeyhole",
+          },
+        ],
+      }),
+      [],
+    ),
+    [s, x] = d.useState(a),
+    [c, m] = d.useState(""),
+    [g, y] = d.useState(!0),
+    [u, B] = d.useState("professional"),
+    P = { Search: ie, ShieldCheck: re, LockKeyhole: oe },
+    F = { ClipboardList: xe, Sparkles: U, FileSignature: ce };
+  d.useEffect(() => {
+    let t = !0;
+    const r = new AbortController();
+    return (
+      Ve("/system/home", { signal: r.signal })
+        .then((l) => {
+          t &&
+            l != null &&
+            l.ok &&
+            l != null &&
+            l.hero &&
+            l != null &&
+            l.bento &&
+            x((S) => ({ ...S, ...l }));
+        })
+        .catch((l) => {
+          t &&
+            (l == null ? void 0 : l.name) !== "AbortError" &&
+            m(String((l == null ? void 0 : l.message) || "Failed to load"));
+        })
+        .finally(() => {
+          t && y(!1);
+        }),
+      () => {
+        ((t = !1), r.abort());
+      }
+    );
+  }, [a]);
+  const I =
+      ((Y = s == null ? void 0 : s.hero) == null ? void 0 : Y.buyerRequest) ||
+      a.hero.buyerRequest,
+    L =
+      ((O = s == null ? void 0 : s.hero) == null
+        ? void 0
+        : O.verifiedFactories) || a.hero.verifiedFactories,
+    R =
+      (($ = s == null ? void 0 : s.hero) == null ? void 0 : $.headline) ||
+      a.hero.headline,
+    v =
+      ((X = s == null ? void 0 : s.hero) == null ? void 0 : X.subheadline) ||
+      a.hero.subheadline,
+    D =
+      ((K = s == null ? void 0 : s.hero) == null
+        ? void 0
+        : K.short_description) || a.hero.short_description,
+    V =
+      ((J = s == null ? void 0 : s.hero) == null
+        ? void 0
+        : J.presentation_rule) || a.hero.presentation_rule,
+    E = Array.isArray(
+      (Q = s == null ? void 0 : s.hero) == null ? void 0 : Q.value_props,
+    )
+      ? s.hero.value_props
+      : a.hero.value_props,
+    w = (s == null ? void 0 : s.bento) || a.bento,
+    W = Array.isArray(
+      (Z = s == null ? void 0 : s.marketing) == null ? void 0 : Z.sections,
+    )
+      ? s.marketing.sections
+      : ((ee = a == null ? void 0 : a.marketing) == null
+          ? void 0
+          : ee.sections) || [],
+    ue = (s == null ? void 0 : s.whyCards) || a.whyCards,
+    he = (s == null ? void 0 : s.workflow) || a.workflow,
+    pe = (s == null ? void 0 : s.platformFeatures) || a.platformFeatures,
+    ge = (s == null ? void 0 : s.categories) || a.categories,
+    fe = (s == null ? void 0 : s.audience) || a.audience,
+    M = (s == null ? void 0 : s.aiWorkflow) || a.aiWorkflow,
+    be = (s == null ? void 0 : s.timeline) || a.timeline,
+    ye = ((se =
+      (te = s == null ? void 0 : s.bento) == null
+        ? void 0
+        : te.enterpriseAnalytics) == null
+      ? void 0
+      : se.stats) ||
+      a.bento.enterpriseAnalytics.stats || [
+        { label: "Active leads", value: "120" },
+        { label: "Verified matches", value: "60" },
+        { label: "Avg. response", value: "1h 30m" },
+      ],
+    we =
+      ((ae = s == null ? void 0 : s.hero) == null ? void 0 : ae.trust_points) ||
+      a.hero.trust_points,
+    H = d.useMemo(
+      () =>
+        u === "professional"
+          ? w
+          : {
+              ...w,
+              professionalFeed: {
+                ...w.professionalFeed,
+                title: "Diverse feed",
+                description:
+                  "A broader surface for discovery -- still structured and readable.",
+                lanes: [
+                  { label: "Market Updates", meta: "Auto-sorted" },
+                  { label: "New Suppliers", meta: "Auto-sorted" },
+                  { label: "Opportunities", meta: "Auto-sorted" },
+                ],
+              },
+              structuredBuyerRequests: {
+                ...w.structuredBuyerRequests,
+                badge: "Verified",
+              },
+            },
+      [w, u],
+    ),
+    h = A(),
+    { scrollY: N } = me(),
+    je = k(N, [0, 800], [0, -60]),
+    ke = k(N, [0, 800], [0, -100]),
+    ve = k(N, [0, 800], [0, -80]),
+    Ne = q(je, { stiffness: 80, damping: 20, restDelta: 0.01 }),
+    Se = q(ke, { stiffness: 80, damping: 20, restDelta: 0.01 }),
+    Ae = q(ve, { stiffness: 80, damping: 20, restDelta: 0.01 }),
+    _e = k(N, [0, 600], [0, -20]),
+    Ce = k(N, [0, 600], [0, -60]),
+    qe = k(N, [0, 600], [0, -10]),
+    G = d.useMemo(() => ["why", "workflow", "platform", "trust"], []),
+    Be = ["Why", "Workflow", "Platform", "Trust"],
+    [Fe, Ie] = d.useState(""),
+    z = d.useRef(null);
+  return (
+    d.useEffect(() => {
+      z.current = new IntersectionObserver(
+        (t) => {
+          for (const r of t) r.isIntersecting && Ie(r.target.id);
+        },
+        { rootMargin: "-40% 0px -40% 0px" },
+      );
+      for (const t of G) {
+        const r = document.getElementById(t);
+        r && z.current.observe(r);
+      }
+      return () => {
+        var t;
+        return (t = z.current) == null ? void 0 : t.disconnect();
+      };
+    }, [G]),
+    g
+      ? e.jsx(Me, { fill: !0, size: 64, text: "Loading..." })
+      : e.jsxs("div", {
+          className:
+            "relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white",
+          children: [
+            !h &&
+              e.jsx("nav", {
+                className:
+                  "fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block",
+                "aria-label": "Section navigation",
+                children: e.jsx("div", {
+                  className: "flex flex-col items-center gap-3",
+                  children: G.map((t, r) =>
+                    e.jsx(
+                      "a",
+                      {
+                        href: `#${t}`,
+                        onClick: (l) => {
+                          var S;
+                          (l.preventDefault(),
+                            (S = document.getElementById(t)) == null ||
+                              S.scrollIntoView({ behavior: "smooth" }));
+                        },
+                        className:
+                          "flex items-center justify-center min-w-[48px] min-h-[48px] rounded-full",
+                        "aria-label": Be[r],
+                        children: e.jsx("span", {
+                          className: `block rounded-full transition-all duration-300 ${Fe === t ? "h-3 w-3 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]" : "h-2 w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-400"}`,
+                        }),
+                      },
+                      t,
+                    ),
+                  ),
+                }),
+              }),
+            e.jsxs("div", {
+              className: "absolute inset-0 -z-10 overflow-hidden",
+              children: [
+                e.jsx("div", {
+                  className:
+                    "absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 max-sm:h-[360px] max-sm:w-[360px] animate-blob-spin-1",
+                  children: e.jsx(n.div, {
+                    style: {
+                      y: h ? 0 : Ne,
+                      backgroundImage:
+                        "conic-gradient(from 0deg, rgba(14,165,233,0.25), rgba(99,102,241,0.15), transparent 70%)",
+                    },
+                    className: "h-full w-full rounded-full blur-3xl",
+                  }),
+                }),
+                e.jsx("div", {
+                  className:
+                    "absolute right-[-80px] top-[260px] h-[360px] w-[360px] max-sm:hidden animate-blob-spin-2",
+                  children: e.jsx(n.div, {
+                    style: {
+                      y: h ? 0 : Se,
+                      backgroundImage:
+                        "conic-gradient(from 120deg, rgba(59,130,246,0.20), rgba(99,102,241,0.12), transparent 70%)",
+                    },
+                    className: "h-full w-full rounded-full blur-3xl",
+                  }),
+                }),
+                e.jsx("div", {
+                  className:
+                    "absolute left-[-120px] top-[760px] h-[280px] w-[280px] max-sm:hidden animate-blob-spin-3",
+                  children: e.jsx(n.div, {
+                    style: {
+                      y: h ? 0 : Ae,
+                      backgroundImage:
+                        "conic-gradient(from 240deg, rgba(6,182,212,0.18), rgba(14,165,233,0.10), transparent 70%)",
+                    },
+                    className: "h-full w-full rounded-full blur-3xl",
+                  }),
+                }),
+                e.jsxs("svg", {
+                  className:
+                    "absolute inset-0 h-full w-full opacity-[0.04] pointer-events-none",
+                  xmlns: "http://www.w3.org/2000/svg",
+                  children: [
+                    e.jsx("defs", {
+                      children: e.jsxs("filter", {
+                        id: "noiseFilter",
+                        children: [
+                          e.jsx("feTurbulence", {
+                            type: "fractalNoise",
+                            baseFrequency: "0.65",
+                            numOctaves: "3",
+                            stitchTiles: "stitch",
+                          }),
+                          e.jsx("feColorMatrix", {
+                            type: "matrix",
+                            values:
+                              "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.05 0",
+                          }),
+                        ],
+                      }),
+                    }),
+                    e.jsx("rect", {
+                      width: "100%",
+                      height: "100%",
+                      filter: "url(#noiseFilter)",
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            e.jsxs("main", {
+              className: "mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8",
+              children: [
+                e.jsxs(f, {
+                  as: "section",
+                  transition: Oe(0),
+                  className:
+                    "grid items-center gap-8 lg:grid-cols-[1.25fr_0.95fr]",
+                  children: [
+                    e.jsxs(n.div, {
+                      variants: Ye,
+                      initial: "hidden",
+                      whileInView: "visible",
+                      viewport: { once: !0, margin: "-60px" },
+                      children: [
+                        e.jsxs(n.div, {
+                          variants: _,
+                          className: "flex flex-wrap gap-2",
+                          children: [
+                            e.jsx(T, { children: "Bangladesh-centric" }),
+                            e.jsx(T, { children: "Global-facing" }),
+                            e.jsx(T, { children: "Garments" }),
+                            e.jsx(T, { children: "Textiles" }),
+                          ],
+                        }),
+                        e.jsx(n.h1, {
+                          variants: _,
+                          className:
+                            "mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl",
+                          children: e.jsx(Ke, { text: R }),
+                        }),
+                        e.jsxs(n.div, {
+                          variants: _,
+                          children: [
+                            e.jsx("p", {
+                              className:
+                                "mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg",
+                              children: v,
+                            }),
+                            e.jsx("p", {
+                              className:
+                                "mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400",
+                              children: D,
+                            }),
+                            V
+                              ? e.jsx("p", {
+                                  className:
+                                    "mt-2 max-w-2xl text-xs italic text-slate-500 dark:text-slate-400",
+                                  children: V,
+                                })
+                              : null,
+                          ],
+                        }),
+                        e.jsx(n.div, {
+                          variants: _,
+                          className: "mt-8 flex flex-wrap gap-3",
+                          children: i
+                            ? e.jsxs(e.Fragment, {
+                                children: [
+                                  e.jsxs(b, {
+                                    to: "/feed",
+                                    className:
+                                      "inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5",
+                                    children: [
+                                      "Go to Dashboard ",
+                                      e.jsx(ne, { className: "h-4 w-4" }),
+                                    ],
+                                  }),
+                                  e.jsx(b, {
+                                    to: "/search",
+                                    className:
+                                      "inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200",
+                                    children: "Browse Suppliers",
+                                  }),
+                                ],
+                              })
+                            : e.jsxs(e.Fragment, {
+                                children: [
+                                  e.jsxs(b, {
+                                    to: "/signup",
+                                    className:
+                                      "inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5",
+                                    children: [
+                                      "Create Buyer Account ",
+                                      e.jsx(ne, { className: "h-4 w-4" }),
+                                    ],
+                                  }),
+                                  e.jsx(b, {
+                                    to: "/signup",
+                                    className:
+                                      "inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200",
+                                    children: "Register Factory",
+                                  }),
+                                  e.jsx(b, {
+                                    to: "/login",
+                                    className:
+                                      "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10",
+                                    children: "View enterprise plans",
+                                  }),
+                                ],
+                              }),
+                        }),
+                        e.jsx(n.div, {
+                          variants: _,
+                          className: "mt-8 grid gap-3 sm:grid-cols-3",
+                          children: ye.map((t) =>
+                            e.jsxs(
+                              p,
+                              {
+                                className: "p-4",
+                                children: [
+                                  e.jsx("div", {
+                                    className:
+                                      "text-sm text-slate-500 dark:text-slate-400",
+                                    children: t.label,
+                                  }),
+                                  e.jsx("div", {
+                                    className:
+                                      "mt-2 text-2xl font-semibold tracking-tight",
+                                    children: t.value,
+                                  }),
+                                ],
+                              },
+                              t.label,
+                            ),
+                          ),
+                        }),
+                      ],
+                    }),
+                    e.jsx("div", {
+                      className: "relative",
+                      children: e.jsx(p, {
+                        className: "overflow-hidden p-5",
+                        children: e.jsxs("div", {
+                          className:
+                            "rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 shadow-2xl shadow-sky-200/30 dark:from-slate-950 dark:to-sky-950 dark:text-white dark:shadow-sky-950/25",
+                          children: [
+                            e.jsxs("div", {
+                              className: "flex items-center justify-between",
+                              children: [
+                                e.jsxs("div", {
+                                  children: [
+                                    e.jsx("div", {
+                                      className:
+                                        "text-sm font-medium text-sky-600/80 dark:text-sky-100/80",
+                                      children: "Buyer Request",
+                                    }),
+                                    e.jsx("div", {
+                                      className: "mt-1 text-xl font-semibold",
+                                      children: I.title,
+                                    }),
+                                  ],
+                                }),
+                                e.jsx($e, { label: I.badge }),
+                              ],
+                            }),
+                            e.jsx("div", {
+                              className: "mt-6 grid gap-3",
+                              children: be.map((t) => {
+                                const r = P[t.icon] || ie;
+                                return e.jsxs(
+                                  "div",
+                                  {
+                                    className:
+                                      "flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5",
+                                    children: [
+                                      e.jsx("div", {
+                                        className:
+                                          "flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/10",
+                                        children: e.jsx(r, {
+                                          className:
+                                            "h-5 w-5 text-sky-600 dark:text-sky-200",
+                                        }),
+                                      }),
+                                      e.jsxs("div", {
+                                        className: "flex-1",
+                                        children: [
+                                          e.jsx("div", {
+                                            className: "text-sm font-medium",
+                                            children: t.label,
+                                          }),
+                                          e.jsx("div", {
+                                            className:
+                                              "text-xs text-slate-600 dark:text-sky-200/90",
+                                            children: t.status,
+                                          }),
+                                        ],
+                                      }),
+                                    ],
+                                  },
+                                  t.label,
+                                );
+                              }),
+                            }),
+                            e.jsxs("div", {
+                              className:
+                                "mt-5 rounded-3xl border border-slate-200 bg-slate-100 p-4 dark:border-white/10 dark:bg-white/10",
+                              children: [
+                                e.jsxs("div", {
+                                  className:
+                                    "flex items-center justify-between",
+                                  children: [
+                                    e.jsxs("div", {
+                                      className:
+                                        "flex items-center gap-2 text-sm font-medium",
+                                      children: [
+                                        e.jsx(Ee, {
+                                          className:
+                                            "h-4 w-4 text-cyan-600 dark:text-cyan-200",
+                                        }),
+                                        " ",
+                                        L.title,
+                                      ],
+                                    }),
+                                    e.jsx("div", {
+                                      className:
+                                        "text-xs text-slate-600 dark:text-sky-200/90",
+                                      children: L.subtitle,
+                                    }),
+                                  ],
+                                }),
+                                e.jsx("div", {
+                                  className:
+                                    "mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2 dark:text-sky-200",
+                                  children: E.slice(0, 4).map((t) =>
+                                    e.jsx(
+                                      "div",
+                                      {
+                                        className:
+                                          "rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5",
+                                        children: t,
+                                      },
+                                      t,
+                                    ),
+                                  ),
+                                }),
+                              ],
+                            }),
+                          ],
+                        }),
+                      }),
+                    }),
+                  ],
+                }),
+                e.jsxs(f, {
+                  as: "section",
+                  id: "why",
+                  className: "mt-20",
+                  children: [
+                    e.jsx(j, {
+                      eyebrow: "Why GarTexHub",
+                      title:
+                        "A sourcing workflow network built only for garments and textiles.",
+                      text: "Low noise, structured requests, and trust by design. Designed to strengthen business workflow, increase transparency, improve efficiency, and build trust.",
+                    }),
+                    e.jsx(De, {
+                      children: e.jsx("div", {
+                        className:
+                          "mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4",
+                        children: ue.map((t) =>
+                          e.jsxs(
+                            p,
+                            {
+                              className: "p-6",
+                              children: [
+                                e.jsx("div", {
+                                  className:
+                                    "flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300",
+                                  children: e.jsx(de, { className: "h-6 w-6" }),
+                                }),
+                                e.jsx("h3", {
+                                  className: "mt-4 text-lg font-semibold",
+                                  children: t.title,
+                                }),
+                                e.jsx("p", {
+                                  className:
+                                    "mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",
+                                  children: t.text,
+                                }),
+                              ],
+                            },
+                            t.title,
+                          ),
+                        ),
+                      }),
+                    }),
+                  ],
+                }),
+                e.jsxs(f, {
+                  as: "section",
+                  id: "workflow",
+                  className: "mt-20",
+                  children: [
+                    e.jsx(j, {
+                      eyebrow: "How GarTexHub works",
+                      title: "A simple flow that stays structured end-to-end.",
+                      text: "From the first request to the final agreement, every step is organized to keep sourcing calm, clear, and fast.",
+                    }),
+                    e.jsx("div", {
+                      className:
+                        "mt-8 flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-3",
+                      children: he.map((t, r) => {
+                        const l = F[t.icon] || xe,
+                          S = h ? {} : { y: [_e, Ce, qe][r] || 0 };
+                        return e.jsx(
+                          n.div,
+                          {
+                            style: S,
+                            children: e.jsxs(p, {
+                              className:
+                                "min-w-[280px] snap-start lg:min-w-0 p-6",
+                              children: [
+                                e.jsxs("div", {
+                                  className:
+                                    "flex items-center justify-between",
+                                  children: [
+                                    e.jsx("div", {
+                                      className:
+                                        "rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300",
+                                      children: e.jsx(le, {
+                                        fromColor: "rgb(14,165,233)",
+                                        toColor: "rgb(99,102,241)",
+                                        children: t.step,
+                                      }),
+                                    }),
+                                    e.jsx("div", {
+                                      className:
+                                        "flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-100",
+                                      children: e.jsx(l, {
+                                        className: "h-5 w-5",
+                                      }),
+                                    }),
+                                  ],
+                                }),
+                                e.jsx("h3", {
+                                  className: "mt-5 text-xl font-semibold",
+                                  children: t.title,
+                                }),
+                                e.jsx("p", {
+                                  className:
+                                    "mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",
+                                  children: t.text,
+                                }),
+                              ],
+                            }),
+                          },
+                          t.title,
+                        );
+                      }),
+                    }),
+                  ],
+                }),
+                e.jsxs(f, {
+                  as: "section",
+                  id: "platform",
+                  className: "mt-20",
+                  children: [
+                    e.jsx(j, {
+                      eyebrow: "Platform features",
+                      title:
+                        "Borderless surfaces, clean hierarchy, and strong trust indicators.",
+                      text: "Professional feed, structured buyer requests, contract vault, enterprise analytics, a subtle lock system, and a premium AI assistant — all aligned around clarity.",
+                    }),
+                    e.jsx("div", {
+                      className: "mt-8 grid gap-4 lg:grid-cols-2",
+                      children: pe.map((t) =>
+                        e.jsxs(
+                          p,
+                          {
+                            className: "p-6",
+                            children: [
+                              e.jsxs("div", {
+                                className:
+                                  "flex items-start justify-between gap-4",
+                                children: [
+                                  e.jsxs("div", {
+                                    children: [
+                                      e.jsx("h3", {
+                                        className: "text-xl font-semibold",
+                                        children: t.title,
+                                      }),
+                                      e.jsx("p", {
+                                        className:
+                                          "mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300",
+                                        children: t.text,
+                                      }),
+                                    ],
+                                  }),
+                                  e.jsx("div", {
+                                    className:
+                                      "rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 p-3 text-white shadow-lg shadow-sky-500/20",
+                                    children: e.jsx(He, {
+                                      className: "h-5 w-5",
+                                    }),
+                                  }),
+                                ],
+                              }),
+                              e.jsx("div", {
+                                className:
+                                  "mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300",
+                                children: t.meta,
+                              }),
+                            ],
+                          },
+                          t.title,
+                        ),
+                      ),
+                    }),
+                  ],
+                }),
+                e.jsxs(f, {
+                  as: "section",
+                  className: "mt-20 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]",
+                  children: [
+                    e.jsxs(p, {
+                      className: "p-6",
+                      id: "trust",
+                      children: [
+                        e.jsx(j, {
+                          eyebrow: "Trust",
+                          title: "Verified and documented by design.",
+                          text: "GarTexHub increases trust with organization-based verification, controlled communication flow, and secure contract records.",
+                        }),
+                        e.jsxs(Re, {
+                          top: 120,
+                          children: [
+                            e.jsx("div", {
+                              className: "mt-6 space-y-3",
+                              children: we.map((t, r) =>
+                                e.jsxs(
+                                  n.div,
+                                  {
+                                    initial: h ? {} : { opacity: 0, x: -10 },
+                                    whileInView: h ? {} : { opacity: 1, x: 0 },
+                                    viewport: { once: !0, margin: "-40px" },
+                                    transition: {
+                                      delay: r * 0.1,
+                                      duration: 0.4,
+                                      ease: [0.16, 1, 0.3, 1],
+                                    },
+                                    className:
+                                      "flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5",
+                                    children: [
+                                      e.jsx(n.div, {
+                                        initial: h ? {} : { scale: 0 },
+                                        whileInView: h ? {} : { scale: 1 },
+                                        viewport: { once: !0 },
+                                        transition: {
+                                          delay: r * 0.1 + 0.2,
+                                          type: "spring",
+                                          stiffness: 300,
+                                          damping: 15,
+                                        },
+                                        children: e.jsx(re, {
+                                          className: "h-5 w-5 text-sky-500",
+                                        }),
+                                      }),
+                                      e.jsx("div", {
+                                        className:
+                                          "text-sm text-slate-700 dark:text-slate-200",
+                                        children: t,
+                                      }),
+                                    ],
+                                  },
+                                  t,
+                                ),
+                              ),
+                            }),
+                            !h &&
+                              e.jsx("div", {
+                                className: "mt-4 grid grid-cols-8 gap-1",
+                                children: Array.from({ length: 32 }).map(
+                                  (t, r) =>
+                                    e.jsx(
+                                      n.div,
+                                      {
+                                        className: `aspect-square rounded-md ${r % 3 === 0 ? "bg-emerald-400/30" : r % 3 === 1 ? "bg-sky-400/20" : "bg-slate-200/30 dark:bg-slate-700/30"}`,
+                                        initial: { opacity: 0, scale: 0.5 },
+                                        whileInView: { opacity: 1, scale: 1 },
+                                        viewport: { once: !0 },
+                                        transition: {
+                                          delay: 0.3 + r * 0.02,
+                                          duration: 0.3,
+                                        },
+                                      },
+                                      r,
+                                    ),
+                                ),
+                              }),
+                          ],
+                        }),
+                      ],
+                    }),
+                    e.jsx(p, {
+                      className: "overflow-hidden p-0",
+                      children: e.jsxs("div", {
+                        className: "grid gap-0 lg:grid-cols-2",
+                        children: [
+                          e.jsxs("div", {
+                            className:
+                              "flex h-full flex-col bg-gradient-to-br from-sky-500 to-blue-700 p-6 text-white",
+                            children: [
+                              e.jsxs("div", {
+                                className:
+                                  "inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium",
+                                children: [
+                                  e.jsx(oe, { className: "h-3.5 w-3.5" }),
+                                  " Internal Agent Lock System",
+                                ],
+                              }),
+                              e.jsx("div", {
+                                className:
+                                  "mt-4 text-2xl font-semibold tracking-tight",
+                                children:
+                                  "Subtle, conflict-free lead ownership",
+                              }),
+                              e.jsx("p", {
+                                className:
+                                  "mt-3 text-sm leading-6 text-sky-50/90",
+                                children:
+                                  "Multi-agent buying house teams can claim leads, avoid overlap, and keep ownership visible without friction.",
+                              }),
+                              e.jsxs("div", {
+                                className:
+                                  "mt-6 rounded-3xl border border-white/15 bg-white/10 p-4",
+                                children: [
+                                  e.jsxs("div", {
+                                    className:
+                                      "flex items-center justify-between text-sm",
+                                    children: [
+                                      e.jsx("span", {
+                                        children: H.agentLock.requestLabel,
+                                      }),
+                                      e.jsx("span", {
+                                        className:
+                                          "rounded-full bg-white/15 px-3 py-1 text-xs",
+                                        children: H.agentLock.status,
+                                      }),
+                                    ],
+                                  }),
+                                  e.jsx("p", {
+                                    className:
+                                      "mt-3 text-xs leading-5 text-sky-50/85",
+                                    children: H.agentLock.note,
+                                  }),
+                                ],
+                              }),
+                            ],
+                          }),
+                          e.jsxs("div", {
+                            className:
+                              "flex h-full flex-col bg-white p-6 dark:bg-slate-950/70",
+                            children: [
+                              e.jsxs("div", {
+                                className: "flex items-center justify-between",
+                                children: [
+                                  e.jsxs("div", {
+                                    children: [
+                                      e.jsx("div", {
+                                        className:
+                                          "text-sm font-medium text-slate-500 dark:text-slate-400",
+                                        children: "Unique toggle",
+                                      }),
+                                      e.jsx("div", {
+                                        className: "mt-1 text-xl font-semibold",
+                                        children:
+                                          "A tactile switch for diverse content modes",
+                                      }),
+                                    ],
+                                  }),
+                                  e.jsx("button", {
+                                    type: "button",
+                                    disabled: !0,
+                                    "aria-label": "Toggle content mode",
+                                    className:
+                                      "relative h-8 w-16 cursor-not-allowed rounded-full bg-slate-200 p-1 opacity-50 dark:bg-slate-800",
+                                    children: e.jsx(n.div, {
+                                      layout: !0,
+                                      className:
+                                        "absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow-md transition-transform dark:bg-sky-400",
+                                      animate: {
+                                        x: u === "professional" ? 0 : 32,
+                                      },
+                                    }),
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("div", {
+                                className:
+                                  "mt-6 flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5",
+                                children: [
+                                  e.jsx("div", {
+                                    className: "text-sm font-medium",
+                                    children:
+                                      u === "professional"
+                                        ? "Professional"
+                                        : "Diverse",
+                                  }),
+                                  e.jsx("div", {
+                                    className:
+                                      "mt-2 text-sm text-slate-600 dark:text-slate-300",
+                                    children: "Factory video gallery",
+                                  }),
+                                  e.jsx("div", {
+                                    className:
+                                      "mt-4 flex-1 grid grid-cols-3 auto-rows-fr gap-2",
+                                    children: Array.from({ length: 6 }).map(
+                                      (t, r) =>
+                                        e.jsx(
+                                          n.div,
+                                          {
+                                            layout: !0,
+                                            transition: {
+                                              type: "spring",
+                                              stiffness: 300,
+                                              damping: 25,
+                                            },
+                                            className:
+                                              "rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700",
+                                          },
+                                          r,
+                                        ),
+                                    ),
+                                  }),
+                                ],
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    }),
+                  ],
+                }),
+                e.jsxs(f, {
+                  as: "section",
+                  className: "mt-20",
+                  children: [
+                    e.jsx(j, {
+                      eyebrow: "Built for growing buying houses",
+                      title:
+                        "Enterprise control, dedicated analytics, and organization-level workflow.",
+                      text: "Unlimited sub-accounts, dedicated analytics, organization control, and contract management designed for serious sourcing teams.",
+                    }),
+                    e.jsxs("div", {
+                      className: "mt-8 grid gap-4 lg:grid-cols-2",
+                      children: [
+                        e.jsxs(p, {
+                          className: "p-6",
+                          children: [
+                            e.jsxs("div", {
+                              className: "flex items-center justify-between",
+                              children: [
+                                e.jsx("div", {
+                                  className: "text-lg font-semibold",
+                                  children: "Enterprise analytics",
+                                }),
+                                e.jsx(Ge, {
+                                  className: "h-5 w-5 text-sky-500",
+                                }),
+                              ],
+                            }),
+                            e.jsx("p", {
+                              className:
+                                "mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",
+                              children:
+                                "Decision-ready reporting for buying houses — without turning the UI into a spreadsheet.",
+                            }),
+                            e.jsx("div", {
+                              className: "mt-6 grid gap-3 sm:grid-cols-3",
+                              children: [
+                                ["Active leads", "120"],
+                                ["Verified matches", "60"],
+                                ["Avg. response", "1h 30m"],
+                              ].map(([t, r]) =>
+                                e.jsxs(
+                                  "div",
+                                  {
+                                    className:
+                                      "rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5",
+                                    children: [
+                                      e.jsx("div", {
+                                        className:
+                                          "text-xs text-slate-500 dark:text-slate-400",
+                                        children: t,
+                                      }),
+                                      e.jsx("div", {
+                                        className:
+                                          "mt-2 text-2xl font-semibold",
+                                        children: r,
+                                      }),
+                                    ],
+                                  },
+                                  t,
+                                ),
+                              ),
+                            }),
+                          ],
+                        }),
+                        e.jsxs(p, {
+                          className: "p-6",
+                          children: [
+                            e.jsxs("div", {
+                              className: "flex items-center justify-between",
+                              children: [
+                                e.jsx("div", {
+                                  className: "text-lg font-semibold",
+                                  children: "Platform features",
+                                }),
+                                e.jsx(ze, {
+                                  className: "h-5 w-5 text-sky-500",
+                                }),
+                              ],
+                            }),
+                            e.jsx("p", {
+                              className:
+                                "mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",
+                              children:
+                                "Focused only on garments and textiles. Clear categories help the right people find the right partners.",
+                            }),
+                            e.jsx("div", {
+                              className: "mt-6 flex flex-wrap gap-2",
+                              children: ge.map((t, r) =>
+                                e.jsx(
+                                  n.span,
+                                  {
+                                    initial: h ? {} : { opacity: 0, y: 6 },
+                                    whileInView: h ? {} : { opacity: 1, y: 0 },
+                                    viewport: { once: !0 },
+                                    transition: {
+                                      delay: r * 0.04,
+                                      duration: 0.3,
+                                      ease: [0.16, 1, 0.3, 1],
+                                    },
+                                    className:
+                                      "rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200",
+                                    children: t,
+                                  },
+                                  t,
+                                ),
+                              ),
+                            }),
+                            e.jsxs("div", {
+                              className:
+                                "mt-6 rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 dark:from-slate-950 dark:to-sky-950 dark:text-white",
+                              children: [
+                                e.jsx("div", {
+                                  className:
+                                    "text-sm text-sky-600/75 dark:text-sky-100/75",
+                                  children:
+                                    "Start connecting with the right partners",
+                                }),
+                                e.jsx("div", {
+                                  className: "mt-1 text-lg font-semibold",
+                                  children: "Create account • Login",
+                                }),
+                                e.jsx("div", {
+                                  className: "mt-4 flex gap-3",
+                                  children: i
+                                    ? e.jsxs(e.Fragment, {
+                                        children: [
+                                          e.jsx(b, {
+                                            to: "/feed",
+                                            className:
+                                              "rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900",
+                                            children: "Go to Dashboard",
+                                          }),
+                                          e.jsx(b, {
+                                            to: "/search",
+                                            className:
+                                              "rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white",
+                                            children: "Browse Suppliers",
+                                          }),
+                                        ],
+                                      })
+                                    : e.jsxs(e.Fragment, {
+                                        children: [
+                                          e.jsx(b, {
+                                            to: "/signup",
+                                            className:
+                                              "rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900",
+                                            children: "Create account",
+                                          }),
+                                          e.jsx(b, {
+                                            to: "/login",
+                                            className:
+                                              "rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white",
+                                            children: "Login",
+                                          }),
+                                        ],
+                                      }),
+                                }),
+                              ],
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                e.jsxs(f, {
+                  as: "section",
+                  className: "mt-20",
+                  children: [
+                    e.jsx(j, {
+                      eyebrow: "Audience",
+                      title:
+                        "Clear surfaces and structured workflows for every role in the sourcing chain.",
+                      text: "Buyers, factories, and buying houses each get a focused experience that keeps the system calm at scale.",
+                    }),
+                    e.jsx("div", {
+                      className: "mt-8 grid gap-4 xl:grid-cols-3",
+                      children: fe.map((t) =>
+                        e.jsxs(
+                          p,
+                          {
+                            className: "p-6",
+                            children: [
+                              e.jsx("h3", {
+                                className: "text-xl font-semibold",
+                                children: t.title,
+                              }),
+                              e.jsx("p", {
+                                className:
+                                  "mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300",
+                                children: e.jsx(le, { children: t.text }),
+                              }),
+                              e.jsx("div", {
+                                className: "mt-5 space-y-3",
+                                children: t.points.map((r) =>
+                                  e.jsxs(
+                                    "div",
+                                    {
+                                      className:
+                                        "flex items-start gap-3 text-sm text-slate-700 dark:text-slate-200",
+                                      children: [
+                                        e.jsx(de, {
+                                          className:
+                                            "mt-0.5 h-4 w-4 text-sky-500",
+                                        }),
+                                        e.jsx("span", { children: r }),
+                                      ],
+                                    },
+                                    r,
+                                  ),
+                                ),
+                              }),
+                            ],
+                          },
+                          t.title,
+                        ),
+                      ),
+                    }),
+                  ],
+                }),
+                W.length
+                  ? e.jsxs(f, {
+                      as: "section",
+                      className: "mt-20",
+                      children: [
+                        e.jsx(j, {
+                          eyebrow: "More",
+                          title: "Additional features and capabilities.",
+                          text: "Explore more ways GarTexHub supports your sourcing workflow.",
+                        }),
+                        e.jsx("div", {
+                          className: "mt-8 grid gap-6 md:grid-cols-2",
+                          children: W.map((t, r) =>
+                            e.jsx(
+                              Xe,
+                              {
+                                index: r,
+                                className: "md:col-span-1",
+                                children: e.jsxs(p, {
+                                  className: "p-7",
+                                  children: [
+                                    t.eyebrow
+                                      ? e.jsx("p", {
+                                          className:
+                                            "text-xs font-semibold text-slate-500 dark:text-slate-400",
+                                          children: t.eyebrow,
+                                        })
+                                      : null,
+                                    e.jsx("h3", {
+                                      className:
+                                        "mt-2 text-base font-bold tracking-tight text-slate-900 dark:text-white",
+                                      children: t.title,
+                                    }),
+                                    t.description
+                                      ? e.jsx("p", {
+                                          className:
+                                            "mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300",
+                                          children: t.description,
+                                        })
+                                      : null,
+                                    Array.isArray(t.bullets) && t.bullets.length
+                                      ? e.jsx("ul", {
+                                          className:
+                                            "mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-300",
+                                          children: t.bullets.map((l) =>
+                                            e.jsxs(
+                                              "li",
+                                              {
+                                                className:
+                                                  "flex items-start gap-2",
+                                                children: [
+                                                  e.jsx("span", {
+                                                    className:
+                                                      "mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500",
+                                                  }),
+                                                  e.jsx("span", {
+                                                    className:
+                                                      "leading-relaxed",
+                                                    children: l,
+                                                  }),
+                                                ],
+                                              },
+                                              l,
+                                            ),
+                                          ),
+                                        })
+                                      : null,
+                                  ],
+                                }),
+                              },
+                              t.id || t.title || String(r),
+                            ),
+                          ),
+                        }),
+                      ],
+                    })
+                  : null,
+                e.jsx(f, {
+                  as: "section",
+                  className:
+                    "mt-20 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500 to-blue-800 p-8 text-white shadow-2xl shadow-sky-500/20 md:p-10",
+                  children: e.jsxs("div", {
+                    className:
+                      "grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center",
+                    children: [
+                      e.jsxs("div", {
+                        children: [
+                          e.jsxs("div", {
+                            className:
+                              "inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium",
+                            children: [
+                              e.jsx(U, { className: "h-3.5 w-3.5" }),
+                              " ",
+                              M.eyebrow,
+                            ],
+                          }),
+                          e.jsx("h2", {
+                            className:
+                              "mt-4 text-3xl font-semibold tracking-tight md:text-4xl",
+                            children: M.title,
+                          }),
+                          e.jsx("p", {
+                            className:
+                              "mt-4 max-w-2xl text-sm leading-6 text-sky-50/90 md:text-base",
+                            children: M.text,
+                          }),
+                        ],
+                      }),
+                      e.jsxs("div", {
+                        className:
+                          "rounded-[1.75rem] border border-white/15 bg-white/10 p-5 backdrop-blur",
+                        children: [
+                          e.jsxs("div", {
+                            className:
+                              "flex items-center justify-between text-sm font-medium",
+                            children: [
+                              e.jsx("span", {
+                                children: "Focused only on garments & textile",
+                              }),
+                              e.jsx(ce, { className: "h-4 w-4" }),
+                            ],
+                          }),
+                          e.jsx("div", {
+                            className: "mt-4 grid gap-2 text-sm text-sky-50/85",
+                            children: M.features.map((t) =>
+                              e.jsx(
+                                "div",
+                                {
+                                  className:
+                                    "rounded-2xl bg-white/10 px-4 py-3",
+                                  children: t,
+                                },
+                                t,
+                              ),
+                            ),
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                }),
+                c
+                  ? e.jsx("p", {
+                      className:
+                        "mt-8 text-center text-xs text-amber-700 dark:text-amber-300",
+                      children: c,
+                    })
+                  : null,
+              ],
+            }),
+          ],
+        })
+  );
+}
+export { xt as default };

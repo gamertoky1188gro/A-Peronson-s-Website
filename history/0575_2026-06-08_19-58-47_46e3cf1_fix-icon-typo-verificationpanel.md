@@ -1,12 +1,12 @@
 # Commit 0575 — `46e3cf1ebc1f`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `46e3cf1ebc1f72b4df5a838f07b325f8381b7d49` |
-| Parent Hash | `f020c7c3ed700cd8787c1e792a5755b365389150` |
-| Author | gamertoky1188gro |
-| Date | 2026-06-08 19:58:47 +0600 |
-| Subject | fix: Typo Icon -> _Icon in VerificationPanel (ReferenceError) |
+| Field       | Value                                                         |
+| ----------- | ------------------------------------------------------------- |
+| Commit Hash | `46e3cf1ebc1f72b4df5a838f07b325f8381b7d49`                    |
+| Parent Hash | `f020c7c3ed700cd8787c1e792a5755b365389150`                    |
+| Author      | gamertoky1188gro                                              |
+| Date        | 2026-06-08 19:58:47 +0600                                     |
+| Subject     | fix: Typo Icon -> _Icon in VerificationPanel (ReferenceError) |
 
 ---
 
@@ -18,9 +18,9 @@ Fixes a ReferenceError caused by a typo: `Icon` was used instead of `_Icon` in t
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `src/components/profile/VerificationPanel.jsx` | modified | 1 | 1 |
+| File                                           | Status   | Insertions | Deletions |
+| ---------------------------------------------- | -------- | ---------- | --------- |
+| `src/components/profile/VerificationPanel.jsx` | modified | 1          | 1         |
 
 **1 file changed, 1 insertion, 1 deletion**
 
@@ -29,6 +29,7 @@ Fixes a ReferenceError caused by a typo: `Icon` was used instead of `_Icon` in t
 ## Detailed Diff Analysis
 
 ### `VerificationPanel.jsx`
+
 - Changed `<Icon size={16} />` → `<_Icon size={16} />`
 
 ---

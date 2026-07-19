@@ -1,12 +1,12 @@
 # Commit 0568 — `ffea1d71efd0`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `ffea1d71efd097e4e134d4ab1b8fa448a409fb35` |
-| Parent Hash | `7c90f289c109f595e2dc2168161f6b6052afe9a1` |
-| Author | gamertoky1188gro |
-| Date | 2026-06-07 20:12:39 +0600 |
-| Subject | feat: Facebook-style post detail modal with Post + Comments tabs |
+| Field       | Value                                                            |
+| ----------- | ---------------------------------------------------------------- |
+| Commit Hash | `ffea1d71efd097e4e134d4ab1b8fa448a409fb35`                       |
+| Parent Hash | `7c90f289c109f595e2dc2168161f6b6052afe9a1`                       |
+| Author      | gamertoky1188gro                                                 |
+| Date        | 2026-06-07 20:12:39 +0600                                        |
+| Subject     | feat: Facebook-style post detail modal with Post + Comments tabs |
 
 ---
 
@@ -18,10 +18,10 @@ Creates a `PostDetailModal` component that replaces the `CommentsDrawer`. It's a
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `src/components/feed/PostDetailModal.jsx` | new | 379 | 0 |
-| `src/pages/MainFeed.jsx` | modified | 3 | 2 |
+| File                                      | Status   | Insertions | Deletions |
+| ----------------------------------------- | -------- | ---------- | --------- |
+| `src/components/feed/PostDetailModal.jsx` | new      | 379        | 0         |
+| `src/pages/MainFeed.jsx`                  | modified | 3          | 2         |
 
 **2 files changed, 382 insertions, 2 deletions**
 
@@ -30,6 +30,7 @@ Creates a `PostDetailModal` component that replaces the `CommentsDrawer`. It's a
 ## Detailed Diff Analysis
 
 ### `PostDetailModal.jsx`
+
 - Full-featured modal with Post tab (shows `PostPreview` component) and Comments tab.
 - Comments: threaded tree view with expand/collapse, inline reply input, user mentions.
 - Fetches comments from `/social/:entityType/:entityId` API.
@@ -38,6 +39,7 @@ Creates a `PostDetailModal` component that replaces the `CommentsDrawer`. It's a
 - Scrollable content area with `max-h-[90vh]`.
 
 ### `MainFeed.jsx`
+
 - Replaced `CommentsDrawer` import/usage with `PostDetailModal`.
 
 ---

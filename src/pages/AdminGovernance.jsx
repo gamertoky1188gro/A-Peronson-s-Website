@@ -35,7 +35,7 @@ const initialVersion = {
   roleScopes: "",
   planScopes: "",
   regionScopes: "",
-  rulesJson: '{"maxWarnings":1}',
+  rulesJson: "",
 };
 const initialSimulation = {
   policyVersionId: "",
@@ -44,10 +44,10 @@ const initialSimulation = {
   region: "",
 };
 const initialTemplate = {
-  templateKey: "trust_decision_notice",
+  templateKey: "",
   channel: "in_app",
-  subject: "Trust decision update",
-  body: "Action {{action}} was applied to your account.",
+  subject: "",
+  body: "",
 };
 
 function splitCsv(value) {
@@ -60,7 +60,8 @@ function splitCsv(value) {
 function safeJsonStringify(value) {
   try {
     return JSON.stringify(value, null, 2);
-  } catch {
+  } catch (err) {
+    console.warn("safeJsonStringify failed:", err);
     return "null";
   }
 }
@@ -69,7 +70,13 @@ function statusTone(status) {
   const s = (status || "").toLowerCase();
   if (!s) return "neutral";
   if (s.includes("failed") || s.includes("error")) return "danger";
-  if (s.includes("saved") || s.includes("created") || s.includes("applied") || s.includes("loaded")) return "success";
+  if (
+    s.includes("saved") ||
+    s.includes("created") ||
+    s.includes("applied") ||
+    s.includes("loaded")
+  )
+    return "success";
   return "info";
 }
 
@@ -86,8 +93,12 @@ function SectionCard({ icon: Icon, title, subtitle, children, right }) {
             <Icon className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
-            <p className="mt-1 max-w-3xl text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              {title}
+            </h2>
+            <p className="mt-1 max-w-3xl text-sm text-slate-500 dark:text-slate-400">
+              {subtitle}
+            </p>
           </div>
         </div>
         {right}
@@ -98,7 +109,11 @@ function SectionCard({ icon: Icon, title, subtitle, children, right }) {
 }
 
 function Label({ children }) {
-  return <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{children}</label>;
+  return (
+    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+      {children}
+    </label>
+  );
 }
 
 function Input(props) {
@@ -108,7 +123,7 @@ function Input(props) {
       className={cn(
         "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition",
         "placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950/60",
-        props.className
+        props.className,
       )}
     />
   );
@@ -121,7 +136,7 @@ function Textarea(props) {
       className={cn(
         "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition",
         "placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950/60",
-        props.className
+        props.className,
       )}
     />
   );
@@ -145,7 +160,7 @@ function Button({ children, variant = "primary", className = "", ...props }) {
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
         styles[variant],
-        className
+        className,
       )}
     >
       {children}
@@ -155,11 +170,16 @@ function Button({ children, variant = "primary", className = "", ...props }) {
 
 function JsonBlock({ value, minHeight = 160 }) {
   return (
-    <pre data-lenis-prevent
+    <pre
+      data-lenis-prevent
       className="overflow-auto rounded-2xl border border-slate-200 bg-slate-950 px-4 py-4 text-xs leading-6 text-slate-100 shadow-inner dark:border-slate-800"
       style={{ minHeight }}
     >
-      {typeof value === "string" ? value : safeJsonStringify(value)}
+      {value === null || value === undefined
+        ? "No data yet. Run an action to see results."
+        : typeof value === "string"
+          ? value
+          : safeJsonStringify(value)}
     </pre>
   );
 }
@@ -181,6 +201,8 @@ export default function AdminGovernance() {
   const [templates, setTemplates] = useState([]);
   const [status, setStatus] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
+  const [evalDecision, setEvalDecision] = useState("auto_evaluated");
+  const [enforceReason, setEnforceReason] = useState("Automated governance review from admin panel");
 
   const shellClass = darkMode
     ? "dark bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.22),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.16),_transparent_23%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] text-slate-100"
@@ -193,13 +215,15 @@ export default function AdminGovernance() {
       { label: "Templates", value: templates.length, icon: BellRing },
       { label: "Current month", value: reportMonth, icon: CalendarDays },
     ],
-    [policies.length, history.length, templates.length, reportMonth]
+    [policies.length, history.length, templates.length, reportMonth],
   );
 
   const load = async () => {
     const [policyRes, historyRes, templatesRes] = await Promise.all([
       apiRequest("/admin/governance/policies", { token: getToken() }),
-      apiRequest("/admin/governance/enforcement/history?limit=50", { token: getToken() }),
+      apiRequest("/admin/governance/enforcement/history?limit=50", {
+        token: getToken(),
+      }),
       apiRequest("/admin/governance/templates", { token: getToken() }),
     ]);
     setPolicies(policyRes?.items || []);
@@ -212,7 +236,8 @@ export default function AdminGovernance() {
     const run = async () => {
       try {
         await load();
-      } catch {
+      } catch (err) {
+        console.warn("Failed to load governance data:", err);
         if (active) setStatus("Failed to load governance data");
       } finally {
         if (active) setPageLoading(false);
@@ -282,7 +307,7 @@ export default function AdminGovernance() {
     const evalRow = await apiRequest("/admin/governance/trust/evaluate", {
       method: "POST",
       token: getToken(),
-      body: { user_id: userId, decision: "auto_evaluated" },
+      body: { user_id: userId, decision: evalDecision },
     });
     await apiRequest("/admin/governance/enforcement/apply", {
       method: "POST",
@@ -290,7 +315,7 @@ export default function AdminGovernance() {
       body: {
         userId,
         evaluationId: evalRow?.id,
-        reason: "Automated governance review from admin panel",
+        reason: enforceReason,
       },
     });
     setStatus("Trust evaluated and enforcement decision applied");
@@ -337,16 +362,24 @@ export default function AdminGovernance() {
                   <LayoutDashboard className="h-3.5 w-3.5" /> /admin/governance
                 </span>
               </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Admin Governance Console</h1>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+                Admin Governance Console
+              </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-300">
-                Policy management, rule simulation, trust evaluation, enforcement history, notification templates, and monthly reporting.
+                Policy management, rule simulation, trust evaluation,
+                enforcement history, notification templates, and monthly
+                reporting.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="secondary" onClick={() => setDarkMode((v) => !v)}>
-              {darkMode ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+              {darkMode ? (
+                <SunMedium className="h-4 w-4" />
+              ) : (
+                <MoonStar className="h-4 w-4" />
+              )}
               {darkMode ? "Light mode" : "Dark mode"}
             </Button>
             <Button variant="secondary" onClick={load}>
@@ -360,10 +393,14 @@ export default function AdminGovernance() {
           <div
             className={cn(
               "mb-6 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm",
-              statusTone(status) === "success" && "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300",
-              statusTone(status) === "danger" && "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300",
-              statusTone(status) === "info" && "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-300",
-              statusTone(status) === "neutral" && "border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+              statusTone(status) === "success" &&
+                "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300",
+              statusTone(status) === "danger" &&
+                "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300",
+              statusTone(status) === "info" &&
+                "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-300",
+              statusTone(status) === "neutral" &&
+                "border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200",
             )}
           >
             <div className="flex items-center gap-2">
@@ -377,11 +414,18 @@ export default function AdminGovernance() {
           {stats.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.label} className="rounded-3xl border border-sky-200/70 bg-white/80 p-5 shadow-[0_20px_60px_-35px_rgba(14,116,144,0.42)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
+              <div
+                key={item.label}
+                className="rounded-3xl border border-sky-200/70 bg-white/80 p-5 shadow-[0_20px_60px_-35px_rgba(14,116,144,0.42)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/60"
+              >
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{item.label}</p>
-                    <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{item.value}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                      {item.value}
+                    </p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-400/15 text-sky-600 dark:text-sky-300">
                     <Icon className="h-5 w-5" />
@@ -397,7 +441,11 @@ export default function AdminGovernance() {
             icon={Code2}
             title="Policy Editor"
             subtitle="Create governance policies, then attach active versions with scoped roles, plans, regions, and JSON rules."
-            right={<div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">POST /policies · POST /policy-versions</div>}
+            right={
+              <div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
+                POST /policies · POST /policy-versions
+              </div>
+            }
           >
             <div className="grid gap-6 xl:grid-cols-2">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60">
@@ -432,7 +480,10 @@ export default function AdminGovernance() {
                       rows={4}
                       value={policy.description}
                       onChange={(e) =>
-                        setPolicy((p) => ({ ...p, description: e.target.value }))
+                        setPolicy((p) => ({
+                          ...p,
+                          description: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -473,7 +524,10 @@ export default function AdminGovernance() {
                         type="datetime-local"
                         value={version.effectiveFrom}
                         onChange={(e) =>
-                          setVersion((p) => ({ ...p, effectiveFrom: e.target.value }))
+                          setVersion((p) => ({
+                            ...p,
+                            effectiveFrom: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -482,7 +536,10 @@ export default function AdminGovernance() {
                       <Input
                         value={version.rulesJson}
                         onChange={(e) =>
-                          setVersion((p) => ({ ...p, rulesJson: e.target.value }))
+                          setVersion((p) => ({
+                            ...p,
+                            rulesJson: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -494,7 +551,10 @@ export default function AdminGovernance() {
                         placeholder="Role scopes (csv)"
                         value={version.roleScopes}
                         onChange={(e) =>
-                          setVersion((p) => ({ ...p, roleScopes: e.target.value }))
+                          setVersion((p) => ({
+                            ...p,
+                            roleScopes: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -504,7 +564,10 @@ export default function AdminGovernance() {
                         placeholder="Plan scopes (csv)"
                         value={version.planScopes}
                         onChange={(e) =>
-                          setVersion((p) => ({ ...p, planScopes: e.target.value }))
+                          setVersion((p) => ({
+                            ...p,
+                            planScopes: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -514,7 +577,10 @@ export default function AdminGovernance() {
                         placeholder="Region scopes (csv)"
                         value={version.regionScopes}
                         onChange={(e) =>
-                          setVersion((p) => ({ ...p, regionScopes: e.target.value }))
+                          setVersion((p) => ({
+                            ...p,
+                            regionScopes: e.target.value,
+                          }))
                         }
                       />
                     </div>
@@ -533,7 +599,11 @@ export default function AdminGovernance() {
             icon={FlaskConical}
             title="Rule Simulation"
             subtitle="Simulate a selected policy version against an actor profile and inspect the raw JSON output."
-            right={<div className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-300">POST /simulate</div>}
+            right={
+              <div className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-300">
+                POST /simulate
+              </div>
+            }
           >
             <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
               <div className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60 md:grid-cols-2">
@@ -589,9 +659,13 @@ export default function AdminGovernance() {
 
               <div className="rounded-2xl border border-slate-200 bg-slate-950 p-5 dark:border-slate-800">
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-                  <FileJson className="h-4 w-4 text-sky-300" /> Simulation result
+                  <FileJson className="h-4 w-4 text-sky-300" /> Simulation
+                  result
                 </div>
-                <JsonBlock value={simulationResult ?? { note: "Simulation result will appear here." }} minHeight={280} />
+                <JsonBlock
+                  value={simulationResult}
+                  minHeight={280}
+                />
               </div>
             </div>
           </SectionCard>
@@ -600,7 +674,11 @@ export default function AdminGovernance() {
             icon={ShieldCheck}
             title="Trust Risk & Enforcement"
             subtitle="Fetch trust signals, record an auto evaluation, and apply enforcement in one sequential action."
-            right={<div className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">GET signals → POST evaluate → POST apply</div>}
+            right={
+              <div className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                GET signals → POST evaluate → POST apply
+              </div>
+            }
           >
             <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60">
@@ -616,22 +694,35 @@ export default function AdminGovernance() {
                     <UserRoundSearch className="h-4 w-4" /> Evaluate + enforce
                   </Button>
                 </div>
-                <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-200">
-                  <div className="flex items-start gap-2">
-                    <BadgeInfo className="mt-0.5 h-4 w-4 shrink-0" />
-                    <p>
-                      Decision is fixed to <span className="font-semibold">auto_evaluated</span> and enforcement reason is fixed to{" "}
-                      <span className="font-semibold">Automated governance review from admin panel</span>.
-                    </p>
+                <div className="space-y-3">
+                  <div>
+                    <Label>Decision</Label>
+                    <Input
+                      value={evalDecision}
+                      onChange={(e) => setEvalDecision(e.target.value)}
+                      placeholder="auto_evaluated"
+                    />
+                  </div>
+                  <div>
+                    <Label>Enforcement reason</Label>
+                    <Input
+                      value={enforceReason}
+                      onChange={(e) => setEnforceReason(e.target.value)}
+                      placeholder="Reason for enforcement"
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-950 p-5 dark:border-slate-800">
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-                  <FileJson className="h-4 w-4 text-emerald-300" /> Trust signals
+                  <FileJson className="h-4 w-4 text-emerald-300" /> Trust
+                  signals
                 </div>
-                <JsonBlock value={trustSignals ?? { note: "Trust signals will appear here." }} minHeight={280} />
+                <JsonBlock
+                  value={trustSignals}
+                  minHeight={280}
+                />
               </div>
             </div>
           </SectionCard>
@@ -640,26 +731,41 @@ export default function AdminGovernance() {
             icon={History}
             title="Enforcement History Viewer"
             subtitle="The most recent 50 enforcement entries, showing action, user ID, reason, and creation time."
-            right={<div className="rounded-full bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-700 dark:text-violet-300">GET /enforcement/history?limit=50</div>}
+            right={
+              <div className="rounded-full bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-700 dark:text-violet-300">
+                GET /enforcement/history?limit=50
+              </div>
+            }
           >
             <div className="grid gap-3">
               {history.length ? (
                 history.map((item) => {
-                  const createdAt = item.created_at ? new Date(item.created_at).toLocaleString() : "Unknown time";
+                  const createdAt = item.created_at
+                    ? new Date(item.created_at).toLocaleString()
+                    : "Unknown time";
                   return (
-                    <div key={item.id} className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/60 md:flex-row md:items-center md:justify-between">
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/60 md:flex-row md:items-center md:justify-between"
+                    >
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-2 text-white">
                           <History className="h-4 w-4" />
                         </div>
                         <div>
                           <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {item.action} <span className="text-slate-400">•</span> {item.user_id}
+                            {item.action}{" "}
+                            <span className="text-slate-400">•</span>{" "}
+                            {item.user_id}
                           </div>
-                          <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{item.reason || "No reason"}</div>
+                          <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            {item.reason || "No reason"}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">{createdAt}</div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        {createdAt}
+                      </div>
                     </div>
                   );
                 })
@@ -675,12 +781,17 @@ export default function AdminGovernance() {
             icon={BellRing}
             title="Notification Templates & Appeal Workflow"
             subtitle="Save the default trust decision template and inspect the existing templates payload as raw JSON."
-            right={<div className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">POST /templates</div>}
+            right={
+              <div className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                POST /templates
+              </div>
+            }
           >
             <div className="grid gap-6 xl:grid-cols-[0.88fr_1.12fr]">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60">
                 <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                  <Building2 className="h-4 w-4 text-sky-500" /> Default template
+                  <Building2 className="h-4 w-4 text-sky-500" /> Default
+                  template
                 </div>
                 <Button onClick={saveTemplate}>
                   <BellRing className="h-4 w-4" /> Save trust templates
@@ -689,7 +800,8 @@ export default function AdminGovernance() {
 
               <div className="rounded-2xl border border-slate-200 bg-slate-950 p-5 dark:border-slate-800">
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-                  <FileJson className="h-4 w-4 text-amber-300" /> Existing templates
+                  <FileJson className="h-4 w-4 text-amber-300" /> Existing
+                  templates
                 </div>
                 <JsonBlock value={templates} minHeight={280} />
               </div>
@@ -700,7 +812,11 @@ export default function AdminGovernance() {
             icon={CalendarDays}
             title="Monthly Governance Reporting"
             subtitle="Generate a month-based governance summary and inspect the JSON response directly."
-            right={<div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">POST /reports/monthly</div>}
+            right={
+              <div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
+                POST /reports/monthly
+              </div>
+            }
           >
             <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900/60">
@@ -717,7 +833,8 @@ export default function AdminGovernance() {
                   </Button>
                 </div>
                 <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-200">
-                  Default month is current YYYY-MM. Report output is shown as raw formatted JSON.
+                  Default month is current YYYY-MM. Report output is shown as
+                  raw formatted JSON.
                 </div>
               </div>
 
@@ -725,7 +842,10 @@ export default function AdminGovernance() {
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
                   <FileJson className="h-4 w-4 text-sky-300" /> Monthly report
                 </div>
-                <JsonBlock value={monthlyReport ?? { note: "Monthly report will appear here." }} minHeight={260} />
+                <JsonBlock
+                  value={monthlyReport}
+                  minHeight={260}
+                />
               </div>
             </div>
           </SectionCard>

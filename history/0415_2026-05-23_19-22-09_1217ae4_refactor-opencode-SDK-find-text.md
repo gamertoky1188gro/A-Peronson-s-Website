@@ -1,12 +1,12 @@
 # Commit 0415 — `1217ae4dea9`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `1217ae4dea97643d4ca64860c3d45a80e2403970` |
-| Parent Hash | `5e9af2e2c850cfb95d62f774cf97b468daf0ffec` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-23 19:22:09 +0600 |
-| Subject | refactor: replace custom code search with opencode SDK find.text |
+| Field       | Value                                                            |
+| ----------- | ---------------------------------------------------------------- |
+| Commit Hash | `1217ae4dea97643d4ca64860c3d45a80e2403970`                       |
+| Parent Hash | `5e9af2e2c850cfb95d62f774cf97b468daf0ffec`                       |
+| Author      | gamertoky1188gro                                                 |
+| Date        | 2026-05-23 19:22:09 +0600                                        |
+| Subject     | refactor: replace custom code search with opencode SDK find.text |
 
 ---
 
@@ -20,9 +20,9 @@ Also removes `AI_PROVIDERS` enum, `aiConfig`, `getPrimaryProvider`, `getFallback
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/assistantService.js` | modified | 343 | 0 |
+| File                                  | Status   | Insertions | Deletions |
+| ------------------------------------- | -------- | ---------- | --------- |
+| `server/services/assistantService.js` | modified | 343        | 0         |
 
 **1 file changed, 34 insertions, 309 deletions**
 
@@ -31,6 +31,7 @@ Also removes `AI_PROVIDERS` enum, `aiConfig`, `getPrimaryProvider`, `getFallback
 ## Detailed Changes
 
 ### Removed (~309 lines)
+
 - `CODE_EXTENSIONS`, `SKIP_DIRECTORIES`, `MAX_FILES_TO_SCAN`, `MAX_FILE_BYTES`, `MAX_MATCHED_SNIPPETS`, `MAX_SNIPPET_LENGTH`
 - `AI_PROVIDERS` enum (`OLLAMA`, `OPENROUTER`, `GEMINI`, `OPENCODE`, `NONE`)
 - `aiConfig` object with all provider configs
@@ -42,6 +43,7 @@ Also removes `AI_PROVIDERS` enum, `aiConfig`, `getPrimaryProvider`, `getFallback
 - Old `searchCodeContext` relied on reading files from disk and token-matching
 
 ### New `searchCodeContext` (~34 lines)
+
 - Calls `ensureOpencodeServer()` to get the port
 - Creates an opencode client via `createOpencodeClient()`
 - Calls `client.find.text({ query: { pattern: questionText } })`

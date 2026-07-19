@@ -194,10 +194,7 @@ async function updateCouponsByKey({ codeOrId, patch }) {
 
   const existing = await prisma.couponCode.findFirst({
     where: {
-      OR: [
-        { id: key },
-        { code: { equals: key, mode: "insensitive" } },
-      ],
+      OR: [{ id: key }, { code: { equals: key, mode: "insensitive" } }],
     },
   });
   if (!existing) {
@@ -381,7 +378,12 @@ export async function performAdminAction(action, payload = {}, actor) {
       where: { org_owner_id: fromOwner },
       data: { org_owner_id: toOwner, updated_at: new Date() },
     });
-    return { ok: true, moved: result.count, from_owner_id: fromOwner, to_owner_id: toOwner };
+    return {
+      ok: true,
+      moved: result.count,
+      from_owner_id: fromOwner,
+      to_owner_id: toOwner,
+    };
   }
 
   if (name === "org.merge") {
@@ -399,7 +401,9 @@ export async function performAdminAction(action, payload = {}, actor) {
       data: { org_owner_id: target, updated_at: new Date() },
     });
     if (archiveSource) {
-      const sourceUser = await prisma.user.findUnique({ where: { id: source } });
+      const sourceUser = await prisma.user.findUnique({
+        where: { id: source },
+      });
       if (sourceUser) {
         const profile = {
           ...(sourceUser.profile || {}),

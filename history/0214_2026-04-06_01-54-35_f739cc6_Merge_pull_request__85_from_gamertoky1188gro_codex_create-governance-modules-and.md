@@ -1,4 +1,5 @@
 ## Commit Metadata
+
 - **Hash:** f739cc6bab1aa1dd28e755a8a3aa2a344d72c9e5
 - **Parent:** 1ef7fbd8038601907806106fac042981af3d4abf c8d3df2b7a282aaae70a0ce9c736eb1748264a43
 - **Author:** Cyber Code Master
@@ -6,26 +7,30 @@
 - **Message:** Merge pull request #85 from gamertoky1188gro/codex/create-governance-modules-and-features
 
 ## Custom Title
+
 Merge pull request #85 from gamertoky1188gro/codex/create-governance-modules-and-features
 
 ## High-Level Summary
+
 Merge pull request #85 from gamertoky1188gro/codex/create-governance-modules-and-features
 
- 9 files changed, 1181 insertions(+)
+9 files changed, 1181 insertions(+)
 
 ## File-by-File Breakdown
- .../migration.sql                                  | 119 +++++++++
- prisma/schema.prisma                               | 142 ++++++++++
- server/controllers/governanceController.js         | 137 ++++++++++
- server/routes/adminRoutes.js                       |  29 +++
- server/services/enforcementService.js              | 285 +++++++++++++++++++++
- server/services/policyRegistryService.js           | 143 +++++++++++
- server/services/trustRiskScoringService.js         | 110 ++++++++
- src/App.jsx                                        |   2 +
- src/pages/AdminGovernance.jsx                      | 214 ++++++++++++++++
- 9 files changed, 1181 insertions(+)
+
+.../migration.sql | 119 +++++++++
+prisma/schema.prisma | 142 ++++++++++
+server/controllers/governanceController.js | 137 ++++++++++
+server/routes/adminRoutes.js | 29 +++
+server/services/enforcementService.js | 285 +++++++++++++++++++++
+server/services/policyRegistryService.js | 143 +++++++++++
+server/services/trustRiskScoringService.js | 110 ++++++++
+src/App.jsx | 2 +
+src/pages/AdminGovernance.jsx | 214 ++++++++++++++++
+9 files changed, 1181 insertions(+)
 
 ## Detailed Diff Analysis
+
 ```diff
 diff --git a/prisma/migrations/20260405203000_add_governance_modules/migration.sql b/prisma/migrations/20260405203000_add_governance_modules/migration.sql
 new file mode 100644
@@ -468,13 +473,13 @@ index b7403ea..80a2d7d 100644
 +  trustSignalsController,
 +  upsertGovernancePolicyController,
 +} from '../controllers/governanceController.js'
- 
+
  const router = Router()
- 
+
 @@ -123,6 +138,20 @@ router.get('/integrations/opensearch/status', requireAuth, requireAdminSecurity,
  router.get('/integrations/email/status', requireAuth, requireAdminSecurity, adminAuditLogger(), integrationEmailStatusController)
  router.post('/integrations/actions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), integrationActionController)
- 
+
 +router.get('/governance/policies', requireAuth, requireAdminSecurity, adminAuditLogger(), listGovernancePoliciesController)
 +router.post('/governance/policies', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), upsertGovernancePolicyController)
 +router.post('/governance/policy-versions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), createGovernancePolicyVersionController)
@@ -1065,7 +1070,7 @@ index 0782c92..f8b5639 100644
        <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin', 'agent']}><AgentDashboard /></ProtectedRoute>} />
        <Route path="/admin" element={<ProtectedRoute roles={['owner', 'admin']}><AdminPanel /></ProtectedRoute>} />
 +      <Route path="/admin/governance" element={<ProtectedRoute roles={['owner', 'admin']}><AdminGovernance /></ProtectedRoute>} />
- 
+
        <Route path="/mvp" element={<MvpDashboard />} />
        <Route path="*" element={<Navigate to="/" replace />} />
 diff --git a/src/pages/AdminGovernance.jsx b/src/pages/AdminGovernance.jsx
@@ -1291,17 +1296,22 @@ index 0000000..df2009a
 ```
 
 ## Why This Change
+
 Merge pull request #85 from gamertoky1188gro/codex/create-governance-modules-and-features
 
 ## Was It Useful
+
 Yes — part of iterative feature development.
 
 ## Impact Analysis
-- **Scope:**  9 files changed, 1181 insertions(+)
+
+- **Scope:** 9 files changed, 1181 insertions(+)
 - **Risk:** Moderate
 
 ## Relationships
+
 Commit 214 in the 0181-0220 sequence.
 
 ## Confidence Notes
+
 Auto-generated from git history.

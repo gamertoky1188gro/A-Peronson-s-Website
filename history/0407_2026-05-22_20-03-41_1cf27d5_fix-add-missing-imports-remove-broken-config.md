@@ -1,12 +1,12 @@
 # Commit 0407 — `1cf27d52544`
 
-| Field | Value |
-|-------|-------|
-| Commit Hash | `1cf27d5254469bcafaabd5ae8bd1d95f1370c279` |
-| Parent Hash | `8672fcb6b897699d5148aa2bec023b78f6149e78` |
-| Author | gamertoky1188gro |
-| Date | 2026-05-22 20:03:41 +0600 |
-| Subject | fix: add missing path/fs imports, remove broken config from createOpencode |
+| Field       | Value                                                                      |
+| ----------- | -------------------------------------------------------------------------- |
+| Commit Hash | `1cf27d5254469bcafaabd5ae8bd1d95f1370c279`                                 |
+| Parent Hash | `8672fcb6b897699d5148aa2bec023b78f6149e78`                                 |
+| Author      | gamertoky1188gro                                                           |
+| Date        | 2026-05-22 20:03:41 +0600                                                  |
+| Subject     | fix: add missing path/fs imports, remove broken config from createOpencode |
 
 ---
 
@@ -18,9 +18,9 @@ Fixes missing `path` and `fs` imports in `assistantService.js`. Separates `fs` a
 
 ## Files Changed
 
-| File | Status | Insertions | Deletions |
-|------|--------|------------|-----------|
-| `server/services/assistantService.js` | modified | 15 | 0 |
+| File                                  | Status   | Insertions | Deletions |
+| ------------------------------------- | -------- | ---------- | --------- |
+| `server/services/assistantService.js` | modified | 15         | 0         |
 
 **1 file changed, 6 insertions, 9 deletions**
 

@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
 import { apiRequest, getRoleHome, saveSession } from "../../lib/auth";
 import usePageMeta from "../../lib/usePageMeta";
 import NeonAtom from "../../components/ui/NeonAtom";
-import { ThreeDot } from 'react-loading-indicators';
+import { ThreeDot } from "react-loading-indicators";
 
 const POSITIONS = [
   "Owner",
@@ -160,156 +160,166 @@ export default function SignupUltra() {
             className="mt-6 grid md:grid-cols-2 gap-4"
             onSubmit={handleSubmit}
           >
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              Full Name
-            </label>
-            <input
-              className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
-              value={form.name}
-              onChange={(e) => onChange("name", e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              Secret Email
-            </label>
-            <input
-              type="email"
-              className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
-              value={form.email}
-              onChange={(e) => onChange("email", e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              Master Password
-            </label>
-            <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                Full Name
+              </label>
               <input
-                type={passwordVisible ? "text" : "password"}
-                placeholder="--------"
-                className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
-                value={form.password}
-                onChange={(e) => onChange("password", e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+                value={form.name}
+                onChange={(e) => onChange("name", e.target.value)}
                 required
               />
-              <button
-                type="button"
-                onClick={() => setPasswordVisible((prev) => !prev)}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-              >
-                {passwordVisible ? "Hide" : "Show"}
-              </button>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              Confirm Password
-            </label>
-            <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                Secret Email
+              </label>
               <input
-                type={confirmVisible ? "text" : "password"}
-                placeholder="--------"
-                className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
-                value={form.confirmPassword}
-                onChange={(e) => onChange("confirmPassword", e.target.value)}
+                type="email"
+                className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+                value={form.email}
+                onChange={(e) => onChange("email", e.target.value)}
                 required
               />
-              <button
-                type="button"
-                onClick={() => setConfirmVisible((prev) => !prev)}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                Master Password
+              </label>
+              <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  placeholder="--------"
+                  className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
+                  value={form.password}
+                  onChange={(e) => onChange("password", e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setPasswordVisible((prev) => !prev)}
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  {passwordVisible ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                Confirm Password
+              </label>
+              <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+                <input
+                  type={confirmVisible ? "text" : "password"}
+                  placeholder="--------"
+                  className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
+                  value={form.confirmPassword}
+                  onChange={(e) => onChange("confirmPassword", e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setConfirmVisible((prev) => !prev)}
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  {confirmVisible ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                Elevated Role
+              </label>
+              <select
+                className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
+                value={form.role}
+                onChange={(e) => onChange("role", e.target.value)}
               >
-                {confirmVisible ? "Hide" : "Show"}
+                <option value="admin">Administrator</option>
+                <option value="owner">System Owner</option>
+                <option value="agent">Operational Agent</option>
+                <option value="buying_house">Buying House (Root)</option>
+                <option value="factory">Factory (Root)</option>
+                <option value="buyer">Buyer (Root)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                HQ Country
+              </label>
+              <input
+                className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+                value={form.country}
+                onChange={(e) => onChange("country", e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                Organization / Entity
+              </label>
+              <input
+                className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+                value={form.organization}
+                onChange={(e) => onChange("organization", e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+                Your Position
+              </label>
+              <select
+                className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
+                value={form.position}
+                onChange={(e) => onChange("position", e.target.value)}
+                required
+              >
+                <option value="">Select position</option>
+                {POSITIONS.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[#0a3d78] leading-relaxed shadow-borderless dark:shadow-borderlessDark dark:bg-[#0a1a33] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">
+              <p className="font-bold mb-1 underline">⚠️ Security Notice:</p>
+              <p>
+                Admin and Owner accounts are automatically granted full system
+                verification and override capabilities. All actions performed
+                through this terminal are logged for security auditing.
+                High-level accounts must maintain 2FA after initial login.
+              </p>
+            </div>
+
+            {error ? (
+              <p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded shadow-borderless dark:shadow-borderlessDark dark:bg-rose-500/10 dark:text-rose-200">
+                Auth Error: {error}
+              </p>
+            ) : null}
+
+            <div className="md:col-span-2 pt-2">
+              <button
+                disabled={loading}
+                className="w-full py-3.5 rounded-lg bg-gtBlue hover:bg-gtBlueHover text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
+              >
+                {loading ? (
+                  <ThreeDot
+                    variant="bounce"
+                    color="#6100ff"
+                    size="small"
+                    text=""
+                    textColor=""
+                  />
+                ) : (
+                  "PROVISION ACCOUNT"
+                )}
               </button>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              Elevated Role
-            </label>
-            <select
-              className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
-              value={form.role}
-              onChange={(e) => onChange("role", e.target.value)}
-            >
-              <option value="admin">Administrator</option>
-              <option value="owner">System Owner</option>
-              <option value="agent">Operational Agent</option>
-              <option value="buying_house">Buying House (Root)</option>
-              <option value="factory">Factory (Root)</option>
-              <option value="buyer">Buyer (Root)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              HQ Country
-            </label>
-            <input
-              className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
-              value={form.country}
-              onChange={(e) => onChange("country", e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              Organization / Entity
-            </label>
-            <input
-              className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
-              value={form.organization}
-              onChange={(e) => onChange("organization", e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-              Your Position
-            </label>
-            <select
-              className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
-              value={form.position}
-              onChange={(e) => onChange("position", e.target.value)}
-              required
-            >
-              <option value="">Select position</option>
-              {POSITIONS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[#0a3d78] leading-relaxed shadow-borderless dark:shadow-borderlessDark dark:bg-[#0a1a33] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">
-            <p className="font-bold mb-1 underline">⚠️ Security Notice:</p>
-            <p>
-              Admin and Owner accounts are automatically granted full system
-              verification and override capabilities. All actions performed
-              through this terminal are logged for security auditing. High-level
-              accounts must maintain 2FA after initial login.
-            </p>
-          </div>
-
-          {error ? (
-            <p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded shadow-borderless dark:shadow-borderlessDark dark:bg-rose-500/10 dark:text-rose-200">
-              Auth Error: {error}
-            </p>
-          ) : null}
-
-          <div className="md:col-span-2 pt-2">
-            <button
-              disabled={loading}
-              className="w-full py-3.5 rounded-lg bg-gtBlue hover:bg-gtBlueHover text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
-            >
-              {loading ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" /> : "PROVISION ACCOUNT"}
-            </button>
-          </div>
-        </motion.form>
+          </motion.form>
         </AnimatePresence>
       </div>
     </div>

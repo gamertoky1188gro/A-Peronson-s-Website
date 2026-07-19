@@ -120,10 +120,7 @@ export async function listMyProductViews(
   ]);
 
   const productsById = new Map(
-    products.map((p) => [
-      String(p.id),
-      normalizeProductVideoFlags(p),
-    ]),
+    products.map((p) => [String(p.id), normalizeProductVideoFlags(p)]),
   );
   const usersById = new Map(users.map((u) => [String(u.id), u]));
 
@@ -157,9 +154,7 @@ export async function listMyProductViews(
     .filter((row) => row.product);
 
   const nextCursor =
-    safeCursor + safeLimit < views.length
-      ? safeCursor + safeLimit
-      : null;
+    safeCursor + safeLimit < views.length ? safeCursor + safeLimit : null;
   return {
     cursor: safeCursor,
     next_cursor: nextCursor,

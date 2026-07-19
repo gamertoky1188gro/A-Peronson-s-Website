@@ -23,11 +23,17 @@
     - Buyer required documents vary by region (EU/USA/OTHER), derived from country.
 */
 import NeonAtom from "../components/ui/NeonAtom";
-import { ThreeDot } from 'react-loading-indicators'
+import { ThreeDot } from "react-loading-indicators";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ScrollReveal from "../components/ScrollReveal";
 import WordleInput from "../components/WordleInput";
-import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth";
+import {
+  API_BASE,
+  apiRequest,
+  getCurrentUser,
+  getToken,
+  syncUserFromApi,
+} from "../lib/auth";
 import { uploadFile } from "../lib/upload";
 import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { useTheme } from "../lib/ThemeProvider";
@@ -36,38 +42,20 @@ import {
   EU_COUNTRIES,
   isEuCountry,
 } from "../../shared/config/geo.js";
-
-const Icon = ({ d, className = "" }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d={d} />
-  </svg>
-);
-
-const icons = {
-  shield: "M12 2l7 4v6c0 5-3.5 9.7-7 10-3.5-.3-7-5-7-10V6l7-4z",
-  check: "M20 6 9 17l-5-5",
-  clock: "M12 8v4l3 2",
-  help: "M9.09 9a3 3 0 1 1 5.82 1c0 2-3 3-3 3",
-  spark: "M13 2l1.5 5.5L20 9l-5.5 1.5L13 16l-1.5-5.5L6 9l5.5-1.5L13 2z",
-  lock: "M7 11V8a5 5 0 0 1 10 0v3",
-  card: "M3 8h18v10H3z M3 12h18",
-  upload: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5-5 5 5 M12 5v12",
-  refresh: "M20 11a8 8 0 1 0-2.3 5.7 M20 4v7h-7",
-  star: "M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 16.8 6.2 19.8l1.1-6.4L2.6 8.8l6.5-.9L12 2z",
-  sun: "M12 3v2 M12 19v2 M4.2 4.2l1.4 1.4 M18.4 18.4l1.4 1.4 M3 12h2 M19 12h2 M4.2 19.8l1.4-1.4 M18.4 5.6l1.4-1.4 M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z",
-  moon: "M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 1 0 9.8 9.8z",
-  x: "M18 6 6 18 M6 6l12 12",
-  plus: "M12 5v14 M5 12h14",
-  user: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
-};
+import {
+  Check,
+  Clock,
+  CreditCard,
+  HelpCircle,
+  Moon,
+  RefreshCw,
+  Shield,
+  Sparkles,
+  Star,
+  Sun,
+  Upload,
+  X,
+} from "lucide-react";
 
 const LABELS = {
   company_registration: "Company Registration",
@@ -139,6 +127,9 @@ export default function VerificationPage({ embedded = false }) {
   const [optionalLicenseInput, setOptionalLicenseInput] = useState("");
   const [renewing, setRenewing] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [verificationPrice, setVerificationPrice] = useState({ firstMonth: 1.99, renewal: 6.99 });
+  const [code, setCode] = useState("");
+  const [verifyingCode, setVerifyingCode] = useState(false);
 
   const fileInputRef = useRef(null);
   const pendingDocRef = useRef("");
@@ -216,7 +207,9 @@ export default function VerificationPage({ embedded = false }) {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [loadStatus]);
 
   useEffect(() => {
@@ -254,6 +247,20 @@ export default function VerificationPage({ embedded = false }) {
 
     return () => clearTimeout(timeoutId);
   }, [buyerCountry, role, token, verification]);
+
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      try {
+        const data = await apiRequest("/subscriptions/me/verification-pricing", { token });
+        if (data?.first_month != null) {
+          setVerificationPrice({ firstMonth: data.first_month, renewal: data.renewal ?? data.renewal_monthly ?? data.first_month });
+        }
+      } catch {
+        // use defaults
+      }
+    })();
+  }, [token]);
 
   async function requestUpload(documentKey, file) {
     if (!file || !token) return;
@@ -430,7 +437,7 @@ export default function VerificationPage({ embedded = false }) {
       >
         <div className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/25">
-            <Icon d={icons.shield} className="h-6 w-6" />
+            <Shield className="h-6 w-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -445,7 +452,7 @@ export default function VerificationPage({ embedded = false }) {
             </div>
             <p className={`mt-1 text-sm ${softText}`}>
               Verification is subscription-based and renews monthly. First
-              month: $1.99 • Renewals: $6.99/month
+              month: ${verificationPrice.firstMonth.toFixed(2)} • Renewals: ${verificationPrice.renewal.toFixed(2)}/month
             </p>
           </div>
         </div>
@@ -455,135 +462,138 @@ export default function VerificationPage({ embedded = false }) {
             onClick={toggleTheme}
             className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
           >
-            <Icon d={isDark ? icons.sun : icons.moon} className="h-4 w-4" />
+            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             {isDark ? "Light" : "Dark"}
           </button>
         )}
       </header>
 
-        {feedback && (
-          <div className="mb-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-3 text-emerald-200">
-            {feedback}
-          </div>
-        )}
-        {error && (
-          <div className="mb-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 px-4 py-3 text-rose-300">
-            {error}
-          </div>
-        )}
+      {feedback && (
+        <div className="mb-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-3 text-emerald-200">
+          {feedback}
+        </div>
+      )}
+      {error && (
+        <div className="mb-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 px-4 py-3 text-rose-300">
+          {error}
+        </div>
+      )}
 
-        <main className="grid flex-1 gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <section className="space-y-6">
-            <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <div
-                    className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${chipBg}`}
-                  >
-                    <Icon d={icons.spark} className="h-3.5 w-3.5" />
-                    Review status: {reviewStatus}
-                    {reviewReason && ` • ${reviewReason}`}
-                  </div>
-                  <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                    Build trust with verified proof
-                  </h2>
-                  <p
-                    className={`mt-4 max-w-2xl text-base leading-7 ${softText}`}
-                  >
-                    Upload the right documents for your role, add optional
-                    licenses, and strengthen credibility for buyers and
-                    partners.
-                  </p>
-                </div>
-
+      <main className="grid flex-1 gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+        <section className="space-y-6">
+          <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
                 <div
-                  className={`min-w-[240px] rounded-3xl border p-5 ${isDark ? "bg-slate-900/70 border-white/10" : "bg-sky-50/70 border-sky-100"}`}
+                  className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${chipBg}`}
                 >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Review status: {reviewStatus}
+                  {reviewReason && ` • ${reviewReason}`}
+                </div>
+                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Build trust with verified proof
+                </h2>
+                <p className={`mt-4 max-w-2xl text-base leading-7 ${softText}`}>
+                  Upload the right documents for your role, add optional
+                  licenses, and strengthen credibility for buyers and partners.
+                </p>
+              </div>
+
+              <div
+                className={`min-w-[240px] rounded-3xl border p-5 ${isDark ? "bg-slate-900/70 border-white/10" : "bg-sky-50/70 border-sky-100"}`}
+              >
+                <div
+                  className={`flex items-center justify-between text-sm ${mutedText}`}
+                >
+                  <span>Credibility</span>
+                  <span>{credibility}/100</span>
+                </div>
+                <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800">
                   <div
-                    className={`flex items-center justify-between text-sm ${mutedText}`}
-                  >
-                    <span>Credibility</span>
-                    <span>{credibility}/100</span>
-                  </div>
-                  <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 transition-all duration-500"
-                      style={{ width: `${credibility}%` }}
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-semibold">
-                        Basic credibility
-                      </div>
-                      <div className={`mt-1 text-xs ${mutedText}`}>
-                        More licensing proof increases credibility and
-                        international trust.
-                      </div>
+                    className="h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 transition-all duration-500"
+                    style={{ width: `${credibility}%` }}
+                  />
+                </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold">
+                      Basic credibility
                     </div>
-                    <Icon d={icons.star} className="h-7 w-7 text-sky-400" />
+                    <div className={`mt-1 text-xs ${mutedText}`}>
+                      More licensing proof increases credibility and
+                      international trust.
+                    </div>
                   </div>
+                  <Star className="h-7 w-7 text-sky-400" />
                 </div>
               </div>
             </div>
+          </div>
 
-            {role === "buyer" && (
-              <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <h3 className="text-xl font-semibold">Buyer region</h3>
-                    <p className={`mt-1 text-sm ${softText}`}>
-                      Select your country to determine required documents.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-sky-500">
-                    <Icon d={icons.help} className="h-4 w-4" />
-                    Region: {buyerRegion}
-                  </div>
-                </div>
-
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                  <select
-                    value={buyerCountry}
-                    onChange={(e) => setBuyerCountry(e.target.value)}
-                    className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition ${fieldBg}`}
-                  >
-                    <option value="">Select country</option>
-                    {BUYER_COUNTRY_OPTIONS.map((country) => (
-                      <option key={country} value={country}>
-                        {country}
-                      </option>
-                    ))}
-                  </select>
-                  {savingCountry && (
-                    <span className="flex items-center">
-                      <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                    </span>
-                  )}
-                </div>
-
-                <p className={`mt-3 text-sm ${softText}`}>
-                  EU buyers need:{" "}
-                  <span className="font-semibold">
-                    Business Registration + VAT Number + EORI + Bank proof
-                  </span>
-                  . USA buyers need:{" "}
-                  <span className="font-semibold">
-                    Business Registration + EIN + IOR + Bank proof
-                  </span>
-                  .
-                </p>
-
-                {!buyerCountry && (
-                  <p className="mt-3 text-sm text-rose-400">
-                    Buyer country is required before completing buyer
-                    verification.
+          {role === "buyer" && (
+            <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold">Buyer region</h3>
+                  <p className={`mt-1 text-sm ${softText}`}>
+                    Select your country to determine required documents.
                   </p>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-sky-500">
+                  <HelpCircle className="h-4 w-4" />
+                  Region: {buyerRegion}
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <select
+                  value={buyerCountry}
+                  onChange={(e) => setBuyerCountry(e.target.value)}
+                  className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition ${fieldBg}`}
+                >
+                  <option value="">Select country</option>
+                  {BUYER_COUNTRY_OPTIONS.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
+                {savingCountry && (
+                  <span className="flex items-center">
+                    <ThreeDot
+                      variant="bounce"
+                      color="#6100ff"
+                      size="small"
+                      text=""
+                      textColor=""
+                    />
+                  </span>
                 )}
               </div>
-            )}
 
-            <ScrollReveal as="section">
+              <p className={`mt-3 text-sm ${softText}`}>
+                EU buyers need:{" "}
+                <span className="font-semibold">
+                  Business Registration + VAT Number + EORI + Bank proof
+                </span>
+                . USA buyers need:{" "}
+                <span className="font-semibold">
+                  Business Registration + EIN + IOR + Bank proof
+                </span>
+                .
+              </p>
+
+              {!buyerCountry && (
+                <p className="mt-3 text-sm text-rose-400">
+                  Buyer country is required before completing buyer
+                  verification.
+                </p>
+              )}
+            </div>
+          )}
+
+          <ScrollReveal as="section">
             <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -610,10 +620,7 @@ export default function VerificationPage({ embedded = false }) {
                       <div
                         className={`mt-0.5 grid h-10 w-10 place-items-center rounded-2xl ${item.done ? "bg-emerald-500/15 text-emerald-300" : "bg-sky-500/10 text-sky-500"}`}
                       >
-                        <Icon
-                          d={item.done ? icons.check : icons.clock}
-                          className="h-5 w-5"
-                        />
+                        {item.done ? <Check className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
                       </div>
                       <div>
                         <h4 className="font-semibold">{item.title}</h4>
@@ -635,217 +642,243 @@ export default function VerificationPage({ embedded = false }) {
                           : buttonGhost
                       }`}
                     >
-                      {busyDoc === requiredDocs[idx]
-                        ? <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-                        : "Upload"}
+                      {busyDoc === requiredDocs[idx] ? (
+                        <ThreeDot
+                          variant="bounce"
+                          color="#6100ff"
+                          size="small"
+                          text=""
+                          textColor=""
+                        />
+                      ) : (
+                        "Upload"
+                      )}
                     </button>
-                    {busyDoc === requiredDocs[idx] && <UploadProgressBar progress={uploadProgress} className="mt-2" />}
+                    {busyDoc === requiredDocs[idx] && (
+                      <UploadProgressBar
+                        progress={uploadProgress}
+                        className="mt-2"
+                      />
+                    )}
                   </div>
                 ))}
               </div>
             </div>
-            </ScrollReveal>
+          </ScrollReveal>
 
-            <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold">Optional licenses</h3>
-                  <p className={`mt-1 text-sm ${softText}`}>
-                    Optional proofs can be added anytime. More proof = more
-                    trust.
-                  </p>
-                </div>
-                <div className={`flex items-center gap-2 text-sm ${softText}`}>
-                  <Icon d={icons.help} className="h-4 w-4 text-sky-400" />
-                  e.g. OEKO-TEX, BSCI, WRAP...
-                </div>
+          <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">Optional licenses</h3>
+                <p className={`mt-1 text-sm ${softText}`}>
+                  Optional proofs can be added anytime. More proof = more trust.
+                </p>
               </div>
-
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <input
-                  value={optionalLicenseInput}
-                  onChange={(e) => setOptionalLicenseInput(e.target.value)}
-                  placeholder="Add a license or certification"
-                  className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition placeholder:text-slate-400 focus:border-sky-400 ${fieldBg}`}
-                />
-                <button
-                  onClick={addOptionalLicense}
-                  className={`rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
-                >
-                  Add
-                </button>
-              </div>
-
-              <div className="mt-5 min-h-[92px] rounded-3xl border border-dashed border-sky-400/30 bg-sky-500/5 p-4">
-                {optionalLicenses.length ? (
-                  <div className="flex flex-wrap gap-2">
-                    {optionalLicenses.map((lic) => (
-                      <button
-                        key={lic}
-                        onClick={() => removeOptionalLicense(lic)}
-                        className={`rounded-full border px-3 py-2 text-sm ${chipBg}`}
-                      >
-                        {lic}
-                        <Icon d={icons.x} className="ml-2 inline h-3 w-3" />
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div
-                    className={`flex h-full items-center justify-center text-sm ${mutedText}`}
-                  >
-                    No optional licenses yet.
-                  </div>
-                )}
+              <div className={`flex items-center gap-2 text-sm ${softText}`}>
+                <HelpCircle className="h-4 w-4 text-sky-400" />
+                e.g. OEKO-TEX, BSCI, WRAP...
               </div>
             </div>
 
-            <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold">Verification code</h3>
-                  <p className={`mt-1 text-sm ${softText}`}>
-                    Enter the 6-digit code sent to your email on file.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <WordleInput
-                  maxLength={6}
-                  onChange={(val) => {
-                    if (val.length === 6) {
-                      setFeedback("Code accepted. Verification in progress.");
-                    }
-                  }}
-                  placeholder="●"
-                />
-              </div>
-            </div>
-          </section>
-
-          <aside className="space-y-6">
-            <div className={`rounded-[28px] border p-6 ${cardBg}`}>
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-sky-500/10 text-sky-500">
-                  <Icon d={icons.card} className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Subscription</h3>
-                  <p className={`text-sm ${mutedText}`}>
-                    Verification approval requires an active verification
-                    subscription.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <input
+                value={optionalLicenseInput}
+                onChange={(e) => setOptionalLicenseInput(e.target.value)}
+                placeholder="Add a license or certification"
+                className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition placeholder:text-slate-400 focus:border-sky-400 ${fieldBg}`}
+              />
+              <button
+                onClick={addOptionalLicense}
+                className={`rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
               >
-                <div className="flex items-center justify-between text-sm">
-                  <span className={softText}>Status</span>
-                  <span className="rounded-full bg-rose-500/10 px-3 py-1 font-semibold text-rose-400">
-                    {remainingDays > 0 ? "Active" : "Inactive"}
-                  </span>
-                </div>
-                <div className={`mt-3 text-sm leading-6 ${softText}`}>
-                  Activate your verification plan to unlock review eligibility
-                  and progress toward approval.
-                </div>
-                {remainingDays > 0 && (
-                  <p className={`mt-3 text-xs ${mutedText}`}>
-                    Remaining: {remainingDays} day
-                    {remainingDays === 1 ? "" : "s"}
-                  </p>
-                )}
-              </div>
+                Add
+              </button>
+            </div>
 
-              <div className="mt-4 grid gap-3">
-                <button
-                  onClick={handleRenewVerification}
-                  disabled={renewing}
-                  className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
+            <div className="mt-5 min-h-[92px] rounded-3xl border border-dashed border-sky-400/30 bg-sky-500/5 p-4">
+              {optionalLicenses.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {optionalLicenses.map((lic) => (
+                    <button
+                      key={lic}
+                      onClick={() => removeOptionalLicense(lic)}
+                      className={`rounded-full border px-3 py-2 text-sm ${chipBg}`}
+                    >
+                      {lic}
+                      <X className="ml-2 inline h-3 w-3" />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className={`flex h-full items-center justify-center text-sm ${mutedText}`}
                 >
-                  <Icon d={icons.refresh} className="h-4 w-4" />
-                  {renewing ? "Processing..." : "Pay / Renew Verification"}
-                </button>
-                <button
-                  onClick={loadStatus}
-                  className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost}`}
-                >
-                  <Icon d={icons.refresh} className="h-4 w-4" />
-                  Refresh status
-                </button>
+                  No optional licenses yet.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">Verification code</h3>
+                <p className={`mt-1 text-sm ${softText}`}>
+                  Enter the 6-digit code sent to your email on file.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <WordleInput
+                maxLength={6}
+                onChange={(val) => {
+                  setCode(val);
+                  if (val.length === 6) {
+                    setVerifyingCode(true);
+                    setFeedback("");
+                    setError("");
+                    apiRequest("/verification/code", { method: "POST", token, body: { code: val } })
+                      .then((res) => {
+                        if (res?.error) throw new Error(res.error);
+                        setFeedback("Code accepted. Verification in progress.");
+                        loadStatus();
+                      })
+                      .catch((err) => {
+                        setError(err.message || "Invalid verification code");
+                      })
+                      .finally(() => {
+                        setVerifyingCode(false);
+                      });
+                  }
+                }}
+                placeholder="●"
+              />
+              {verifyingCode && (
+                <div className="mt-3 flex items-center gap-2 text-sm text-sky-400">
+                  <ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+                  <span>Verifying code...</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <aside className="space-y-6">
+          <div className={`rounded-[28px] border p-6 ${cardBg}`}>
+            <div className="flex items-center gap-3">
+              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-sky-500/10 text-sky-500">
+                <CreditCard className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Subscription</h3>
+                <p className={`text-sm ${mutedText}`}>
+                  Verification approval requires an active verification
+                  subscription.
+                </p>
               </div>
             </div>
 
-            <div className={`rounded-[28px] border p-6 ${cardBg}`}>
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-500/10 text-cyan-500">
-                  <Icon d={icons.help} className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Need help?</h3>
-                  <p className={`text-sm ${mutedText}`}>
-                    Visit the Help Center.
-                  </p>
-                </div>
+            <div
+              className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}
+            >
+              <div className="flex items-center justify-between text-sm">
+                <span className={softText}>Status</span>
+                <span className="rounded-full bg-rose-500/10 px-3 py-1 font-semibold text-rose-400">
+                  {remainingDays > 0 ? "Active" : "Inactive"}
+                </span>
               </div>
+              <div className={`mt-3 text-sm leading-6 ${softText}`}>
+                Activate your verification plan to unlock review eligibility and
+                progress toward approval.
+              </div>
+              {remainingDays > 0 && (
+                <p className={`mt-3 text-xs ${mutedText}`}>
+                  Remaining: {remainingDays} day
+                  {remainingDays === 1 ? "" : "s"}
+                </p>
+              )}
+            </div>
 
-              <div
-                className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-sky-50/60"}`}
+            <div className="mt-4 grid gap-3">
+              <button
+                onClick={handleRenewVerification}
+                disabled={renewing}
+                className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
               >
-                <div className="flex items-start gap-3">
-                  <Icon
-                    d={icons.upload}
-                    className="mt-0.5 h-5 w-5 text-sky-400"
-                  />
-                  <div>
-                    <p className="text-sm font-semibold">
-                      Upload stronger proof
-                    </p>
-                    <p className={`mt-1 text-sm leading-6 ${softText}`}>
-                      Higher-quality documents and licenses can improve review
-                      confidence and credibility.
-                    </p>
-                  </div>
-                </div>
+                <RefreshCw className="h-4 w-4" />
+                {renewing ? "Processing..." : "Pay / Renew Verification"}
+              </button>
+              <button
+                onClick={loadStatus}
+                className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost}`}
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh status
+              </button>
+            </div>
+          </div>
+
+          <div className={`rounded-[28px] border p-6 ${cardBg}`}>
+            <div className="flex items-center gap-3">
+              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-500/10 text-cyan-500">
+                <HelpCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Need help?</h3>
+                <p className={`text-sm ${mutedText}`}>Visit the Help Center.</p>
               </div>
             </div>
 
-            <div className={`rounded-[28px] border p-6 ${cardBg}`}>
-              <h3 className="font-semibold">Overview</h3>
-              <div className="mt-4 space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className={softText}>First month</span>
-                  <span className="font-semibold">$1.99</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className={softText}>Renewals</span>
-                  <span className="font-semibold">$6.99/month</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className={softText}>Review status</span>
-                  <span className="font-semibold text-amber-400">
-                    {reviewStatus}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className={softText}>Verification</span>
-                  <span className="font-semibold text-rose-400">
-                    {verified ? "Verified" : "Not verified"}
-                  </span>
+            <div
+              className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-sky-50/60"}`}
+            >
+              <div className="flex items-start gap-3">
+                <Upload className="mt-0.5 h-5 w-5 text-sky-400" />
+                <div>
+                  <p className="text-sm font-semibold">Upload stronger proof</p>
+                  <p className={`mt-1 text-sm leading-6 ${softText}`}>
+                    Higher-quality documents and licenses can improve review
+                    confidence and credibility.
+                  </p>
                 </div>
               </div>
             </div>
-          </aside>
-        </main>
+          </div>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          className="hidden"
-          onChange={onFileSelected}
-        />
+          <div className={`rounded-[28px] border p-6 ${cardBg}`}>
+            <h3 className="font-semibold">Overview</h3>
+            <div className="mt-4 space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className={softText}>First month</span>
+                <span className="font-semibold">${verificationPrice.firstMonth.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className={softText}>Renewals</span>
+                <span className="font-semibold">{verificationPrice.renewal.toFixed(2)}/month</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className={softText}>Review status</span>
+                <span className="font-semibold text-amber-400">
+                  {reviewStatus}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className={softText}>Verification</span>
+                <span className="font-semibold text-rose-400">
+                  {verified ? "Verified" : "Not verified"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        onChange={onFileSelected}
+      />
     </>
   );
 

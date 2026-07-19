@@ -170,15 +170,14 @@ export async function listEarlyVerifiedFactories({
   days = 30,
   limit = 20,
 } = {}) {
-  const cutoff = new Date(Date.now() - Number(days || 30) * 24 * 60 * 60 * 1000);
+  const cutoff = new Date(
+    Date.now() - Number(days || 30) * 24 * 60 * 60 * 1000,
+  );
   const rows = await prisma.user.findMany({
     where: {
       role: "factory",
       verified: true,
-      OR: [
-        { updated_at: { gte: cutoff } },
-        { created_at: { gte: cutoff } },
-      ],
+      OR: [{ updated_at: { gte: cutoff } }, { created_at: { gte: cutoff } }],
     },
     orderBy: { updated_at: "desc" },
     take: Math.max(1, Math.min(50, Number(limit || 20))),
@@ -221,7 +220,7 @@ export async function searchUsers(viewerId, query, cursor = 0, limit = 12) {
 
   const items = users.map((user) => {
     const safe = cleanUser(user);
-    const profile = (safe.profile || {});
+    const profile = safe.profile || {};
     const isSelf = user.id === viewerId;
     const relation = isSelf
       ? { following: false, friend_status: "self" }
@@ -486,10 +485,7 @@ export async function deleteUserWithPassword(userId, password) {
 
   await prisma.userConnection.deleteMany({
     where: {
-      OR: [
-        { requester_id: userId },
-        { receiver_id: userId },
-      ],
+      OR: [{ requester_id: userId }, { receiver_id: userId }],
     },
   });
 

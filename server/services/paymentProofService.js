@@ -96,7 +96,9 @@ export async function createPaymentProof(actor, payload = {}) {
     throw err;
   }
 
-  const contract = await prisma.document.findUnique({ where: { id: contractId } });
+  const contract = await prisma.document.findUnique({
+    where: { id: contractId },
+  });
   if (!contract) {
     const err = new Error("Contract not found");
     err.status = 404;
@@ -175,7 +177,10 @@ export async function createPaymentProof(actor, payload = {}) {
         160,
       ),
       bank_name: sanitizeString(payload.bank_name || "", 120),
-      sender_account_name: sanitizeString(payload.sender_account_name || "", 120),
+      sender_account_name: sanitizeString(
+        payload.sender_account_name || "",
+        120,
+      ),
       receiver_account_name: sanitizeString(
         payload.receiver_account_name || "",
         120,
@@ -254,7 +259,9 @@ export async function updatePaymentProof(actor, proofId, payload = {}) {
   const proof = await prisma.paymentProof.findUnique({ where: { id } });
   if (!proof) return null;
 
-  const contract = await prisma.document.findUnique({ where: { id: proof.contract_id } });
+  const contract = await prisma.document.findUnique({
+    where: { id: proof.contract_id },
+  });
   if (!contract) return null;
   if (!ensureContractAccess(actor, contract)) {
     const err = new Error("Forbidden");
