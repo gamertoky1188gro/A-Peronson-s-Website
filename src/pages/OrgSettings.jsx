@@ -2938,7 +2938,7 @@ function NotificationPreferencesTab() {
       .then((data) => {
         if (data) setPrefs(data);
       })
-      .catch(() => {})
+      .catch(() => console.warn("Failed to load notification preferences"))
       .finally(() => setLoading(false));
   }, [token]);
 

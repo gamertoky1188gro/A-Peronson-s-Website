@@ -480,7 +480,7 @@ export default function MainFeed() {
     if (!token) return markLoaded("config");
     apiRequest("/admin/config/feed-page", { token })
       .then((data) => setFeedConfig({ ...DEFAULT_FEED_CONFIG, ...data }))
-      .catch(() => {})
+      .catch(() => console.warn("Failed to load feed config"))
       .finally(() => markLoaded("config"));
   }, []);
 
