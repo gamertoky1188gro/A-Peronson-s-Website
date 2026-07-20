@@ -35,8 +35,5 @@ PythonAi/HaramDetection/.venv
 __pycache__/
 *.pyc
 
-# Environment files
-.env
-
 # npm cache
 npmcache/
