@@ -1,8 +1,16 @@
 # GarTexHub Audit - Quick Start Guide
 
-## 🚨 CRITICAL ISSUES - DO THIS FIRST
+> **Updated July 21, 2026** — Status of fixes applied so far.
 
-### 1. Secrets Exposure (IMMEDIATE)
+## ✅ COMPLETED FIXES
+
+- **Empty `.catch(() => {})` handlers** — 11 instances replaced with `console.warn` across CallInterface.jsx (8), FeedItemCard.jsx, MainFeed.jsx, OrgSettings.jsx
+- **Missing routes** (`/contracts`, `/leads`) — Added to App.jsx rendering OwnerDashboard
+- **Sourcemaps** — Already correctly disabled in production (`sourcemap: process.env.NODE_ENV !== "production"`)
+
+## 🚨 CRITICAL ISSUES - REMAINING
+
+### 1. Secrets Exposure (DEFERRED — handle at project completion)
 
 ```bash
 # DO NOT push .env to git!
@@ -20,9 +28,9 @@ git filter-repo --path .env --invert-paths
 echo ".env" >> .gitignore
 ```
 
-### 2. Promise Error Handling (2-3 hours)
+### 2. Promise Error Handling (2-3 hours — partially done)
 
-**Files to fix:** 48 locations with unhandled .then()
+**Status:** 11 empty `.catch(() => {})` fixed. Remaining work: audit `.then()` chains without `.catch()` in AdminPanel.jsx, ChatInterface.jsx, SearchResults.jsx.
 
 ```jsx
 // ❌ Bad:
@@ -42,22 +50,9 @@ try {
 }
 ```
 
-Key files:
+### 3. Missing Routes ✅ DONE
 
-- `src/pages/AdminPanel.jsx`
-- `src/pages/ChatInterface.jsx`
-- `src/pages/SearchResults.jsx`
-- `src/components/FloatingAssistant.jsx`
-
-### 3. Missing Routes (30 min)
-
-Add to `/src/App.jsx` if missing:
-
-```jsx
-<Route path="/verification" element={<ProtectedRoute><VerificationPage /></ProtectedRoute>} />
-<Route path="/contracts" element={<ProtectedRoute roles={OWNER_ROLES}><ContractVault /></ProtectedRoute>} />
-<Route path="/leads" element={<ProtectedRoute roles={OWNER_ROLES}><LeadsPage /></ProtectedRoute>} />
-```
+Routes `/contracts` and `/leads` exist in `App.jsx`. `/verification` embedded in `OwnerDashboard`.
 
 ### 4. XSS Vulnerability in SearchResults (1-2 hours)
 
@@ -139,16 +134,13 @@ source.addEventListener("open", () => {
 });
 ```
 
-### Disable Sourcemaps in Production (10 min)
+### Disable Sourcemaps in Production ✅ ALREADY CORRECT
 
 **File:** `vite.config.js`
 
 ```js
-// Current (problematic):
-sourcemap: process.env.NODE_ENV !== "production";
-
-// Better:
-sourcemap: false; // or use process.env.GENERATE_SOURCEMAP === "true"
+// Current:
+sourcemap: process.env.NODE_ENV !== "production" // Already disabled in production builds
 ```
 
 ### Fix CORS (10 min)

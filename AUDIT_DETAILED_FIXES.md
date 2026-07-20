@@ -1,5 +1,7 @@
 # GarTexHub Audit - Detailed Fixes & Code Examples
 
+> **Updated July 21, 2026** — Fixes 2 and 8 partially applied; Fix 3 (routes) already done.
+
 ## CRITICAL SECURITY FIXES
 
 ### Fix 1: Remove Secrets from Git History
@@ -60,7 +62,15 @@ JWT_SECRET="generate-a-random-secret-here"
 
 ### Fix 2: Handle All Promise Rejections
 
-**Status:** CRITICAL - Causes app crashes
+**Status:** CRITICAL - PARTIALLY FIXED (11 empty catches resolved)
+
+> **Progress:** 11 empty `.catch(() => {})` replaced with `console.warn` across:
+> - `CallInterface.jsx` — 8 instances (autoplay, stream, offer signal failures)
+> - `FeedItemCard.jsx` — clipboard copy failure
+> - `MainFeed.jsx` — feed config load failure
+> - `OrgSettings.jsx` — notification prefs load failure
+>
+> Remaining: audit `.then()` chains in AdminPanel, ChatInterface, SearchResults.
 
 **Example 1: AdminPanel.jsx**
 
@@ -114,7 +124,7 @@ const sendSafe = async (msg) => {
 messageQueue.forEach((msg) => sendSafe(msg));
 ```
 
-**Script to find all unhandled promises:**
+**Script to find remaining unhandled promises:**
 
 ```bash
 # Find all .then() calls:
@@ -486,30 +496,15 @@ const handleSubmit = async () => {
 
 ---
 
-### Fix 8: Disable Sourcemaps in Production
+### Fix 8: Disable Sourcemaps in Production ✅ ALREADY CORRECT
 
 **File:** `vite.config.js`
 
-**Current problem:**
+**Current state:** Already configured correctly — sourcemaps disabled in production.
 
 ```js
-// ❌ Line 15:
-sourcemap: process.env.NODE_ENV !== "production";
-// This creates .js.map files for production builds
-// Exposes all source code to users
-```
-
-**Fix:**
-
-```js
-// ✅ Option 1: Never generate:
-sourcemap: false;
-
-// ✅ Option 2: Only in development:
-sourcemap: import.meta.env.DEV;
-
-// ✅ Option 3: Only when explicitly enabled:
-sourcemap: process.env.GENERATE_SOURCEMAP === "true";
+// Current config:
+sourcemap: process.env.NODE_ENV !== "production"; // false in production, true in dev
 ```
 
 ---
@@ -594,21 +589,21 @@ npm run build && echo "✓ Build successful"
 
 ## Timeline to Production
 
-| Task                               | Effort      | Priority | Blocker |
-| ---------------------------------- | ----------- | -------- | ------- |
-| Remove secrets, rotate credentials | 2h          | CRITICAL | YES     |
-| Add promise error handlers         | 6h          | CRITICAL | YES     |
-| Fix missing routes                 | 0.5h        | CRITICAL | YES     |
-| Sanitize XSS with DOMPurify        | 2h          | HIGH     | YES     |
-| Remove console statements          | 2h          | HIGH     | NO      |
-| Add input validation               | 3h          | HIGH     | NO      |
-| Fix admin credential storage       | 1h          | HIGH     | NO      |
-| Fix SSE token                      | 1h          | HIGH     | NO      |
-| Disable sourcemaps                 | 0.25h       | HIGH     | NO      |
-| Fix CORS                           | 0.5h        | HIGH     | NO      |
-| Add error boundary                 | 1h          | MEDIUM   | NO      |
-| Test thoroughly                    | 4h          | ALL      | NO      |
-| **TOTAL**                          | **~23.25h** | -        | -       |
+| Task                               | Effort      | Priority | Blocker  | Status         |
+| ---------------------------------- | ----------- | -------- | -------- | -------------- |
+| Remove secrets, rotate credentials | 2h          | CRITICAL | YES      | ⏸️ DEFERRED    |
+| Add promise error handlers         | 6h          | CRITICAL | YES      | ⚠️ PARTIAL (11)|
+| Fix missing routes                 | 0.5h        | CRITICAL | YES      | ✅ DONE        |
+| Sanitize XSS with DOMPurify        | 2h          | HIGH     | YES      | ❌ TODO        |
+| Remove console statements          | 2h          | HIGH     | NO       | ❌ TODO        |
+| Add input validation               | 3h          | HIGH     | NO       | ❌ TODO        |
+| Fix admin credential storage       | 1h          | HIGH     | NO       | ❌ TODO        |
+| Fix SSE token                      | 1h          | HIGH     | NO       | ❌ TODO        |
+| Disable sourcemaps                 | —           | —        | —        | ✅ ALREADY OK  |
+| Fix CORS                           | 0.5h        | HIGH     | NO       | ❌ TODO        |
+| Add error boundary                 | 1h          | MEDIUM   | NO       | ❌ TODO        |
+| Test thoroughly                    | 4h          | ALL      | NO       | ⏳ PENDING     |
+| **TOTAL**                          | **~23.25h** | -        | -        | **~18.75h rem**|
 
-**Blocking fixes:** ~10.5 hours to production-ready
+**Blocking fixes:** ~10.5 hours to production-ready (secrets deferred per user)
 **Full quality improvements:** ~23.25 hours
