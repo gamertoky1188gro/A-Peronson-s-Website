@@ -51,6 +51,7 @@ import {
   connectNotificationsRealtime,
   subscribeNotificationsRealtime,
 } from "../lib/notificationsRealtime";
+import { logger } from "../lib/logger";
 
 const Motion = motion;
 
@@ -192,7 +193,7 @@ export default function NotificationsCenter() {
       const data = await apiRequest("/notifications/search-alerts", { token });
       setAlerts(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.warn("Failed to load search alerts:", err);
+      logger.warn("Failed to load search alerts:", err);
       setAlerts([]);
     } finally {
       setLoadingAlerts(false);
@@ -214,7 +215,7 @@ export default function NotificationsCenter() {
         setViewsCursor(reset ? 10 : cursor + 10);
         setViewsNext(data?.next_cursor ?? null);
       } catch (err) {
-        console.warn("Failed to load views:", err);
+        logger.warn("Failed to load views:", err);
         if (reset) setViews([]);
         setViewsNext(null);
       } finally {

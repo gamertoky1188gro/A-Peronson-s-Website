@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../lib/ThemeProvider";
 import { usePremiumCheck } from "../hooks/useSecureUser";
+import { logger } from "../lib/logger";
 
 const FALLBACK_CATEGORIES = [
   "Bug Report",
@@ -116,7 +117,7 @@ export default function SupportReports() {
       const data = await apiRequest("/support/tickets", { token });
       setTickets(Array.isArray(data?.items) ? data.items : []);
     } catch (err) {
-      console.warn("Failed to load tickets:", err);
+      logger.warn("Failed to load tickets:", err);
       setTickets([]);
     } finally {
       setTicketsLoading(false);
@@ -152,7 +153,7 @@ export default function SupportReports() {
           }
         }
       })
-      .catch((err) => console.warn("Failed to load support options:", err));
+      .catch((err) => logger.warn("Failed to load support options:", err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 

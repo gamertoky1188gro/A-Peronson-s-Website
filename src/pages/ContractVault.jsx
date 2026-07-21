@@ -36,6 +36,7 @@ import ScrollReveal from "../components/ScrollReveal";
 import CardStack from "../components/CardStack";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer";
 import { uploadFile } from "../lib/upload";
+import { logger } from "../lib/logger";
 
 const TIMELINE = [
   "Discovered",
@@ -49,6 +50,7 @@ const TIMELINE = [
 ];
 
 function mapContract(c) {
+  if (!c) return null;
   const ls = c.lifecycle_status || "draft";
   const artifactStatus = c.artifact?.status || "draft";
   const next = (() => {
@@ -427,11 +429,13 @@ export default function ContractVaultPage({ embedded = false }) {
           token: getToken(),
         });
         if (cancelled) return;
-        const mapped = (Array.isArray(data) ? data : []).map(mapContract);
+        const mapped = (Array.isArray(data) ? data : [])
+          .map(mapContract)
+          .filter(Boolean);
         setContracts(mapped);
         if (mapped.length > 0) setSelectedId(mapped[0].id);
       } catch (err) {
-        console.warn("Failed to load contracts", err);
+        logger.warn("Failed to load contracts", err);
         setFeedback("Failed to load contracts.");
       } finally {
         contractsDone = true;
@@ -466,10 +470,12 @@ export default function ContractVaultPage({ embedded = false }) {
       const data = await apiRequest("/documents/contracts", {
         token: getToken(),
       });
-      const mapped = (Array.isArray(data) ? data : []).map(mapContract);
+      const mapped = (Array.isArray(data) ? data : [])
+        .map(mapContract)
+        .filter(Boolean);
       setContracts(mapped);
     } catch (err) {
-      console.warn("Failed to load contracts", err);
+      logger.warn("Failed to load contracts", err);
     }
   };
 
@@ -483,7 +489,7 @@ export default function ContractVaultPage({ embedded = false }) {
       await loadContracts();
       if (newContract?.id) setSelectedId(newContract.id);
     } catch (err) {
-      console.warn("Failed to create draft", err);
+      logger.warn("Failed to create draft", err);
     }
   };
 
@@ -545,7 +551,7 @@ export default function ContractVaultPage({ embedded = false }) {
       });
       await refreshPaymentProofs();
     } catch (err) {
-      console.warn("Failed to upload file", err);
+      logger.warn("Failed to upload file", err);
     }
   };
 
@@ -575,7 +581,7 @@ export default function ContractVaultPage({ embedded = false }) {
     try {
       await actionFn();
     } catch (err) {
-      console.error(err.message || errorMsg);
+      logger.error(err.message || errorMsg);
     } finally {
       setSaving(false);
     }

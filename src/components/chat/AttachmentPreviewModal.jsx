@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Download, File, X } from "lucide-react";
 import { Atom } from "react-loading-indicators";
@@ -475,11 +476,46 @@ function escapeHtml(value = "") {
 }
 
 function sanitizeHtml(html = "") {
-  return String(html || "")
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
-    .replace(/\son\w+\s*=\s*'[^']*'/gi, "")
-    .replace(/\son\w+\s*=\s*[^\s>]+/gi, "");
+  return DOMPurify.sanitize(String(html || ""), {
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "u",
+      "a",
+      "ul",
+      "li",
+      "ol",
+      "pre",
+      "code",
+      "span",
+      "div",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "th",
+      "td",
+      "blockquote",
+      "hr",
+      "img",
+      "figure",
+      "figcaption",
+      "dl",
+      "dt",
+      "dd",
+      "sub",
+      "sup",
+    ],
+    ALLOWED_ATTR: ["href", "target", "src", "alt", "class", "id", "style"],
+  });
 }
 
 function formatXml(xmlText = "") {
@@ -1365,9 +1401,10 @@ function AttachmentPreviewModal({
                 >
                   <code
                     dangerouslySetInnerHTML={{
-                      __html:
+                      __html: sanitizeHtml(
                         highlightState.html ||
-                        escapeHtml(formatXml(textState.content || "")),
+                          escapeHtml(formatXml(textState.content || "")),
+                      ),
                     }}
                   />
                 </pre>
@@ -1416,9 +1453,10 @@ function AttachmentPreviewModal({
                 >
                   <code
                     dangerouslySetInnerHTML={{
-                      __html:
+                      __html: sanitizeHtml(
                         highlightState.html ||
-                        escapeHtml(textState.content || ""),
+                          escapeHtml(textState.content || ""),
+                      ),
                     }}
                   />
                 </pre>

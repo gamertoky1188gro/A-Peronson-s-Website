@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 export const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const USER_KEY = "user";
@@ -67,7 +69,7 @@ export async function syncUserFromApi(token = getToken()) {
       return user;
     }
   } catch (err) {
-    console.error("User sync failed:", err);
+    logger.error("User sync failed:", err);
   }
   return null;
 }
@@ -154,7 +156,7 @@ export async function apiRequest(
   } catch (err) {
     if (debugRequests) {
       const elapsed = performance.now() - startedAt;
-      console.warn("[api] request failed", {
+      logger.warn("[api] request failed", {
         method,
         path,
         ms: Math.round(elapsed),
@@ -168,9 +170,9 @@ export async function apiRequest(
     const elapsed = performance.now() - startedAt;
     const entry = { method, path, status: res.status, ms: Math.round(elapsed) };
     if (elapsed >= 10000) {
-      console.warn("[api] slow request", entry);
+      logger.warn("[api] slow request", entry);
     } else {
-      console.info("[api] request", entry);
+      logger.info("[api] request", entry);
     }
   }
   if (!res.ok) {
@@ -207,7 +209,7 @@ export async function getUserFromApi(token = getToken()) {
     const user = await apiRequest("/users/me", { token });
     return user;
   } catch (err) {
-    console.error("Failed to fetch user from API:", err);
+    logger.error("Failed to fetch user from API:", err);
     return null;
   }
 }

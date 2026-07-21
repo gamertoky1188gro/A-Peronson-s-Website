@@ -30,6 +30,7 @@ import {
 import NeonAtom from "../components/ui/NeonAtom";
 import { ThreeDot } from "react-loading-indicators";
 import ScrollReveal from "../components/ScrollReveal";
+import { logger } from "../lib/logger";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -446,7 +447,7 @@ export default function Insights() {
           Array.isArray(productData?.items) ? productData.items : [],
         );
       } catch (err) {
-        console.warn("Failed to load viewers:", err);
+        logger.warn("Failed to load viewers:", err);
         setProfileViewers([]);
         setProductViewers([]);
       } finally {

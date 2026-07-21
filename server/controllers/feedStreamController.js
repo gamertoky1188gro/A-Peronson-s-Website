@@ -11,7 +11,8 @@ function sendEvent(res, event, data) {
 }
 
 export function feedStream(req, res) {
-  const token = req.query.token || "";
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   if (!token) return res.status(401).json({ error: "token required" });
 
   let userId;

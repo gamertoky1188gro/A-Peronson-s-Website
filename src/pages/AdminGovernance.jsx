@@ -26,6 +26,7 @@ import {
   SunMedium,
   UserRoundSearch,
 } from "lucide-react";
+import { logger } from "../lib/logger";
 
 const initialPolicy = { code: "", name: "", description: "" };
 const initialVersion = {
@@ -61,7 +62,7 @@ function safeJsonStringify(value) {
   try {
     return JSON.stringify(value, null, 2);
   } catch (err) {
-    console.warn("safeJsonStringify failed:", err);
+    logger.warn("safeJsonStringify failed:", err);
     return "null";
   }
 }
@@ -239,7 +240,7 @@ export default function AdminGovernance() {
       try {
         await load();
       } catch (err) {
-        console.warn("Failed to load governance data:", err);
+        logger.warn("Failed to load governance data:", err);
         if (active) setStatus("Failed to load governance data");
       } finally {
         if (active) setPageLoading(false);

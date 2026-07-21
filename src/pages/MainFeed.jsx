@@ -48,6 +48,7 @@ import {
   UserCircle2,
 } from "lucide-react";
 import usePageMeta from "../lib/usePageMeta";
+import { logger } from "../lib/logger";
 
 const Motion = motion;
 
@@ -480,7 +481,7 @@ export default function MainFeed() {
     if (!token) return markLoaded("config");
     apiRequest("/admin/config/feed-page", { token })
       .then((data) => setFeedConfig({ ...DEFAULT_FEED_CONFIG, ...data }))
-      .catch(() => console.warn("Failed to load feed config"))
+      .catch(() => logger.warn("Failed to load feed config"))
       .finally(() => markLoaded("config"));
   }, []);
 

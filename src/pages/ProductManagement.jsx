@@ -31,6 +31,7 @@ import {
   Rocket,
 } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
+import { logger } from "../lib/logger";
 
 const EMPTY_FORM = {
   title: "",
@@ -147,7 +148,7 @@ export default function ProductManagement() {
       const data = await apiRequest("/products?mine=true", { token });
       setItems(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.warn("Failed to load products:", err);
+      logger.warn("Failed to load products:", err);
       setItems([]);
     } finally {
       setLoading(false);
@@ -208,7 +209,7 @@ export default function ProductManagement() {
         setNotice("Created draft manually. Save will create the product.");
       }
     } catch (err) {
-      console.error("Create draft error:", err);
+      logger.error("Create draft error:", err);
       setNotice(
         err.message ||
           "Failed to create draft. You can still enter product details and save.",
@@ -370,7 +371,7 @@ export default function ProductManagement() {
       await loadMine();
       closeModal();
     } catch (err) {
-      console.error("Save error:", err);
+      logger.error("Save error:", err);
       setNotice(err.message || "Save failed. Please try again.");
     } finally {
       setSaving(false);
@@ -394,7 +395,7 @@ export default function ProductManagement() {
       setItems((prev) => prev.filter((p) => p.id !== productId));
       setNotice("Product deleted.");
     } catch (err) {
-      console.error("Delete error:", err);
+      logger.error("Delete error:", err);
       setNotice(
         err.message ||
           "Delete failed. The product may have already been deleted.",
@@ -575,7 +576,7 @@ export default function ProductManagement() {
         },
       });
     } catch (err) {
-      console.error("Sync media failed:", err);
+      logger.error("Sync media failed:", err);
       setNotice(err.message || "Failed to sync media");
     }
   }
@@ -589,7 +590,7 @@ export default function ProductManagement() {
         body: { video_url: videoUrl },
       });
     } catch (err) {
-      console.error("Sync video failed:", err);
+      logger.error("Sync video failed:", err);
       setNotice(err.message || "Failed to sync video");
     }
   }

@@ -27,6 +27,7 @@
     - Skeleton shimmer while loading.
     - Optional premium-locked overlays for advanced filters.
 */
+import DOMPurify from "dompurify";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
@@ -93,6 +94,7 @@ import {
 } from "./searchFiltersConfig";
 import MasonryGrid from "../components/MasonryGrid";
 import usePageMeta from "../lib/usePageMeta";
+import { logger } from "../lib/logger";
 
 const SORT_OPTIONS = [
   { key: "relevance", label: "Relevance" },
@@ -224,7 +226,8 @@ const initialFilters = {
 function highlightText(text, query) {
   if (!text || !query?.trim()) return text;
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return text.replace(
+  const safe = DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
+  return safe.replace(
     new RegExp(`(${escaped})`, "gi"),
     '<strong class="text-sky-600 dark:text-sky-400">$1</strong>',
   );
@@ -1329,7 +1332,7 @@ export default function SearchResults() {
           setRecentViews(data.items.slice(0, 5));
         }
       } catch (err) {
-        console.warn("Unable to load recent views", err);
+        logger.warn("Unable to load recent views", err);
       } finally {
         pageLoadCountRef.current += 1;
         if (pageLoadCountRef.current >= 3) setPageLoading(false);
@@ -1347,7 +1350,7 @@ export default function SearchResults() {
           setTrendingSearches(data.trending.slice(0, 8));
         }
       } catch (err) {
-        console.warn("fetchTrending failed:", err);
+        logger.warn("fetchTrending failed:", err);
       }
     }
     fetchTrending();
@@ -1360,7 +1363,7 @@ export default function SearchResults() {
         const data = await apiRequest("/search/analytics", { token });
         if (data) setAnalytics(data);
       } catch (err) {
-        console.warn("fetchAnalytics failed:", err);
+        logger.warn("fetchAnalytics failed:", err);
       }
     }
     fetchAnalytics();
@@ -1377,7 +1380,7 @@ export default function SearchResults() {
           setAlertsQuota(Number(data.remaining) || 0);
         }
       } catch (err) {
-        console.warn("Unable to load quota", err);
+        logger.warn("Unable to load quota", err);
       } finally {
         pageLoadCountRef.current += 1;
         if (pageLoadCountRef.current >= 3) setPageLoading(false);
@@ -1433,7 +1436,7 @@ export default function SearchResults() {
           }));
         }
       } catch (err) {
-        console.warn("Unable to load filter options", err);
+        logger.warn("Unable to load filter options", err);
       } finally {
         pageLoadCountRef.current += 1;
         if (pageLoadCountRef.current >= 3) setPageLoading(false);
@@ -1450,7 +1453,7 @@ export default function SearchResults() {
         setSavedSearchAlerts(data.alerts);
       }
     } catch (err) {
-      console.warn("fetchSavedAlerts failed:", err);
+      logger.warn("fetchSavedAlerts failed:", err);
     }
   }, [token]);
 
@@ -1887,7 +1890,7 @@ export default function SearchResults() {
             setSpellingSuggestion(spRes.suggestion);
           }
         } catch (err) {
-          console.warn("Spelling suggestion failed:", err);
+          logger.warn("Spelling suggestion failed:", err);
         }
       }
 
@@ -1900,7 +1903,7 @@ export default function SearchResults() {
           setRelatedSearches(trendRes.related.slice(0, 8));
         }
       } catch (err) {
-        console.warn("Related searches failed:", err);
+        logger.warn("Related searches failed:", err);
       }
     } catch (err) {
       addToast(

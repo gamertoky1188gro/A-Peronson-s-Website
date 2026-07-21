@@ -1,6 +1,8 @@
 import { getToken } from "./auth";
 
 const BASE = import.meta.env.VITE_API_URL || "";
+const RECONNECT_BASE_MS = 3000;
+const RECONNECT_MAX_MS = 30000;
 
 export function subscribeFeedRealtime({
   onNewPost,
@@ -10,39 +12,84 @@ export function subscribeFeedRealtime({
   const token = getToken();
   if (!token) return null;
 
-  const url = `${BASE}/api/feed/stream?token=${encodeURIComponent(token)}`;
-  const source = new EventSource(url);
+  let abortController = new AbortController();
+  let retryDelay = RECONNECT_BASE_MS;
+  let reconnectTimer = null;
 
-  source.addEventListener("new_post", (e) => {
+  async function connect() {
+    const token = getToken();
+    if (!token) return;
+
+    abortController = new AbortController();
+
     try {
-      const post = JSON.parse(e.data);
-      onNewPost?.(post);
-    } catch {
-      /* ignore parse errors */
-    }
-  });
+      const response = await fetch(`${BASE}/api/feed/stream`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: abortController.signal,
+      });
 
-  source.addEventListener("updated_post", (e) => {
-    try {
-      const post = JSON.parse(e.data);
-      onUpdatedPost?.(post);
-    } catch {
-      /* ignore parse errors */
-    }
-  });
+      if (!response.ok) {
+        scheduleReconnect();
+        return;
+      }
 
-  source.addEventListener("deleted_post", (e) => {
-    try {
-      const { id } = JSON.parse(e.data);
-      onDeletedPost?.(id);
-    } catch {
-      /* ignore parse errors */
-    }
-  });
+      retryDelay = RECONNECT_BASE_MS;
 
-  source.onerror = () => {
-    // EventSource auto-reconnects; no action needed
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        let eventType = "";
+        let eventData = "";
+
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            eventType = line.slice(7).trim();
+          } else if (line.startsWith("data: ")) {
+            eventData = line.slice(6).trim();
+          } else if (line === "" && eventType && eventData) {
+            try {
+              const data = JSON.parse(eventData);
+              if (eventType === "new_post") onNewPost?.(data);
+              else if (eventType === "updated_post") onUpdatedPost?.(data);
+              else if (eventType === "deleted_post") onDeletedPost?.(data.id);
+            } catch {
+              /* ignore parse errors */
+            }
+            eventType = "";
+            eventData = "";
+          }
+        }
+      }
+
+      scheduleReconnect();
+    } catch (err) {
+      if (err.name !== "AbortError") scheduleReconnect();
+    }
+  }
+
+  function scheduleReconnect() {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(() => {
+      retryDelay = Math.min(retryDelay * 1.5, RECONNECT_MAX_MS);
+      connect();
+    }, retryDelay);
+  }
+
+  connect();
+
+  return {
+    close() {
+      clearTimeout(reconnectTimer);
+      abortController.abort();
+    },
   };
-
-  return source;
 }

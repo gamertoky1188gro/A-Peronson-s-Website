@@ -44,6 +44,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { logger } from "../lib/logger";
 
 const EMPTY_FORM = {
   requestType: "",
@@ -488,7 +489,7 @@ export default function BuyerRequestManagement() {
       const data = await apiRequest("/requirements/browse", { token });
       setBrowse(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.warn("Failed to load browse:", err);
+      logger.warn("Failed to load browse:", err);
       setBrowse([]);
     } finally {
       setLoadingBrowse(false);
@@ -502,7 +503,7 @@ export default function BuyerRequestManagement() {
       const data = await apiRequest("/org/members", { token });
       setAgents(Array.isArray(data?.members) ? data.members : []);
     } catch (err) {
-      console.warn("Failed to load agents:", err);
+      logger.warn("Failed to load agents:", err);
       setAgents([]);
     }
   }, [role, token]);
@@ -520,7 +521,7 @@ export default function BuyerRequestManagement() {
           [requirementId]: Array.isArray(data) ? data : [],
         }));
       } catch (err) {
-        console.warn("Failed to load attachments:", err);
+        logger.warn("Failed to load attachments:", err);
         setAttachmentsByRequest((prev) => ({ ...prev, [requirementId]: [] }));
       }
     },
@@ -670,7 +671,7 @@ export default function BuyerRequestManagement() {
         }, {});
         setForm((prev) => ({ ...prev, ...sanitized }));
       } catch (err) {
-        console.warn("AI parse fallback used:", err);
+        logger.warn("AI parse fallback used:", err);
         const timelineDays = extracted?.timeline?.normalized_days;
         const priceMin = extracted?.price?.min;
         const priceMax = extracted?.price?.max;

@@ -19,6 +19,7 @@ import {
   Shield,
 } from "lucide-react";
 import usePageMeta from "../lib/usePageMeta";
+import { logger } from "../lib/logger";
 
 function Pill({ children, tone = "default" }) {
   const tones = {
@@ -139,7 +140,7 @@ export default function ProfilePage() {
         const user = data?.users?.[0];
         if (!cancelled) setTarget(user || null);
       } catch (err) {
-        console.warn("API error:", err);
+        logger.warn("API error:", err);
         if (!cancelled) setError(true);
       } finally {
         if (!cancelled) setLoading(false);

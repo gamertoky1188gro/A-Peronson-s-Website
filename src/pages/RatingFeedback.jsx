@@ -16,6 +16,7 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
+import { logger } from "../lib/logger";
 
 const STAR_OPTIONS = [1, 2, 3, 4, 5];
 const MAX_COMMENT_LEN = 500;
@@ -125,7 +126,7 @@ export default function RatingFeedback() {
               setLookup(map);
             })
             .catch((err) => {
-              console.warn("User lookup failed:", err);
+              logger.warn("User lookup failed:", err);
               setLookup({});
             })
             .finally(() => setLookupDone(true));

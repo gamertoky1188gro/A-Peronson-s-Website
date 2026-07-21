@@ -39,6 +39,7 @@ import { trackClientEvent } from "../lib/events";
 import MarkdownMessage from "../components/chat/MarkdownMessage";
 import { ThreeDot } from "react-loading-indicators";
 import JourneyTimeline from "../components/JourneyTimeline";
+import { logger } from "../lib/logger";
 
 const WS_BASE = (() => {
   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
@@ -529,7 +530,7 @@ export default function CallInterface() {
           localVideoRef.current.srcObject = stream;
           const playAttempt = localVideoRef.current.play?.();
           if (playAttempt && typeof playAttempt.catch === "function") {
-            playAttempt.catch(() => console.warn("Local video play failed"));
+            playAttempt.catch(() => logger.warn("Local video play failed"));
           }
         }
 
@@ -622,7 +623,7 @@ export default function CallInterface() {
           remoteVideoRef.current.srcObject = stream;
           const playAttempt = remoteVideoRef.current.play?.();
           if (playAttempt && typeof playAttempt.catch === "function") {
-            playAttempt.catch(() => console.warn("Remote video play failed"));
+            playAttempt.catch(() => logger.warn("Remote video play failed"));
           }
         }
         if (mountedRef.current) setHasRemoteStream(true);
@@ -1195,7 +1196,9 @@ export default function CallInterface() {
       }
 
       if (!navigator?.permissions?.query) {
-        ensureLocalStream().catch(() => console.warn("No permissions API, stream attempt failed"));
+        ensureLocalStream().catch(() =>
+          logger.warn("No permissions API, stream attempt failed"),
+        );
         return;
       }
 
@@ -1227,9 +1230,13 @@ export default function CallInterface() {
           return;
         }
 
-        ensureLocalStream().catch(() => console.warn("Permission-granted stream request failed"));
+        ensureLocalStream().catch(() =>
+          logger.warn("Permission-granted stream request failed"),
+        );
       } catch {
-        ensureLocalStream().catch(() => console.warn("Exception during stream request"));
+        ensureLocalStream().catch(() =>
+          logger.warn("Exception during stream request"),
+        );
       }
     }
 
@@ -1247,8 +1254,10 @@ export default function CallInterface() {
 
   useEffect(() => {
     if (!hasLocalStream) return;
-    tryAnswerPendingOffer().catch(() => console.warn("Failed to answer pending offer"));
-    tryStartOffer().catch(() => console.warn("Failed to start offer"));
+    tryAnswerPendingOffer().catch(() =>
+      logger.warn("Failed to answer pending offer"),
+    );
+    tryStartOffer().catch(() => logger.warn("Failed to start offer"));
   }, [hasLocalStream, tryAnswerPendingOffer, tryStartOffer]);
 
   useEffect(() => {
@@ -1579,7 +1588,9 @@ export default function CallInterface() {
         if (!next) {
           const playAttempt = remoteVideoRef.current.play?.();
           if (playAttempt && typeof playAttempt.catch === "function") {
-            playAttempt.catch(() => console.warn("Remote video play after unmute failed"));
+            playAttempt.catch(() =>
+              logger.warn("Remote video play after unmute failed"),
+            );
           }
         }
       }

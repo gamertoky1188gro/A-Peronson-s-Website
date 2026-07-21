@@ -63,6 +63,7 @@ import {
   BriefcaseBusiness,
   Building,
 } from "lucide-react";
+import { logger } from "../lib/logger";
 
 const Motion = motion;
 
@@ -283,7 +284,7 @@ export default function BuyerProfile() {
       );
       setRatingSummary(data || null);
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
       setRatingSummary(null);
     }
   }, [id]);
@@ -297,7 +298,7 @@ export default function BuyerProfile() {
       );
       setCertification(data?.summary || null);
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
       setCertification(null);
     }
   }, [id, token]);
@@ -317,7 +318,7 @@ export default function BuyerProfile() {
         setRequestsCursor(reset ? 10 : cursor + 10);
         setRequestsNext(data?.next_cursor ?? null);
       } catch (err) {
-        console.warn("API error:", err);
+        logger.warn("API error:", err);
       } finally {
         setLoadingRequests(false);
       }
@@ -356,7 +357,7 @@ export default function BuyerProfile() {
         if (!cancelled) setRatingSummary(data || null);
       })
       .catch((err) => {
-        console.warn("API error:", err);
+        logger.warn("API error:", err);
         if (!cancelled) setRatingSummary(null);
       });
 
@@ -366,7 +367,7 @@ export default function BuyerProfile() {
           if (!cancelled) setCertification(data?.summary || null);
         })
         .catch((err) => {
-          console.warn("API error:", err);
+          logger.warn("API error:", err);
           if (!cancelled) setCertification(null);
         });
     }
@@ -421,7 +422,7 @@ export default function BuyerProfile() {
         setRequestsNext(data?.next_cursor ?? null);
       })
       .catch((err) => {
-        console.warn("API error:", err);
+        logger.warn("API error:", err);
       })
       .finally(() => {
         if (!cancelled) setLoadingRequests(false);
@@ -445,7 +446,7 @@ export default function BuyerProfile() {
           : prev,
       );
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
     }
   }
 
@@ -462,7 +463,7 @@ export default function BuyerProfile() {
           : prev,
       );
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
     }
   }
 
@@ -1366,7 +1367,7 @@ export default function BuyerProfile() {
                     });
                     await loadRatings();
                   } catch (err) {
-                    console.warn("API error:", err);
+                    logger.warn("API error:", err);
                   }
                   setReviewEditModal({
                     open: false,
@@ -1418,7 +1419,7 @@ export default function BuyerProfile() {
                     });
                     await loadRatings();
                   } catch (err) {
-                    console.warn("API error:", err);
+                    logger.warn("API error:", err);
                   }
                   setReviewDeleteId(null);
                 }}

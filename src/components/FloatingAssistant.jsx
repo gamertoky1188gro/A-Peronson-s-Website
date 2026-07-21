@@ -6,6 +6,7 @@ import BotLogo from "./ui/BotLogo";
 import MarkdownMessage from "./chat/MarkdownMessage";
 import { ThreeDot } from "react-loading-indicators";
 import useScrollDirection from "../hooks/useScrollDirection";
+import { logger } from "../lib/logger";
 
 function getUserId() {
   const user = getCurrentUser();
@@ -183,7 +184,7 @@ export default function FloatingAssistant() {
           socket.send(JSON.stringify({ type: "identify", token }));
         }
       } catch (err) {
-        console.warn("Assistant identify failed", err);
+        logger.warn("Assistant identify failed", err);
       }
     };
 
@@ -192,7 +193,7 @@ export default function FloatingAssistant() {
       try {
         data = JSON.parse(event.data);
       } catch (err) {
-        console.error("Failed to parse WS message", err);
+        logger.error("Failed to parse WS message", err);
         return;
       }
       if (data.type === "chunk") {

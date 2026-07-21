@@ -28,6 +28,7 @@ import {
 } from "../../lib/auth";
 import { ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../../components/ui/NeonAtom";
+import { logger } from "../../lib/logger";
 
 const FALLBACK_CATEGORIES = [
   "T-Shirt",
@@ -75,7 +76,7 @@ export default function OnboardingWizard() {
           setAvailableCategories(data.items.map((c) => c.name || c.label || c));
         }
       })
-      .catch((err) => console.warn("Failed to load categories:", err));
+      .catch((err) => logger.warn("Failed to load categories:", err));
   }, [token]);
 
   const [profileImage, setProfileImage] = useState(

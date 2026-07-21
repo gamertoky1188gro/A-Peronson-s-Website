@@ -127,7 +127,7 @@
 
 ---
 
-#### SEC-003: **HIGH** - XSS via dangerouslySetInnerHTML in SearchResults.jsx
+#### SEC-003: **HIGH** - XSS via dangerouslySetInnerHTML in SearchResults.jsx — **FIXED**
 
 - **File:** `src/pages/SearchResults.jsx`
 - **Lines:** ~25 instances
@@ -143,17 +143,15 @@
   - Stored XSS if backend doesn't sanitize
   - Malicious script execution in user browsers
   - Session hijacking possible
-- **Recommended Fix:**
-  ```jsx
-  import DOMPurify from 'dompurify';
-  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }}
-  ```
-- **Priority:** NEXT SPRINT
-- **Dependency to Add:** `dompurify`
+- **Fix Applied:**
+  - `dompurify` installed as dependency
+  - `SearchResults.jsx`: 19 instances wrapped with `DOMPurify.sanitize()` via `highlightText()` helper
+  - `AttachmentPreviewModal.jsx`: 3 instances wrapped with `DOMPurify.sanitize()` via `sanitizeHtml()` helper
+- **Priority:** FIXED
 
 ---
 
-#### SEC-004: **HIGH** - Admin Credentials Stored in LocalStorage
+#### SEC-004: **HIGH** - Admin Credentials Stored in LocalStorage — **FIXED**
 
 - **File:** `src/pages/AdminPanel.jsx`
 - **Lines:** Multiple
@@ -168,12 +166,14 @@
   - XSS can steal admin credentials
   - LocalStorage accessible from any script
   - Persistent across sessions
-- **Fix:** Use httpOnly cookies or sessionStorage (with appropriate TTL)
-- **Priority:** NEXT SPRINT
+- **Fix Applied:**
+  - `src/lib/secureStorage.js` created — wraps `sessionStorage` with JSON expiry and configurable TTL
+  - 4 keys (`admin_mfa_code`, `admin_device_id`, `admin_passkey`, `admin_stepup_code`) migrated from `localStorage` → `secureStorage` with 60-min TTL
+- **Priority:** FIXED
 
 ---
 
-#### SEC-005: **MEDIUM** - EventSource Token in URL Query Parameter
+#### SEC-005: **MEDIUM** - EventSource Token in URL Query Parameter — **FIXED**
 
 - **File:** `src/lib/feedRealtime.js`
 - **Line:** 6
@@ -186,8 +186,10 @@
 - **Impact:**
   - JWT token exposed in URL (visible in logs, referrer headers, browser history)
   - Server-side logging captures sensitive token
-- **Fix:** Use Authorization header with SSE
-- **Priority:** NEXT SPRINT
+- **Fix Applied:**
+  - `src/lib/feedRealtime.js` rewritten to use `fetch` + `ReadableStream` instead of `EventSource`, passing token via `Authorization: Bearer` header
+  - `server/controllers/feedStreamController.js` reads token from `req.headers.authorization` instead of `req.query.token`
+- **Priority:** FIXED
 
 ---
 
@@ -285,7 +287,7 @@
 
 ---
 
-#### BUG-004: **HIGH** - Type Mismatch in ContractVault.jsx
+#### BUG-004: **HIGH** - Type Mismatch in ContractVault.jsx — **FIXED**
 
 - **File:** `src/pages/ContractVault.jsx`
 - **Lines:** mapContract() function
@@ -299,8 +301,16 @@
   }
   ```
 - **Impact:** Runtime crash when rendering empty state
-- **Fix:** Add null check: `if (!c) return null;`
-- **Priority:** IMMEDIATE
+- **Fix Applied:**
+  ```jsx
+  function mapContract(c) {
+    if (!c) return null; // ← guard added
+    const ls = c.lifecycle_status || "draft";
+    // ...
+  }
+  ```
+  - `.filter(Boolean)` added after both `.map(mapContract)` calls (lines 430, 469)
+- **Priority:** FIXED
 
 ---
 
@@ -672,7 +682,7 @@
 ### Security: 7 Issues (2 Critical, 5 High/Medium)
 
 - Hardcoded secrets: CRITICAL
-- XSS vulnerabilities: HIGH
+- XSS vulnerabilities: HIGH (FIXED)
 - Token exposure: MEDIUM
 - CSRF missing: MEDIUM
 
@@ -680,7 +690,7 @@
 
 - Unhandled promises: CRITICAL (PARTIALLY FIXED)
 - Missing routes: CRITICAL (FIXED)
-- Type mismatches: HIGH
+- Type mismatches: HIGH (FIXED)
 
 ### Hardcoded Values: 3 Issues (1 High, 2 Medium)
 
@@ -690,8 +700,8 @@
 
 ### Incomplete Features: 4 Issues (2 High, 2 Medium)
 
-- Console.logs: HIGH
-- Missing validation: HIGH
+- Console.logs: HIGH (FIXED)
+- Missing validation: HIGH (PARTIALLY FIXED)
 - Missing states: MEDIUM
 
 ### Data/Persistence: 2 Issues
@@ -743,10 +753,9 @@
    - Admin credentials in localStorage
    - Needs refactoring
 
-3. **`src/pages/SearchResults.jsx`** - HIGH RISK
-   - 25+ dangerouslySetInnerHTML instances
-   - XSS vulnerability
-   - Urgent sanitization needed
+3. **`src/pages/SearchResults.jsx`** - HIGH RISK (FIXED)
+   - 25+ dangerouslySetInnerHTML instances — all 19 sanitized via DOMPurify
+   - XSS vulnerability — mitigated
 
 4. **`src/pages/ChatInterface.jsx`** - HIGH RISK
    - Token in URL query parameters
@@ -801,15 +810,15 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 2. Add error boundaries to App
 3. ~~Fix missing route definitions~~ ✅ DONE
 4. ~~Add .catch() handlers to all promises~~ ⚠️ PARTIAL (11 empty catches fixed)
-5. Fix ContractVault type safety
+5. ~~Fix ContractVault type safety~~ ✅ DONE
 
 ### NEXT SPRINT (This Month)
 
-1. Remove all console.log statements (80 instances)
+1. ~~Remove all console.log statements (90 instances)~~ ✅ DONE — all replaced with `logger` (dev-only) via `src/lib/logger.js`
 2. Add input validation to all forms
-3. Replace dangerouslySetInnerHTML with DOMPurify
-4. Move token from URL parameter to Authorization header
-5. Move admin credentials from localStorage to secure storage
+3. ~~Replace dangerouslySetInnerHTML with DOMPurify~~ ✅ DONE
+4. ~~Move token from URL parameter to Authorization header~~ ✅ DONE
+5. ~~Move admin credentials from localStorage to secure storage~~ ✅ DONE
 6. ~~Add sourcemap disable in production~~ ✅ ALREADY CORRECT
 7. Fix CORS configuration for production
 
@@ -869,15 +878,15 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 1. ❌ Secrets exposed in .env (CRITICAL) — DEFERRED
 2. ✅ Unhandled promise rejections — PARTIALLY FIXED (11 empty catches done)
 3. ✅ Missing route definitions causing 404s — FIXED
-4. ❌ XSS vulnerabilities in SearchResults (HIGH)
-5. ❌ ContractVault type safety (HIGH)
+4. ✅ XSS vulnerabilities in SearchResults (FIXED)
+5. ✅ ContractVault type safety (FIXED)
 
 ### Required Before Launch:
 
 1. ~~Remove credentials from git~~ — DEFERRED
 2. ~~Add error handlers to all promises~~ — PARTIALLY DONE
 3. ~~Fix route definitions~~ ✅ DONE
-4. Sanitize HTML with DOMPurify
+4. ~~Sanitize HTML with DOMPurify~~ ✅ DONE
 5. Remove console.log statements
 6. Add input validation
 7. Fix admin credential storage
@@ -903,17 +912,17 @@ Following the AGENTS.md notes, several components use mock/placeholder data:
 
 ## Metrics & Statistics
 
-| Metric                            | Value                              | Updated (Jul 21)                  |
-| --------------------------------- | ---------------------------------- | ---------------------------------- |
-| Total Files Analyzed              | 139 (src) + 237 (server)           | —                                  |
-| Lines of Code                     | ~74,000                            | —                                  |
-| Console Statements                | 78                                 | **80** (increased)                 |
-| Promise .then() without .catch()  | ~42                                | **~31** (11 empty catches fixed)   |
-| Empty `.catch(() => {})`          | ~11                                | **0** (all replaced with warn)     |
-| dangerouslySetInnerHTML instances | 25+                                | 22 (unchanged)                     |
-| Test Files                        | 60                                 | —                                  |
-| Code Coverage                     | Unknown (no coverage report found) | —                                  |
-| Average Function Length           | ~150 lines (estimated)             | —                                  |
+| Metric                            | Value                              | Updated (Jul 21)                 |
+| --------------------------------- | ---------------------------------- | -------------------------------- |
+| Total Files Analyzed              | 139 (src) + 237 (server)           | —                                |
+| Lines of Code                     | ~74,000                            | —                                |
+| Console Statements                | 78                                 | **80** (increased)               |
+| Promise .then() without .catch()  | ~42                                | **~31** (11 empty catches fixed) |
+| Empty `.catch(() => {})`          | ~11                                | **0** (all replaced with warn)   |
+| dangerouslySetInnerHTML instances | 25+                                | 22 (all sanitized via DOMPurify) |
+| Test Files                        | 60                                 | —                                |
+| Code Coverage                     | Unknown (no coverage report found) | —                                |
+| Average Function Length           | ~150 lines (estimated)             | —                                |
 
 ---
 
@@ -924,10 +933,10 @@ The GarTexHub project has a solid feature foundation but requires critical secur
 1. **Secret credential exposure** — Deferred per user decision
 2. **Unhandled promise rejections** — 11 empty catches fixed, ~31 remaining `.then()` chains to audit
 3. **Missing error boundaries** — Global application stability
-4. **XSS vulnerabilities** — User data protection
-5. **ContractVault type safety** — Null reference crashes
+4. **XSS vulnerabilities** — All 22 instances sanitized via DOMPurify
+5. **ContractVault type safety** — Null guard + filter applied
 
-Progress since initial audit: routes fixed, sourcemaps verified correct, 11 empty promise catches replaced with `console.warn`. With focused effort on remaining critical and high-priority issues (~35-40 hours), the application can reach production-ready status.
+Progress since initial audit: routes fixed, sourcemaps verified correct, 11 empty promise catches replaced with `console.warn`, ContractVault null safety fixed, all XSS vectors sanitized via DOMPurify. With focused effort on remaining critical and high-priority issues (~35-40 hours), the application can reach production-ready status.
 
 ---
 

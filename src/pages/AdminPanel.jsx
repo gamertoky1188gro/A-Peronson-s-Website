@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { secureStorage } from "../lib/secureStorage";
 import {
   ResponsiveContainer,
   LineChart,
@@ -1095,16 +1096,16 @@ export default function AdminPanel() {
   const [premiumFilter, setPremiumFilter] = useState("all");
   const [userDrafts, setUserDrafts] = useState({});
   const [mfaCode, setMfaCode] = useState(
-    () => localStorage.getItem("admin_mfa_code") || "",
+    () => secureStorage.getItem("admin_mfa_code") || "",
   );
   const [deviceId, setDeviceId] = useState(
-    () => localStorage.getItem("admin_device_id") || "",
+    () => secureStorage.getItem("admin_device_id") || "",
   );
   const [passkeyValue] = useState(
-    () => localStorage.getItem("admin_passkey") || "",
+    () => secureStorage.getItem("admin_passkey") || "",
   );
   const [stepUpCode, setStepUpCode] = useState(
-    () => localStorage.getItem("admin_stepup_code") || "",
+    () => secureStorage.getItem("admin_stepup_code") || "",
   );
   const [passkeyBusy, setPasskeyBusy] = useState(false);
   const [securityGateOpen, setSecurityGateOpen] = useState(false);
@@ -1207,12 +1208,12 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (!mfaCode) return;
-    localStorage.setItem("admin_mfa_code", mfaCode);
+    secureStorage.setItem("admin_mfa_code", mfaCode, 60);
   }, [mfaCode]);
 
   useEffect(() => {
     if (!deviceId) return;
-    localStorage.setItem("admin_device_id", deviceId);
+    secureStorage.setItem("admin_device_id", deviceId, 60);
   }, [deviceId]);
 
   useEffect(() => {
@@ -1224,12 +1225,12 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (!passkeyValue) return;
-    localStorage.setItem("admin_passkey", passkeyValue);
+    secureStorage.setItem("admin_passkey", passkeyValue, 60);
   }, [passkeyValue]);
 
   useEffect(() => {
     if (!stepUpCode) return;
-    localStorage.setItem("admin_stepup_code", stepUpCode);
+    secureStorage.setItem("admin_stepup_code", stepUpCode, 60);
   }, [stepUpCode]);
 
   useEffect(() => {
@@ -1356,7 +1357,7 @@ export default function AdminPanel() {
       });
       setAudit(Array.isArray(auditData?.items) ? auditData.items : []);
     } catch (err) {
-      console.warn("Failed to load audit:", err);
+      if (import.meta.env.DEV) console.warn("Failed to load audit:", err);
     }
   }
 
@@ -1803,8 +1804,11 @@ export default function AdminPanel() {
     const token = getToken();
     if (!token) return;
     const headers = buildAdminHeaders({ stepUp: true });
-    const newPassword = "";
-    if (!newPassword) return;
+    const newPassword = window.prompt("Enter new password for user:") || "";
+    if (!newPassword || newPassword.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
     try {
       await apiRequest(`/users/${userId}/reset-password`, {
         method: "POST",
@@ -2068,9 +2072,23 @@ export default function AdminPanel() {
     }
   }
 
+  function isValidEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v).trim());
+  }
+
   async function saveEmailConfig() {
     const token = getToken();
     if (!token) return;
+    const fromEmail = String(emailConfig.from_email || "").trim();
+    const testRecipient = String(emailConfig.test_recipient || "").trim();
+    if (fromEmail && !isValidEmail(fromEmail)) {
+      setEmailConfigError("Invalid sender email address.");
+      return;
+    }
+    if (testRecipient && !isValidEmail(testRecipient)) {
+      setEmailConfigError("Invalid test recipient email address.");
+      return;
+    }
     setEmailConfigBusy(true);
     setEmailConfigNotice("");
     setEmailConfigError("");
@@ -2081,8 +2099,8 @@ export default function AdminPanel() {
             enabled: Boolean(emailConfig.enabled),
             provider: emailConfig.provider || "smtp",
             from_name: String(emailConfig.from_name || "").trim(),
-            from_email: String(emailConfig.from_email || "").trim(),
-            test_recipient: String(emailConfig.test_recipient || "").trim(),
+            from_email: fromEmail,
+            test_recipient: testRecipient,
           },
         },
       };
@@ -2378,6 +2396,11 @@ export default function AdminPanel() {
   async function sendEmailTest() {
     const token = getToken();
     if (!token) return;
+    const recipient = String(emailConfig.test_recipient || "").trim();
+    if (!isValidEmail(recipient)) {
+      setEmailConfigError("Enter a valid test recipient email first.");
+      return;
+    }
     setEmailConfigNotice("");
     setEmailConfigError("");
     try {
@@ -4956,7 +4979,7 @@ export default function AdminPanel() {
                                   <button
                                     type="button"
                                     onClick={async () => {
-                                      const reason = "" || "rejected_by_admin";
+                                      const reason = "rejected_by_admin";
                                       await runInlineAdminAction(
                                         "verification.reject",
                                         { user_id: row.user_id, reason },
@@ -5186,8 +5209,8 @@ export default function AdminPanel() {
                                   <button
                                     type="button"
                                     onClick={async () => {
-                                      const resolutionAction = "" || "resolved";
-                                      const resolutionNote = "" || "";
+                                      const resolutionAction = "resolved";
+                                      const resolutionNote = "";
                                       await runInlineAdminAction(
                                         "dispute.resolve",
                                         {

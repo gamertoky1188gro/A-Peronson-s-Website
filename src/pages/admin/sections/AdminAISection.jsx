@@ -24,6 +24,7 @@ import {
 import { apiRequest } from "../../../lib/auth";
 
 import { Mosaic, ThreeDot } from "react-loading-indicators";
+import { logger } from "../../../lib/logger";
 
 export function AdminAISection({ activeCategory, adminDark }) {
   const [rules, setRules] = useState({ globalRules: [], smallTalkRules: [] });
@@ -70,7 +71,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
         });
       }
     } catch (err) {
-      console.warn("Failed to load AI data:", err);
+      logger.warn("Failed to load AI data:", err);
       setError("Failed to load data");
     } finally {
       setLoading(false);
@@ -145,7 +146,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
         setTimeout(() => setNotice(""), 3000);
       }
     } catch (err) {
-      console.warn("Failed to add rule:", err);
+      logger.warn("Failed to add rule:", err);
       setError("Failed to add rule");
     }
   }
@@ -168,7 +169,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
       setNotice("Rule deleted");
       setTimeout(() => setNotice(""), 3000);
     } catch (err) {
-      console.warn("Failed to delete rule:", err);
+      logger.warn("Failed to delete rule:", err);
       setError("Failed to delete rule");
     }
   }

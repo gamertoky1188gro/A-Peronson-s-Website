@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { apiRequest, getToken } from "../../../lib/auth";
 import { ThreeDot, Mosaic } from "react-loading-indicators";
+import { logger } from "../../../lib/logger";
 
 const FOLDER_CONFIG = [
   { id: "all", label: "All Files", icon: FolderOpen },
@@ -262,7 +263,7 @@ export function FileExplorerSection({ adminDark }) {
       );
       setFiles(result.files || result || []);
     } catch (err) {
-      console.error("Failed to load files:", err);
+      logger.error("Failed to load files:", err);
       setFileError(err.message || "Failed to load files");
     } finally {
       setLoading(false);
@@ -275,7 +276,7 @@ export function FileExplorerSection({ adminDark }) {
       const result = await apiRequest("/admin/uploads/stats", { token });
       setStats(result);
     } catch (err) {
-      console.error("Failed to load stats:", err);
+      logger.error("Failed to load stats:", err);
       setFileError(err.message || "Failed to load stats");
     }
   };

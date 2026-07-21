@@ -69,6 +69,7 @@ import {
   Plus,
   Rocket,
 } from "lucide-react";
+import { logger } from "../lib/logger";
 
 const Motion = motion;
 
@@ -481,7 +482,7 @@ export default function BuyingHouseProfile() {
       );
       setRatingSummary(data || null);
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
       setRatingSummary(null);
     }
   }, [id]);
@@ -495,7 +496,7 @@ export default function BuyingHouseProfile() {
       );
       setCertification(data?.summary || null);
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
       setCertification(null);
     }
   }, [id, token]);
@@ -515,7 +516,7 @@ export default function BuyingHouseProfile() {
         setProductsCursor(reset ? 10 : cursor + 10);
         setProductsNext(data?.next_cursor ?? null);
       } catch (err) {
-        console.warn("API error:", err);
+        logger.warn("API error:", err);
       } finally {
         setLoadingProducts(false);
       }
@@ -533,7 +534,7 @@ export default function BuyingHouseProfile() {
       );
       setPartnerNetwork(data || null);
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
       setPartnerNetwork(null);
     } finally {
       setLoadingNetwork(false);
@@ -571,7 +572,7 @@ export default function BuyingHouseProfile() {
         if (!cancelled) setRatingSummary(data || null);
       })
       .catch((err) => {
-        console.warn("API error:", err);
+        logger.warn("API error:", err);
         if (!cancelled) setRatingSummary(null);
       });
 
@@ -581,7 +582,7 @@ export default function BuyingHouseProfile() {
           if (!cancelled) setCertification(data?.summary || null);
         })
         .catch((err) => {
-          console.warn("API error:", err);
+          logger.warn("API error:", err);
           if (!cancelled) setCertification(null);
         });
     }
@@ -636,7 +637,7 @@ export default function BuyingHouseProfile() {
         setProductsNext(data?.next_cursor ?? null);
       })
       .catch((err) => {
-        console.warn("API error:", err);
+        logger.warn("API error:", err);
       })
       .finally(() => {
         if (!cancelled) setLoadingProducts(false);
@@ -662,7 +663,7 @@ export default function BuyingHouseProfile() {
         if (!cancelled) setPartnerNetwork(data || null);
       })
       .catch((err) => {
-        console.warn("API error:", err);
+        logger.warn("API error:", err);
         if (!cancelled) setPartnerNetwork(null);
       })
       .finally(() => {
@@ -687,7 +688,7 @@ export default function BuyingHouseProfile() {
           : prev,
       );
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
     }
   }
 
@@ -704,7 +705,7 @@ export default function BuyingHouseProfile() {
           : prev,
       );
     } catch (err) {
-      console.warn("API error:", err);
+      logger.warn("API error:", err);
     }
   }
 
@@ -1625,7 +1626,7 @@ export default function BuyingHouseProfile() {
                     });
                     await loadRatings();
                   } catch (err) {
-                    console.warn("API error:", err);
+                    logger.warn("API error:", err);
                   }
                   setReviewEditModal({
                     open: false,
@@ -1677,7 +1678,7 @@ export default function BuyingHouseProfile() {
                     });
                     await loadRatings();
                   } catch (err) {
-                    console.warn("API error:", err);
+                    logger.warn("API error:", err);
                   }
                   setReviewDeleteId(null);
                 }}

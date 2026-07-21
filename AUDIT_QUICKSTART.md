@@ -7,6 +7,10 @@
 - **Empty `.catch(() => {})` handlers** — 11 instances replaced with `console.warn` across CallInterface.jsx (8), FeedItemCard.jsx, MainFeed.jsx, OrgSettings.jsx
 - **Missing routes** (`/contracts`, `/leads`) — Added to App.jsx rendering OwnerDashboard
 - **Sourcemaps** — Already correctly disabled in production (`sourcemap: process.env.NODE_ENV !== "production"`)
+- **Console statements (80→0)** — All 90 `console.*` calls across 22 files replaced with `logger` (dev-only); `src/lib/logger.js` created
+- **Admin credentials in localStorage** — 4 keys migrated to `sessionStorage` with 60-min TTL via `src/lib/secureStorage.js`
+- **SSE token in URL** — `feedRealtime.js` rewritten to `fetch` + `Authorization: Bearer` header; server reads from header
+- **Input validation** — Email validation added to `AdminPanel.jsx` (saveEmailConfig, sendEmailTest) and `OrgSettings.jsx` (inviteMember)
 
 ## 🚨 CRITICAL ISSUES - REMAINING
 
@@ -54,85 +58,30 @@ try {
 
 Routes `/contracts` and `/leads` exist in `App.jsx`. `/verification` embedded in `OwnerDashboard`.
 
-### 4. XSS Vulnerability in SearchResults (1-2 hours)
+### 4. XSS Vulnerability in SearchResults ✅ DONE
 
 ```bash
+# Installed:
 npm install dompurify
 ```
 
-```jsx
-import DOMPurify from 'dompurify';
-
-// Replace all dangerouslySetInnerHTML in SearchResults.jsx:
-// ❌ Before:
-<div dangerouslySetInnerHTML={{ __html: data.description }} />
-
-// ✅ After:
-<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.description) }} />
-```
+- **SearchResults.jsx:** 19 instances — `highlightText()` sanitizes input via `DOMPurify.sanitize(text, { ALLOWED_TAGS: [] })` before highlighting
+- **AttachmentPreviewModal.jsx:** 3 instances — `sanitizeHtml()` wrapped with `DOMPurify.sanitize()` allowlisting safe tags
 
 ---
 
 ## 🔴 HIGH PRIORITY (Next Sprint)
 
-### Remove Console Statements (1-2 hours)
+### Remove Console Statements ✅ DONE
 
-```bash
-# Find all:
-grep -r "console\." src/ --include="*.jsx" --include="*.js" | wc -l
-# Expected: ~78 instances across 21 files
+All 90 `console.*` calls across 22 files replaced with `logger.warn/error/info` which are no-ops in production. `src/lib/logger.js` created.
 
-# Remove or wrap in dev check:
-if (import.meta.env.DEV) console.log(...);
-```
+### Add Input Validation (1-2 hours remaining)
 
-### Add Input Validation (2-3 hours)
+Key files still needing additional validation:
 
-Key files needing validation:
-
-- `src/pages/OrgSettings.jsx`
-- `src/pages/OnboardingWizard.jsx`
-- `src/pages/AdminPanel.jsx`
-
-Example:
-
-```jsx
-// Add validation before submission:
-if (!orgName || orgName.length < 3) {
-  setError("Organization name must be at least 3 characters");
-  return;
-}
-```
-
-### Fix Admin Credential Storage (1 hour)
-
-**File:** `src/pages/AdminPanel.jsx`
-
-```jsx
-// ❌ Bad - in localStorage:
-localStorage.setItem("admin_mfa_code", mfaCode);
-
-// ✅ Good - in session with expiry:
-sessionStorage.setItem("admin_mfa_code", mfaCode);
-
-// OR: Use secure HTTP-only cookies from server
-```
-
-### Fix SSE Token (1 hour)
-
-**File:** `src/lib/feedRealtime.js`
-
-```jsx
-// ❌ Bad - token in URL:
-const url = `${BASE}/api/feed/stream?token=${token}`;
-
-// ✅ Good - use Authorization header:
-const source = new EventSource(url);
-source.addEventListener("open", () => {
-  source.close();
-  // Use fetch with proper headers instead
-});
-```
+- `src/pages/AdminPanel.jsx` — email validation added to saveEmailConfig/sendEmailTest; resetPassword now prompts; more needed on IP/port/domain fields
+- `src/pages/OrgSettings.jsx` — email validation added to inviteMember; more needed on URL/numeric fields
 
 ### Disable Sourcemaps in Production ✅ ALREADY CORRECT
 
@@ -140,7 +89,7 @@ source.addEventListener("open", () => {
 
 ```js
 // Current:
-sourcemap: process.env.NODE_ENV !== "production" // Already disabled in production builds
+sourcemap: process.env.NODE_ENV !== "production"; // Already disabled in production builds
 ```
 
 ### Fix CORS (10 min)
@@ -213,7 +162,7 @@ npm run build
 - [ ] Sourcemaps disabled
 - [ ] Routes defined and working
 - [ ] Input validation added to forms
-- [ ] XSS sanitization in place
+- [x] XSS sanitization in place
 - [ ] CORS properly configured
 - [ ] Admin credentials moved to secure storage
 

@@ -23,6 +23,7 @@ import {
 import ProfileImageUpload from "../../components/ui/ProfileImageUpload";
 import { ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../../components/ui/NeonAtom";
+import { logger } from "../../lib/logger";
 
 const DEFAULT_CATEGORIES = [
   "T-Shirt",
@@ -68,7 +69,7 @@ export default function OnboardingPage() {
           setAvailableCategories(data.items.map((c) => c.name || c.label || c));
         }
       })
-      .catch((err) => console.warn("Failed to load categories:", err));
+      .catch((err) => logger.warn("Failed to load categories:", err));
   }, [token]);
 
   const progress = useMemo(() => ((step - 1) / 2) * 100, [step]);

@@ -16,6 +16,7 @@ import { useTheme } from "../lib/ThemeProvider";
 import { useEntitlements } from "../hooks/useSecureUser";
 import ProfileImageUpload from "../components/ui/ProfileImageUpload";
 import { ThreeDot } from "react-loading-indicators";
+import { logger } from "../lib/logger";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -792,8 +793,13 @@ export default function OrgSettings({ embedded = false }) {
 
   // Invite member
   const inviteMember = async () => {
-    if (!memberInviteEmail.trim()) {
+    const email = memberInviteEmail.trim();
+    if (!email) {
       setMemberFeedback("Enter a member email");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setMemberFeedback("Enter a valid email address.");
       return;
     }
     const token = getToken();
@@ -2938,7 +2944,7 @@ function NotificationPreferencesTab() {
       .then((data) => {
         if (data) setPrefs(data);
       })
-      .catch(() => console.warn("Failed to load notification preferences"))
+      .catch(() => logger.warn("Failed to load notification preferences"))
       .finally(() => setLoading(false));
   }, [token]);
 

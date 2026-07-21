@@ -14,6 +14,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import PostPreview from "../ui/PostPreview";
+import { logger } from "../../lib/logger";
 
 function requestStatusBadgeClass(status = "") {
   const s = String(status || "open").toLowerCase();
@@ -232,7 +233,9 @@ export default function FeedItemCard({
                     const url = profileLink
                       ? `${window.location.origin}${profileLink}`
                       : window.location.href;
-                    navigator.clipboard.writeText(url).catch(() => console.warn("Failed to copy link"));
+                    navigator.clipboard
+                      .writeText(url)
+                      .catch(() => logger.warn("Failed to copy link"));
                   }}
                   className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                 >
