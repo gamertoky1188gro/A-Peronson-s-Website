@@ -129,9 +129,7 @@ export async function apiRequest(
   path,
   { method = "GET", token = "", body, signal, headers = {} } = {},
 ) {
-  const debugRequests =
-    import.meta.env.DEV ||
-    String(import.meta.env.VITE_REQUEST_DEBUG || "").toLowerCase() === "true";
+  const debugRequests = import.meta.env.DEV;
   const startedAt = debugRequests ? performance.now() : 0;
 
   const isFormData = body instanceof FormData;

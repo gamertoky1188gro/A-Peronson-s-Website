@@ -1,7 +1,7 @@
 # 📋 GarTexHub Code Audit - Complete Documentation Index
 
 **Audit Date:** July 19, 2026  
-**Last Updated:** July 21, 2026 (final — round 4)  
+**Last Updated:** July 21, 2026 (final — round 5)  
 **Total Issues Found:** 47 (8 Critical, 14 High, 18 Medium, 7 Low)  
 **Production Ready:** ❌ NO (Critical issues must be fixed)
 
@@ -341,6 +341,12 @@ Use these issue IDs when creating tickets:
 - [x] QUALITY-001: Large file refactoring (NOTED — AdminPanel 15k lines, deferred)
 - [x] QUALITY-002: Inconsistent naming (FIXED — shared cn.js, 11 files unified)
 - [x] QUALITY-003: Missing JSDoc (FIXED — key lib files documented)
+- [x] SEC-007: Debug features (FIXED — VITE_REQUEST_DEBUG dev-only)
+- [ ] QUALITY-004: Unused imports (NOTED — ESLint no-unused-vars off for JSX by design)
+- [ ] ARCH-002: Service layer (NOTED — apiRequest pattern is centralized)
+- [ ] UX-001: Hardcoded colors (DEFERRED — library props/dynamic theme)
+- [ ] UX-002: Mobile responsiveness (NOTED — 100+ responsive classes already)
+- [ ] DATA-002: DB transactions (DEFERRED — server-side refactor needed)
 
 ---
 

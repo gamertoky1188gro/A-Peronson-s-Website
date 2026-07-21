@@ -1,6 +1,6 @@
 # GarTexHub Audit - Detailed Fixes & Code Examples
 
-> **Updated July 21, 2026 (final — round 4)** — All audit items resolved except secrets (deferred). Round 4 LOW fixes: code splitting, shared cn() utility, route constants, React.memo, magic number constants, JSDoc on lib files.
+> **Updated July 21, 2026 (final — round 5)** — All audit items resolved except secrets (deferred). Round 5: SEC-007 (VITE_REQUEST_DEBUG gated). Remaining items assessed/deferred.
 
 ## CRITICAL SECURITY FIXES
 

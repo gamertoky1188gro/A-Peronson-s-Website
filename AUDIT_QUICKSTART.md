@@ -1,6 +1,6 @@
 # GarTexHub Audit - Quick Start Guide
 
-> **Updated July 21, 2026 (final — round 4)** — All audit items resolved except secrets (deferred). Round 4: code splitting, shared cn() utility, route constants, React.memo, magic number constants, JSDoc on lib files.
+> **Updated July 21, 2026 (final — round 5)** — All audit items resolved except secrets (deferred). Round 5: SEC-007 (VITE_REQUEST_DEBUG gated to dev only). Remaining items assessed: QUALITY-004 (ESLint no-unused-vars off for JSX by design), UX-001 (colors are library props/dynamic theme — deferred), UX-002 (AdminPanel already has 100+ responsive classes), ARCH-002 (apiRequest in auth.js is the centralized pattern), DATA-002 (server transactions deferred).
 
 ## ✅ COMPLETED FIXES
 
@@ -26,6 +26,7 @@
 - **React.memo on inline components** — `MainFeed.jsx` (Pill, StatCard, ActionButton) and `OwnerDashboard.jsx` (ProgressBar, MiniBarChart, SectionCard, StatCard) wrapped with `React.memo`
 - **Magic number constants** — Created `src/lib/constants.js` with `TIMEOUTS`, `PAGINATION`, `STORAGE`, `UI`; timeouts in `main.jsx`, `TaskTracker.jsx`, `AdminAISection.jsx` now use named constants
 - **JSDoc on lib files** — Added JSDoc to `validation.js`, `secureStorage.js`, `constants.js`, `envCheck.js`, `cn.js`, `routes.js`
+- **SEC-007: VITE_REQUEST_DEBUG gated** — `src/lib/auth.js` now only enables request debug logging in `DEV` mode; `VITE_REQUEST_DEBUG` env var no longer overrides in production
 
 ## 🚨 CRITICAL ISSUES - REMAINING
 
@@ -110,11 +111,17 @@ sourcemap: process.env.NODE_ENV !== "production"; // Already disabled in product
 - [x] React.memo on inline components (FIXED — MainFeed + OwnerDashboard)
 - [x] Magic number constants (FIXED — src/lib/constants.js)
 - [x] JSDoc on lib files (FIXED — key utilities documented)
+- [x] SEC-007: Debug flag gated (FIXED — VITE_REQUEST_DEBUG dev-only)
 - [ ] Add loading/error states to async operations (deferred)
 - [ ] Refactor large components (AdminPanel: 10k lines) (deferred)
 - [ ] Create type definitions for API responses (deferred)
 - [ ] Add request/response logging service (deferred)
 - [ ] Implement pagination for large lists (deferred — cursor pagination already exists)
+- [ ] UX-001: Hardcoded colors (deferred — library props, dynamic theme; full design-system pass needed)
+- [ ] UX-002: Mobile responsiveness AdminPanel (deferred — 100+ responsive classes already present)
+- [ ] ARCH-002: Service layer (deferred — apiRequest in auth.js is the centralized pattern)
+- [ ] DATA-002: DB transactions (deferred — server-side refactor needed)
+- [ ] QUALITY-004: Unused imports (deferred — ESLint no-unused-vars off for JSX by design)
 
 ---
 
