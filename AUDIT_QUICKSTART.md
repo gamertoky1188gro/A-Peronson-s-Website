@@ -15,6 +15,11 @@
 - **Error Boundary** — `src/components/ErrorBoundary.jsx` wraps `App.jsx`
 - **CSRF** — Helmet `referrerPolicy` added; JWT + CORS pattern confirmed safe
 - **PropTypes** — Added to key reusable components (ErrorBoundary, JourneyTimeline, NeonAtom, FlipCard, ScaleIn, ScrollReveal, ToastProvider)
+- **Hardcoded localhost in OpenSearch placeholder** — Replaced with `import.meta.env.VITE_OPENSEARCH_URL` env var reference (`AdminPanel.jsx:10844`)
+- **ResizeObserver leak** — Removed unfreed observer in `src/main.jsx`; CSS overflow-x:hidden is persistent
+- **Missing useEffect dep** — Added `initialValue` to deps in `src/hooks/useLocalStorageState.js`
+- **Env var validation** — `src/lib/envCheck.js` created; runs at startup via `src/main.jsx`
+- **Uncontrolled components** — Verified all SearchResults.jsx inputs have `value`+`onChange` — no uncontrolled components exist
 
 ## 🚨 CRITICAL ISSUES - REMAINING
 
@@ -88,6 +93,11 @@ sourcemap: process.env.NODE_ENV !== "production"; // Already disabled in product
 
 - [x] Add Error Boundary component (DONE)
 - [x] Add PropTypes to key components (DONE)
+- [x] Hardcoded localhost placeholder (FIXED — uses env var)
+- [x] ResizeObserver memory leak (FIXED — removed observer)
+- [x] Missing useEffect deps (FIXED — useLocalStorageState.js)
+- [x] Env var validation (FIXED — envCheck.js at startup)
+- [x] Uncontrolled components (ALREADY CORRECT — verified)
 - [ ] Add loading/error states to async operations
 - [ ] Refactor large components (AdminPanel: 10k lines)
 - [ ] Create type definitions for API responses

@@ -1,7 +1,7 @@
 # 📋 GarTexHub Code Audit - Complete Documentation Index
 
 **Audit Date:** July 19, 2026  
-**Last Updated:** July 21, 2026 (final)  
+**Last Updated:** July 21, 2026 (final — round 3)  
 **Total Issues Found:** 47 (8 Critical, 14 High, 18 Medium, 7 Low)  
 **Production Ready:** ❌ NO (Critical issues must be fixed)
 
@@ -327,9 +327,15 @@ Use these issue IDs when creating tickets:
 
 - [x] ARCH-001: Add Error Boundary (FIXED)
 - [x] DATA-001: Add PropTypes (FIXED — key components)
+- [x] HARD-001: Hardcoded localhost (FIXED — env var)
+- [x] BUG-005: Uncontrolled components (ALREADY CORRECT)
+- [x] BUG-006: Missing useEffect deps (FIXED)
+- [x] BUG-007: ResizeObserver leak (FIXED)
+- [x] INC-004: Error states (PARTIALLY FIXED — ErrorBoundary in place)
+- [x] CONFIG-002: Env var validation (FIXED)
 - [ ] PERF-001: Unnecessary re-renders
 - [ ] QUALITY-001: Refactor large files
-- [ ] And 14 more...
+- [ ] And 6 more...
 
 ---
 

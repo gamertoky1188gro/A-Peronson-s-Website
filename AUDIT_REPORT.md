@@ -310,7 +310,8 @@
   Multiple uncontrolled components with no change handlers properly wired
 - **Impact:** State sync issues, form submission failures
 - **Fix:** Ensure all inputs are controlled or have proper defaultValue
-- **Priority:** NEXT SPRINT
+- **Verification:** Re-audited all 30+ `<input>`/`<select>` elements — every one already has both `value` and `onChange` props wired. No uncontrolled components found.
+- **Priority:** FIXED (already resolved)
 
 ---
 
@@ -322,8 +323,10 @@
 - **Description:**
   Variables used in effect but not in dependency array
 - **Impact:** Stale closures, outdated data, memory leaks
-- **Fix:** Add all used variables to dependency array
-- **Priority:** NEXT SPRINT
+- **Fix Applied:**
+  - `src/hooks/useLocalStorageState.js:20-25` — added `initialValue` to deps array (was missing, causing stale closure on `initialValue` changes)
+  - Other `eslint-disable` suppressions (MainFeed.jsx:493, MemberManagement.jsx:197, SupportReports.jsx:157) are valid — adding the functions would cause infinite re-render loops
+- **Priority:** FIXED
 
 ---
 
@@ -340,8 +343,8 @@
   // ResizeObserver never disconnected
   ```
 - **Impact:** Memory leak on component unmount
-- **Fix:** Add cleanup in component unmount or add ro.disconnect()
-- **Priority:** LATER
+- **Fix Applied:** Removed leaking `ResizeObserver` — the `overflow-x: hidden` CSS properties set by `preventHorizontalOverflow()` are persistent and don't need an observer to maintain them. Initial call + setTimeout(500) retained as a safety net.
+- **Priority:** FIXED
 
 ---
 
@@ -350,15 +353,15 @@
 #### HARD-001: **HIGH** - Hardcoded Localhost in AdminPanel.jsx
 
 - **File:** `src/pages/AdminPanel.jsx`
-- **Line:** 10820
+- **Line:** 10844
 - **Severity:** HIGH
 - **Description:**
   ```jsx
-  placeholder = "http://localhost:9200";
+  placeholder="http://localhost:9200"
   ```
 - **Impact:** Confusing for users, may cause copy-paste errors
-- **Fix:** Use environment variable
-- **Priority:** NEXT SPRINT
+- **Fix Applied:** Replaced with `placeholder={import.meta.env.VITE_OPENSEARCH_URL || "https://your-opensearch-host:443"}` — reads `VITE_OPENSEARCH_URL` env var at runtime, falls back to descriptive generic URL.
+- **Priority:** FIXED
 
 ---
 
@@ -449,6 +452,7 @@
 - **Severity:** MEDIUM
 - **Description:** Some async operations don't show loading indicators
 - **Fix:** Add loading UI for all async operations
+- **Status:** Partially addressed — audit of all page components shows 25+ pages already implement `loading` state with `<NeonAtom />`, `<Spinner />`, or inline loading UIs. Remaining deferred to full UX pass.
 - **Priority:** LATER
 
 ---
@@ -458,8 +462,8 @@
 - **Files:** All data-fetching components
 - **Severity:** MEDIUM
 - **Description:** No error boundaries or error UI
-- **Fix:** Add error boundary wrapper, show error messages
-- **Priority:** LATER
+- **Fix Applied:** `src/components/ErrorBoundary.jsx` created and wraps `<AppLayout />` in `src/App.jsx`. Many pages already render inline error messages (ChatInterface.jsx `visibleError`, MainFeed.jsx `error`, AdminPanel.jsx `openSearchError`). Further per-component error UI deferred.
+- **Priority:** PARTIALLY FIXED
 
 ---
 
@@ -571,8 +575,8 @@
 - **File:** `src/lib/auth.js`, config files
 - **Severity:** MEDIUM
 - **Description:** No validation that required env vars are set at startup
-- **Fix:** Add startup validation script
-- **Priority:** LATER
+- **Fix Applied:** Created `src/lib/envCheck.js` — `checkEnvVars()` validates `VITE_*` env vars (1 required: `VITE_API_URL`; 13 optional with default fallback warnings in dev). Called via `logEnvStatus()` in `src/main.jsx` at startup.
+- **Priority:** FIXED
 
 ---
 

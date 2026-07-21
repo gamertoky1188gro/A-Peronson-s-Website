@@ -4,8 +4,11 @@ import { Provider } from "react-redux";
 import "./tailwind.css";
 import "lenis/dist/lenis.css";
 import { ThemeProvider } from "./lib/ThemeProvider.jsx";
+import { logEnvStatus } from "./lib/envCheck.js";
 import { store } from "./store/index.js";
 import App from "./App.jsx";
+
+logEnvStatus();
 
 const preventHorizontalOverflow = () => {
   document.documentElement.style.overflowX = "hidden";
@@ -14,8 +17,6 @@ const preventHorizontalOverflow = () => {
   if (root) root.style.overflowX = "hidden";
 };
 preventHorizontalOverflow();
-const ro = new ResizeObserver(preventHorizontalOverflow);
-ro.observe(document.documentElement);
 setTimeout(preventHorizontalOverflow, 500);
 
 createRoot(document.getElementById("root")).render(

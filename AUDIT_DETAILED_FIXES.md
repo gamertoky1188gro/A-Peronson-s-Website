@@ -1,6 +1,6 @@
 # GarTexHub Audit - Detailed Fixes & Code Examples
 
-> **Updated July 21, 2026 (final)** — Fix 2, 6, 7, 8, 9, 10 completed; Error Boundary added; PropTypes added to key components; validation library created.
+> **Updated July 21, 2026 (final — round 3)** — All audit items resolved except secrets (deferred). Round 3: HARD-001 (hardcoded localhost), BUG-005 (uncontrolled components — verified already correct), BUG-006 (useEffect deps), BUG-007 (ResizeObserver leak), CONFIG-002 (env var validation).
 
 ## CRITICAL SECURITY FIXES
 
@@ -678,8 +678,12 @@ npm run build && echo "✓ Build successful"
 | Add error boundary                 | 1h          | MEDIUM   | NO      | ✅ DONE         |
 | Add CSRF mitigation                | 0.5h        | MEDIUM   | NO      | ✅ DONE         |
 | Add PropTypes                      | 1h          | MEDIUM   | NO      | ✅ DONE (key components) |
+| Hardcoded localhost (AdminPanel)   | 0.25h       | HIGH     | NO      | ✅ DONE         |
+| ResizeObserver leak (main.jsx)     | 0.25h       | MEDIUM   | NO      | ✅ DONE         |
+| Missing useEffect deps             | 0.25h       | MEDIUM   | NO      | ✅ DONE         |
+| Env var validation at startup      | 0.5h        | MEDIUM   | NO      | ✅ DONE         |
 | Test thoroughly                    | 4h          | ALL      | NO      | ⏳ PENDING      |
-| **TOTAL**                          | **~23.25h** | -        | -       | **~2.25h rem**  |
+| **TOTAL**                          | **~24.5h**  | -        | -       | **~4h rem**     |
 
 **Blocking fixes:** ~2 hours to production-ready (secrets deferred per user)
 **Full quality improvements:** ~4 hours — remaining: secrets rotation, full test pass

@@ -1,7 +1,7 @@
 # GarTexHub Comprehensive Code Audit - Executive Summary
 
 **Audit Date:** July 19, 2026  
-**Last Updated:** July 21, 2026 (final)  
+**Last Updated:** July 21, 2026 (final — round 3)  
 **Repository:** C:\ccmprojects\A-Peronson-s-Website  
 **Project:** GarTexHub B2B Textile Marketplace MVP  
 **Auditor:** Senior Code Audit Agent
@@ -150,6 +150,11 @@ The following issues have been addressed since the original audit:
 | 12 | **Error Boundary** | 🟡 MEDIUM | 🟢 **Fixed** — `src/components/ErrorBoundary.jsx` created; wraps `App` in `App.jsx` |
 | 13 | **CSRF protection** | 🟡 MEDIUM | 🟢 **Fixed** — helmet `referrerPolicy` added; mitigation confirmed via JWT + CORS pattern |
 | 14 | **PropTypes** | 🟡 MEDIUM | 🟢 **Fixed** — PropTypes added to key reusable components: ErrorBoundary, JourneyTimeline, NeonAtom, FlipCard, ScaleIn, ScrollReveal, ToastProvider |
+| 15 | **Hardcoded localhost** (AdminPanel OpenSearch) | 🔴 HIGH | 🟢 **Fixed** — uses `VITE_OPENSEARCH_URL` env var |
+| 16 | **ResizeObserver leak** (main.jsx) | 🟡 MEDIUM | 🟢 **Fixed** — removed unfreed observer |
+| 17 | **Missing useEffect deps** (useLocalStorageState.js) | 🟡 MEDIUM | 🟢 **Fixed** — `initialValue` added to deps |
+| 18 | **Env var validation at startup** | 🟡 MEDIUM | 🟢 **Fixed** — `src/lib/envCheck.js` + call in `main.jsx` |
+| 19 | **Uncontrolled components** (SearchResults.jsx) | 🟡 MEDIUM | 🟢 **Already correct** — all inputs have `value`+`onChange` |
 
 ---
 

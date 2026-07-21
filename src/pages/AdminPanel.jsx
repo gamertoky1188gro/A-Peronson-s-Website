@@ -10841,7 +10841,7 @@ export default function AdminPanel() {
                                             url: e.target.value,
                                           }))
                                         }
-                                        placeholder="http://localhost:9200"
+                                        placeholder={import.meta.env.VITE_OPENSEARCH_URL || "https://your-opensearch-host:443"}
                                         className={cn(
                                           "w-full rounded-2xl border px-4 py-3 text-sm outline-none",
                                           adminDark
