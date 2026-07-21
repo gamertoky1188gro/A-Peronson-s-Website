@@ -10,7 +10,6 @@ import {
   apiRequest,
   getCurrentUser,
   getToken,
-  API_BASE,
   hasEntitlement,
 } from "../lib/auth";
 import { uploadFile } from "../lib/upload";

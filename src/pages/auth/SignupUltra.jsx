@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate, useParams, Navigate } from "react-router-dom";
+import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { apiRequest, getRoleHome, saveSession } from "../../lib/auth";
 import usePageMeta from "../../lib/usePageMeta";
 import NeonAtom from "../../components/ui/NeonAtom";

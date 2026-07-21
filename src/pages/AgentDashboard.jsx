@@ -25,12 +25,10 @@ import {
   FileText,
   Gauge,
   AlertTriangle,
-  BrainCircuit,
   RefreshCcw,
   Send,
   ShieldCheck,
   Sparkles,
-  ArrowUpRight,
 } from "lucide-react";
 import { cn } from "../lib/cn";
 

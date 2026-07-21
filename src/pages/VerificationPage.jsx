@@ -28,7 +28,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ScrollReveal from "../components/ScrollReveal";
 import WordleInput from "../components/WordleInput";
 import {
-  API_BASE,
   apiRequest,
   getCurrentUser,
   getToken,
@@ -39,7 +38,6 @@ import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { useTheme } from "../lib/ThemeProvider";
 import {
   BUYER_COUNTRY_OPTIONS,
-  EU_COUNTRIES,
   isEuCountry,
 } from "../../shared/config/geo.js";
 import {

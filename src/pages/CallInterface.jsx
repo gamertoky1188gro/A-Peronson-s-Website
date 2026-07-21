@@ -19,7 +19,6 @@ import {
   Smile,
   Volume2,
   VolumeX,
-  SunMoon,
   Video,
   VideoOff,
   X,
@@ -30,9 +29,8 @@ import {
   Clock3,
   Radio,
   WifiOff,
-  ChevronUp,
 } from "lucide-react";
-import { API_BASE, apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { uploadFile } from "../lib/upload";
 import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { trackClientEvent } from "../lib/events";

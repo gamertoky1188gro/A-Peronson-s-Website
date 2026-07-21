@@ -4,7 +4,6 @@ import {
   MessageSquareText,
   Share2,
   Flag,
-  Heart,
   Reply,
   ChevronDown,
   ChevronUp,

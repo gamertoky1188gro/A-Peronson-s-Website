@@ -12,7 +12,6 @@ import { ThreeDot } from "react-loading-indicators";
 import {
   apiRequest,
   getCurrentUser,
-  getRoleHome,
   saveSession,
 } from "../../lib/auth";
 import { useTheme } from "../../lib/ThemeProvider";

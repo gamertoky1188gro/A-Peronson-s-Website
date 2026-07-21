@@ -13,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import ScrollReveal from "../components/ScrollReveal";
 import {
   apiRequest,
-  API_BASE,
   getCurrentUser,
   getToken,
   hasEntitlement,

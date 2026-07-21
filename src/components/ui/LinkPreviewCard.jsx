@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ExternalLink } from "lucide-react";
 
 function getDefaultDomain(url) {
   try {

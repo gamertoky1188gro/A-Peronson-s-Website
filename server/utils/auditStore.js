@@ -1,5 +1,4 @@
 import prisma from "./prisma.js";
-import _crypto from "crypto";
 
 const AUDIT_CACHE_TTL = 10000;
 let auditCache = { data: null, timestamp: 0 };

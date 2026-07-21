@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   Lock,
   LogIn,
-  Sparkles,
   ShieldAlert,
   SunMedium,
   MoonStar,

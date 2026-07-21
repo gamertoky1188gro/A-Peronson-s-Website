@@ -20,7 +20,7 @@
     - GET /api/profiles/:id/requests?cursor=...
 */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   motion,
   useReducedMotion,
@@ -43,11 +43,8 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronLeft,
-  CircleDashed,
   ClipboardList,
-  Clock3,
   Edit3,
-  ExternalLink,
   Eye,
   Heart,
   Mail,
@@ -59,7 +56,6 @@ import {
   Users,
   Sparkles,
   Rocket,
-  UserRound,
   BriefcaseBusiness,
   Building,
 } from "lucide-react";

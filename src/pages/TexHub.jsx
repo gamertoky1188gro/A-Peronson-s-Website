@@ -19,12 +19,11 @@
 
   Theme: Merged with user's new sky-blue theme while preserving all functionality
 */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { apiRequest, getToken } from "../lib/auth";
 import usePageMeta from "../lib/usePageMeta";
 import {
-  AnimatePresence,
   motion,
   useMotionValue,
   useReducedMotion,
@@ -40,7 +39,6 @@ import {
   BadgeCheck,
   BriefcaseBusiness,
   CheckCircle2,
-  ChevronRight,
   ClipboardList,
   FileSignature,
   Layers3,

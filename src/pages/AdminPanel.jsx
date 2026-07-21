@@ -30,7 +30,6 @@ import {
   Bell,
   BookOpen,
   FolderOpen,
-  CalendarClock,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -39,7 +38,6 @@ import {
   Cpu,
   Database,
   Download,
-  Eye,
   FileText,
   Globe,
   Globe2,
@@ -50,10 +48,8 @@ import {
   CircuitBoard,
   KeyRound,
   LockKeyhole,
-  Loader2,
   Menu,
   MoonStar,
-  PanelLeftClose,
   RefreshCw,
   Search,
   ShieldCheck,
@@ -63,7 +59,6 @@ import {
   SunMedium,
   TerminalSquare,
   Trash2,
-  UserCog,
   Users,
   Wifi,
   Wrench,
@@ -81,7 +76,6 @@ import {
   Image,
   Lock,
   Settings,
-  Sparkle,
   Server,
   Sliders,
   XCircle,
@@ -90,12 +84,12 @@ import {
   Film,
   X,
 } from "lucide-react";
-import { startAuthentication } from "@simplewebauthn/browser";
 import AccessDeniedState from "../components/AccessDeniedState";
 import RejectionReasonModal from "../components/admin/RejectionReasonModal";
 import { AdminAISection } from "./admin/sections/AdminAISection";
 import { FileExplorerSection } from "./admin/sections/FileExplorerSection";
 import { apiRequest, getCurrentUser, getToken, saveSession } from "../lib/auth";
+import { startAuthentication } from "@simplewebauthn/browser";
 import { useTheme } from "../lib/ThemeProvider";
 import {
   useInventory,
@@ -108,8 +102,6 @@ import {
 import * as Utils from "./AdminPanel.utils";
 import * as UI from "./AdminPanel.ui";
 import * as Helpers from "./AdminPanel.helpers";
-import * as CMS from "./AdminPanel.cms";
-import * as Ultra from "./AdminPanel.ultra";
 import NeonAtom from "../components/ui/NeonAtom";
 import { ThreeDot, Mosaic } from "react-loading-indicators";
 

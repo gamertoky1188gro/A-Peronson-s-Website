@@ -25,7 +25,6 @@
 import { useEffect, useMemo, useRef, useCallback, useState } from "react";
 import {
   ArrowUpRight,
-  BadgeCheck,
   Building2,
   Check,
   ChevronRight,
@@ -33,7 +32,6 @@ import {
   ExternalLink,
   FileText,
   Globe2,
-  LockKeyhole,
   MessagesSquare,
   ShieldCheck,
   Sparkles,
@@ -50,7 +48,7 @@ import { apiRequest } from "../lib/auth";
 import NeonAtom from "../components/ui/NeonAtom";
 import MagneticButton from "../components/ui/MagneticButton";
 import SpotlightCard from "../components/ui/SpotlightCard";
-import TextColorReveal from "../components/TextColorReveal";
+
 import ParallaxBackground from "../components/ParallaxBackground";
 import { ThreeDot } from "react-loading-indicators";
 

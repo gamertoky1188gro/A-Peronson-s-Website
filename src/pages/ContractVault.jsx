@@ -5,9 +5,8 @@
  */
 import NeonAtom from "../components/ui/NeonAtom";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
-import AccessDeniedState from "../components/AccessDeniedState";
 import {
   API_BASE,
   apiRequest,

@@ -2,9 +2,6 @@ import { spawn, execSync } from "child_process";
 import { GoogleGenAI } from "@google/genai";
 import { createOpencodeClient } from "@opencode-ai/sdk";
 import crypto from "crypto";
-import _path from "path";
-import _fs from "fs";
-import _fsp from "fs/promises";
 import net from "net";
 
 async function findFreePort(startPort = 4096, maxAttempts = 100) {

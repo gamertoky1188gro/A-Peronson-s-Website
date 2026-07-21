@@ -42,7 +42,6 @@ import {
   MessageSquare,
   Moon,
   Package,
-  PlusCircle,
   Search,
   Settings,
   ShieldCheck,

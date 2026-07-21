@@ -32,20 +32,10 @@ import {
   BriefcaseBusiness,
   ChevronDown,
   Filter,
-  Flag,
   LayoutGrid,
-  MessageCircle,
-  MoonStar,
-  MoreHorizontal,
   Plus,
   Search,
-  Send,
-  Share2,
-  SlidersHorizontal,
-  Sparkles,
-  SunMedium,
   Upload,
-  UserCircle2,
 } from "lucide-react";
 import usePageMeta from "../lib/usePageMeta";
 import { logger } from "../lib/logger";

@@ -21,7 +21,7 @@
     - DELETE /api/notifications/search-alerts/:id
     - GET /api/products/views/me (for the "Viewed Products" tab)
 */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
 import NeonAtom from "../components/ui/NeonAtom";

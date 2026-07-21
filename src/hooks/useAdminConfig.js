@@ -8,7 +8,6 @@ import {
   fetchActions as fetchActionsThunk,
   fetchActionGroups as fetchActionGroupsThunk,
   fetchRoles as fetchRolesThunk,
-  _clearConfig,
 } from "../store/configSlice";
 
 const DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY = [

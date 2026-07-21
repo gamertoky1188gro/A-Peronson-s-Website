@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 
-import { getToken } from "../lib/auth";
 import * as Utils from "./AdminPanel.utils";
 
 export function statusBadge() {

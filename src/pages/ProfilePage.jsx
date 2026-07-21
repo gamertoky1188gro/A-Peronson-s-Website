@@ -10,12 +10,10 @@ import {
   Building2,
   Globe2,
   Mail,
-  CalendarDays,
   UserRound,
   SearchX,
   ArrowLeft,
   BadgeCheck,
-  Sparkles,
   Shield,
 } from "lucide-react";
 import usePageMeta from "../lib/usePageMeta";

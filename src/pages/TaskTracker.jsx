@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, ChevronDown, Check, X } from "lucide-react";
+import { ChevronRight, ChevronDown, Check } from "lucide-react";
 import tasksData from "../tasks.json";
 import { TIMEOUTS } from "../lib/constants";
-import NeonAtom from "../components/ui/NeonAtom";
+
 import ScrollReveal from "../components/ScrollReveal";
 
 function TreeNode({ task, onToggle, depth = 0 }) {

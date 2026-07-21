@@ -2,7 +2,6 @@ import crypto from "crypto";
 import prisma from "../utils/prisma.js";
 import {
   isCrmSqlEnabled,
-  readLegacyJson as _readLegacyJson,
 } from "../utils/crmFallbackStore.js";
 import { sanitizeString } from "../utils/validators.js";
 import { trackTransition } from "../utils/metrics.js";

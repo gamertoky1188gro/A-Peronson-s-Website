@@ -64,7 +64,6 @@ import { requestLogger } from "./middleware/requestLogger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { logInfo, logError } from "./utils/logger.js";
 import {
-  assistantReply as _assistantReply,
   streamOpencodeReply,
   initOpencodeServer,
   initAllUserSessions,
