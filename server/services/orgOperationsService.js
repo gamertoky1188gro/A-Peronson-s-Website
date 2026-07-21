@@ -379,52 +379,54 @@ export async function rebalanceOrgQueue(actor, payload = {}) {
   });
 
   if (updatedAssignments.length) {
-    await prisma.lead.updateMany({
-      where: {
-        id: { in: updatedAssignments.map((a) => a.lead_id) },
-        org_owner_id: orgOwnerId,
-      },
-      data: {
-        assigned_agent_id: undefined,
-        updated_at: new Date(),
-      },
-    });
-    for (const assignment of updatedAssignments) {
-      await prisma.leadAssignment.create({ data: assignment });
-    }
-    for (const agent of agents) {
-      await prisma.agentCapacity.upsert({
+    await prisma.$transaction(async (tx) => {
+      await tx.lead.updateMany({
         where: {
-          agent_capacity_org_owner_id_agent_id: {
+          id: { in: updatedAssignments.map((a) => a.lead_id) },
+          org_owner_id: orgOwnerId,
+        },
+        data: {
+          assigned_agent_id: undefined,
+          updated_at: new Date(),
+        },
+      });
+      for (const assignment of updatedAssignments) {
+        await tx.leadAssignment.create({ data: assignment });
+      }
+      for (const agent of agents) {
+        await tx.agentCapacity.upsert({
+          where: {
+            agent_capacity_org_owner_id_agent_id: {
+              org_owner_id: String(orgOwnerId),
+              agent_id: String(agent.id),
+            },
+          },
+          update: {
+            max_concurrent_leads: Number(capacityByAgent.get(agent.id) || 10),
+            current_load: Number(loadByAgent.get(agent.id) || 0),
+            updated_at: new Date(),
+          },
+          create: {
+            id: crypto.randomUUID(),
             org_owner_id: String(orgOwnerId),
             agent_id: String(agent.id),
+            max_concurrent_leads: Number(capacityByAgent.get(agent.id) || 10),
+            current_load: Number(loadByAgent.get(agent.id) || 0),
+            updated_at: new Date(),
           },
-        },
-        update: {
-          max_concurrent_leads: Number(capacityByAgent.get(agent.id) || 10),
-          current_load: Number(loadByAgent.get(agent.id) || 0),
-          updated_at: new Date(),
-        },
-        create: {
-          id: crypto.randomUUID(),
-          org_owner_id: String(orgOwnerId),
-          agent_id: String(agent.id),
-          max_concurrent_leads: Number(capacityByAgent.get(agent.id) || 10),
-          current_load: Number(loadByAgent.get(agent.id) || 0),
-          updated_at: new Date(),
-        },
-      });
-    }
+        });
+      }
 
-    for (const assignment of updatedAssignments) {
-      await prisma.lead.update({
-        where: { id: assignment.lead_id },
-        data: {
-          assigned_agent_id: assignment.assigned_to || null,
-          updated_at: new Date(),
-        },
-      });
-    }
+      for (const assignment of updatedAssignments) {
+        await tx.lead.update({
+          where: { id: assignment.lead_id },
+          data: {
+            assigned_agent_id: assignment.assigned_to || null,
+            updated_at: new Date(),
+          },
+        });
+      }
+    });
 
     await trackEvent({
       type: "queue_rebalanced",
@@ -478,26 +480,28 @@ export async function escalateOrgLead(actor, leadId, payload = {}) {
     escalation_reason: reason,
     updated_at: now,
   };
-  await prisma.lead.update({
-    where: { id: target.id },
-    data: {
-      status: "escalated",
-      updated_at: new Date(),
-    },
-  });
+  await prisma.$transaction(async (tx) => {
+    await tx.lead.update({
+      where: { id: target.id },
+      data: {
+        status: "escalated",
+        updated_at: new Date(),
+      },
+    });
 
-  const assignmentEvent = {
-    id: crypto.randomUUID(),
-    lead_id: target.id,
-    org_owner_id: orgOwnerId,
-    assigned_by: actor.id,
-    assigned_to: target.assigned_agent_id || "",
-    previous_assignee: target.assigned_agent_id || "",
-    reason: reason || "lead_escalated",
-    assigned_at: new Date(),
-    created_at: new Date(),
-  };
-  await prisma.leadAssignment.create({ data: assignmentEvent });
+    const assignmentEvent = {
+      id: crypto.randomUUID(),
+      lead_id: target.id,
+      org_owner_id: orgOwnerId,
+      assigned_by: actor.id,
+      assigned_to: target.assigned_agent_id || "",
+      previous_assignee: target.assigned_agent_id || "",
+      reason: reason || "lead_escalated",
+      assigned_at: new Date(),
+      created_at: new Date(),
+    };
+    await tx.leadAssignment.create({ data: assignmentEvent });
+  });
 
   const sla = computeSlaStatus(escalated, policy);
   if (sla.status === "breached") {

@@ -138,18 +138,24 @@ export async function listUsers() {
   const updated = [];
   for (const user of users) {
     const profile = { ...(user.profile || {}) };
-    if (!String(profile.mfa_setup_code || "").trim()) {
-      profile.mfa_setup_code = generateSetupCode("mfa");
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { profile },
-      });
-    }
-    if (!String(profile.stepup_setup_code || "").trim()) {
-      profile.stepup_setup_code = generateSetupCode("stepup");
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { profile },
+    const hasMfa = String(profile.mfa_setup_code || "").trim();
+    const hasStepup = String(profile.stepup_setup_code || "").trim();
+    if (!hasMfa || !hasStepup) {
+      await prisma.$transaction(async (tx) => {
+        if (!hasMfa) {
+          profile.mfa_setup_code = generateSetupCode("mfa");
+          await tx.user.update({
+            where: { id: user.id },
+            data: { profile },
+          });
+        }
+        if (!hasStepup) {
+          profile.stepup_setup_code = generateSetupCode("stepup");
+          await tx.user.update({
+            where: { id: user.id },
+            data: { profile },
+          });
+        }
       });
     }
     updated.push({ ...user, profile });

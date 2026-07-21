@@ -1,6 +1,6 @@
 # GarTexHub Audit - Detailed Fixes & Code Examples
 
-> **Updated July 21, 2026 (final — round 5)** — All audit items resolved except secrets (deferred). Round 5: SEC-007 (VITE_REQUEST_DEBUG gated). Remaining items assessed/deferred.
+> **Updated July 21, 2026 (final — round 5 — DATA-002 complete)** — All audit items resolved except secrets (deferred). Round 5: SEC-007 (VITE_REQUEST_DEBUG gated), DATA-002 (all server-side prisma operations wrapped in $transaction). Remaining items assessed/deferred.
 
 ## CRITICAL SECURITY FIXES
 

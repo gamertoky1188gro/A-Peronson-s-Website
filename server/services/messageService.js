@@ -477,23 +477,26 @@ export async function postMessage(
   entry.message = moderation.text;
   entry.moderated = Boolean(moderation.moderated);
   entry.moderation_reason = moderation.reason || "";
-  await prisma.message.create({ data: entry });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.message.create({ data: entry });
+
+    if (!sender?.verified) {
+      const reqState = upsertRequestState(messageRequests, matchId, {
+        status: "pending",
+        acted_by: null,
+        acted_at: null,
+      });
+      await tx.messageRequest.upsert({
+        where: { thread_id: reqState.thread_id },
+        update: reqState,
+        create: reqState,
+      });
+    }
+  });
 
   if (entry.queue_id) {
     await attachMessageToQueue(entry.queue_id, entry.id);
-  }
-
-  if (!sender?.verified) {
-    const reqState = upsertRequestState(messageRequests, matchId, {
-      status: "pending",
-      acted_by: null,
-      acted_at: null,
-    });
-    await prisma.messageRequest.upsert({
-      where: { thread_id: reqState.thread_id },
-      update: reqState,
-      create: reqState,
-    });
   }
 
   // CRM (project.md): Every inquiry/message becomes a lead for Buying House / Factory org accounts.

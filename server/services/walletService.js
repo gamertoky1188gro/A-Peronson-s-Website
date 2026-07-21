@@ -65,30 +65,34 @@ export async function creditWallet({
     ? currentBalance
     : Math.round((currentBalance + amount) * 100) / 100;
 
-  await prisma.user.update({
-    where: { id: String(userId) },
-    data: {
-      wallet_balance_usd: nextBalance,
-      wallet_restricted_usd: nextRestricted,
-      updated_at: nowIso(),
-    },
-  });
-
-  const historyRow = await prisma.walletHistory.create({
-    data: {
-      id: crypto.randomUUID(),
-      user_id: String(userId),
-      kind: "credit",
-      amount_usd: amount,
-      balance_after_usd: nextBalance,
-      reason: sanitizeString(String(reason || ""), 80),
-      ref: sanitizeString(String(ref || ""), 160),
-      meta: {
-        ...(metadata && typeof metadata === "object" ? metadata : {}),
-        restricted_credit: restricted,
-        restricted_balance_after_usd: nextRestricted,
+  const [historyRow] = await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: String(userId) },
+      data: {
+        wallet_balance_usd: nextBalance,
+        wallet_restricted_usd: nextRestricted,
+        updated_at: nowIso(),
       },
-    },
+    });
+
+    const row = await tx.walletHistory.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: String(userId),
+        kind: "credit",
+        amount_usd: amount,
+        balance_after_usd: nextBalance,
+        reason: sanitizeString(String(reason || ""), 80),
+        ref: sanitizeString(String(ref || ""), 160),
+        meta: {
+          ...(metadata && typeof metadata === "object" ? metadata : {}),
+          restricted_credit: restricted,
+          restricted_balance_after_usd: nextRestricted,
+        },
+      },
+    });
+
+    return [row];
   });
 
   return {
@@ -153,30 +157,34 @@ export async function debitWallet({
   const nextBalance =
     Math.round((currentBalance - unrestrictedUsed) * 100) / 100;
 
-  await prisma.user.update({
-    where: { id: String(userId) },
-    data: {
-      wallet_balance_usd: nextBalance,
-      wallet_restricted_usd: nextRestricted,
-      updated_at: new Date(),
-    },
-  });
-
-  const row = await prisma.walletHistory.create({
-    data: {
-      id: crypto.randomUUID(),
-      user_id: String(userId),
-      kind: "debit",
-      amount_usd: amount,
-      balance_after_usd: nextBalance,
-      reason: sanitizeString(String(reason || ""), 80),
-      ref: sanitizeString(String(ref || ""), 160),
-      meta: {
-        ...(metadata && typeof metadata === "object" ? metadata : {}),
-        restricted_used_usd: restrictedUsed,
-        restricted_balance_after_usd: nextRestricted,
+  const [row] = await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: String(userId) },
+      data: {
+        wallet_balance_usd: nextBalance,
+        wallet_restricted_usd: nextRestricted,
+        updated_at: new Date(),
       },
-    },
+    });
+
+    const entry = await tx.walletHistory.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: String(userId),
+        kind: "debit",
+        amount_usd: amount,
+        balance_after_usd: nextBalance,
+        reason: sanitizeString(String(reason || ""), 80),
+        ref: sanitizeString(String(ref || ""), 160),
+        meta: {
+          ...(metadata && typeof metadata === "object" ? metadata : {}),
+          restricted_used_usd: restrictedUsed,
+          restricted_balance_after_usd: nextRestricted,
+        },
+      },
+    });
+
+    return [entry];
   });
 
   return {
@@ -418,52 +426,56 @@ export async function redeemCouponForUser({ userId, code }) {
     };
   }
 
-  await prisma.user.update({
-    where: { id: String(userId) },
-    data: {
-      profile: nextProfile,
-      wallet_restricted_usd: nextRestricted,
-      updated_at: new Date(),
-    },
-  });
-
-  const redemption = await prisma.couponRedemption.create({
-    data: {
-      id: crypto.randomUUID(),
-      code_id: coupon.id,
-      user_id: String(userId),
-      amount_usd: amount,
-      redeemed_at: new Date(),
-    },
-  });
-
-  const balanceAfter =
-    Math.round(Number(user.wallet_balance_usd || 0) * 100) / 100;
-
-  await prisma.walletHistory.create({
-    data: {
-      id: crypto.randomUUID(),
-      user_id: String(userId),
-      kind: "credit",
-      amount_usd: amount,
-      balance_after_usd: balanceAfter,
-      reason: "coupon_redeem",
-      ref: `coupon:${coupon.code}`,
-      meta: {
-        restricted_credit: true,
-        restricted_balance_after_usd: nextRestricted,
-        coupon_id: coupon.id,
-        coupon_code: coupon.code,
-        marketing_source: coupon.marketing_source || null,
-        campaign: coupon.campaign || null,
-        role_restrictions: Array.isArray(coupon.role_restrictions)
-          ? coupon.role_restrictions
-          : null,
-        verification_free_months:
-          Number(coupon.verification_free_months || 0) || null,
-        requires_card: Boolean(coupon.requires_card),
+  const [redemption] = await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: String(userId) },
+      data: {
+        profile: nextProfile,
+        wallet_restricted_usd: nextRestricted,
+        updated_at: new Date(),
       },
-    },
+    });
+
+    const red = await tx.couponRedemption.create({
+      data: {
+        id: crypto.randomUUID(),
+        code_id: coupon.id,
+        user_id: String(userId),
+        amount_usd: amount,
+        redeemed_at: new Date(),
+      },
+    });
+
+    const balanceAfter =
+      Math.round(Number(user.wallet_balance_usd || 0) * 100) / 100;
+
+    await tx.walletHistory.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: String(userId),
+        kind: "credit",
+        amount_usd: amount,
+        balance_after_usd: balanceAfter,
+        reason: "coupon_redeem",
+        ref: `coupon:${coupon.code}`,
+        meta: {
+          restricted_credit: true,
+          restricted_balance_after_usd: nextRestricted,
+          coupon_id: coupon.id,
+          coupon_code: coupon.code,
+          marketing_source: coupon.marketing_source || null,
+          campaign: coupon.campaign || null,
+          role_restrictions: Array.isArray(coupon.role_restrictions)
+            ? coupon.role_restrictions
+            : null,
+          verification_free_months:
+            Number(coupon.verification_free_months || 0) || null,
+          requires_card: Boolean(coupon.requires_card),
+        },
+      },
+    });
+
+    return [red];
   });
 
   return {

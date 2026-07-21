@@ -1,6 +1,6 @@
+import crypto from "crypto";
 import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
-import { createNotification } from "../services/notificationService.js";
 import { getAdminConfig } from "../services/adminConfigService.js";
 
 function resolveReviewStatus(status) {
@@ -62,42 +62,52 @@ export async function updateModerationProduct(req, res) {
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) return res.status(404).json({ error: "Product not found" });
 
-  const updated = await prisma.product.update({
-    where: { id: productId },
-    data: {
-      content_review_status: nextStatus,
-      content_review_reason:
-        nextStatus === "rejected"
-          ? reason ||
-            product.content_review_reason ||
-            "Content standards violation."
-          : "",
-      content_reviewed_at: new Date(),
-      content_reviewed_by: sanitizeString(String(req.user?.id || "admin"), 120),
-      updated_at: new Date(),
-    },
-  });
-
-  const config = await getAdminConfig();
-  const fixTip =
-    config?.moderation?.clothing_rules?.reason_templates?.fix_guidance || "";
-  const notifyMessage =
-    nextStatus === "approved"
-      ? "Your product was approved after review."
-      : `Your product was rejected: ${updated.content_review_reason || "Content standards violation."} ${fixTip}`.trim();
-
-  if (updated.company_id) {
-    await createNotification(updated.company_id, {
-      type: "product_content_review",
-      entity_type: "company_product",
-      entity_id: updated.id,
-      message: notifyMessage,
-      meta: {
-        review_status: nextStatus,
-        reason: updated.content_review_reason,
+  const [updated] = await prisma.$transaction(async (tx) => {
+    const u = await tx.product.update({
+      where: { id: productId },
+      data: {
+        content_review_status: nextStatus,
+        content_review_reason:
+          nextStatus === "rejected"
+            ? reason ||
+              product.content_review_reason ||
+              "Content standards violation."
+            : "",
+        content_reviewed_at: new Date(),
+        content_reviewed_by: sanitizeString(String(req.user?.id || "admin"), 120),
+        updated_at: new Date(),
       },
     });
-  }
+
+    const config = await getAdminConfig();
+    const fixTip =
+      config?.moderation?.clothing_rules?.reason_templates?.fix_guidance || "";
+    const notifyMessage =
+      nextStatus === "approved"
+        ? "Your product was approved after review."
+        : `Your product was rejected: ${u.content_review_reason || "Content standards violation."} ${fixTip}`.trim();
+
+    if (u.company_id) {
+      await tx.notification.create({
+        data: {
+          id: crypto.randomUUID(),
+          user_id: u.company_id,
+          type: "product_content_review",
+          entity_type: "company_product",
+          entity_id: u.id,
+          message: notifyMessage,
+          meta: {
+            review_status: nextStatus,
+            reason: u.content_review_reason,
+          },
+          read: false,
+          created_at: new Date(),
+        },
+      });
+    }
+
+    return [u];
+  });
 
   return res.json({ ok: true, item: updated });
 }

@@ -61,61 +61,65 @@ export async function applyEnforcement({
       ? new Date(now.getTime() + 6 * 60 * 60 * 1000)
       : null;
 
-  const enforcement = await prisma.governanceEnforcement.create({
-    data: {
-      id: crypto.randomUUID(),
-      user_id: String(userId),
-      evaluation_id: latestEval.id,
-      policy_definition_id: policyDefinitionId,
-      policy_version_id: policyVersionId,
-      action,
-      reason: String(reason || "Automated trust governance decision"),
-      expires_at: expiresAt,
-      created_by: actorId,
-      metadata: {
-        trust_score: latestEval.trust_score,
-        signals: latestEval.signals || null,
-      },
-    },
-  });
-
-  if (action === ENFORCEMENT_ACTIONS.TEMP_COMMUNICATION_THROTTLE) {
-    await prisma.user
-      .update({
-        where: { id: String(userId) },
-        data: {
-          messaging_restricted_until: expiresAt,
-        },
-      })
-      .catch(() => null);
-  }
-
-  if (action === ENFORCEMENT_ACTIONS.FEATURE_LOCK) {
-    await prisma.user
-      .update({
-        where: { id: String(userId) },
-        data: {
-          status: "restricted",
-        },
-      })
-      .catch(() => null);
-  }
-
-  if (action === ENFORCEMENT_ACTIONS.MANUAL_REVIEW_QUEUE) {
-    await prisma.governanceManualReviewQueue.create({
+  const [enforcement] = await prisma.$transaction(async (tx) => {
+    const e = await tx.governanceEnforcement.create({
       data: {
         id: crypto.randomUUID(),
-        enforcement_id: enforcement.id,
         user_id: String(userId),
-        reason: enforcement.reason,
-        priority: "high",
-        payload: {
+        evaluation_id: latestEval.id,
+        policy_definition_id: policyDefinitionId,
+        policy_version_id: policyVersionId,
+        action,
+        reason: String(reason || "Automated trust governance decision"),
+        expires_at: expiresAt,
+        created_by: actorId,
+        metadata: {
           trust_score: latestEval.trust_score,
-          signals: latestEval.signals || {},
+          signals: latestEval.signals || null,
         },
       },
     });
-  }
+
+    if (action === ENFORCEMENT_ACTIONS.TEMP_COMMUNICATION_THROTTLE) {
+      await tx.user
+        .update({
+          where: { id: String(userId) },
+          data: {
+            messaging_restricted_until: expiresAt,
+          },
+        })
+        .catch(() => null);
+    }
+
+    if (action === ENFORCEMENT_ACTIONS.FEATURE_LOCK) {
+      await tx.user
+        .update({
+          where: { id: String(userId) },
+          data: {
+            status: "restricted",
+          },
+        })
+        .catch(() => null);
+    }
+
+    if (action === ENFORCEMENT_ACTIONS.MANUAL_REVIEW_QUEUE) {
+      await tx.governanceManualReviewQueue.create({
+        data: {
+          id: crypto.randomUUID(),
+          enforcement_id: e.id,
+          user_id: String(userId),
+          reason: e.reason,
+          priority: "high",
+          payload: {
+            trust_score: latestEval.trust_score,
+            signals: latestEval.signals || {},
+          },
+        },
+      });
+    }
+
+    return [e];
+  });
 
   const fallback = {
     subject: "Trust governance update",

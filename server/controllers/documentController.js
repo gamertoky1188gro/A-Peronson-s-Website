@@ -250,26 +250,28 @@ export async function createContractSignCallback(req, res) {
             const nowTs = Date.now();
             const cutoff = new Date(nowTs - retentionMs);
 
-            // Delete old nonces first
-            await prisma.esignWebhookNonce.deleteMany({
-              where: {
-                created_at: { lt: cutoff },
-              },
-            });
+            await prisma.$transaction(async (tx) => {
+              // Delete old nonces first
+              await tx.esignWebhookNonce.deleteMany({
+                where: {
+                  created_at: { lt: cutoff },
+                },
+              });
 
-            // Check if signature already used
-            const existing = await prisma.esignWebhookNonce.findUnique({
-              where: { nonce: signature },
-            });
-            if (existing) {
-              const err = new Error("Replay detected");
-              err.status = 403;
-              throw err;
-            }
+              // Check if signature already used
+              const existing = await tx.esignWebhookNonce.findUnique({
+                where: { nonce: signature },
+              });
+              if (existing) {
+                const err = new Error("Replay detected");
+                err.status = 403;
+                throw err;
+              }
 
-            // Store new nonce
-            await prisma.esignWebhookNonce.create({
-              data: { nonce: signature },
+              // Store new nonce
+              await tx.esignWebhookNonce.create({
+                data: { nonce: signature },
+              });
             });
           } catch (e) {
             if (e && e.status === 403)

@@ -396,26 +396,29 @@ export async function performAdminAction(action, payload = {}, actor) {
       throw err;
     }
     await ensureUserExists(target);
-    const moveResult = await prisma.user.updateMany({
-      where: { org_owner_id: source },
-      data: { org_owner_id: target, updated_at: new Date() },
-    });
-    if (archiveSource) {
-      const sourceUser = await prisma.user.findUnique({
-        where: { id: source },
+    const [moveResult] = await prisma.$transaction(async (tx) => {
+      const mr = await tx.user.updateMany({
+        where: { org_owner_id: source },
+        data: { org_owner_id: target, updated_at: new Date() },
       });
-      if (sourceUser) {
-        const profile = {
-          ...(sourceUser.profile || {}),
-          org_merged_into: target,
-          org_merged_at: new Date().toISOString(),
-        };
-        await prisma.user.update({
+      if (archiveSource) {
+        const sourceUser = await tx.user.findUnique({
           where: { id: source },
-          data: { status: "inactive", profile, updated_at: new Date() },
         });
+        if (sourceUser) {
+          const profile = {
+            ...(sourceUser.profile || {}),
+            org_merged_into: target,
+            org_merged_at: new Date().toISOString(),
+          };
+          await tx.user.update({
+            where: { id: source },
+            data: { status: "inactive", profile, updated_at: new Date() },
+          });
+        }
       }
-    }
+      return [mr];
+    });
     return {
       ok: true,
       moved: moveResult.count,

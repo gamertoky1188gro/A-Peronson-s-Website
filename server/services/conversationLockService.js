@@ -44,25 +44,36 @@ export async function claimConversation(requestId, agent) {
   });
 
   if (!existing) {
-    const row = await prisma.conversationLock.create({
-      data: {
-        request_id: requestId,
-        locked_by: agent.id,
-        allowed_agents: [agent.id],
-        allowed_users: [agent.id],
-        lock_type: "agent_claim",
-        lock_status: "claimed",
-        lock_reason: "agent_claim",
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
+    const row = await prisma.$transaction(async (tx) => {
+      const r = await tx.conversationLock.create({
+        data: {
+          request_id: requestId,
+          locked_by: agent.id,
+          allowed_agents: [agent.id],
+          allowed_users: [agent.id],
+          lock_type: "agent_claim",
+          lock_status: "claimed",
+          lock_reason: "agent_claim",
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      });
+      await tx.notification.create({
+        data: {
+          id: crypto.randomUUID(),
+          user_id: agent.id,
+          type: "conversation_lock",
+          entity_type: "buyer_request",
+          entity_id: requestId,
+          message: `You claimed buyer request ${requestId}.`,
+          actor_id: agent.id,
+          meta: {},
+          read: false,
+          created_at: new Date(),
+        },
+      });
+      return r;
     });
-    await createLockNotification(
-      agent.id,
-      `You claimed buyer request ${requestId}.`,
-      requestId,
-      agent.id,
-    );
     return { status: "claimed", ...row };
   }
 
@@ -90,23 +101,33 @@ export async function grantConversationAccess(requestId, actor, targetUserId) {
   if (!isOwner && !isAdmin) return "forbidden";
 
   const allowedUsers = normalizeAllowed(existing);
-  if (!allowedUsers.includes(targetUserId)) {
-    await prisma.conversationLock.update({
-      where: { request_id: requestId },
+
+  await prisma.$transaction(async (tx) => {
+    if (!allowedUsers.includes(targetUserId)) {
+      await tx.conversationLock.update({
+        where: { request_id: requestId },
+        data: {
+          allowed_users: [...allowedUsers, targetUserId],
+          updated_at: new Date(),
+        },
+      });
+    }
+
+    await tx.notification.create({
       data: {
-        allowed_users: [...allowedUsers, targetUserId],
-        updated_at: new Date(),
+        id: crypto.randomUUID(),
+        user_id: targetUserId,
+        type: "conversation_lock",
+        entity_type: "buyer_request",
+        entity_id: requestId,
+        message: `Access granted for buyer request ${requestId}. You can now join this conversation.`,
+        actor_id: actor?.id,
+        meta: { request_id: requestId, granted_by: actor?.id },
+        read: false,
+        created_at: new Date(),
       },
     });
-  }
-
-  await createLockNotification(
-    targetUserId,
-    `Access granted for buyer request ${requestId}. You can now join this conversation.`,
-    requestId,
-    actor?.id,
-    { request_id: requestId, granted_by: actor?.id },
-  );
+  });
 
   return prisma.conversationLock.findUnique({
     where: { request_id: requestId },
@@ -127,21 +148,37 @@ export async function requestConversationAccess(requestId, requester) {
     return { status: "granted", ...lock };
   }
 
-  await createLockNotification(
-    lock.locked_by,
-    `${requester.name || "An agent"} requested access to buyer request ${requestId}.`,
-    requestId,
-    requester.id,
-    { request_id: requestId, requester_id: requester.id },
-  );
+  await prisma.$transaction(async (tx) => {
+    await tx.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: lock.locked_by,
+        type: "conversation_lock",
+        entity_type: "buyer_request",
+        entity_id: requestId,
+        message: `${requester.name || "An agent"} requested access to buyer request ${requestId}.`,
+        actor_id: requester.id,
+        meta: { request_id: requestId, requester_id: requester.id },
+        read: false,
+        created_at: new Date(),
+      },
+    });
 
-  await createLockNotification(
-    requester.id,
-    `Access request sent for buyer request ${requestId}.`,
-    requestId,
-    requester.id,
-    { request_id: requestId, requester_id: requester.id },
-  );
+    await tx.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: requester.id,
+        type: "conversation_lock",
+        entity_type: "buyer_request",
+        entity_id: requestId,
+        message: `Access request sent for buyer request ${requestId}.`,
+        actor_id: requester.id,
+        meta: { request_id: requestId, requester_id: requester.id },
+        read: false,
+        created_at: new Date(),
+      },
+    });
+  });
 
   return {
     status: "requested",
@@ -163,34 +200,50 @@ export async function transferConversation(requestId, actor, targetUserId) {
   );
   if (!isOwner && !isAdmin) return "forbidden";
 
-  await prisma.conversationLock.update({
-    where: { request_id: requestId },
-    data: {
-      locked_by: targetUserId,
-      allowed_agents: [targetUserId],
-      allowed_users: [targetUserId],
-      lock_type: "agent_claim",
-      lock_status: "claimed",
-      lock_reason: "agent_transfer",
-      updated_at: new Date(),
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.conversationLock.update({
+      where: { request_id: requestId },
+      data: {
+        locked_by: targetUserId,
+        allowed_agents: [targetUserId],
+        allowed_users: [targetUserId],
+        lock_type: "agent_claim",
+        lock_status: "claimed",
+        lock_reason: "agent_transfer",
+        updated_at: new Date(),
+      },
+    });
+
+    await tx.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: targetUserId,
+        type: "conversation_lock",
+        entity_type: "buyer_request",
+        entity_id: requestId,
+        message: `A conversation was transferred to you for buyer request ${requestId}. You now own this thread.`,
+        actor_id: actor?.id,
+        meta: { request_id: requestId, transferred_by: actor?.id },
+        read: false,
+        created_at: new Date(),
+      },
+    });
+
+    await tx.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        user_id: existing.locked_by,
+        type: "conversation_lock",
+        entity_type: "buyer_request",
+        entity_id: requestId,
+        message: `You transferred buyer request ${requestId}. You no longer have messaging access.`,
+        actor_id: actor?.id,
+        meta: { request_id: requestId, transferred_to: targetUserId },
+        read: false,
+        created_at: new Date(),
+      },
+    });
   });
-
-  await createLockNotification(
-    targetUserId,
-    `A conversation was transferred to you for buyer request ${requestId}. You now own this thread.`,
-    requestId,
-    actor?.id,
-    { request_id: requestId, transferred_by: actor?.id },
-  );
-
-  await createLockNotification(
-    existing.locked_by,
-    `You transferred buyer request ${requestId}. You no longer have messaging access.`,
-    requestId,
-    actor?.id,
-    { request_id: requestId, transferred_to: targetUserId },
-  );
 
   return prisma.conversationLock.findUnique({
     where: { request_id: requestId },

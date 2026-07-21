@@ -254,61 +254,64 @@ async function getInventoryByModule(moduleId) {
 
 async function updateInventoryConfig(data, actorId) {
   try {
-    const results = [];
+    const resultCount = await prisma.$transaction(async (tx) => {
+      let count = 0;
 
-    for (const module of data.modules || []) {
-      const savedModule = await prisma.adminModule.upsert({
-        where: { module_id: module.id },
-        update: {
-          label: module.label,
-          icon_name: module.icon_name,
-          sort_order: module.sort_order || 0,
-          active: module.active !== false,
-          updated_at: new Date(),
-        },
-        create: {
-          module_id: module.id,
-          label: module.label,
-          icon_name: module.icon_name,
-          sort_order: module.sort_order || 0,
-          active: module.active !== false,
+      for (const module of data.modules || []) {
+        const savedModule = await tx.adminModule.upsert({
+          where: { module_id: module.id },
+          update: {
+            label: module.label,
+            icon_name: module.icon_name,
+            sort_order: module.sort_order || 0,
+            active: module.active !== false,
+            updated_at: new Date(),
+          },
+          create: {
+            module_id: module.id,
+            label: module.label,
+            icon_name: module.icon_name,
+            sort_order: module.sort_order || 0,
+            active: module.active !== false,
+          },
+        });
+        count++;
+
+        for (const section of module.sections || []) {
+          await tx.adminSection.upsert({
+            where: { section_id: section.id },
+            update: {
+              module_id: savedModule.id,
+              title: section.title,
+              features: section.features || [],
+              sort_order: section.sort_order || 0,
+              active: section.active !== false,
+            },
+            create: {
+              section_id: section.id,
+              module_id: savedModule.id,
+              title: section.title,
+              features: section.features || [],
+              sort_order: section.sort_order || 0,
+              active: section.active !== false,
+            },
+          });
+          count++;
+        }
+      }
+
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "inventory",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify(data),
         },
       });
 
-      for (const section of module.sections || []) {
-        const savedSection = await prisma.adminSection.upsert({
-          where: { section_id: section.id },
-          update: {
-            module_id: savedModule.id,
-            title: section.title,
-            features: section.features || [],
-            sort_order: section.sort_order || 0,
-            active: section.active !== false,
-          },
-          create: {
-            section_id: section.id,
-            module_id: savedModule.id,
-            title: section.title,
-            features: section.features || [],
-            sort_order: section.sort_order || 0,
-            active: section.active !== false,
-          },
-        });
-        results.push(savedSection);
-      }
-
-      results.push(savedModule);
-    }
-
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "inventory",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify(data),
-      },
+      return count;
     });
 
-    return { success: true, count: results.length };
+    return { success: true, count: resultCount };
   } catch (error) {
     console.error(
       "[AdminDynamicConfig] updateInventoryConfig error:",
@@ -383,40 +386,43 @@ async function getActionsAsGroups() {
 
 async function updateActionsConfig(data, actorId) {
   try {
-    const results = [];
+    const count = await prisma.$transaction(async (tx) => {
+      let c = 0;
+      for (const action of data.actions || []) {
+        await tx.adminAction.upsert({
+          where: { action_id: action.id },
+          update: {
+            label: action.label,
+            category: action.category,
+            fields: action.fields || [],
+            sort_order: action.sort_order || 0,
+            active: action.active !== false,
+            updated_at: new Date(),
+          },
+          create: {
+            action_id: action.id,
+            label: action.label,
+            category: action.category,
+            fields: action.fields || [],
+            sort_order: action.sort_order || 0,
+            active: action.active !== false,
+          },
+        });
+        c++;
+      }
 
-    for (const action of data.actions || []) {
-      const saved = await prisma.adminAction.upsert({
-        where: { action_id: action.id },
-        update: {
-          label: action.label,
-          category: action.category,
-          fields: action.fields || [],
-          sort_order: action.sort_order || 0,
-          active: action.active !== false,
-          updated_at: new Date(),
-        },
-        create: {
-          action_id: action.id,
-          label: action.label,
-          category: action.category,
-          fields: action.fields || [],
-          sort_order: action.sort_order || 0,
-          active: action.active !== false,
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "actions",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify(data),
         },
       });
-      results.push(saved);
-    }
 
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "actions",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify(data),
-      },
+      return c;
     });
 
-    return { success: true, count: results.length };
+    return { success: true, count };
   } catch (error) {
     console.error(
       "[AdminDynamicConfig] updateActionsConfig error:",
@@ -457,43 +463,46 @@ async function getCapabilitiesWithFallback(moduleId) {
 
 async function updateCapabilities(data, actorId) {
   try {
-    const results = [];
+    const count = await prisma.$transaction(async (tx) => {
+      let c = 0;
+      for (const cap of data.capabilities || []) {
+        await tx.adminCapability.upsert({
+          where: { capability_id: cap.capability_id },
+          update: {
+            module_id: cap.module_id,
+            title: cap.title,
+            count: cap.count || 0,
+            icon_name: cap.icon_name,
+            subtitle: cap.subtitle,
+            sort_order: cap.sort_order || 0,
+            active: cap.active !== false,
+          },
+          create: {
+            capability_id: cap.capability_id,
+            module_id: cap.module_id,
+            title: cap.title,
+            count: cap.count || 0,
+            icon_name: cap.icon_name,
+            subtitle: cap.subtitle,
+            sort_order: cap.sort_order || 0,
+            active: cap.active !== false,
+          },
+        });
+        c++;
+      }
 
-    for (const cap of data.capabilities || []) {
-      const saved = await prisma.adminCapability.upsert({
-        where: { capability_id: cap.capability_id },
-        update: {
-          module_id: cap.module_id,
-          title: cap.title,
-          count: cap.count || 0,
-          icon_name: cap.icon_name,
-          subtitle: cap.subtitle,
-          sort_order: cap.sort_order || 0,
-          active: cap.active !== false,
-        },
-        create: {
-          capability_id: cap.capability_id,
-          module_id: cap.module_id,
-          title: cap.title,
-          count: cap.count || 0,
-          icon_name: cap.icon_name,
-          subtitle: cap.subtitle,
-          sort_order: cap.sort_order || 0,
-          active: cap.active !== false,
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "capabilities",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify(data),
         },
       });
-      results.push(saved);
-    }
 
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "capabilities",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify(data),
-      },
+      return c;
     });
 
-    return { success: true, count: results.length };
+    return { success: true, count };
   } catch (error) {
     console.error(
       "[AdminDynamicConfig] updateCapabilities error:",
@@ -540,28 +549,32 @@ async function getUiConfigWithFallback() {
 
 async function updateUiConfig(data, actorId) {
   try {
-    const config = await prisma.adminUiConfig.upsert({
-      where: { id: "default" },
-      update: {
-        section_metrics: data.section_metrics,
-        chart_palette: data.chart_palette,
-        empty_states: data.empty_states,
-        updated_at: new Date(),
-      },
-      create: {
-        id: "default",
-        section_metrics: data.section_metrics,
-        chart_palette: data.chart_palette,
-        empty_states: data.empty_states,
-      },
-    });
+    const [config] = await prisma.$transaction(async (tx) => {
+      const c = await tx.adminUiConfig.upsert({
+        where: { id: "default" },
+        update: {
+          section_metrics: data.section_metrics,
+          chart_palette: data.chart_palette,
+          empty_states: data.empty_states,
+          updated_at: new Date(),
+        },
+        create: {
+          id: "default",
+          section_metrics: data.section_metrics,
+          chart_palette: data.chart_palette,
+          empty_states: data.empty_states,
+        },
+      });
 
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "ui",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify(data),
-      },
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "ui",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify(data),
+        },
+      });
+
+      return [c];
     });
 
     return { success: true, config };
@@ -602,26 +615,30 @@ async function getMockDataWithFallback(dataType) {
 
 async function updateMockData(dataKey, payload, actorId) {
   try {
-    const saved = await prisma.adminMockData.upsert({
-      where: { data_key: dataKey },
-      update: {
-        payload,
-        active: true,
-      },
-      create: {
-        data_key: dataKey,
-        data_type: payload.data_type || "default",
-        payload,
-        active: true,
-      },
-    });
+    const [saved] = await prisma.$transaction(async (tx) => {
+      const s = await tx.adminMockData.upsert({
+        where: { data_key: dataKey },
+        update: {
+          payload,
+          active: true,
+        },
+        create: {
+          data_key: dataKey,
+          data_type: payload.data_type || "default",
+          payload,
+          active: true,
+        },
+      });
 
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "mock",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify({ [dataKey]: payload }),
-      },
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "mock",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify({ [dataKey]: payload }),
+        },
+      });
+
+      return [s];
     });
 
     return { success: true, saved };
@@ -671,37 +688,40 @@ async function getRoleConfigWithFallback() {
 
 async function updateRoleConfig(data, actorId) {
   try {
-    const results = [];
+    const count = await prisma.$transaction(async (tx) => {
+      let c = 0;
+      for (const role of data.roles || []) {
+        await tx.adminRoleConfig.upsert({
+          where: { role_key: role.role_key },
+          update: {
+            label: role.label,
+            is_admin_role: role.is_admin_role || false,
+            benefits: role.benefits || [],
+            active: role.active !== false,
+          },
+          create: {
+            role_key: role.role_key,
+            label: role.label,
+            is_admin_role: role.is_admin_role || false,
+            benefits: role.benefits || [],
+            active: role.active !== false,
+          },
+        });
+        c++;
+      }
 
-    for (const role of data.roles || []) {
-      const saved = await prisma.adminRoleConfig.upsert({
-        where: { role_key: role.role_key },
-        update: {
-          label: role.label,
-          is_admin_role: role.is_admin_role || false,
-          benefits: role.benefits || [],
-          active: role.active !== false,
-        },
-        create: {
-          role_key: role.role_key,
-          label: role.label,
-          is_admin_role: role.is_admin_role || false,
-          benefits: role.benefits || [],
-          active: role.active !== false,
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "roles",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify(data),
         },
       });
-      results.push(saved);
-    }
 
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "roles",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify(data),
-      },
+      return c;
     });
 
-    return { success: true, count: results.length };
+    return { success: true, count };
   } catch (error) {
     console.error(
       "[AdminDynamicConfig] updateRoleConfig error:",
@@ -739,32 +759,36 @@ async function getGovernanceConfigWithFallback() {
 
 async function updateGovernanceConfig(data, actorId) {
   try {
-    const config = await prisma.governanceConfig.upsert({
-      where: { id: "default" },
-      update: {
-        initial_policy: data.initial_policy,
-        initial_version: data.initial_version,
-        initial_simulation: data.initial_simulation,
-        initial_template: data.initial_template,
-        default_rules: data.default_rules,
-        updated_at: new Date(),
-      },
-      create: {
-        id: "default",
-        initial_policy: data.initial_policy,
-        initial_version: data.initial_version,
-        initial_simulation: data.initial_simulation,
-        initial_template: data.initial_template,
-        default_rules: data.default_rules,
-      },
-    });
+    const [config] = await prisma.$transaction(async (tx) => {
+      const c = await tx.governanceConfig.upsert({
+        where: { id: "default" },
+        update: {
+          initial_policy: data.initial_policy,
+          initial_version: data.initial_version,
+          initial_simulation: data.initial_simulation,
+          initial_template: data.initial_template,
+          default_rules: data.default_rules,
+          updated_at: new Date(),
+        },
+        create: {
+          id: "default",
+          initial_policy: data.initial_policy,
+          initial_version: data.initial_version,
+          initial_simulation: data.initial_simulation,
+          initial_template: data.initial_template,
+          default_rules: data.default_rules,
+        },
+      });
 
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "governance",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify(data),
-      },
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "governance",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify(data),
+        },
+      });
+
+      return [c];
     });
 
     return { success: true, config };
@@ -812,33 +836,36 @@ async function getBrandingConfigWithFallback() {
 
 async function updateBrandingConfig(data, actorId) {
   try {
-    const results = [];
+    const count = await prisma.$transaction(async (tx) => {
+      let c = 0;
+      for (const [key, value] of Object.entries(data)) {
+        await tx.adminBranding.upsert({
+          where: { brand_key: key },
+          update: {
+            value,
+            active: true,
+          },
+          create: {
+            brand_key: key,
+            value,
+            active: true,
+          },
+        });
+        c++;
+      }
 
-    for (const [key, value] of Object.entries(data)) {
-      const saved = await prisma.adminBranding.upsert({
-        where: { brand_key: key },
-        update: {
-          value,
-          active: true,
-        },
-        create: {
-          brand_key: key,
-          value,
-          active: true,
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "branding",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify(data),
         },
       });
-      results.push(saved);
-    }
 
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "branding",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify(data),
-      },
+      return c;
     });
 
-    return { success: true, count: results.length };
+    return { success: true, count };
   } catch (error) {
     console.error(
       "[AdminDynamicConfig] updateBrandingConfig error:",
@@ -875,33 +902,36 @@ async function getSecurityPurposesWithFallback() {
 
 async function updateSecurityPurposes(data, actorId) {
   try {
-    const results = [];
+    const count = await prisma.$transaction(async (tx) => {
+      let c = 0;
+      for (const [key, type] of Object.entries(data)) {
+        await tx.adminSecurityPurpose.upsert({
+          where: { purpose_key: key },
+          update: {
+            purpose_type: type,
+            active: true,
+          },
+          create: {
+            purpose_key: key,
+            purpose_type: type,
+            active: true,
+          },
+        });
+        c++;
+      }
 
-    for (const [key, type] of Object.entries(data)) {
-      const saved = await prisma.adminSecurityPurpose.upsert({
-        where: { purpose_key: key },
-        update: {
-          purpose_type: type,
-          active: true,
-        },
-        create: {
-          purpose_key: key,
-          purpose_type: type,
-          active: true,
+      await tx.adminConfigHistory.create({
+        data: {
+          config_type: "security",
+          changed_by: actorId || "system",
+          new_value: JSON.stringify(data),
         },
       });
-      results.push(saved);
-    }
 
-    await prisma.adminConfigHistory.create({
-      data: {
-        config_type: "security",
-        changed_by: actorId || "system",
-        new_value: JSON.stringify(data),
-      },
+      return c;
     });
 
-    return { success: true, count: results.length };
+    return { success: true, count };
   } catch (error) {
     console.error(
       "[AdminDynamicConfig] updateSecurityPurposes error:",

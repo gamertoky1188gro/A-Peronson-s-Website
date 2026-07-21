@@ -55,29 +55,33 @@ export async function createSupportTicket({
     120,
   );
 
-  const ticket = await prisma.supportTicket.create({
-    data: {
-      id: ticketId,
-      user_id: sanitizeString(String(actor?.id || ""), 120),
-      subject: sanitizeString(String(subject || "Support ticket"), 160),
-      category: sanitizeString(String(category || "General"), 80),
-      description: sanitizeString(String(description || ""), 1200),
-      status: "open",
-      priority: normalizePriority(priority, premium),
-      assigned_to: assignedTo || null,
-      created_at: now,
-      updated_at: now,
-    },
-  });
+  const [ticket, initialMessage] = await prisma.$transaction(async (tx) => {
+    const t = await tx.supportTicket.create({
+      data: {
+        id: ticketId,
+        user_id: sanitizeString(String(actor?.id || ""), 120),
+        subject: sanitizeString(String(subject || "Support ticket"), 160),
+        category: sanitizeString(String(category || "General"), 80),
+        description: sanitizeString(String(description || ""), 1200),
+        status: "open",
+        priority: normalizePriority(priority, premium),
+        assigned_to: assignedTo || null,
+        created_at: now,
+        updated_at: now,
+      },
+    });
 
-  const initialMessage = await prisma.supportTicketMessage.create({
-    data: {
-      id: crypto.randomUUID(),
-      ticket_id: ticketId,
-      sender_id: sanitizeString(String(actor?.id || ""), 120),
-      message: sanitizeString(String(description || ""), 1200),
-      created_at: now,
-    },
+    const msg = await tx.supportTicketMessage.create({
+      data: {
+        id: crypto.randomUUID(),
+        ticket_id: ticketId,
+        sender_id: sanitizeString(String(actor?.id || ""), 120),
+        message: sanitizeString(String(description || ""), 1200),
+        created_at: now,
+      },
+    });
+
+    return [t, msg];
   });
 
   return { ticket, initial_message: initialMessage };
@@ -133,20 +137,24 @@ export async function appendSupportTicketMessage(ticketId, actor, message) {
   if (!ticket) return null;
   if (String(ticket.user_id) !== String(actor?.id || "")) return "forbidden";
 
-  const entry = await prisma.supportTicketMessage.create({
-    data: {
-      id: crypto.randomUUID(),
-      ticket_id: String(ticketId),
-      sender_id: sanitizeString(String(actor?.id || ""), 120),
-      message: sanitizeString(String(message || ""), 1200),
-      created_at: new Date(),
-    },
-  });
+  const [entry] = await prisma.$transaction(async (tx) => {
+    const msg = await tx.supportTicketMessage.create({
+      data: {
+        id: crypto.randomUUID(),
+        ticket_id: String(ticketId),
+        sender_id: sanitizeString(String(actor?.id || ""), 120),
+        message: sanitizeString(String(message || ""), 1200),
+        created_at: new Date(),
+      },
+    });
 
-  const nextStatus = ticket.status === "resolved" ? "open" : ticket.status;
-  await prisma.supportTicket.update({
-    where: { id: String(ticketId) },
-    data: { updated_at: entry.created_at, status: nextStatus },
+    const nextStatus = ticket.status === "resolved" ? "open" : ticket.status;
+    await tx.supportTicket.update({
+      where: { id: String(ticketId) },
+      data: { updated_at: msg.created_at, status: nextStatus },
+    });
+
+    return [msg];
   });
 
   return entry;

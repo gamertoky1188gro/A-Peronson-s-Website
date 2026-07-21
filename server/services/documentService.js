@@ -642,7 +642,12 @@ export async function createDraftContract(actor, payload = {}) {
     updated_at: new Date(),
   };
   contract.lifecycle_status = normalizeContractLifecycle(contract);
-  await prisma.document.create({ data: contract });
+  await prisma.$transaction(async (tx) => {
+    await tx.document.create({ data: contract });
+    await appendContractAudit(contract.id, actor.id, "contract_created", {
+      title: contract.title,
+    }, tx);
+  });
   await trackEvent({
     type: "contract_created",
     actor_id: actor.id,
@@ -659,13 +664,11 @@ export async function createDraftContract(actor, payload = {}) {
     },
     { actor_id: actor.id },
   ).catch(() => null);
-  await appendContractAudit(contract.id, actor.id, "contract_created", {
-    title: contract.title,
-  });
   return contract;
 }
 
-async function appendContractAudit(contractId, actorId, action, metadata = {}) {
+async function appendContractAudit(contractId, actorId, action, metadata = {}, tx) {
+  const client = tx || prisma;
   try {
     const row = {
       id: crypto.randomUUID(),
@@ -675,7 +678,7 @@ async function appendContractAudit(contractId, actorId, action, metadata = {}) {
       metadata: metadata || {},
       created_at: new Date().toISOString(),
     };
-    await prisma.contractAudit.create({ data: row });
+    await client.contractAudit.create({ data: row });
   } catch {
     void 0;
   }
@@ -775,17 +778,36 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   }
 
   next.lifecycle_status = normalizeContractLifecycle(next);
-  await prisma.document.update({ where: { id: contractId }, data: next });
+  await prisma.$transaction(async (tx) => {
+    await tx.document.update({ where: { id: contractId }, data: next });
+
+    if (previousBuyerState !== nextBuyerState && nextBuyerState === "signed") {
+      await appendContractAudit(next.id, actor.id, "buyer_signed", {
+        previous: previousBuyerState,
+        now: nextBuyerState,
+      }, tx);
+    }
+    if (
+      previousFactoryState !== nextFactoryState &&
+      nextFactoryState === "signed"
+    ) {
+      await appendContractAudit(next.id, actor.id, "factory_signed", {
+        previous: previousFactoryState,
+        now: nextFactoryState,
+      }, tx);
+    }
+    if (next.lifecycle_status === "signed") {
+      await appendContractAudit(next.id, actor.id, "contract_signed", {
+        artifact: next.artifact || null,
+      }, tx);
+    }
+  });
 
   if (previousBuyerState !== nextBuyerState && nextBuyerState === "signed") {
     await trackEvent({
       type: "contract_buyer_signed",
       actor_id: actor.id,
       entity_id: next.id,
-    });
-    await appendContractAudit(next.id, actor.id, "buyer_signed", {
-      previous: previousBuyerState,
-      now: nextBuyerState,
     });
   }
   if (
@@ -796,10 +818,6 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
       type: "contract_factory_signed",
       actor_id: actor.id,
       entity_id: next.id,
-    });
-    await appendContractAudit(next.id, actor.id, "factory_signed", {
-      previous: previousFactoryState,
-      now: nextFactoryState,
     });
   }
   if (next.lifecycle_status === "signed") {
@@ -821,9 +839,6 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
         { actor_id: actor.id },
       ).catch(() => null);
     }
-    await appendContractAudit(next.id, actor.id, "contract_signed", {
-      artifact: next.artifact || null,
-    });
   }
   return {
     ...presentContractForActor(next, actor),
@@ -892,7 +907,22 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
   };
 
   next.lifecycle_status = normalizeContractLifecycle(next);
-  await prisma.document.update({ where: { id: contractId }, data: next });
+  await prisma.$transaction(async (tx) => {
+    await tx.document.update({ where: { id: contractId }, data: next });
+
+    if (previousStatus !== artifactStatus && artifactStatus === "locked") {
+      await appendContractAudit(next.id, actor.id, "artifact_locked", {
+        previous: previousStatus,
+        now: artifactStatus,
+      }, tx);
+    }
+    if (previousStatus !== artifactStatus && artifactStatus === "archived") {
+      await appendContractAudit(next.id, actor.id, "artifact_archived", {
+        previous: previousStatus,
+        now: artifactStatus,
+      }, tx);
+    }
+  });
 
   if (previousStatus !== artifactStatus && artifactStatus === "locked") {
     await trackEvent({
@@ -900,20 +930,12 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
       actor_id: actor.id,
       entity_id: next.id,
     });
-    await appendContractAudit(next.id, actor.id, "artifact_locked", {
-      previous: previousStatus,
-      now: artifactStatus,
-    });
   }
   if (previousStatus !== artifactStatus && artifactStatus === "archived") {
     await trackEvent({
       type: "contract_archived",
       actor_id: actor.id,
       entity_id: next.id,
-    });
-    await appendContractAudit(next.id, actor.id, "artifact_archived", {
-      previous: previousStatus,
-      now: artifactStatus,
     });
   }
   return {

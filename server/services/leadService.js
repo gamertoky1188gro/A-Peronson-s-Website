@@ -542,17 +542,21 @@ export async function updateLead(actor, leadId, patch = {}) {
     if (!assignedAgent) throw forbiddenError();
   }
 
-  let updated = await prisma.lead.update({
-    where: { id },
-    data: {
-      status:
-        patch.status !== undefined
-          ? normalizeStatus(patch.status, current.status || "new")
-          : current.status,
-      ...(isAgent(actor) ? {} : { assigned_agent_id: assignedAgentId }),
-      updated_at: new Date(),
-    },
+  const [updatedLead, updated2] = await prisma.$transaction(async (tx) => {
+    const first = await tx.lead.update({
+      where: { id },
+      data: {
+        status:
+          patch.status !== undefined
+            ? normalizeStatus(patch.status, current.status || "new")
+            : current.status,
+        ...(isAgent(actor) ? {} : { assigned_agent_id: assignedAgentId }),
+        updated_at: new Date(),
+      },
+    });
+    return [first];
   });
+  let updated = updatedLead;
   const opsLead = await applyLeadOpsOnCreateOrUpdate({
     actor,
     lead: updated,
@@ -562,13 +566,17 @@ export async function updateLead(actor, leadId, patch = {}) {
     String(updated.assigned_agent_id || "") !==
     String(opsLead.assigned_agent_id || "")
   ) {
-    updated = await prisma.lead.update({
-      where: { id },
-      data: {
-        assigned_agent_id: opsLead.assigned_agent_id || null,
-        updated_at: new Date(),
-      },
+    const [next] = await prisma.$transaction(async (tx) => {
+      const u = await tx.lead.update({
+        where: { id },
+        data: {
+          assigned_agent_id: opsLead.assigned_agent_id || null,
+          updated_at: new Date(),
+        },
+      });
+      return [u];
     });
+    updated = next;
   } else {
     updated = opsLead;
   }
@@ -579,22 +587,24 @@ export async function updateLead(actor, leadId, patch = {}) {
       String(updated.assigned_agent_id || "")
   ) {
     const now = new Date();
-    await prisma.leadAssignment.create({
-      data: {
-        id: crypto.randomUUID(),
-        lead_id: updated.id,
-        org_owner_id: updated.org_owner_id,
-        assigned_by: String(actor.id || ""),
-        assigned_to: updated.assigned_agent_id || null,
-        previous_assignee: current.assigned_agent_id || null,
-        reason:
-          sanitizeString(
-            String(patch.assignment_reason || "manual_assignment"),
-            180,
-          ) || "manual_assignment",
-        assigned_at: now,
-        created_at: now,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.leadAssignment.create({
+        data: {
+          id: crypto.randomUUID(),
+          lead_id: updated.id,
+          org_owner_id: updated.org_owner_id,
+          assigned_by: String(actor.id || ""),
+          assigned_to: updated.assigned_agent_id || null,
+          previous_assignee: current.assigned_agent_id || null,
+          reason:
+            sanitizeString(
+              String(patch.assignment_reason || "manual_assignment"),
+              180,
+            ) || "manual_assignment",
+          assigned_at: now,
+          created_at: now,
+        },
+      });
     });
     await trackEvent({
       type: "lead_reassigned",

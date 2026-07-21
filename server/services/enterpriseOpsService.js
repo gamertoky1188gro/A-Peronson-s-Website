@@ -256,24 +256,26 @@ function computeAgentCap(policy, agentId) {
 }
 
 async function persistWorkloads({ orgOwnerId, agents, leads, policy }) {
-  await prisma.agentWorkload.deleteMany({
-    where: { org_owner_id: String(orgOwnerId) },
+  await prisma.$transaction(async (tx) => {
+    await tx.agentWorkload.deleteMany({
+      where: { org_owner_id: String(orgOwnerId) },
+    });
+
+    const now = new Date();
+    const data = agents.map((agent) => ({
+      id: crypto.randomUUID(),
+      org_owner_id: String(orgOwnerId),
+      agent_id: String(agent.id),
+      active_leads: computeAgentLoad(leads, agent.id),
+      capped_max_leads: computeAgentCap(policy, String(agent.id)),
+      last_assigned_at: null,
+      updated_at: now,
+    }));
+
+    if (data.length) {
+      await tx.agentWorkload.createMany({ data });
+    }
   });
-
-  const now = new Date();
-  const data = agents.map((agent) => ({
-    id: crypto.randomUUID(),
-    org_owner_id: String(orgOwnerId),
-    agent_id: String(agent.id),
-    active_leads: computeAgentLoad(leads, agent.id),
-    capped_max_leads: computeAgentCap(policy, String(agent.id)),
-    last_assigned_at: null,
-    updated_at: now,
-  }));
-
-  if (data.length) {
-    await prisma.agentWorkload.createMany({ data });
-  }
 }
 
 async function chooseAssignee({ policy, orgOwnerId, lead, leads, users }) {
@@ -415,6 +417,31 @@ export async function applyLeadOpsOnCreateOrUpdate({
     });
     if (picked?.agentId) {
       changed.assigned_agent_id = picked.agentId;
+      await prisma.$transaction(async (tx) => {
+        await tx.leadAssignment.create({
+          data: {
+            id: crypto.randomUUID(),
+            lead_id: changed.id,
+            org_owner_id: orgOwnerId,
+            assigned_by: String(actor?.id || orgOwnerId),
+            assigned_to: picked.agentId,
+            previous_assignee: "",
+            reason: "policy_auto_assignment",
+            assigned_at: new Date(),
+            created_at: new Date(),
+          },
+        });
+
+        if (picked.nextRoundRobinIndex !== undefined) {
+          await tx.orgOpsPolicy.update({
+            where: { id: String(policy.id) },
+            data: {
+              round_robin_index: picked.nextRoundRobinIndex,
+              updated_at: new Date(),
+            },
+          });
+        }
+      });
       await trackEvent({
         type: "lead_assignment",
         actor_id: String(actor?.id || orgOwnerId),
@@ -428,29 +455,6 @@ export async function applyLeadOpsOnCreateOrUpdate({
         },
         allowUnknownTypes: true,
       });
-      await prisma.leadAssignment.create({
-        data: {
-          id: crypto.randomUUID(),
-          lead_id: changed.id,
-          org_owner_id: orgOwnerId,
-          assigned_by: String(actor?.id || orgOwnerId),
-          assigned_to: picked.agentId,
-          previous_assignee: "",
-          reason: "policy_auto_assignment",
-          assigned_at: new Date(),
-          created_at: new Date(),
-        },
-      });
-
-      if (picked.nextRoundRobinIndex !== undefined) {
-        await prisma.orgOpsPolicy.update({
-          where: { id: String(policy.id) },
-          data: {
-            round_robin_index: picked.nextRoundRobinIndex,
-            updated_at: new Date(),
-          },
-        });
-      }
     }
   }
 
@@ -543,19 +547,21 @@ export async function evaluateAndEscalateLeadIfBreached({ actor, lead }) {
     updated_at: now,
   };
 
-  await prisma.leadEscalation.create({
-    data: escalation,
-  });
-
-  if (breachedTimer?.timer?.id) {
-    await prisma.leadSlaTimer.update({
-      where: { id: String(breachedTimer.timer.id) },
-      data: {
-        breached_at: new Date(),
-        updated_at: new Date(),
-      },
+  await prisma.$transaction(async (tx) => {
+    await tx.leadEscalation.create({
+      data: escalation,
     });
-  }
+
+    if (breachedTimer?.timer?.id) {
+      await tx.leadSlaTimer.update({
+        where: { id: String(breachedTimer.timer.id) },
+        data: {
+          breached_at: new Date(),
+          updated_at: new Date(),
+        },
+      });
+    }
+  });
 
   await trackEvent({
     type: "sla_breach",

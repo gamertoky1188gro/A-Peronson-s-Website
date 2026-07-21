@@ -26,8 +26,9 @@ function safeNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-async function createFeedbackRequestNotification(counterpartyId, profileKey) {
-  await prisma.notification.create({
+async function createFeedbackRequestNotification(counterpartyId, profileKey, tx) {
+  const client = tx || prisma;
+  await client.notification.create({
     data: {
       id: crypto.randomUUID(),
       user_id: counterpartyId,
@@ -285,87 +286,92 @@ export async function recordMilestone({
     },
   });
 
-  if (existing) {
-    await prisma.ratingMilestone.update({
-      where: { id: existing.id },
-      data: {
-        status: "completed",
-        completed_at: now,
-        updated_at: now,
-        updated_by: actorId,
-      },
-    });
-  } else {
-    await prisma.ratingMilestone.create({
-      data: {
-        id: crypto.randomUUID(),
-        profile_key: normalizedProfile,
-        counterparty_id: normalizedCounterparty,
-        interaction_type: normalizedInteractionType,
-        milestone: normalizedMilestone,
-        status: "completed",
-        completed_at: now,
-        created_at: now,
-        updated_at: now,
-        updated_by: actorId,
-      },
-    });
-  }
+  const txResult = await prisma.$transaction(async (tx) => {
+    if (existing) {
+      await tx.ratingMilestone.update({
+        where: { id: existing.id },
+        data: {
+          status: "completed",
+          completed_at: now,
+          updated_at: now,
+          updated_by: actorId,
+        },
+      });
+    } else {
+      await tx.ratingMilestone.create({
+        data: {
+          id: crypto.randomUUID(),
+          profile_key: normalizedProfile,
+          counterparty_id: normalizedCounterparty,
+          interaction_type: normalizedInteractionType,
+          milestone: normalizedMilestone,
+          status: "completed",
+          completed_at: now,
+          created_at: now,
+          updated_at: now,
+          updated_by: actorId,
+        },
+      });
+    }
 
-  const completed = await prisma.ratingMilestone.findMany({
-    where: {
-      profile_key: normalizedProfile,
-      counterparty_id: normalizedCounterparty,
-      status: "completed",
-    },
-  });
-  const completedMilestones = completed.map((row) => row.milestone);
-  const qualifies = profileQualifiesForFeedback(completedMilestones);
-
-  let feedbackRequest = null;
-  if (qualifies) {
-    const existingRequest = await prisma.ratingFeedbackRequest.findFirst({
+    const completed = await tx.ratingMilestone.findMany({
       where: {
         profile_key: normalizedProfile,
         counterparty_id: normalizedCounterparty,
-        status: "pending",
+        status: "completed",
       },
     });
+    const completedMilestones = completed.map((row) => row.milestone);
+    const qualifies = profileQualifiesForFeedback(completedMilestones);
 
-    if (!existingRequest) {
-      feedbackRequest = await prisma.ratingFeedbackRequest.create({
-        data: {
-          id: crypto.randomUUID(),
+    let feedbackRequest = null;
+    if (qualifies) {
+      const existingRequest = await tx.ratingFeedbackRequest.findFirst({
+        where: {
           profile_key: normalizedProfile,
           counterparty_id: normalizedCounterparty,
-          interaction_type: normalizedInteractionType,
-          qualification_rules: QUALIFICATION_RULES,
           status: "pending",
-          triggered_by: actorId,
-          created_at: now,
         },
       });
 
-      await prisma.ratingFeedbackEvent.create({
-        data: {
-          id: crypto.randomUUID(),
-          profile_key: normalizedProfile,
-          counterparty_id: normalizedCounterparty,
-          interaction_type: normalizedInteractionType,
-          event: "feedback_requested",
-          milestone: normalizedMilestone,
-          created_at: now,
-        },
-      });
+      if (!existingRequest) {
+        feedbackRequest = await tx.ratingFeedbackRequest.create({
+          data: {
+            id: crypto.randomUUID(),
+            profile_key: normalizedProfile,
+            counterparty_id: normalizedCounterparty,
+            interaction_type: normalizedInteractionType,
+            qualification_rules: QUALIFICATION_RULES,
+            status: "pending",
+            triggered_by: actorId,
+            created_at: now,
+          },
+        });
 
-      await createFeedbackRequestNotification(
-        normalizedCounterparty,
-        normalizedProfile,
-      );
+        await tx.ratingFeedbackEvent.create({
+          data: {
+            id: crypto.randomUUID(),
+            profile_key: normalizedProfile,
+            counterparty_id: normalizedCounterparty,
+            interaction_type: normalizedInteractionType,
+            event: "feedback_requested",
+            milestone: normalizedMilestone,
+            created_at: now,
+          },
+        });
+
+        await createFeedbackRequestNotification(
+          normalizedCounterparty,
+          normalizedProfile,
+          tx,
+        );
+      }
     }
-  }
 
-  return { feedback_request: feedbackRequest, qualifies };
+    return { feedback_request: feedbackRequest, qualifies };
+  });
+
+  return txResult;
 }
 
 export async function createRating({
@@ -402,34 +408,38 @@ export async function createRating({
     },
   });
 
-  if (pendingRequest) {
-    await prisma.ratingFeedbackRequest.update({
-      where: { id: pendingRequest.id },
+  const [rating] = await prisma.$transaction(async (tx) => {
+    if (pendingRequest) {
+      await tx.ratingFeedbackRequest.update({
+        where: { id: pendingRequest.id },
+        data: {
+          status: "fulfilled",
+          fulfilled_at: new Date(),
+        },
+      });
+    }
+
+    const r = await tx.rating.create({
       data: {
-        status: "fulfilled",
-        fulfilled_at: new Date(),
+        id: crypto.randomUUID(),
+        profile_key: normalizedProfile,
+        from_user_id: normalizedFrom,
+        interaction_type: normalizedInteractionType,
+        score: numericScore,
+        comment: normalizedComment,
+        reliability_flags: {
+          verified_counterparty: Boolean(reliabilityFlags.verified_counterparty),
+          qualified_milestone_pair: Boolean(
+            reliabilityFlags.qualified_milestone_pair,
+          ),
+          auto_generated: Boolean(reliabilityFlags.auto_generated),
+        },
+        auto_generated: Boolean(reliabilityFlags.auto_generated),
+        created_at: new Date(),
       },
     });
-  }
 
-  const rating = await prisma.rating.create({
-    data: {
-      id: crypto.randomUUID(),
-      profile_key: normalizedProfile,
-      from_user_id: normalizedFrom,
-      interaction_type: normalizedInteractionType,
-      score: numericScore,
-      comment: normalizedComment,
-      reliability_flags: {
-        verified_counterparty: Boolean(reliabilityFlags.verified_counterparty),
-        qualified_milestone_pair: Boolean(
-          reliabilityFlags.qualified_milestone_pair,
-        ),
-        auto_generated: Boolean(reliabilityFlags.auto_generated),
-      },
-      auto_generated: Boolean(reliabilityFlags.auto_generated),
-      created_at: new Date(),
-    },
+    return [r];
   });
 
   return rating;
@@ -469,12 +479,14 @@ async function autoGenerateRatingsForOverdueRequests() {
     });
 
     if (alreadyRated) {
-      await prisma.ratingFeedbackRequest.update({
-        where: { id: row.id },
-        data: {
-          status: "fulfilled",
-          fulfilled_at: row.fulfilled_at || new Date(),
-        },
+      await prisma.$transaction(async (tx) => {
+        await tx.ratingFeedbackRequest.update({
+          where: { id: row.id },
+          data: {
+            status: "fulfilled",
+            fulfilled_at: row.fulfilled_at || new Date(),
+          },
+        });
       });
       continue;
     }
@@ -504,42 +516,44 @@ async function autoGenerateRatingsForOverdueRequests() {
       : 5;
     const comment = "Auto-rating (no user feedback).";
 
-    await prisma.rating.create({
-      data: {
-        id: crypto.randomUUID(),
-        profile_key: profileKey,
-        from_user_id: counterpartyId,
-        interaction_type: sanitizeString(row.interaction_type || "deal", 40),
-        score: Math.min(5, Math.max(1, Math.round(score))),
-        comment,
-        reliability_flags: {
-          verified_counterparty: false,
-          qualified_milestone_pair: false,
+    await prisma.$transaction(async (tx) => {
+      await tx.rating.create({
+        data: {
+          id: crypto.randomUUID(),
+          profile_key: profileKey,
+          from_user_id: counterpartyId,
+          interaction_type: sanitizeString(row.interaction_type || "deal", 40),
+          score: Math.min(5, Math.max(1, Math.round(score))),
+          comment,
+          reliability_flags: {
+            verified_counterparty: false,
+            qualified_milestone_pair: false,
+            auto_generated: true,
+          },
           auto_generated: true,
+          created_at: new Date(),
         },
-        auto_generated: true,
-        created_at: new Date(),
-      },
-    });
+      });
 
-    await prisma.ratingFeedbackRequest.update({
-      where: { id: row.id },
-      data: {
-        status: "fulfilled",
-        fulfilled_at: new Date(),
-      },
-    });
+      await tx.ratingFeedbackRequest.update({
+        where: { id: row.id },
+        data: {
+          status: "fulfilled",
+          fulfilled_at: new Date(),
+        },
+      });
 
-    await prisma.ratingFeedbackEvent.create({
-      data: {
-        id: crypto.randomUUID(),
-        profile_key: profileKey,
-        counterparty_id: counterpartyId,
-        interaction_type: sanitizeString(row.interaction_type || "deal", 40),
-        event: "auto_rating",
-        milestone: "no_user_feedback",
-        created_at: new Date(),
-      },
+      await tx.ratingFeedbackEvent.create({
+        data: {
+          id: crypto.randomUUID(),
+          profile_key: profileKey,
+          counterparty_id: counterpartyId,
+          interaction_type: sanitizeString(row.interaction_type || "deal", 40),
+          event: "auto_rating",
+          milestone: "no_user_feedback",
+          created_at: new Date(),
+        },
+      });
     });
   }
 }
