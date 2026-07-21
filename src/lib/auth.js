@@ -163,7 +163,13 @@ export async function apiRequest(
     throw err;
   }
 
-  const data = await res.json().catch(() => ({}));
+  let data;
+  try {
+    data = await res.json();
+  } catch (parseErr) {
+    logger.error("[api] failed to parse JSON response", { method, path, status: res.status, error: parseErr.message });
+    data = {};
+  }
   if (debugRequests) {
     const elapsed = performance.now() - startedAt;
     const entry = { method, path, status: res.status, ms: Math.round(elapsed) };
