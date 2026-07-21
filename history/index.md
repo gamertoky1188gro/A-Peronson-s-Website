@@ -1,13 +1,13 @@
 # Project History Index
 
-> Complete chronological documentation of all 594 commits in the GarTexHub B2B Textile Marketplace repository.
+> Complete chronological documentation of all 610 commits in the GarTexHub B2B Textile Marketplace repository.
 
 ## Summary Statistics
 
 | Metric                            | Value                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Total commits documented**      | 594                                                                                                                                         |
-| **Date range**                    | 2026-03-01 → 2026-07-19                                                                                                                     |
+| **Total commits documented**      | 610                                                                                                                         |
+| **Date range**                    | 2026-03-01 → 2026-07-21                                                                                                                     |
 | **Unique files ever touched**     | 2,200+                                                                                                                                      |
 | **Most frequently changed files** | `src/pages/SearchResults.jsx` (77x), `server/server.js` (76x), `src/App.jsx` (65x), `src/components/NavBar.jsx` (59x), `package.json` (58x) |
 | **Largest commits (by files)**    | 936 files (commit `bdbbbc1` "meow"), 515 files (commit `6b75ca5` "Fixed"), 299 files (commit `bb22700` "Fixed")                            |
@@ -30,6 +30,7 @@
 | **11. Search & Feed**            | 0501–0560 | Jun 2–6      | Search features, semantic search, markdown rendering, link previews, live feed SSE          |
 | **12. Polish & A11Y**            | 0561–0588 | Jun 7–22     | SEO, accessibility, perf, comment UI, custom cursor, final cleanup |
 | **13. History & Lint**           | 0589–0594 | Jun 23–Jul 19 | History documentation framework, HTML/PDF exports, lint fixes, massive rebuild |
+| **14. Audit & Quality**          | 0595–0610 | Jul 19–21 | Post-rebuild lint fixes, security audit resolution (HIGH/LOW items), Prisma transaction wrapping, unused import cleanup, progress documentation |
 
 ## Complete Commit List
 
@@ -72,14 +73,30 @@
 | [0592](./0592_2026-07-12_15-51-18_9c670b2_update-test-print-statement.md)                     | 2026-07-12 15:51 | `9c670b2` | Update Test Print Statement                                      | Changed 1.txt from "Hello" to "Goodbye", reduced from 690KB to 2 bytes     |
 | [0593](./0593_2026-07-17_00-09-56_543b633_fix-resolve-218-lint-errors.md)                     | 2026-07-17 00:09 | `543b633` | Fix: Resolve All 218 Lint Errors                                 | Comprehensive lint fix across 274 files (server + client)                  |
 | [0594](./0594_2026-07-19_23-23-52_bdbbbc1_massive-rebuild-post-lint-fixes.md)                 | 2026-07-19 23:23 | `bdbbbc1` | Massive Rebuild Post-Lint Fixes                                  | 936 files rebuilt, dist/ regeneration, server/client refinements           |
+| [0595](./0595_2026-07-19_23-40-16_9dfb2ac_document-history-for-commits-0589-0594.md)           | 2026-07-19 23:40 | `9dfb2ac` | Document History for Commits 0589-0594                           | Created markdown documentation for the 6 most recent commits               |
+| [0596](./0596_2026-07-19_23-41-21_86f4e88_fix-remaining-lint-errors-across-33-files.md)       | 2026-07-19 23:41 | `86f4e88` | Fix Remaining Lint Errors Across 33 Files                        | Second pass of lint fixes across 33 source files (+1,472/-908)             |
+| [0597](./0597_2026-07-20_23-52-48_0acab6c_stop-tracking-env-and-fix-empty-promise-handlers.md)| 2026-07-20 23:52 | `0acab6c` | Stop Tracking .env and Fix Empty Promise Handlers                | Added .env to .gitignore, fixed silent promise rejection in 5 components   |
+| [0598](./0598_2026-07-21_00-16-36_5b2e698_revert-env-tracking-changes.md)                     | 2026-07-21 00:16 | `5b2e698` | Revert .env Tracking Changes                                     | Re-added .env to tracking, removed from .gitignore                          |
+| [0599](./0599_2026-07-21_00-19-12_df28dfe_update-audit-reports-with-fix-status.md)            | 2026-07-21 00:19 | `df28dfe` | Update Audit Reports with Fix Status                             | Updated all 5 AUDIT*.md files to reflect current remediation state          |
+| [0600](./0600_2026-07-21_12-31-47_5059792_resolve-4-high-audit-items.md)                      | 2026-07-21 12:31 | `5059792` | Resolve 4 High Audit Items                                       | Security fixes: console logger, admin credentials, SSE token, validation   |
+| [0601](./0601_2026-07-21_13-17-44_f8947c1_fix-missing-catch-in-floating-assistant.md)         | 2026-07-21 13:17 | `f8947c1` | Fix Missing .catch() in FloatingAssistant                        | Added proper error handling to fetchSessionData promises (BUG-001)         |
+| [0602](./0602_2026-07-21_13-19-46_db90012_update-audit-files-for-bug-001.md)                  | 2026-07-21 13:19 | `db90012` | Update Audit Files for BUG-001                                   | Updated all 5 audit reports to reflect BUG-001 completion                   |
+| [0603](./0603_2026-07-21_13-29-58_ef0308f_fix-cors-errorboundary-csrf-validation-proptypes.md)| 2026-07-21 13:29 | `ef0308f` | Fix CORS, ErrorBoundary, CSRF, Validation, PropTypes             | Created ErrorBoundary, validation lib, CORS hardening, PropTypes additions |
+| [0604](./0604_2026-07-21_13-31-58_169c0e0_finalize-audit-file-dates.md)                       | 2026-07-21 13:31 | `169c0e0` | Finalize Audit File Dates                                        | Marked audit files as (final) in index and report                           |
+| [0605](./0605_2026-07-21_13-39-17_199b40e_round-3-hardcoded-localhost-resizeobserver-leak.md) | 2026-07-21 13:39 | `199b40e` | Round 3: Localhost, ResizeObserver, Deps, Env Validation         | Fixed hardcoded localhost URLs, ResizeObserver cleanup, env validation lib |
+| [0606](./0606_2026-07-21_13-40-00_5103b07_remove-leftover-debug-files.md)                     | 2026-07-21 13:40 | `5103b07` | Remove Leftover Debug Files                                      | Deleted 3 debug output files (then_calls.txt, then_calls2.txt, then_calls3.txt) |
+| [0607](./0607_2026-07-21_13-56-31_0b16124_round-4-code-splitting-cn-routes-memo-constants.md) | 2026-07-21 13:56 | `0b16124` | Round 4: Code Splitting, cn(), Routes, Memo, Constants, JSDoc    | Added shared cn() utility, route constants, code splitting, React.memo     |
+| [0608](./0608_2026-07-21_14-16-49_4235ca_gate-vite-request-debug-to-dev.md)                   | 2026-07-21 14:16 | `4235ca`  | Gate VITE_REQUEST_DEBUG to Dev Environment                       | Restricted VITE_REQUEST_DEBUG to dev only (SEC-007), updated audit files   |
+| [0609](./0609_2026-07-21_14-59-06_00350f_wrap-multi-step-prisma-in-transactions.md)           | 2026-07-21 14:59 | `00350f`  | Wrap Multi-Step Prisma Operations in Transactions                | Transaction wrapping in 16 server files (DATA-002), ~+1,196/-1,021 lines   |
+| [0610](./0610_2026-07-21_15-21-31_3f2122_remove-48-unused-imports-across-34-files.md)         | 2026-07-21 15:21 | `3f2122`  | Remove 48 Unused Imports Across 34 Files                         | Cleaned unused imports from 29 client + 5 server files (QUALITY-004)       |
 
-> **Note**: Due to the large number of commits (594), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
+> **Note**: Due to the large number of commits (610), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
 
 ## File Naming Convention
 
 `history/NNNN_YYYY-MM-DD_HH-MM-SS_ABBREV_HASH_descriptive-title.md`
 
-- `NNNN` = 4-digit commit sequence number (0001-0594)
+- `NNNN` = 4-digit commit sequence number (0001-0610)
 - `YYYY-MM-DD_HH-MM-SS` = commit date/time
 - `ABBREV_HASH` = first 7 characters of commit hash
 - `descriptive-title` = generated title (kebab-case)
@@ -93,6 +110,7 @@
 - **Backend migration**: JSON file store → Prisma/PostgreSQL
 - **AI integration**: Local llama.cpp → opencode SDK with SSE streaming
 - **History documentation**: Commits 0589–0591 retroactively documented all prior commits; 0593–0594 fixed lint errors and rebuilt the entire codebase
+- **Audit remediation (0595–0610)**: Systematic security audit fix rounds (HIGH items → LOW items), Prisma transaction safety, unused import cleanup, and ongoing progress documentation
 
 ## Progress Tracking
 
