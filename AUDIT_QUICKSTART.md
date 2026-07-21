@@ -1,10 +1,10 @@
 # GarTexHub Audit - Quick Start Guide
 
-> **Updated July 21, 2026** — Status of fixes applied so far.
+> **Updated July 21, 2026 (evening)** — All promise error handlers completed.
 
 ## ✅ COMPLETED FIXES
 
-- **Empty `.catch(() => {})` handlers** — 11 instances replaced with `console.warn` across CallInterface.jsx (8), FeedItemCard.jsx, MainFeed.jsx, OrgSettings.jsx
+- **Promise error handlers (all .then chains)** — 48/48 `.then()` chains across `src/` now have `.catch()` handlers. 11 empty catches replaced, 2 missing catches added to `FloatingAssistant.jsx`.
 - **Missing routes** (`/contracts`, `/leads`) — Added to App.jsx rendering OwnerDashboard
 - **Sourcemaps** — Already correctly disabled in production (`sourcemap: process.env.NODE_ENV !== "production"`)
 - **Console statements (80→0)** — All 90 `console.*` calls across 22 files replaced with `logger` (dev-only); `src/lib/logger.js` created
@@ -32,27 +32,9 @@ git filter-repo --path .env --invert-paths
 echo ".env" >> .gitignore
 ```
 
-### 2. Promise Error Handling (2-3 hours — partially done)
+### 2. Promise Error Handling ✅ DONE
 
-**Status:** 11 empty `.catch(() => {})` fixed. Remaining work: audit `.then()` chains without `.catch()` in AdminPanel.jsx, ChatInterface.jsx, SearchResults.jsx.
-
-```jsx
-// ❌ Bad:
-apiRequest("/api/data").then((data) => setState(data));
-
-// ✅ Good:
-apiRequest("/api/data")
-  .then((data) => setState(data))
-  .catch((err) => handleError(err));
-
-// ✅ Better (async/await):
-try {
-  const data = await apiRequest("/api/data");
-  setState(data);
-} catch (err) {
-  handleError(err);
-}
-```
+**Status:** All 48 `.then()` chains across `src/` have `.catch()` handlers. 11 empty catches replaced, 2 missing catches added to `FloatingAssistant.jsx`. No remaining work.
 
 ### 3. Missing Routes ✅ DONE
 
@@ -157,7 +139,7 @@ npm run build
 
 - [ ] .env removed from git
 - [ ] All credentials rotated
-- [ ] All .then() have .catch()
+- [x] All .then() have .catch()
 - [ ] No console.log in production code
 - [ ] Sourcemaps disabled
 - [ ] Routes defined and working

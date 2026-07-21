@@ -131,7 +131,7 @@
 | #   | Issue                     | Severity    | Location            | Effort | Status                |
 | --- | ------------------------- | ----------- | ------------------- | ------ | --------------------- |
 | 1   | Hardcoded secrets in .env | 🔴 CRITICAL | `.env`              | 2h     | ⏸️ DEFERRED           |
-| 2   | Empty `.catch(() => {})`  | 🔴 CRITICAL | CallInterface.jsx+  | 6h     | ✅ PARTIAL (11 fixed) |
+| 2   | Promise error handlers  | 🔴 CRITICAL | FloatingAssistant.jsx+  | 6h     | ✅ DONE (48/48 chains) |
 | 3   | Missing routes            | 🔴 CRITICAL | `src/App.jsx`       | 0.5h   | ✅ FIXED              |
 | 4   | Type safety issues        | 🔴 CRITICAL | `ContractVault.jsx` | 1h     | ✅ FIXED              |
 | 5   | XSS vulnerabilities       | 🔴 CRITICAL | `SearchResults.jsx` | 2h     | ✅ FIXED              |
@@ -139,7 +139,7 @@
 | 7   | Missing input validation  | 🟠 HIGH     | 3 pages             | 3h     | ⚠️ PARTIAL            |
 | 8   | Secrets in localStorage   | 🟠 HIGH     | `AdminPanel.jsx`    | 1h     | ✅ FIXED              |
 
-**Blocking deployment: Issue 1 (secrets deferred) and remaining unhandled promises (~5h)**
+**Blocking deployment: Issue 1 (secrets deferred) only**
 
 ---
 
@@ -308,7 +308,7 @@ Use these issue IDs when creating tickets:
 **Critical Fixes (This Week):**
 
 - [ ] SEC-001: Hardcoded secrets
-- [ ] BUG-001: Unhandled promises
+- [x] BUG-001: Unhandled promises (FIXED)
 - [ ] BUG-002: Missing routes
 - [ ] BUG-004: Type safety
 - [ ] SEC-003: XSS vulnerabilities

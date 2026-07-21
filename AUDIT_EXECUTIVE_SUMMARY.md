@@ -1,7 +1,7 @@
 # GarTexHub Comprehensive Code Audit - Executive Summary
 
 **Audit Date:** July 19, 2026  
-**Last Updated:** July 21, 2026  
+**Last Updated:** July 21, 2026 (evening)  
 **Repository:** C:\ccmprojects\A-Peronson-s-Website  
 **Project:** GarTexHub B2B Textile Marketplace MVP  
 **Auditor:** Senior Code Audit Agent
@@ -12,9 +12,9 @@
 
 | Aspect                   | Rating  | Status            |
 | ------------------------ | ------- | ----------------- |
-| **Production Readiness** | ⚠️ 3/10 | NOT READY         |
+| **Production Readiness** | ⚠️ 4/10 | NOT READY         |
 | **Security**             | 🔴 2/10 | CRITICAL ISSUES   |
-| **Stability**            | 🟡 5/10 | Has Bugs          |
+| **Stability**            | 🟡 7/10 | Minor Bugs        |
 | **Code Quality**         | 🟡 6/10 | Needs Refactoring |
 | **Test Coverage**        | 🟡 6/10 | Moderate          |
 
@@ -61,13 +61,13 @@ Issues by Category:
 - **Effort:** 2 hours
 - **Action:** Immediately remove .env from git, rotate all credentials
 
-### 2. **42 Unhandled Promise Rejections** - APP CRASH RISK
+### 2. **Unhandled Promise Rejections** - APP CRASH RISK
 
 - **Severity:** CRITICAL
 - **Impact:** Silent failures, app freezes, unpredictable behavior
-- **Status:** **PARTIALLY FIXED** — 11 empty `.catch(() => {})` replaced with `console.warn`. 48 `.then()` vs 72 `.catch()` (catches > then calls). 10+ still have empty catches returning defaults (acceptable). Remaining files with `.then()` lacking error handlers need review.
-- **Effort:** 6 hours (4h remaining)
-- **Action:** Add .catch() or error handling to all async operations
+- **Status:** **FIXED** — All 48 `.then()` chains in `src/` now have `.catch()` handlers. 11 empty catches replaced with `logger.warn`, 2 missing catches added to `FloatingAssistant.jsx`.
+- **Effort:** 6 hours (done)
+- **Action:** None remaining — all promises handled
 
 ### 3. **Missing Route Definitions** - USER EXPERIENCE BROKEN
 
@@ -137,7 +137,7 @@ The following issues have been addressed since the original audit:
 | # | Issue | Previous Status | Current Status |
 | |-------|----------------|----------------|
 | 1 | **Secrets in .env tracked in git** | 🔴 CRITICAL | 🔴 **Deferred** — will handle at project completion |
-| 2 | **Empty `.catch(() => {})` promise handlers** | 🔴 CRITICAL | 🟢 **Fixed** — 11 empty catches replaced with `console.warn` across `CallInterface.jsx` (8), `FeedItemCard.jsx` (1), `MainFeed.jsx` (1), `OrgSettings.jsx` (1) |
+| 2 | **Promise error handlers (all .then chains)** | 🔴 CRITICAL | 🟢 **Fixed** — 48/48 `.then()` chains have `.catch()`; 11 empty catches replaced, 2 missing added in `FloatingAssistant.jsx` |
 | 3 | **Missing routes** (`/contracts`, `/leads`) | 🔴 CRITICAL | 🟢 **Fixed** — routes exist in `App.jsx` pointing to `OwnerDashboard`, present in `ROUTE_MANIFEST` |
 | 4 | **Sourcemaps in production** | 🟠 HIGH | 🟢 **Already correct** — `sourcemap: process.env.NODE_ENV !== "production"` disables in production builds |
 | 5 | **Null safety — ContractVault `mapContract`** | 🔴 CRITICAL | 🟢 **Fixed** — `if (!c) return null` guard + `.filter(Boolean)` on both map calls in `ContractVault.jsx` |
@@ -195,7 +195,7 @@ Priority 1: Remove .env from git, rotate credentials
   └─ Blocks: EVERYTHING
 
 Priority 2: Add error handlers to all promises
-  └─ Effort: 6 hours [PARTIALLY DONE — 11 empty catches fixed, 4h remaining]
+  └─ Effort: 6 hours [DONE — all 48 .then() chains have .catch()]
   └─ Blocks: Stability
 
 Priority 3: Fix missing routes (/verification, /contracts, /leads)
@@ -211,7 +211,7 @@ Priority 5: Add null safety checks (ContractVault, SearchResults)
   └─ Blocks: Stability
 ```
 
-**Total Blocking Time: ~8.5 hours (was ~11.5h)**
+**Total Blocking Time: ~5.5 hours (was ~11.5h)**
 
 ### NEXT SPRINT (Next 2 weeks) - MUST HAVE
 
@@ -281,7 +281,7 @@ Priority 5: Add null safety checks (ContractVault, SearchResults)
 - [x] Missing core routes ← DONE
 - [x] Type safety issues ← FIXED
 - [x] XSS vulnerabilities ← FIXED
-- [ ] Remaining unhandled `.then()` without `.catch()` ← MUST FIX
+- [x] Remaining unhandled `.then()` without `.catch()` ← FIXED
 
 ### Production Ready Only When:
 
@@ -309,7 +309,7 @@ Priority 5: Add null safety checks (ContractVault, SearchResults)
 ### What Needs Immediate Attention
 
 🔴 Security credentials exposed  
-🔴 Error handling incomplete  
+🟢 Error handling complete (src/)  
 🟢 Type safety fixed  
 🟢 XSS vulnerabilities fixed  
 🔴 Navigation broken
