@@ -1,0 +1,21 @@
+export const TIMEOUTS = {
+  SHORT: 500,
+  MEDIUM: 2000,
+  LONG: 3000,
+  RECONNECT: 30000,
+};
+
+export const PAGINATION = {
+  FEED_PAGE_LIMIT: 12,
+  SEARCH_PAGE_LIMIT: 20,
+};
+
+export const STORAGE = {
+  ADMIN_TTL_MINUTES: 60,
+};
+
+export const UI = {
+  TRAJECTORY_SAMPLE: 4,
+  ENTER_DELAY: 180,
+  EXIT_DELAY: 250,
+};

@@ -1,7 +1,7 @@
 # GarTexHub Comprehensive Code Audit - Executive Summary
 
 **Audit Date:** July 19, 2026  
-**Last Updated:** July 21, 2026 (final — round 3)  
+**Last Updated:** July 21, 2026 (final — round 4)  
 **Repository:** C:\ccmprojects\A-Peronson-s-Website  
 **Project:** GarTexHub B2B Textile Marketplace MVP  
 **Auditor:** Senior Code Audit Agent
@@ -155,6 +155,12 @@ The following issues have been addressed since the original audit:
 | 17 | **Missing useEffect deps** (useLocalStorageState.js) | 🟡 MEDIUM | 🟢 **Fixed** — `initialValue` added to deps |
 | 18 | **Env var validation at startup** | 🟡 MEDIUM | 🟢 **Fixed** — `src/lib/envCheck.js` + call in `main.jsx` |
 | 19 | **Uncontrolled components** (SearchResults.jsx) | 🟡 MEDIUM | 🟢 **Already correct** — all inputs have `value`+`onChange` |
+| 20 | **Code splitting / bundle size** | 🟡 MEDIUM | 🟢 **Fixed** — vendor chunks (react, icons, charts) split; chunkWarning 1000→500 |
+| 21 | **Duplicate cn() utilities** | 🟢 LOW | 🟢 **Fixed** — shared `src/lib/cn.js`; 11 files unified |
+| 22 | **Hardcoded route paths** (ChatInterface) | 🟢 LOW | 🟢 **Fixed** — `src/lib/routes.js` constants used |
+| 23 | **Missing React.memo** (Feed, OwnerDashboard) | 🟢 LOW | 🟢 **Fixed** — 7 inline components wrapped |
+| 24 | **Magic number timeouts** | 🟢 LOW | 🟢 **Fixed** — `src/lib/constants.js` with TIMEOUTS/PAGINATION/STORAGE/UI |
+| 25 | **Missing JSDoc** | 🟢 LOW | 🟢 **Fixed** — key src/lib files documented |
 
 ---
 

@@ -233,9 +233,7 @@ export function getPiePalette(config) {
   return fromConfig || DEFAULT_PIE_PALETTE;
 }
 
-export function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+export { cn } from "../lib/cn";
 
 export function normalizeRole(value = "") {
   return String(value || "")

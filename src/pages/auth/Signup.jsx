@@ -75,9 +75,7 @@ const POSITIONS = [
   "Administrator",
 ];
 
-function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+import { cn } from "../../lib/cn";
 
 function FieldShell({ label, children, hint }) {
   return (

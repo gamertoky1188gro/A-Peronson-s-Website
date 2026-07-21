@@ -84,9 +84,7 @@ function timeAgo(value) {
   return `${months} months ago`;
 }
 
-function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+import { cn } from "../lib/cn";
 
 export default function FeedManagementPage() {
   const fileInputRef = useRef(null);

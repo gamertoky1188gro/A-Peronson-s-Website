@@ -76,8 +76,7 @@ import useScrollDirection from "../hooks/useScrollDirection";
 import SlideIn from "./SlideIn";
 import { ThreeDot } from "react-loading-indicators";
 import { isRouteValid } from "../lib/routeHealthCheck";
-
-const cn = (...classes) => classes.filter(Boolean).join(" ");
+import { cn } from "../lib/cn";
 
 // Public navigation (shown for logged-out visitors).
 const publicLinks = [

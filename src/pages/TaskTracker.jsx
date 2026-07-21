@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ChevronRight, ChevronDown, Check, X } from "lucide-react";
 import tasksData from "../tasks.json";
+import { TIMEOUTS } from "../lib/constants";
 import NeonAtom from "../components/ui/NeonAtom";
 import ScrollReveal from "../components/ScrollReveal";
 
@@ -134,7 +135,7 @@ export default function TaskTracker() {
         });
         if (response.ok) {
           setSaveStatus("Saved");
-          setTimeout(() => setSaveStatus(""), 2000);
+          setTimeout(() => setSaveStatus(""), TIMEOUTS.MEDIUM);
         }
       } catch {
         const blob = new Blob(
@@ -154,11 +155,11 @@ export default function TaskTracker() {
         a.click();
         URL.revokeObjectURL(url);
         setSaveStatus("Downloaded");
-        setTimeout(() => setSaveStatus(""), 2000);
+        setTimeout(() => setSaveStatus(""), TIMEOUTS.MEDIUM);
       }
     };
 
-    const timer = setTimeout(saveTasks, 500);
+    const timer = setTimeout(saveTasks, TIMEOUTS.SHORT);
     return () => clearTimeout(timer);
   }, [tasks]);
 

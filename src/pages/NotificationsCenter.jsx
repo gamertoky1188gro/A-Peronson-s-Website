@@ -83,9 +83,7 @@ function feedLinkForEntity(entityType, entityId) {
   return `/feed?item=${encodeURIComponent(`${entityType}:${entityId}`)}`;
 }
 
-function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+import { cn } from "../lib/cn";
 
 function Badge({ children, tone = "slate" }) {
   const tones = {

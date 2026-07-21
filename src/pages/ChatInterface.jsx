@@ -67,14 +67,15 @@ const WS_BASE = (() => {
 })();
 
 import { isRouteValid } from "../lib/routeHealthCheck";
+import { ROUTES } from "../lib/routes";
 
 const CHAT_NAV_ITEMS = [
-  { to: "/feed", label: "Feed", icon: Home },
-  { to: "/search", label: "Search", icon: Search },
-  { to: "/notifications", label: "Alerts", icon: Bell },
-  { to: "/chat", label: "Chat", icon: MessageCircle },
-  { to: "/contracts", label: "Vault", icon: FolderOpen },
-  { to: "/help", label: "Help", icon: CircleHelp },
+  { to: ROUTES.FEED, label: "Feed", icon: Home },
+  { to: ROUTES.SEARCH, label: "Search", icon: Search },
+  { to: ROUTES.NOTIFICATIONS, label: "Alerts", icon: Bell },
+  { to: ROUTES.CHAT, label: "Chat", icon: MessageCircle },
+  { to: ROUTES.CONTRACTS, label: "Vault", icon: FolderOpen },
+  { to: ROUTES.HELP, label: "Help", icon: CircleHelp },
 ].filter((item) => isRouteValid(item.to));
 
 const PANEL_STYLE = {
@@ -1207,7 +1208,7 @@ export default function ChatInterface() {
         metadata: { match_id: thread.matchId },
       });
       navigate(
-        `/call?callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`,
+        `${ROUTES.CALL}?callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`,
       );
     } catch (err) {
       setScheduleStatus(err.message || "Failed to start call");
@@ -1224,7 +1225,7 @@ export default function ChatInterface() {
     setCallPromptThread(null);
     if (thread.callId) {
       navigate(
-        `/call?callId=${encodeURIComponent(thread.callId)}&matchId=${encodeURIComponent(thread.matchId || "")}`,
+        `${ROUTES.CALL}?callId=${encodeURIComponent(thread.callId)}&matchId=${encodeURIComponent(thread.matchId || "")}`,
       );
       return;
     }
@@ -1912,7 +1913,7 @@ export default function ChatInterface() {
               background: isLight ? "#ffffff" : theme.tileBg,
               color: isLight ? "#ef4444" : "#8f95bb",
             }}
-            onClick={() => navigate("/login")}
+            onClick={() => navigate(ROUTES.LOGIN)}
             title="Logout"
           >
             <LogOut size={18} strokeWidth={1.5} />
@@ -2149,8 +2150,8 @@ export default function ChatInterface() {
                   <Link
                     to={
                       activeThread?.matchId
-                        ? `/contracts?journey_match_id=${encodeURIComponent(activeThread.matchId)}`
-                        : "/contracts"
+                        ? `${ROUTES.CONTRACTS}?journey_match_id=${encodeURIComponent(activeThread.matchId)}`
+                        : ROUTES.CONTRACTS
                     }
                     className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40"
                   >

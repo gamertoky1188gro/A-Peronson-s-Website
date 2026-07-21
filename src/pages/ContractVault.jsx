@@ -109,9 +109,7 @@ function mapContract(c) {
   };
 }
 
-function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+import { cn } from "../lib/cn";
 
 const icons = {
   vault: (props) => <Package {...props} />,

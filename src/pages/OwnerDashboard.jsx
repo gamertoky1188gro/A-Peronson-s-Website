@@ -1,6 +1,6 @@
 import NeonAtom from "../components/ui/NeonAtom";
 import { Mosaic } from "react-loading-indicators";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTheme } from "../lib/ThemeProvider";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard";
@@ -15,10 +15,7 @@ import HoverCard from "../components/HoverCard";
 import ContractVaultPage from "./ContractVault";
 import VerificationPage from "./VerificationPage";
 import OrgSettings from "./OrgSettings";
-
-function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+import { cn } from "../lib/cn";
 
 function SparkIcon({ className = "" }) {
   return (
@@ -53,7 +50,7 @@ function Icon({ path, className = "" }) {
   );
 }
 
-function ProgressBar({ value }) {
+const ProgressBar = memo(function ProgressBar({ value }) {
   return (
     <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800">
       <div
@@ -62,7 +59,7 @@ function ProgressBar({ value }) {
       />
     </div>
   );
-}
+});
 
 const monthLabels = [
   "Jan",
@@ -79,7 +76,7 @@ const monthLabels = [
   "Dec",
 ];
 
-function MiniBarChart({ values }) {
+const MiniBarChart = memo(function MiniBarChart({ values }) {
   const max = Math.max(...values, 1);
   return (
     <div className="flex h-44 items-end gap-2 rounded-2xl bg-gradient-to-b from-sky-50/70 to-white p-3 dark:from-sky-950/30 dark:to-slate-950/20">
@@ -99,9 +96,9 @@ function MiniBarChart({ values }) {
       ))}
     </div>
   );
-}
+});
 
-function SectionCard({ title, subtitle, children, className = "", action }) {
+const SectionCard = memo(function SectionCard({ title, subtitle, children, className = "", action }) {
   return (
     <div
       className={cn(
@@ -125,9 +122,9 @@ function SectionCard({ title, subtitle, children, className = "", action }) {
       {children}
     </div>
   );
-}
+});
 
-function StatCard({ label, value, sub, accent = "from-sky-500 to-cyan-400" }) {
+const StatCard = memo(function StatCard({ label, value, sub, accent = "from-sky-500 to-cyan-400" }) {
   const isNumeric = typeof value === "number" && !Number.isNaN(value);
   return (
     <HoverCard className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
@@ -163,7 +160,7 @@ function StatCard({ label, value, sub, accent = "from-sky-500 to-cyan-400" }) {
       </div>
     </HoverCard>
   );
-}
+});
 
 const menuItems = [
   { id: "home", label: "Dashboard Home", short: "Home" },

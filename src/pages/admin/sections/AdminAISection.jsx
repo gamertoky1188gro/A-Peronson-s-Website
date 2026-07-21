@@ -2,10 +2,8 @@
  * Admin AI Section - AI Rules & Configuration
  */
 import { useState, useEffect } from "react";
-
-function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+import { cn } from "../../../lib/cn";
+import { TIMEOUTS } from "../../../lib/constants";
 
 import {
   Bot,
@@ -143,7 +141,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
         setNewRule({ source: "", keywords: "", response: "" });
         setShowAddForm(false);
         setNotice("Rule added successfully");
-        setTimeout(() => setNotice(""), 3000);
+        setTimeout(() => setNotice(""), TIMEOUTS.LONG);
       }
     } catch (err) {
       logger.warn("Failed to add rule:", err);
@@ -167,7 +165,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
           ).filter((r) => r.id !== ruleId),
       }));
       setNotice("Rule deleted");
-      setTimeout(() => setNotice(""), 3000);
+      setTimeout(() => setNotice(""), TIMEOUTS.LONG);
     } catch (err) {
       logger.warn("Failed to delete rule:", err);
       setError("Failed to delete rule");

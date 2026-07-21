@@ -81,9 +81,7 @@ function statusTone(status) {
   return "info";
 }
 
-function cn(...parts) {
-  return parts.filter(Boolean).join(" ");
-}
+import { cn } from "../lib/cn";
 
 function SectionCard({ icon: Icon, title, subtitle, children, right }) {
   return (

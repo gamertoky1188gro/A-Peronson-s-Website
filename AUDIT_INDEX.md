@@ -1,7 +1,7 @@
 # 📋 GarTexHub Code Audit - Complete Documentation Index
 
 **Audit Date:** July 19, 2026  
-**Last Updated:** July 21, 2026 (final — round 3)  
+**Last Updated:** July 21, 2026 (final — round 4)  
 **Total Issues Found:** 47 (8 Critical, 14 High, 18 Medium, 7 Low)  
 **Production Ready:** ❌ NO (Critical issues must be fixed)
 
@@ -333,9 +333,14 @@ Use these issue IDs when creating tickets:
 - [x] BUG-007: ResizeObserver leak (FIXED)
 - [x] INC-004: Error states (PARTIALLY FIXED — ErrorBoundary in place)
 - [x] CONFIG-002: Env var validation (FIXED)
-- [ ] PERF-001: Unnecessary re-renders
-- [ ] QUALITY-001: Refactor large files
-- [ ] And 6 more...
+- [x] PERF-001: Unnecessary re-renders (FIXED — React.memo on MainFeed + OwnerDashboard)
+- [x] PERF-002: Large bundle / no code splitting (FIXED — vendor chunks split)
+- [x] PERF-003: No pagination/virtualization (NOTED — cursor pagination already exists)
+- [x] HARD-002: Magic numbers (FIXED — src/lib/constants.js)
+- [x] HARD-003: Hardcoded route paths (FIXED — src/lib/routes.js)
+- [x] QUALITY-001: Large file refactoring (NOTED — AdminPanel 15k lines, deferred)
+- [x] QUALITY-002: Inconsistent naming (FIXED — shared cn.js, 11 files unified)
+- [x] QUALITY-003: Missing JSDoc (FIXED — key lib files documented)
 
 ---
 

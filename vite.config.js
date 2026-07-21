@@ -12,9 +12,19 @@ export default defineConfig({
     cssCodeSplit: true,
   },
   build: {
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       external: ["rtf.js"],
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/react-dom")) return "vendor-react";
+          if (id.includes("node_modules/react")) return "vendor-react";
+          if (id.includes("node_modules/lucide-react")) return "vendor-icons";
+          if (id.includes("node_modules/dompurify")) return "vendor-security";
+          if (id.includes("node_modules/recharts")) return "vendor-charts";
+          if (id.includes("node_modules")) return "vendor";
+        },
+      },
     },
     reportCompressedSize: false,
     sourcemap: process.env.NODE_ENV !== "production",

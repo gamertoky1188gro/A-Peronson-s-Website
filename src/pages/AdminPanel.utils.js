@@ -313,9 +313,7 @@ export function textareaToList(value) {
   return [...new Set(cleaned)];
 }
 
-export function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+export { cn } from "../lib/cn";
 
 export const SECTION_METRICS = {
   users: [

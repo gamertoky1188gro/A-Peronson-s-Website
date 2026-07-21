@@ -1,7 +1,7 @@
 # GarTexHub Comprehensive Code Audit Report
 
 **Date:** July 19, 2026  
-**Last Updated:** July 21, 2026 (final)  
+**Last Updated:** July 21, 2026 (final — round 4)  
 **Auditor:** GitHub Copilot Code Audit Agent  
 **Project:** GarTexHub B2B Textile Marketplace  
 **Repository:** A-Peronson-s-Website
@@ -919,7 +919,7 @@ The GarTexHub project has a solid feature foundation but requires critical secur
 4. **XSS vulnerabilities** — All 22 instances sanitized via DOMPurify
 5. **ContractVault type safety** — Null guard + filter applied
 
-Progress since initial audit: routes fixed, sourcemaps verified correct, all 48 promise chains now have `.catch()` handlers, ContractVault null safety fixed, all XSS vectors sanitized via DOMPurify, CORS hardened, ErrorBoundary added, CSRF mitigated, input validation added (phone/URL), PropTypes added to key components. Remaining blocker is secrets rotation (deferred).
+Progress since initial audit: routes fixed, sourcemaps verified correct, all 48 promise chains now have `.catch()` handlers, ContractVault null safety fixed, all XSS vectors sanitized via DOMPurify, CORS hardened, ErrorBoundary added, CSRF mitigated, input validation added (phone/URL), PropTypes added to key components, hardcoded localhost replaced with env var, ResizeObserver leak fixed, useEffect deps fixed, env var validation added. Round 4 LOW fixes: code splitting (vendor chunks), shared `cn()` utility (11 files unified), route constants (`src/lib/routes.js`), React.memo on inline components (MainFeed + OwnerDashboard), magic number constants (`src/lib/constants.js`), JSDoc on key lib files. Remaining blocker is secrets rotation (deferred).
 
 ---
 

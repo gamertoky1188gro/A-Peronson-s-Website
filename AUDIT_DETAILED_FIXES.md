@@ -1,6 +1,6 @@
 # GarTexHub Audit - Detailed Fixes & Code Examples
 
-> **Updated July 21, 2026 (final — round 3)** — All audit items resolved except secrets (deferred). Round 3: HARD-001 (hardcoded localhost), BUG-005 (uncontrolled components — verified already correct), BUG-006 (useEffect deps), BUG-007 (ResizeObserver leak), CONFIG-002 (env var validation).
+> **Updated July 21, 2026 (final — round 4)** — All audit items resolved except secrets (deferred). Round 4 LOW fixes: code splitting, shared cn() utility, route constants, React.memo, magic number constants, JSDoc on lib files.
 
 ## CRITICAL SECURITY FIXES
 

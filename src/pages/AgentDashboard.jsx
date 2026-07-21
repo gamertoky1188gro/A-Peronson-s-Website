@@ -32,8 +32,7 @@ import {
   Sparkles,
   ArrowUpRight,
 } from "lucide-react";
-
-const cn = (...classes) => classes.filter(Boolean).join(" ");
+import { cn } from "../lib/cn";
 
 const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
   const isNumeric = typeof value === "number" && !Number.isNaN(value);

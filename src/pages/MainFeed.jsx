@@ -3,7 +3,7 @@
   Access: Protected (login required)
   Using the exact template layout with glass-morphism theme
 */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   motion,
@@ -232,7 +232,7 @@ async function copyToClipboard(text) {
 }
 
 // ====== UI COMPONENTS ======
-function Pill({ children, active = false, onClick }) {
+const Pill = memo(function Pill({ children, active = false, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -246,9 +246,9 @@ function Pill({ children, active = false, onClick }) {
       {children}
     </button>
   );
-}
+});
 
-function StatCard({ icon, label, value, accent = "sky" }) {
+const StatCard = memo(function StatCard({ icon, label, value, accent = "sky" }) {
   return (
     <div className="rounded-3xl border border-white/60 bg-white/80 p-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
       <div className="flex items-center justify-between gap-2">
@@ -275,9 +275,9 @@ function StatCard({ icon, label, value, accent = "sky" }) {
       </div>
     </div>
   );
-}
+});
 
-function ActionButton({ icon, label, onClick }) {
+const ActionButton = memo(function ActionButton({ icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -287,7 +287,7 @@ function ActionButton({ icon, label, onClick }) {
       {label}
     </button>
   );
-}
+});
 
 // ====== MAIN COMPONENT ======
 export default function MainFeed() {

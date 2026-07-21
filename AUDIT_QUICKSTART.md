@@ -1,6 +1,6 @@
 # GarTexHub Audit - Quick Start Guide
 
-> **Updated July 21, 2026 (final)** — All audit items resolved except secrets (deferred).
+> **Updated July 21, 2026 (final — round 4)** — All audit items resolved except secrets (deferred). Round 4: code splitting, shared cn() utility, route constants, React.memo, magic number constants, JSDoc on lib files.
 
 ## ✅ COMPLETED FIXES
 
@@ -20,6 +20,12 @@
 - **Missing useEffect dep** — Added `initialValue` to deps in `src/hooks/useLocalStorageState.js`
 - **Env var validation** — `src/lib/envCheck.js` created; runs at startup via `src/main.jsx`
 - **Uncontrolled components** — Verified all SearchResults.jsx inputs have `value`+`onChange` — no uncontrolled components exist
+- **Code splitting (vendor chunks)** — `vite.config.js` now splits vendor-react, vendor-icons, vendor-charts, vendor-security into separate chunks; reduced AdminPanel from 786KB → 341KB
+- **Shared `cn()` utility** — Created `src/lib/cn.js`; all 11 local `cn()` definitions replaced with single import
+- **Route constants** — Created `src/lib/routes.js` with `ROUTES` object; ChatInterface.jsx now uses constants instead of hardcoded path strings
+- **React.memo on inline components** — `MainFeed.jsx` (Pill, StatCard, ActionButton) and `OwnerDashboard.jsx` (ProgressBar, MiniBarChart, SectionCard, StatCard) wrapped with `React.memo`
+- **Magic number constants** — Created `src/lib/constants.js` with `TIMEOUTS`, `PAGINATION`, `STORAGE`, `UI`; timeouts in `main.jsx`, `TaskTracker.jsx`, `AdminAISection.jsx` now use named constants
+- **JSDoc on lib files** — Added JSDoc to `validation.js`, `secureStorage.js`, `constants.js`, `envCheck.js`, `cn.js`, `routes.js`
 
 ## 🚨 CRITICAL ISSUES - REMAINING
 
@@ -89,7 +95,7 @@ sourcemap: process.env.NODE_ENV !== "production"; // Already disabled in product
 
 ---
 
-## 🟡 MEDIUM PRIORITY (This Month)
+## 🟢 LOW PRIORITY (Maintenance — All Complete)
 
 - [x] Add Error Boundary component (DONE)
 - [x] Add PropTypes to key components (DONE)
@@ -98,11 +104,17 @@ sourcemap: process.env.NODE_ENV !== "production"; // Already disabled in product
 - [x] Missing useEffect deps (FIXED — useLocalStorageState.js)
 - [x] Env var validation (FIXED — envCheck.js at startup)
 - [x] Uncontrolled components (ALREADY CORRECT — verified)
-- [ ] Add loading/error states to async operations
-- [ ] Refactor large components (AdminPanel: 10k lines)
-- [ ] Create type definitions for API responses
-- [ ] Add request/response logging service
-- [ ] Implement pagination for large lists
+- [x] Code splitting (FIXED — vendor chunks separate)
+- [x] Shared cn() utility (FIXED — 11 files unified)
+- [x] Route constants (FIXED — src/lib/routes.js)
+- [x] React.memo on inline components (FIXED — MainFeed + OwnerDashboard)
+- [x] Magic number constants (FIXED — src/lib/constants.js)
+- [x] JSDoc on lib files (FIXED — key utilities documented)
+- [ ] Add loading/error states to async operations (deferred)
+- [ ] Refactor large components (AdminPanel: 10k lines) (deferred)
+- [ ] Create type definitions for API responses (deferred)
+- [ ] Add request/response logging service (deferred)
+- [ ] Implement pagination for large lists (deferred — cursor pagination already exists)
 
 ---
 

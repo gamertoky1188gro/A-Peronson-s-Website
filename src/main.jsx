@@ -5,6 +5,7 @@ import "./tailwind.css";
 import "lenis/dist/lenis.css";
 import { ThemeProvider } from "./lib/ThemeProvider.jsx";
 import { logEnvStatus } from "./lib/envCheck.js";
+import { TIMEOUTS } from "./lib/constants.js";
 import { store } from "./store/index.js";
 import App from "./App.jsx";
 
@@ -17,7 +18,7 @@ const preventHorizontalOverflow = () => {
   if (root) root.style.overflowX = "hidden";
 };
 preventHorizontalOverflow();
-setTimeout(preventHorizontalOverflow, 500);
+setTimeout(preventHorizontalOverflow, TIMEOUTS.SHORT);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
