@@ -90,47 +90,51 @@ export default function FloatingAssistant() {
   // Pre-load session data on mount (before panel opens)
   useEffect(() => {
     if (!userId) return;
-    fetchSessionData().then(({ messages: msgs, title: t }) => {
-      if (msgs && msgs.length > 0) {
-        const formatted = msgs.map((m) => ({
-          role: m.role === "user" ? "user" : "assistant",
-          text: m.text,
-          isNew: false,
-        }));
-        setMessages(formatted);
-        hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
-      }
-      if (t) setTitle(t);
-      setSessionLoaded(true);
-      sessionLoadedRef.current = true;
-    });
+    fetchSessionData()
+      .then(({ messages: msgs, title: t }) => {
+        if (msgs && msgs.length > 0) {
+          const formatted = msgs.map((m) => ({
+            role: m.role === "user" ? "user" : "assistant",
+            text: m.text,
+            isNew: false,
+          }));
+          setMessages(formatted);
+          hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
+        }
+        if (t) setTitle(t);
+        setSessionLoaded(true);
+        sessionLoadedRef.current = true;
+      })
+      .catch((err) => logger.warn("Failed to load session data:", err));
   }, [userId]);
 
   // Fallback: load session when panel opens if mount-load didn't run
   useEffect(() => {
     if (!open || !userId || sessionLoadedRef.current) return;
-    fetchSessionData().then(({ messages: msgs, title: t }) => {
-      if (msgs && msgs.length > 0) {
-        const formatted = msgs.map((m) => ({
-          role: m.role === "user" ? "user" : "assistant",
-          text: m.text,
-          isNew: false,
-        }));
-        setMessages(formatted);
-        hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
-      } else {
-        setMessages([
-          {
-            role: "assistant",
-            text: "Hello! I am your GarTex Assistant. How can I help you with your textile business today?",
+    fetchSessionData()
+      .then(({ messages: msgs, title: t }) => {
+        if (msgs && msgs.length > 0) {
+          const formatted = msgs.map((m) => ({
+            role: m.role === "user" ? "user" : "assistant",
+            text: m.text,
             isNew: false,
-          },
-        ]);
-      }
-      if (t) setTitle(t);
-      setSessionLoaded(true);
-      sessionLoadedRef.current = true;
-    });
+          }));
+          setMessages(formatted);
+          hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
+        } else {
+          setMessages([
+            {
+              role: "assistant",
+              text: "Hello! I am your GarTex Assistant. How can I help you with your textile business today?",
+              isNew: false,
+            },
+          ]);
+        }
+        if (t) setTitle(t);
+        setSessionLoaded(true);
+        sessionLoadedRef.current = true;
+      })
+      .catch((err) => logger.warn("Failed to load fallback session data:", err));
   }, [open, userId]);
 
   async function deleteSession() {
