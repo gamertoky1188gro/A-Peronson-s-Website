@@ -16,30 +16,13 @@ let cachedUser = null;
 let cacheTime = 0;
 const CACHE_TTL_MS = 5000;
 
-export function getCurrentUser() {
-  const token = getToken();
-  if (!token) return null;
-
-  // First check localStorage for immediate availability
+function loadUserFromStorage() {
   const stored = localStorage.getItem(USER_KEY);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      // Return stored user immediately
-      cachedUser = parsed;
-      cacheTime = Date.now();
-    } catch {
-      // ignore parse errors
-    }
-  }
+  if (!stored) return null;
+  try { return JSON.parse(stored); } catch { return null; }
+}
 
-  // If we have recent cache, return it
-  const now = Date.now();
-  if (cachedUser && now - cacheTime < CACHE_TTL_MS) {
-    return cachedUser;
-  }
-
-  // Start background fetch to update cache
+function fetchAndCacheUser(token) {
   if (!userFetchPromise) {
     userFetchPromise = apiRequest("/users/me", { token })
       .then((user) => {
@@ -48,15 +31,49 @@ export function getCurrentUser() {
           cacheTime = Date.now();
           persistUser(user);
         }
-        return user;
+        return cachedUser;
       })
       .catch(() => cachedUser)
-      .finally(() => {
-        userFetchPromise = null;
-      });
+      .finally(() => { userFetchPromise = null; });
+  }
+  return userFetchPromise;
+}
+
+export function getCurrentUser() {
+  const token = getToken();
+  if (!token) return null;
+
+  const stored = loadUserFromStorage();
+  if (stored) {
+    cachedUser = stored;
+    cacheTime = Date.now();
   }
 
+  const now = Date.now();
+  if (cachedUser && now - cacheTime < CACHE_TTL_MS) {
+    return cachedUser;
+  }
+
+  fetchAndCacheUser(token).catch(() => {});
   return cachedUser;
+}
+
+export async function getCurrentUserAsync() {
+  const token = getToken();
+  if (!token) return null;
+
+  const stored = loadUserFromStorage();
+  if (stored) {
+    cachedUser = stored;
+    cacheTime = Date.now();
+  }
+
+  const now = Date.now();
+  if (cachedUser && now - cacheTime < CACHE_TTL_MS) {
+    return cachedUser;
+  }
+
+  return fetchAndCacheUser(token);
 }
 
 // Sync user data from API before page loads - security critical

@@ -1,17 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, useReducedMotion, useSpring } from "framer-motion";
-import { API_BASE, getToken, getCurrentUser } from "../lib/auth";
+import { API_BASE, getToken, getCurrentUserAsync } from "../lib/auth";
 import BotLogo from "./ui/BotLogo";
 import MarkdownMessage from "./chat/MarkdownMessage";
 import { ThreeDot } from "react-loading-indicators";
 import useScrollDirection from "../hooks/useScrollDirection";
 import { logger } from "../lib/logger";
-
-function getUserId() {
-  const user = getCurrentUser();
-  return user?.id || null;
-}
 
 async function fetchSessionData() {
   const token = getToken();
@@ -62,7 +57,7 @@ function TypewriterText({ text, speed = 20, onComplete }) {
 }
 
 export default function FloatingAssistant() {
-  const userId = getUserId();
+  const [userId, setUserId] = useState(null);
   const location = useLocation();
   const orbMode = location.pathname === "/help";
   const [open, setOpen] = useState(false);
@@ -86,6 +81,10 @@ export default function FloatingAssistant() {
   const requestSeqRef = useRef(1);
   const hasUserMessagesRef = useRef(false);
   const sessionLoadedRef = useRef(false);
+
+  useEffect(() => {
+    getCurrentUserAsync().then((user) => setUserId(user?.id || null));
+  }, []);
 
   // Pre-load session data on mount (before panel opens)
   useEffect(() => {

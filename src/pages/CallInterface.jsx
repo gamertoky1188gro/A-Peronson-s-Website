@@ -1505,7 +1505,7 @@ export default function CallInterface() {
           setRtcConnectionState("new");
           setRtcIceState("new");
         }
-        if (mountedRef.current) {
+        if (active && mountedRef.current) {
           reconnectTimerRef.current = window.setTimeout(() => {
             reconnectTimerRef.current = null;
             setReconnectNonce((n) => n + 1);
@@ -1524,7 +1524,13 @@ export default function CallInterface() {
         window.clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
       }
-      if (ws) ws.close();
+      if (ws) {
+        ws.onopen = null;
+        ws.onmessage = null;
+        ws.onerror = null;
+        ws.onclose = null;
+        ws.close();
+      }
     };
   }, [
     callId,
