@@ -2122,6 +2122,12 @@ export default function AdminPanel() {
   async function saveOpenSearchConfig() {
     const token = getToken();
     if (!token) return;
+    const url = String(openSearchConfig.url || "").trim();
+    if (url && !/^https?:\/\/.+/.test(url)) {
+      setOpenSearchError("Please enter a valid URL (http://... or https://...)");
+      setOpenSearchConfigBusy(false);
+      return;
+    }
     setOpenSearchConfigBusy(true);
     setOpenSearchNotice("");
     setOpenSearchError("");
@@ -2130,7 +2136,7 @@ export default function AdminPanel() {
         integrations: {
           opensearch: {
             enabled: Boolean(openSearchConfig.enabled),
-            url: String(openSearchConfig.url || "").trim(),
+            url,
             username: String(openSearchConfig.username || "").trim(),
             password: String(openSearchConfig.password || ""),
             index_prefix: String(openSearchConfig.index_prefix || "").trim(),

@@ -1,3 +1,12 @@
+import PropTypes from "prop-types";
+
+NeonAtom.propTypes = {
+  size: PropTypes.number,
+  className: PropTypes.string,
+  text: PropTypes.string,
+  fill: PropTypes.bool,
+};
+
 export default function NeonAtom({
   size = 180,
   className = "",

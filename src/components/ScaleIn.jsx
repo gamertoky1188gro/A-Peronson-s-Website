@@ -1,4 +1,14 @@
 import { motion, useReducedMotion } from "framer-motion";
+import PropTypes from "prop-types";
+
+ScaleIn.propTypes = {
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string,
+  as: PropTypes.string,
+  delay: PropTypes.number,
+  duration: PropTypes.number,
+  scale: PropTypes.number,
+};
 
 export default function ScaleIn({
   children,

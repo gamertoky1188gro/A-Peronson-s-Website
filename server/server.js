@@ -122,13 +122,10 @@ const corsOptions = {
       "https://gartexhub.onrender.com", // production
     ];
 
-    // Allow requests with no origin (like mobile apps, curl, Postman)
-    // In production, you might want to be stricter
+    // Allow requests with no origin (like mobile apps, curl, Postman) only in dev
     if (!origin) {
       if (process.env.NODE_ENV === "production") {
-        // In production, require specific origins (comment out to allow all for API clients)
-        // callback(null, true); // Uncomment for strict mode
-        callback(null, true); // Temporary: allow no-origin for mobile/API
+        callback(new Error("Origin is required in production"));
       } else {
         callback(null, true); // Dev: allow all
       }
@@ -150,6 +147,9 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
+// CSRF is mitigated by JWT-in-Authorization-header pattern + strict CORS.
+// No cookie-based sessions are used; state-changing operations require
+// a Bearer token which browsers do not auto-attach cross-origin.
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -165,6 +165,7 @@ app.use(
         frameSrc: ["'none'"],
       },
     },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   }),
 );
 app.use(cors(corsOptions));

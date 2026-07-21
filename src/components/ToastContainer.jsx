@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
 } from "react";
+import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
@@ -21,6 +22,10 @@ export function useToast() {
   if (!ctx) throw new Error("useToast must be used within ToastProvider");
   return ctx;
 }
+
+ToastProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export function ToastProvider({ children }) {
   const toasts = useSelector((s) => s.toast.toasts);

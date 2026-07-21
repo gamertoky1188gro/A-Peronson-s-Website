@@ -17,6 +17,7 @@ import { useEntitlements } from "../hooks/useSecureUser";
 import ProfileImageUpload from "../components/ui/ProfileImageUpload";
 import { ThreeDot } from "react-loading-indicators";
 import { logger } from "../lib/logger";
+import { isValidPhone, isValidUrl, ERRORS } from "../lib/validation";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -983,6 +984,10 @@ export default function OrgSettings({ embedded = false }) {
   const saveContactSettings = async () => {
     const token = getToken();
     if (!token) return;
+    if (profilePhone && !isValidPhone(profilePhone)) {
+      setProfileFeedback(ERRORS.phone);
+      return;
+    }
     setLoadingProfile(true);
     setProfileFeedback("");
     try {
@@ -1038,6 +1043,10 @@ export default function OrgSettings({ embedded = false }) {
   const saveBrandingSettings = async () => {
     const token = getToken();
     if (!token) return;
+    if (brandWebsite && !isValidUrl(brandWebsite)) {
+      setStatusMessage(ERRORS.url);
+      return;
+    }
     try {
       await apiRequest("/users/me/profile", {
         method: "PATCH",

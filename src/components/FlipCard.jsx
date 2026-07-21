@@ -1,4 +1,14 @@
 import { motion, useReducedMotion } from "framer-motion";
+import PropTypes from "prop-types";
+
+FlipCard.propTypes = {
+  front: PropTypes.node.isRequired,
+  back: PropTypes.node.isRequired,
+  className: PropTypes.string,
+  flipOn: PropTypes.oneOf(["hover", "click"]),
+  isFlipped: PropTypes.bool,
+  onFlip: PropTypes.func,
+};
 
 export default function FlipCard({
   front,

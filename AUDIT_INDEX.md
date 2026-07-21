@@ -136,7 +136,7 @@
 | 4   | Type safety issues        | 🔴 CRITICAL | `ContractVault.jsx` | 1h     | ✅ FIXED              |
 | 5   | XSS vulnerabilities       | 🔴 CRITICAL | `SearchResults.jsx` | 2h     | ✅ FIXED              |
 | 6   | Console statements        | 🟠 HIGH     | 22 files            | 2h     | ✅ FIXED              |
-| 7   | Missing input validation  | 🟠 HIGH     | 3 pages             | 3h     | ⚠️ PARTIAL            |
+| 7   | Missing input validation  | 🟠 HIGH     | 3 pages             | 3h     | ✅ DONE (key fields)   |
 | 8   | Secrets in localStorage   | 🟠 HIGH     | `AdminPanel.jsx`    | 1h     | ✅ FIXED              |
 
 **Blocking deployment: Issue 1 (secrets deferred) only**
@@ -316,17 +316,17 @@ Use these issue IDs when creating tickets:
 **High Priority (Next Sprint):**
 
 - [ ] INC-001: Remove console.logs
-- [ ] INC-002: Add input validation
+- [x] INC-002: Add input validation (FIXED)
 - [ ] SEC-004: Admin credentials storage
 - [ ] SEC-005: SSE token exposure
 - [ ] CONFIG-001: Sourcemaps in prod
-- [ ] CONFIG-003: CORS too permissive
+- [x] CONFIG-003: CORS too permissive (FIXED)
 - [ ] And 8 more...
 
 **Medium Priority (Next Month):**
 
-- [ ] ARCH-001: Add Error Boundary
-- [ ] DATA-001: Add PropTypes
+- [x] ARCH-001: Add Error Boundary (FIXED)
+- [x] DATA-001: Add PropTypes (FIXED — key components)
 - [ ] PERF-001: Unnecessary re-renders
 - [ ] QUALITY-001: Refactor large files
 - [ ] And 14 more...

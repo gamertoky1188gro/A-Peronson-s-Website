@@ -1,6 +1,13 @@
 import { motion, useReducedMotion } from "framer-motion";
+import PropTypes from "prop-types";
 
 const easePremium = [0.16, 1, 0.3, 1];
+
+ScrollReveal.propTypes = {
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string,
+  as: PropTypes.string,
+};
 
 export default function ScrollReveal({
   children,

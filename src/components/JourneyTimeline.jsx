@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import PropTypes from "prop-types";
 import { apiRequest, getToken } from "../lib/auth";
 
 const ORDERED_STATES = [
@@ -17,6 +18,11 @@ function toLabel(state) {
     .replace(/_/g, " ")
     .replace(/^./, (c) => c.toUpperCase());
 }
+
+JourneyTimeline.propTypes = {
+  title: PropTypes.string,
+  matchId: PropTypes.string,
+};
 
 export default function JourneyTimeline({
   title = "Journey Timeline",

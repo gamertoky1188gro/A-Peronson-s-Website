@@ -8,6 +8,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { motion } from "framer-motion";
+import ErrorBoundary from "./components/ErrorBoundary";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import FloatingAssistant from "./components/FloatingAssistant";
@@ -527,7 +528,9 @@ function App() {
     <BrowserRouter>
       <CyberpunkCursor />
       <ToastProvider>
-        <AppLayout />
+        <ErrorBoundary>
+          <AppLayout />
+        </ErrorBoundary>
         <ScrollToTop />
       </ToastProvider>
     </BrowserRouter>
