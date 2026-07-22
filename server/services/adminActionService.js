@@ -2187,7 +2187,11 @@ export async function performAdminAction(action, payload = {}, actor) {
     const emailConfig = config?.notifications?.email || {};
     const recipient = sanitizeString(
       String(
-        payload.to || payload.recipient || emailConfig.test_recipient || "",
+        payload.to ||
+          payload.recipient ||
+          emailConfig.test_recipient ||
+          process.env.ADMIN_TEST_EMAIL ||
+          "",
       ),
       160,
     );

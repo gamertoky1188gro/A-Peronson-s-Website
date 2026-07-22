@@ -101,6 +101,39 @@ import { runLeadReminderSweep } from "./services/leadReminderService.js";
 import { getFxHealth, refreshRates } from "./services/currencyService.js";
 import { startEventQualityReporter } from "./services/eventIngestionService.js";
 
+const REQUIRED_ENV_VARS = [
+  "DATABASE_URL",
+  "JWT_SECRET",
+];
+const RECOMMENDED_ENV_VARS = [
+  "REDIS_URL",
+  "ADMIN_EMAIL",
+  "ADMIN_TEST_EMAIL",
+  "ALLOWED_WS_ORIGINS",
+  "OPENAI_API_KEY",
+  "VITE_API_PROXY",
+];
+
+function validateRequiredEnvVars() {
+  const missing = REQUIRED_ENV_VARS.filter((name) => !process.env[name]);
+  if (missing.length > 0) {
+    logError("Missing required environment variables", {
+      missing: missing.join(", "),
+    });
+    process.exit(1);
+  }
+  const missingRecommended = RECOMMENDED_ENV_VARS.filter(
+    (name) => !process.env[name],
+  );
+  if (missingRecommended.length > 0) {
+    logInfo("Missing recommended environment variables (using defaults)", {
+      missing: missingRecommended.join(", "),
+    });
+  }
+}
+
+validateRequiredEnvVars();
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -112,7 +145,14 @@ setInterval(() => {
 
 startEventQualityReporter();
 
-// CORS configuration - stricter in production
+// CORS configuration - stricter in production.
+// In development mode (NODE_ENV !== "production"), all origins are intentionally
+// allowed to support local dev servers, mobile app testing, and tools like Postman.
+// This is safe because:
+//   1. No cookie-based sessions are used (JWT via Authorization header)
+//   2. The dev server is not exposed to the public internet
+//   3. CSRF is mitigated by JWT-in-Header pattern (see helmet note below)
+// In production, only explicit origins in `allowedOrigins` are permitted.
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [

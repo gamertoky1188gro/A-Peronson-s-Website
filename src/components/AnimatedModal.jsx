@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 const overlayVariants = {
@@ -45,6 +46,51 @@ const slideRightVariants = {
  * @param {boolean} [props.overlay=true] - Whether to show the overlay.
  * @returns {JSX.Element|null} The rendered animated modal component.
  */
+const FOCUSABLE = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function useFocusTrap(open, containerRef) {
+  const previousFocus = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    previousFocus.current = document.activeElement;
+    const timer = setTimeout(() => {
+      const el = containerRef.current;
+      if (!el) return;
+      const first = el.querySelector(FOCUSABLE);
+      if (first) first.focus();
+    }, 50);
+
+    function handleKeyDown(e) {
+      if (e.key !== "Tab" || !containerRef.current) return;
+      const focusable = containerRef.current.querySelectorAll(FOCUSABLE);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("keydown", handleKeyDown);
+      if (previousFocus.current && previousFocus.current.focus) {
+        previousFocus.current.focus();
+      }
+    };
+  }, [open, containerRef]);
+}
+
 export default function AnimatedModal({
   open,
   onClose,
@@ -54,13 +100,24 @@ export default function AnimatedModal({
   overlay = true,
 }) {
   const reduceMotion = useReducedMotion();
+  const containerRef = useRef(null);
+  useFocusTrap(open, containerRef);
 
   if (reduceMotion) {
     if (!open) return null;
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        ref={containerRef}
+        className="fixed inset-0 z-50 flex items-center justify-center"
+        role="dialog"
+        aria-modal="true"
+      >
         {overlay && (
-          <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={onClose}
+            aria-label="Close modal"
+          />
         )}
         <div className={`relative ${className}`}>{children}</div>
       </div>
@@ -73,7 +130,12 @@ export default function AnimatedModal({
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div
+          ref={containerRef}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+        >
           {overlay && (
             <motion.div
               className="absolute inset-0 bg-black/50"
@@ -82,6 +144,7 @@ export default function AnimatedModal({
               animate="visible"
               exit="hidden"
               onClick={onClose}
+              aria-label="Close modal"
             />
           )}
           <motion.div

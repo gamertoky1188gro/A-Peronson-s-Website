@@ -142,6 +142,7 @@ model Requirement {
   priceNormalizedBase        Float?
 
   @@index([buyer_id])
+  @@index([assigned_agent_id])
   @@index([status, created_at])
   @@map("requirements")
 }
@@ -191,6 +192,7 @@ model Product {
   priceBaseMax               Float?
   currency                   String?
 
+  @@index([company_id])
   @@index([status, category, content_review_status, created_at])
   @@map("company_products")
 }
@@ -293,6 +295,9 @@ model MessageQueue {
   created_at            DateTime  @default(now())
   updated_at            DateTime?
 
+  @@index([sender_id])
+  @@index([match_id])
+  @@index([org_id])
   @@map("message_queue")
 }
 
@@ -319,6 +324,9 @@ model MessagePolicyDecision {
   created_at              DateTime  @default(now())
   updated_at              DateTime?
 
+  @@index([sender_id])
+  @@index([match_id])
+  @@index([org_id])
   @@map("message_policy_decisions")
 }
 
@@ -347,6 +355,7 @@ model CommunicationPolicyConfig {
   updated_by                  String?
   updated_at                  DateTime?
 
+  @@index([org_id])
   @@map("communication_policy_configs")
 }
 
@@ -367,6 +376,9 @@ model MessageQueueItem {
   created_at            DateTime  @default(now())
   updated_at            DateTime?
 
+  @@index([sender_id])
+  @@index([match_id])
+  @@index([org_id])
   @@map("message_queue_items")
 }
 
@@ -394,6 +406,9 @@ model MessagePolicyLog {
   created_at                      DateTime  @default(now())
   updated_at                      DateTime?
 
+  @@index([sender_id])
+  @@index([match_id])
+  @@index([org_id])
   @@map("message_policy_logs")
 }
 
@@ -408,6 +423,7 @@ model CommunicationLimit {
   updated_by           String?
   updated_at           DateTime?
 
+  @@index([org_id])
   @@map("communication_limits")
 }
 
@@ -434,6 +450,7 @@ model SearchAlert {
   created_at DateTime  @default(now())
   updated_at DateTime?
 
+  @@index([user_id])
   @@map("search_alerts")
 }
 
@@ -530,6 +547,8 @@ model CallSession {
   audit_trail       Json?
   interactions      InteractionLog[]
 
+  @@index([created_by])
+  @@index([match_id])
   @@map("call_sessions")
 }
 
@@ -539,6 +558,8 @@ model CallRecordingView {
   viewer_id String
   viewed_at DateTime @default(now())
 
+  @@index([call_id])
+  @@index([viewer_id])
   @@map("call_recording_views")
 }
 
@@ -804,6 +825,8 @@ model AnalyticsEvent {
   metadata   Json?
   created_at DateTime @default(now())
 
+  @@index([actor_id])
+  @@index([type, created_at])
   @@map("analytics")
 }
 
@@ -819,6 +842,7 @@ model Boost {
   created_at   DateTime  @default(now())
   cancelled_at DateTime?
 
+  @@index([user_id])
   @@index([scope, status, starts_at, ends_at])
   @@map("boosts")
 }
@@ -831,6 +855,8 @@ model ProductView {
   created_at DateTime  @default(now())
   updated_at DateTime?
 
+  @@index([user_id])
+  @@index([product_id])
   @@map("product_views")
 }
 
@@ -848,6 +874,8 @@ model Report {
   resolution_action String?
   resolution_note   String?
 
+  @@index([actor_id])
+  @@index([resolved_by])
   @@map("reports")
 }
 
@@ -866,6 +894,7 @@ model PolicyViolation {
   meta                       Json?
   created_at                 DateTime  @default(now())
 
+  @@index([actor_id, created_at])
   @@map("violations")
 }
 
@@ -893,6 +922,8 @@ model UserConnection {
   created_at   DateTime  @default(now())
   updated_at   DateTime?
 
+  @@index([requester_id])
+  @@index([receiver_id])
   @@map("user_connections")
 }
 
@@ -964,6 +995,7 @@ model AssistantKnowledge {
   created_at DateTime  @default(now())
   updated_at DateTime?
 
+  @@index([org_id])
   @@map("assistant_knowledge")
 }
 
@@ -980,6 +1012,7 @@ model AssistantRule {
   created_at DateTime  @default(now())
   updated_at DateTime?
 
+  @@index([org_id])
   @@map("assistant_rules")
 }
 
@@ -1157,6 +1190,7 @@ model WalletHistory {
   meta              Json?
   created_at        DateTime @default(now())
 
+  @@index([user_id, created_at])
   @@map("wallet_history")
 }
 
@@ -1523,6 +1557,7 @@ model EmailOutbox {
   status     String   @default("queued")
   error      String?
 
+  @@index([status, created_at])
   @@map("email_outbox")
 }
 

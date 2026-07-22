@@ -31,7 +31,9 @@ export default defineConfig({
   },
   plugins: [tailwindcss(), react()],
   server: {
-    allowedHosts: ["habits-asia-occur-acute.trycloudflare.com"],
+    allowedHosts: process.env.VITE_ALLOWED_HOSTS
+      ? process.env.VITE_ALLOWED_HOSTS.split(",").map((s) => s.trim())
+      : ["localhost"],
     proxy: {
       "/api": {
         target: process.env.VITE_API_PROXY || "http://localhost:4000",
