@@ -1,5 +1,11 @@
 import { ThreeDot, Mosaic } from "react-loading-indicators";
 
+/**
+ * Renders a skeleton chart.
+ * @param {Object} props
+ * @param {number} [props.height]
+ * @returns {JSX.Element}
+ */
 export function SkeletonChart({ height = 320 }) {
   return (
     <div className={`flex items-center justify-center`} style={{ height }}>
@@ -14,6 +20,14 @@ export function SkeletonChart({ height = 320 }) {
   );
 }
 
+/**
+ * Renders a section title.
+ * @param {Object} props
+ * @param {string} props.title
+ * @param {string} [props.subtitle]
+ * @param {React.ElementType} [props.icon]
+ * @returns {JSX.Element}
+ */
 export function SectionTitle({ title, subtitle, icon: TitleIcon }) {
   return (
     <div className="mb-6 flex items-start gap-3">
@@ -36,6 +50,16 @@ export function SectionTitle({ title, subtitle, icon: TitleIcon }) {
   );
 }
 
+/**
+ * Renders a metric card.
+ * @param {Object} props
+ * @param {string} props.label
+ * @param {string|number} props.value
+ * @param {string} [props.hint]
+ * @param {React.ElementType} [props.icon]
+ * @param {boolean} [props.loading]
+ * @returns {JSX.Element}
+ */
 export function MetricCard({
   label,
   value,
@@ -80,6 +104,12 @@ export function MetricCard({
   );
 }
 
+/**
+ * Renders a pill.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ * @returns {JSX.Element}
+ */
 export function Pill({ children }) {
   return (
     <span className="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
@@ -88,6 +118,14 @@ export function Pill({ children }) {
   );
 }
 
+/**
+ * Renders a benefit card.
+ * @param {Object} props
+ * @param {string} props.title
+ * @param {string[]} props.items
+ * @param {string} [props.accent]
+ * @returns {JSX.Element}
+ */
 export function BenefitCard({ title, items, accent = "sky" }) {
   const colorMap = {
     sky: "bg-sky-500/10 text-sky-600 dark:text-sky-300",
@@ -135,6 +173,14 @@ export function BenefitCard({ title, items, accent = "sky" }) {
   );
 }
 
+/**
+ * Renders an admin security gate.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ * @param {string} props.role
+ * @param {React.ReactNode} [props.fallback]
+ * @returns {JSX.Element}
+ */
 export function AdminSecurityGate({ children, role, fallback }) {
   const allowed = ["owner", "admin"];
   if (!allowed.includes(String(role || "").toLowerCase())) {

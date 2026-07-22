@@ -157,11 +157,9 @@ async function runAIAnalysisOnFile(fullPath, docId) {
       },
     });
 
-    console.log(
-      `[AI Moderation] Scanned file ${filename}: label=${label}, score=${score}`,
-    );
+    logInfo("AI Moderation scanned file", { filename, label, score });
   } catch (err) {
-    console.error(`[AI Moderation] Failed for ${fullPath}:`, err.message);
+    logError("AI Moderation file scan failed", new Error(`${fullPath}: ${err.message}`));
   }
 }
 
@@ -174,7 +172,7 @@ async function processQueue() {
     const batch = SCAN_QUEUE.splice(0, MAX_CONCURRENT);
     await Promise.all(
       batch.map(({ fullPath, docId }) =>
-        runAIAnalysisOnFile(fullPath, docId).catch(console.error),
+        runAIAnalysisOnFile(fullPath, docId).catch((err) => logError("AI Moderation queue item failed", err)),
       ),
     );
   }
@@ -185,20 +183,16 @@ function enqueueScan(fullPath, docId) {
   SCAN_QUEUE.push({ fullPath, docId });
   if (!SCAN_RUNNING) {
     SCAN_RUNNING = true;
-    processQueue().catch(console.error);
+    processQueue().catch((err) => logError("AI Moderation queue processing failed", err));
   }
 }
 
 export async function scanAndAnalyzeExistingFiles() {
   if (!isAIAnalyticsEnabled()) {
-    console.log(
-      "[AI Moderation] Skipping scan — AI_HARAM_ANALYTICS_ENABLED is false",
-    );
+    logInfo("AI Moderation skipping scan — AI_HARAM_ANALYTICS_ENABLED is false");
     return;
   }
-  console.log(
-    "[AI Moderation] Scanning existing uploads for unanalyzed media...",
-  );
+  logInfo("AI Moderation scanning existing uploads for unanalyzed media...");
   try {
     const basePath = UPLOADS_ROOT;
     const subfolders = ["profile", "feed", "chat", "calls", "contracts", ""];
@@ -263,9 +257,9 @@ export async function scanAndAnalyzeExistingFiles() {
         /* ignore folder */
       }
     }
-    console.log("[AI Moderation] Scan queued. Waiting for analysis...");
+    logInfo("AI Moderation scan queued. Waiting for analysis...");
   } catch (err) {
-    console.error("[AI Moderation] Scan error:", err.message);
+    logError("AI Moderation scan error", err);
   }
 }
 

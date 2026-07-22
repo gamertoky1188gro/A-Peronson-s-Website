@@ -1,6 +1,16 @@
 import { Component } from "react";
 import PropTypes from "prop-types";
 
+/**
+ * An error boundary component to catch JavaScript errors in its child component tree.
+ *
+ * @typedef {Object} ErrorBoundaryProps
+ * @property {React.ReactNode} children - The child components.
+ * @property {Function} [fallback] - The fallback component to render on error.
+ * @property {Function} [onError] - Function to call on error.
+ *
+ * @extends {Component<ErrorBoundaryProps>}
+ */
 export default class ErrorBoundary extends Component {
   static propTypes = {
     children: PropTypes.node.isRequired,

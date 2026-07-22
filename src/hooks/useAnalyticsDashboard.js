@@ -3,6 +3,10 @@ import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 
 const ENTERPRISE_PLANS = new Set(["premium", "enterprise"]);
 
+/**
+ * Hook to retrieve analytics dashboard data, company analytics, platform analytics, premium insights, and subscription status.
+ * @returns {Object} Analytics dashboard state.
+ */
 export default function useAnalyticsDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [companyAnalytics, setCompanyAnalytics] = useState(null);

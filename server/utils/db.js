@@ -1,5 +1,6 @@
 import prisma from "./prisma.js";
 import chalk from "chalk";
+import { logInfo, logWarn } from "../utils/logger.js";
 
 let dbConnected = false;
 let dbError = "";
@@ -32,12 +33,9 @@ export async function ensureDatabaseConnection() {
     const safeUrl = new URL(process.env.DATABASE_URL);
     const maskedPass = safeUrl.password ? "***" : "";
     const safe = `${safeUrl.protocol}//${safeUrl.username}${maskedPass ? `:${maskedPass}` : ""}@${safeUrl.host}${safeUrl.pathname}`;
-    console.log(chalk.green("[db] Using DATABASE_URL:"), safe);
+    logInfo("db Using DATABASE_URL", { url: safe });
   } catch {
-    console.log(
-      chalk.green("[db] Using DATABASE_URL (unparsed):"),
-      "[redacted]",
-    );
+    logInfo("db Using DATABASE_URL (unparsed)", { url: "[redacted]" });
   }
   while (true) {
     try {
@@ -74,7 +72,7 @@ export function startDbHeartbeat() {
         await prisma.$connect();
         dbConnected = true;
         dbError = "";
-        console.log(chalk.green("[db] Reconnected successfully"));
+        logInfo("db Reconnected successfully");
       }
     } catch {
       if (dbConnected) {

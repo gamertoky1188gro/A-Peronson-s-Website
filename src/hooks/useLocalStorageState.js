@@ -9,6 +9,12 @@ function safeParseJson(value, fallback) {
   }
 }
 
+/**
+ * Hook to manage state synchronized with localStorage.
+ * @param {string} key - The localStorage key.
+ * @param {*} initialValue - The initial value.
+ * @returns {[*, Function]} State value and setter function.
+ */
 export default function useLocalStorageState(key, initialValue) {
   const initial = useMemo(() => {
     if (!key) return initialValue;

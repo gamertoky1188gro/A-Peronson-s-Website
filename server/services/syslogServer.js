@@ -107,7 +107,7 @@ export function startSyslogServer() {
         for (const chunk of chunks) {
           const parsed = parseRfc5424(chunk);
           const formatted = formatSyslogEntry(parsed);
-          console.log(formatted);
+          logInfo("syslog entry", { entry: formatted });
           writeLogFile(formatted);
         }
       });

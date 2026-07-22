@@ -1,7 +1,20 @@
+/**
+ * Helper for ultra metric shell styles.
+ * @param {boolean} _dark
+ * @returns {string}
+ */
 function ultraMetricShell(_dark) {
   return "rounded-xl border border-slate-800/50 bg-slate-900/50 p-4";
 }
 
+/**
+ * Renders an ultra pill.
+ * @param {Object} props
+ * @param {boolean} [props.dark]
+ * @param {boolean} [props.active]
+ * @param {React.ReactNode} props.children
+ * @returns {JSX.Element}
+ */
 export function UltraPill({ dark: _dark, active = false, children }) {
   const base =
     "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold transition-all";
@@ -11,6 +24,18 @@ export function UltraPill({ dark: _dark, active = false, children }) {
   return <span className={`${base} ${activeClass}`}>{children}</span>;
 }
 
+/**
+ * Renders an ultra stat card.
+ * @param {Object} props
+ * @param {boolean} [props.dark]
+ * @param {React.ElementType} [props.icon]
+ * @param {string} props.label
+ * @param {string|number} props.value
+ * @param {string} [props.hint]
+ * @param {number} [props.trend]
+ * @param {string} [props.trendLabel]
+ * @returns {JSX.Element}
+ */
 export function UltraStatCard({
   dark,
   icon: Icon,
@@ -49,6 +74,16 @@ export function UltraStatCard({
   );
 }
 
+/**
+ * Renders an ultra section card.
+ * @param {Object} props
+ * @param {boolean} [props.dark]
+ * @param {string} [props.title]
+ * @param {string} [props.subtitle]
+ * @param {React.ReactNode} props.children
+ * @param {React.ReactNode} [props.right]
+ * @returns {JSX.Element}
+ */
 export function UltraSectionCard({
   dark: _dark,
   title,
@@ -72,6 +107,16 @@ export function UltraSectionCard({
   );
 }
 
+/**
+ * Renders an ultra toggle switch.
+ * @param {Object} props
+ * @param {boolean} [props.dark]
+ * @param {boolean} props.on
+ * @param {string} props.label
+ * @param {string} [props.hint]
+ * @param {Function} props.onToggle
+ * @returns {JSX.Element}
+ */
 export function UltraToggle({ dark: _dark, on, label, hint, onToggle }) {
   return (
     <div className="flex items-center justify-between">
@@ -98,6 +143,14 @@ export function UltraToggle({ dark: _dark, on, label, hint, onToggle }) {
   );
 }
 
+/**
+ * Renders an ultra tiny chart.
+ * @param {Object} props
+ * @param {boolean} [props.dark]
+ * @param {number[]} [props.data]
+ * @param {string} [props.color]
+ * @returns {JSX.Element}
+ */
 export function UltraTinyChart({ dark: _dark, data = [], color = "#06B6D4" }) {
   const chartData = data.map((v, i) => ({ i, v }));
   const max = Math.max(...data, 1);

@@ -90,6 +90,21 @@ const fallbackAbout = {
   ],
 };
 
+/**
+ * @typedef {Object} Document
+ * @property {string} name
+ * @property {string} status
+ * @property {string} updatedAt
+ */
+
+/**
+ * @typedef {Object} Stats
+ * @property {number} verifiedFactories
+ * @property {number} countriesCovered
+ * @property {number} docsVerified
+ * @property {string} avgResponseSla
+ */
+
 const statusStyles = {
   Verified: {
     chip: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
@@ -108,6 +123,13 @@ const statusStyles = {
   },
 };
 
+/**
+ * Renders a loading skeleton.
+ * @param {Object} props
+ * @param {string} [props.className]
+ * @param {number} [props.size]
+ * @returns {JSX.Element}
+ */
 const Skeleton = ({ className = "", size }) => (
   <div className={`flex items-center justify-center ${className}`}>
     <ThreeDot
@@ -121,6 +143,13 @@ const Skeleton = ({ className = "", size }) => (
   </div>
 );
 
+/**
+ * Wraps children in a motion div for scroll-based animations.
+ * @param {Object} props
+ * @param {string} [props.className]
+ * @param {React.ReactNode} props.children
+ * @returns {JSX.Element}
+ */
 function MotionItem({ className = "", children }) {
   const reduceMotion = useReducedMotion();
   if (reduceMotion) return <div className={className}>{children}</div>;
@@ -154,6 +183,12 @@ const staggerItem = {
   },
 };
 
+/**
+ * Renders a verified badge.
+ * @param {Object} props
+ * @param {string} [props.label]
+ * @returns {JSX.Element}
+ */
 function VerifiedBadge({ label = "Verified" }) {
   return (
     <span
@@ -170,6 +205,12 @@ function VerifiedBadge({ label = "Verified" }) {
   );
 }
 
+/**
+ * Renders a status chip based on document status.
+ * @param {Object} props
+ * @param {string} props.status
+ * @returns {JSX.Element}
+ */
 function StatusChip({ status }) {
   const style = statusStyles[status] || statusStyles.Pending;
   const StatusIcon = style.icon;
@@ -184,6 +225,15 @@ function StatusChip({ status }) {
   );
 }
 
+/**
+ * Renders a statistical card.
+ * @param {Object} props
+ * @param {React.ElementType} props.icon
+ * @param {string} props.label
+ * @param {string|number} props.value
+ * @param {string} props.sublabel
+ * @returns {JSX.Element}
+ */
 function StatCard({ icon: Icon, label, value, sublabel }) {
   return (
     <SpotlightCard className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/70 p-5 shadow-[0_20px_80px_-30px_rgba(2,132,199,0.35)] backdrop-blur dark:bg-slate-950/55">
@@ -207,6 +257,14 @@ function StatCard({ icon: Icon, label, value, sublabel }) {
   );
 }
 
+/**
+ * Renders a section heading.
+ * @param {Object} props
+ * @param {string} props.eyebrow
+ * @param {string} props.title
+ * @param {string} props.description
+ * @returns {JSX.Element}
+ */
 function SectionHeading({ eyebrow, title, description }) {
   return (
     <div className="max-w-3xl">
@@ -224,6 +282,10 @@ function SectionHeading({ eyebrow, title, description }) {
   );
 }
 
+/**
+ * About page component.
+ * @returns {JSX.Element}
+ */
 export default function About() {
   usePageMeta({
     title: "About — GarTexHub",

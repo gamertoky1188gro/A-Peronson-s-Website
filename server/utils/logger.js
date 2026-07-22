@@ -115,3 +115,9 @@ export function logError(message, error = null) {
   }
   console.log(chalk.red("[ERROR]"), chalk.gray(stamp), chalk.white(message));
 }
+
+export const logger = {
+  info: logInfo,
+  warn: logWarn,
+  error: logError,
+};

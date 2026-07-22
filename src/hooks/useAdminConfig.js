@@ -138,6 +138,10 @@ const BUYING_HOUSE_BENEFITS_DEFAULT = [
   "Supplier network",
 ];
 
+/**
+ * Hook to retrieve full admin configuration including inventory, UI settings, roles, and capabilities.
+ * @returns {Object} Admin configuration state and helper functions.
+ */
 export function useAdminFullConfig() {
   const dispatch = useDispatch();
   const { config, loading, error } = useSelector((s) => s.config);
@@ -199,6 +203,10 @@ export function useAdminFullConfig() {
   };
 }
 
+/**
+ * Hook to retrieve inventory configuration.
+ * @returns {Object} Inventory list and loading state.
+ */
 export function useInventory() {
   const dispatch = useDispatch();
   const { inventory, inventoryLoading: loading } = useSelector((s) => s.config);
@@ -214,6 +222,10 @@ export function useInventory() {
   };
 }
 
+/**
+ * Hook to retrieve UI configuration.
+ * @returns {Object} UI configuration object and loading state.
+ */
 export function useUiConfig() {
   const dispatch = useDispatch();
   const { uiConfig, uiConfigLoading: loading } = useSelector((s) => s.config);
@@ -231,6 +243,11 @@ export function useUiConfig() {
   };
 }
 
+/**
+ * Hook to retrieve capabilities for a specific module.
+ * @param {string} moduleId - The ID of the module.
+ * @returns {Object} Capabilities object and loading state.
+ */
 export function useCapabilities(moduleId) {
   const dispatch = useDispatch();
   const { capabilities, capabilitiesLoading: loading } = useSelector(
@@ -244,6 +261,10 @@ export function useCapabilities(moduleId) {
   return { capabilities, loading };
 }
 
+/**
+ * Hook to retrieve available actions.
+ * @returns {Object} Actions array and loading state.
+ */
 export function useActions() {
   const dispatch = useDispatch();
   const { actions, actionsLoading: loading } = useSelector((s) => s.config);
@@ -255,6 +276,10 @@ export function useActions() {
   return { actions, loading };
 }
 
+/**
+ * Hook to retrieve action groups.
+ * @returns {Object} Action groups and loading state.
+ */
 export function useActionGroups() {
   const dispatch = useDispatch();
   const { actionGroups: groups, actionGroupsLoading: loading } = useSelector(
@@ -268,6 +293,10 @@ export function useActionGroups() {
   return { groups, loading };
 }
 
+/**
+ * Hook to retrieve role configuration.
+ * @returns {Object} Role configuration and loading state.
+ */
 export function useRoleConfig() {
   const dispatch = useDispatch();
   const { roleConfig, roleConfigLoading: loading } = useSelector(

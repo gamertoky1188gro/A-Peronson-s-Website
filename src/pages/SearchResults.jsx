@@ -90,33 +90,7 @@ import MasonryGrid from "../components/MasonryGrid";
 import usePageMeta from "../lib/usePageMeta";
 import { logger } from "../lib/logger";
 
-const SORT_OPTIONS = [
-  { key: "relevance", label: "Relevance" },
-  { key: "newest", label: "Newest first" },
-  { key: "price_asc", label: "Price: Low to high" },
-  { key: "price_desc", label: "Price: High to low" },
-  { key: "moq_asc", label: "MOQ: Low to high" },
-];
-
-const SEASON_OPTIONS = [
-  "Any season",
-  "Spring",
-  "Summer",
-  "Fall",
-  "Winter",
-  "Spring 2025",
-  "Summer 2025",
-  "Fall 2025",
-  "Winter 2025",
-  "Spring 2026",
-  "Summer 2026",
-  "Fall 2026",
-  "Winter 2026",
-  "Spring 2027",
-  "Summer 2027",
-  "Fall 2027",
-  "Winter 2027",
-];
+import { SORT_OPTIONS, SEASON_OPTIONS } from "../lib/constants";
 
 const STOCK_STATUS_OPTIONS = [
   { key: "", label: "Any availability" },

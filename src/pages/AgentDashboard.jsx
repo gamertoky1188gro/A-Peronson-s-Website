@@ -32,6 +32,16 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/cn";
 
+/**
+ * Renders a statistic card.
+ * @param {Object} props
+ * @param {React.ElementType} props.icon
+ * @param {string} props.label
+ * @param {string|number} props.value
+ * @param {string} [props.sublabel]
+ * @param {boolean} [props.accent]
+ * @returns {JSX.Element}
+ */
 const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
   const isNumeric = typeof value === "number" && !Number.isNaN(value);
   return (
@@ -78,6 +88,14 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
   );
 };
 
+/**
+ * Renders a section title.
+ * @param {Object} props
+ * @param {string} props.title
+ * @param {string} [props.subtitle]
+ * @param {React.ReactNode} [props.right]
+ * @returns {JSX.Element}
+ */
 const SectionTitle = ({ title, subtitle, right }) => (
   <div className="mb-5 flex items-end justify-between gap-4">
     <div>
@@ -94,6 +112,10 @@ const SectionTitle = ({ title, subtitle, right }) => (
   </div>
 );
 
+/**
+ * AgentDashboard component.
+ * @returns {JSX.Element}
+ */
 export default function AgentDashboard() {
   const [activeTab, setActiveTab] = useState("requests");
   const { dashboard, subscription, isEnterprise, loading, error } =

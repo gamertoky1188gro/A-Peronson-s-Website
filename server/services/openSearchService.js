@@ -1,5 +1,6 @@
 import { Client } from "@opensearch-project/opensearch";
 import chalk from "chalk";
+import { logInfo, logWarn } from "../utils/logger.js";
 import { getAdminConfig } from "./adminConfigService.js";
 import prisma from "../utils/prisma.js";
 import { getBaseCurrency, normalizeMoney } from "./currencyService.js";
@@ -1103,15 +1104,11 @@ export function startOpenSearchHeartbeat() {
     try {
       const { client } = await getClient();
       if (!client) {
-        console.log(
-          chalk.yellow(
-            "[opensearch] No client available, will retry in 30s...",
-          ),
-        );
+        logWarn("opensearch No client available, will retry in 30s...");
         return;
       }
       await client.ping();
-      console.log(chalk.green("[opensearch] Heartbeat OK"));
+      logInfo("opensearch Heartbeat OK");
     } catch (err) {
       if (
         err?.code === "P1001" ||

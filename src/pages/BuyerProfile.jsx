@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../lib/types').User} User
+ */
+
 /*
   Route: /buyer/:id
   Access: Protected (login required)
@@ -63,6 +67,12 @@ import { logger } from "../lib/logger";
 
 const Motion = motion;
 
+/**
+ * Maps a role and ID to a route.
+ * @param {string} role The user role.
+ * @param {string} id The user ID.
+ * @returns {string} The route path.
+ */
 function roleToRoute(role, id) {
   if (!id) return "/feed";
   if (role === "buyer") return `/buyer/${encodeURIComponent(id)}`;
@@ -70,6 +80,11 @@ function roleToRoute(role, id) {
   return `/factory/${encodeURIComponent(id)}`;
 }
 
+/**
+ * Checks if a profile boost is currently active.
+ * @param {Object} boost The boost object.
+ * @returns {boolean} True if active.
+ */
 function isBoostActive(boost) {
   if (!boost) return false;
   if (String(boost.status || "").toLowerCase() !== "active") return false;
@@ -80,6 +95,14 @@ function isBoostActive(boost) {
   return now >= startsAt && now <= endsAt;
 }
 
+/**
+ * Renders a stylized pill component.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ * @param {string} [props.tone="default"]
+ * @param {string} [props.title]
+ * @returns {JSX.Element}
+ */
 function Pill({ children, tone = "default", title }) {
   const tones = {
     default:
@@ -102,6 +125,14 @@ function Pill({ children, tone = "default", title }) {
   );
 }
 
+/**
+ * Renders a metric card.
+ * @param {Object} props
+ * @param {string} props.label
+ * @param {React.ReactNode} props.value
+ * @param {React.ReactNode} [props.helper]
+ * @returns {JSX.Element}
+ */
 function Metric({ label, value, helper }) {
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
@@ -120,6 +151,13 @@ function Metric({ label, value, helper }) {
   );
 }
 
+/**
+ * Renders an avatar with fallback initials.
+ * @param {Object} props
+ * @param {string} props.name
+ * @param {string} [props.imageUrl]
+ * @returns {JSX.Element}
+ */
 function AvatarFallback({ name, imageUrl }) {
   const initials = (n) => {
     if (!n) return "?";
@@ -147,6 +185,13 @@ function AvatarFallback({ name, imageUrl }) {
   );
 }
 
+/**
+ * Renders a card with soft styling.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ * @param {string} [props.className]
+ * @returns {JSX.Element}
+ */
 function SoftCard({ children, className = "" }) {
   return (
     <div
@@ -157,6 +202,15 @@ function SoftCard({ children, className = "" }) {
   );
 }
 
+/**
+ * Renders a section title.
+ * @param {Object} props
+ * @param {React.ComponentType} [props.icon]
+ * @param {string} props.title
+ * @param {string} [props.subtitle]
+ * @param {React.ReactNode} [props.action]
+ * @returns {JSX.Element}
+ */
 function SectionTitle({ icon: Icon, title, subtitle, action }) {
   return (
     <div className="mb-4 flex items-start justify-between gap-3">
@@ -178,6 +232,10 @@ function SectionTitle({ icon: Icon, title, subtitle, action }) {
   );
 }
 
+/**
+ * Buyer profile page component.
+ * @returns {JSX.Element}
+ */
 export default function BuyerProfile() {
   const { id } = useParams();
   const navigate = useNavigate();

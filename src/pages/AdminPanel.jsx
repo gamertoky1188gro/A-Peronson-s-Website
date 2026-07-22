@@ -86,6 +86,8 @@ import {
 } from "lucide-react";
 import AccessDeniedState from "../components/AccessDeniedState";
 import RejectionReasonModal from "../components/admin/RejectionReasonModal";
+import { useToast } from "../components/ToastContainer";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { AdminAISection } from "./admin/sections/AdminAISection";
 import { FileExplorerSection } from "./admin/sections/FileExplorerSection";
 import { apiRequest, getCurrentUser, getToken, saveSession } from "../lib/auth";
@@ -943,6 +945,10 @@ function UltraTinyChart({
   );
 }
 
+/**
+ * AdminPanel component.
+ * @returns {JSX.Element}
+ */
 export default function AdminPanel() {
   const user = getCurrentUser();
   const userRole = normalizeRole(user?.role);
@@ -1011,9 +1017,11 @@ export default function AdminPanel() {
   const [moderationPending, setModerationPending] = useState([]);
   const [moderationRejected, setModerationRejected] = useState([]);
   const [loadingModeration, setLoadingModeration] = useState(false);
+  const toast = useToast();
   const [aiModalDoc, setAiModalDoc] = useState(null);
   const [reanalzyingId, setReanalyzingId] = useState(null);
   const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+  const [forceLogoutTarget, setForceLogoutTarget] = useState(null);
   const [rejectionItem, setRejectionItem] = useState(null);
   const [policyQueueItems, setPolicyQueueItems] = useState([]);
   const [policyReviewRows, setPolicyReviewRows] = useState([]);
@@ -1818,16 +1826,20 @@ export default function AdminPanel() {
     const token = getToken();
     if (!token) return;
     const headers = buildAdminHeaders({ stepUp: true });
-    if (!window.confirm("Force logout this user?")) return;
     try {
       await apiRequest(`/users/${userId}/force-logout`, {
         method: "POST",
         token,
         headers,
       });
+      toast.success("User logged out");
     } catch (err) {
-      setError(err.message || "Failed to force logout");
+      toast.error(err.message || "Failed to force logout");
     }
+  }
+
+  function confirmForceLogout(userId) {
+    setForceLogoutTarget(userId);
   }
 
   async function lockMessaging(userId, hours = 24) {
@@ -4253,7 +4265,7 @@ export default function AdminPanel() {
                                     <div className="flex flex-wrap items-center gap-2">
                                       <button
                                         type="button"
-                                        onClick={() => forceLogout(u.id)}
+                                        onClick={() => confirmForceLogout(u.id)}
                                         className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
                                       >
                                         Force logout
@@ -15169,10 +15181,7 @@ export default function AdminPanel() {
                         }
                       }
                     } catch (err) {
-                      alert(
-                        "Reanalysis failed: " +
-                          (err.message || "Unknown error"),
-                      );
+                      toast.error("Reanalysis failed: " + (err.message || "Unknown error"));
                     } finally {
                       setReanalyzingId(null);
                     }
@@ -15210,6 +15219,16 @@ export default function AdminPanel() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!forceLogoutTarget}
+        onClose={() => setForceLogoutTarget(null)}
+        onConfirm={() => forceLogout(forceLogoutTarget)}
+        title="Force logout"
+        message="Force logout this user? They will be signed out immediately."
+        confirmLabel="Force logout"
+        destructive
+      />
     </>
   );
 }

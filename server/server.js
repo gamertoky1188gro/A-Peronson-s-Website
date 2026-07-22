@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import express from "express";
 import cors from "cors";
+import { logInfo } from "./utils/logger.js";
 import helmet from "helmet";
 import http from "http";
 import { WebSocketServer } from "ws";
@@ -187,10 +188,7 @@ app.use("/uploads", express.static(uploadsRoot));
 const distRoot = path.join(process.cwd(), "dist");
 const serveDist = process.env.SERVE_DIST === "true";
 if (serveDist) {
-  console.log(
-    "[static] SERVE_DIST=true, dist exists:",
-    fs.existsSync(distRoot),
-  );
+  logInfo("SERVE_DIST=true", { distExists: fs.existsSync(distRoot) });
 }
 const MIME_TYPES = {
   ".js": "application/javascript",
@@ -1040,9 +1038,7 @@ async function start() {
         .then(({ scanAndAnalyzeExistingFiles }) => {
           setTimeout(() => {
             if (!isAIAnalyticsEnabled()) {
-              console.log(
-                "[AI Moderation] Disabled via AI_HARAM_ANALYTICS_ENABLED — skipping venv setup and scan",
-              );
+              logInfo("AI Moderation disabled via AI_HARAM_ANALYTICS_ENABLED — skipping venv setup and scan");
               return;
             }
             ensureVenv().catch(console.error);

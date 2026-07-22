@@ -1,8 +1,11 @@
-import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchUser } from "../store/userSlice";
-import { getToken } from "../lib/auth";
+/**
+ * @typedef {import('../lib/types').User} User
+ */
 
+/**
+ * Hook to retrieve secure user information.
+ * @returns {{user: User|null, loading: boolean, error: string|null}} User state.
+ */
 export function useSecureUser() {
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector((s) => s.user);
@@ -17,6 +20,10 @@ export function useSecureUser() {
   return { user, loading, error };
 }
 
+/**
+ * Hook to check if the current user has a premium subscription.
+ * @returns {{isPremium: boolean, loading: boolean, user: User|null}} Premium status.
+ */
 export function usePremiumCheck() {
   const { user, loading } = useSecureUser();
   const isPremium =
@@ -25,6 +32,10 @@ export function usePremiumCheck() {
   return { isPremium, loading, user };
 }
 
+/**
+ * Hook to check user entitlements.
+ * @returns {{entitlements: Object|undefined, hasEntitlement: Function, loading: boolean, user: User|null}} Entitlements data.
+ */
 export function useEntitlements() {
   const { user, loading } = useSecureUser();
   const hasEntitlement = (feature) => {

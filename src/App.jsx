@@ -29,6 +29,7 @@ const safeLazy = (importFn) => {
         error.name === "ChunkLoadError"
       ) {
         window.location.reload();
+        return { default: () => null };
       }
       throw error;
     }),

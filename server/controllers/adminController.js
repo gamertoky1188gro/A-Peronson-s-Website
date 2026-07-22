@@ -13,6 +13,7 @@ import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 import { handleSignCallback } from "../services/eSignService.js";
 import { logInfo, logError } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
+import { logInfo, logError } from "../utils/logger.js";
 
 function toPublicFileUrl(filePath = "") {
   if (!filePath) return "";
@@ -289,11 +290,9 @@ export async function reanalyzeDocument(req, res) {
       },
     });
 
-    console.log(
-      `[Reanalyze] Completed for ${docId}: label=${label}, score=${score}`,
-    );
+    logInfo("Reanalyze completed", { docId, label, score });
   } catch (err) {
-    console.error(`[Reanalyze] Failed for ${docId}:`, err.message);
+    logError("Reanalyze failed", new Error(`docId=${docId}: ${err.message}`));
     await prisma.document.update({
       where: { id: docId },
       data: {

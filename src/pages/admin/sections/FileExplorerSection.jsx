@@ -16,6 +16,8 @@ import {
 import { apiRequest, getToken } from "../../../lib/auth";
 import { ThreeDot, Mosaic } from "react-loading-indicators";
 import { logger } from "../../../lib/logger";
+import { useToast } from "../../../components/ToastContainer";
+import ConfirmDialog from "../../../components/ConfirmDialog";
 
 const FOLDER_CONFIG = [
   { id: "all", label: "All Files", icon: FolderOpen },
@@ -243,9 +245,11 @@ export function FileContextMenu({
 }
 
 export function FileExplorerSection({ adminDark }) {
+  const toast = useToast();
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeFolder, setActiveFolder] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("grid");
   const [contextMenu, setContextMenu] = useState(null);
@@ -307,7 +311,7 @@ export function FileExplorerSection({ adminDark }) {
     navigator.clipboard
       .writeText(url)
       .then(() => {
-        alert("URL copied to clipboard!");
+        toast.success("URL copied to clipboard!");
       })
       .catch(() => {
         prompt("Copy this URL:", url);
@@ -315,18 +319,24 @@ export function FileExplorerSection({ adminDark }) {
   };
 
   const handleDelete = async (file) => {
-    if (!confirm(`Delete "${file.filename}"? This cannot be undone.`)) return;
+    setDeleteTarget(file);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
       const token = getToken();
       await apiRequest("/admin/uploads/file", {
         method: "DELETE",
         token,
-        body: { file_path: file.path },
+        body: { file_path: deleteTarget.path },
       });
-      setFiles((prev) => prev.filter((f) => f.path !== file.path));
+      setFiles((prev) => prev.filter((f) => f.path !== deleteTarget.path));
+      toast.success("File deleted");
     } catch (err) {
-      alert("Failed to delete file: " + (err.message || "Unknown error"));
+      toast.error("Failed to delete file: " + (err.message || "Unknown error"));
     }
+    setDeleteTarget(null);
   };
 
   const panelBg = adminDark ? "bg-slate-950/80" : "bg-white/95";
@@ -474,6 +484,16 @@ export function FileExplorerSection({ adminDark }) {
           darkMode={adminDark}
         />
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete file"
+        message={deleteTarget ? `Delete "${deleteTarget.filename}"? This cannot be undone.` : ""}
+        confirmLabel="Delete"
+        destructive
+      />
     </div>
   );
 }

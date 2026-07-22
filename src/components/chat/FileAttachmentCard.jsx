@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { Atom } from "react-loading-indicators";
+import { logger } from "../../lib/logger";
 
 const TEXT_EXTS = new Set([
   "txt",
@@ -231,6 +232,7 @@ function FileAttachmentCard({
         }
       } catch (error) {
         if (!alive) return;
+        logger.warn("[FileAttachmentCard] PDF thumbnail failed", { error: error?.message, url });
         setPdfPreview({
           loading: false,
           error: error?.message || "Unable to preview PDF",
@@ -290,6 +292,7 @@ function FileAttachmentCard({
       } catch (error) {
         if (!alive) return;
         if (error?.name === "AbortError") return;
+        logger.warn("[FileAttachmentCard] text snippet fetch failed", { error: error?.message, url, status: error?.status });
         setTextPreview({
           loading: false,
           error: error?.message || "Unable to preview file",

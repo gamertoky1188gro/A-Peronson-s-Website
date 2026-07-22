@@ -5,6 +5,7 @@ import path from "path";
 import axios from "axios";
 import unzipper from "unzipper";
 import * as tar from "tar";
+import { logInfo, logWarn } from "./utils/logger.js";
 
 const BASE_URL =
   "https://github.com/ggml-org/llama.cpp/releases/download/b8196";
@@ -156,17 +157,17 @@ async function tryDownloadCandidates() {
     const downloadPath = path.join(process.cwd(), filename);
 
     try {
-      console.log("Trying:", filename);
+      logInfo("model download - trying", { filename });
       await downloadFile(url, downloadPath);
 
-      console.log("Extracting:", filename);
+      logInfo("model download - extracting", { filename });
       await extractFile(downloadPath);
 
       fs.unlinkSync(downloadPath);
-      console.log("Success with:", filename);
+      logInfo("model download - success", { filename });
       return;
     } catch (err) {
-      console.log("Failed:", filename, err.message);
+      logWarn("model download - failed", { filename, error: err.message });
       if (fs.existsSync(downloadPath)) fs.unlinkSync(downloadPath);
     }
   }
@@ -176,7 +177,7 @@ async function tryDownloadCandidates() {
 
 async function main() {
   await tryDownloadCandidates();
-  console.log("Installation complete.");
+  logInfo("model download - installation complete");
 }
 
 main().catch((err) => {

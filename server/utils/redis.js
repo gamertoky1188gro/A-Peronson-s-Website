@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import chalk from "chalk";
+import { logger } from "./logger.js";
 
 let client = null;
 let isConnected = false;
@@ -8,7 +8,7 @@ export async function initRedis() {
   const redisUrl = process.env.REDIS_URL;
 
   if (!redisUrl) {
-    console.log(chalk.yellow("[redis] REDIS_URL not set - caching disabled"));
+    logger.warn("[redis] REDIS_URL not set - caching disabled");
     return null;
   }
 
@@ -17,33 +17,31 @@ export async function initRedis() {
       url: redisUrl,
       socket: {
         reconnectStrategy: (retries) => {
-          console.log(
-            chalk.yellow(`[redis] Reconnecting (attempt ${retries})...`),
-          );
+          logger.warn(`[redis] Reconnecting (attempt ${retries})...`);
           return 30000;
         },
       },
     });
 
     client.on("error", (err) => {
-      console.error(chalk.red("[redis] Client error:"), err.message);
+      logger.error("[redis] Client error:", err);
       isConnected = false;
     });
 
     client.on("connect", () => {
-      console.log(chalk.green("[redis] Connected to Redis"));
+      logger.info("[redis] Connected to Redis");
       isConnected = true;
     });
 
     client.on("disconnect", () => {
-      console.log(chalk.yellow("[redis] Disconnected from Redis"));
+      logger.warn("[redis] Disconnected from Redis");
       isConnected = false;
     });
 
     await client.connect();
     return client;
   } catch (err) {
-    console.error(chalk.red("[redis] Failed to connect:"), err.message);
+    logger.error("[redis] Failed to connect:", err);
     return null;
   }
 }
@@ -62,7 +60,7 @@ export async function cacheGet(key) {
     const value = await client.get(key);
     return value ? JSON.parse(value) : null;
   } catch (err) {
-    console.error(chalk.red("[redis] cacheGet error:"), err.message);
+    logger.error("[redis] cacheGet error:", err);
     return null;
   }
 }
@@ -73,7 +71,7 @@ export async function cacheSet(key, value, ttlSeconds = 3600) {
     await client.setEx(key, ttlSeconds, JSON.stringify(value));
     return true;
   } catch (err) {
-    console.error(chalk.red("[redis] cacheSet error:"), err.message);
+    logger.error("[redis] cacheSet error:", err);
     return false;
   }
 }
@@ -84,7 +82,7 @@ export async function cacheDelete(key) {
     await client.del(key);
     return true;
   } catch (err) {
-    console.error(chalk.red("[redis] cacheDelete error:"), err.message);
+    logger.error("[redis] cacheDelete error:", err);
     return false;
   }
 }
@@ -98,10 +96,7 @@ export async function cacheInvalidatePattern(pattern) {
     }
     return true;
   } catch (err) {
-    console.error(
-      chalk.red("[redis] cacheInvalidatePattern error:"),
-      err.message,
-    );
+    logger.error("[redis] cacheInvalidatePattern error:", err);
     return false;
   }
 }

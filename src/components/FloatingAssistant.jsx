@@ -8,6 +8,17 @@ import { ThreeDot } from "react-loading-indicators";
 import useScrollDirection from "../hooks/useScrollDirection";
 import { logger } from "../lib/logger";
 
+/**
+ * @typedef {Object} SessionData
+ * @property {Array} messages - The session messages.
+ * @property {string|null} title - The session title.
+ */
+
+/**
+ * Fetches session data from the API.
+ *
+ * @returns {Promise<SessionData>} The session data.
+ */
 async function fetchSessionData() {
   const token = getToken();
   if (!token) return { messages: [], title: null };
@@ -15,13 +26,23 @@ async function fetchSessionData() {
     const res = await fetch(`${API_BASE}/assistant/session-messages`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    if (!res.ok) {
+      logger.warn("[assistant] fetchSessionData non-ok", { status: res.status });
+      return { messages: [], title: null };
+    }
     const data = await res.json();
     return { messages: data.messages || [], title: data.title || null };
-  } catch {
+  } catch (err) {
+    logger.warn("[assistant] fetchSessionData failed", { error: err.message });
     return { messages: [], title: null };
   }
 }
 
+/**
+ * Deletes the current session.
+ *
+ * @returns {Promise<boolean>} Whether the session was deleted.
+ */
 async function deleteSessionAPI() {
   const token = getToken();
   if (!token) return false;
@@ -30,13 +51,27 @@ async function deleteSessionAPI() {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
+    if (!res.ok) {
+      logger.warn("[assistant] deleteSessionAPI non-ok", { status: res.status });
+      return false;
+    }
     const data = await res.json();
     return data.ok || false;
-  } catch {
+  } catch (err) {
+    logger.warn("[assistant] deleteSessionAPI failed", { error: err.message });
     return false;
   }
 }
 
+/**
+ * Renders text with a typewriter effect.
+ *
+ * @param {Object} props
+ * @param {string} props.text - The text to display.
+ * @param {number} [props.speed=20] - The speed of the typewriter effect.
+ * @param {Function} [props.onComplete] - Callback on completion.
+ * @returns {JSX.Element} The rendered typewriter text.
+ */
 function TypewriterText({ text, speed = 20, onComplete }) {
   const [displayedText, setDisplayedText] = useState("");
   const [index, setIndex] = useState(0);
@@ -56,6 +91,11 @@ function TypewriterText({ text, speed = 20, onComplete }) {
   return <span>{displayedText}</span>;
 }
 
+/**
+ * Renders the floating assistant component.
+ *
+ * @returns {JSX.Element} The rendered floating assistant component.
+ */
 export default function FloatingAssistant() {
   const [userId, setUserId] = useState(null);
   const location = useLocation();

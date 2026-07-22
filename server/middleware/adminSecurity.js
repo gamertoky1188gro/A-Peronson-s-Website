@@ -1,6 +1,7 @@
 import { deny, hasRole } from "../utils/permissions.js";
 import { getAdminAuthConfig } from "../services/securityService.js";
 import chalk from "chalk";
+import { logInfo, logWarn } from "../utils/logger.js";
 
 function normalizeIp(ip = "") {
   const value = String(ip || "").trim();
@@ -18,15 +19,11 @@ function isAllowedDevice(_req, _allowlist) {
 }
 
 export async function requireAdminSecurity(req, res, next) {
-  console.log(
-    chalk.cyan("[adminSecurity]"),
-    "user:" + chalk.bold.white(req.user?.id || "unknown"),
-    chalk.magenta(req.user?.role || "none"),
-    "ip:" + chalk.gray(req.ip),
-  );
+  const u = req.user;
+  logInfo("adminSecurity check", { userId: u?.id, role: u?.role, ip: req.ip });
 
   if (!req.user || !hasRole(req.user, "owner", "admin")) {
-    console.log(chalk.red("[adminSecurity] DENY: no user or wrong role"));
+    logWarn("adminSecurity DENY: no user or wrong role", { role: req.user?.role });
     return deny(res);
   }
 
@@ -34,21 +31,21 @@ export async function requireAdminSecurity(req, res, next) {
 
   // DEV MODE: Allow localhost/local network without further checks
   const clientIp = normalizeIp(req.ip);
-  console.log(chalk.cyan("[adminSecurity] clientIp:"), chalk.cyan(clientIp));
+  logInfo("adminSecurity clientIp", { clientIp });
   if (
     clientIp === "127.0.0.1" ||
     clientIp === "::1" ||
     clientIp.startsWith("192.168.") ||
     clientIp.startsWith("10.")
   ) {
-    console.log(chalk.green("[adminSecurity] ALLOW: localhost"));
+    logInfo("adminSecurity ALLOW: localhost");
     return next();
   }
 
   // Allow both owner and admin roles through without owner allowlist requirement
-  console.log(chalk.cyan("[adminSecurity] not localhost, checking role"));
+  logInfo("adminSecurity not localhost, checking role");
   if (hasRole(req.user, "owner", "admin")) {
-    console.log(chalk.green("[adminSecurity] ALLOW: owner/admin role"));
+    logInfo("adminSecurity ALLOW: owner/admin role");
     return next();
   }
 

@@ -13,6 +13,11 @@ import { getToken } from "../lib/auth";
 import { useTheme } from "../lib/ThemeProvider";
 import usePageMeta from "../lib/usePageMeta";
 
+/**
+ * Helper to format route label.
+ * @param {string|Object} fromValue
+ * @returns {string}
+ */
 function formatRouteLabel(fromValue) {
   if (!fromValue) return "this page";
   if (typeof fromValue === "string") return fromValue;
@@ -22,6 +27,13 @@ function formatRouteLabel(fromValue) {
   return "this page";
 }
 
+/**
+ * Renders an information item.
+ * @param {Object} props
+ * @param {string} props.label
+ * @param {string} props.value
+ * @returns {JSX.Element}
+ */
 function InfoItem({ label, value }) {
   return (
     <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/50">
@@ -35,6 +47,10 @@ function InfoItem({ label, value }) {
   );
 }
 
+/**
+ * AccessDenied page component.
+ * @returns {JSX.Element}
+ */
 export default function AccessDenied() {
   usePageMeta({
     title: "Access Denied — GarTexHub",

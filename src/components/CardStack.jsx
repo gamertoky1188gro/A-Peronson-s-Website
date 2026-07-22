@@ -6,6 +6,17 @@ import {
 } from "framer-motion";
 import { useRef } from "react";
 
+/**
+ * Renders an item in the card stack.
+ *
+ * @param {Object} props
+ * @param {React.ReactNode} props.child - The content of the card.
+ * @param {import('framer-motion').MotionValue<number>} props.scrollYProgress - The scroll progress.
+ * @param {number} props.index - The index of the item.
+ * @param {number} props.count - Total number of items.
+ * @param {number} props.overlap - The overlap distance.
+ * @returns {JSX.Element} The rendered card stack item.
+ */
 function CardStackItem({ child, scrollYProgress, index, count, overlap }) {
   const progress = Math.max(0, Math.min(1, (index + 1) / count));
   const y = useTransform(
@@ -33,6 +44,16 @@ function CardStackItem({ child, scrollYProgress, index, count, overlap }) {
   );
 }
 
+/**
+ * Renders a stack of cards that animates on scroll.
+ *
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - The cards to stack.
+ * @param {string} [props.className=""] - Additional CSS class names.
+ * @param {number} [props.stackDistance=80] - Distance to stack cards.
+ * @param {number} [props.overlap=40] - The overlap between stacked cards.
+ * @returns {JSX.Element} The rendered card stack component.
+ */
 export default function CardStack({
   children,
   className = "",

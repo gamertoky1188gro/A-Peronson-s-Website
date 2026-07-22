@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 
+/**
+ * Hook to detect scroll direction.
+ * @param {number} [threshold=10] - The scroll threshold.
+ * @returns {string|null} Scroll direction ('up', 'down', or null).
+ */
 export default function useScrollDirection(threshold = 10) {
   const [direction, setDirection] = useState(null);
 

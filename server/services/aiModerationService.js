@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import crypto from "crypto";
+import { logInfo, logWarn, logError } from "../utils/logger.js";
 
 const VENV_DIR = process.env.VENV_DIR || "";
 
@@ -103,40 +104,38 @@ export async function ensureVenv() {
         HARAM_DETECTION_DIR,
         30000,
       );
-      console.log("[AI Moderation] venv Python ready with all packages");
+      logInfo("AI Moderation venv Python ready with all packages");
       return;
     } catch (_) {
-      console.log(
-        "[AI Moderation] venv exists but packages missing, installing...",
-      );
+      logInfo("AI Moderation venv exists but packages missing, installing...");
     }
   }
 
   if (!fs.existsSync(VENV_DIR)) {
-    console.log("[AI Moderation] Creating venv with Python 3.11...");
+    logInfo("AI Moderation Creating venv with Python 3.11...");
     try {
       await runSync(
         "uv",
         ["venv", "--python", "3.11", VENV_DIR],
         HARAM_DETECTION_DIR,
       );
-      console.log("[AI Moderation] venv created");
+      logInfo("AI Moderation venv created");
     } catch (err) {
-      console.error("[AI Moderation] venv creation failed:", err.message);
+      logError("AI Moderation venv creation failed", err);
       return;
     }
   }
 
-  console.log("[AI Moderation] Running uv sync...");
+  logInfo("AI Moderation Running uv sync...");
   try {
     await runSync("uv", ["sync"], HARAM_DETECTION_DIR, 600000);
   } catch (err) {
-    console.warn("[AI Moderation] uv sync warning:", err.message);
+    logWarn("AI Moderation uv sync warning", { error: err.message });
   }
 
   const venvPy = getVenvPython();
   if (venvPy) {
-    console.log("[AI Moderation] Installing torch CPU...");
+    logInfo("AI Moderation Installing torch CPU...");
     try {
       await runSync(
         getVenvUv(),
@@ -152,11 +151,11 @@ export async function ensureVenv() {
         600000,
       );
     } catch (err) {
-      console.warn("[AI Moderation] torch install warning:", err.message);
+      logWarn("AI Moderation torch install warning", { error: err.message });
     }
   }
 
-  console.log("[AI Moderation] venv setup complete");
+  logInfo("AI Moderation venv setup complete");
 }
 
 function buildPythonScript(filePath) {

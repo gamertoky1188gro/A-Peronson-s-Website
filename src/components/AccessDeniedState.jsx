@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
 
+/**
+ * Renders a state indicating that access to a section is denied.
+ *
+ * @param {Object} props
+ * @param {string} [props.message="You do not have permission to access this section."] - The message to display.
+ * @returns {JSX.Element} The rendered access denied component.
+ */
 export default function AccessDeniedState({
   message = "You do not have permission to access this section.",
 }) {

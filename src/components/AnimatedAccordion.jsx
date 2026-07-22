@@ -1,6 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
+/**
+ * @typedef {Object} AccordionItem
+ * @property {string|number} id - Unique identifier for the item.
+ * @property {string|JSX.Element} title - Title of the accordion item.
+ * @property {string|JSX.Element} content - Content of the accordion item.
+ */
+
+/**
+ * Renders an accordion component with animated transitions.
+ *
+ * @param {Object} props
+ * @param {AccordionItem[]} props.items - The list of items in the accordion.
+ * @param {string} [props.className=""] - Additional CSS class names.
+ * @param {boolean} [props.allowMultiple=false] - Whether multiple items can be open at once.
+ * @returns {JSX.Element} The rendered animated accordion component.
+ */
 export default function AnimatedAccordion({
   items,
   className = "",

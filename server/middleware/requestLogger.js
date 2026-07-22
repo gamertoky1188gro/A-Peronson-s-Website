@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import chalk from "chalk";
+import { logInfo } from "../utils/logger.js";
 
 const SENSITIVE_KEYS = new Set([
   "password",
@@ -183,10 +184,9 @@ export function requestLogger({ timeoutMs = 45000 } = {}) {
     const isEventEndpoint = req.originalUrl?.startsWith("/api/events");
 
     if (isEventEndpoint && req.method === "POST" && body?.type) {
-      console.log(formatEventLogPayload(req.body));
+      logInfo("request event", formatEventLogPayload(req.body));
     } else {
-      console.log(
-        formatEventLog(
+      logInfo("request start", formatEventLog(
           {
             request_id: requestId,
             method: req.method,
@@ -197,8 +197,7 @@ export function requestLogger({ timeoutMs = 45000 } = {}) {
             event: "request_start",
           },
           true,
-        ),
-      );
+        ));
     }
 
     let responseBytes = 0;
@@ -227,8 +226,7 @@ export function requestLogger({ timeoutMs = 45000 } = {}) {
       if (res.headersSent) return;
       res.status(504).json({ error: "Request timeout" });
       const duration = Date.now() - startedAt;
-      console.log(
-        formatEventLog({
+      logInfo("request timeout", formatEventLog({
           request_id: requestId,
           method: req.method,
           path: req.originalUrl || req.url,
@@ -236,8 +234,7 @@ export function requestLogger({ timeoutMs = 45000 } = {}) {
           duration_ms: duration,
           response_bytes: responseBytes,
           event: "timeout",
-        }),
-      );
+        }));
     }, timeoutMs);
 
     function finalize(eventName = "request_end") {
@@ -245,8 +242,7 @@ export function requestLogger({ timeoutMs = 45000 } = {}) {
       const duration = Date.now() - startedAt;
       const status = res.statusCode;
 
-      console.log(
-        formatEventLog({
+      logInfo("request end", formatEventLog({
           request_id: requestId,
           method: req.method,
           path: req.originalUrl || req.url,

@@ -1,6 +1,10 @@
 import { useMotionValue, useScroll } from "framer-motion";
 import { useEffect } from "react";
 
+/**
+ * Hook to track scroll velocity using Framer Motion.
+ * @returns {import('framer-motion').MotionValue} Scroll velocity motion value.
+ */
 export default function useScrollVelocity() {
   const { scrollY } = useScroll();
   const velocity = useMotionValue(0);

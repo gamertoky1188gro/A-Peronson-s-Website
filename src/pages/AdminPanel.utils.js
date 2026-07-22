@@ -67,6 +67,7 @@ import {
   Bot,
 } from "lucide-react";
 
+/** @type {Object<string, React.ComponentType>} */
 const ICON_REGISTRY = {
   Activity,
   AlertTriangle,
@@ -136,6 +137,7 @@ const ICON_REGISTRY = {
   Bot,
 };
 
+/** @type {Set<string>} */
 export const KNOWN_ROLES = new Set([
   "buyer",
   "factory",
@@ -145,8 +147,10 @@ export const KNOWN_ROLES = new Set([
   "agent",
 ]);
 
+/** @type {string[]} */
 export const DEFAULT_ADMIN_PANEL_ALLOWED_ROLES = ["owner", "admin"];
 
+/** @type {Array<{id: string, label: string, icon_name: string, sections: []}>} */
 export const DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY = [
   {
     id: "platform",
@@ -187,12 +191,22 @@ export const DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY = [
   { id: "config", label: "Config Editor", icon_name: "Sliders", sections: [] },
 ];
 
+/**
+ * Normalizes a role string.
+ * @param {string} value The role string.
+ * @returns {string} The normalized string.
+ */
 export function normalizeRole(value = "") {
   return String(value || "")
     .trim()
     .toLowerCase();
 }
 
+/**
+ * Gets allowed roles for the admin panel.
+ * @param {Object} config The application configuration.
+ * @returns {string[]} The allowed roles.
+ */
 export function getAdminPanelAllowedRoles(config) {
   const raw = config?.ui?.admin_panel?.allowed_roles;
   const list = Array.isArray(raw) ? raw.map(normalizeRole).filter(Boolean) : [];
@@ -201,6 +215,11 @@ export function getAdminPanelAllowedRoles(config) {
   return filtered;
 }
 
+/**
+ * Gets fallback inventory for admin panel.
+ * @param {Object} config The application configuration.
+ * @returns {Array<{id: string, label: string, icon_name: string, sections: []}>} The inventory.
+ */
 export function getAdminPanelFallbackInventory(config) {
   const raw = config?.ui?.admin_panel?.fallback_inventory;
   if (!Array.isArray(raw) || !raw.length)
@@ -217,11 +236,18 @@ export function getAdminPanelFallbackInventory(config) {
   return rows.length ? rows : DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY;
 }
 
+/**
+ * Gets an icon component from registry.
+ * @param {string} iconName The icon name.
+ * @param {React.ComponentType} [fallback=ShieldCheck] The fallback component.
+ * @returns {React.ComponentType} The icon component.
+ */
 export function getIconComponent(iconName = "", fallback = ShieldCheck) {
   const key = String(iconName || "").trim();
   return ICON_REGISTRY[key] || fallback;
 }
 
+/** @type {Array<{title: string, count: number, icon: React.ComponentType, subtitle: string}>} */
 export const INFRA_CAPABILITIES = [
   {
     title: "System Health & Performance Monitoring",
@@ -255,6 +281,7 @@ export const INFRA_CAPABILITIES = [
   },
 ];
 
+/** @type {Array<{title: string, count: number, items: string[]}>} */
 export const NETWORK_CAPABILITIES = [
   {
     title: "Real-Time Monitoring & Visibility",
@@ -303,10 +330,20 @@ export const NETWORK_CAPABILITIES = [
   },
 ];
 
+/**
+ * Converts a list to a textarea string.
+ * @param {string[]} value The list.
+ * @returns {string} The textarea string.
+ */
 export function listToTextarea(value) {
   return Array.isArray(value) ? value.join("\n") : "";
 }
 
+/**
+ * Converts a textarea string to a list.
+ * @param {string} value The textarea string.
+ * @returns {string[]} The list.
+ */
 export function textareaToList(value) {
   const raw = String(value || "").split(/[\n,]/);
   const cleaned = raw.map((entry) => entry.trim()).filter(Boolean);
@@ -315,6 +352,7 @@ export function textareaToList(value) {
 
 export { cn } from "../lib/cn";
 
+/** @type {Object<string, Array<{label: string, path: string}>>} */
 export const SECTION_METRICS = {
   users: [
     { label: "Total", path: "users.total" },
@@ -346,6 +384,7 @@ export const SECTION_METRICS = {
   ],
 };
 
+/** @type {Object<string, Array<{label: string, path: string, icon: React.ComponentType, format: string, tone?: string}>>} */
 export const METRIC_CARDS = {
   users: [
     {
@@ -442,6 +481,7 @@ export const METRIC_CARDS = {
   ],
 };
 
+/** @type {Object<string, {title: string, items: string[]}>} */
 export const DEFAULT_BENEFITS = {
   factory: {
     title: "Factory Benefits",
@@ -475,6 +515,10 @@ export const DEFAULT_BENEFITS = {
   },
 };
 
+/**
+ * Returns the CSS classes for the status badge.
+ * @returns {Object<string, string>} The CSS class map.
+ */
 export function statusBadge() {
   return {
     pending:
@@ -488,6 +532,11 @@ export function statusBadge() {
   };
 }
 
+/**
+ * Formats a number for display.
+ * @param {number|string} value The value to format.
+ * @returns {string} The formatted number string.
+ */
 export function formatNumber(value) {
   if (value === null || value === undefined) return "0";
   const num = Number(value);
@@ -497,6 +546,11 @@ export function formatNumber(value) {
   return String(num);
 }
 
+/**
+ * Formats a currency value for display.
+ * @param {number|string} value The currency value.
+ * @returns {string} The formatted currency string.
+ */
 export function formatCurrency(value) {
   if (value === null || value === undefined) return "$0";
   const num = Number(value);
@@ -509,6 +563,12 @@ export function formatCurrency(value) {
   }).format(num);
 }
 
+/**
+ * Resolves a nested path in an object.
+ * @param {Object} source The source object.
+ * @param {string} path The dot-notation path.
+ * @returns {*} The resolved value or null.
+ */
 export function _resolvePath(source, path) {
   if (!path) return source;
   const keys = path.split(".");
@@ -520,6 +580,10 @@ export function _resolvePath(source, path) {
   return result;
 }
 
+/**
+ * Exports user emails to a CSV file.
+ * @param {Array<{email: string, name: string, role: string, verified: boolean}>} rows The list of user objects.
+ */
 export function exportEmailsCsv(rows = []) {
   if (!Array.isArray(rows) || !rows.length) return;
   const headers = ["Email", "Name", "Role", "Verified"];
@@ -539,18 +603,34 @@ export function exportEmailsCsv(rows = []) {
   URL.revokeObjectURL(url);
 }
 
+/** @type {string} */
 export const NO_DATA_LABEL = "No Data";
 
+/**
+ * Checks if a value is a valid hex color code.
+ * @param {string|number} value The color string.
+ * @returns {boolean} True if valid hex color.
+ */
 export function isHexColor(value) {
   return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(
     String(value || "").trim(),
   );
 }
 
+/**
+ * Gets the pie chart color palette from configuration.
+ * @param {Object} _config The application configuration (unused).
+ * @returns {string[]} The palette colors.
+ */
 export function getAdminPanelPiePalette(_config) {
   return DEFAULT_PIE_PALETTE;
 }
 
+/**
+ * Gets the CMS weekly trend fallback data.
+ * @param {Object} config The application configuration.
+ * @returns {Array<{name: string, value: number}>} The trend data.
+ */
 export function getCmsWeeklyTrendFallback(config) {
   const raw = config?.ui?.admin_panel?.fallbacks?.cms?.weekly_trend;
   if (!Array.isArray(raw) || !raw.length) return DEFAULT_CMS_WEEKLY_TREND;
@@ -565,6 +645,11 @@ export function getCmsWeeklyTrendFallback(config) {
     .slice(0, 31);
 }
 
+/**
+ * Gets ultra security mini chart points.
+ * @param {Object} config The application configuration.
+ * @returns {number[]} The points.
+ */
 export function getUltraMiniChartPoints(config) {
   const raw =
     config?.ui?.admin_panel?.fallbacks?.ultra_security?.mini_chart_points;
@@ -573,6 +658,11 @@ export function getUltraMiniChartPoints(config) {
   return raw.map(Number).filter(Number.isFinite).slice(0, 60);
 }
 
+/**
+ * Gets ultra security KPI metrics.
+ * @param {Object} config The application configuration.
+ * @returns {Array<{label: string, value: string}>} The KPIs.
+ */
 export function getUltraMiniChartKpis(config) {
   const raw =
     config?.ui?.admin_panel?.fallbacks?.ultra_security?.mini_chart_kpis;
@@ -586,6 +676,11 @@ export function getUltraMiniChartKpis(config) {
     .slice(0, 6);
 }
 
+/**
+ * Gets ultra security capabilities.
+ * @param {Object} config The application configuration.
+ * @returns {string[]} The capabilities.
+ */
 export function getUltraSecurityCapabilities(config) {
   const raw = config?.ui?.admin_panel?.fallbacks?.ultra_security?.capabilities;
   const list = Array.isArray(raw)
@@ -598,6 +693,11 @@ export function getUltraSecurityCapabilities(config) {
   return unique.length ? unique.slice(0, 30) : ULTRA_CAPABILITIES_DEFAULT;
 }
 
+/**
+ * Gets the no data label for contracts.
+ * @param {Object} config The application configuration.
+ * @returns {string} The label.
+ */
 export function getContractNoDataLabel(config) {
   return (
     String(
@@ -606,6 +706,13 @@ export function getContractNoDataLabel(config) {
   );
 }
 
+/**
+ * Gets empty state copy text.
+ * @param {Object} config The application configuration.
+ * @param {string} key The key.
+ * @param {string} fallback The fallback text.
+ * @returns {string} The copy text.
+ */
 export function getEmptyStateCopy(config, key, fallback) {
   const path = String(key || "").trim();
   const copy = config?.ui?.admin_panel?.copy?.empty_states?.[path];
@@ -615,6 +722,7 @@ export function getEmptyStateCopy(config, key, fallback) {
   );
 }
 
+/** @type {string[]} */
 export const ULTRA_CAPABILITIES_DEFAULT = [
   "Advanced Search Filters",
   "Priority Buyer Request Placement",
@@ -633,6 +741,7 @@ export const ULTRA_CAPABILITIES_DEFAULT = [
   "Custom RFQ Templates",
 ];
 
+/** @type {Array<{name: string, value: number}>} */
 export const DEFAULT_CMS_WEEKLY_TREND = [
   { name: "Mon", value: 12 },
   { name: "Tue", value: 19 },
@@ -643,10 +752,12 @@ export const DEFAULT_CMS_WEEKLY_TREND = [
   { name: "Sun", value: 10 },
 ];
 
+/** @type {number[]} */
 export const DEFAULT_ULTRA_MINI_CHART_POINTS = [
   12, 19, 15, 22, 28, 18, 10, 14, 20, 25, 30, 22,
 ];
 
+/** @type {Array<{label: string, value: string}>} */
 export const DEFAULT_ULTRA_MINI_CHART_KPIS = [
   { label: "Active Users", value: "2,847" },
   { label: "Total Revenue", value: "$124.5K" },
@@ -654,6 +765,7 @@ export const DEFAULT_ULTRA_MINI_CHART_KPIS = [
   { label: "Avg. Session", value: "8m 32s" },
 ];
 
+/** @type {Object<string, string>} */
 export const DEFAULT_EMPTY_STATE_COPY = {
   no_verifications: "No pending verifications at this time.",
   no_contracts: "No contracts found. Start by creating your first contract.",
@@ -663,11 +775,15 @@ export const DEFAULT_EMPTY_STATE_COPY = {
   no_moderation_cases: "No moderation cases to review.",
 };
 
+/** @type {string[]} */
 export const BUYER_BENEFITS_DEFAULT = DEFAULT_BENEFITS.buyer.items;
+/** @type {string[]} */
 export const FACTORY_BENEFITS_DEFAULT = DEFAULT_BENEFITS.factory.items;
+/** @type {string[]} */
 export const BUYING_HOUSE_BENEFITS_DEFAULT =
   DEFAULT_BENEFITS.buying_house.items;
 
+/** @type {string[]} */
 export const DEFAULT_PIE_PALETTE = [
   "#3B82F6",
   "#10B981",

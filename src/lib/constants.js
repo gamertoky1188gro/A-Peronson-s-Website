@@ -1,21 +1,55 @@
-export const TIMEOUTS = {
-  SHORT: 500,
-  MEDIUM: 2000,
-  LONG: 3000,
-  RECONNECT: 30000,
-};
 
-export const PAGINATION = {
-  FEED_PAGE_LIMIT: 12,
-  SEARCH_PAGE_LIMIT: 20,
-};
+export const QUICK_EMOJIS = [
+  "😀",
+  "😁",
+  "😂",
+  "🤣",
+  "😊",
+  "😍",
+  "😎",
+  "🤝",
+  "👍",
+  "👎",
+  "🙏",
+  "👏",
+  "🎉",
+  "🔥",
+  "💯",
+  "✅",
+  "⚡",
+  "💡",
+  "📝",
+  "📎",
+  "🧠",
+  "🚀",
+  "❤️",
+  "✨",
+];
 
-export const STORAGE = {
-  ADMIN_TTL_MINUTES: 60,
-};
+export const SORT_OPTIONS = [
+  { key: "relevance", label: "Relevance" },
+  { key: "newest", label: "Newest first" },
+  { key: "price_asc", label: "Price: Low to high" },
+  { key: "price_desc", label: "Price: High to low" },
+  { key: "moq_asc", label: "MOQ: Low to high" },
+];
 
-export const UI = {
-  TRAJECTORY_SAMPLE: 4,
-  ENTER_DELAY: 180,
-  EXIT_DELAY: 250,
-};
+export const SEASON_OPTIONS = [
+  "Any season",
+  "Spring",
+  "Summer",
+  "Fall",
+  "Winter",
+  "Spring 2025",
+  "Summer 2025",
+  "Fall 2025",
+  "Winter 2025",
+  "Spring 2026",
+  "Summer 2026",
+  "Fall 2026",
+  "Winter 2026",
+  "Spring 2027",
+  "Summer 2027",
+  "Fall 2027",
+  "Winter 2027",
+];

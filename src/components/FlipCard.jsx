@@ -1,15 +1,18 @@
 import { motion, useReducedMotion } from "framer-motion";
 import PropTypes from "prop-types";
 
-FlipCard.propTypes = {
-  front: PropTypes.node.isRequired,
-  back: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  flipOn: PropTypes.oneOf(["hover", "click"]),
-  isFlipped: PropTypes.bool,
-  onFlip: PropTypes.func,
-};
-
+/**
+ * Renders a flip card component.
+ *
+ * @param {Object} props
+ * @param {React.ReactNode} props.front - The front content.
+ * @param {React.ReactNode} props.back - The back content.
+ * @param {string} [props.className=""] - Additional CSS class names.
+ * @param {'hover'|'click'} [props.flipOn="hover"] - Trigger for flipping.
+ * @param {boolean} [props.isFlipped] - Controlled flip state.
+ * @param {Function} [props.onFlip] - Function to call on flip.
+ * @returns {JSX.Element} The rendered flip card component.
+ */
 export default function FlipCard({
   front,
   back,

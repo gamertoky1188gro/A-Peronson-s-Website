@@ -51,6 +51,11 @@ const initialTemplate = {
   body: "",
 };
 
+/**
+ * Splits a CSV string into an array of trimmed strings.
+ * @param {string} value
+ * @returns {string[]}
+ */
 function splitCsv(value) {
   return String(value || "")
     .split(",")
@@ -58,6 +63,11 @@ function splitCsv(value) {
     .filter(Boolean);
 }
 
+/**
+ * Safely stringifies an object to JSON.
+ * @param {any} value
+ * @returns {string}
+ */
 function safeJsonStringify(value) {
   try {
     return JSON.stringify(value, null, 2);
@@ -67,6 +77,11 @@ function safeJsonStringify(value) {
   }
 }
 
+/**
+ * Returns the CSS tone class based on status.
+ * @param {string} status
+ * @returns {string}
+ */
 function statusTone(status) {
   const s = (status || "").toLowerCase();
   if (!s) return "neutral";
@@ -83,6 +98,16 @@ function statusTone(status) {
 
 import { cn } from "../lib/cn";
 
+/**
+ * Renders a section card.
+ * @param {Object} props
+ * @param {React.ElementType} props.icon
+ * @param {string} props.title
+ * @param {string} props.subtitle
+ * @param {React.ReactNode} props.children
+ * @param {React.ReactNode} [props.right]
+ * @returns {JSX.Element}
+ */
 function SectionCard({ icon: Icon, title, subtitle, children, right }) {
   return (
     <section className="overflow-hidden rounded-3xl border border-sky-200/70 bg-white/80 shadow-[0_20px_60px_-25px_rgba(14,116,144,0.45)] backdrop-blur dark:border-slate-700/70 dark:bg-slate-950/70">
@@ -107,6 +132,12 @@ function SectionCard({ icon: Icon, title, subtitle, children, right }) {
   );
 }
 
+/**
+ * Renders a label.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ * @returns {JSX.Element}
+ */
 function Label({ children }) {
   return (
     <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -115,6 +146,11 @@ function Label({ children }) {
   );
 }
 
+/**
+ * Renders an input field.
+ * @param {Object} props
+ * @returns {JSX.Element}
+ */
 function Input(props) {
   return (
     <input
@@ -128,6 +164,11 @@ function Input(props) {
   );
 }
 
+/**
+ * Renders a textarea.
+ * @param {Object} props
+ * @returns {JSX.Element}
+ */
 function Textarea(props) {
   return (
     <textarea
@@ -141,6 +182,14 @@ function Textarea(props) {
   );
 }
 
+/**
+ * Renders a button.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ * @param {string} [props.variant]
+ * @param {string} [props.className]
+ * @returns {JSX.Element}
+ */
 function Button({ children, variant = "primary", className = "", ...props }) {
   const styles = {
     primary:
@@ -167,6 +216,13 @@ function Button({ children, variant = "primary", className = "", ...props }) {
   );
 }
 
+/**
+ * Renders a JSON block.
+ * @param {Object} props
+ * @param {any} props.value
+ * @param {number} [props.minHeight]
+ * @returns {JSX.Element}
+ */
 function JsonBlock({ value, minHeight = 160 }) {
   return (
     <pre
@@ -183,6 +239,10 @@ function JsonBlock({ value, minHeight = 160 }) {
   );
 }
 
+/**
+ * AdminGovernance page component.
+ * @returns {JSX.Element}
+ */
 export default function AdminGovernance() {
   const [darkMode, setDarkMode] = useState(true);
   const [policy, setPolicy] = useState(initialPolicy);

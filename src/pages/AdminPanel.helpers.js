@@ -2,15 +2,29 @@
 
 import * as Utils from "./AdminPanel.utils";
 
+/**
+ * Returns the CSS classes for the status badge.
+ * @returns {string} The CSS class string.
+ */
 export function statusBadge() {
   return "bg-emerald-400/20 text-emerald-200";
 }
 
+/**
+ * Formats a number for display.
+ * @param {number|string} value The value to format.
+ * @returns {string} The formatted number string.
+ */
 export function formatNumber(value) {
   const num = Number(value || 0);
   return Number.isFinite(num) ? num.toLocaleString() : "0";
 }
 
+/**
+ * Formats a currency value for display.
+ * @param {number|string} value The currency value.
+ * @returns {string} The formatted currency string.
+ */
 export function formatCurrency(value) {
   const num = Number(value || 0);
   return Number.isFinite(num)
@@ -18,6 +32,12 @@ export function formatCurrency(value) {
     : "$0";
 }
 
+/**
+ * Resolves a nested path in an object.
+ * @param {Object} source The source object.
+ * @param {string} path The dot-notation path.
+ * @returns {*} The resolved value or undefined.
+ */
 export function _resolvePath(source, path) {
   if (!source || !path) return undefined;
   return path
@@ -28,6 +48,10 @@ export function _resolvePath(source, path) {
     );
 }
 
+/**
+ * Exports user emails to a CSV file.
+ * @param {Array<{email: string}>} rows The list of user objects.
+ */
 export function exportEmailsCsv(rows = []) {
   const emails = rows.map((u) => u.email).filter(Boolean);
   const csv = ["email", ...emails].join("\n");
@@ -40,12 +64,22 @@ export function exportEmailsCsv(rows = []) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Checks if a value is a valid hex color code.
+ * @param {string|number} value The color string.
+ * @returns {boolean} True if valid hex color.
+ */
 export function isHexColor(value) {
   return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(
     String(value || "").trim(),
   );
 }
 
+/**
+ * Gets the pie chart color palette from configuration.
+ * @param {Object} config The application configuration.
+ * @returns {string[]|null} The palette colors or null.
+ */
 export function getAdminPanelPiePalette(config) {
   const raw = config?.ui?.admin_panel?.theme?.pie_palette;
   if (!Array.isArray(raw)) return null;
@@ -56,6 +90,7 @@ export function getAdminPanelPiePalette(config) {
   return colors.length >= 2 ? colors.slice(0, 12) : null;
 }
 
+/** @type {Array<{name: string, value: number}>} */
 export const DEFAULT_CMS_WEEKLY_TREND = [
   { name: "Mon", value: 12 },
   { name: "Tue", value: 19 },
@@ -66,6 +101,11 @@ export const DEFAULT_CMS_WEEKLY_TREND = [
   { name: "Sun", value: 10 },
 ];
 
+/**
+ * Gets the CMS weekly trend fallback data.
+ * @param {Object} config The application configuration.
+ * @returns {Array<{name: string, value: number}>} The trend data.
+ */
 export function getCmsWeeklyTrendFallback(config) {
   const raw = config?.ui?.admin_panel?.fallbacks?.cms?.weekly_trend;
   if (!Array.isArray(raw) || !raw.length) return DEFAULT_CMS_WEEKLY_TREND;
@@ -80,10 +120,16 @@ export function getCmsWeeklyTrendFallback(config) {
     .slice(0, 31);
 }
 
+/** @type {number[]} */
 export const DEFAULT_ULTRA_MINI_CHART_POINTS = [
   12, 19, 15, 22, 28, 18, 10, 14, 20, 25, 30, 22,
 ];
 
+/**
+ * Gets ultra security mini chart points.
+ * @param {Object} config The application configuration.
+ * @returns {number[]} The points.
+ */
 export function getUltraMiniChartPoints(config) {
   const raw =
     config?.ui?.admin_panel?.fallbacks?.ultra_security?.mini_chart_points;
@@ -95,6 +141,7 @@ export function getUltraMiniChartPoints(config) {
     : DEFAULT_ULTRA_MINI_CHART_POINTS;
 }
 
+/** @type {Array<{label: string, value: string}>} */
 export const DEFAULT_ULTRA_MINI_CHART_KPIS = [
   { label: "Active Users", value: "2,847" },
   { label: "Total Revenue", value: "$124.5K" },
@@ -102,6 +149,11 @@ export const DEFAULT_ULTRA_MINI_CHART_KPIS = [
   { label: "Avg. Session", value: "8m 32s" },
 ];
 
+/**
+ * Gets ultra security KPI metrics.
+ * @param {Object} config The application configuration.
+ * @returns {Array<{label: string, value: string}>} The KPIs.
+ */
 export function getUltraMiniChartKpis(config) {
   const raw =
     config?.ui?.admin_panel?.fallbacks?.ultra_security?.mini_chart_kpis;
@@ -115,6 +167,7 @@ export function getUltraMiniChartKpis(config) {
     .slice(0, 6);
 }
 
+/** @type {string[]} */
 export const ULTRA_CAPABILITIES_DEFAULT = [
   "Advanced Search Filters",
   "Priority Buyer Request Placement",
@@ -133,6 +186,11 @@ export const ULTRA_CAPABILITIES_DEFAULT = [
   "Custom RFQ Templates",
 ];
 
+/**
+ * Gets ultra security capabilities.
+ * @param {Object} config The application configuration.
+ * @returns {string[]} The capabilities.
+ */
 export function getUltraSecurityCapabilities(config) {
   const raw = config?.ui?.admin_panel?.fallbacks?.ultra_security?.capabilities;
   const list = Array.isArray(raw)
@@ -145,8 +203,14 @@ export function getUltraSecurityCapabilities(config) {
   return unique.length ? unique.slice(0, 30) : ULTRA_CAPABILITIES_DEFAULT;
 }
 
+/** @type {string} */
 export const DEFAULT_CONTRACT_NO_DATA_LABEL = "No Data";
 
+/**
+ * Gets the no data label for contracts.
+ * @param {Object} config The application configuration.
+ * @returns {string} The label.
+ */
 export function getContractNoDataLabel(config) {
   const raw =
     config?.ui?.admin_panel?.fallbacks?.contract_status?.no_data_label;
@@ -154,6 +218,7 @@ export function getContractNoDataLabel(config) {
   return value || DEFAULT_CONTRACT_NO_DATA_LABEL;
 }
 
+/** @type {Object<string, string>} */
 export const DEFAULT_EMPTY_STATE_COPY = {
   no_verifications: "No pending verifications at this time.",
   no_contracts: "No contracts found. Start by creating your first contract.",
@@ -163,6 +228,13 @@ export const DEFAULT_EMPTY_STATE_COPY = {
   no_moderation_cases: "No moderation cases to review.",
 };
 
+/**
+ * Gets empty state copy text.
+ * @param {Object} config The application configuration.
+ * @param {string} key The key.
+ * @param {string} fallback The fallback text.
+ * @returns {string} The copy text.
+ */
 export function getEmptyStateCopy(config, key, fallback) {
   const k = String(key || "").trim();
   const raw = config?.ui?.admin_panel?.copy?.empty_states?.[k];
@@ -172,6 +244,7 @@ export function getEmptyStateCopy(config, key, fallback) {
   return fallback;
 }
 
+/** @type {string[]} */
 export const buyerBenefits = [
   "Advanced Search Filters",
   "Priority Buyer Request Placement",
@@ -186,6 +259,7 @@ export const buyerBenefits = [
   "Profile, product boost & increased reach",
 ];
 
+/** @type {string[]} */
 export const factoryBenefits = [
   "Profile, product boost & increased reach",
   "Advanced analytics (who viewed, inquiry rate)",
@@ -202,6 +276,7 @@ export const factoryBenefits = [
   "Direct access to verified buyers",
 ];
 
+/** @type {string[]} */
 export const buyingHouseBenefits = [
   "Multi-factory management dashboard",
   "Team collaboration tools",
@@ -216,6 +291,7 @@ export const buyingHouseBenefits = [
   "Profile, product boost & increased reach",
 ];
 
+/** @type {string[]} */
 export const DEFAULT_PIE_PALETTE = [
   "#3B82F6",
   "#10B981",
@@ -227,6 +303,11 @@ export const DEFAULT_PIE_PALETTE = [
   "#84CC16",
 ];
 
+/**
+ * Gets the pie chart color palette.
+ * @param {Object} config The application configuration.
+ * @returns {string[]} The palette colors.
+ */
 export function getPiePalette(config) {
   const fromConfig = getAdminPanelPiePalette(config);
   return fromConfig || DEFAULT_PIE_PALETTE;
@@ -234,12 +315,22 @@ export function getPiePalette(config) {
 
 export { cn } from "../lib/cn";
 
+/**
+ * Normalizes a role string.
+ * @param {string} value The role string.
+ * @returns {string} The normalized string.
+ */
 export function normalizeRole(value = "") {
   return String(value || "")
     .trim()
     .toLowerCase();
 }
 
+/**
+ * Gets allowed roles for the admin panel.
+ * @param {Object} config The application configuration.
+ * @returns {string[]} The allowed roles.
+ */
 export function getAdminPanelAllowedRoles(config) {
   const raw = config?.ui?.admin_panel?.allowed_roles;
   const list = Array.isArray(raw) ? raw.map(normalizeRole).filter(Boolean) : [];
@@ -248,6 +339,11 @@ export function getAdminPanelAllowedRoles(config) {
   return filtered;
 }
 
+/**
+ * Gets fallback inventory for admin panel.
+ * @param {Object} config The application configuration.
+ * @returns {Array<{id: string, label: string, icon_name: string, sections: []}>} The inventory.
+ */
 export function getAdminPanelFallbackInventory(config) {
   const raw = config?.ui?.admin_panel?.fallback_inventory;
   if (!Array.isArray(raw) || !raw.length)
@@ -266,21 +362,39 @@ export function getAdminPanelFallbackInventory(config) {
   return rows.length ? rows : Utils.DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY;
 }
 
+/**
+ * Gets an icon component from registry.
+ * @param {Object} ICON_REGISTRY The registry object.
+ * @param {string} iconName The icon name.
+ * @param {React.ComponentType} fallback The fallback component.
+ * @returns {React.ComponentType} The icon component.
+ */
 export function getIconComponent(ICON_REGISTRY, iconName = "", fallback) {
   const key = String(iconName || "").trim();
   return ICON_REGISTRY[key] || fallback;
 }
 
+/**
+ * Converts a list to a textarea string.
+ * @param {string[]} value The list.
+ * @returns {string} The textarea string.
+ */
 export function listToTextarea(value) {
   return Array.isArray(value) ? value.join("\n") : "";
 }
 
+/**
+ * Converts a textarea string to a list.
+ * @param {string} value The textarea string.
+ * @returns {string[]} The list.
+ */
 export function textareaToList(value) {
   const raw = String(value || "").split(/[\n,]/);
   const cleaned = raw.map((entry) => entry.trim()).filter(Boolean);
   return [...new Set(cleaned)];
 }
 
+/** @type {Array<{label: string, actions: Array<{id: string, label: string, route: string, fields: Array<{key: string, label: string}>}>}>} */
 export const ACTION_GROUPS = [
   {
     label: "Platform Actions",

@@ -58,32 +58,7 @@ const ICE_SERVERS = (() => {
   }
 })();
 
-const QUICK_EMOJIS = [
-  "😀",
-  "😁",
-  "😂",
-  "🤣",
-  "😊",
-  "😍",
-  "😎",
-  "🤝",
-  "👍",
-  "👎",
-  "🙏",
-  "👏",
-  "🎉",
-  "🔥",
-  "💯",
-  "✅",
-  "⚡",
-  "💡",
-  "📝",
-  "📎",
-  "🧠",
-  "🚀",
-  "❤️",
-  "✨",
-];
+import { QUICK_EMOJIS } from "../lib/constants";
 
 function cx(...parts) {
   return parts.filter(Boolean).join(" ");

@@ -3,6 +3,11 @@ import { getCurrentUser } from "../lib/auth";
 import ScrollReveal from "./ScrollReveal";
 import { isRouteValid } from "../lib/routeHealthCheck";
 
+/**
+ * Renders the application footer.
+ *
+ * @returns {JSX.Element} The rendered footer component.
+ */
 export default function Footer() {
   const user = getCurrentUser();
 

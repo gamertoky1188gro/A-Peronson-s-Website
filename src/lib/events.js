@@ -72,6 +72,10 @@ function normalizeEventType(type) {
     .replace(/\s+/g, "_");
 }
 
+/**
+ * Retrieves or creates a persistent client ID stored in localStorage.
+ * @returns {string} The client ID.
+ */
 export function getClientId() {
   try {
     const existing = localStorage.getItem(CLIENT_ID_KEY);
@@ -85,6 +89,10 @@ export function getClientId() {
   }
 }
 
+/**
+ * Retrieves or creates a session ID stored in sessionStorage.
+ * @returns {string} The session ID.
+ */
 export function getSessionId() {
   try {
     const existing = sessionStorage.getItem(SESSION_ID_KEY);
@@ -97,6 +105,16 @@ export function getSessionId() {
   }
 }
 
+/**
+ * Tracks a client-side event by POSTing to the events API.
+ * Silently fails to never break the UI.
+ * @param {string} type - The event type name.
+ * @param {Object} [options] - Event options.
+ * @param {string} [options.entityType=''] - The entity type.
+ * @param {string} [options.entityId=''] - The entity ID.
+ * @param {Object} [options.metadata={}] - Additional metadata.
+ * @returns {Promise<void>}
+ */
 export async function trackClientEvent(
   type,
   { entityType = "", entityId = "", metadata = {} } = {},

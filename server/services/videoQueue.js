@@ -4,6 +4,7 @@ import {
   compressVideo,
   replaceWithCompressed,
 } from "./videoProcessor.js";
+import { logInfo } from "../utils/logger.js";
 
 const QUEUE = [];
 let isProcessing = false;
@@ -52,7 +53,7 @@ async function processNext() {
 }
 
 export function startVideoQueueWorker() {
-  console.log("[Video Queue] Worker started");
+  logInfo("Video Queue Worker started");
   if (QUEUE.length > 0 && !isProcessing) {
     processNext();
   }

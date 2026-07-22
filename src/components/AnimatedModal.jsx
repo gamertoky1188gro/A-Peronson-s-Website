@@ -33,6 +33,18 @@ const slideRightVariants = {
   },
 };
 
+/**
+ * Renders an animated modal component.
+ *
+ * @param {Object} props
+ * @param {boolean} props.open - Whether the modal is open.
+ * @param {Function} props.onClose - Function to call when the modal should close.
+ * @param {React.ReactNode} props.children - The content of the modal.
+ * @param {string} [props.className=""] - Additional CSS class names.
+ * @param {'center'|'right'} [props.variant="center"] - The variant of the modal.
+ * @param {boolean} [props.overlay=true] - Whether to show the overlay.
+ * @returns {JSX.Element|null} The rendered animated modal component.
+ */
 export default function AnimatedModal({
   open,
   onClose,

@@ -1,6 +1,16 @@
 import { useSpring, useReducedMotion, useInView } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 
+/**
+ * Renders a number that counts up to the target value.
+ *
+ * @param {Object} props
+ * @param {number} props.value - The target value.
+ * @param {number} [props.decimals=0] - Number of decimal places.
+ * @param {string} [props.suffix=""] - String to display after the number.
+ * @param {string} [props.className=""] - Additional CSS class names.
+ * @returns {JSX.Element} The rendered count up component.
+ */
 export default function CountUp({
   value,
   decimals = 0,

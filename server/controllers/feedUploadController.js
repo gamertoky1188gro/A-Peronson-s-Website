@@ -2,6 +2,7 @@ import path from "path";
 import crypto from "crypto";
 import fs from "fs";
 import prisma from "../utils/prisma.js";
+import { logInfo, logError } from "../utils/logger.js";
 import {
   analyzeBufferWithAI,
   isAIAnalyticsEnabled,
@@ -106,11 +107,9 @@ async function runAIAnalysis(docId, fullPath) {
       },
     });
 
-    console.log(
-      `[AI Moderation] Document ${docId}: label=${label}, score=${score}, autoApproved=${autoApproved}`,
-    );
+    logInfo("AI Moderation document result", { docId, label, score, autoApproved });
   } catch (err) {
-    console.error(`[AI Moderation] Failed for document ${docId}:`, err.message);
+    logError("AI Moderation document failed", new Error(`docId=${docId}: ${err.message}`));
   }
 }
 
