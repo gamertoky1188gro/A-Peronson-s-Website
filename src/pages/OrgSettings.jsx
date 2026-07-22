@@ -17,7 +17,7 @@ import { useEntitlements } from "../hooks/useSecureUser";
 import ProfileImageUpload from "../components/ui/ProfileImageUpload";
 import { ThreeDot } from "react-loading-indicators";
 import { logger } from "../lib/logger";
-import { isValidPhone, isValidUrl, ERRORS } from "../lib/validation";
+import { isValidEmail, isValidPhone, isValidUrl, ERRORS } from "../lib/validation";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -799,8 +799,8 @@ export default function OrgSettings({ embedded = false }) {
       setMemberFeedback("Enter a member email");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setMemberFeedback("Enter a valid email address.");
+    if (!isValidEmail(email)) {
+      setMemberFeedback(ERRORS.email);
       return;
     }
     const token = getToken();
@@ -984,6 +984,10 @@ export default function OrgSettings({ embedded = false }) {
   const saveContactSettings = async () => {
     const token = getToken();
     if (!token) return;
+    if (profileEmail && !isValidEmail(profileEmail)) {
+      setProfileFeedback(ERRORS.email);
+      return;
+    }
     if (profilePhone && !isValidPhone(profilePhone)) {
       setProfileFeedback(ERRORS.phone);
       return;

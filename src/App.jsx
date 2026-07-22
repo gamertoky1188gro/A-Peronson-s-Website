@@ -21,18 +21,31 @@ import ScrollToTop from "./components/ScrollToTop";
 import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
 
+function LazyLoadError() {
+  return (
+    <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8 text-center">
+      <div className="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
+        <svg className="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+        </svg>
+      </div>
+      <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Failed to load page</h2>
+      <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
+        The page could not be loaded. This may be a network issue or a new version was deployed.
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
+      >
+        Refresh Page
+      </button>
+    </div>
+  );
+}
+
 const safeLazy = (importFn) => {
   return lazy(() =>
-    importFn().catch((error) => {
-      if (
-        error.message?.includes("dynamically imported module") ||
-        error.name === "ChunkLoadError"
-      ) {
-        window.location.reload();
-        return { default: () => null };
-      }
-      throw error;
-    }),
+    importFn().catch(() => ({ default: LazyLoadError })),
   );
 };
 
@@ -368,15 +381,17 @@ function AppLayout() {
   const content =
     isAdminRoute || isImmersiveRoute ? (
       <>
-        <Suspense
-          fallback={
-            <div className="flex min-h-screen items-center justify-center">
-              <NeonAtom size={48} />
-            </div>
-          }
-        >
-          <AppRoutes />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense
+            fallback={
+              <div className="flex min-h-screen items-center justify-center">
+                <NeonAtom size={48} />
+              </div>
+            }
+          >
+            <AppRoutes />
+          </Suspense>
+        </ErrorBoundary>
       </>
     ) : (
       <>
@@ -388,22 +403,24 @@ function AppLayout() {
           >
             {!hideChrome ? <NavBar /> : null}
             <main className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
-              <Suspense
-                fallback={
-                  <div className="flex min-h-screen items-center justify-center">
-                    <NeonAtom size={48} />
-                  </div>
-                }
-              >
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              <ErrorBoundary>
+                <Suspense
+                  fallback={
+                    <div className="flex min-h-screen items-center justify-center">
+                      <NeonAtom size={48} />
+                    </div>
+                  }
                 >
-                  <AppRoutes />
-                </motion.div>
-              </Suspense>
+                  <motion.div
+                    key={location.pathname}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <AppRoutes />
+                  </motion.div>
+                </Suspense>
+              </ErrorBoundary>
             </main>
             {!hideChrome && location.pathname !== "/feed" ? <Footer /> : null}
             {!hideChrome ? <FloatingAssistant /> : null}
