@@ -32,3 +32,18 @@
 
 - **Problem:** `/contracts` and `/leads` were not in App.jsx routes or ROUTE_MANIFEST, causing nav items to be hidden by health check
 - **Fix:** Added routes in App.jsx rendering OwnerDashboard (protected by OWNER_ROLES), added to ROUTE_MANIFEST. OwnerDashboard now reads `?tab=` query param for initial active tab. QuickActions now properly shows Contracts and Leads items.
+
+## 7. WebSocket cleanup (Item 26)
+
+- **Problem:** WebSocket connections persisted after component unmount; cleanup didn't nullify all event handlers
+- **Fix:** All 4 WebSocket usage sites (CallInterface, FloatingAssistant, ChatInterface, notificationsRealtime) now nullify ALL handlers (onopen/onmessage/onerror/onclose) before close in useEffect cleanup. FloatingAssistant also handles CONNECTING readyState on disconnect.
+
+## 8. Unnecessary re-renders verification (Item 27)
+
+- **Problem:** Audit flagged low-severity re-render concern in AdminPanel.jsx and SearchResults.jsx
+- **Verdict:** Already well-memoized — AdminPanel has 38+ useMemo/useCallback calls, SearchResults has 16+. No changes needed.
+
+## 9. Test coverage clarification (Item 28)
+
+- **Problem:** Audit reported minimal test coverage based on `src/pages/__tests__/` (now-deleted single file)
+- **Verdict:** Actual test suite lives in `tests/` with 50+ unit tests (Jest + RTL) and 10+ integration tests — comprehensive coverage already exists. No changes needed.

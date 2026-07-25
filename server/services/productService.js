@@ -12,6 +12,7 @@ import { getAdminConfig } from "./adminConfigService.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { indexProduct, deleteProductIndex } from "./openSearchService.js";
 import { indexProduct as indexProductQdrant } from "./qdrantService.js";
+import { logError } from "../utils/logger.js";
 import {
   extractOriginalPrice,
   getBaseCurrency,
@@ -641,7 +642,7 @@ export async function createProduct(user, payload) {
     ...(user?.profile || {}),
     id: ownerId,
     ...user,
-  }).catch(() => {});
+  }).catch(err => logError("productService: indexProductQdrant failed", err));
 
   return presentProduct(row, [], viewer);
 }
@@ -926,7 +927,7 @@ export async function updateProductById(actor, productId, patch = {}) {
       ...(ownerRecord || {}),
       ...(ownerRecord?.profile || {}),
     });
-    await indexProductQdrant(next, ownerRecord || {}).catch(() => {});
+    await indexProductQdrant(next, ownerRecord || {});
   } catch {
     // ignore index failures
   }

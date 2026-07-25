@@ -3,6 +3,7 @@ import { exec } from "child_process";
 import util from "util";
 import fs from "fs/promises";
 import path from "path";
+import { logError } from "../utils/logger.js";
 import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 
 const execAsync = util.promisify(exec);
@@ -420,9 +421,9 @@ export async function performServerAdminAction(action = "", payload = {}) {
         content: String(payload.content || "").slice(0, 4000),
         updated_at: now,
       };
-      fs.mkdir(FILE_MANAGER_ROOT, { recursive: true }).catch(() => {});
+      fs.mkdir(FILE_MANAGER_ROOT, { recursive: true }).catch(err => logError("serverAdminService: mkdir file_manager failed", err));
       fs.writeFile(safePath, String(payload.content || ""), "utf8").catch(
-        () => {},
+        err => logError("serverAdminService: writeFile failed", err),
       );
       const existing = (state.files || []).find(
         (f) => String(f.path) === String(safePath),

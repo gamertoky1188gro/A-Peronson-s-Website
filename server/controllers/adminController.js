@@ -13,7 +13,6 @@ import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 import { handleSignCallback } from "../services/eSignService.js";
 import { logInfo, logError } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
-import { logInfo, logError } from "../utils/logger.js";
 
 function toPublicFileUrl(filePath = "") {
   if (!filePath) return "";
@@ -26,24 +25,38 @@ function toPublicFileUrl(filePath = "") {
 }
 
 export async function verificationAudit(req, res) {
-  const verification = await prisma.verification.findMany();
-  return res.json(verification);
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+  const take = Math.max(1, Math.min(500, Number(req.query.take) || 100));
+  const [data, total] = await Promise.all([
+    prisma.verification.findMany({ skip, take }),
+    prisma.verification.count(),
+  ]);
+  return res.json({ data, total, skip, take });
 }
 
 export async function subscriptionsAudit(req, res) {
-  const subscriptions = await prisma.subscription.findMany();
-  return res.json(subscriptions);
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+  const take = Math.max(1, Math.min(500, Number(req.query.take) || 100));
+  const [data, total] = await Promise.all([
+    prisma.subscription.findMany({ skip, take }),
+    prisma.subscription.count(),
+  ]);
+  return res.json({ data, total, skip, take });
 }
 
 export async function usersAudit(req, res) {
-  const users = await prisma.user.findMany();
-  return res.json(
-    users.map((user) => {
-      const safe = { ...user };
-      delete safe.password_hash;
-      return safe;
-    }),
-  );
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+  const take = Math.max(1, Math.min(500, Number(req.query.take) || 100));
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({ skip, take }),
+    prisma.user.count(),
+  ]);
+  const data = users.map((user) => {
+    const safe = { ...user };
+    delete safe.password_hash;
+    return safe;
+  });
+  return res.json({ data, total, skip, take });
 }
 
 export async function violationsAudit(req, res) {

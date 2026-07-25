@@ -12,6 +12,27 @@ describe("currencyService FX freshness and upsert collision handling", () => {
   const originalCurrencyConfig = prisma.currencyConfig;
   const originalFxRate = prisma.fxRate;
 
+  beforeEach(() => {
+    prisma.currencyConfig = {
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn().mockResolvedValue(null),
+      findFirst: jest.fn().mockResolvedValue(null),
+      count: jest.fn().mockResolvedValue(0),
+      create: jest.fn().mockResolvedValue({}),
+      update: jest.fn().mockResolvedValue({}),
+      delete: jest.fn().mockResolvedValue({}),
+    };
+    prisma.fxRate = {
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn().mockResolvedValue(null),
+      findFirst: jest.fn().mockResolvedValue(null),
+      count: jest.fn().mockResolvedValue(0),
+      create: jest.fn().mockResolvedValue({}),
+      update: jest.fn().mockResolvedValue({}),
+      delete: jest.fn().mockResolvedValue({}),
+    };
+  });
+
   afterEach(() => {
     global.fetch = originalFetch;
     prisma.currencyConfig = originalCurrencyConfig;

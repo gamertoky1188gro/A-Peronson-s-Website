@@ -50,10 +50,9 @@ const MATRIX = [
   },
 ];
 
-test.describe("deal journey matrix", () => {
+test.describe.skipIf(!E2E_RUN)("deal journey matrix", () => {
   for (const row of MATRIX) {
     test(row.name, async ({ request }) => {
-      test.skip(!E2E_RUN, "Set E2E_RUN=true to execute API-backed e2e tests.");
       // NOTE: Setup auth and ids in your test environment fixtures.
       const response = await request.post("/api/deal-journeys/events", {
         data: {

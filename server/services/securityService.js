@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import path from "path";
 import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 import { readAuditLog } from "../utils/auditStore.js";
+import { logError } from "../utils/logger.js";
 
 const execAsync = util.promisify(exec);
 const EXEC_ENABLED = ["true", "1", "yes"].includes(
@@ -408,7 +409,7 @@ export async function performSecurityAction(action = "", payload = {}) {
     const auditHash = auditLog.length
       ? hashAuditLog(auditLog)
       : crypto.randomUUID();
-    await fs.mkdir(IMMUTABLE_DIR, { recursive: true }).catch(() => {});
+    await fs.mkdir(IMMUTABLE_DIR, { recursive: true }).catch(err => logError("securityService: mkdir immutable dir failed", err));
     const fileName = `immutable-${now.replace(/[:.]/g, "-")}.json`;
     const payloadOut = {
       created_at: now,
@@ -421,7 +422,7 @@ export async function performSecurityAction(action = "", payload = {}) {
         JSON.stringify(payloadOut, null, 2),
         "utf8",
       )
-      .catch(() => {});
+      .catch(err => logError("securityService: writeFile immutable backup failed", err));
     updated = await updateState((state) => {
       state.immutable_backups = {
         ...state.immutable_backups,

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
+import { logError } from "../utils/logger.js";
 import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 
 const STATE_FILE = "cms_state.json";
@@ -139,7 +140,7 @@ export async function performCmsAction(action = "", payload = {}) {
       return state;
     });
     if (payload?.content) {
-      await fs.mkdir(CONTENT_DIR, { recursive: true }).catch(() => {});
+      await fs.mkdir(CONTENT_DIR, { recursive: true }).catch(err => logError("cmsService: mkdir failed", err));
       await fs
         .writeFile(
           path.join(
@@ -149,7 +150,7 @@ export async function performCmsAction(action = "", payload = {}) {
           String(payload.content),
           "utf8",
         )
-        .catch(() => {});
+        .catch(err => logError("cmsService: writeFile failed", err));
     }
   } else if (action === "cms.page.create") {
     updated = await updateState((state) => {
@@ -164,14 +165,14 @@ export async function performCmsAction(action = "", payload = {}) {
       return state;
     });
     if (payload?.content) {
-      await fs.mkdir(CONTENT_DIR, { recursive: true }).catch(() => {});
+      await fs.mkdir(CONTENT_DIR, { recursive: true }).catch(err => logError("cmsService: mkdir failed", err));
       await fs
         .writeFile(
           path.join(CONTENT_DIR, `page-${payload.slug || actionId}.md`),
           String(payload.content),
           "utf8",
         )
-        .catch(() => {});
+        .catch(err => logError("cmsService: writeFile failed", err));
     }
   } else if (action === "cms.media.upload") {
     updated = await updateState((state) => {

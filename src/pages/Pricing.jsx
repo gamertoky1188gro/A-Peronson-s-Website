@@ -236,12 +236,7 @@ const defaultPricing = {
   },
 };
 
-const _statCards = [
-  { label: "Order completion", value: "72%", meta: "last 30 days", icon: "📊" },
-  { label: "Avg. cycle", value: "18d", meta: "request → contract", icon: "📈" },
-  { label: "Active orgs", value: "24", meta: "buyers + factories", icon: "👥" },
-  { label: "Response SLA", value: "1h 10m", meta: "median", icon: "🔒" },
-];
+
 
 function SectionTitle({ eyebrow, title, subtitle }) {
   const reduceMotion = useReducedMotion();
@@ -603,9 +598,9 @@ export default function PricingPage() {
     locale: "en_US",
   });
   const location = useLocation();
-  const [pricing, setPricing] = useState(defaultPricing);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const [pricing, setPricing] = useState(null);
+  const [pricingLoading, setPricingLoading] = useState(true);
+  const [pricingError, setPricingError] = useState(null);
 
   const sessionUser = getCurrentUser();
   const { user: secureUser } = useSecureUser();
@@ -636,11 +631,11 @@ export default function PricingPage() {
       .catch((err) => {
         if (!alive) return;
         if (err?.name === "AbortError") return;
-        setLoadError(String(err?.message || "Failed to load analytics"));
+        setPricingError(String(err?.message || "Failed to load pricing data"));
       })
       .finally(() => {
         if (!alive) return;
-        setLoading(false);
+        setPricingLoading(false);
       });
 
     return () => {
@@ -746,14 +741,44 @@ export default function PricingPage() {
     let running = true;
     const id = setInterval(() => {
       if (running) gradientAngle.set((gradientAngle.get() + 0.4) % 360);
-    }, 40);
+    }, 100);
     return () => {
       running = false;
       clearInterval(id);
     };
   }, [reduceMotion, gradientAngle]);
 
-  if (loading) return <NeonAtom fill />;
+  if (pricingLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f9ff] dark:bg-[#07111f]">
+        <NeonAtom />
+      </div>
+    );
+  }
+
+  if (pricingError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#f5f9ff] px-4 dark:bg-[#07111f]">
+        <div className="mx-auto max-w-md rounded-2xl border border-red-200/80 bg-red-50 p-8 text-center shadow-sm dark:border-red-800/40 dark:bg-red-950/30">
+          <div className="mb-4 text-4xl" aria-hidden="true">
+            ⚠️
+          </div>
+          <h2 className="mb-2 text-xl font-semibold text-red-800 dark:text-red-200">
+            Unable to load pricing
+          </h2>
+          <p className="mb-6 text-sm leading-relaxed text-red-600 dark:text-red-300">
+            {pricingError}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-2 rounded-xl bg-red-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
@@ -831,8 +856,8 @@ export default function PricingPage() {
 
           <AnalyticsCard
             tiles={pricing?.analytics?.tiles || []}
-            loading={loading}
-            loadError={loadError}
+            loading={pricingLoading}
+            loadError={pricingError}
           />
         </ScrollReveal>
 
@@ -919,8 +944,8 @@ export default function PricingPage() {
           </div>
           <AnalyticsCard
             tiles={pricing?.analytics?.tiles || []}
-            loading={loading}
-            loadError={loadError}
+            loading={pricingLoading}
+            loadError={pricingError}
           />
         </ScrollReveal>
 
@@ -954,8 +979,8 @@ export default function PricingPage() {
           <div className="mt-10">
             <AnalyticsCard
               tiles={pricing?.analytics?.tiles || []}
-              loading={loading}
-              loadError={loadError}
+              loading={pricingLoading}
+              loadError={pricingError}
             />
           </div>
         </ScrollReveal>

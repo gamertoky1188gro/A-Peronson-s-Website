@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
+import { adminLimiter } from "../middleware/rateLimiter.js";
 import { requireAdminSecurity } from "../middleware/adminSecurity.js";
 import { requireAdminStepUp } from "../middleware/adminStepUp.js";
 import { requireDualExportApproval } from "../middleware/adminDualConfirm.js";
@@ -110,6 +111,8 @@ import {
 } from "../controllers/governanceController.js";
 
 const router = Router();
+
+router.use(adminLimiter);
 
 router.get(
   "/users",

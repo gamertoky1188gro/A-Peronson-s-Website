@@ -1,6 +1,7 @@
 import { QdrantClient } from "@qdrant/qdrant-js";
 import { getAdminConfig } from "./adminConfigService.js";
 import prisma from "../utils/prisma.js";
+import { logError } from "../utils/logger.js";
 import {
   generateEmbedding,
   generateEmbeddingWithRetry,
@@ -154,7 +155,7 @@ export async function indexProduct(product, author) {
     .upsert(name, {
       points: [{ id: product.id, vector: embedding, payload }],
     })
-    .catch(() => {});
+    .catch(err => logError("qdrantService: upsert product index failed", err));
 }
 
 export async function indexRequirement(req, author) {
@@ -170,7 +171,7 @@ export async function indexRequirement(req, author) {
     .upsert(name, {
       points: [{ id: req.id, vector: embedding, payload }],
     })
-    .catch(() => {});
+    .catch(err => logError("qdrantService: upsert requirement index failed", err));
 }
 
 export async function deleteProduct(id) {

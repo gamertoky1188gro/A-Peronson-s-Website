@@ -225,6 +225,7 @@ export function requestLogger({ timeoutMs = 45000 } = {}) {
     const timer = setTimeout(() => {
       if (res.headersSent) return;
       res.status(504).json({ error: "Request timeout" });
+      req.destroy();
       const duration = Date.now() - startedAt;
       logInfo("request timeout", formatEventLog({
           request_id: requestId,

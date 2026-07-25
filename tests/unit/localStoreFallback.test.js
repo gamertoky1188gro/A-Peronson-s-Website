@@ -11,6 +11,18 @@ describe("localStore fallback and test-mode behavior", () => {
   const originalNodeEnv = process.env.NODE_ENV;
   const originalAppState = prisma.appState;
 
+  beforeEach(() => {
+    prisma.appState = {
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn().mockResolvedValue(null),
+      findFirst: jest.fn().mockResolvedValue(null),
+      count: jest.fn().mockResolvedValue(0),
+      create: jest.fn().mockResolvedValue({}),
+      update: jest.fn().mockResolvedValue({}),
+      delete: jest.fn().mockResolvedValue({}),
+    };
+  });
+
   afterEach(() => {
     process.env.NODE_ENV = originalNodeEnv;
     prisma.appState = originalAppState;

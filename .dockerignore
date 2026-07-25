@@ -1,0 +1,11 @@
+node_modules
+.git
+history
+docs
+tests
+.env
+*.md
+server/uploads/
+scripts/*.txt
+pnpm-lock.yaml
+package-lock.yaml

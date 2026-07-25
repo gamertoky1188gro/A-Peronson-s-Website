@@ -12,6 +12,11 @@ describe("db connection lifecycle", () => {
   const originalConnect = prisma.$connect;
   const originalDisconnect = prisma.$disconnect;
 
+  beforeEach(() => {
+    prisma.$connect = jest.fn().mockResolvedValue(undefined);
+    prisma.$disconnect = jest.fn().mockResolvedValue(undefined);
+  });
+
   afterEach(() => {
     process.env.DATABASE_URL = originalDatabaseUrl;
     prisma.$connect = originalConnect;

@@ -3,7 +3,6 @@ import path from "path";
 import fs from "fs";
 import express from "express";
 import cors from "cors";
-import { logInfo } from "./utils/logger.js";
 import helmet from "helmet";
 import http from "http";
 import { WebSocketServer } from "ws";
@@ -1085,9 +1084,9 @@ async function start() {
             scanAndAnalyzeExistingFiles().catch(console.error);
           }, 5000);
         })
-        .catch(() => {});
+        .catch(err => logError("server: uploadsService import failed", err));
     })
-    .catch(() => {});
+    .catch(err => logError("server: aiModerationService import failed", err));
 }
 
 start().catch((error) => {

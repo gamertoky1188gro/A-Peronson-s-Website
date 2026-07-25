@@ -8,6 +8,32 @@ export const API_BASE = import.meta.env.VITE_API_URL || "/api";
 const USER_KEY = "user";
 const TOKEN_KEY = "jwt";
 
+let cachedUser = null;
+let cacheTime = 0;
+const CACHE_TTL_MS = 60000;
+
+function loadUserFromStorage() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchAndCacheUser(token) {
+  try {
+    const user = await fetchCurrentUser(token);
+    if (user) {
+      cachedUser = user;
+      cacheTime = Date.now();
+    }
+    return user;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Retrieves the JWT token from local or session storage.
  * @returns {string} The JWT token, or an empty string if not found.

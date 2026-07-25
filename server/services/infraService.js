@@ -6,6 +6,7 @@ import util from "util";
 import crypto from "crypto";
 import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 import { readAuditLog } from "../utils/auditStore.js";
+import { logError } from "../utils/logger.js";
 
 const execAsync = util.promisify(exec);
 const EXEC_ENABLED = ["true", "1", "yes"].includes(
@@ -1301,7 +1302,7 @@ export async function performInfraAction(action = "", payload = {}) {
     const backupDir = path.join(process.cwd(), "server", "backups");
     const backupName = `backup-${new Date().toISOString().replace(/[:.]/g, "-")}.zip`;
     const backupPath = path.join(backupDir, backupName);
-    await fs.mkdir(backupDir, { recursive: true }).catch(() => {});
+    await fs.mkdir(backupDir, { recursive: true }).catch(err => logError("infraService: mkdir backup failed", err));
     command = isWindows()
       ? `powershell -NoProfile -Command "Compress-Archive -Path '${path.join(process.cwd(), "server", "database", "*")}' -DestinationPath '${backupPath}' -Force"`
       : `tar -czf ${backupPath} -C ${path.join(process.cwd(), "server", "database")} .`;

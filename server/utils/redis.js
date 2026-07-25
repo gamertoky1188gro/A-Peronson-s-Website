@@ -90,7 +90,13 @@ export async function cacheDelete(key) {
 export async function cacheInvalidatePattern(pattern) {
   if (!isRedisConnected()) return false;
   try {
-    const keys = await client.keys(pattern);
+    const keys = [];
+    let cursor = "0";
+    do {
+      const [nextCursor, found] = await client.scan(cursor, { MATCH: pattern, COUNT: 100 });
+      cursor = nextCursor;
+      keys.push(...found);
+    } while (cursor !== "0");
     if (keys.length > 0) {
       await client.del(keys);
     }

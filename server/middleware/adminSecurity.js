@@ -1,6 +1,5 @@
 import { deny, hasRole } from "../utils/permissions.js";
 import { getAdminAuthConfig } from "../services/securityService.js";
-import chalk from "chalk";
 import { logInfo, logWarn } from "../utils/logger.js";
 
 function normalizeIp(ip = "") {
@@ -10,12 +9,52 @@ function normalizeIp(ip = "") {
   return value;
 }
 
-function isAllowedIp(_req, _allowlist) {
-  return true;
+function isAllowedIp(req, allowlist) {
+  if (!allowlist || allowlist === "*") return true;
+  const clientIp = normalizeIp(req.ip);
+  if (!clientIp) return false;
+  const entries = String(allowlist)
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean);
+  for (const entry of entries) {
+    if (entry === "*") return true;
+    if (entry === clientIp) return true;
+    if (entry.includes("/")) {
+      const [rangeIp, bitsStr] = entry.split("/");
+      const bits = parseInt(bitsStr, 10);
+      if (!isNaN(bits) && bits >= 0 && bits <= 32) {
+        const ipLong = ip4ToLong(clientIp);
+        const rangeLong = ip4ToLong(rangeIp);
+        if (ipLong !== null && rangeLong !== null) {
+          const mask = ~0 << (32 - bits);
+          if ((ipLong & mask) === (rangeLong & mask)) return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
-function isAllowedDevice(_req, _allowlist) {
-  return true;
+function ip4ToLong(ip) {
+  const parts = String(ip).trim().split(".");
+  if (parts.length !== 4) return null;
+  const nums = parts.map(Number);
+  if (nums.some((n) => isNaN(n) || n < 0 || n > 255)) return null;
+  return ((nums[0] << 24) | (nums[1] << 16) | (nums[2] << 8) | nums[3]) >>> 0;
+}
+
+function isAllowedDevice(req, allowlist) {
+  if (!allowlist || allowlist === "*") return true;
+  const deviceId = String(
+    req.headers["x-device-id"] || req.headers["user-agent"] || "",
+  ).trim();
+  if (!deviceId) return false;
+  const entries = String(allowlist)
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean);
+  return entries.some((entry) => entry === "*" || entry === deviceId);
 }
 
 export async function requireAdminSecurity(req, res, next) {

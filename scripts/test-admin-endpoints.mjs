@@ -1,23 +1,38 @@
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-process.env.DATABASE_URL =
-  process.env.DATABASE_URL ||
-  "postgresql://postgres:123123455@localhost:5432/gartexhub";
-process.env.ADMIN_MFA_CODE = process.env.ADMIN_MFA_CODE || "123456";
+const requiredEnvs = [
+  "DATABASE_URL",
+  "ADMIN_MFA_CODE",
+  "ADMIN_IP_ALLOWLIST",
+  "ADMIN_DEVICE_ALLOWLIST",
+  "ADMIN_STEPUP_CODE",
+  "ADMIN_EXPORT_CODE_PRIMARY",
+  "ADMIN_EXPORT_CODE_SECONDARY",
+  "ADMIN_EXEC_ENABLED",
+  "ADMIN_EXEC_ALLOW_ANY",
+  "ADMIN_EXEC_ALLOWLIST",
+  "ADMIN_EXEC_TIMEOUT_MS",
+];
+for (const key of requiredEnvs) {
+  if (!process.env[key]) {
+    console.warn(`Warning: ${key} not set — using safe fallback`);
+  }
+}
+
+process.env.DATABASE_URL = process.env.DATABASE_URL || "";
+process.env.ADMIN_MFA_CODE = process.env.ADMIN_MFA_CODE || "";
 process.env.ADMIN_IP_ALLOWLIST =
   process.env.ADMIN_IP_ALLOWLIST || "127.0.0.1,::1";
 process.env.ADMIN_DEVICE_ALLOWLIST =
   process.env.ADMIN_DEVICE_ALLOWLIST || "local-dev-device";
-process.env.ADMIN_STEPUP_CODE = process.env.ADMIN_STEPUP_CODE || "stepup-7890";
+process.env.ADMIN_STEPUP_CODE = process.env.ADMIN_STEPUP_CODE || "";
 process.env.ADMIN_EXPORT_CODE_PRIMARY =
-  process.env.ADMIN_EXPORT_CODE_PRIMARY || "export-primary";
+  process.env.ADMIN_EXPORT_CODE_PRIMARY || "";
 process.env.ADMIN_EXPORT_CODE_SECONDARY =
-  process.env.ADMIN_EXPORT_CODE_SECONDARY || "export-secondary";
-process.env.ADMIN_EXEC_ENABLED = process.env.ADMIN_EXEC_ENABLED || "true";
+  process.env.ADMIN_EXPORT_CODE_SECONDARY || "";
+process.env.ADMIN_EXEC_ENABLED = process.env.ADMIN_EXEC_ENABLED || "false";
 process.env.ADMIN_EXEC_ALLOW_ANY = process.env.ADMIN_EXEC_ALLOW_ANY || "false";
-process.env.ADMIN_EXEC_ALLOWLIST =
-  process.env.ADMIN_EXEC_ALLOWLIST ||
-  "powershell -NoProfile -Command,systemctl,ps,df,kill,echo,ping,tracert,traceroute,netsh,ufw,apt-get,apt,winget,schtasks,snmpwalk,ip,tail,timedatectl,useradd,userdel,passwd,usermod,gpasswd,tzutil,w32tm,getent,awk,head,crontab,php,iostat,command,certbot,tar,dnf,yum,tc,fwupdmgr";
+process.env.ADMIN_EXEC_ALLOWLIST = process.env.ADMIN_EXEC_ALLOWLIST || "";
 process.env.ADMIN_EXEC_TIMEOUT_MS =
   process.env.ADMIN_EXEC_TIMEOUT_MS || "12000";
 

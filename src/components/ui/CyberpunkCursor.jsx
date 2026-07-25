@@ -193,24 +193,28 @@ export default function CyberpunkCursor() {
     };
 
     const magneticEls = [...document.querySelectorAll(".magnetic")];
+    const magneticListeners = [];
     magneticEls.forEach((el) => {
       let rect = null;
 
-      el.addEventListener("mouseenter", () => {
+      const onEnter = () => {
         rect = el.getBoundingClientRect();
-      });
-
-      el.addEventListener("mousemove", (e) => {
+      };
+      const onMove = (e) => {
         rect = rect || el.getBoundingClientRect();
         const dx = e.clientX - (rect.left + rect.width / 2);
         const dy = e.clientY - (rect.top + rect.height / 2);
         const strength = 0.18;
         el.style.transform = `translate3d(${dx * strength}px, ${dy * strength}px, 0)`;
-      });
-
-      el.addEventListener("mouseleave", () => {
+      };
+      const onLeave = () => {
         el.style.transform = "";
-      });
+      };
+
+      el.addEventListener("mouseenter", onEnter);
+      el.addEventListener("mousemove", onMove);
+      el.addEventListener("mouseleave", onLeave);
+      magneticListeners.push({ el, onEnter, onMove, onLeave });
     });
 
     const animate = () => {
@@ -332,6 +336,11 @@ export default function CyberpunkCursor() {
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup", onUp);
       document.removeEventListener("mousemove", onDomMove);
+      magneticListeners.forEach(({ el, onEnter, onMove, onLeave }) => {
+        el.removeEventListener("mouseenter", onEnter);
+        el.removeEventListener("mousemove", onMove);
+        el.removeEventListener("mouseleave", onLeave);
+      });
     };
   }, [theme]);
 

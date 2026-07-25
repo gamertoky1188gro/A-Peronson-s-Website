@@ -1,266 +1,247 @@
-/**
- * Admin Config Section - Configuration Editor
- * Location in main file: ~line 16232-16489
- */
-
-import { Sliders, Database, Wrench, Save } from "lucide-react";
-import { cn } from "../../../lib/utils";
 import { ThreeDot } from "react-loading-indicators";
+import { apiRequest, getToken } from "../../../lib/auth";
 
 export function AdminConfigSection({
-  activeCategory,
-  adminDark,
-  configEditorTab = "inventory",
-  setConfigEditorTab = () => {},
-  configEditorData = {},
-  configEditorLoading = false,
-  configEditorError = "",
-  configEditorNotice = "",
-  configEditorSaving = false,
-  setConfigEditorSaving = () => {},
-  setConfigEditorNotice = () => {},
-  setConfigEditorError = () => {},
+  configEditorTab,
+  setConfigEditorTab,
+  configEditorLoading,
+  configEditorError,
+  configEditorData,
+  configEditorSaving,
+  setConfigEditorSaving,
+  configEditorNotice,
+  setConfigEditorNotice,
+  setConfigEditorError,
 }) {
-  if (activeCategory !== "config") return null;
-
-  const configTabs = [
-    { id: "inventory", label: "Inventory", icon: Database },
-    { id: "actions", label: "Actions", icon: Wrench },
-    { id: "ui", label: "UI Settings", icon: Sliders },
-  ];
-
   return (
-    <div className="space-y-6">
-      {/* Config Header */}
-      <div
-        className={cn(
-          "rounded-3xl border p-6",
-          adminDark
-            ? "border-white/10 bg-white/5"
-            : "border-slate-200 bg-white",
-        )}
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-400 text-white">
-            <Sliders className="h-6 w-6" />
-          </div>
-          <div>
-            <h2
-              className={cn(
-                "text-2xl font-semibold",
-                adminDark ? "text-white" : "text-slate-900",
-              )}
-            >
-              Config Editor
-            </h2>
-            <p
-              className={cn(
-                "mt-1",
-                adminDark ? "text-slate-400" : "text-slate-600",
-              )}
-            >
-              Edit admin panel configuration from the database
-            </p>
-          </div>
-        </div>
+    <div className="admin-card admin-sweep rounded-3xl p-6">
+      <div className="mb-6">
+        <h2 className="text-lg font-bold">
+          Dynamic Configuration Editor
+        </h2>
+        <p className="text-sm text-slate-500">
+          Edit admin panel configuration from the database.
+        </p>
       </div>
 
-      {/* Tabs */}
       <div className="mb-4 flex gap-2">
-        {configTabs.map((tab) => (
+        {["inventory", "actions", "ui"].map((tab) => (
           <button
-            key={tab.id}
-            onClick={() => setConfigEditorTab(tab.id)}
-            className={cn(
-              "rounded-full px-4 py-1.5 text-sm font-medium transition",
-              configEditorTab === tab.id
+            key={tab}
+            type="button"
+            onClick={() => setConfigEditorTab(tab)}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              configEditorTab === tab
                 ? "bg-sky-500 text-white"
-                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
-            )}
+                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+            }`}
           >
-            {tab.id === "inventory"
+            {tab === "inventory"
               ? "Inventory"
-              : tab.id === "actions"
+              : tab === "actions"
                 ? "Actions"
                 : "UI Settings"}
           </button>
         ))}
       </div>
 
-      {/* Loading State */}
       {configEditorLoading ? (
-        <ThreeDot
-          variant="bounce"
-          color="#6100ff"
-          size="small"
-          text=""
-          textColor=""
-        />
+        <div className="py-8 text-center">
+          <ThreeDot
+            variant="bounce"
+            color="#6100ff"
+            size="small"
+            text=""
+            textColor=""
+          />
+        </div>
       ) : configEditorError ? (
         <div className="py-8 text-center text-rose-500">
           {configEditorError}
         </div>
-      ) : (
-        <>
-          {/* Inventory Tab */}
-          {configEditorTab === "inventory" && (
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setConfigEditorSaving(true);
-                    setConfigEditorNotice("");
-                    try {
-                      setConfigEditorNotice("Inventory saved!");
-                    } catch (err) {
-                      setConfigEditorError(err.message);
-                    } finally {
-                      setConfigEditorSaving(false);
-                    }
-                  }}
-                  disabled={configEditorSaving}
-                  className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                >
-                  {configEditorSaving ? (
-                    <ThreeDot
-                      variant="bounce"
-                      color="#6100ff"
-                      size="small"
-                      text=""
-                      textColor=""
-                    />
-                  ) : (
-                    "Save Inventory"
-                  )}
-                </button>
-              </div>
-              <div className="grid gap-3">
-                {(configEditorData?.inventory || []).map((mod, idx) => (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "rounded-xl border p-4",
-                      adminDark ? "border-white/10" : "border-slate-200",
-                    )}
-                  >
-                    <div className="font-medium">{mod?.label || "Module"}</div>
-                    <div className="text-sm text-slate-500">{mod?.id}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Actions Tab */}
-          {configEditorTab === "actions" && (
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setConfigEditorSaving(true);
-                    setConfigEditorNotice("");
-                    try {
-                      setConfigEditorNotice("Actions saved!");
-                    } catch (err) {
-                      setConfigEditorError(err.message);
-                    } finally {
-                      setConfigEditorSaving(false);
-                    }
-                  }}
-                  disabled={configEditorSaving}
-                  className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                >
-                  {configEditorSaving ? (
-                    <ThreeDot
-                      variant="bounce"
-                      color="#6100ff"
-                      size="small"
-                      text=""
-                      textColor=""
-                    />
-                  ) : (
-                    "Save Actions"
-                  )}
-                </button>
-              </div>
+      ) : configEditorTab === "inventory" ? (
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={async () => {
+                setConfigEditorSaving(true);
+                setConfigEditorNotice("");
+                try {
+                  await apiRequest("/admin/config/inventory", {
+                    method: "PUT",
+                    token: getToken(),
+                    body: {
+                      data: {
+                        modules: configEditorData.inventory,
+                      },
+                    },
+                  });
+                  setConfigEditorNotice("Inventory saved!");
+                } catch (err) {
+                  setConfigEditorError(err.message);
+                } finally {
+                  setConfigEditorSaving(false);
+                }
+              }}
+              disabled={configEditorSaving}
+              className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {configEditorSaving ? (
+                <ThreeDot
+                  variant="bounce"
+                  color="#6100ff"
+                  size="small"
+                  text=""
+                  textColor=""
+                />
+              ) : (
+                "Save Inventory"
+              )}
+            </button>
+          </div>
+          <div className="grid gap-3">
+            {configEditorData.inventory.map((mod, idx) => (
               <div
-                className={cn(
-                  "rounded-xl border p-4",
-                  adminDark ? "border-white/10" : "border-slate-200",
-                )}
+                key={mod.id || idx}
+                className="rounded-xl border p-4 dark:border-white/10"
               >
-                <pre
-                  data-lenis-prevent
-                  className="max-h-96 overflow-auto text-xs"
-                >
-                  {JSON.stringify(configEditorData?.actions || {}, null, 2)}
-                </pre>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{mod.label}</span>
+                  <span className="text-xs text-slate-500">
+                    ({mod.id})
+                  </span>
+                </div>
+                <div className="mt-2 text-xs text-slate-500">
+                  {mod.sections?.length || 0} sections
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* UI Settings Tab */}
-          {configEditorTab === "ui" && (
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setConfigEditorSaving(true);
-                    setConfigEditorNotice("");
-                    try {
-                      setConfigEditorNotice("UI settings saved!");
-                    } catch (err) {
-                      setConfigEditorError(err.message);
-                    } finally {
-                      setConfigEditorSaving(false);
-                    }
-                  }}
-                  disabled={configEditorSaving}
-                  className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                >
-                  {configEditorSaving ? (
-                    <ThreeDot
-                      variant="bounce"
-                      color="#6100ff"
-                      size="small"
-                      text=""
-                      textColor=""
-                    />
-                  ) : (
-                    "Save UI Settings"
-                  )}
-                </button>
-              </div>
-              <pre
-                data-lenis-prevent
-                className={cn(
-                  "max-h-96 overflow-auto rounded-xl p-4 text-xs",
-                  adminDark
-                    ? "bg-slate-900 text-slate-200"
-                    : "bg-slate-50 text-slate-800",
-                )}
+            ))}
+          </div>
+        </div>
+      ) : configEditorTab === "actions" ? (
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={async () => {
+                setConfigEditorSaving(true);
+                setConfigEditorNotice("");
+                try {
+                  const flatActions =
+                    configEditorData.actions.flatMap(
+                      (g) => g.actions || [],
+                    );
+                  await apiRequest("/admin/config/actions", {
+                    method: "PUT",
+                    token: getToken(),
+                    body: {
+                      data: { actions: flatActions },
+                    },
+                  });
+                  setConfigEditorNotice("Actions saved!");
+                } catch (err) {
+                  setConfigEditorError(err.message);
+                } finally {
+                  setConfigEditorSaving(false);
+                }
+              }}
+              disabled={configEditorSaving}
+              className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {configEditorSaving ? (
+                <ThreeDot
+                  variant="bounce"
+                  color="#6100ff"
+                  size="small"
+                  text=""
+                  textColor=""
+                />
+              ) : (
+                "Save Actions"
+              )}
+            </button>
+          </div>
+          <div className="space-y-3">
+            {configEditorData.actions.map((group, gIdx) => (
+              <div
+                key={gIdx}
+                className="rounded-xl border p-4 dark:border-white/10"
               >
-                {JSON.stringify(configEditorData?.ui || {}, null, 2)}
-              </pre>
-            </div>
-          )}
-        </>
+                <div className="font-semibold">{group.label}</div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {(group.actions || []).map((action, aIdx) => (
+                    <div
+                      key={aIdx}
+                      className="text-xs text-slate-600 dark:text-slate-300"
+                    >
+                      {action.label}{" "}
+                      <span className="text-slate-400">
+                        ({action.id})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={async () => {
+                setConfigEditorSaving(true);
+                setConfigEditorNotice("");
+                try {
+                  await apiRequest("/admin/config/ui", {
+                    method: "PUT",
+                    token: getToken(),
+                    body: { data: configEditorData.ui },
+                  });
+                  setConfigEditorNotice("UI settings saved!");
+                } catch (err) {
+                  setConfigEditorError(err.message);
+                } finally {
+                  setConfigEditorSaving(false);
+                }
+              }}
+              disabled={configEditorSaving}
+              className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {configEditorSaving ? (
+                <ThreeDot
+                  variant="bounce"
+                  color="#6100ff"
+                  size="small"
+                  text=""
+                  textColor=""
+                />
+              ) : (
+                "Save UI Settings"
+              )}
+            </button>
+          </div>
+          <pre
+            data-lenis-prevent
+            className="max-h-96 overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-200"
+          >
+            {JSON.stringify(configEditorData.ui, null, 2)}
+          </pre>
+        </div>
       )}
 
-      {/* Notices */}
-      {configEditorNotice && (
+      {configEditorNotice ? (
         <div className="mt-4 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
           {configEditorNotice}
         </div>
-      )}
-      {configEditorError && (
+      ) : null}
+      {configEditorError ? (
         <div className="mt-4 rounded-lg bg-rose-500/10 px-4 py-2 text-sm text-rose-400">
           {configEditorError}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import prisma from "../utils/prisma.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
-import { logInfo } from "../utils/logger.js";
+import { logInfo, logError } from "../utils/logger.js";
 import {
   createNotification,
   emitNotificationsForEntity,
@@ -396,7 +396,7 @@ export async function createRequirement(buyerId, payload) {
       ...(author || {}),
       ...(author?.profile || {}),
     });
-    indexRequirementQdrant(requirement, author || {}).catch(() => {});
+    indexRequirementQdrant(requirement, author || {});
   } catch {
     // ignore index failures
   }
@@ -756,7 +756,7 @@ export async function updateRequirement(requirementId, patch, actor) {
       ...(author || {}),
       ...(author?.profile || {}),
     });
-    indexRequirementQdrant(next, author || {}).catch(() => {});
+    indexRequirementQdrant(next, author || {});
   } catch {
     // ignore index failures
   }

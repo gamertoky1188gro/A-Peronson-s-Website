@@ -102,45 +102,54 @@ export function connectNotificationsRealtime(token = getToken()) {
   currentToken = nextToken;
   reconnectAttempts = 0;
 
-  try {
-    if (socket) socket.close();
-  } catch {
-    // ignore
-  }
+  const handlers = {
+    onOpen: () => {
+      reconnectAttempts = 0;
+      startHeartbeat();
+      try {
+        socket.send(JSON.stringify({ type: "identify", token: nextToken }));
+      } catch {
+        // ignore
+      }
+    },
+    onMessage: (event) => {
+      const msg = safeParse(event?.data);
+      if (!msg) return;
+      if (msg.type === "pong") return;
+      if (
+        msg.type === "notification_created" ||
+        msg.type === "notification_read"
+      ) {
+        emit(msg);
+      }
+    },
+    onClose: () => {
+      stopHeartbeat();
+      if (!currentToken) return;
+      scheduleReconnect(currentToken);
+    },
+    onError: () => {
+      stopHeartbeat();
+      if (!currentToken) return;
+      scheduleReconnect(currentToken);
+    },
+  };
 
-  socket = new WebSocket(WS_BASE);
-
-  socket.addEventListener("open", () => {
-    reconnectAttempts = 0;
-    startHeartbeat();
+  if (socket) {
+    socket.removeEventListener("open", handlers.onOpen);
+    socket.removeEventListener("message", handlers.onMessage);
+    socket.removeEventListener("close", handlers.onClose);
+    socket.removeEventListener("error", handlers.onError);
     try {
-      socket.send(JSON.stringify({ type: "identify", token: nextToken }));
+      socket.close();
     } catch {
       // ignore
     }
-  });
+  }
 
-  socket.addEventListener("message", (event) => {
-    const msg = safeParse(event?.data);
-    if (!msg) return;
-    if (msg.type === "pong") return;
-    if (
-      msg.type === "notification_created" ||
-      msg.type === "notification_read"
-    ) {
-      emit(msg);
-    }
-  });
-
-  socket.addEventListener("close", () => {
-    stopHeartbeat();
-    if (!currentToken) return;
-    scheduleReconnect(currentToken);
-  });
-
-  socket.addEventListener("error", () => {
-    stopHeartbeat();
-    if (!currentToken) return;
-    scheduleReconnect(currentToken);
-  });
+  socket = new WebSocket(WS_BASE);
+  socket.addEventListener("open", handlers.onOpen);
+  socket.addEventListener("message", handlers.onMessage);
+  socket.addEventListener("close", handlers.onClose);
+  socket.addEventListener("error", handlers.onError);
 }

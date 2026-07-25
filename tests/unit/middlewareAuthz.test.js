@@ -105,3 +105,5 @@ describe("authz middleware", () => {
     process.env.ADMIN_STEPUP_MAX_MINUTES = prevWindow;
   });
 });
+
+afterAll(() => { process.env.NODE_ENV = "test"; });

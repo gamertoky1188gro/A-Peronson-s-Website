@@ -328,9 +328,14 @@ export default function FloatingAssistant() {
     return () => {
       cancelReconnect();
       if (socketRef.current) {
+        socketRef.current.onopen = null;
+        socketRef.current.onmessage = null;
         socketRef.current.onclose = null;
         socketRef.current.onerror = null;
-        if (socketRef.current.readyState === WebSocket.OPEN) {
+        if (
+          socketRef.current.readyState === WebSocket.OPEN ||
+          socketRef.current.readyState === WebSocket.CONNECTING
+        ) {
           socketRef.current.close();
         }
       }

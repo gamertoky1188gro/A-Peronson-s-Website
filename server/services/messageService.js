@@ -27,6 +27,7 @@ import {
   evaluateMessagePolicy,
 } from "./communicationPolicyService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
+import { logError } from "../utils/logger.js";
 
 const _USE_SQL_CRM = isCrmSqlEnabled();
 
@@ -526,7 +527,7 @@ export async function postMessage(
   try {
     const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, senderId);
     if (orgOwnerId) {
-      autoSummarizeMatch({ matchId, orgOwnerId }).catch(() => {});
+      autoSummarizeMatch({ matchId, orgOwnerId }).catch(err => logError("messageService: autoSummarizeMatch failed", err));
     }
   } catch {
     void 0;

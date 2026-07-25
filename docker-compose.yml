@@ -20,6 +20,21 @@ services:
       - qdrant_data:/qdrant/storage
     restart: unless-stopped
 
+  opensearch:
+    image: opensearchproject/opensearch:2
+    container_name: gartexhub-opensearch
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    environment:
+      - discovery.type=single-node
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    restart: unless-stopped
+
 volumes:
   ollama_data:
   qdrant_data:
+  opensearch_data:

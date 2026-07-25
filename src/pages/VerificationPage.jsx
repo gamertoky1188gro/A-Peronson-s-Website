@@ -435,7 +435,7 @@ export default function VerificationPage({ embedded = false }) {
     done: Boolean(documents?.[key]),
   }));
 
-  if (pageLoading) return embedded ? null : <NeonAtom fill />;
+  if (pageLoading) return <NeonAtom fill />;
 
   const content = (
     <>

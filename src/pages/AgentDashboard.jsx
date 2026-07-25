@@ -131,20 +131,11 @@ export default function AgentDashboard() {
   const [sendState, setSendState] = useState(null);
   const [queueSummary, setQueueSummary] = useState({ queue: [] });
   const [pageLoading, setPageLoading] = useState(true);
-  const pageLoadCountRef = useRef(0);
 
   useEffect(() => {
     if (loading) return;
-    pageLoadCountRef.current += 1;
-    if (pageLoadCountRef.current >= 2) setPageLoading(false);
+    syncUserFromApi(getToken()).finally(() => setPageLoading(false));
   }, [loading]);
-
-  useEffect(() => {
-    syncUserFromApi(getToken()).finally(() => {
-      pageLoadCountRef.current += 1;
-      if (pageLoadCountRef.current >= 2) setPageLoading(false);
-    });
-  }, []);
 
   async function generateAiReply() {
     const token = getToken();

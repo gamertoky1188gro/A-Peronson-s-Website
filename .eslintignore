@@ -1,0 +1,11 @@
+dist/
+node_modules/
+history/
+docs/
+*.md
+server/uploads/
+scripts/*.txt
+tests/e2e/*.cypress.*
+*.docx
+pnpm-lock.yaml
+package-lock.json

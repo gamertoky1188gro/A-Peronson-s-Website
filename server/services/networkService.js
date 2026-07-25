@@ -4,6 +4,7 @@ import util from "util";
 import os from "os";
 import fs from "fs/promises";
 import path from "path";
+import { logError } from "../utils/logger.js";
 import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
 
 const execAsync = util.promisify(exec);
@@ -771,7 +772,7 @@ export async function performNetworkAction(action = "", payload = {}) {
     const backupId = deviceId || "host";
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const fileName = `config-${backupId}-${timestamp}.txt`;
-    await fs.mkdir(BACKUP_DIR, { recursive: true }).catch(() => {});
+    await fs.mkdir(BACKUP_DIR, { recursive: true }).catch(err => logError("networkService: mkdir backup dir failed", err));
     let snapshot = "snapshot unavailable";
     if (EXEC_ENABLED) {
       const cmd =
@@ -787,7 +788,7 @@ export async function performNetworkAction(action = "", payload = {}) {
         String(snapshot || ""),
         "utf8",
       )
-      .catch(() => {});
+      .catch(err => logError("networkService: writeFile backup failed", err));
     response.inventory = await updateInventory((inventory) =>
       appendConfigAudit(
         {

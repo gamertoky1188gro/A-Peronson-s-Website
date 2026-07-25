@@ -103,3 +103,5 @@ describe("auth routes and controller", () => {
     expect(users.some((u) => u.email === email)).toBe(true);
   });
 });
+
+afterAll(() => { process.env.NODE_ENV = "test"; });

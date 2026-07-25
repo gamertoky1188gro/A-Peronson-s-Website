@@ -24,41 +24,29 @@
     - This file is large; comments focus on major blocks (state/effects/render sections).
 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { List } from "react-window";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
-  ChevronDown,
-  ChevronUp,
   CircleHelp,
   Download,
   EllipsisVertical,
   Filter,
-  Flag,
   FolderOpen,
   Home,
-  Info,
-  Lock,
-  LogOut,
   MessageCircle,
   Phone,
-  Plus,
   Search,
   SendHorizontal,
-  VolumeX,
 } from "lucide-react";
 import NeonAtom from "../components/ui/NeonAtom";
-import { ThreeDot, Mosaic } from "react-loading-indicators";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
 import { uploadFile } from "../lib/upload";
-import UploadProgressBar from "../components/ui/UploadProgressBar";
 import { useSecureUser } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
 import { consumeLeadSource } from "../lib/leadSource";
 import AttachmentPreviewModal from "../components/chat/AttachmentPreviewModal";
 import MarkdownMessage from "../components/chat/MarkdownMessage";
 import FileAttachmentCard from "../components/chat/FileAttachmentCard";
-import JourneyTimeline from "../components/JourneyTimeline";
 
 const WS_BASE = (() => {
   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
@@ -68,6 +56,7 @@ const WS_BASE = (() => {
 
 import { isRouteValid } from "../lib/routeHealthCheck";
 import { ROUTES } from "../lib/routes";
+import MessageArea from "./chat/MessageArea";
 
 const CHAT_NAV_ITEMS = [
   { to: ROUTES.FEED, label: "Feed", icon: Home },
@@ -78,389 +67,35 @@ const CHAT_NAV_ITEMS = [
   { to: ROUTES.HELP, label: "Help", icon: CircleHelp },
 ].filter((item) => isRouteValid(item.to));
 
-const PANEL_STYLE = {
-  background: "rgb(16, 13, 34)",
-  boxShadow: "0 10px 40px rgba(0,0,0,0.45)",
-};
-
-const RIGHT_PANEL_STYLE = {
-  background: "#100D22",
-  boxShadow: "0 10px 40px rgba(0,0,0,0.45)",
-};
-
-function sortByNewest(a, b) {
-  return (
-    new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()
-  );
-}
-
-function sortByOldest(a, b) {
-  return (
-    new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
-  );
-}
-
-function normalizeThreads(messages = [], currentUserId = "") {
-  const byMatchId = new Map();
-  const latestByOther = new Map();
-
-  messages.forEach((message) => {
-    if (!message?.match_id) return;
-    const existing = byMatchId.get(message.match_id);
-    const lock = message.conversation_lock || existing?.lock || null;
-    const isOther =
-      currentUserId && message.sender_id && message.sender_id !== currentUserId;
-    const otherCandidate = isOther ? message : null;
-
-    if (!existing) {
-      byMatchId.set(message.match_id, {
-        id: message.match_id,
-        matchId: message.match_id,
-        requestId: message.request_id || String(message.match_id).split(":")[0],
-        name: formatDisplayName(
-          message.sender_name ||
-            message.company_name ||
-            message.sender_company_name,
-          message.sender_id,
-        ),
-        avatar: message.sender_avatar_url || message.sender_avatar || "",
-        senderId: message.sender_id,
-        verified: Boolean(message.sender_verified),
-        last: String(message.message || "").trim(),
-        unread: Number(message.unread_count || 0),
-        lastReadAt: message.last_read_at || null,
-        timestamp: message.timestamp,
-        lock,
-        isFriendThread: String(message.match_id || "").startsWith("friend:"),
-        friendRequestStatus: message.friend_request_status || null,
-        friendRequestDirection: message.friend_request_direction || null,
-        policyStatus: message.policy_status || "delivered",
-        policyPriority: message.policy_priority || null,
-        policyReason: message.policy_reason || "",
-        retryAfterSeconds: Number(message.retry_after_seconds || 0),
-      });
-      if (otherCandidate) {
-        latestByOther.set(message.match_id, otherCandidate);
-      }
-      return;
-    }
-
-    if (
-      new Date(message.timestamp || 0).getTime() >
-      new Date(existing.timestamp || 0).getTime()
-    ) {
-      byMatchId.set(message.match_id, {
-        ...existing,
-        last: String(message.message || "").trim() || existing.last,
-        timestamp: message.timestamp,
-        lock,
-        isFriendThread:
-          existing.isFriendThread ||
-          String(message.match_id || "").startsWith("friend:"),
-        friendRequestStatus:
-          message.friend_request_status || existing.friendRequestStatus || null,
-        friendRequestDirection:
-          message.friend_request_direction ||
-          existing.friendRequestDirection ||
-          null,
-        unread: Number(message.unread_count || existing.unread || 0),
-        lastReadAt: message.last_read_at || existing.lastReadAt || null,
-        policyStatus:
-          message.policy_status || existing.policyStatus || "delivered",
-        policyPriority:
-          message.policy_priority || existing.policyPriority || null,
-        policyReason: message.policy_reason || existing.policyReason || "",
-        retryAfterSeconds: Number(
-          message.retry_after_seconds || existing.retryAfterSeconds || 0,
-        ),
-      });
-    }
-
-    const existingOther = latestByOther.get(message.match_id);
-    if (otherCandidate) {
-      if (
-        !existingOther ||
-        new Date(message.timestamp || 0).getTime() >
-          new Date(existingOther.timestamp || 0).getTime()
-      ) {
-        latestByOther.set(message.match_id, otherCandidate);
-      }
-    }
-  });
-
-  const normalized = [...byMatchId.values()].map((thread) => {
-    const other = latestByOther.get(thread.matchId);
-    if (!other) return thread;
-    return {
-      ...thread,
-      name: formatDisplayName(
-        other.sender_name || other.company_name || other.sender_company_name,
-        other.sender_id,
-      ),
-      avatar: other.sender_avatar_url || other.sender_avatar || thread.avatar,
-      senderId: other.sender_id,
-      verified: Boolean(other.sender_verified),
-    };
-  });
-
-  return normalized.sort(sortByNewest);
-}
-
-function lockStatusLabel(lock, thread = null) {
-  if (thread?.isFriendThread) {
-    if (
-      thread.friendRequestStatus === "pending" &&
-      thread.friendRequestDirection === "incoming"
-    )
-      return "Incoming friend request";
-    if (
-      thread.friendRequestStatus === "pending" &&
-      thread.friendRequestDirection === "outgoing"
-    )
-      return "Friend request pending";
-    return "Direct friend chat";
-  }
-
-  if (!lock || lock.status === "unclaimed") return "Unclaimed";
-  if (lock.lock_type === "verified_first" && lock.status !== "granted") {
-    return `Verified first message by ${lock.claimed_by_name || "supplier"}`;
-  }
-  if (lock.status === "claimed")
-    return `Claimed by ${lock.claimed_by_name || "you"}`;
-  if (lock.status === "granted") return "Access granted";
-  return `Claimed by ${lock.claimed_by_name || (lock.lock_type === "verified_first" ? "another supplier" : "another agent")}`;
-}
-
-const IMAGE_ATTACHMENT_EXTS = new Set([
-  "jpg",
-  "jpeg",
-  "png",
-  "webp",
-  "avif",
-  "gif",
-  "apng",
-  "bmp",
-  "tiff",
-  "tif",
-  "heic",
-  "heif",
-  "dcm",
-  "tga",
-  "svg",
-  "eps",
-  "pdf",
-  "dng",
-  "cr2",
-  "cr3",
-  "nef",
-  "arw",
-  "sr2",
-  "orf",
-  "raf",
-  "psd",
-  "ai",
-  "xcf",
-  "cdr",
-]);
-const VIDEO_ATTACHMENT_EXTS = new Set([
-  "mp4",
-  "webm",
-  "mkv",
-  "flv",
-  "vob",
-  "ogv",
-  "ogg",
-  "rrc",
-  "gifv",
-  "mng",
-  "mov",
-  "avi",
-  "qt",
-  "wmv",
-  "yuv",
-  "rm",
-  "asf",
-  "amv",
-  "m4p",
-  "m4v",
-  "mpg",
-  "mp2",
-  "mpeg",
-  "mpe",
-  "mpv",
-  "svi",
-  "3gp",
-  "3g2",
-  "mxf",
-  "roq",
-  "nsv",
-  "f4v",
-  "f4p",
-  "f4a",
-  "f4b",
-  "mod",
-]);
-
-function safeAttachmentExt(attachment) {
-  const candidates = [attachment?.name, attachment?.url]
-    .map((value) => String(value || "").trim())
-    .filter(Boolean);
-  if (candidates.length === 0) return "";
-
-  const raw = candidates[0];
-  const cleaned = raw.split("*")[0].split("#")[0];
-  const tail = cleaned.split("/").pop() || cleaned;
-  const match = tail.match(/\.([a-z0-9]+)$/i);
-  return match ? match[1].toLowerCase() : "";
-}
-
-function isImageExt(attachment) {
-  const ext = safeAttachmentExt(attachment);
-  return IMAGE_ATTACHMENT_EXTS.has(ext);
-}
-
-function isVideoExt(attachment) {
-  const ext = safeAttachmentExt(attachment);
-  return VIDEO_ATTACHMENT_EXTS.has(ext);
-}
-
-function isImageMessage(message) {
-  return (
-    message?.type === "image" ||
-    String(message?.attachment?.mime_type || "").startsWith("image/") ||
-    isImageExt(message?.attachment)
-  );
-}
-
-function isVideoMessage(message) {
-  return (
-    message?.type === "video" ||
-    String(message?.attachment?.mime_type || "").startsWith("video/") ||
-    isVideoExt(message?.attachment)
-  );
-}
-
-function toAbsoluteAssetUrl(url = "") {
-  if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  const apiUrl = import.meta.env.VITE_API_URL || "/api";
-  const base = apiUrl.replace(/\/api\/*$/, "");
-  return `${base}${url.startsWith("/") ? "" : "/"}${url}`;
-}
-
-function truncateId(value = "", size = 8) {
-  const normalized = String(value || "");
-  if (normalized.length <= size) return normalized;
-  return `${normalized.slice(0, size)}...`;
-}
-
-function formatDisplayName(name, fallbackId) {
-  if (name && String(name).trim()) return String(name).trim();
-  const cleaned = String(fallbackId || "")
-    .replace(/^friend:/i, "")
-    .replace(/[_:.@-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return cleaned || "Unknown contact";
-}
-
-function getInitials(label = "") {
-  const words = String(label).trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return "U";
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return `${words[0][0] || ""}${words[1][0] || ""}`.toUpperCase();
-}
-
-function formatTime(iso) {
-  if (!iso) return "--:--";
-  return new Date(iso)
-    .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    .toLowerCase();
-}
-
-function extractFirstUrl(text = "") {
-  const match = String(text).match(/https*:\/\/[^\s]+/i);
-  return match ? match[0] : "";
-}
-
-function avatarUrl(avatar = "") {
-  return String(avatar || "").trim();
-}
-
-function dateDividerLabel(iso) {
-  if (!iso) return "Recent";
-  const date = new Date(iso);
-  const now = new Date();
-  const startToday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-  ).getTime();
-  const startDate = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  ).getTime();
-  const dayDiff = Math.floor((startToday - startDate) / 86400000);
-  if (dayDiff <= 0) return "Today";
-  if (dayDiff === 1) return "Yesterday";
-  return date.toLocaleDateString();
-}
-
-function formatPresence(iso) {
-  if (!iso) return "No recent activity";
-  const ms = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(ms / 60000);
-  if (mins < 2) return "Online";
-  if (mins < 60) return `Last seen ${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `Last seen ${hours}h ago`;
-  return `Last seen ${new Date(iso).toLocaleDateString()}`;
-}
-
-function extractLatestNote(notes = [], prefix = "") {
-  const matches = (Array.isArray(notes) ? notes : [])
-    .filter((note) => String(note.note || "").startsWith(prefix))
-    .sort((a, b) =>
-      String(b.created_at || "").localeCompare(String(a.created_at || "")),
-    );
-  return matches[0] || null;
-}
-
-function splitSuggestedReply(noteText = "") {
-  const raw = String(noteText || "");
-  const marker = "Suggested reply:";
-  if (!raw.includes(marker)) return { text: raw.trim(), suggested: "" };
-  const parts = raw.split(marker);
-  return {
-    text: parts[0].trim(),
-    suggested: parts.slice(1).join(marker).trim(),
-  };
-}
-
-function friendCounterpartyId(matchId = "", currentUserId = "") {
-  if (!matchId.startsWith("friend:")) return "";
-  const parts = String(matchId).split(":");
-  if (parts.length !== 3) return "";
-  const a = parts[1];
-  const b = parts[2];
-  if (!currentUserId) return "";
-  if (a === currentUserId) return b;
-  if (b === currentUserId) return a;
-  return "";
-}
-
-function linkPreviewMeta(url = "") {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.replace(/^www\./i, "");
-    const path =
-      parsed.pathname && parsed.pathname !== "/" ? parsed.pathname : "";
-    return { host, path };
-  } catch {
-    return { host: "link", path: "" };
-  }
-}
+import {
+  sortByNewest,
+  sortByOldest,
+  normalizeThreads,
+  lockStatusLabel,
+  IMAGE_ATTACHMENT_EXTS,
+  VIDEO_ATTACHMENT_EXTS,
+  safeAttachmentExt,
+  isImageExt,
+  isVideoExt,
+  isImageMessage,
+  isVideoMessage,
+  toAbsoluteAssetUrl,
+  formatDisplayName,
+  getInitials,
+  formatTime,
+  extractFirstUrl,
+  avatarUrl,
+  dateDividerLabel,
+  formatPresence,
+  extractLatestNote,
+  splitSuggestedReply,
+  friendCounterpartyId,
+  linkPreviewMeta,
+} from "./chat/chatUtils";
+import ChatSidebar from "./chat/ChatSidebar";
+import ThreadList from "./chat/ThreadList";
+import GrantTransferModal from "./chat/GrantTransferModal";
+import RightPanel from "./chat/RightPanel";
 
 export default function ChatInterface() {
   const [themeMode, setThemeMode] = useState(() => {
@@ -500,7 +135,7 @@ export default function ChatInterface() {
     sharedPost: true,
   });
   const [presenceMap, setPresenceMap] = useState({});
-  const [notice, setNotice] = useState(null);
+  const [notice, setNotice] = useState(() => location.state?.notice ?? null);
   const [aiSuggesting, setAiSuggesting] = useState(false);
   const [aiError, setAiError] = useState("");
   const [aiSummary, setAiSummary] = useState(null);
@@ -568,8 +203,6 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (location.state?.notice) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setNotice(location.state.notice);
       navigate(location.pathname, { replace: true, state: {} });
     }
     if (location.state?.matchId) {
@@ -729,7 +362,6 @@ export default function ChatInterface() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadInbox();
   }, [loadInbox]);
 
@@ -766,20 +398,17 @@ export default function ChatInterface() {
   }, [activeThread?.matchId]);
 
   useEffect(() => {
-    if (pageLoading && !loading && !secureLoading) {
-      if (!activeThread?.matchId) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setPageLoading(false);
-      } else if (messagesByThread[activeThread.matchId]) {
-        setPageLoading(false);
-      }
+    if (loading || secureLoading) return;
+    if (!activeThread?.matchId) {
+      setPageLoading(false);
+    } else if (messagesByThread[activeThread.matchId]) {
+      setPageLoading(false);
     }
-  }, [pageLoading, loading, secureLoading, activeThread, messagesByThread]);
+  }, [loading, secureLoading, activeThread, messagesByThread, setPageLoading]);
 
   useEffect(() => {
     const token = getToken();
     if (!token || !activeThread?.matchId || activeThread?.isFriendThread) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLeadSummary(null);
       setPrequalOverride(false);
       setAiSummary(null);
@@ -798,7 +427,6 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!leadSummary?.notes) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAiSummary(null);
       setAiNegotiation(null);
       return;
@@ -950,7 +578,6 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!activeThread?.matchId) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadThreadMessages(activeThread.matchId);
   }, [activeThread, loadThreadMessages]);
 
@@ -992,7 +619,6 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (participantIds.length === 0) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshPresence(participantIds);
   }, [participantIds, refreshPresence]);
 
@@ -1111,6 +737,10 @@ export default function ChatInterface() {
         reconnectTimerRef.current = null;
       }
       if (wsRef.current) {
+        wsRef.current.onopen = null;
+        wsRef.current.onmessage = null;
+        wsRef.current.onerror = null;
+        wsRef.current.onclose = null;
         wsRef.current.close();
         wsRef.current = null;
       }
@@ -1547,7 +1177,6 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!policyFeedback.retryAfter || policyFeedback.retryAfter <= 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCountdownSeconds(0);
       return undefined;
     }
@@ -1745,7 +1374,6 @@ export default function ChatInterface() {
     activeThread?.name,
     activeThread?.senderId || activeThread?.matchId,
   );
-  const activeThreadInitials = getInitials(activeThreadDisplayName);
   const activeAvatar = avatarUrl(activeThread?.avatar);
   const visibleError = String(error || "")
     .toLowerCase()
@@ -1866,990 +1494,107 @@ export default function ChatInterface() {
         </div>
       ) : null}
       <div className="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
-        <aside
-          className="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1"
-          style={{ background: "transparent", boxShadow: "none" }}
-        >
-          <div className="space-y-2">
-            <button
-              className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] shadow-none text-lg transition-colors${
-                isLight
-                  ? "bg-white text-orange-400 shadow-sm"
-                  : "bg-[#171031] text-[#D4FF59]"
-              }`}
-              onClick={() =>
-                setThemeMode((value) => (value === "light" ? "dark" : "light"))
-              }
-              title={isLight ? "Switch to Dark Mode" : "Switch to Light Mode"}
-            >
-              {isLight ? "??" : "??"}
-            </button>
-            {CHAT_NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.to;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all${
-                    isActive
-                      ? isLight
-                        ? "bg-gtBlue text-white"
-                        : "bg-[rgba(10,102,194,0.18)] text-[#D4FF59]"
-                      : isLight
-                        ? "text-slate-400 hover:bg-white hover:text-gtBlue"
-                        : "bg-[#171031] text-[#8f95bb] hover:text-white"
-                  }`}
-                  title={item.label}
-                >
-                  <Icon size={18} strokeWidth={1.5} />
-                </Link>
-              );
-            })}
-          </div>
-          <button
-            className="flex h-10 w-10 items-center justify-center rounded-[12px] transition-colors"
-            style={{
-              background: isLight ? "#ffffff" : theme.tileBg,
-              color: isLight ? "#ef4444" : "#8f95bb",
-            }}
-            onClick={() => navigate(ROUTES.LOGIN)}
-            title="Logout"
-          >
-            <LogOut size={18} strokeWidth={1.5} />
-          </button>
-        </aside>
+        <ChatSidebar
+          themeMode={themeMode}
+          setThemeMode={setThemeMode}
+          isLight={isLight}
+          theme={theme}
+          location={location}
+          navigate={navigate}
+          ROUTES={ROUTES}
+          CHAT_NAV_ITEMS={CHAT_NAV_ITEMS}
+        />
 
-        <aside
-          className="hidden lg:block rounded-[24px] p-5 overflow-hidden shadow-borderless dark:shadow-borderlessDark"
-          style={{ background: theme.panelBg, boxShadow: theme.shadow }}
-        >
-          <div className="mb-6">
-            <h2 className="text-xl font-bold tracking-tight">Messages</h2>
-            <p
-              className="text-xs font-medium"
-              style={{ color: theme.textMuted }}
-            >
-              {currentUser?.email || "No email available"}
-            </p>
-          </div>
+        <ThreadList
+          query={query}
+          setQuery={setQuery}
+          allVisibleThreads={allVisibleThreads}
+          loading={loading}
+          visibleError={visibleError}
+          activeThreadId={activeThreadId}
+          setActiveThreadId={setActiveThreadId}
+          presenceStatus={presenceStatus}
+          isLight={isLight}
+          theme={theme}
+        />
 
-          <div className="relative mb-6">
-            <Search
-              size={15}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              className="h-11 w-full appearance-none rounded-[14px] shadow-borderless dark:shadow-borderlessDark pl-10 pr-11 text-[13px] outline-none transition-all"
-              style={{ background: theme.inputBg, color: theme.textPrimary }}
-              placeholder="Search conversations..."
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </div>
+        <MessageArea
+          activeThread={activeThread}
+          activeMessages={activeMessages}
+          draftMessage={draftMessage}
+          setDraftMessage={setDraftMessage}
+          canSendMessage={canSendMessage}
+          isLockRestricted={isLockRestricted}
+          isLockOwner={isLockOwner}
+          isAdminUser={isAdminUser}
+          isLight={isLight}
+          theme={theme}
+          currentUser={currentUser}
+          activeAvatar={activeAvatar}
+          activeThreadDisplayName={activeThreadDisplayName}
+          presenceStatus={presenceStatus}
+          presenceLastSeen={presenceLastSeen}
+          lockMeta={lockMeta}
+          hasRecordedCall={hasRecordedCall}
+          scheduleStatus={scheduleStatus}
+          uploading={uploading}
+          uploadProgress={uploadProgress}
+          uploadStatus={uploadStatus}
+          policyFeedback={policyFeedback}
+          countdownSeconds={countdownSeconds}
+          aiSuggesting={aiSuggesting}
+          aiError={aiError}
+          sendMessage={sendMessage}
+          sendAttachment={sendAttachment}
+          openAttachmentPreview={openAttachmentPreview}
+          requestAiSuggestion={requestAiSuggestion}
+          prequalNeedsInfo={prequalNeedsInfo}
+          prequalHardBlocked={prequalHardBlocked}
+          prequalCanOverride={prequalCanOverride}
+          prequal={prequal}
+          notice={notice}
+          renderMessageBody={renderMessageBody}
+          openGrantModal={openGrantModal}
+          openTransferModal={openTransferModal}
+          startInstantCall={startInstantCall}
+          requestAccess={requestAccess}
+          setPrequalOverride={setPrequalOverride}
+          fileInputRef={fileInputRef}
+        />
 
-          <div className="mb-3 flex items-center justify-between px-1">
-            <h3
-              className="text-xs font-bold uppercase tracking-wider"
-              style={{ color: theme.textMuted }}
-            >
-              Direct Messages
-            </h3>
-            <span className="text-[10px] font-bold text-gtBlue">
-              {allVisibleThreads.length}
-            </span>
-          </div>
-
-          <div
-            data-lenis-prevent
-            className="h-[calc(100vh-250px)] overflow-auto pr-1 custom-scrollbar"
-          >
-            {loading ? (
-              <Mosaic
-                color="#3b00ff"
-                size="large"
-                style={{ fontSize: "40px" }}
-                text=""
-                textColor=""
-              />
-            ) : null}
-            {!loading && visibleError ? (
-              <div className="p-4 text-center text-sm text-red-400">
-                {visibleError}
-              </div>
-            ) : null}
-            {!loading && !visibleError && allVisibleThreads.length > 0 ? (
-              <List
-                height={
-                  typeof window !== "undefined" ? window.innerHeight - 250 : 600
-                }
-                itemCount={allVisibleThreads.length}
-                itemSize={82}
-                width="100%"
-                overscanCount={5}
-              >
-                {({ index, style }) => {
-                  const thread = allVisibleThreads[index];
-                  const threadName = formatDisplayName(
-                    thread.name,
-                    thread.senderId || thread.id,
-                  );
-                  const isActive = activeThreadId === thread.id;
-                  const hasUnread = Number(thread.unread || 0) > 0;
-                  const isFriendRequest =
-                    thread.isFriendThread &&
-                    thread.friendRequestStatus === "pending";
-                  return (
-                    <div style={style} className="pb-1">
-                      <button
-                        key={thread.id}
-                        className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? "ring-1 ring-gtBlue/20" : ""}${isFriendRequest ? " ring-2 ring-violet-400/30" : ""}`}
-                        style={{
-                          background: isActive
-                            ? theme.threadActiveBg
-                            : hasUnread
-                              ? isLight
-                                ? "#eef6ff"
-                                : "#1b1f3b"
-                              : "transparent",
-                        }}
-                        onClick={() => setActiveThreadId(thread.id)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="relative flex-shrink-0">
-                            {thread.avatar ? (
-                              <img
-                                src={avatarUrl(thread.avatar)}
-                                alt={threadName}
-                                className="h-11 w-11 rounded-full object-cover shadow-sm"
-                              />
-                            ) : (
-                              <div
-                                className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? "bg-gtBlue text-white" : "bg-slate-100 text-slate-500"}`}
-                              >
-                                {getInitials(threadName)}
-                              </div>
-                            )}
-                            <span
-                              className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
-                              style={{
-                                background:
-                                  presenceStatus(thread.senderId) === "online"
-                                    ? "#22c55e"
-                                    : "#94a3b8",
-                                boxShadow: `0 0 0 2px ${isLight ? "#e2e8f0" : "rgba(255,255,255,0.18)"}`,
-                              }}
-                            />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-1">
-                              <p
-                                className={`truncate text-[14px] font-semibold${isActive ? "text-gtBlue" : ""}`}
-                              >
-                                {threadName}
-                              </p>
-                              <div className="ml-2 flex flex-shrink-0 items-center gap-1">
-                                {thread.isFriendThread ? (
-                                  <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[9px] font-bold uppercase text-violet-700">
-                                    Request
-                                  </span>
-                                ) : null}
-                                {thread.policyStatus &&
-                                thread.policyStatus !== "delivered" ? (
-                                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">
-                                    Queued
-                                  </span>
-                                ) : null}
-                                {thread.policyPriority ? (
-                                  <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-bold text-indigo-700">
-                                    {thread.policyPriority}
-                                  </span>
-                                ) : null}
-                                <span className="text-[10px] font-medium text-slate-400">
-                                  {formatTime(thread.timestamp)}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between gap-2">
-                              <p
-                                className={`truncate text-xs${isActive ? "text-slate-600" : hasUnread ? "text-slate-700" : "text-slate-400"}`}
-                              >
-                                {thread.last || "No messages"}
-                              </p>
-                              {hasUnread ? (
-                                <span className="min-w-[18px] rounded-full bg-gtBlue px-2 py-0.5 text-[10px] font-bold text-white">
-                                  {thread.unread}
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    </div>
-                  );
-                }}
-              </List>
-            ) : !loading && !visibleError && allVisibleThreads.length === 0 ? (
-              <div className="p-4 text-center text-sm text-slate-400">
-                No conversations
-              </div>
-            ) : null}
-          </div>
-        </aside>
-
-        <main
-          className="rounded-[24px] p-0 flex flex-col h-full overflow-hidden shadow-borderless dark:shadow-borderlessDark"
-          style={{ background: theme.panelBg, boxShadow: theme.shadow }}
-        >
-          {activeThread ? (
-            <>
-              <div className="flex items-center justify-between px-6 py-4 shadow-dividerB dark:shadow-dividerBDark">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    {activeAvatar ? (
-                      <img
-                        src={activeAvatar}
-                        alt={activeThreadDisplayName}
-                        className="h-10 w-10 rounded-full object-cover shadow-sm"
-                      />
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
-                        {activeThreadInitials}
-                      </div>
-                    )}
-                    <span
-                      className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
-                      style={{
-                        background:
-                          presenceStatus(activeThread?.senderId) === "online"
-                            ? "#22c55e"
-                            : "#94a3b8",
-                        boxShadow: `0 0 0 2px ${isLight ? "#e2e8f0" : "rgba(255,255,255,0.18)"}`,
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold tracking-tight">
-                      {activeThreadDisplayName}
-                    </p>
-                    <p className="text-[11px] font-medium text-slate-400">
-                      {presenceStatus(activeThread?.senderId) === "online"
-                        ? "Online"
-                        : formatPresence(
-                            presenceLastSeen(activeThread?.senderId),
-                          )}
-                    </p>
-                    {lockMeta && !activeThread?.isFriendThread ? (
-                      <span className="mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
-                        {lockStatusLabel(lockMeta, activeThread)}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Link
-                    to={
-                      activeThread?.matchId
-                        ? `${ROUTES.CONTRACTS}?journey_match_id=${encodeURIComponent(activeThread.matchId)}`
-                        : ROUTES.CONTRACTS
-                    }
-                    className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40"
-                  >
-                    Contract draft
-                  </Link>
-                  {isLockOwner ? (
-                    <button
-                      onClick={openGrantModal}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
-                      title="Grant access to another member"
-                    >
-                      Grant access
-                    </button>
-                  ) : null}
-                  {isLockOwner || isAdminUser ? (
-                    <button
-                      onClick={openTransferModal}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
-                      title="Transfer this conversation to another agent"
-                    >
-                      Transfer
-                    </button>
-                  ) : null}
-                  <button
-                    onClick={() => startInstantCall(activeThread)}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
-                    title="Start call"
-                  >
-                    <Phone size={16} />
-                  </button>
-                  <button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
-                    <Search size={16} />
-                  </button>
-                  <button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
-                    <EllipsisVertical size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="px-6 pb-3">
-                <JourneyTimeline
-                  title="Journey Timeline"
-                  matchId={activeThread?.matchId || ""}
-                />
-              </div>
-
-              {!hasRecordedCall ? (
-                <div className="mx-6 mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <span>
-                      Video calls are recommended for trust. No recorded call
-                      exists yet for this conversation.
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => startInstantCall(activeThread)}
-                      className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500"
-                    >
-                      Start call
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-
-              <div
-                data-lenis-prevent
-                className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar"
-                style={{ background: isLight ? "#f8fafc" : "transparent" }}
-              >
-                <div className="flex justify-center mb-6">
-                  <span className="rounded-full bg-transparent shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">
-                    {todayLabel}
-                  </span>
-                </div>
-                {activeMessages.length > 0 ? (
-                  activeMessages.map((message) => {
-                    const isOwn = message.sender_id === currentUser?.id;
-                    const isBot =
-                      message?.type === "bot" || Boolean(message?.meta?.bot);
-                    const readCutoff = activeThread?.lastReadAt
-                      ? new Date(activeThread.lastReadAt).getTime()
-                      : 0;
-                    const messageTs = new Date(
-                      message.timestamp || 0,
-                    ).getTime();
-                    const isRead =
-                      Number.isFinite(readCutoff) &&
-                      Number.isFinite(messageTs) &&
-                      messageTs <= readCutoff;
-                    const showReadTick = !isOwn && isRead;
-                    return (
-                      <div
-                        key={message.id}
-                        className={`flex${isOwn ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
-                            isOwn
-                              ? "bg-gtBlue text-white rounded-br-none"
-                              : isBot
-                                ? `${isLight ? "bg-[#EFF6FF] ring-1 ring-[#BFDBFE]" : "bg-[#0B1224] ring-1 ring-white/5"} rounded-bl-none`
-                                : `${isLight ? "bg-white ring-1 ring-slate-200/70" : "bg-[#2a2744]"} rounded-bl-none`
-                          }`}
-                          style={
-                            !isOwn ? { color: theme.textPrimary } : undefined
-                          }
-                        >
-                          {isBot ? (
-                            <div className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-gtBlue">
-                              AI Assistant
-                            </div>
-                          ) : null}
-                          {renderMessageBody(message, isOwn)}
-                          <div
-                            className={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60${isOwn ? "text-white" : "text-slate-400"}`}
-                          >
-                            <span>{formatTime(message.timestamp)}</span>
-                            {message.policy_status &&
-                            message.policy_status !== "delivered" ? (
-                              <span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600">
-                                {message.policy_status === "needs_review"
-                                  ? "Needs review"
-                                  : "Queued"}
-                              </span>
-                            ) : null}
-                            {message.policy_priority ? (
-                              <span className="inline-flex items-center rounded-full bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-600">
-                                {message.policy_priority}
-                              </span>
-                            ) : null}
-                            {showReadTick ? (
-                              <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">
-                                ✓ Read
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="flex h-full items-center justify-center text-sm font-medium text-slate-400 italic">
-                    No messages yet. Start the conversation!
-                  </div>
-                )}
-              </div>
-
-              <div className="p-4 shadow-dividerT dark:shadow-dividerTDark">
-                {isLockRestricted ? (
-                  <div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
-                    <span>
-                      Conversation locked by{" "}
-                      {lockMeta?.claimed_by_name ||
-                        (lockMeta?.lock_type === "verified_first"
-                          ? "verified supplier"
-                          : "another agent")}
-                      .
-                    </span>
-                    <button
-                      type="button"
-                      onClick={requestAccess}
-                      className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
-                    >
-                      Request access
-                    </button>
-                  </div>
-                ) : null}
-                {prequalNeedsInfo ? (
-                  <div className="mb-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span>
-                        AI pre-qual flagged missing info.{" "}
-                        {prequal?.missing
-                          ? `Missing: ${prequal.missing}.`
-                          : "Request more details before negotiating."}
-                      </span>
-                      {prequalCanOverride ? (
-                        <button
-                          type="button"
-                          onClick={() => setPrequalOverride(true)}
-                          className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
-                        >
-                          Allow send anyway
-                        </button>
-                      ) : null}
-                    </div>
-                    {prequalHardBlocked ? (
-                      <div className="mt-1 text-[10px] text-amber-800">
-                        Only verified suppliers can override this
-                        pre-qualification gate.
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-500">
-                  <span>AI Suggested Reply</span>
-                  <button
-                    type="button"
-                    onClick={requestAiSuggestion}
-                    disabled={aiSuggesting || !activeThread?.matchId}
-                    className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
-                  >
-                    {aiSuggesting ? (
-                      <ThreeDot
-                        variant="bounce"
-                        color="#6100ff"
-                        size="small"
-                        text=""
-                        textColor=""
-                      />
-                    ) : (
-                      "Generate"
-                    )}
-                  </button>
-                </div>
-                {aiError ? (
-                  <div className="mb-2 text-[11px] font-semibold text-rose-600">
-                    {aiError}
-                  </div>
-                ) : null}
-                <div
-                  className="relative flex items-center gap-2 rounded-[18px] p-1.5"
-                  style={{ background: theme.inputBg }}
-                >
-                  <button
-                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading || !canSendMessage}
-                  >
-                    {uploading ? (
-                      <ThreeDot
-                        variant="bounce"
-                        color="#6100ff"
-                        size="small"
-                        text=""
-                        textColor=""
-                      />
-                    ) : (
-                      <Plus size={20} />
-                    )}
-                  </button>
-                  <textarea
-                    rows={1}
-                    className="flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-5 outline-none placeholder:text-slate-400"
-                    style={{ color: theme.textPrimary, maxHeight: 140 }}
-                    placeholder={
-                      canSendMessage
-                        ? "Write a message..."
-                        : "Conversation locked. Request access to reply."
-                    }
-                    disabled={!canSendMessage}
-                    value={draftMessage}
-                    onChange={(event) => setDraftMessage(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" && !event.shiftKey) {
-                        event.preventDefault();
-                        sendMessage();
-                      }
-                    }}
-                  />
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) sendAttachment(file);
-                    }}
-                    disabled={!canSendMessage}
-                  />
-                  <button
-                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gtBlue text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
-                    onClick={sendMessage}
-                    disabled={!canSendMessage}
-                  >
-                    <SendHorizontal size={18} />
-                  </button>
-                </div>
-                {policyFeedback.reason ? (
-                  <p className="mt-2 px-4 text-[11px] font-medium text-rose-500">
-                    Blocked: {policyFeedback.reason}
-                    {countdownSeconds > 0
-                      ? ` • Retry in ${countdownSeconds}s`
-                      : ""}
-                  </p>
-                ) : null}
-                {uploading && (
-                  <div className="px-4 mt-2">
-                    <UploadProgressBar progress={uploadProgress} />
-                  </div>
-                )}
-                {uploadStatus || scheduleStatus ? (
-                  <p className="mt-2 px-4 text-[11px] font-medium text-gtBlue">
-                    {uploadStatus || scheduleStatus}
-                  </p>
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center text-slate-400 gap-4">
-              <div className="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center dark:bg-slate-800/30">
-                <MessageCircle size={32} className="opacity-20" />
-              </div>
-              <p className="text-sm font-medium">
-                Select a conversation to start chatting
-              </p>
-            </div>
-          )}
-        </main>
-
-        <aside
-          data-lenis-prevent
-          className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto shadow-borderless dark:shadow-borderlessDark"
-          style={{ background: theme.panelBg, boxShadow: theme.shadow }}
-        >
-          {activeThread ? (
-            <>
-              <div className="mb-8 text-center">
-                <div className="mx-auto mb-4 h-24 w-24 rounded-full shadow-md">
-                  {activeAvatar ? (
-                    <img
-                      src={activeAvatar}
-                      alt={activeThreadDisplayName}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-400">
-                      {activeThreadInitials}
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-lg font-bold tracking-tight">
-                  {activeThreadDisplayName}
-                </h3>
-                <p className="text-xs font-medium text-slate-400 tracking-wide">
-                  @
-                  {truncateId(
-                    activeThread.senderId || activeThread.matchId,
-                    16,
-                  )}
-                </p>
-              </div>
-
-              {leadLoading ? (
-                <ThreeDot
-                  variant="bounce"
-                  color="#6100ff"
-                  size="small"
-                  text=""
-                  textColor=""
-                />
-              ) : prequal ? (
-                <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
-                    AI Pre-Qual Summary
-                  </p>
-                  <p className="mt-1">
-                    Score:{" "}
-                    <span className="font-semibold">
-                      {prequal.score ?? "--"}
-                    </span>
-                  </p>
-                  <p className="mt-1">Missing: {prequal.missing || "None"}</p>
-                </div>
-              ) : null}
-
-              <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
-                    AI Conversation Summary
-                  </p>
-                  <button
-                    type="button"
-                    onClick={requestAiSummary}
-                    disabled={aiSummaryLoading || !activeThread?.matchId}
-                    className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
-                  >
-                    {aiSummaryLoading ? (
-                      <ThreeDot
-                        variant="bounce"
-                        color="#6100ff"
-                        size="small"
-                        text=""
-                        textColor=""
-                      />
-                    ) : (
-                      "Refresh"
-                    )}
-                  </button>
-                </div>
-                {aiSummaryError ? (
-                  <div className="mt-2 text-[10px] font-semibold text-rose-600">
-                    {aiSummaryError}
-                  </div>
-                ) : null}
-                {aiSummary?.text ? (
-                  <>
-                    <p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">
-                      {aiSummary.text}
-                    </p>
-                    {aiSummary.suggestedReply ? (
-                      <p className="mt-2 text-[11px] text-slate-500">
-                        Suggested reply: {aiSummary.suggestedReply}
-                      </p>
-                    ) : null}
-                  </>
-                ) : (
-                  <p className="mt-2 text-[10px] text-slate-400 italic">
-                    No summary yet.
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
-                    AI Negotiation Helper
-                  </p>
-                  <button
-                    type="button"
-                    onClick={requestNegotiationHelper}
-                    disabled={aiNegotiationLoading || !activeThread?.matchId}
-                    className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
-                  >
-                    {aiNegotiationLoading ? (
-                      <ThreeDot
-                        variant="bounce"
-                        color="#6100ff"
-                        size="small"
-                        text=""
-                        textColor=""
-                      />
-                    ) : (
-                      "Generate"
-                    )}
-                  </button>
-                </div>
-                {aiNegotiationError ? (
-                  <div className="mt-2 text-[10px] font-semibold text-rose-600">
-                    {aiNegotiationError}
-                  </div>
-                ) : null}
-                {aiNegotiation?.guidance ? (
-                  <>
-                    <p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">
-                      {aiNegotiation.guidance}
-                    </p>
-                    {aiNegotiation.suggestedReply ? (
-                      <p className="mt-2 text-[11px] text-slate-500">
-                        Suggested reply: {aiNegotiation.suggestedReply}
-                      </p>
-                    ) : null}
-                  </>
-                ) : (
-                  <p className="mt-2 text-[10px] text-slate-400 italic">
-                    Generate guidance for this thread.
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-8 grid grid-cols-4 gap-3">
-                {[
-                  { icon: Flag, title: "Report" },
-                  { icon: Lock, title: "Block" },
-                  { icon: Info, title: "Info" },
-                  { icon: VolumeX, title: "Mute" },
-                ].map((action, i) => (
-                  <button
-                    key={i}
-                    className="flex flex-col items-center gap-1.5 transition-opacity hover:opacity-70"
-                    title={action.title}
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-transparent text-slate-400 dark:text-slate-500">
-                      <action.icon size={16} strokeWidth={2} />
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-4">
-                {[
-                  {
-                    id: "sharedDocument",
-                    label: "Documents",
-                    count: sharedLinks.length,
-                    icon: FolderOpen,
-                  },
-                  {
-                    id: "sharedMedia",
-                    label: "Media",
-                    count: sharedMedia.length,
-                    icon: Search,
-                  },
-                  {
-                    id: "sharedPost",
-                    label: "Posts",
-                    count: sharedPosts.length,
-                    icon: Home,
-                  },
-                ].map((section) => (
-                  <div
-                    key={section.id}
-                    className="overflow-hidden rounded-[18px] shadow-borderless dark:shadow-borderlessDark"
-                  >
-                    <button
-                      className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                      style={{
-                        background: isLight ? "#f8fafc" : "#101328",
-                        color: theme.textMuted,
-                      }}
-                      onClick={() =>
-                        setAccordionState((prev) => ({
-                          ...prev,
-                          [section.id]: !prev[section.id],
-                        }))
-                      }
-                    >
-                      <div className="flex items-center gap-2">
-                        <section.icon size={14} className="opacity-50" />
-                        <span>
-                          {section.label}{" "}
-                          <span className="ml-1 opacity-50">
-                            ({section.count})
-                          </span>
-                        </span>
-                      </div>
-                      {accordionState[section.id] ? (
-                        <ChevronUp size={14} />
-                      ) : (
-                        <ChevronDown size={14} />
-                      )}
-                    </button>
-                    {accordionState[section.id] && (
-                      <div className="p-3 bg-white dark:bg-transparent">
-                        {section.id === "sharedDocument" && (
-                          <div className="space-y-2">
-                            {sharedLinks.length > 0 ? (
-                              sharedLinks.map((item) => {
-                                const url = toAbsoluteAssetUrl(
-                                  item.attachment?.url || "",
-                                );
-                                return (
-                                  <button
-                                    key={item.id}
-                                    type="button"
-                                    onClick={() =>
-                                      openAttachmentPreview(
-                                        item.attachment,
-                                        url,
-                                      )
-                                    }
-                                    className="flex w-full items-center gap-2 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors dark:bg-slate-800/30"
-                                    title="Preview"
-                                  >
-                                    <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700">
-                                      <Plus size={12} className="opacity-30" />
-                                    </div>
-                                    <span className="truncate flex-1">
-                                      {item.attachment?.name || "File"}
-                                    </span>
-                                  </button>
-                                );
-                              })
-                            ) : (
-                              <p className="text-[10px] text-slate-400 italic text-center py-2">
-                                No documents shared
-                              </p>
-                            )}
-                          </div>
-                        )}
-                        {section.id === "sharedMedia" && (
-                          <div className="grid grid-cols-3 gap-1.5">
-                            {sharedMedia.length > 0 ? (
-                              sharedMedia.slice(0, 6).map((item) => {
-                                const url = toAbsoluteAssetUrl(
-                                  item.attachment?.url || "",
-                                );
-                                const isVideo = isVideoMessage(item);
-                                return (
-                                  <button
-                                    key={item.id}
-                                    type="button"
-                                    onClick={() =>
-                                      openAttachmentPreview(
-                                        item.attachment,
-                                        url,
-                                      )
-                                    }
-                                    className="relative aspect-square overflow-hidden rounded-lg"
-                                    title="View"
-                                  >
-                                    {isVideo ? (
-                                      <>
-                                        <video
-                                          src={url}
-                                          muted
-                                          playsInline
-                                          preload="metadata"
-                                          className="h-full w-full object-cover"
-                                        />
-                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
-                                          <div className="rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white">
-                                            Play
-                                          </div>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <img
-                                        src={url}
-                                        alt=""
-                                        className="h-full w-full object-cover transition-transform hover:scale-110"
-                                      />
-                                    )}
-                                  </button>
-                                );
-                              })
-                            ) : (
-                              <p className="col-span-3 text-[10px] text-slate-400 italic text-center py-2">
-                                No media shared
-                              </p>
-                            )}
-                          </div>
-                        )}
-                        {section.id === "sharedPost" && (
-                          <div className="space-y-2">
-                            {sharedPosts.length > 0 ? (
-                              sharedPosts.map((item) => (
-                                <div
-                                  key={item.id}
-                                  style={{
-                                    background: isLight
-                                      ? "#f1f5f9"
-                                      : "rgba(255,255,255,0.03)",
-                                  }}
-                                >
-                                  <p className="line-clamp-2 leading-relaxed opacity-80">
-                                    {item.message}
-                                  </p>
-                                </div>
-                              ))
-                            ) : (
-                              <p className="text-[10px] text-slate-400 italic text-center py-2">
-                                No posts shared
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center text-slate-400 text-xs italic">
-              Details will appear here
-            </div>
-          )}
-        </aside>
+        <RightPanel
+          activeThread={activeThread}
+          activeAvatar={activeAvatar}
+          activeThreadDisplayName={activeThreadDisplayName}
+          isLight={isLight}
+          theme={theme}
+          leadLoading={leadLoading}
+          prequal={prequal}
+          aiSummary={aiSummary}
+          aiSummaryLoading={aiSummaryLoading}
+          aiSummaryError={aiSummaryError}
+          aiNegotiation={aiNegotiation}
+          aiNegotiationLoading={aiNegotiationLoading}
+          aiNegotiationError={aiNegotiationError}
+          accordionState={accordionState}
+          setAccordionState={setAccordionState}
+          sharedMedia={sharedMedia}
+          sharedLinks={sharedLinks}
+          sharedPosts={sharedPosts}
+          requestAiSummary={requestAiSummary}
+          requestNegotiationHelper={requestNegotiationHelper}
+          openAttachmentPreview={openAttachmentPreview}
+        />
       </div>
 
-      {showGrantModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-slate-950">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-              {grantMode === "grant" ? "Grant access" : "Transfer conversation"}
-            </h3>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {grantMode === "grant"
-                ? "Enter the user ID to grant access to this conversation."
-                : "Enter the agent/user ID to transfer ownership."}
-            </p>
-            <input
-              value={grantUserId}
-              onChange={(e) => setGrantUserId(e.target.value)}
-              placeholder="User ID"
-              className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
-            />
-            <div className="mt-5 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowGrantModal(false)}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={submitGrantOrTransfer}
-                disabled={!grantUserId.trim()}
-                className="rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {grantMode === "grant" ? "Grant" : "Transfer"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <GrantTransferModal
+        showModal={showGrantModal}
+        mode={grantMode}
+        userId={grantUserId}
+        setUserId={setGrantUserId}
+        setShowModal={setShowGrantModal}
+        onSubmit={submitGrantOrTransfer}
+      />
     </div>
   );
 }

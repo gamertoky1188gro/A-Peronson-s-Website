@@ -497,3 +497,5 @@ export function FileExplorerSection({ adminDark }) {
     </div>
   );
 }
+
+export default FileThumbnailImage;

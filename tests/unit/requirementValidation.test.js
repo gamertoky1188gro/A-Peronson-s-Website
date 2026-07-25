@@ -50,3 +50,5 @@ describe("buyer request validation", () => {
     expect(draft.title).toBe("abcd");
   });
 });
+
+afterAll(() => { process.env.NODE_ENV = "test"; });
