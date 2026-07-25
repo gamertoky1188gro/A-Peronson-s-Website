@@ -1,13 +1,13 @@
 # Project History Index
 
-> Complete chronological documentation of all 610 commits in the GarTexHub B2B Textile Marketplace repository.
+> Complete chronological documentation of all 617 commits in the GarTexHub B2B Textile Marketplace repository.
 
 ## Summary Statistics
 
 | Metric                            | Value                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Total commits documented**      | 610                                                                                                                         |
-| **Date range**                    | 2026-03-01 → 2026-07-21                                                                                                                     |
+| **Total commits documented**      | 617                                                                                                                         |
+| **Date range**                    | 2026-03-01 → 2026-07-25                                                                                                                     |
 | **Unique files ever touched**     | 2,200+                                                                                                                                      |
 | **Most frequently changed files** | `src/pages/SearchResults.jsx` (77x), `server/server.js` (76x), `src/App.jsx` (65x), `src/components/NavBar.jsx` (59x), `package.json` (58x) |
 | **Largest commits (by files)**    | 936 files (commit `bdbbbc1` "meow"), 515 files (commit `6b75ca5` "Fixed"), 299 files (commit `bb22700` "Fixed")                            |
@@ -89,14 +89,21 @@
 | [0608](./0608_2026-07-21_14-16-49_4235ca_gate-vite-request-debug-to-dev.md)                   | 2026-07-21 14:16 | `4235ca`  | Gate VITE_REQUEST_DEBUG to Dev Environment                       | Restricted VITE_REQUEST_DEBUG to dev only (SEC-007), updated audit files   |
 | [0609](./0609_2026-07-21_14-59-06_00350f_wrap-multi-step-prisma-in-transactions.md)           | 2026-07-21 14:59 | `00350f`  | Wrap Multi-Step Prisma Operations in Transactions                | Transaction wrapping in 16 server files (DATA-002), ~+1,196/-1,021 lines   |
 | [0610](./0610_2026-07-21_15-21-31_3f2122_remove-48-unused-imports-across-34-files.md)         | 2026-07-21 15:21 | `3f2122`  | Remove 48 Unused Imports Across 34 Files                         | Cleaned unused imports from 29 client + 5 server files (QUALITY-004)       |
+| [0611](./0611_2026-07-21_18-19-39_7ea7e2d_document-history-for-commits-0595-0610.md)          | 2026-07-21 18:19 | `7ea7e2d` | Document History for Commits 0595-0610                           | Created markdown documentation for 16 recent commits (595-610)             |
+| [0612](./0612_2026-07-21_20-23-56_e872ced_remove-hardcoded-jwt-secret-and-add-json-parse-error-logging.md)| 2026-07-21 20:23 | `e872ced` | Remove Hardcoded JWT_SECRET and Add JSON Parse Error Logging     | Removed JWT fallback, added JSON parse error handling, updated audit files |
+| [0613](./0613_2026-07-21_20-33-42_8b67fe8_fix-high-severity-audit-issues-3-5.md)              | 2026-07-21 20:33 | `8b67fe8` | Fix High-Severity Audit Issues 3-5                               | Cache dedup, useEffect deps cleanup, WebSocket lifecycle fixes             |
+| [0614](./0614_2026-07-22_21-36-19_335b94_fix-low-severity-audit-issues-11-15.md)              | 2026-07-22 21:36 | `335b94f` | Fix Low-Severity Audit Issues 11-15                              | console.log → logger, N+1 queries, dead code removal, hardcoded values→constants, JSDoc additions |
+| [0615](./0615_2026-07-22_21-47-32_cc5c8ce_fix-error-boundaries-and-form-validation.md)       | 2026-07-22 21:47 | `cc5c8ce` | Fix Error Boundaries and Form Validation                         | safeLazy fallback for chunk failures, ErrorBoundary wrapping, email validation |
+| [0616](./0616_2026-07-22_21-57-46_4b141b2_fix-database-indexes-env-vars-cors-aria-and-focus-trap.md)| 2026-07-22 21:57 | `4b141b2` | Fix Database Indexes, Env Vars, CORS, ARIA, and Focus Trap       | @@index on 18+ model FKs, ADMIN_TEST_EMAIL fallback, env validation, focus trap hook |
+| [0617](./0617_2026-07-25_09-56-04_4277269_fix-audit-issues-31-to-50-across-71-files.md)       | 2026-07-25 09:56 | `4277269` | Fix Audit Issues 31 to 50 Across 71 Files                        | Dead code, memory leaks, test pollution, build config, Docker, env restoration, AdminPanel split |
 
-> **Note**: Due to the large number of commits (610), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
+> **Note**: Due to the large number of commits (617), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
 
 ## File Naming Convention
 
 `history/NNNN_YYYY-MM-DD_HH-MM-SS_ABBREV_HASH_descriptive-title.md`
 
-- `NNNN` = 4-digit commit sequence number (0001-0610)
+- `NNNN` = 4-digit commit sequence number (0001-0617)
 - `YYYY-MM-DD_HH-MM-SS` = commit date/time
 - `ABBREV_HASH` = first 7 characters of commit hash
 - `descriptive-title` = generated title (kebab-case)
@@ -110,7 +117,7 @@
 - **Backend migration**: JSON file store → Prisma/PostgreSQL
 - **AI integration**: Local llama.cpp → opencode SDK with SSE streaming
 - **History documentation**: Commits 0589–0591 retroactively documented all prior commits; 0593–0594 fixed lint errors and rebuilt the entire codebase
-- **Audit remediation (0595–0610)**: Systematic security audit fix rounds (HIGH items → LOW items), Prisma transaction safety, unused import cleanup, and ongoing progress documentation
+- **Audit remediation (0595–0617)**: Systematic security audit fix rounds (HIGH items → LOW items), Prisma transaction safety, unused import cleanup, JWT secret removal, error boundaries, form validation, database indexes, ARIA/focus trap, AdminPanel modularization, and ongoing progress documentation
 
 ## Progress Tracking
 
