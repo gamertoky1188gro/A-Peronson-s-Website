@@ -3,27 +3,25 @@ process.env.ESIGN_PROVIDER_URL = "https://api.dropbox.sign.test";
 process.env.ESIGN_DROPBOX_SIGN_API_KEY = "testkey";
 
 import axios from "axios";
+
 axios.post = async () => ({
-  data: { signing_url: "https://provider/sign/abc", session_id: "sess-abc" },
+	data: { signing_url: "https://provider/sign/abc", session_id: "sess-abc" },
 });
 
 import { createDraftContract } from "../server/services/documentService.js";
 import { createSignSession } from "../server/services/eSignService.js";
 import prisma from "../server/utils/prisma.js";
+
 (async () => {
-  const actor = { id: "owner-debug", role: "owner" };
-  const draft = await createDraftContract(actor, {
-    buyer_id: "buyer-debug",
-    factory_id: "factory-debug",
-    buyer_name: "Buyer D",
-    factory_name: "Factory D",
-  });
-  console.log("draft", draft.id);
-  const session = await createSignSession(draft.id, actor);
-  console.log("session", session);
-  const stored = await prisma.document.findUnique({ where: { id: draft.id } });
-  console.log("stored.artifact", stored?.artifact);
-})().catch((err) => {
-  console.error(err);
-  process.exit(1);
+	const actor = { id: "owner-debug", role: "owner" };
+	const draft = await createDraftContract(actor, {
+		buyer_id: "buyer-debug",
+		factory_id: "factory-debug",
+		buyer_name: "Buyer D",
+		factory_name: "Factory D",
+	});
+	const session = await createSignSession(draft.id, actor);
+	const stored = await prisma.document.findUnique({ where: { id: draft.id } });
+})().catch((_err) => {
+	process.exit(1);
 });

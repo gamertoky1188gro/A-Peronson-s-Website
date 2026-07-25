@@ -1,16 +1,16 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  completeMilestone,
-  getFeedbackRequests,
-  getProfileRatings,
-  getProfileRatingsAggregate,
-  getProfileRatingsBatch,
-  getSearchRatings,
-  submitRating,
-  editRating,
-  removeRating,
+	completeMilestone,
+	editRating,
+	getFeedbackRequests,
+	getProfileRatings,
+	getProfileRatingsAggregate,
+	getProfileRatingsBatch,
+	getSearchRatings,
+	removeRating,
+	submitRating,
 } from "../controllers/ratingsController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

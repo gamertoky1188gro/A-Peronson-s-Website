@@ -1,26 +1,25 @@
-import { Router } from "express";
-import express from "express";
+import express, { Router } from "express";
 import multer from "multer";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  createContractDraft,
-  getContracts,
-  getContractAudit,
-  getDocuments,
-  patchContractArtifact,
-  patchContractSignatures,
-  registerDocumentUrl,
-  removeDocument,
-  uploadDocument,
-  createContractSignSession,
-  createContractSignCallback,
-  approveDocumentCtrl,
-  rejectDocumentCtrl,
+	approveDocumentCtrl,
+	createContractDraft,
+	createContractSignCallback,
+	createContractSignSession,
+	getContractAudit,
+	getContracts,
+	getDocuments,
+	patchContractArtifact,
+	patchContractSignatures,
+	registerDocumentUrl,
+	rejectDocumentCtrl,
+	removeDocument,
+	uploadDocument,
 } from "../controllers/documentController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 250 * 1024 * 1024 },
+	storage: multer.memoryStorage(),
+	limits: { fileSize: 250 * 1024 * 1024 },
 });
 const router = Router();
 
@@ -28,29 +27,17 @@ router.post("/", requireAuth, upload.single("file"), uploadDocument);
 router.post("/url", requireAuth, registerDocumentUrl);
 
 router.post("/contracts/draft", requireAuth, createContractDraft);
-router.post(
-  "/contracts/:contractId/sign-session",
-  requireAuth,
-  createContractSignSession,
-);
+router.post("/contracts/:contractId/sign-session", requireAuth, createContractSignSession);
 // Provider webhook (no auth) - validate with ESIGN_WEBHOOK_SECRET
 router.post(
-  "/contracts/:contractId/sign-callback",
-  express.raw({ type: "*/*", limit: "1mb" }),
-  createContractSignCallback,
+	"/contracts/:contractId/sign-callback",
+	express.raw({ type: "*/*", limit: "1mb" }),
+	createContractSignCallback,
 );
 router.get("/contracts", requireAuth, getContracts);
 router.get("/contracts/:contractId/audit", requireAuth, getContractAudit);
-router.patch(
-  "/contracts/:contractId/signatures",
-  requireAuth,
-  patchContractSignatures,
-);
-router.patch(
-  "/contracts/:contractId/artifact",
-  requireAuth,
-  patchContractArtifact,
-);
+router.patch("/contracts/:contractId/signatures", requireAuth, patchContractSignatures);
+router.patch("/contracts/:contractId/artifact", requireAuth, patchContractArtifact);
 router.get("/", requireAuth, getDocuments);
 router.patch("/:documentId/approve", requireAuth, approveDocumentCtrl);
 router.patch("/:documentId/reject", requireAuth, rejectDocumentCtrl);

@@ -1,10 +1,10 @@
 import { Router } from "express";
 import {
-  systemAbout,
-  systemHome,
-  systemMeta,
-  systemPolicies,
-  systemPricing,
+	systemAbout,
+	systemHome,
+	systemMeta,
+	systemPolicies,
+	systemPricing,
 } from "../controllers/systemController.js";
 
 const router = Router();

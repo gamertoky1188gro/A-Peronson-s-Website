@@ -1,351 +1,346 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function CyberpunkCursor() {
-  const canvasRef = useRef(null);
-  const coreRef = useRef(null);
-  const ringRef = useRef(null);
-  const glowRef = useRef(null);
-  const dotRef = useRef(null);
-  const spinnerRef = useRef(null);
+	const canvasRef = useRef(null);
+	const coreRef = useRef(null);
+	const ringRef = useRef(null);
+	const glowRef = useRef(null);
+	const dotRef = useRef(null);
+	const spinnerRef = useRef(null);
 
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") return "dark";
-    const htmlTheme = document.documentElement.classList.contains("dark")
-      ? "dark"
-      : "light";
-    return htmlTheme;
-  });
+	const [theme, setTheme] = useState(() => {
+		if (typeof window === "undefined") {
+			return "dark";
+		}
+		const htmlTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+		return htmlTheme;
+	});
 
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const isDark = document.documentElement.classList.contains("dark");
-      setTheme(isDark ? "dark" : "light");
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    return () => observer.disconnect();
-  }, []);
+	useEffect(() => {
+		const observer = new MutationObserver(() => {
+			const isDark = document.documentElement.classList.contains("dark");
+			setTheme(isDark ? "dark" : "light");
+		});
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ["class"],
+		});
+		return () => observer.disconnect();
+	}, []);
 
-  useEffect(() => {
-    const body = document.body;
-    const html = document.documentElement;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
+	useEffect(() => {
+		const body = document.body;
+		const html = document.documentElement;
+		const canvas = canvasRef.current;
+		const ctx = canvas?.getContext("2d");
 
-    const core = coreRef.current;
-    const ring = ringRef.current;
-    const glow = glowRef.current;
-    const dot = dotRef.current;
-    const spinner = spinnerRef.current;
+		const core = coreRef.current;
+		const ring = ringRef.current;
+		const glow = glowRef.current;
+		const dot = dotRef.current;
+		const spinner = spinnerRef.current;
 
-    if (!canvas || !ctx || !core || !ring || !glow || !dot || !spinner) return;
+		if (!(canvas && ctx && core && ring && glow && dot && spinner)) {
+			return;
+		}
 
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const state = {
-      x: window.innerWidth * 0.5,
-      y: window.innerHeight * 0.5,
-      px: window.innerWidth * 0.5,
-      py: window.innerHeight * 0.5,
-      rx: window.innerWidth * 0.5,
-      ry: window.innerHeight * 0.5,
-      gx: window.innerWidth * 0.5,
-      gy: window.innerHeight * 0.5,
-      visible: false,
-      mode: "normal",
-      lastEmit: 0,
-      hue: 180,
-      particles: [],
-    };
+		const state = {
+			x: window.innerWidth * 0.5,
+			y: window.innerHeight * 0.5,
+			px: window.innerWidth * 0.5,
+			py: window.innerHeight * 0.5,
+			rx: window.innerWidth * 0.5,
+			ry: window.innerHeight * 0.5,
+			gx: window.innerWidth * 0.5,
+			gy: window.innerHeight * 0.5,
+			visible: false,
+			mode: "normal",
+			lastEmit: 0,
+			hue: 180,
+			particles: [],
+		};
 
-    const resizeCanvas = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(window.innerWidth * dpr);
-      canvas.height = Math.floor(window.innerHeight * dpr);
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
+		const resizeCanvas = () => {
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			canvas.width = Math.floor(window.innerWidth * dpr);
+			canvas.height = Math.floor(window.innerHeight * dpr);
+			canvas.style.width = `${window.innerWidth}px`;
+			canvas.style.height = `${window.innerHeight}px`;
+			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		};
 
-    const setPos = (el, x, y) => {
-      el.style.left = `${x}px`;
-      el.style.top = `${y}px`;
-    };
+		const setPos = (el, x, y) => {
+			el.style.left = `${x}px`;
+			el.style.top = `${y}px`;
+		};
 
-    const emitParticles = (x, y, amount = 2) => {
-      if (reduceMotion) return;
-      for (let i = 0; i < amount; i += 1) {
-        state.particles.push({
-          x,
-          y,
-          vx: (Math.random() - 0.5) * (2.2 + Math.random() * 1.8),
-          vy: (Math.random() - 0.5) * (2.2 + Math.random() * 1.8),
-          life: 1,
-          size: 0.8 + Math.random() * 2.8,
-          hue: state.hue + (Math.random() * 32 - 16),
-        });
-      }
-    };
+		const emitParticles = (x, y, amount = 2) => {
+			if (reduceMotion) {
+				return;
+			}
+			for (let i = 0; i < amount; i += 1) {
+				state.particles.push({
+					x,
+					y,
+					vx: (Math.random() - 0.5) * (2.2 + Math.random() * 1.8),
+					vy: (Math.random() - 0.5) * (2.2 + Math.random() * 1.8),
+					life: 1,
+					size: 0.8 + Math.random() * 2.8,
+					hue: state.hue + (Math.random() * 32 - 16),
+				});
+			}
+		};
 
-    const emitBurst = (x, y, amount = 10) => {
-      if (reduceMotion) return;
-      for (let i = 0; i < amount; i += 1) {
-        state.particles.push({
-          x,
-          y,
-          vx: (Math.random() - 0.5) * 7,
-          vy: (Math.random() - 0.5) * 7,
-          life: 1,
-          size: 1 + Math.random() * 3.5,
-          hue: state.hue + (Math.random() * 70 - 35),
-        });
-      }
-    };
+		const emitBurst = (x, y, amount = 10) => {
+			if (reduceMotion) {
+				return;
+			}
+			for (let i = 0; i < amount; i += 1) {
+				state.particles.push({
+					x,
+					y,
+					vx: (Math.random() - 0.5) * 7,
+					vy: (Math.random() - 0.5) * 7,
+					life: 1,
+					size: 1 + Math.random() * 3.5,
+					hue: state.hue + (Math.random() * 70 - 35),
+				});
+			}
+		};
 
-    const spawnWave = (x, y) => {
-      const wave = document.createElement("div");
-      wave.className = "cp-click-wave";
-      setPos(wave, x, y);
-      document.body.appendChild(wave);
-      wave.addEventListener("animationend", () => wave.remove(), {
-        once: true,
-      });
-    };
+		const spawnWave = (x, y) => {
+			const wave = document.createElement("div");
+			wave.className = "cp-click-wave";
+			setPos(wave, x, y);
+			document.body.appendChild(wave);
+			wave.addEventListener("animationend", () => wave.remove(), {
+				once: true,
+			});
+		};
 
-    const isTextTarget = (el) =>
-      !!el &&
-      (el.tagName === "INPUT" ||
-        el.tagName === "TEXTAREA" ||
-        el.isContentEditable);
-    const isLoadingTarget = (el) =>
-      !!el && !!el.closest("[data-cursor='loading'], .loading-btn");
-    const isPointerTarget = (el) =>
-      !!el &&
-      !!el.closest(
-        "button, a, [role='button'], .magnetic, .cursor-hoverable, select, summary",
-      );
+		const isTextTarget = (el) =>
+			Boolean(el) && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
+		const isLoadingTarget = (el) =>
+			Boolean(el) && Boolean(el.closest("[data-cursor='loading'], .loading-btn"));
+		const isPointerTarget = (el) =>
+			Boolean(el) &&
+			Boolean(
+				el.closest("button, a, [role='button'], .magnetic, .cursor-hoverable, select, summary"),
+			);
 
-    const setMode = (mode) => {
-      state.mode = mode;
-      body.classList.toggle("cp-pointer", mode === "pointer");
-      body.classList.toggle("cp-text", mode === "text");
-      body.classList.toggle("cp-loading", mode === "loading");
-    };
+		const setMode = (mode) => {
+			state.mode = mode;
+			body.classList.toggle("cp-pointer", mode === "pointer");
+			body.classList.toggle("cp-text", mode === "text");
+			body.classList.toggle("cp-loading", mode === "loading");
+		};
 
-    const applyStateFromElement = (el) => {
-      if (isLoadingTarget(el)) {
-        setMode("loading");
-        return;
-      }
-      if (isTextTarget(el)) {
-        setMode("text");
-        return;
-      }
-      if (isPointerTarget(el)) {
-        setMode("pointer");
-        return;
-      }
-      setMode("normal");
-    };
+		const applyStateFromElement = (el) => {
+			if (isLoadingTarget(el)) {
+				setMode("loading");
+				return;
+			}
+			if (isTextTarget(el)) {
+				setMode("text");
+				return;
+			}
+			if (isPointerTarget(el)) {
+				setMode("pointer");
+				return;
+			}
+			setMode("normal");
+		};
 
-    const updateMouse = (e) => {
-      state.visible = true;
-      state.x = e.clientX;
-      state.y = e.clientY;
+		const updateMouse = (e) => {
+			state.visible = true;
+			state.x = e.clientX;
+			state.y = e.clientY;
 
-      state.hue =
-        theme === "light"
-          ? (210 + (state.x / window.innerWidth) * 60) % 360
-          : (180 +
-              (state.x / window.innerWidth) * 170 +
-              (state.y / window.innerHeight) * 40) %
-            360;
+			state.hue =
+				theme === "light"
+					? (210 + (state.x / window.innerWidth) * 60) % 360
+					: (180 + (state.x / window.innerWidth) * 170 + (state.y / window.innerHeight) * 40) % 360;
 
-      html.style.setProperty("--cursor-hue", String(state.hue));
-      html.style.setProperty(
-        "--cursor-accent",
-        String((state.hue + 120) % 360),
-      );
+			html.style.setProperty("--cursor-hue", String(state.hue));
+			html.style.setProperty("--cursor-accent", String((state.hue + 120) % 360));
 
-      const el = document.elementFromPoint(state.x, state.y);
-      applyStateFromElement(el);
+			const el = document.elementFromPoint(state.x, state.y);
+			applyStateFromElement(el);
 
-      const now = performance.now();
-      const dx = state.x - state.px;
-      const dy = state.y - state.py;
-      const dist = Math.hypot(dx, dy);
+			const now = performance.now();
+			const dx = state.x - state.px;
+			const dy = state.y - state.py;
+			const dist = Math.hypot(dx, dy);
 
-      if (dist > 10 && now - state.lastEmit > 10) {
-        state.lastEmit = now;
-        emitParticles(state.x, state.y, state.mode === "pointer" ? 5 : 2);
-      }
+			if (dist > 10 && now - state.lastEmit > 10) {
+				state.lastEmit = now;
+				emitParticles(state.x, state.y, state.mode === "pointer" ? 5 : 2);
+			}
 
-      state.px = state.x;
-      state.py = state.y;
+			state.px = state.x;
+			state.py = state.y;
 
-      setPos(core, state.x, state.y);
-      setPos(dot, state.x, state.y);
-      setPos(spinner, state.x, state.y);
-    };
+			setPos(core, state.x, state.y);
+			setPos(dot, state.x, state.y);
+			setPos(spinner, state.x, state.y);
+		};
 
-    const magneticEls = [...document.querySelectorAll(".magnetic")];
-    const magneticListeners = [];
-    magneticEls.forEach((el) => {
-      let rect = null;
+		const magneticEls = [...document.querySelectorAll(".magnetic")];
+		const magneticListeners = [];
+		magneticEls.forEach((el) => {
+			let rect = null;
 
-      const onEnter = () => {
-        rect = el.getBoundingClientRect();
-      };
-      const onMove = (e) => {
-        rect = rect || el.getBoundingClientRect();
-        const dx = e.clientX - (rect.left + rect.width / 2);
-        const dy = e.clientY - (rect.top + rect.height / 2);
-        const strength = 0.18;
-        el.style.transform = `translate3d(${dx * strength}px, ${dy * strength}px, 0)`;
-      };
-      const onLeave = () => {
-        el.style.transform = "";
-      };
+			const onEnter = () => {
+				rect = el.getBoundingClientRect();
+			};
+			const onMove = (e) => {
+				rect = rect || el.getBoundingClientRect();
+				const dx = e.clientX - (rect.left + rect.width / 2);
+				const dy = e.clientY - (rect.top + rect.height / 2);
+				const strength = 0.18;
+				el.style.transform = `translate3d(${dx * strength}px, ${dy * strength}px, 0)`;
+			};
+			const onLeave = () => {
+				el.style.transform = "";
+			};
 
-      el.addEventListener("mouseenter", onEnter);
-      el.addEventListener("mousemove", onMove);
-      el.addEventListener("mouseleave", onLeave);
-      magneticListeners.push({ el, onEnter, onMove, onLeave });
-    });
+			el.addEventListener("mouseenter", onEnter);
+			el.addEventListener("mousemove", onMove);
+			el.addEventListener("mouseleave", onLeave);
+			magneticListeners.push({ el, onEnter, onMove, onLeave });
+		});
 
-    const animate = () => {
-      if (!state.visible) {
-        requestAnimationFrame(animate);
-        return;
-      }
+		const animate = () => {
+			if (!state.visible) {
+				requestAnimationFrame(animate);
+				return;
+			}
 
-      state.rx += (state.x - state.rx) * 0.22;
-      state.ry += (state.y - state.ry) * 0.22;
-      state.gx += (state.x - state.gx) * 0.12;
-      state.gy += (state.y - state.gy) * 0.12;
+			state.rx += (state.x - state.rx) * 0.22;
+			state.ry += (state.y - state.ry) * 0.22;
+			state.gx += (state.x - state.gx) * 0.12;
+			state.gy += (state.y - state.gy) * 0.12;
 
-      setPos(ring, state.rx, state.ry);
-      setPos(glow, state.gx, state.gy);
+			setPos(ring, state.rx, state.ry);
+			setPos(glow, state.gx, state.gy);
 
-      const dx = state.x - state.rx;
-      const dy = state.y - state.ry;
-      glow.style.transform = `translate(-50%, -50%) translate(${dx * 0.06}px, ${dy * 0.06}px)`;
+			const dx = state.x - state.rx;
+			const dy = state.y - state.ry;
+			glow.style.transform = `translate(-50%, -50%) translate(${dx * 0.06}px, ${dy * 0.06}px)`;
 
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      ctx.globalCompositeOperation = "lighter";
+			ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+			ctx.globalCompositeOperation = "lighter";
 
-      for (let i = state.particles.length - 1; i >= 0; i -= 1) {
-        const p = state.particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vx *= 0.98;
-        p.vy *= 0.98;
-        p.life -= 0.025;
+			for (let i = state.particles.length - 1; i >= 0; i -= 1) {
+				const p = state.particles[i];
+				p.x += p.vx;
+				p.y += p.vy;
+				p.vx *= 0.98;
+				p.vy *= 0.98;
+				p.life -= 0.025;
 
-        if (p.life <= 0) {
-          state.particles.splice(i, 1);
-          continue;
-        }
+				if (p.life <= 0) {
+					state.particles.splice(i, 1);
+					continue;
+				}
 
-        const alpha = Math.max(0, p.life);
-        ctx.beginPath();
-        ctx.fillStyle = `hsla(${p.hue}, 100%, 65%, ${alpha})`;
-        ctx.shadowBlur = 16;
-        ctx.shadowColor = `hsla(${p.hue}, 100%, 65%, ${alpha})`;
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
+				const alpha = Math.max(0, p.life);
+				ctx.beginPath();
+				ctx.fillStyle = `hsla(${p.hue}, 100%, 65%, ${alpha})`;
+				ctx.shadowBlur = 16;
+				ctx.shadowColor = `hsla(${p.hue}, 100%, 65%, ${alpha})`;
+				ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+				ctx.fill();
+			}
 
-      if (state.mode === "text") {
-        core.style.borderRadius = "999px";
-        ring.style.borderRadius = "10px";
-      } else {
-        core.style.borderRadius = "50%";
-        ring.style.borderRadius = "50%";
-      }
+			if (state.mode === "text") {
+				core.style.borderRadius = "999px";
+				ring.style.borderRadius = "10px";
+			} else {
+				core.style.borderRadius = "50%";
+				ring.style.borderRadius = "50%";
+			}
 
-      requestAnimationFrame(animate);
-    };
+			requestAnimationFrame(animate);
+		};
 
-    body.style.cursor = "none";
-    resizeCanvas();
+		body.style.cursor = "none";
+		resizeCanvas();
 
-    const cursorEls = [core, ring, glow, dot, spinner];
+		const cursorEls = [core, ring, glow, dot, spinner];
 
-    const setCursorVisible = (visible) => {
-      cursorEls.forEach((el) => {
-        el.style.opacity = visible ? "1" : "0";
-      });
-    };
+		const setCursorVisible = (visible) => {
+			cursorEls.forEach((el) => {
+				el.style.opacity = visible ? "1" : "0";
+			});
+		};
 
-    const onResize = resizeCanvas;
-    const onMouseMove = updateMouse;
-    const onLeave = () => {
-      setCursorVisible(false);
-      state.visible = false;
-    };
-    const onEnter = (e) => {
-      setCursorVisible(true);
-      state.visible = true;
-      state.x = e.clientX;
-      state.y = e.clientY;
-      state.px = e.clientX;
-      state.py = e.clientY;
-      setPos(core, state.x, state.y);
-      setPos(dot, state.x, state.y);
-      setPos(spinner, state.x, state.y);
-    };
-    const onFirstMove = () => setCursorVisible(true);
-    const onDown = (e) => {
-      body.classList.add("cp-click");
-      spawnWave(e.clientX, e.clientY);
-      emitBurst(e.clientX, e.clientY, 14);
-      window.setTimeout(() => body.classList.remove("cp-click"), 420);
-    };
-    const onUp = () => body.classList.remove("cp-click");
-    const onDomMove = (e) => {
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      applyStateFromElement(el);
-    };
+		const onResize = resizeCanvas;
+		const onMouseMove = updateMouse;
+		const onLeave = () => {
+			setCursorVisible(false);
+			state.visible = false;
+		};
+		const onEnter = (e) => {
+			setCursorVisible(true);
+			state.visible = true;
+			state.x = e.clientX;
+			state.y = e.clientY;
+			state.px = e.clientX;
+			state.py = e.clientY;
+			setPos(core, state.x, state.y);
+			setPos(dot, state.x, state.y);
+			setPos(spinner, state.x, state.y);
+		};
+		const onFirstMove = () => setCursorVisible(true);
+		const onDown = (e) => {
+			body.classList.add("cp-click");
+			spawnWave(e.clientX, e.clientY);
+			emitBurst(e.clientX, e.clientY, 14);
+			window.setTimeout(() => body.classList.remove("cp-click"), 420);
+		};
+		const onUp = () => body.classList.remove("cp-click");
+		const onDomMove = (e) => {
+			const el = document.elementFromPoint(e.clientX, e.clientY);
+			applyStateFromElement(el);
+		};
 
-    window.addEventListener("resize", onResize);
-    window.addEventListener("mousemove", onMouseMove, { passive: true });
-    document.documentElement.addEventListener("mouseleave", onLeave);
-    document.documentElement.addEventListener("mouseenter", onEnter);
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("mouseup", onUp);
-    document.addEventListener("mousemove", onDomMove, { passive: true });
+		window.addEventListener("resize", onResize);
+		window.addEventListener("mousemove", onMouseMove, { passive: true });
+		document.documentElement.addEventListener("mouseleave", onLeave);
+		document.documentElement.addEventListener("mouseenter", onEnter);
+		window.addEventListener("mousedown", onDown);
+		window.addEventListener("mouseup", onUp);
+		document.addEventListener("mousemove", onDomMove, { passive: true });
 
-    setCursorVisible(false);
-    window.addEventListener("mousemove", onFirstMove, { once: true });
-    animate();
+		setCursorVisible(false);
+		window.addEventListener("mousemove", onFirstMove, { once: true });
+		animate();
 
-    return () => {
-      cursorEls.forEach((el) => {
-        el.style.opacity = "";
-      });
-      body.style.cursor = "";
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("mousemove", onMouseMove);
-      document.documentElement.removeEventListener("mouseleave", onLeave);
-      document.documentElement.removeEventListener("mouseenter", onEnter);
-      window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("mouseup", onUp);
-      document.removeEventListener("mousemove", onDomMove);
-      magneticListeners.forEach(({ el, onEnter, onMove, onLeave }) => {
-        el.removeEventListener("mouseenter", onEnter);
-        el.removeEventListener("mousemove", onMove);
-        el.removeEventListener("mouseleave", onLeave);
-      });
-    };
-  }, [theme]);
+		return () => {
+			cursorEls.forEach((el) => {
+				el.style.opacity = "";
+			});
+			body.style.cursor = "";
+			window.removeEventListener("resize", onResize);
+			window.removeEventListener("mousemove", onMouseMove);
+			document.documentElement.removeEventListener("mouseleave", onLeave);
+			document.documentElement.removeEventListener("mouseenter", onEnter);
+			window.removeEventListener("mousedown", onDown);
+			window.removeEventListener("mouseup", onUp);
+			document.removeEventListener("mousemove", onDomMove);
+			magneticListeners.forEach(({ el, onEnter, onMove, onLeave }) => {
+				el.removeEventListener("mouseenter", onEnter);
+				el.removeEventListener("mousemove", onMove);
+				el.removeEventListener("mouseleave", onLeave);
+			});
+		};
+	}, [theme]);
 
-  const styles = useMemo(
-    () => `
+	const styles = useMemo(
+		() => `
       :root {
         --cursor-x: 0px;
         --cursor-y: 0px;
@@ -569,19 +564,19 @@ export default function CyberpunkCursor() {
         .cp-click-wave { animation: none !important; }
       }
     `,
-    [],
-  );
+		[],
+	);
 
-  return (
-    <>
-      <style>{styles}</style>
-      <canvas id="cp-canvas" ref={canvasRef} />
+	return (
+		<>
+			<style>{styles}</style>
+			<canvas id="cp-canvas" ref={canvasRef} />
 
-      <div ref={glowRef} className="cp-glow" />
-      <div ref={ringRef} className="cp-ring" />
-      <div ref={coreRef} className="cp-core" />
-      <div ref={spinnerRef} className="cp-spinner" />
-      <div ref={dotRef} className="cp-dot" />
-    </>
-  );
+			<div ref={glowRef} class="cp-glow" />
+			<div ref={ringRef} class="cp-ring" />
+			<div ref={coreRef} class="cp-core" />
+			<div ref={spinnerRef} class="cp-spinner" />
+			<div ref={dotRef} class="cp-dot" />
+		</>
+	);
 }

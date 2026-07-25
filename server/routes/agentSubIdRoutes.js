@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  listAgentSubIdsController,
-  createAgentSubIdController,
-  getAgentSubIdController,
-  deleteAgentSubIdController,
+	createAgentSubIdController,
+	deleteAgentSubIdController,
+	getAgentSubIdController,
+	listAgentSubIdsController,
 } from "../controllers/agentSubIdController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

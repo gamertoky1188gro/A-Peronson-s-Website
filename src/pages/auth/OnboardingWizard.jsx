@@ -14,327 +14,312 @@
     - This is intentionally lightweight and non-blocking: users can skip, but the app will
       re-prompt until onboarding_completed is true.
 */
+
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import BackButton from "../../components/ui/BackButton";
-import ProfileImageUpload from "../../components/ui/ProfileImageUpload";
-import { useNavigate } from "react-router-dom";
-import {
-  apiRequest,
-  getCurrentUser,
-  getRoleHome,
-  getToken,
-  saveSession,
-} from "../../lib/auth";
 import { ThreeDot } from "react-loading-indicators";
-import NeonAtom from "../../components/ui/NeonAtom";
-import { logger } from "../../lib/logger";
+import { useNavigate } from "react-router-dom";
+import BackButton from "../../components/ui/BackButton.jsx";
+import NeonAtom from "../../components/ui/NeonAtom.jsx";
+import ProfileImageUpload from "../../components/ui/ProfileImageUpload.jsx";
+import { apiRequest, getCurrentUser, getRoleHome, getToken, saveSession } from "../../lib/auth.js";
+import { logger } from "../../lib/logger.js";
 
 const FALLBACK_CATEGORIES = [
-  "T-Shirt",
-  "Polo",
-  "Denim",
-  "Hoodie",
-  "Sportswear",
-  "Knitwear",
-  "Woven",
-  "Outerwear",
+	"T-Shirt",
+	"Polo",
+	"Denim",
+	"Hoodie",
+	"Sportswear",
+	"Knitwear",
+	"Woven",
+	"Outerwear",
 ];
 
 function StepHeader({ step, title, subtitle }) {
-  return (
-    <div className="mb-6">
-      <div className="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-sky-600 dark:text-sky-300">
-        Step {step} / 3
-      </div>
-      <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-        {title}
-      </h1>
-      <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-        {subtitle}
-      </p>
-    </div>
-  );
+	return (
+		<div class="mb-6">
+			<div class="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-sky-600 dark:text-sky-300">
+				Step {step} / 3
+			</div>
+			<h1 class="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h1>
+			<p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{subtitle}</p>
+		</div>
+	);
 }
 
 export default function OnboardingWizard() {
-  const navigate = useNavigate();
-  const token = useMemo(() => getToken(), []);
-  const user = getCurrentUser();
+	const navigate = useNavigate();
+	const token = useMemo(() => getToken(), []);
+	const user = getCurrentUser();
 
-  const [step, setStep] = useState(1);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [availableCategories, setAvailableCategories] =
-    useState(FALLBACK_CATEGORIES);
+	const [step, setStep] = useState(1);
+	const [saving, setSaving] = useState(false);
+	const [error, setError] = useState("");
+	const [availableCategories, setAvailableCategories] = useState(FALLBACK_CATEGORIES);
 
-  useEffect(() => {
-    if (!token) return;
-    apiRequest("/categories", { token })
-      .then((data) => {
-        if (Array.isArray(data?.items)) {
-          setAvailableCategories(data.items.map((c) => c.name || c.label || c));
-        }
-      })
-      .catch((err) => logger.warn("Failed to load categories:", err));
-  }, [token]);
+	useEffect(() => {
+		if (!token) {
+			return;
+		}
+		apiRequest("/categories", { token })
+			.then((data) => {
+				if (Array.isArray(data?.items)) {
+					setAvailableCategories(data.items.map((c) => c.name || c.label || c));
+				}
+			})
+			.catch((err) => logger.warn("Failed to load categories:", err));
+	}, [token]);
 
-  const [profileImage, setProfileImage] = useState(
-    () => user?.profile?.profile_image || "",
-  );
-  const [organizationName, setOrganizationName] = useState(
-    () => user?.profile?.organization_name || user?.company_name || "",
-  );
-  const [bio, setBio] = useState(() => user?.profile?.bio || "");
-  const [categories, setCategories] = useState(() => {
-    const current = user?.profile?.categories;
-    return Array.isArray(current) && current.length ? current : [];
-  });
+	const [profileImage, setProfileImage] = useState(() => user?.profile?.profile_image || "");
+	const [organizationName, setOrganizationName] = useState(
+		() => user?.profile?.organization_name || user?.company_name || "",
+	);
+	const [bio, setBio] = useState(() => user?.profile?.bio || "");
+	const [categories, setCategories] = useState(() => {
+		const current = user?.profile?.categories;
+		return Array.isArray(current) && current.length > 0 ? current : [];
+	});
 
-  function toggleCategory(cat) {
-    setCategories((prev) => {
-      const set = new Set(prev);
-      if (set.has(cat)) set.delete(cat);
-      else set.add(cat);
-      return [...set];
-    });
-  }
+	function toggleCategory(cat) {
+		setCategories((prev) => {
+			const set = new Set(prev);
+			if (set.has(cat)) {
+				set.delete(cat);
+			} else {
+				set.add(cat);
+			}
+			return [...set];
+		});
+	}
 
-  async function submit({ skipped = false } = {}) {
-    if (!token) return;
-    setSaving(true);
-    setError("");
-    try {
-      // Basic validation before submitting (unless skipping)
-      if (!skipped) {
-        const name = String(organizationName || "").trim();
-        if (!name || name.length < 3) {
-          setError("Organization name must be at least 3 characters.");
-          setSaving(false);
-          return;
-        }
-        // Require at least one category to be selected (unless user explicitly skips)
-        if (!Array.isArray(categories) || categories.length === 0) {
-          setError(
-            'Please select at least one category or click "Skip for now".',
-          );
-          setSaving(false);
-          return;
-        }
-      }
-      const payload = {
-        profile_image: skipped ? profileImage || "" : profileImage || "",
-        organization_name: skipped
-          ? organizationName || ""
-          : organizationName || "",
-        bio: skipped ? bio || "" : bio || "",
-        categories: skipped ? categories || [] : categories || [],
-      };
+	async function submit({ skipped = false } = {}) {
+		if (!token) {
+			return;
+		}
+		setSaving(true);
+		setError("");
+		try {
+			// Basic validation before submitting (unless skipping)
+			if (!skipped) {
+				const name = String(organizationName || "").trim();
+				if (!name || name.length < 3) {
+					setError("Organization name must be at least 3 characters.");
+					setSaving(false);
+					return;
+				}
+				// Require at least one category to be selected (unless user explicitly skips)
+				if (!Array.isArray(categories) || categories.length === 0) {
+					setError('Please select at least one category or click "Skip for now".');
+					setSaving(false);
+					return;
+				}
+			}
+			const payload = {
+				profile_image: skipped ? profileImage || "" : profileImage || "",
+				organization_name: skipped ? organizationName || "" : organizationName || "",
+				bio: skipped ? bio || "" : bio || "",
+				categories: skipped ? categories || [] : categories || [],
+			};
 
-      const updatedUser = await apiRequest("/onboarding", {
-        method: "POST",
-        token,
-        body: payload,
-      });
-      // Keep session user updated (so route guards / UI show the correct state immediately).
-      saveSession(updatedUser, token);
-      navigate(getRoleHome(updatedUser.role), { replace: true });
-    } catch (err) {
-      setError(err.message || "Unable to save onboarding");
-    } finally {
-      setSaving(false);
-    }
-  }
+			const updatedUser = await apiRequest("/onboarding", {
+				method: "POST",
+				token,
+				body: payload,
+			});
+			// Keep session user updated (so route guards / UI show the correct state immediately).
+			saveSession(updatedUser, token);
+			navigate(getRoleHome(updatedUser.role), { replace: true });
+		} catch (err) {
+			setError(err.message || "Unable to save onboarding");
+		} finally {
+			setSaving(false);
+		}
+	}
 
-  function next() {
-    setError("");
-    const validate = (s) => {
-      if (s === 1) {
-        if (profileImage) {
-          const isUrl =
-            profileImage.startsWith("http://") ||
-            profileImage.startsWith("https://");
-          const isRelativePath = profileImage.startsWith("/uploads/");
-          if (!isUrl && !isRelativePath) {
-            setError("Please enter a valid image URL or leave it blank.");
-            return false;
-          }
-        }
-      }
-      if (s === 2) {
-        const name = String(organizationName || "").trim();
-        if (!name || name.length < 3) {
-          setError("Organization name must be at least 3 characters.");
-          return false;
-        }
-      }
-      return true;
-    };
+	function next() {
+		setError("");
+		const validate = (s) => {
+			if (s === 1 && profileImage) {
+				const isUrl = profileImage.startsWith("http://") || profileImage.startsWith("https://");
+				const isRelativePath = profileImage.startsWith("/uploads/");
+				if (!(isUrl || isRelativePath)) {
+					setError("Please enter a valid image URL or leave it blank.");
+					return false;
+				}
+			}
+			if (s === 2) {
+				const name = String(organizationName || "").trim();
+				if (!name || name.length < 3) {
+					setError("Organization name must be at least 3 characters.");
+					return false;
+				}
+			}
+			return true;
+		};
 
-    if (!validate(step)) return;
-    setStep((s) => Math.min(3, s + 1));
-  }
+		if (!validate(step)) {
+			return;
+		}
+		setStep((s) => Math.min(3, s + 1));
+	}
 
-  function back() {
-    setStep((s) => Math.max(1, s - 1));
-  }
+	function back() {
+		setStep((s) => Math.max(1, s - 1));
+	}
 
-  if (saving) return <NeonAtom fill />;
+	if (saving) {
+		return <NeonAtom fill={true} />;
+	}
 
-  return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-500 ease-in-out dark:bg-[#020617] dark:text-slate-100">
-      <div className="mx-auto w-full max-w-3xl">
-        <div className="rounded-2xl bg-[#ffffff] p-8 shadow-[0_12px_40px_rgba(2,6,23,0.08)] ring-1 ring-slate-200/60 transition-colors duration-500 ease-in-out dark:bg-slate-900/50 dark:shadow-none dark:ring-slate-800">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: 60 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -60 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {step === 1 ? (
-                <>
-                  <StepHeader
-                    step={1}
-                    title="Add your profile image"
-                    subtitle="Optional. You can paste a URL or upload an image."
-                  />
-                  <ProfileImageUpload
-                    value={profileImage}
-                    onChange={setProfileImage}
-                    label="Profile Image"
-                  />
-                </>
-              ) : null}
+	return (
+		<div class="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-500 ease-in-out dark:bg-[#020617] dark:text-slate-100">
+			<div class="mx-auto w-full max-w-3xl">
+				<div class="rounded-2xl bg-[#ffffff] p-8 shadow-[0_12px_40px_rgba(2,6,23,0.08)] ring-1 ring-slate-200/60 transition-colors duration-500 ease-in-out dark:bg-slate-900/50 dark:shadow-none dark:ring-slate-800">
+					<AnimatePresence mode="wait">
+						<motion.div
+							key={step}
+							initial={{ opacity: 0, x: 60 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: -60 }}
+							transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+						>
+							{step === 1 ? (
+								<>
+									<StepHeader
+										step={1}
+										title="Add your profile image"
+										subtitle="Optional. You can paste a URL or upload an image."
+									/>
+									<ProfileImageUpload
+										value={profileImage}
+										onChange={setProfileImage}
+										label="Profile Image"
+									/>
+								</>
+							) : null}
 
-              {step === 2 ? (
-                <>
-                  <StepHeader
-                    step={2}
-                    title="Confirm your organization"
-                    subtitle="Use the official name used in documents."
-                  />
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    Organization name
-                  </label>
-                  <input
-                    value={organizationName}
-                    onChange={(e) => setOrganizationName(e.target.value)}
-                    placeholder="Your company / buying house name"
-                    className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
-                  />
-                  <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                    Account role:{" "}
-                    <span className="font-semibold text-slate-700 dark:text-slate-200">
-                      {String(user?.role || "").replace("_", " ")}
-                    </span>
-                  </div>
-                  <label className="mt-4 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    Description / Bio
-                  </label>
-                  <textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell us about your organization..."
-                    rows={3}
-                    className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224] resize-none"
-                  />
-                </>
-              ) : null}
+							{step === 2 ? (
+								<>
+									<StepHeader
+										step={2}
+										title="Confirm your organization"
+										subtitle="Use the official name used in documents."
+									/>
+									<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+										Organization name
+									</label>
+									<input
+										value={organizationName}
+										onChange={(e) => setOrganizationName(e.target.value)}
+										placeholder="Your company / buying house name"
+										class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
+									/>
+									<div class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+										Account role:{" "}
+										<span class="font-semibold text-slate-700 dark:text-slate-200">
+											{String(user?.role || "").replace("_", " ")}
+										</span>
+									</div>
+									<label class="mt-4 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+										Description / Bio
+									</label>
+									<textarea
+										value={bio}
+										onChange={(e) => setBio(e.target.value)}
+										placeholder="Tell us about your organization..."
+										rows={3}
+										class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224] resize-none"
+									/>
+								</>
+							) : null}
 
-              {step === 3 ? (
-                <>
-                  <StepHeader
-                    step={3}
-                    title="Select categories"
-                    subtitle="Pick a few categories you work with."
-                  />
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {availableCategories.map((cat) => {
-                      const active = categories.includes(cat);
-                      return (
-                        <button
-                          type="button"
-                          key={cat}
-                          onClick={() => toggleCategory(cat)}
-                          className={[
-                            "rounded-xl px-3 py-2 text-xs font-semibold transition",
-                            active
-                              ? "bg-sky-600 text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]"
-                              : "bg-slate-50 text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10",
-                          ].join(" ")}
-                        >
-                          {cat}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                    You can change these later in Organization Settings.
-                  </p>
-                </>
-              ) : null}
-            </motion.div>
-          </AnimatePresence>
+							{step === 3 ? (
+								<>
+									<StepHeader
+										step={3}
+										title="Select categories"
+										subtitle="Pick a few categories you work with."
+									/>
+									<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+										{availableCategories.map((cat) => {
+											const active = categories.includes(cat);
+											return (
+												<button
+													type="button"
+													key={cat}
+													onClick={() => toggleCategory(cat)}
+													class={[
+														"rounded-xl px-3 py-2 text-xs font-semibold transition",
+														active
+															? "bg-sky-600 text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]"
+															: "bg-slate-50 text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10",
+													].join(" ")}
+												>
+													{cat}
+												</button>
+											);
+										})}
+									</div>
+									<p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+										You can change these later in Organization Settings.
+									</p>
+								</>
+							) : null}
+						</motion.div>
+					</AnimatePresence>
 
-          {error ? (
-            <div className="mt-5 rounded-xl bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">
-              {error}
-            </div>
-          ) : null}
+					{error ? (
+						<div class="mt-5 rounded-xl bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">
+							{error}
+						</div>
+					) : null}
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <BackButton
-                onClick={back}
-                disabled={step === 1 || saving}
-                className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:bg-[#0b1224] dark:text-slate-200"
-              >
-                Back
-              </BackButton>
-              {step < 3 ? (
-                <button
-                  type="button"
-                  onClick={next}
-                  disabled={saving}
-                  className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
-                >
-                  Continue
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => submit()}
-                  disabled={saving}
-                  className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
-                >
-                  {saving ? (
-                    <ThreeDot
-                      variant="bounce"
-                      color="#6100ff"
-                      size="small"
-                      text=""
-                      textColor=""
-                    />
-                  ) : (
-                    "Finish setup"
-                  )}
-                </button>
-              )}
-            </div>
+					<div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div class="flex items-center gap-2">
+							<BackButton
+								onClick={back}
+								disabled={step === 1 || saving}
+								class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:bg-[#0b1224] dark:text-slate-200"
+							>
+								Back
+							</BackButton>
+							{step < 3 ? (
+								<button
+									type="button"
+									onClick={next}
+									disabled={saving}
+									class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
+								>
+									Continue
+								</button>
+							) : (
+								<button
+									type="button"
+									onClick={() => submit()}
+									disabled={saving}
+									class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
+								>
+									{saving ? (
+										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									) : (
+										"Finish setup"
+									)}
+								</button>
+							)}
+						</div>
 
-            <button
-              type="button"
-              onClick={() => submit({ skipped: true })}
-              disabled={saving}
-              className="text-sm font-semibold text-slate-500 transition hover:text-slate-700 disabled:opacity-60 dark:text-slate-400 dark:hover:text-slate-200"
-            >
-              Skip for now
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+						<button
+							type="button"
+							onClick={() => submit({ skipped: true })}
+							disabled={saving}
+							class="text-sm font-semibold text-slate-500 transition hover:text-slate-700 disabled:opacity-60 dark:text-slate-400 dark:hover:text-slate-200"
+						>
+							Skip for now
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }

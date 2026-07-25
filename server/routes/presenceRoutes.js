@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import { getPresence } from "../controllers/presenceController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

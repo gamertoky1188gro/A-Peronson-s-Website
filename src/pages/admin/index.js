@@ -27,83 +27,83 @@
 
 // Re-export all sections
 export {
-  AdminHomeSection,
-  AdminPlatformSection,
-  AdminInfraSection,
-  AdminNetworkSection,
-  AdminServerSection,
-  AdminCMSSection,
-  AdminSecuritySection,
-  AdminConfigSection,
-} from "./sections";
+	AdminCMSSection,
+	AdminConfigSection,
+	AdminHomeSection,
+	AdminInfraSection,
+	AdminNetworkSection,
+	AdminPlatformSection,
+	AdminSecuritySection,
+	AdminServerSection,
+} from "./sections/index.js";
 
 // Category constants
 export const ADMIN_CATEGORIES = {
-  HOME: "home",
-  PLATFORM: "platform",
-  INFRA: "infra",
-  NETWORK: "network",
-  SERVER_ADMIN: "server-admin",
-  CMS: "cms",
-  ULTRA_SECURITY: "ultra-security",
-  CONFIG: "config",
+	HOME: "home",
+	PLATFORM: "platform",
+	INFRA: "infra",
+	NETWORK: "network",
+	SERVER_ADMIN: "server-admin",
+	CMS: "cms",
+	ULTRA_SECURITY: "ultra-security",
+	CONFIG: "config",
 };
 
 export const CATEGORY_LABELS = {
-  home: "Dashboard",
-  platform: "Platform",
-  infra: "Infrastructure",
-  network: "Network",
-  "server-admin": "Server Admin",
-  cms: "CMS",
-  "ultra-security": "Ultra Security",
-  config: "Config",
+	home: "Dashboard",
+	platform: "Platform",
+	infra: "Infrastructure",
+	network: "Network",
+	"server-admin": "Server Admin",
+	cms: "CMS",
+	"ultra-security": "Ultra Security",
+	config: "Config",
 };
 
 // Default props for each section (to be used with original state)
 export const getDefaultSectionProps = (adminDark = false) => ({
-  adminDark,
-  // Platform nav states
-  platformNav: "overview",
-  setPlatformNav: () => {},
-  // Infra nav states
-  infraNav: "overview",
-  setInfraNav: () => {},
-  // Network nav states
-  networkNav: "overview",
-  setNetworkNav: () => {},
-  // Server nav states
-  serverNav: "overview",
-  setServerNav: () => {},
-  // CMS nav states
-  cmsNav: "pages",
-  setCmsNav: () => {},
-  // Security nav states
-  securityNav: "overview",
-  setSecurityNav: () => {},
-  // Config editor states
-  configEditorTab: "inventory",
-  setConfigEditorTab: () => {},
-  // Data placeholders (would come from parent state)
-  metricsData: [],
-  recentActivity: [],
-  systemAlerts: [],
-  usersData: [],
-  verificationData: [],
-  subscriptionData: [],
-  contractsData: [],
-  moderationData: [],
-  infraData: {},
-  networkData: {},
-  serverData: {},
-  cmsData: {},
-  securityData: {},
-  configEditorData: {},
-  configEditorLoading: false,
-  configEditorError: "",
-  configEditorNotice: "",
-  configEditorSaving: false,
-  setConfigEditorSaving: () => {},
-  setConfigEditorNotice: () => {},
-  setConfigEditorError: () => {},
+	adminDark,
+	// Platform nav states
+	platformNav: "overview",
+	setPlatformNav: () => {},
+	// Infra nav states
+	infraNav: "overview",
+	setInfraNav: () => {},
+	// Network nav states
+	networkNav: "overview",
+	setNetworkNav: () => {},
+	// Server nav states
+	serverNav: "overview",
+	setServerNav: () => {},
+	// CMS nav states
+	cmsNav: "pages",
+	setCmsNav: () => {},
+	// Security nav states
+	securityNav: "overview",
+	setSecurityNav: () => {},
+	// Config editor states
+	configEditorTab: "inventory",
+	setConfigEditorTab: () => {},
+	// Data placeholders (would come from parent state)
+	metricsData: [],
+	recentActivity: [],
+	systemAlerts: [],
+	usersData: [],
+	verificationData: [],
+	subscriptionData: [],
+	contractsData: [],
+	moderationData: [],
+	infraData: {},
+	networkData: {},
+	serverData: {},
+	cmsData: {},
+	securityData: {},
+	configEditorData: {},
+	configEditorLoading: false,
+	configEditorError: "",
+	configEditorNotice: "",
+	configEditorSaving: false,
+	setConfigEditorSaving: () => {},
+	setConfigEditorNotice: () => {},
+	setConfigEditorError: () => {},
 });

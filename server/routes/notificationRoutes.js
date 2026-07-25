@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  createSearchAlert,
-  deleteSearchAlert,
-  getNotifications,
-  getSearchAlerts,
-  readNotification,
-  getPreferences,
-  updatePreferences,
+	createSearchAlert,
+	deleteSearchAlert,
+	getNotifications,
+	getPreferences,
+	getSearchAlerts,
+	readNotification,
+	updatePreferences,
 } from "../controllers/notificationController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

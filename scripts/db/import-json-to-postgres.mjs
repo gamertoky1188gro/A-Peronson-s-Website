@@ -18,25 +18,16 @@ const ROOT = process.cwd();
 const DB_DIR = path.join(ROOT, "server", "database");
 
 async function readJsonFile(file) {
-  const full = path.join(DB_DIR, file);
-  const raw = await fs.readFile(full, "utf-8").catch(() => "[]");
-  return JSON.parse(raw || "[]");
+	const full = path.join(DB_DIR, file);
+	const raw = await fs.readFile(full, "utf-8").catch(() => "[]");
+	return JSON.parse(raw || "[]");
 }
 
 async function main() {
-  const users = await readJsonFile("users.json");
-  const requirements = await readJsonFile("requirements.json");
-
-  console.log("Import scaffold:");
-  console.log("- users:", Array.isArray(users) ? users.length : 0);
-  console.log(
-    "- requirements:",
-    Array.isArray(requirements) ? requirements.length : 0,
-  );
-  console.log("Next: wire PrismaClient writes once migrations are created.");
+	const users = await readJsonFile("users.json");
+	const requirements = await readJsonFile("requirements.json");
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exitCode = 1;
+main().catch((_err) => {
+	process.exitCode = 1;
 });

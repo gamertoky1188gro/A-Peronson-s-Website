@@ -1,9 +1,6 @@
 import { Router } from "express";
+import { getIndustryAutoReply, getIndustryPage } from "../controllers/industryController.js";
 import { requireAuth } from "../middleware/auth.js";
-import {
-  getIndustryAutoReply,
-  getIndustryPage,
-} from "../controllers/industryController.js";
 
 const router = Router();
 

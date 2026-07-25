@@ -1,72 +1,72 @@
 {
-  "name": "GarTexHub",
-  "short_name": "GarTexHub",
-  "description": "A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.",
-  "id": "/",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "orientation": "any",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "dir": "auto",
-  "lang": "en",
-  "icons": [
-    {
-      "src": "/vite.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Home",
-      "short_name": "Home",
-      "description": "Go to homepage",
-      "url": "/"
-    },
-    {
-      "name": "Pricing",
-      "short_name": "Pricing",
-      "description": "View pricing plans",
-      "url": "/pricing"
-    },
-    {
-      "name": "About",
-      "short_name": "About",
-      "description": "Learn about GarTexHub",
-      "url": "/about"
-    },
-    {
-      "name": "Help Center",
-      "short_name": "Help",
-      "description": "Get help and support",
-      "url": "/help"
-    },
-    {
-      "name": "Login",
-      "short_name": "Login",
-      "description": "Sign in to your account",
-      "url": "/login"
-    },
-    {
-      "name": "Create Account",
-      "short_name": "Sign Up",
-      "description": "Create a new account",
-      "url": "/signup"
-    },
-    {
-      "name": "Terms of Service",
-      "short_name": "Terms",
-      "description": "Read terms of service",
-      "url": "/terms"
-    },
-    {
-      "name": "Privacy Policy",
-      "short_name": "Privacy",
-      "description": "Read privacy policy",
-      "url": "/privacy"
-    }
-  ]
+	"name": "GarTexHub",
+	"short_name": "GarTexHub",
+	"description": "A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.",
+	"id": "/",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"orientation": "any",
+	"background_color": "#0f172a",
+	"theme_color": "#0f172a",
+	"dir": "auto",
+	"lang": "en",
+	"icons": [
+		{
+			"src": "/vite.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		}
+	],
+	"shortcuts": [
+		{
+			"name": "Home",
+			"short_name": "Home",
+			"description": "Go to homepage",
+			"url": "/"
+		},
+		{
+			"name": "Pricing",
+			"short_name": "Pricing",
+			"description": "View pricing plans",
+			"url": "/pricing"
+		},
+		{
+			"name": "About",
+			"short_name": "About",
+			"description": "Learn about GarTexHub",
+			"url": "/about"
+		},
+		{
+			"name": "Help Center",
+			"short_name": "Help",
+			"description": "Get help and support",
+			"url": "/help"
+		},
+		{
+			"name": "Login",
+			"short_name": "Login",
+			"description": "Sign in to your account",
+			"url": "/login"
+		},
+		{
+			"name": "Create Account",
+			"short_name": "Sign Up",
+			"description": "Create a new account",
+			"url": "/signup"
+		},
+		{
+			"name": "Terms of Service",
+			"short_name": "Terms",
+			"description": "Read terms of service",
+			"url": "/terms"
+		},
+		{
+			"name": "Privacy Policy",
+			"short_name": "Privacy",
+			"description": "Read privacy policy",
+			"url": "/privacy"
+		}
+	]
 }

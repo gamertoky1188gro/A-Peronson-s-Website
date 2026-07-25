@@ -1,62 +1,57 @@
 import PropTypes from "prop-types";
 
 NeonAtom.propTypes = {
-  size: PropTypes.number,
-  className: PropTypes.string,
-  text: PropTypes.string,
-  fill: PropTypes.bool,
+	size: PropTypes.number,
+	className: PropTypes.string,
+	text: PropTypes.string,
+	fill: PropTypes.bool,
 };
 
-export default function NeonAtom({
-  size = 180,
-  className = "",
-  text = "",
-  fill = false,
-}) {
-  const s = fill ? 200 : size;
-  const orbitSize = s * 0.89;
-  const coreSize = s * 0.2;
-  const particleSize = s * 0.089;
+export default function NeonAtom({ size = 180, className = "", text = "", fill = false }) {
+	const s = fill ? 200 : size;
+	const orbitSize = s * 0.89;
+	const coreSize = s * 0.2;
+	const particleSize = s * 0.089;
 
-  const rings = [
-    {
-      color: "#00ffff",
-      shadow: "#00bfff",
-      orbitTransform: "rotateY(70deg) rotateZ(20deg)",
-      orbitAnim: "na-orbit1 3s linear infinite",
-      particleTransform: "rotateZ(-20deg) rotateY(-70deg)",
-      particleAnim: "na-particle1 3s linear infinite",
-      glow: "#00ffff",
-    },
-    {
-      color: "#ff00ff",
-      shadow: "#8a2be2",
-      orbitTransform: "rotateY(60deg) rotateX(60deg) rotateZ(-30deg)",
-      orbitAnim: "na-orbit2 3s linear infinite",
-      particleTransform: "rotateZ(30deg) rotateX(-60deg) rotateY(-60deg)",
-      particleAnim: "na-particle2 3s linear infinite",
-      glow: "#ff00ff",
-    },
-    {
-      color: "#00bfff",
-      shadow: "#0040ff",
-      orbitTransform: "rotateY(-60deg) rotateX(60deg) rotateZ(100deg)",
-      orbitAnim: "na-orbit3 3s linear infinite",
-      particleTransform: "rotateZ(-100deg) rotateX(-60deg) rotateY(60deg)",
-      particleAnim: "na-particle3 3s linear infinite",
-      glow: "#00bfff",
-    },
-  ];
+	const rings = [
+		{
+			color: "#00ffff",
+			shadow: "#00bfff",
+			orbitTransform: "rotateY(70deg) rotateZ(20deg)",
+			orbitAnim: "na-orbit1 3s linear infinite",
+			particleTransform: "rotateZ(-20deg) rotateY(-70deg)",
+			particleAnim: "na-particle1 3s linear infinite",
+			glow: "#00ffff",
+		},
+		{
+			color: "#ff00ff",
+			shadow: "#8a2be2",
+			orbitTransform: "rotateY(60deg) rotateX(60deg) rotateZ(-30deg)",
+			orbitAnim: "na-orbit2 3s linear infinite",
+			particleTransform: "rotateZ(30deg) rotateX(-60deg) rotateY(-60deg)",
+			particleAnim: "na-particle2 3s linear infinite",
+			glow: "#ff00ff",
+		},
+		{
+			color: "#00bfff",
+			shadow: "#0040ff",
+			orbitTransform: "rotateY(-60deg) rotateX(60deg) rotateZ(100deg)",
+			orbitAnim: "na-orbit3 3s linear infinite",
+			particleTransform: "rotateZ(-100deg) rotateX(-60deg) rotateY(60deg)",
+			particleAnim: "na-particle3 3s linear infinite",
+			glow: "#00bfff",
+		},
+	];
 
-  return (
-    <div
-      className={`flex flex-col items-center justify-center gap-3 overflow-hidden ${
-        fill
-          ? "min-h-screen w-full bg-[#050212] bg-[radial-gradient(circle_at_center,#150833_0%,#050212_60%)]"
-          : ""
-      } ${className}`}
-    >
-      <style>{`
+	return (
+		<div
+			class={`flex flex-col items-center justify-center gap-3 overflow-hidden ${
+				fill
+					? "min-h-screen w-full bg-[#050212] bg-[radial-gradient(circle_at_center,#150833_0%,#050212_60%)]"
+					: ""
+			} ${className}`}
+		>
+			<style>{`
         @keyframes na-float {
           0% { transform: translateY(-${s * 0.083}px) rotateX(5deg) rotateY(5deg); }
           100% { transform: translateY(${s * 0.083}px) rotateX(-5deg) rotateY(-5deg); }
@@ -72,64 +67,62 @@ export default function NeonAtom({
         @keyframes na-orbit3 { 0% { transform: rotateY(-60deg) rotateX(60deg) rotateZ(100deg); } 100% { transform: rotateY(-60deg) rotateX(60deg) rotateZ(460deg); } }
         @keyframes na-particle3 { 0% { transform: rotateZ(-100deg) rotateX(-60deg) rotateY(60deg); } 100% { transform: rotateZ(-460deg) rotateX(-60deg) rotateY(60deg); } }
       `}</style>
-      <div
-        className="relative"
-        style={{
-          width: s,
-          height: s,
-          perspective: 800,
-          transformStyle: "preserve-3d",
-          animation: "na-float 3s ease-in-out infinite alternate",
-        }}
-      >
-        <div
-          className="absolute inset-0 m-auto rounded-full z-10"
-          style={{
-            width: coreSize,
-            height: coreSize,
-            background: "radial-gradient(circle at 30% 30%, #ff00ff, #8a2be2)",
-            animation: "na-pulse 1.5s ease-in-out infinite alternate",
-          }}
-        />
+			<div
+				class="relative"
+				style={{
+					width: s,
+					height: s,
+					perspective: 800,
+					transformStyle: "preserve-3d",
+					animation: "na-float 3s ease-in-out infinite alternate",
+				}}
+			>
+				<div
+					class="absolute inset-0 m-auto rounded-full z-10"
+					style={{
+						width: coreSize,
+						height: coreSize,
+						background: "radial-gradient(circle at 30% 30%, #ff00ff, #8a2be2)",
+						animation: "na-pulse 1.5s ease-in-out infinite alternate",
+					}}
+				/>
 
-        {rings.map((ring, i) => (
-          <div
-            key={i}
-            className="absolute inset-0 m-auto rounded-full border border-white/5"
-            style={{
-              width: orbitSize,
-              height: orbitSize,
-              borderColor: `${ring.color}4D`,
-              boxShadow: `inset 0 0 ${s * 0.083}px ${ring.color}33, 0 0 ${s * 0.083}px ${ring.color}33`,
-              transformStyle: "preserve-3d",
-              transform: ring.orbitTransform,
-              animation: ring.orbitAnim,
-            }}
-          >
-            <div
-              className="absolute rounded-full z-20"
-              style={{
-                top: -particleSize / 2,
-                left: 0,
-                right: 0,
-                margin: "0 auto",
-                width: particleSize,
-                height: particleSize,
-                transformOrigin: "50% 50% 0",
-                background: ring.color,
-                boxShadow: `0 0 ${s * 0.083}px ${ring.color}, 0 0 ${s * 0.139}px ${ring.shadow}, 0 0 ${s * 0.194}px #fff`,
-                transform: ring.particleTransform,
-                animation: ring.particleAnim,
-              }}
-            />
-          </div>
-        ))}
-      </div>
-      {text && (
-        <span className="text-sm text-gray-400 animate-pulse tracking-wider uppercase">
-          {text}
-        </span>
-      )}
-    </div>
-  );
+				{rings.map((ring, i) => (
+					<div
+						key={i}
+						class="absolute inset-0 m-auto rounded-full border border-white/5"
+						style={{
+							width: orbitSize,
+							height: orbitSize,
+							borderColor: `${ring.color}4D`,
+							boxShadow: `inset 0 0 ${s * 0.083}px ${ring.color}33, 0 0 ${s * 0.083}px ${ring.color}33`,
+							transformStyle: "preserve-3d",
+							transform: ring.orbitTransform,
+							animation: ring.orbitAnim,
+						}}
+					>
+						<div
+							class="absolute rounded-full z-20"
+							style={{
+								top: -particleSize / 2,
+								left: 0,
+								right: 0,
+								margin: "0 auto",
+								width: particleSize,
+								height: particleSize,
+								transformOrigin: "50% 50% 0",
+								background: ring.color,
+								boxShadow: `0 0 ${s * 0.083}px ${ring.color}, 0 0 ${s * 0.139}px ${ring.shadow}, 0 0 ${s * 0.194}px #fff`,
+								transform: ring.particleTransform,
+								animation: ring.particleAnim,
+							}}
+						/>
+					</div>
+				))}
+			</div>
+			{text && (
+				<span class="text-sm text-gray-400 animate-pulse tracking-wider uppercase">{text}</span>
+			)}
+		</div>
+	);
 }

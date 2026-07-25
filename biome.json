@@ -1,0 +1,184 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.5/schema.json",
+
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+
+	"files": {
+		"includes": [
+			"**",
+			"!dist",
+			"!history",
+			"!node_modules",
+			"!docs",
+			"!server/uploads",
+			"!pnpm-lock.yaml",
+			"!package-lock.json",
+			"!**/*.docx",
+			"!scripts/*.txt",
+			"!tests/e2e/*.cypress.*",
+			"!github_file_status.json",
+			"!github_file_status.csv",
+			"!lint.html",
+			"!test.html",
+			"!eslint.config.js",
+			"!temp.txt",
+			"!listing.txt",
+			"!commit_list.txt"
+		]
+	},
+
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 100
+	},
+
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"trailingCommas": "all",
+			"semicolons": "always"
+		}
+	},
+
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "all",
+			"correctness": {
+				"noProcessGlobal": "off",
+				"useQwikValidLexicalScope": "off",
+				"noSolidDestructuredProps": "off",
+				"useImageSize": "warn",
+				"noUndeclaredDependencies": "warn",
+				"useUniqueElementIds": "warn",
+				"noUnresolvedImports": "warn",
+				"noUndeclaredVariables": "warn",
+				"useJsxKeyInIterable": "warn",
+				"noUnusedInstantiation": "warn",
+				"noNodejsModules": "warn"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "warn"
+			},
+			"performance": {
+				"useSolidForComponent": "off",
+				"useTopLevelRegex": "warn"
+			},
+			"style": {
+				"noTernary": "off",
+				"noDefaultExport": "off",
+				"useNamingConvention": "off",
+				"noProcessEnv": "off",
+				"useGlobalThis": "warn"
+			},
+			"a11y": {
+				"useButtonType": "warn",
+				"noLabelWithoutControl": "warn",
+				"noStaticElementInteractions": "warn",
+				"noNoninteractiveElementInteractions": "warn",
+				"noSvgWithoutTitle": "warn",
+				"useKeyWithClickEvents": "warn",
+				"useAriaPropsSupportedByRole": "warn",
+				"useMediaCaption": "warn",
+				"useValidAnchor": "warn",
+				"useAltText": "warn"
+			},
+			"suspicious": {
+				"noEmptyBlockStatements": "warn",
+				"useIterableCallbackReturn": "warn",
+				"noArrayIndexKey": "warn",
+				"noAssignInExpressions": "warn",
+				"noReturnAssign": "warn",
+				"noShadowRestrictedNames": "warn"
+			}
+		}
+	},
+
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+
+	"overrides": [
+		{
+			"includes": ["server/**/*.js"],
+			"javascript": {
+				"globals": ["exports"]
+			}
+		},
+		{
+			"includes": ["src/**/*.{js,jsx}"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"useExhaustiveDependencies": "warn",
+						"useHookAtTopLevel": "error"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/**/*.jsx"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["tests/**/*.{js,ts}"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUndeclaredVariables": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["scripts/**", "*.cjs", "*.mjs", "electron/**"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off",
+						"noNodejsModules": "off"
+					},
+					"suspicious": {
+						"noEmptyBlockStatements": "off"
+					},
+					"performance": {
+						"useTopLevelRegex": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["*.html"],
+			"linter": {
+				"rules": {
+					"style": {
+						"useGlobalThis": "off",
+						"noHexColors": "off"
+					}
+				}
+			}
+		}
+	]
+}

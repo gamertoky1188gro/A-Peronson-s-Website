@@ -1,24 +1,21 @@
 import { Router } from "express";
-import { allowRoles, requireAuth } from "../middleware/auth.js";
 import {
-  getLegacyOperationsPolicies,
-  getOperationsPolicies,
-  getOperationsEscalations,
-  getOperationsQueue,
-  getOperationsWorkload,
-  postOperationsEscalate,
-  postOperationsRebalance,
-  postResolveEscalation,
-  putLegacyOperationsPolicies,
-  putOperationsPolicies,
+	getLegacyOperationsPolicies,
+	getOperationsEscalations,
+	getOperationsPolicies,
+	getOperationsQueue,
+	getOperationsWorkload,
+	postOperationsEscalate,
+	postOperationsRebalance,
+	postResolveEscalation,
+	putLegacyOperationsPolicies,
+	putOperationsPolicies,
 } from "../controllers/orgOperationsController.js";
+import { allowRoles, requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
-router.use(
-  requireAuth,
-  allowRoles("owner", "admin", "buying_house", "factory", "agent"),
-);
+router.use(requireAuth, allowRoles("owner", "admin", "buying_house", "factory", "agent"));
 
 router.get("/policies", getOperationsPolicies);
 router.put("/policies", putOperationsPolicies);

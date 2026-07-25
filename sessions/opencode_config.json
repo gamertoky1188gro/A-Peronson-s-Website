@@ -1,7 +1,7 @@
 {
-  "baseUrl": "http://localhost:4096",
-  "providerID": "opencode",
-  "modelID": "deepseek-v4-flash-free",
-  "port": 4096,
-  "updatedAt": "2026-05-17T17:02:37.196Z"
+	"baseUrl": "http://localhost:4096",
+	"providerID": "opencode",
+	"modelID": "deepseek-v4-flash-free",
+	"port": 4096,
+	"updatedAt": "2026-05-17T17:02:37.196Z"
 }

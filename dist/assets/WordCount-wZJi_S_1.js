@@ -1,0 +1,1 @@
+import{j as r}from"./vendor-react-BmBD2UMy.js";function i({text:t="",limit:o}){const e=t.trim()?t.trim().split(/\s+/).length:0,s=e>o;return r.jsxs("span",{class:`mt-1 block text-right text-xs ${s?"font-semibold text-red-500":"text-slate-400"}`,children:[e.toLocaleString()," / ",o.toLocaleString()," words",s?" — limit exceeded":""]})}export{i as W};

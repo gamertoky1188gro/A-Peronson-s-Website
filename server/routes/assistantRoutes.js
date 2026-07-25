@@ -1,22 +1,22 @@
 import { Router } from "express";
-import { allowRoles, requireAuth } from "../middleware/auth.js";
 import {
-  askAssistant,
-  askAssistantPublic,
-  getSessionMessages,
-  deleteSession,
-  postExtractRequirement,
-  postGenerateFirstResponse,
-  postValidateResponse,
-  getConversationSummary,
-  getNegotiationHelper,
-  getAssistantRules,
-  putAssistantRules,
-  postAssistantRule,
-  deleteAssistantRule,
-  getAssistantConfigHandler,
-  putAssistantConfigHandler,
+	askAssistant,
+	askAssistantPublic,
+	deleteAssistantRule,
+	deleteSession,
+	getAssistantConfigHandler,
+	getAssistantRules,
+	getConversationSummary,
+	getNegotiationHelper,
+	getSessionMessages,
+	postAssistantRule,
+	postExtractRequirement,
+	postGenerateFirstResponse,
+	postValidateResponse,
+	putAssistantConfigHandler,
+	putAssistantRules,
 } from "../controllers/assistantController.js";
+import { allowRoles, requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -30,42 +30,17 @@ router.post("/validate-response", requireAuth, postValidateResponse);
 router.post("/conversation-summary", requireAuth, getConversationSummary);
 router.post("/negotiation", requireAuth, getNegotiationHelper);
 
-router.get(
-  "/rules",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  getAssistantRules,
-);
-router.put(
-  "/rules",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  putAssistantRules,
-);
-router.post(
-  "/rules",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  postAssistantRule,
-);
+router.get("/rules", requireAuth, allowRoles("owner", "admin"), getAssistantRules);
+router.put("/rules", requireAuth, allowRoles("owner", "admin"), putAssistantRules);
+router.post("/rules", requireAuth, allowRoles("owner", "admin"), postAssistantRule);
 router.delete(
-  "/rules/:type/:ruleId",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  deleteAssistantRule,
+	"/rules/:type/:ruleId",
+	requireAuth,
+	allowRoles("owner", "admin"),
+	deleteAssistantRule,
 );
 
-router.get(
-  "/config",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  getAssistantConfigHandler,
-);
-router.put(
-  "/config",
-  requireAuth,
-  allowRoles("owner", "admin"),
-  putAssistantConfigHandler,
-);
+router.get("/config", requireAuth, allowRoles("owner", "admin"), getAssistantConfigHandler);
+router.put("/config", requireAuth, allowRoles("owner", "admin"), putAssistantConfigHandler);
 
 export default router;

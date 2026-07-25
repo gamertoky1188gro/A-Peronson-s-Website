@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  getChatbotProfile,
-  replyWithChatbot,
-  getChatbotSettingsController,
-  updateChatbotSettingsController,
+	getChatbotProfile,
+	getChatbotSettingsController,
+	replyWithChatbot,
+	updateChatbotSettingsController,
 } from "../controllers/chatbotController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

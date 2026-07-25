@@ -1,21 +1,22 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  createSearchAlert,
-  getSearchAlerts,
-  deleteSearchAlert,
+	createSearchAlert,
+	deleteSearchAlert,
+	getSearchAlerts,
 } from "../controllers/notificationController.js";
 import {
-  uploadSearchImage,
-  trendingSearches,
-  searchSuggestions,
-  spellingSuggestions,
-  searchHistoryCreate,
-  searchHistoryList,
-  searchAnalytics,
-  batchSearch,
-  batchSearchCSV,
+	batchSearch,
+	batchSearchCSV,
+	exportSearchResults,
+	searchAnalytics,
+	searchHistoryCreate,
+	searchHistoryList,
+	searchSuggestions,
+	spellingSuggestions,
+	trendingSearches,
+	uploadSearchImage,
 } from "../controllers/searchController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -30,6 +31,7 @@ router.post("/history", requireAuth, searchHistoryCreate);
 router.get("/history", requireAuth, searchHistoryList);
 router.post("/batch", requireAuth, batchSearch);
 router.post("/batch/csv", requireAuth, batchSearchCSV);
+router.post("/export", requireAuth, exportSearchResults);
 router.get("/analytics", requireAuth, searchAnalytics);
 
 export default router;

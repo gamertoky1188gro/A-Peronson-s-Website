@@ -22,907 +22,873 @@
   Notes:
     - Buyer required documents vary by region (EU/USA/OTHER), derived from country.
 */
-import NeonAtom from "../components/ui/NeonAtom";
-import { ThreeDot } from "react-loading-indicators";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ScrollReveal from "../components/ScrollReveal";
-import WordleInput from "../components/WordleInput";
+
 import {
-  apiRequest,
-  getCurrentUser,
-  getToken,
-  syncUserFromApi,
-} from "../lib/auth";
-import { uploadFile } from "../lib/upload";
-import UploadProgressBar from "../components/ui/UploadProgressBar";
-import { useTheme } from "../lib/ThemeProvider";
-import {
-  BUYER_COUNTRY_OPTIONS,
-  isEuCountry,
-} from "../../shared/config/geo.js";
-import {
-  Check,
-  Clock,
-  CreditCard,
-  HelpCircle,
-  Moon,
-  RefreshCw,
-  Shield,
-  Sparkles,
-  Star,
-  Sun,
-  Upload,
-  X,
+	Check,
+	Clock,
+	CreditCard,
+	HelpCircle,
+	Moon,
+	RefreshCw,
+	Shield,
+	Sparkles,
+	Star,
+	Sun,
+	Upload,
+	X,
 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ThreeDot } from "react-loading-indicators";
+import { BUYER_COUNTRY_OPTIONS, isEuCountry } from "../../shared/config/geo.js";
+import ScrollReveal from "../components/ScrollReveal.jsx";
+import NeonAtom from "../components/ui/NeonAtom.jsx";
+import UploadProgressBar from "../components/ui/UploadProgressBar.jsx";
+import WordleInput from "../components/WordleInput.jsx";
+import { apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth.js";
+import { useTheme } from "../lib/ThemeProvider.jsx";
+import { uploadFile } from "../lib/upload.js";
 
 const LABELS = {
-  company_registration: "Company Registration",
-  trade_license: "Trade License",
-  tin: "TIN (Tax Identification Number)",
-  authorized_person_nid: "Authorized Person NID",
-  bank_proof: "Company Bank Proof",
-  erc: "ERC (Export Registration Certificate)",
+	company_registration: "Company Registration",
+	trade_license: "Trade License",
+	tin: "TIN (Tax Identification Number)",
+	authorized_person_nid: "Authorized Person NID",
+	bank_proof: "Company Bank Proof",
+	erc: "ERC (Export Registration Certificate)",
 
-  vat: "VAT Number",
-  eori: "EORI (Economic Operators Registration and Identification)",
-  ein: "EIN (Employer Identification Number)",
-  ior: "IOR (Importer of Record)",
+	vat: "VAT Number",
+	eori: "EORI (Economic Operators Registration and Identification)",
+	ein: "EIN (Employer Identification Number)",
+	ior: "IOR (Importer of Record)",
 };
 
 const REQUIRED_BY_ROLE = {
-  factory: [
-    "company_registration",
-    "trade_license",
-    "tin",
-    "authorized_person_nid",
-    "bank_proof",
-    "erc",
-  ],
-  buying_house: [
-    "company_registration",
-    "trade_license",
-    "tin",
-    "authorized_person_nid",
-    "bank_proof",
-  ],
+	factory: [
+		"company_registration",
+		"trade_license",
+		"tin",
+		"authorized_person_nid",
+		"bank_proof",
+		"erc",
+	],
+	buying_house: [
+		"company_registration",
+		"trade_license",
+		"tin",
+		"authorized_person_nid",
+		"bank_proof",
+	],
 };
 
 const REQUIRED_BUYER_BY_REGION = {
-  EU: ["company_registration", "vat", "eori", "bank_proof"],
-  USA: ["company_registration", "ein", "ior", "bank_proof"],
-  OTHER: ["company_registration", "bank_proof"],
+	EU: ["company_registration", "vat", "eori", "bank_proof"],
+	USA: ["company_registration", "ein", "ior", "bank_proof"],
+	OTHER: ["company_registration", "bank_proof"],
 };
 
 function normalizeBuyerRegionFromCountry(country) {
-  const value = String(country || "").trim();
-  if (!value) return "OTHER";
-  if (isEuCountry(value)) return "EU";
-  const upper = value.toUpperCase();
-  if (
-    upper === "USA" ||
-    upper === "US" ||
-    upper === "UNITED STATES" ||
-    upper === "UNITED STATES OF AMERICA"
-  )
-    return "USA";
-  return "OTHER";
+	const value = String(country || "").trim();
+	if (!value) {
+		return "OTHER";
+	}
+	if (isEuCountry(value)) {
+		return "EU";
+	}
+	const upper = value.toUpperCase();
+	if (
+		upper === "USA" ||
+		upper === "US" ||
+		upper === "UNITED STATES" ||
+		upper === "UNITED STATES OF AMERICA"
+	) {
+		return "USA";
+	}
+	return "OTHER";
 }
 
 export default function VerificationPage({ embedded = false }) {
-  const user = getCurrentUser();
-  const token = getToken();
-  const role = user?.role || "buyer";
+	const user = getCurrentUser();
+	const token = getToken();
+	const role = user?.role || "buyer";
 
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === "dark";
-  const [verification, setVerification] = useState(null);
-  const [buyerCountry, setBuyerCountry] = useState("");
-  const [busyDoc, setBusyDoc] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [savingCountry, setSavingCountry] = useState(false);
-  const [error, setError] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [optionalLicenseInput, setOptionalLicenseInput] = useState("");
-  const [renewing, setRenewing] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [verificationPrice, setVerificationPrice] = useState({
-    firstMonth: 1.99,
-    renewal: 6.99,
-  });
-  const [code, setCode] = useState("");
-  const [verifyingCode, setVerifyingCode] = useState(false);
+	const { theme, toggleTheme } = useTheme();
+	const isDark = theme === "dark";
+	const [verification, setVerification] = useState(null);
+	const [buyerCountry, setBuyerCountry] = useState("");
+	const [busyDoc, setBusyDoc] = useState("");
+	const [uploadProgress, setUploadProgress] = useState(0);
+	const [savingCountry, setSavingCountry] = useState(false);
+	const [error, setError] = useState("");
+	const [feedback, setFeedback] = useState("");
+	const [optionalLicenseInput, setOptionalLicenseInput] = useState("");
+	const [renewing, setRenewing] = useState(false);
+	const [pageLoading, setPageLoading] = useState(true);
+	const [verificationPrice, setVerificationPrice] = useState({
+		firstMonth: 1.99,
+		renewal: 6.99,
+	});
+	const [code, setCode] = useState("");
+	const [verifyingCode, setVerifyingCode] = useState(false);
 
-  const fileInputRef = useRef(null);
-  const pendingDocRef = useRef("");
+	const fileInputRef = useRef(null);
+	const pendingDocRef = useRef("");
 
-  const buyerRegion = useMemo(() => {
-    if (role !== "buyer") return "";
-    return normalizeBuyerRegionFromCountry(buyerCountry);
-  }, [buyerCountry, role]);
+	const buyerRegion = useMemo(() => {
+		if (role !== "buyer") {
+			return "";
+		}
+		return normalizeBuyerRegionFromCountry(buyerCountry);
+	}, [buyerCountry, role]);
 
-  const requiredDocs = useMemo(() => {
-    if (role === "buyer")
-      return (
-        REQUIRED_BUYER_BY_REGION[buyerRegion] || REQUIRED_BUYER_BY_REGION.OTHER
-      );
-    return REQUIRED_BY_ROLE[role] || [];
-  }, [buyerRegion, role]);
+	const requiredDocs = useMemo(() => {
+		if (role === "buyer") {
+			return REQUIRED_BUYER_BY_REGION[buyerRegion] || REQUIRED_BUYER_BY_REGION.OTHER;
+		}
+		return REQUIRED_BY_ROLE[role] || [];
+	}, [buyerRegion, role]);
 
-  const documents = verification?.documents || {};
-  const optionalLicenses = Array.isArray(documents.optional_licenses)
-    ? documents.optional_licenses.filter(Boolean)
-    : [];
+	const documents = verification?.documents || {};
+	const optionalLicenses = Array.isArray(documents.optional_licenses)
+		? documents.optional_licenses.filter(Boolean)
+		: [];
 
-  const credibilityScore = verification?.credibility?.score ?? 0;
-  const verified = Boolean(verification?.verified);
-  const reviewStatus =
-    verification?.review_status || (verified ? "approved" : "pending");
-  const reviewReason = verification?.review_reason || "";
-  const remainingDays = Number(verification?.subscription_remaining_days || 0);
+	const credibilityScore = verification?.credibility?.score ?? 0;
+	const verified = Boolean(verification?.verified);
+	const reviewStatus = verification?.review_status || (verified ? "approved" : "pending");
+	const reviewReason = verification?.review_reason || "";
+	const remainingDays = Number(verification?.subscription_remaining_days || 0);
 
-  const credibility = useMemo(() => {
-    const base = 12;
-    const bonus = optionalLicenses.length * 12;
-    return Math.min(100, base + bonus + credibilityScore);
-  }, [optionalLicenses.length, credibilityScore]);
+	const credibility = useMemo(() => {
+		const base = 12;
+		const bonus = optionalLicenses.length * 12;
+		return Math.min(100, base + bonus + credibilityScore);
+	}, [optionalLicenses.length, credibilityScore]);
 
-  const loadStatus = useCallback(async () => {
-    if (!token) return;
-    setError("");
-    setFeedback("");
-    try {
-      const verificationData = await apiRequest("/verification/me", { token });
-      setVerification(verificationData);
-      setBuyerCountry(String(verificationData?.documents?.buyer_country || ""));
-    } catch (err) {
-      setError(err.message || "Could not load verification center data");
-    }
-  }, [token]);
+	const loadStatus = useCallback(async () => {
+		if (!token) {
+			return;
+		}
+		setError("");
+		setFeedback("");
+		try {
+			const verificationData = await apiRequest("/verification/me", { token });
+			setVerification(verificationData);
+			setBuyerCountry(String(verificationData?.documents?.buyer_country || ""));
+		} catch (err) {
+			setError(err.message || "Could not load verification center data");
+		}
+	}, [token]);
 
-  useEffect(() => {
-    let cancelled = false;
-    let statusDone = false;
-    let userDone = false;
+	useEffect(() => {
+		let cancelled = false;
+		let statusDone = false;
+		let userDone = false;
 
-    function tryDone() {
-      if (statusDone && userDone && !cancelled) {
-        setPageLoading(false);
-      }
-    }
+		function tryDone() {
+			if (statusDone && userDone && !cancelled) {
+				setPageLoading(false);
+			}
+		}
 
-    (async () => {
-      try {
-        await loadStatus();
-      } finally {
-        statusDone = true;
-        tryDone();
-      }
-    })();
+		(async () => {
+			try {
+				await loadStatus();
+			} finally {
+				statusDone = true;
+				tryDone();
+			}
+		})();
 
-    (async () => {
-      try {
-        await syncUserFromApi(getToken());
-      } finally {
-        userDone = true;
-        tryDone();
-      }
-    })();
+		(async () => {
+			try {
+				await syncUserFromApi(getToken());
+			} finally {
+				userDone = true;
+				tryDone();
+			}
+		})();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [loadStatus]);
+		return () => {
+			cancelled = true;
+		};
+	}, [loadStatus]);
 
-  useEffect(() => {
-    if (!token || role !== "buyer") return;
-    if (!buyerCountry) return;
+	useEffect(() => {
+		if (!token || role !== "buyer") {
+			return;
+		}
+		if (!buyerCountry) {
+			return;
+		}
 
-    const currentCountry = String(verification?.documents?.buyer_country || "");
-    const currentRegion = String(verification?.documents?.buyer_region || "");
-    const nextRegion = normalizeBuyerRegionFromCountry(buyerCountry);
-    if (currentCountry === buyerCountry && currentRegion === nextRegion) return;
+		const currentCountry = String(verification?.documents?.buyer_country || "");
+		const currentRegion = String(verification?.documents?.buyer_region || "");
+		const nextRegion = normalizeBuyerRegionFromCountry(buyerCountry);
+		if (currentCountry === buyerCountry && currentRegion === nextRegion) {
+			return;
+		}
 
-    const timeoutId = setTimeout(async () => {
-      try {
-        setSavingCountry(true);
-        const updatedDocs = {
-          ...(verification?.documents || {}),
-          buyer_country: buyerCountry,
-          buyer_region: nextRegion,
-        };
-        await apiRequest("/verification/me", {
-          method: "POST",
-          token,
-          body: { documents: updatedDocs },
-        });
-        setVerification((prev) => ({
-          ...(prev || {}),
-          documents: updatedDocs,
-        }));
-      } catch {
-        setError("Could not save buyer country. Please try again.");
-      } finally {
-        setSavingCountry(false);
-      }
-    }, 350);
+		const timeoutId = setTimeout(async () => {
+			try {
+				setSavingCountry(true);
+				const updatedDocs = {
+					...(verification?.documents || {}),
+					buyer_country: buyerCountry,
+					buyer_region: nextRegion,
+				};
+				await apiRequest("/verification/me", {
+					method: "POST",
+					token,
+					body: { documents: updatedDocs },
+				});
+				setVerification((prev) => ({
+					...(prev || {}),
+					documents: updatedDocs,
+				}));
+			} catch {
+				setError("Could not save buyer country. Please try again.");
+			} finally {
+				setSavingCountry(false);
+			}
+		}, 350);
 
-    return () => clearTimeout(timeoutId);
-  }, [buyerCountry, role, token, verification]);
+		return () => clearTimeout(timeoutId);
+	}, [buyerCountry, role, token, verification]);
 
-  useEffect(() => {
-    if (!token) return;
-    (async () => {
-      try {
-        const data = await apiRequest(
-          "/subscriptions/me/verification-pricing",
-          { token },
-        );
-        if (data?.first_month != null) {
-          setVerificationPrice({
-            firstMonth: data.first_month,
-            renewal: data.renewal ?? data.renewal_monthly ?? data.first_month,
-          });
-        }
-      } catch {
-        // use defaults
-      }
-    })();
-  }, [token]);
+	useEffect(() => {
+		if (!token) {
+			return;
+		}
+		(async () => {
+			try {
+				const data = await apiRequest("/subscriptions/me/verification-pricing", { token });
+				if (data?.first_month !== null) {
+					setVerificationPrice({
+						firstMonth: data.first_month,
+						renewal: data.renewal ?? data.renewal_monthly ?? data.first_month,
+					});
+				}
+			} catch {
+				// use defaults
+			}
+		})();
+	}, [token]);
 
-  async function requestUpload(documentKey, file) {
-    if (!file || !token) return;
-    setBusyDoc(documentKey);
-    setFeedback("");
-    setError("");
+	async function requestUpload(documentKey, file) {
+		if (!(file && token)) {
+			return;
+		}
+		setBusyDoc(documentKey);
+		setFeedback("");
+		setError("");
 
-    try {
-      setUploadProgress(0);
-      const uploadData = await uploadFile("/documents", {
-        file,
-        token,
-        fields: {
-          type: documentKey,
-          entity_type: "verification",
-        },
-        onProgress: setUploadProgress,
-      });
+		try {
+			setUploadProgress(0);
+			const uploadData = await uploadFile("/documents", {
+				file,
+				token,
+				fields: {
+					type: documentKey,
+					entity_type: "verification",
+				},
+				onProgress: setUploadProgress,
+			});
 
-      const updatedDocs = {
-        ...(verification?.documents || {}),
-        [documentKey]: "uploaded",
-        ...(role === "buyer"
-          ? {
-              buyer_country: buyerCountry,
-              buyer_region: normalizeBuyerRegionFromCountry(buyerCountry),
-            }
-          : {}),
-      };
+			const updatedDocs = {
+				...(verification?.documents || {}),
+				[documentKey]: "uploaded",
+				...(role === "buyer"
+					? {
+							buyer_country: buyerCountry,
+							buyer_region: normalizeBuyerRegionFromCountry(buyerCountry),
+						}
+					: {}),
+			};
 
-      await apiRequest("/verification/me", {
-        method: "POST",
-        token,
-        body: { documents: updatedDocs },
-      });
-      setVerification((prev) => ({ ...(prev || {}), documents: updatedDocs }));
-      setFeedback(
-        `${LABELS[documentKey] || documentKey} uploaded and verification state updated.`,
-      );
-    } catch (err) {
-      setError(err.message || "Upload failed");
-    } finally {
-      setBusyDoc("");
-      setUploadProgress(0);
-    }
-  }
+			await apiRequest("/verification/me", {
+				method: "POST",
+				token,
+				body: { documents: updatedDocs },
+			});
+			setVerification((prev) => ({ ...(prev || {}), documents: updatedDocs }));
+			setFeedback(`${LABELS[documentKey] || documentKey} uploaded and verification state updated.`);
+		} catch (err) {
+			setError(err.message || "Upload failed");
+		} finally {
+			setBusyDoc("");
+			setUploadProgress(0);
+		}
+	}
 
-  function openPicker(documentKey) {
-    pendingDocRef.current = documentKey;
-    fileInputRef.current?.click();
-  }
+	function openPicker(documentKey) {
+		pendingDocRef.current = documentKey;
+		fileInputRef.current?.click();
+	}
 
-  async function onFileSelected(event) {
-    const file = event.target.files?.[0];
-    const documentKey = pendingDocRef.current;
-    event.target.value = "";
-    if (!file || !documentKey) return;
-    await requestUpload(documentKey, file);
-  }
+	async function onFileSelected(event) {
+		const file = event.target.files?.[0];
+		const documentKey = pendingDocRef.current;
+		event.target.value = "";
+		if (!(file && documentKey)) {
+			return;
+		}
+		await requestUpload(documentKey, file);
+	}
 
-  async function addOptionalLicense() {
-    const nextValue = optionalLicenseInput.trim();
-    if (!nextValue || !token) return;
-    setOptionalLicenseInput("");
-    setFeedback("");
-    setError("");
-    try {
-      const updatedDocs = {
-        ...(verification?.documents || {}),
-        optional_licenses: [...optionalLicenses, nextValue],
-        ...(role === "buyer" && buyerCountry
-          ? {
-              buyer_country: buyerCountry,
-              buyer_region: normalizeBuyerRegionFromCountry(buyerCountry),
-            }
-          : {}),
-      };
-      const updated = await apiRequest("/verification/me", {
-        method: "POST",
-        token,
-        body: { documents: updatedDocs },
-      });
-      if (updated?.error) throw new Error(updated.error);
-      setVerification(updated);
-      setFeedback("Optional license saved.");
-    } catch (err) {
-      setError(err.message || "Could not save optional license");
-    }
-  }
+	async function addOptionalLicense() {
+		const nextValue = optionalLicenseInput.trim();
+		if (!(nextValue && token)) {
+			return;
+		}
+		setOptionalLicenseInput("");
+		setFeedback("");
+		setError("");
+		try {
+			const updatedDocs = {
+				...(verification?.documents || {}),
+				optional_licenses: [...optionalLicenses, nextValue],
+				...(role === "buyer" && buyerCountry
+					? {
+							buyer_country: buyerCountry,
+							buyer_region: normalizeBuyerRegionFromCountry(buyerCountry),
+						}
+					: {}),
+			};
+			const updated = await apiRequest("/verification/me", {
+				method: "POST",
+				token,
+				body: { documents: updatedDocs },
+			});
+			if (updated?.error) {
+				throw new Error(updated.error);
+			}
+			setVerification(updated);
+			setFeedback("Optional license saved.");
+		} catch (err) {
+			setError(err.message || "Could not save optional license");
+		}
+	}
 
-  async function removeOptionalLicense(value) {
-    if (!token) return;
-    setFeedback("");
-    setError("");
-    try {
-      const updatedDocs = {
-        ...(verification?.documents || {}),
-        optional_licenses: optionalLicenses.filter((x) => x !== value),
-        ...(role === "buyer"
-          ? {
-              buyer_country: buyerCountry,
-              buyer_region: normalizeBuyerRegionFromCountry(buyerCountry),
-            }
-          : {}),
-      };
-      const updated = await apiRequest("/verification/me", {
-        method: "POST",
-        token,
-        body: { documents: updatedDocs },
-      });
-      setVerification(updated);
-      setFeedback("Optional license removed.");
-    } catch (err) {
-      setError(err.message || "Could not remove optional license");
-    }
-  }
+	async function removeOptionalLicense(value) {
+		if (!token) {
+			return;
+		}
+		setFeedback("");
+		setError("");
+		try {
+			const updatedDocs = {
+				...(verification?.documents || {}),
+				optional_licenses: optionalLicenses.filter((x) => x !== value),
+				...(role === "buyer"
+					? {
+							buyer_country: buyerCountry,
+							buyer_region: normalizeBuyerRegionFromCountry(buyerCountry),
+						}
+					: {}),
+			};
+			const updated = await apiRequest("/verification/me", {
+				method: "POST",
+				token,
+				body: { documents: updatedDocs },
+			});
+			setVerification(updated);
+			setFeedback("Optional license removed.");
+		} catch (err) {
+			setError(err.message || "Could not remove optional license");
+		}
+	}
 
-  async function handleRenewVerification() {
-    if (!token) return;
-    setError("");
-    setFeedback("");
-    setRenewing(true);
-    try {
-      const res = await apiRequest("/verification/renew", {
-        method: "POST",
-        token,
-      });
-      if (res?.verification) setVerification(res.verification);
-      const price = Number(res?.price_usd || 0);
-      setFeedback(
-        `Verification subscription updated. Charged $${price.toFixed(2)}.`,
-      );
-    } catch (err) {
-      setError(err.message || "Verification payment failed");
-    } finally {
-      setRenewing(false);
-    }
-  }
+	async function handleRenewVerification() {
+		if (!token) {
+			return;
+		}
+		setError("");
+		setFeedback("");
+		setRenewing(true);
+		try {
+			const res = await apiRequest("/verification/renew", {
+				method: "POST",
+				token,
+			});
+			if (res?.verification) {
+				setVerification(res.verification);
+			}
+			const price = Number(res?.price_usd || 0);
+			setFeedback(`Verification subscription updated. Charged $${price.toFixed(2)}.`);
+		} catch (err) {
+			setError(err.message || "Verification payment failed");
+		} finally {
+			setRenewing(false);
+		}
+	}
 
-  const pageBg = isDark
-    ? "bg-slate-950 text-slate-100"
-    : "bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-900";
+	const pageBg = isDark
+		? "bg-slate-950 text-slate-100"
+		: "bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-900";
 
-  const cardBg = isDark
-    ? "bg-white/5 border-white/10 shadow-[0_20px_80px_rgba(2,8,23,0.55)]"
-    : "bg-white/80 border-slate-200 shadow-[0_20px_70px_rgba(14,165,233,0.12)] backdrop-blur";
+	const cardBg = isDark
+		? "bg-white/5 border-white/10 shadow-[0_20px_80px_rgba(2,8,23,0.55)]"
+		: "bg-white/80 border-slate-200 shadow-[0_20px_70px_rgba(14,165,233,0.12)] backdrop-blur";
 
-  const softText = isDark ? "text-slate-300" : "text-slate-600";
-  const mutedText = isDark ? "text-slate-400" : "text-slate-500";
-  const fieldBg = isDark
-    ? "bg-slate-900/80 border-white/10 text-slate-100"
-    : "bg-white border-slate-200 text-slate-900";
-  const chipBg = isDark
-    ? "bg-sky-500/10 text-sky-200 border-sky-400/20"
-    : "bg-sky-50 text-sky-700 border-sky-200";
-  const buttonPrimary =
-    "bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-0.5";
-  const buttonGhost = isDark
-    ? "bg-white/5 hover:bg-white/10 border-white/10 text-slate-100"
-    : "bg-white hover:bg-sky-50 border-slate-200 text-slate-900";
+	const softText = isDark ? "text-slate-300" : "text-slate-600";
+	const mutedText = isDark ? "text-slate-400" : "text-slate-500";
+	const fieldBg = isDark
+		? "bg-slate-900/80 border-white/10 text-slate-100"
+		: "bg-white border-slate-200 text-slate-900";
+	const chipBg = isDark
+		? "bg-sky-500/10 text-sky-200 border-sky-400/20"
+		: "bg-sky-50 text-sky-700 border-sky-200";
+	const buttonPrimary =
+		"bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-0.5";
+	const buttonGhost = isDark
+		? "bg-white/5 hover:bg-white/10 border-white/10 text-slate-100"
+		: "bg-white hover:bg-sky-50 border-slate-200 text-slate-900";
 
-  const requirements = requiredDocs.map((key) => ({
-    title: LABELS[key] || key,
-    desc: documents?.[key] ? "Submitted" : "Missing",
-    done: Boolean(documents?.[key]),
-  }));
+	const requirements = requiredDocs.map((key) => ({
+		title: LABELS[key] || key,
+		desc: documents?.[key] ? "Submitted" : "Missing",
+		done: Boolean(documents?.[key]),
+	}));
 
-  if (pageLoading) return <NeonAtom fill />;
+	if (pageLoading) {
+		return <NeonAtom fill={true} />;
+	}
 
-  const content = (
-    <>
-      <header
-        className={`mb-6 flex items-center justify-between rounded-3xl border px-4 py-4 ${cardBg}`}
-      >
-        <div className="flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/25">
-            <Shield className="h-6 w-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-                Verification Center
-              </h1>
-              <span
-                className={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] ${chipBg}`}
-              >
-                {reviewStatus}
-              </span>
-            </div>
-            <p className={`mt-1 text-sm ${softText}`}>
-              Verification is subscription-based and renews monthly. First
-              month: ${verificationPrice.firstMonth.toFixed(2)} • Renewals: $
-              {verificationPrice.renewal.toFixed(2)}/month
-            </p>
-          </div>
-        </div>
+	const content = (
+		<>
+			<header
+				class={`mb-6 flex items-center justify-between rounded-3xl border px-4 py-4 ${cardBg}`}
+			>
+				<div class="flex items-center gap-3">
+					<div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/25">
+						<Shield class="h-6 w-6" />
+					</div>
+					<div>
+						<div class="flex items-center gap-2">
+							<h1 class="text-xl font-semibold tracking-tight sm:text-2xl">Verification Center</h1>
+							<span
+								class={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] ${chipBg}`}
+							>
+								{reviewStatus}
+							</span>
+						</div>
+						<p class={`mt-1 text-sm ${softText}`}>
+							Verification is subscription-based and renews monthly. First month: $
+							{verificationPrice.firstMonth.toFixed(2)} • Renewals: $
+							{verificationPrice.renewal.toFixed(2)}/month
+						</p>
+					</div>
+				</div>
 
-        {!embedded && (
-          <button
-            onClick={toggleTheme}
-            className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
-          >
-            {isDark ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-            {isDark ? "Light" : "Dark"}
-          </button>
-        )}
-      </header>
+				{!embedded && (
+					<button
+						onClick={toggleTheme}
+						class={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
+					>
+						{isDark ? <Sun class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+						{isDark ? "Light" : "Dark"}
+					</button>
+				)}
+			</header>
 
-      {feedback && (
-        <div className="mb-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-3 text-emerald-200">
-          {feedback}
-        </div>
-      )}
-      {error && (
-        <div className="mb-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 px-4 py-3 text-rose-300">
-          {error}
-        </div>
-      )}
+			{feedback && (
+				<div class="mb-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-3 text-emerald-200">
+					{feedback}
+				</div>
+			)}
+			{error && (
+				<div class="mb-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 px-4 py-3 text-rose-300">
+					{error}
+				</div>
+			)}
 
-      <main className="grid flex-1 gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-        <section className="space-y-6">
-          <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <div
-                  className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${chipBg}`}
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Review status: {reviewStatus}
-                  {reviewReason && ` • ${reviewReason}`}
-                </div>
-                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Build trust with verified proof
-                </h2>
-                <p className={`mt-4 max-w-2xl text-base leading-7 ${softText}`}>
-                  Upload the right documents for your role, add optional
-                  licenses, and strengthen credibility for buyers and partners.
-                </p>
-              </div>
+			<main class="grid flex-1 gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+				<section class="space-y-6">
+					<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+						<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+							<div>
+								<div
+									class={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${chipBg}`}
+								>
+									<Sparkles class="h-3.5 w-3.5" />
+									Review status: {reviewStatus}
+									{reviewReason && ` • ${reviewReason}`}
+								</div>
+								<h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">
+									Build trust with verified proof
+								</h2>
+								<p class={`mt-4 max-w-2xl text-base leading-7 ${softText}`}>
+									Upload the right documents for your role, add optional licenses, and strengthen
+									credibility for buyers and partners.
+								</p>
+							</div>
 
-              <div
-                className={`min-w-[240px] rounded-3xl border p-5 ${isDark ? "bg-slate-900/70 border-white/10" : "bg-sky-50/70 border-sky-100"}`}
-              >
-                <div
-                  className={`flex items-center justify-between text-sm ${mutedText}`}
-                >
-                  <span>Credibility</span>
-                  <span>{credibility}/100</span>
-                </div>
-                <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 transition-all duration-500"
-                    style={{ width: `${credibility}%` }}
-                  />
-                </div>
-                <div className="mt-4 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-semibold">
-                      Basic credibility
-                    </div>
-                    <div className={`mt-1 text-xs ${mutedText}`}>
-                      More licensing proof increases credibility and
-                      international trust.
-                    </div>
-                  </div>
-                  <Star className="h-7 w-7 text-sky-400" />
-                </div>
-              </div>
-            </div>
-          </div>
+							<div
+								class={`min-w-[240px] rounded-3xl border p-5 ${isDark ? "bg-slate-900/70 border-white/10" : "bg-sky-50/70 border-sky-100"}`}
+							>
+								<div class={`flex items-center justify-between text-sm ${mutedText}`}>
+									<span>Credibility</span>
+									<span>{credibility}/100</span>
+								</div>
+								<div class="mt-3 h-3 w-full overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800">
+									<div
+										class="h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 transition-all duration-500"
+										style={{ width: `${credibility}%` }}
+									/>
+								</div>
+								<div class="mt-4 flex items-center justify-between">
+									<div>
+										<div class="text-sm font-semibold">Basic credibility</div>
+										<div class={`mt-1 text-xs ${mutedText}`}>
+											More licensing proof increases credibility and international trust.
+										</div>
+									</div>
+									<Star class="h-7 w-7 text-sky-400" />
+								</div>
+							</div>
+						</div>
+					</div>
 
-          {role === "buyer" && (
-            <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold">Buyer region</h3>
-                  <p className={`mt-1 text-sm ${softText}`}>
-                    Select your country to determine required documents.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-sky-500">
-                  <HelpCircle className="h-4 w-4" />
-                  Region: {buyerRegion}
-                </div>
-              </div>
+					{role === "buyer" && (
+						<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+							<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+								<div>
+									<h3 class="text-xl font-semibold">Buyer region</h3>
+									<p class={`mt-1 text-sm ${softText}`}>
+										Select your country to determine required documents.
+									</p>
+								</div>
+								<div class="flex items-center gap-2 text-sm text-sky-500">
+									<HelpCircle class="h-4 w-4" />
+									Region: {buyerRegion}
+								</div>
+							</div>
 
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <select
-                  value={buyerCountry}
-                  onChange={(e) => setBuyerCountry(e.target.value)}
-                  className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition ${fieldBg}`}
-                >
-                  <option value="">Select country</option>
-                  {BUYER_COUNTRY_OPTIONS.map((country) => (
-                    <option key={country} value={country}>
-                      {country}
-                    </option>
-                  ))}
-                </select>
-                {savingCountry && (
-                  <span className="flex items-center">
-                    <ThreeDot
-                      variant="bounce"
-                      color="#6100ff"
-                      size="small"
-                      text=""
-                      textColor=""
-                    />
-                  </span>
-                )}
-              </div>
+							<div class="mt-5 flex flex-col gap-3 sm:flex-row">
+								<select
+									value={buyerCountry}
+									onChange={(e) => setBuyerCountry(e.target.value)}
+									class={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition ${fieldBg}`}
+								>
+									<option value="">Select country</option>
+									{BUYER_COUNTRY_OPTIONS.map((country) => (
+										<option key={country} value={country}>
+											{country}
+										</option>
+									))}
+								</select>
+								{savingCountry && (
+									<span class="flex items-center">
+										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									</span>
+								)}
+							</div>
 
-              <p className={`mt-3 text-sm ${softText}`}>
-                EU buyers need:{" "}
-                <span className="font-semibold">
-                  Business Registration + VAT Number + EORI + Bank proof
-                </span>
-                . USA buyers need:{" "}
-                <span className="font-semibold">
-                  Business Registration + EIN + IOR + Bank proof
-                </span>
-                .
-              </p>
+							<p class={`mt-3 text-sm ${softText}`}>
+								EU buyers need:{" "}
+								<span class="font-semibold">
+									Business Registration + VAT Number + EORI + Bank proof
+								</span>
+								. USA buyers need:{" "}
+								<span class="font-semibold">Business Registration + EIN + IOR + Bank proof</span>.
+							</p>
 
-              {!buyerCountry && (
-                <p className="mt-3 text-sm text-rose-400">
-                  Buyer country is required before completing buyer
-                  verification.
-                </p>
-              )}
-            </div>
-          )}
+							{!buyerCountry && (
+								<p class="mt-3 text-sm text-rose-400">
+									Buyer country is required before completing buyer verification.
+								</p>
+							)}
+						</div>
+					)}
 
-          <ScrollReveal as="section">
-            <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-xl font-semibold">Your requirements</h3>
-                  <p className={`mt-1 text-sm ${softText}`}>
-                    Role-based checklist. Uploading more proof increases
-                    credibility.
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full border px-3 py-1 text-sm ${chipBg}`}
-                >
-                  {verified ? "Verified" : "Not verified"}
-                </span>
-              </div>
+					<ScrollReveal as="section">
+						<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+							<div class="flex items-center justify-between gap-4">
+								<div>
+									<h3 class="text-xl font-semibold">Your requirements</h3>
+									<p class={`mt-1 text-sm ${softText}`}>
+										Role-based checklist. Uploading more proof increases credibility.
+									</p>
+								</div>
+								<span class={`rounded-full border px-3 py-1 text-sm ${chipBg}`}>
+									{verified ? "Verified" : "Not verified"}
+								</span>
+							</div>
 
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                {requirements.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className={`rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`mt-0.5 grid h-10 w-10 place-items-center rounded-2xl ${item.done ? "bg-emerald-500/15 text-emerald-300" : "bg-sky-500/10 text-sky-500"}`}
-                      >
-                        {item.done ? (
-                          <Check className="h-5 w-5" />
-                        ) : (
-                          <Clock className="h-5 w-5" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">{item.title}</h4>
-                        <p className={`mt-1 text-sm leading-6 ${softText}`}>
-                          {item.desc}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => openPicker(requiredDocs[idx])}
-                      disabled={
-                        busyDoc === requiredDocs[idx] ||
-                        (role === "buyer" && !buyerCountry)
-                      }
-                      className={`mt-4 w-full rounded-2xl border px-3 py-2 text-sm font-medium transition-all ${
-                        busyDoc === requiredDocs[idx] ||
-                        (role === "buyer" && !buyerCountry)
-                          ? "opacity-50 cursor-not-allowed border-white/10"
-                          : buttonGhost
-                      }`}
-                    >
-                      {busyDoc === requiredDocs[idx] ? (
-                        <ThreeDot
-                          variant="bounce"
-                          color="#6100ff"
-                          size="small"
-                          text=""
-                          textColor=""
-                        />
-                      ) : (
-                        "Upload"
-                      )}
-                    </button>
-                    {busyDoc === requiredDocs[idx] && (
-                      <UploadProgressBar
-                        progress={uploadProgress}
-                        className="mt-2"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </ScrollReveal>
+							<div class="mt-6 grid gap-4 md:grid-cols-3">
+								{requirements.map((item, idx) => (
+									<div
+										key={idx}
+										class={`rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+									>
+										<div class="flex items-start gap-3">
+											<div
+												class={`mt-0.5 grid h-10 w-10 place-items-center rounded-2xl ${item.done ? "bg-emerald-500/15 text-emerald-300" : "bg-sky-500/10 text-sky-500"}`}
+											>
+												{item.done ? <Check class="h-5 w-5" /> : <Clock class="h-5 w-5" />}
+											</div>
+											<div>
+												<h4 class="font-semibold">{item.title}</h4>
+												<p class={`mt-1 text-sm leading-6 ${softText}`}>{item.desc}</p>
+											</div>
+										</div>
+										<button
+											onClick={() => openPicker(requiredDocs[idx])}
+											disabled={
+												busyDoc === requiredDocs[idx] || (role === "buyer" && !buyerCountry)
+											}
+											class={`mt-4 w-full rounded-2xl border px-3 py-2 text-sm font-medium transition-all ${
+												busyDoc === requiredDocs[idx] || (role === "buyer" && !buyerCountry)
+													? "opacity-50 cursor-not-allowed border-white/10"
+													: buttonGhost
+											}`}
+										>
+											{busyDoc === requiredDocs[idx] ? (
+												<ThreeDot
+													variant="bounce"
+													color="#6100ff"
+													size="small"
+													text=""
+													textColor=""
+												/>
+											) : (
+												"Upload"
+											)}
+										</button>
+										{busyDoc === requiredDocs[idx] && (
+											<UploadProgressBar progress={uploadProgress} class="mt-2" />
+										)}
+									</div>
+								))}
+							</div>
+						</div>
+					</ScrollReveal>
 
-          <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h3 className="text-xl font-semibold">Optional licenses</h3>
-                <p className={`mt-1 text-sm ${softText}`}>
-                  Optional proofs can be added anytime. More proof = more trust.
-                </p>
-              </div>
-              <div className={`flex items-center gap-2 text-sm ${softText}`}>
-                <HelpCircle className="h-4 w-4 text-sky-400" />
-                e.g. OEKO-TEX, BSCI, WRAP...
-              </div>
-            </div>
+					<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+						<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+							<div>
+								<h3 class="text-xl font-semibold">Optional licenses</h3>
+								<p class={`mt-1 text-sm ${softText}`}>
+									Optional proofs can be added anytime. More proof = more trust.
+								</p>
+							</div>
+							<div class={`flex items-center gap-2 text-sm ${softText}`}>
+								<HelpCircle class="h-4 w-4 text-sky-400" />
+								e.g. OEKO-TEX, BSCI, WRAP...
+							</div>
+						</div>
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <input
-                value={optionalLicenseInput}
-                onChange={(e) => setOptionalLicenseInput(e.target.value)}
-                placeholder="Add a license or certification"
-                className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition placeholder:text-slate-400 focus:border-sky-400 ${fieldBg}`}
-              />
-              <button
-                onClick={addOptionalLicense}
-                className={`rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
-              >
-                Add
-              </button>
-            </div>
+						<div class="mt-5 flex flex-col gap-3 sm:flex-row">
+							<input
+								value={optionalLicenseInput}
+								onChange={(e) => setOptionalLicenseInput(e.target.value)}
+								placeholder="Add a license or certification"
+								class={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition placeholder:text-slate-400 focus:border-sky-400 ${fieldBg}`}
+							/>
+							<button
+								onClick={addOptionalLicense}
+								class={`rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
+							>
+								Add
+							</button>
+						</div>
 
-            <div className="mt-5 min-h-[92px] rounded-3xl border border-dashed border-sky-400/30 bg-sky-500/5 p-4">
-              {optionalLicenses.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {optionalLicenses.map((lic) => (
-                    <button
-                      key={lic}
-                      onClick={() => removeOptionalLicense(lic)}
-                      className={`rounded-full border px-3 py-2 text-sm ${chipBg}`}
-                    >
-                      {lic}
-                      <X className="ml-2 inline h-3 w-3" />
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div
-                  className={`flex h-full items-center justify-center text-sm ${mutedText}`}
-                >
-                  No optional licenses yet.
-                </div>
-              )}
-            </div>
-          </div>
+						<div class="mt-5 min-h-[92px] rounded-3xl border border-dashed border-sky-400/30 bg-sky-500/5 p-4">
+							{optionalLicenses.length > 0 ? (
+								<div class="flex flex-wrap gap-2">
+									{optionalLicenses.map((lic) => (
+										<button
+											key={lic}
+											onClick={() => removeOptionalLicense(lic)}
+											class={`rounded-full border px-3 py-2 text-sm ${chipBg}`}
+										>
+											{lic}
+											<X class="ml-2 inline h-3 w-3" />
+										</button>
+									))}
+								</div>
+							) : (
+								<div class={`flex h-full items-center justify-center text-sm ${mutedText}`}>
+									No optional licenses yet.
+								</div>
+							)}
+						</div>
+					</div>
 
-          <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h3 className="text-xl font-semibold">Verification code</h3>
-                <p className={`mt-1 text-sm ${softText}`}>
-                  Enter the 6-digit code sent to your email on file.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5">
-              <WordleInput
-                maxLength={6}
-                onChange={(val) => {
-                  setCode(val);
-                  if (val.length === 6) {
-                    setVerifyingCode(true);
-                    setFeedback("");
-                    setError("");
-                    apiRequest("/verification/code", {
-                      method: "POST",
-                      token,
-                      body: { code: val },
-                    })
-                      .then((res) => {
-                        if (res?.error) throw new Error(res.error);
-                        setFeedback("Code accepted. Verification in progress.");
-                        loadStatus();
-                      })
-                      .catch((err) => {
-                        setError(err.message || "Invalid verification code");
-                      })
-                      .finally(() => {
-                        setVerifyingCode(false);
-                      });
-                  }
-                }}
-                placeholder="●"
-              />
-              {verifyingCode && (
-                <div className="mt-3 flex items-center gap-2 text-sm text-sky-400">
-                  <ThreeDot
-                    variant="bounce"
-                    color="#6100ff"
-                    size="small"
-                    text=""
-                    textColor=""
-                  />
-                  <span>Verifying code...</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
+					<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+						<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+							<div>
+								<h3 class="text-xl font-semibold">Verification code</h3>
+								<p class={`mt-1 text-sm ${softText}`}>
+									Enter the 6-digit code sent to your email on file.
+								</p>
+							</div>
+						</div>
+						<div class="mt-5">
+							<WordleInput
+								maxLength={6}
+								onChange={(val) => {
+									setCode(val);
+									if (val.length === 6) {
+										setVerifyingCode(true);
+										setFeedback("");
+										setError("");
+										apiRequest("/verification/code", {
+											method: "POST",
+											token,
+											body: { code: val },
+										})
+											.then((res) => {
+												if (res?.error) {
+													throw new Error(res.error);
+												}
+												setFeedback("Code accepted. Verification in progress.");
+												loadStatus();
+											})
+											.catch((err) => {
+												setError(err.message || "Invalid verification code");
+											})
+											.finally(() => {
+												setVerifyingCode(false);
+											});
+									}
+								}}
+								placeholder="●"
+							/>
+							{verifyingCode && (
+								<div class="mt-3 flex items-center gap-2 text-sm text-sky-400">
+									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<span>Verifying code...</span>
+								</div>
+							)}
+						</div>
+					</div>
+				</section>
 
-        <aside className="space-y-6">
-          <div className={`rounded-[28px] border p-6 ${cardBg}`}>
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-sky-500/10 text-sky-500">
-                <CreditCard className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Subscription</h3>
-                <p className={`text-sm ${mutedText}`}>
-                  Verification approval requires an active verification
-                  subscription.
-                </p>
-              </div>
-            </div>
+				<aside class="space-y-6">
+					<div class={`rounded-[28px] border p-6 ${cardBg}`}>
+						<div class="flex items-center gap-3">
+							<div class="grid h-11 w-11 place-items-center rounded-2xl bg-sky-500/10 text-sky-500">
+								<CreditCard class="h-5 w-5" />
+							</div>
+							<div>
+								<h3 class="font-semibold">Subscription</h3>
+								<p class={`text-sm ${mutedText}`}>
+									Verification approval requires an active verification subscription.
+								</p>
+							</div>
+						</div>
 
-            <div
-              className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}
-            >
-              <div className="flex items-center justify-between text-sm">
-                <span className={softText}>Status</span>
-                <span className="rounded-full bg-rose-500/10 px-3 py-1 font-semibold text-rose-400">
-                  {remainingDays > 0 ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <div className={`mt-3 text-sm leading-6 ${softText}`}>
-                Activate your verification plan to unlock review eligibility and
-                progress toward approval.
-              </div>
-              {remainingDays > 0 && (
-                <p className={`mt-3 text-xs ${mutedText}`}>
-                  Remaining: {remainingDays} day
-                  {remainingDays === 1 ? "" : "s"}
-                </p>
-              )}
-            </div>
+						<div
+							class={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}
+						>
+							<div class="flex items-center justify-between text-sm">
+								<span class={softText}>Status</span>
+								<span class="rounded-full bg-rose-500/10 px-3 py-1 font-semibold text-rose-400">
+									{remainingDays > 0 ? "Active" : "Inactive"}
+								</span>
+							</div>
+							<div class={`mt-3 text-sm leading-6 ${softText}`}>
+								Activate your verification plan to unlock review eligibility and progress toward
+								approval.
+							</div>
+							{remainingDays > 0 && (
+								<p class={`mt-3 text-xs ${mutedText}`}>
+									Remaining: {remainingDays} day
+									{remainingDays === 1 ? "" : "s"}
+								</p>
+							)}
+						</div>
 
-            <div className="mt-4 grid gap-3">
-              <button
-                onClick={handleRenewVerification}
-                disabled={renewing}
-                className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
-              >
-                <RefreshCw className="h-4 w-4" />
-                {renewing ? "Processing..." : "Pay / Renew Verification"}
-              </button>
-              <button
-                onClick={loadStatus}
-                className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost}`}
-              >
-                <RefreshCw className="h-4 w-4" />
-                Refresh status
-              </button>
-            </div>
-          </div>
+						<div class="mt-4 grid gap-3">
+							<button
+								onClick={handleRenewVerification}
+								disabled={renewing}
+								class={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
+							>
+								<RefreshCw class="h-4 w-4" />
+								{renewing ? "Processing..." : "Pay / Renew Verification"}
+							</button>
+							<button
+								onClick={loadStatus}
+								class={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost}`}
+							>
+								<RefreshCw class="h-4 w-4" />
+								Refresh status
+							</button>
+						</div>
+					</div>
 
-          <div className={`rounded-[28px] border p-6 ${cardBg}`}>
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-500/10 text-cyan-500">
-                <HelpCircle className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Need help?</h3>
-                <p className={`text-sm ${mutedText}`}>Visit the Help Center.</p>
-              </div>
-            </div>
+					<div class={`rounded-[28px] border p-6 ${cardBg}`}>
+						<div class="flex items-center gap-3">
+							<div class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-500/10 text-cyan-500">
+								<HelpCircle class="h-5 w-5" />
+							</div>
+							<div>
+								<h3 class="font-semibold">Need help?</h3>
+								<p class={`text-sm ${mutedText}`}>Visit the Help Center.</p>
+							</div>
+						</div>
 
-            <div
-              className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-sky-50/60"}`}
-            >
-              <div className="flex items-start gap-3">
-                <Upload className="mt-0.5 h-5 w-5 text-sky-400" />
-                <div>
-                  <p className="text-sm font-semibold">Upload stronger proof</p>
-                  <p className={`mt-1 text-sm leading-6 ${softText}`}>
-                    Higher-quality documents and licenses can improve review
-                    confidence and credibility.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+						<div
+							class={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-sky-50/60"}`}
+						>
+							<div class="flex items-start gap-3">
+								<Upload class="mt-0.5 h-5 w-5 text-sky-400" />
+								<div>
+									<p class="text-sm font-semibold">Upload stronger proof</p>
+									<p class={`mt-1 text-sm leading-6 ${softText}`}>
+										Higher-quality documents and licenses can improve review confidence and
+										credibility.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
 
-          <div className={`rounded-[28px] border p-6 ${cardBg}`}>
-            <h3 className="font-semibold">Overview</h3>
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className={softText}>First month</span>
-                <span className="font-semibold">
-                  ${verificationPrice.firstMonth.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className={softText}>Renewals</span>
-                <span className="font-semibold">
-                  {verificationPrice.renewal.toFixed(2)}/month
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className={softText}>Review status</span>
-                <span className="font-semibold text-amber-400">
-                  {reviewStatus}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className={softText}>Verification</span>
-                <span className="font-semibold text-rose-400">
-                  {verified ? "Verified" : "Not verified"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </aside>
-      </main>
+					<div class={`rounded-[28px] border p-6 ${cardBg}`}>
+						<h3 class="font-semibold">Overview</h3>
+						<div class="mt-4 space-y-3 text-sm">
+							<div class="flex items-center justify-between">
+								<span class={softText}>First month</span>
+								<span class="font-semibold">${verificationPrice.firstMonth.toFixed(2)}</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class={softText}>Renewals</span>
+								<span class="font-semibold">{verificationPrice.renewal.toFixed(2)}/month</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class={softText}>Review status</span>
+								<span class="font-semibold text-amber-400">{reviewStatus}</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class={softText}>Verification</span>
+								<span class="font-semibold text-rose-400">
+									{verified ? "Verified" : "Not verified"}
+								</span>
+							</div>
+						</div>
+					</div>
+				</aside>
+			</main>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        className="hidden"
-        onChange={onFileSelected}
-      />
-    </>
-  );
+			<input ref={fileInputRef} type="file" class="hidden" onChange={onFileSelected} />
+		</>
+	);
 
-  if (embedded) return content;
-  return (
-    <div className={`min-h-screen ${pageBg} transition-colors duration-300`}>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-sky-500/20 blur-3xl" />
-        <div className="absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
-        <div className="absolute bottom-[-6rem] left-[-4rem] h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
-      </div>
-      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-        {content}
-      </div>
-    </div>
-  );
+	if (embedded) {
+		return content;
+	}
+	return (
+		<div class={`min-h-screen ${pageBg} transition-colors duration-300`}>
+			<div class="absolute inset-0 overflow-hidden pointer-events-none">
+				<div class="absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-sky-500/20 blur-3xl" />
+				<div class="absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
+				<div class="absolute bottom-[-6rem] left-[-4rem] h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+			</div>
+			<div class="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+				{content}
+			</div>
+		</div>
+	);
 }

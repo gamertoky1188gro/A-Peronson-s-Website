@@ -1,10 +1,6 @@
 import { Router } from "express";
+import { getMyWallet, getMyWalletHistory, redeemCoupon } from "../controllers/walletController.js";
 import { requireAuth } from "../middleware/auth.js";
-import {
-  getMyWallet,
-  getMyWalletHistory,
-  redeemCoupon,
-} from "../controllers/walletController.js";
 
 const router = Router();
 

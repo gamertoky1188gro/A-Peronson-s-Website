@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  createJourneyEvent,
-  getJourney,
-  getJourneyByContext,
-  rollbackJourney,
+	createJourneyEvent,
+	getJourney,
+	getJourneyByContext,
+	rollbackJourney,
 } from "../controllers/dealJourneyController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

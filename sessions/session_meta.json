@@ -1,82 +1,82 @@
 {
-  "admin-001": {
-    "sessionId": "ses_1c91a439cffeyoH2SEnolhrrB0",
-    "sessionIdKey": "session-admin-001",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:46.183Z",
-    "lastActive": "2026-05-17T17:04:46.185Z"
-  },
-  "b5893edf-f5e8-4b8f-b0fa-442a4d87471f": {
-    "sessionId": "ses_1c91a4659ffeKJO665CYO0rD4E",
-    "sessionIdKey": "session-b5893edf-f5e8-4b8f-b0fa-442a4d87471f",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:45.513Z",
-    "lastActive": "2026-05-17T17:04:45.516Z"
-  },
-  "c4a2b12c-17dd-4266-ba08-4e876fca6f42": {
-    "sessionId": "ses_1c91a45f4ffeC8xzYOESW36dyK",
-    "sessionIdKey": "session-c4a2b12c-17dd-4266-ba08-4e876fca6f42",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:45.591Z",
-    "lastActive": "2026-05-17T17:04:45.594Z"
-  },
-  "0da111a3-4de1-465d-887c-5110dd16649f": {
-    "sessionId": "ses_1c91a459dffe7q9S97P0RxnnVo",
-    "sessionIdKey": "session-0da111a3-4de1-465d-887c-5110dd16649f",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:45.684Z",
-    "lastActive": "2026-05-17T17:04:45.688Z"
-  },
-  "48a615e0-8b15-4150-b8e9-95569a500bb9": {
-    "sessionId": "ses_1c91a4549ffeo09tmSAtOpYuhB",
-    "sessionIdKey": "session-48a615e0-8b15-4150-b8e9-95569a500bb9",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:45.765Z",
-    "lastActive": "2026-05-17T17:04:45.769Z"
-  },
-  "org-ccm-001": {
-    "sessionId": "ses_1c91a4448ffef2YbIRNMnH6qNW",
-    "sessionIdKey": "session-org-ccm-001",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:46.013Z",
-    "lastActive": "2026-05-17T17:04:46.014Z"
-  },
-  "65a7f132-893a-438d-884f-7bf147a6270e": {
-    "sessionId": "ses_1c91a4424ffe88USB3MnKe7tW8",
-    "sessionIdKey": "session-65a7f132-893a-438d-884f-7bf147a6270e",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:46.047Z",
-    "lastActive": "2026-05-17T17:04:46.049Z"
-  },
-  "c77e2a6d-daf6-4156-b182-b5158c316c7d": {
-    "sessionId": "ses_1c91a4402ffetXcCPkvka7d5be",
-    "sessionIdKey": "session-c77e2a6d-daf6-4156-b182-b5158c316c7d",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:46.081Z",
-    "lastActive": "2026-05-17T17:04:46.083Z"
-  },
-  "cefa9bfa-3278-47f2-bab4-c7a1e9ab2849": {
-    "sessionId": "ses_1c91a43e8ffe2aUlhTkKnet43R",
-    "sessionIdKey": "session-cefa9bfa-3278-47f2-bab4-c7a1e9ab2849",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:46.108Z",
-    "lastActive": "2026-05-17T17:04:46.110Z"
-  },
-  "5004cdf9-4190-4e70-a05d-161f1cbd331d": {
-    "sessionId": "ses_1c91a43b7ffeqXa3RJ8Zo11ML3",
-    "sessionIdKey": "session-5004cdf9-4190-4e70-a05d-161f1cbd331d",
-    "model": "minimax-m2.5-free",
-    "provider": "opencode",
-    "createdAt": "2026-05-17T17:04:46.156Z",
-    "lastActive": "2026-05-17T17:04:46.157Z"
-  }
+	"admin-001": {
+		"sessionId": "ses_1c91a439cffeyoH2SEnolhrrB0",
+		"sessionIdKey": "session-admin-001",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:46.183Z",
+		"lastActive": "2026-05-17T17:04:46.185Z"
+	},
+	"b5893edf-f5e8-4b8f-b0fa-442a4d87471f": {
+		"sessionId": "ses_1c91a4659ffeKJO665CYO0rD4E",
+		"sessionIdKey": "session-b5893edf-f5e8-4b8f-b0fa-442a4d87471f",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:45.513Z",
+		"lastActive": "2026-05-17T17:04:45.516Z"
+	},
+	"c4a2b12c-17dd-4266-ba08-4e876fca6f42": {
+		"sessionId": "ses_1c91a45f4ffeC8xzYOESW36dyK",
+		"sessionIdKey": "session-c4a2b12c-17dd-4266-ba08-4e876fca6f42",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:45.591Z",
+		"lastActive": "2026-05-17T17:04:45.594Z"
+	},
+	"0da111a3-4de1-465d-887c-5110dd16649f": {
+		"sessionId": "ses_1c91a459dffe7q9S97P0RxnnVo",
+		"sessionIdKey": "session-0da111a3-4de1-465d-887c-5110dd16649f",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:45.684Z",
+		"lastActive": "2026-05-17T17:04:45.688Z"
+	},
+	"48a615e0-8b15-4150-b8e9-95569a500bb9": {
+		"sessionId": "ses_1c91a4549ffeo09tmSAtOpYuhB",
+		"sessionIdKey": "session-48a615e0-8b15-4150-b8e9-95569a500bb9",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:45.765Z",
+		"lastActive": "2026-05-17T17:04:45.769Z"
+	},
+	"org-ccm-001": {
+		"sessionId": "ses_1c91a4448ffef2YbIRNMnH6qNW",
+		"sessionIdKey": "session-org-ccm-001",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:46.013Z",
+		"lastActive": "2026-05-17T17:04:46.014Z"
+	},
+	"65a7f132-893a-438d-884f-7bf147a6270e": {
+		"sessionId": "ses_1c91a4424ffe88USB3MnKe7tW8",
+		"sessionIdKey": "session-65a7f132-893a-438d-884f-7bf147a6270e",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:46.047Z",
+		"lastActive": "2026-05-17T17:04:46.049Z"
+	},
+	"c77e2a6d-daf6-4156-b182-b5158c316c7d": {
+		"sessionId": "ses_1c91a4402ffetXcCPkvka7d5be",
+		"sessionIdKey": "session-c77e2a6d-daf6-4156-b182-b5158c316c7d",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:46.081Z",
+		"lastActive": "2026-05-17T17:04:46.083Z"
+	},
+	"cefa9bfa-3278-47f2-bab4-c7a1e9ab2849": {
+		"sessionId": "ses_1c91a43e8ffe2aUlhTkKnet43R",
+		"sessionIdKey": "session-cefa9bfa-3278-47f2-bab4-c7a1e9ab2849",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:46.108Z",
+		"lastActive": "2026-05-17T17:04:46.110Z"
+	},
+	"5004cdf9-4190-4e70-a05d-161f1cbd331d": {
+		"sessionId": "ses_1c91a43b7ffeqXa3RJ8Zo11ML3",
+		"sessionIdKey": "session-5004cdf9-4190-4e70-a05d-161f1cbd331d",
+		"model": "minimax-m2.5-free",
+		"provider": "opencode",
+		"createdAt": "2026-05-17T17:04:46.156Z",
+		"lastActive": "2026-05-17T17:04:46.157Z"
+	}
 }

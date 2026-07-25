@@ -1,8 +1,8 @@
-import express from "express";
 import bodyParser from "body-parser";
+import express from "express";
 import {
-  postExtractRequirement,
-  postGenerateFirstResponse,
+	postExtractRequirement,
+	postGenerateFirstResponse,
 } from "../server/controllers/assistantController.js";
 
 const app = express();

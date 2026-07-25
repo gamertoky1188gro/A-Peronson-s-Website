@@ -1,15 +1,15 @@
 import { Router } from "express";
 import {
-  login,
-  logout,
-  me,
-  passkeyList,
-  passkeyLoginOptions,
-  passkeyLoginVerify,
-  passkeyRegistrationOptions,
-  passkeyRegistrationVerify,
-  passkeyRemove,
-  register,
+	login,
+	logout,
+	me,
+	passkeyList,
+	passkeyLoginOptions,
+	passkeyLoginVerify,
+	passkeyRegistrationOptions,
+	passkeyRegistrationVerify,
+	passkeyRemove,
+	register,
 } from "../controllers/authController.js";
 import { requireAuth } from "../middleware/auth.js";
 import { authLimiter, passkeyLimiter } from "../middleware/rateLimiter.js";
@@ -20,16 +20,8 @@ router.post("/register", authLimiter, register);
 router.post("/login", authLimiter, login);
 router.post("/passkey/login/options", passkeyLimiter, passkeyLoginOptions);
 router.post("/passkey/login/verify", passkeyLimiter, passkeyLoginVerify);
-router.post(
-  "/passkey/registration/options",
-  requireAuth,
-  passkeyRegistrationOptions,
-);
-router.post(
-  "/passkey/registration/verify",
-  requireAuth,
-  passkeyRegistrationVerify,
-);
+router.post("/passkey/registration/options", requireAuth, passkeyRegistrationOptions);
+router.post("/passkey/registration/verify", requireAuth, passkeyRegistrationVerify);
 router.get("/passkeys", requireAuth, passkeyList);
 router.delete("/passkeys/:credentialId", requireAuth, passkeyRemove);
 router.get("/me", requireAuth, me);

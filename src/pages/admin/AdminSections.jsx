@@ -15,41 +15,37 @@
  * - config: Configuration editor
  */
 
+import { AdminAISection } from "./sections/AdminAISection.jsx";
+import { AdminCMSSection } from "./sections/AdminCMSSection.jsx";
+import { AdminConfigSection } from "./sections/AdminConfigSection.jsx";
 // Section component imports - each handles its own rendering
-import { AdminHomeSection } from "./sections/AdminHomeSection";
-import { AdminPlatformSection } from "./sections/AdminPlatformSection";
-import { AdminInfraSection } from "./sections/AdminInfraSection";
-import { AdminNetworkSection } from "./sections/AdminNetworkSection";
-import { AdminServerSection } from "./sections/AdminServerSection";
-import { AdminCMSSection } from "./sections/AdminCMSSection";
-import { AdminSecuritySection } from "./sections/AdminSecuritySection";
-import { AdminConfigSection } from "./sections/AdminConfigSection";
-import { AdminAISection } from "./sections/AdminAISection";
+import { AdminHomeSection } from "./sections/AdminHomeSection.jsx";
+import { AdminInfraSection } from "./sections/AdminInfraSection.jsx";
+import { AdminNetworkSection } from "./sections/AdminNetworkSection.jsx";
+import { AdminPlatformSection } from "./sections/AdminPlatformSection.jsx";
+import { AdminSecuritySection } from "./sections/AdminSecuritySection.jsx";
+import { AdminServerSection } from "./sections/AdminServerSection.jsx";
 
 const SECTIONS = {
-  home: AdminHomeSection,
-  platform: AdminPlatformSection,
-  infra: AdminInfraSection,
-  network: AdminNetworkSection,
-  "server-admin": AdminServerSection,
-  cms: AdminCMSSection,
-  "ultra-security": AdminSecuritySection,
-  config: AdminConfigSection,
-  ai: AdminAISection,
+	home: AdminHomeSection,
+	platform: AdminPlatformSection,
+	infra: AdminInfraSection,
+	network: AdminNetworkSection,
+	"server-admin": AdminServerSection,
+	cms: AdminCMSSection,
+	"ultra-security": AdminSecuritySection,
+	config: AdminConfigSection,
+	ai: AdminAISection,
 };
 
 export function AdminSectionRouter({ activeCategory, ...props }) {
-  const SectionComponent = SECTIONS[activeCategory];
+	const SectionComponent = SECTIONS[activeCategory];
 
-  if (!SectionComponent) {
-    return (
-      <div className="p-8 text-center text-slate-500">
-        Unknown category: {activeCategory}
-      </div>
-    );
-  }
+	if (!SectionComponent) {
+		return <div class="p-8 text-center text-slate-500">Unknown category: {activeCategory}</div>;
+	}
 
-  return <SectionComponent {...props} />;
+	return <SectionComponent {...props} />;
 }
 
 export default AdminSectionRouter;

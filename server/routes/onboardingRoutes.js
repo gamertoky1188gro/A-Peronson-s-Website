@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import { submitOnboarding } from "../controllers/onboardingController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 router.post("/", requireAuth, submitOnboarding);

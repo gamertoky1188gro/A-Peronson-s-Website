@@ -4,6 +4,7 @@ allowBuilds:
   "@prisma/engines": true
   electron: true
   esbuild: true
+  inotify: true
   opencode-ai: true
   prisma: true
   protobufjs: true

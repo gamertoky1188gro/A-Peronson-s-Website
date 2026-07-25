@@ -1,10 +1,6 @@
 import { Router } from "express";
+import { cancelBoostController, createBoost, getMyBoosts } from "../controllers/boostController.js";
 import { requireAuth } from "../middleware/auth.js";
-import {
-  cancelBoostController,
-  createBoost,
-  getMyBoosts,
-} from "../controllers/boostController.js";
 
 const router = Router();
 

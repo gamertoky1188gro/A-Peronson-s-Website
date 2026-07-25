@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  createAction,
-  createComment,
-  createReport,
-  createShare,
-  getEntityInteractions,
+	createAction,
+	createComment,
+	createReport,
+	createShare,
+	getEntityInteractions,
 } from "../controllers/socialController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  createJourney,
-  getJourney,
-  getJourneyByMatch,
-  transitionJourney,
+	createJourney,
+	getJourney,
+	getJourneyByMatch,
+	transitionJourney,
 } from "../controllers/workflowLifecycleController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

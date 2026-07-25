@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  approveReplyDraft,
-  draftReply,
-  extractRequirements,
-  sendApprovedReply,
+	approveReplyDraft,
+	draftReply,
+	extractRequirements,
+	sendApprovedReply,
 } from "../controllers/aiController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

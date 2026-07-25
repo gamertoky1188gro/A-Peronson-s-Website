@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { optionalAuth } from "../middleware/auth.js";
 import { postEvent } from "../controllers/eventController.js";
+import { optionalAuth } from "../middleware/auth.js";
 
 const router = Router();
 

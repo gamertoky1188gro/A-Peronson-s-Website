@@ -3,35 +3,31 @@
 
 echo "Running pre-commit checks..."
 
-echo "1. Running Prettier..."
-npx prettier . --write
+echo "1. Running Biome check (lint + format)..."
+npx biome check --write --no-errors-on-unmatched .
 if [ $? -ne 0 ]; then
-  echo "Prettier failed!"
+  echo "Biome check failed!"
   exit 1
 fi
 
-echo "2. Running Lint..."
-npm run lint
-if [ $? -ne 0 ]; then
-  echo "Lint failed!"
-  exit 1
-fi
+# Stage any files Biome auto-fixed
+git add -u
 
-echo "3. Running Tests..."
+echo "2. Running Tests..."
 npm test 2>&1 | grep -E "(PASS|FAIL|Tests:)"
 if [ $? -ne 0 ]; then
   echo "Tests failed!"
   exit 1
 fi
 
-echo "4. Running Build..."
+echo "3. Running Build..."
 npm run build
 if [ $? -ne 0 ]; then
   echo "Build failed!"
   exit 1
 fi
 
-echo "5. Checking for changes..."
+echo "4. Checking for changes..."
 git diff HEAD --stat
 
 echo "Pre-commit checks passed!"

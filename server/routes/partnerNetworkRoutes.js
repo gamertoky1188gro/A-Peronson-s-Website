@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
 import {
-  acceptPartnerRequest,
-  cancelPartnerRequest,
-  createPartnerRequest,
-  deletePartnerConnection,
-  listIncomingPartnerRequests,
-  listPartnerNetwork,
-  rejectPartnerRequest,
+	acceptPartnerRequest,
+	cancelPartnerRequest,
+	createPartnerRequest,
+	deletePartnerConnection,
+	listIncomingPartnerRequests,
+	listPartnerNetwork,
+	rejectPartnerRequest,
 } from "../controllers/partnerNetworkController.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 

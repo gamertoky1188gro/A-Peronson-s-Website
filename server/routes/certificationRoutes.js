@@ -1,9 +1,6 @@
 import { Router } from "express";
+import { getMyCertification, getOrgCertification } from "../controllers/certificationController.js";
 import { requireAuth } from "../middleware/auth.js";
-import {
-  getMyCertification,
-  getOrgCertification,
-} from "../controllers/certificationController.js";
 
 const router = Router();
 

@@ -1,19 +1,19 @@
-import prisma from "./utils/prisma.js";
 import { logInfo } from "./utils/logger.js";
+import prisma from "./utils/prisma.js";
 
 async function main() {
-  const user = await prisma.user.findUnique({
-    where: { email: "admin@gmail.com" },
-    select: { id: true, name: true, email: true, role: true, status: true },
-  });
+	const user = await prisma.user.findUnique({
+		where: { email: "admin@gmail.com" },
+		select: { id: true, name: true, email: true, role: true, status: true },
+	});
 
-  if (user) {
-    logInfo("User found", user);
-  } else {
-    logInfo("User not found");
-  }
+	if (user) {
+		logInfo("User found", user);
+	} else {
+		logInfo("User not found");
+	}
 
-  await prisma.$disconnect();
+	await prisma.$disconnect();
 }
 
 main().catch(console.error);
