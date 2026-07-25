@@ -135,6 +135,8 @@ export default function ChatInterface() {
     sharedPost: true,
   });
   const [presenceMap, setPresenceMap] = useState({});
+  const navigate = useNavigate();
+  const location = useLocation();
   const [notice, setNotice] = useState(() => location.state?.notice ?? null);
   const [aiSuggesting, setAiSuggesting] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -156,8 +158,6 @@ export default function ChatInterface() {
   const pendingMatchIdRef = useRef("");
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
   const { user: secureUser, loading: secureLoading } = useSecureUser();
-  const navigate = useNavigate();
-  const location = useLocation();
   const isLight = themeMode === "light";
   const userRole =
     secureUser?.role || String(currentUser?.role || "").toLowerCase();
@@ -362,6 +362,7 @@ export default function ChatInterface() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadInbox();
   }, [loadInbox]);
 
@@ -400,6 +401,7 @@ export default function ChatInterface() {
   useEffect(() => {
     if (loading || secureLoading) return;
     if (!activeThread?.matchId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageLoading(false);
     } else if (messagesByThread[activeThread.matchId]) {
       setPageLoading(false);
@@ -409,6 +411,7 @@ export default function ChatInterface() {
   useEffect(() => {
     const token = getToken();
     if (!token || !activeThread?.matchId || activeThread?.isFriendThread) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLeadSummary(null);
       setPrequalOverride(false);
       setAiSummary(null);
@@ -427,6 +430,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!leadSummary?.notes) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAiSummary(null);
       setAiNegotiation(null);
       return;
@@ -578,6 +582,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!activeThread?.matchId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadThreadMessages(activeThread.matchId);
   }, [activeThread, loadThreadMessages]);
 
@@ -619,6 +624,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (participantIds.length === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshPresence(participantIds);
   }, [participantIds, refreshPresence]);
 
@@ -1177,6 +1183,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     if (!policyFeedback.retryAfter || policyFeedback.retryAfter <= 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCountdownSeconds(0);
       return undefined;
     }

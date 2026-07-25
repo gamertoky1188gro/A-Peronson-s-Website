@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import prisma from "../utils/prisma.js";
 
-async function createLockNotification(
+async function _createLockNotification(
   userId,
   message,
   requestId,

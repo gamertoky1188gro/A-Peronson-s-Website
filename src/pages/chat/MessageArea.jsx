@@ -3,7 +3,7 @@ import { ThreeDot, Mosaic } from "react-loading-indicators";
 import { MessageCircle, Phone, Search, EllipsisVertical, Plus, SendHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import JourneyTimeline from "../../components/JourneyTimeline";
-import UploadProgressBar from "../../components/chat/UploadProgressBar";
+import UploadProgressBar from "../../components/ui/UploadProgressBar";
 import { ROUTES } from "../../lib/routes";
 import {
   formatPresence,

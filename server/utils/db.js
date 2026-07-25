@@ -1,6 +1,6 @@
 import prisma from "./prisma.js";
 import chalk from "chalk";
-import { logInfo, logWarn } from "../utils/logger.js";
+import { logInfo } from "../utils/logger.js";
 
 let dbConnected = false;
 let dbError = "";

@@ -446,7 +446,7 @@ export async function redeemCouponForUser({ userId, code }) {
       },
     });
 
-    const balanceAfter =
+    const _balanceAfter =
       Math.round(Number(user.wallet_balance_usd || 0) * 100) / 100;
 
     await tx.walletHistory.create({
@@ -455,7 +455,7 @@ export async function redeemCouponForUser({ userId, code }) {
         user_id: String(userId),
         kind: "credit",
         amount_usd: amount,
-        balance_after_usd: balanceAfter,
+        balance_after_usd: _balanceAfter,
         reason: "coupon_redeem",
         ref: `coupon:${coupon.code}`,
         meta: {
@@ -481,7 +481,7 @@ export async function redeemCouponForUser({ userId, code }) {
   return {
     wallet: {
       user_id: String(userId),
-      balance_usd: balanceAfter,
+      balance_usd: user?.wallet_balance_usd || 0,
       restricted_balance_usd: nextRestricted,
     },
     redemption,

@@ -84,7 +84,7 @@ import {
   X,
 } from "lucide-react";
 import { ThreeDot, Mosaic } from "react-loading-indicators";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../lib/cn";
 import {
   SkeletonChart,
   SectionTitle,

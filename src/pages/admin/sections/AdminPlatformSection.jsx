@@ -12,7 +12,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../lib/cn";
 import { apiRequest, getToken } from "../../../lib/auth";
 import { exportEmailsCsv } from "../../AdminPanel.utils";
 
@@ -123,6 +123,7 @@ export function AdminPlatformSection({
     assigned_to: "",
   });
   const [supportLoading, setSupportLoading] = useState(false);
+  const [policyMetricsData, setPolicyMetrics] = useState(policyMetrics);
   const [systemReports, setSystemReportsLocal] = useState([]);
   const [productAppealReports, setProductAppealReportsLocal] = useState([]);
   const [contentReports, setContentReportsLocal] = useState([]);
@@ -135,7 +136,7 @@ export function AdminPlatformSection({
     setProductAppealReports || setProductAppealReportsLocal;
   const setContentReportsSafe = setContentReports || setContentReportsLocal;
 
-  function buildAdminHeaders({ stepUp = false } = {}) {
+  const buildAdminHeaders = useCallback(({ stepUp = false } = {}) => {
     const headers = {};
     if (mfaCode) headers["x-admin-mfa"] = mfaCode;
     if (deviceId) headers["x-admin-device"] = deviceId;
@@ -145,7 +146,7 @@ export function AdminPlatformSection({
       headers["x-admin-stepup-at"] = new Date().toISOString();
     }
     return headers;
-  }
+  }, [mfaCode, deviceId, passkeyValue, stepUpCode]);
 
   const regionOptions = useMemo(() => {
     const set = new Set();
@@ -337,7 +338,7 @@ export function AdminPlatformSection({
     } finally {
       setLoadingModeration(false);
     }
-  }, []);
+  }, [buildAdminHeaders]);
 
   const refreshMessagePolicyOps = useCallback(async () => {
     const token = getToken();
@@ -360,7 +361,7 @@ export function AdminPlatformSection({
       setPolicyMetrics(null);
       setError(err.message || "Failed to load communication policy queues");
     }
-  }, []);
+  }, [buildAdminHeaders, setError, setPolicyQueueItems, setPolicyReviewRows]);
 
   const refreshReportQueuesLocal = useCallback(async () => {
     const token = getToken();
@@ -378,7 +379,7 @@ export function AdminPlatformSection({
     setContentReportsSafe(
       Array.isArray(contentData?.items) ? contentData.items : [],
     );
-  }, []);
+  }, [buildAdminHeaders, setContentReportsSafe, setProductAppealReportsSafe, setSystemReportsSafe]);
 
   const refreshSupportTicketsLocal = useCallback(async () => {
     const token = getToken();
@@ -405,7 +406,7 @@ export function AdminPlatformSection({
     } finally {
       setSupportLoading(false);
     }
-  }, [supportFilters]);
+  }, [buildAdminHeaders, setError, setSupportLoading, setSupportTickets, supportFilters]);
 
   async function refreshSignups() {
     const token = getToken();
@@ -531,7 +532,7 @@ export function AdminPlatformSection({
       }
       handleRejectionModalClose();
     },
-    [rejectionItem],
+    [buildAdminHeaders, handleRejectionModalClose, refreshModerationQueues, rejectionItem, setError],
   );
 
   return (
@@ -1636,18 +1637,18 @@ export function AdminPlatformSection({
               <div className="mt-2 space-y-1 text-[11px] text-slate-600">
                 <p>
                   Blocked rate:{" "}
-                  {Number(policyMetrics?.policy_metrics?.blocked_rate || 0).toFixed(4)}
+                  {Number(policyMetricsData?.policy_metrics?.blocked_rate || 0).toFixed(4)}
                 </p>
                 <p>
                   Queue→Sent:{" "}
                   {Number(
-                    policyMetrics?.policy_metrics?.queued_to_sent_conversion || 0,
+                    policyMetricsData?.policy_metrics?.queued_to_sent_conversion || 0,
                   ).toFixed(4)}
                 </p>
                 <p>
                   False-positive ratio:{" "}
                   {Number(
-                    policyMetrics?.policy_metrics?.spam_false_positive_ratio || 0,
+                    policyMetricsData?.policy_metrics?.spam_false_positive_ratio || 0,
                   ).toFixed(4)}
                 </p>
               </div>
@@ -1898,9 +1899,9 @@ export function AdminPlatformSection({
           </div>
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
             {[
-              { title: "System & Support", items: systemReportsSafe },
-              { title: "Product Appeals", items: productAppealReportsSafe },
-              { title: "Content Reports", items: contentReportsSafe },
+              { title: "System & Support", items: systemReports },
+              { title: "Product Appeals", items: productAppealReports },
+              { title: "Content Reports", items: contentReports },
             ].map((group) => (
               <div
                 key={group.title}

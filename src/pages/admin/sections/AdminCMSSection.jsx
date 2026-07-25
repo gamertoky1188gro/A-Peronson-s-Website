@@ -32,7 +32,7 @@ import {
   Area,
 } from "recharts";
 import { ThreeDot } from "react-loading-indicators";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../lib/cn";
 import {
   CmsMiniBadge,
   CmsStatCard,

@@ -542,7 +542,7 @@ export async function updateLead(actor, leadId, patch = {}) {
     if (!assignedAgent) throw forbiddenError();
   }
 
-  const [updatedLead, updated2] = await prisma.$transaction(async (tx) => {
+  const [updatedLead] = await prisma.$transaction(async (tx) => {
     const first = await tx.lead.update({
       where: { id },
       data: {

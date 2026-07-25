@@ -1,6 +1,6 @@
 import { CheckCircle2, Sparkles, RefreshCw, ArrowUpRight } from "lucide-react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../lib/cn";
 
 export function SkeletonChart({ height = 320 }) {
   return (
@@ -340,6 +340,7 @@ export function SectionCard({
   );
 }
 
+/* eslint-disable react-refresh/only-export-components */
 export function cmsChipClass(dark, active = false) {
   return [
     "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition",

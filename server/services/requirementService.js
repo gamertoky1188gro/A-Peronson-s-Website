@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import prisma from "../utils/prisma.js";
 import { sanitizeString, limitWordCount } from "../utils/validators.js";
-import { logInfo, logError } from "../utils/logger.js";
+import { logInfo } from "../utils/logger.js";
 import {
   createNotification,
   emitNotificationsForEntity,

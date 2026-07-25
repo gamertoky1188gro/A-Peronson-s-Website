@@ -6,7 +6,19 @@ import babelParser from "@babel/eslint-parser";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist", "history"]),
+  globalIgnores([
+    "dist",
+    "history",
+    "node_modules",
+    "docs",
+    "*.md",
+    "*.docx",
+    "server/uploads",
+    "scripts/*.txt",
+    "tests/e2e/*.cypress.*",
+    "pnpm-lock.yaml",
+    "package-lock.json",
+  ]),
   {
     files: ["server/**/*.js"],
     extends: [js.configs.recommended],

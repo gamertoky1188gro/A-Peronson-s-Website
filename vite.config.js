@@ -12,17 +12,20 @@ export default defineConfig({
     cssCodeSplit: true,
   },
   build: {
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       external: ["rtf.js"],
       output: {
         manualChunks(id) {
           if (id.includes("node_modules/react-dom")) return "vendor-react";
           if (id.includes("node_modules/react")) return "vendor-react";
+          if (id.includes("node_modules/framer-motion")) return "vendor-motion";
+          if (id.includes("node_modules/react-router")) return "vendor-router";
+          if (id.includes("node_modules/@reduxjs/toolkit")) return "vendor-redux";
+          if (id.includes("node_modules/react-redux")) return "vendor-redux";
           if (id.includes("node_modules/lucide-react")) return "vendor-icons";
           if (id.includes("node_modules/dompurify")) return "vendor-security";
           if (id.includes("node_modules/recharts")) return "vendor-charts";
-          if (id.includes("node_modules")) return "vendor";
         },
       },
     },

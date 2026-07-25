@@ -27,7 +27,7 @@ import {
   SunMedium,
   Moon,
 } from "lucide-react";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../lib/cn";
 
 const NETWORK_CAPABILITIES = [
   {
@@ -125,7 +125,7 @@ export function AdminNetworkSection({
         `${device?.name || ""} ${device?.id || ""} ${device?.status || ""}`.toLowerCase();
       return value.includes(query);
     });
-  }, [networkInventory?.devices, networkQuery]);
+    }, [networkInventory, networkQuery]);
 
   const filteredNetworkAuditRows = useMemo(() => {
     const query = networkAuditQuery.trim().toLowerCase();

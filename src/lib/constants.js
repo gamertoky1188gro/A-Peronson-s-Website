@@ -1,4 +1,10 @@
 
+export const TIMEOUTS = {
+  SHORT: 300,
+  MEDIUM: 1500,
+  LONG: 3000,
+};
+
 export const QUICK_EMOJIS = [
   "😀",
   "😁",

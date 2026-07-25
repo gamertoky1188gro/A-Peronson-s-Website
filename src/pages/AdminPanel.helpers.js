@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 import * as Utils from "./AdminPanel.utils";
 
 /**

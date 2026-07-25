@@ -28,7 +28,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge, StatCard, SectionCard } from "../shared";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../lib/cn";
 
 const INFRA_CAPABILITIES = [
   {

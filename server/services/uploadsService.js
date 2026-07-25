@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import prisma from "../utils/prisma.js";
+import { logInfo, logError } from "../utils/logger.js";
 import {
   analyzeBufferWithAI,
   isAIAnalyticsEnabled,

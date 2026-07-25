@@ -40,7 +40,7 @@ import {
   Search,
 } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../lib/cn";
 import { apiRequest, getToken } from "../../../lib/auth";
 import { SkeletonChart, MetricCard, SectionTitle, Pill, BenefitCard } from "../shared";
 
