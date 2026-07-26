@@ -54,7 +54,6 @@
 		"chalk": "^5.6.2",
 		"concurrently": "^9.0.1",
 		"cors": "^2.8.6",
-		"dev": "^0.1.5",
 		"dompurify": "^3.4.12",
 		"express": "^5.2.1",
 		"express-rate-limit": "8.5.2",
@@ -136,5 +135,8 @@
 		"opencode-ai@1.15.12": true,
 		"prisma@6.19.3": true,
 		"protobufjs@7.6.1": true
+	},
+	"optionalDependencies": {
+		"dev": "^0.1.5"
 	}
 }
