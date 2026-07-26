@@ -6,14 +6,14 @@ import {
 	rejectLicenseRequestController,
 	uploadLicenseDocumentController,
 } from "../controllers/licenseRequestController.js";
-import { authenticateToken } from "../middleware/auth.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
-router.post("/", authenticateToken, createLicenseRequestController);
-router.post("/:requestId/upload", authenticateToken, uploadLicenseDocumentController);
-router.post("/:requestId/reject", authenticateToken, rejectLicenseRequestController);
-router.get("/incoming", authenticateToken, listPendingController);
-router.get("/outgoing", authenticateToken, listMyRequestsController);
+router.post("/", requireAuth, createLicenseRequestController);
+router.post("/:requestId/upload", requireAuth, uploadLicenseDocumentController);
+router.post("/:requestId/reject", requireAuth, rejectLicenseRequestController);
+router.get("/incoming", requireAuth, listPendingController);
+router.get("/outgoing", requireAuth, listMyRequestsController);
 
 export default router;
