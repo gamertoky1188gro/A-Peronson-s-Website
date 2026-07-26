@@ -77,7 +77,9 @@ const IndustryPage = safeLazy(() => import("./pages/IndustryPage.jsx"));
 const RatingFeedback = safeLazy(() => import("./pages/RatingFeedback.jsx"));
 const SupportReports = safeLazy(() => import("./pages/SupportReports.jsx"));
 const VerificationPage = safeLazy(() => import("./pages/VerificationPage.jsx"));
+const JoinRequestPage = safeLazy(() => import("./pages/JoinRequestPage.jsx"));
 const TaskTracker = safeLazy(() => import("./pages/TaskTracker.jsx"));
+const FeedbackPage = safeLazy(() => import("./pages/FeedbackPage.jsx"));
 const ProfilePage = safeLazy(() => import("./pages/ProfilePage.jsx"));
 const AdminPanel = safeLazy(() => import("./pages/AdminPanel.jsx"));
 const AdminGovernance = safeLazy(() => import("./pages/AdminGovernance.jsx"));
@@ -123,8 +125,8 @@ function AppRoutes() {
 			<Route path="/terms" element={<Terms />} />
 			<Route path="/privacy" element={<Privacy />} />
 			<Route path="/help" element={<HelpCenter />} />
-			<Route path="/login" element={<Login />} />
-			<Route path="/signup" element={<Signup />} />
+			<Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
+			<Route path="/signup" element={<ErrorBoundary><Signup /></ErrorBoundary>} />
 			<Route path="/:time/meow/:date/SignupUltra" element={<SignupUltra />} />
 			<Route
 				path="/onboarding"
@@ -225,6 +227,14 @@ function AppRoutes() {
 				}
 			/>
 			<Route
+				path="/join-requests/:requestId"
+				element={
+					<ProtectedRoute roles={AUTH_ROLES}>
+						<JoinRequestPage />
+					</ProtectedRoute>
+				}
+			/>
+			<Route
 				path="/chat"
 				element={
 					<ProtectedRoute roles={AUTH_ROLES}>
@@ -306,6 +316,14 @@ function AppRoutes() {
 				}
 			/>
 			<Route
+				path="/verification"
+				element={
+					<ProtectedRoute roles={OWNER_ROLES}>
+						<OwnerDashboard />
+					</ProtectedRoute>
+				}
+			/>
+			<Route
 				path="/agent"
 				element={
 					<ProtectedRoute roles={["buying_house", "owner", "admin", "agent"]}>
@@ -331,6 +349,14 @@ function AppRoutes() {
 			/>
 
 			<Route path="/tasks" element={<TaskTracker />} />
+			<Route
+				path="/feedback"
+				element={
+					<ProtectedRoute roles={AUTH_ROLES}>
+						<FeedbackPage />
+					</ProtectedRoute>
+				}
+			/>
 			<Route
 				path="/profile/:id"
 				element={

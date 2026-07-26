@@ -14,6 +14,7 @@ import {
 	ClipboardList,
 	Edit3,
 	Eye,
+	Handshake,
 	Heart,
 	Mail,
 	MapPin,
@@ -275,6 +276,7 @@ export default function BuyerProfile() {
 		comment: "",
 	});
 	const [reviewDeleteId, setReviewDeleteId] = useState(null);
+	const [feedback, setFeedback] = useState(null);
 	const isBoosted = Boolean(profileBoost);
 	const isPremium =
 		isPremiumFromApi ||
@@ -556,6 +558,42 @@ export default function BuyerProfile() {
 		});
 	}
 
+	async function requestRelationship() {
+		if (!id) {
+			return;
+		}
+		setFeedback(null);
+		try {
+			const tokenValue = getToken();
+			await apiRequest("/relationships", {
+				method: "POST",
+				token: tokenValue,
+				body: { recipient_id: id, recipient_type: "user" },
+			});
+			setFeedback("Business relationship request sent.");
+		} catch (err) {
+			setFeedback(err.message || "Failed to send relationship request.");
+		}
+	}
+
+	async function requestLicense() {
+		if (!id) {
+			return;
+		}
+		setFeedback(null);
+		try {
+			const tokenValue = getToken();
+			await apiRequest("/license-requests", {
+				method: "POST",
+				token: tokenValue,
+				body: { recipient_id: id, license_name: user?.profile?.industry || "General" },
+			});
+			setFeedback("License request sent.");
+		} catch (err) {
+			setFeedback(err.message || "Failed to send license request.");
+		}
+	}
+
 	if (loading) {
 		return <NeonAtom fill={true} />;
 	}
@@ -693,6 +731,25 @@ export default function BuyerProfile() {
 														? "Requested"
 														: "Connect"}
 											</button>
+											{currentUser?.id === user?.id ? null : (
+												<>
+													<button
+														onClick={requestRelationship}
+														class="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-100 backdrop-blur transition hover:-translate-y-0.5 hover:bg-emerald-500/30"
+													>
+														<Handshake class="h-4 w-4" /> Confirm Business Relationship
+													</button>
+													<button
+														onClick={requestLicense}
+														class="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/20 px-4 py-2 text-sm font-semibold text-amber-100 backdrop-blur transition hover:-translate-y-0.5 hover:bg-amber-500/30"
+													>
+														<ShieldCheck class="h-4 w-4" /> Request License
+													</button>
+												</>
+											)}
+											{feedback ? (
+												<p class="w-full text-center text-xs text-white/80">{feedback}</p>
+											) : null}
 										</div>
 									</div>
 								</div>

@@ -1,4 +1,5 @@
 import prisma from "../utils/prisma.js";
+import { redactPhoneFromProfile } from "../utils/privacy.js";
 import { sanitizeString } from "../utils/validators.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { listProducts } from "./productService.js";
@@ -146,6 +147,10 @@ export async function getProfileOverview(viewerId, profileUserId) {
 	let extendedProfile = null;
 	if (viewerId === profileUserId || isAdmin) {
 		extendedProfile = extendProfileForOwner({}, user);
+	}
+
+	if (viewerId !== profileUserId && !isAdmin) {
+		safeUser.profile = redactPhoneFromProfile(safeUser.profile);
 	}
 
 	const relationship =

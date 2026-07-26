@@ -10,10 +10,12 @@ import {
 	scopeRecordsForUser,
 } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
+import { getPublicDocuments } from "../utils/privacy.js";
 import { sanitizeString } from "../utils/validators.js";
 import { ensureCertificationForContract } from "./certificationService.js";
 import { trackEvent } from "./eventTrackingService.js";
 import { markLeadConvertedFromContract } from "./leadService.js";
+import { hasPendingRatingForCounterparty } from "./ratingsService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
 
 const SIGNATURE_STATES = new Set(["pending", "signed"]);
@@ -165,13 +167,17 @@ function presentContractForActor(contract, actor) {
 	if (canViewContractBankingReferences(actor, contract)) {
 		return base;
 	}
-	return {
-		...base,
-		bank_name: "",
-		beneficiary_name: "",
-		transaction_reference: "",
-		artifact: base.artifact ? { ...base.artifact, pdf_path: "" } : base.artifact,
-	};
+	return getPublicDocuments(
+		{
+			...base,
+			bank_name: "",
+			beneficiary_name: "",
+			transaction_reference: "",
+			artifact: base.artifact ? { ...base.artifact, pdf_path: "" } : base.artifact,
+		},
+		actor?.id,
+		contract.uploaded_by,
+	);
 }
 
 function sanitizeSignatureState(value, fallback = "pending") {
@@ -600,6 +606,20 @@ export async function createDraftContract(actor, payload = {}) {
 		const err = new Error("Forbidden");
 		err.status = 403;
 		throw err;
+	}
+
+	const buyerId = sanitizeString(payload.buyer_id || "", 120);
+	const factoryId = sanitizeString(payload.factory_id || "", 120);
+
+	if (buyerId && factoryId) {
+		const hasPending = await hasPendingRatingForCounterparty(buyerId, factoryId);
+		if (!hasPending) {
+			const err = new Error(
+				"Rating required before creating a new contract with this counterparty",
+			);
+			err.status = 403;
+			throw err;
+		}
 	}
 
 	const ownerId = actor.id;

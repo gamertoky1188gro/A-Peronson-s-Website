@@ -13,35 +13,11 @@ import NeonAtom from "../../components/ui/NeonAtom.jsx";
 import { apiRequest, getCurrentUser, saveSession } from "../../lib/auth.js";
 import { useTheme } from "../../lib/ThemeProvider.jsx";
 import usePageMeta from "../../lib/usePageMeta.js";
-
-const COUNTRIES = [
-	"Bangladesh",
-	"India",
-	"Pakistan",
-	"China",
-	"Vietnam",
-	"Indonesia",
-	"Sri Lanka",
-	"Turkey",
-	"Italy",
-	"Spain",
-	"United States",
-	"United Kingdom",
-	"Germany",
-	"France",
-	"Netherlands",
-	"Japan",
-	"South Korea",
-	"Malaysia",
-	"Thailand",
-	"Cambodia",
-];
-
-const ACCOUNT_TYPES = [
-	{ label: "Factory", value: "F" },
-	{ label: "Buying house", value: "BH" },
-	{ label: "Buyer", value: "B" },
-];
+import {
+	COUNTRY_OPTIONS,
+	FACTORY_SECTOR_OPTIONS,
+	PUBLIC_ACCOUNT_TYPES,
+} from "../../../shared/config/platformTaxonomy.js";
 
 const POSITIONS = [
 	"Owner",
@@ -148,12 +124,6 @@ function CheckIcon() {
 	);
 }
 
-const ROLE_VALUE_TO_API = {
-	F: "factory",
-	BH: "buying_house",
-	B: "buyer",
-};
-
 export default function Signup() {
 	usePageMeta({
 		title: "Create Account — GarTexHub",
@@ -174,12 +144,13 @@ export default function Signup() {
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [accountType, setAccountType] = useState(ACCOUNT_TYPES[0]);
+	const [accountType, setAccountType] = useState(PUBLIC_ACCOUNT_TYPES[0]);
 	const [accountOpen, setAccountOpen] = useState(false);
 	const [countryQuery, setCountryQuery] = useState("");
 	const [country, setCountry] = useState("");
 	const [countryOpen, setCountryOpen] = useState(false);
 	const [organizationName, setOrganizationName] = useState("");
+	const [factorySector, setFactorySector] = useState("");
 	const [position, setPosition] = useState("");
 	const [positionOpen, setPositionOpen] = useState(false);
 
@@ -206,12 +177,18 @@ export default function Signup() {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
+	useEffect(() => {
+		if (accountType.value !== "factory" && factorySector) {
+			setFactorySector("");
+		}
+	}, [accountType.value, factorySector]);
+
 	const filteredCountries = useMemo(() => {
 		const q = countryQuery.trim().toLowerCase();
 		if (!q) {
-			return COUNTRIES;
+			return COUNTRY_OPTIONS;
 		}
-		return COUNTRIES.filter((c) => c.toLowerCase().includes(q));
+		return COUNTRY_OPTIONS.filter((c) => c.toLowerCase().includes(q));
 	}, [countryQuery]);
 
 	const handleBack = () => {
@@ -241,6 +218,11 @@ export default function Signup() {
 			setError("Please enter your organization name.");
 			return;
 		}
+		if (accountType.value === "factory" && !factorySector) {
+			setLoading(false);
+			setError("Please select whether the factory is Garments or Textile.");
+			return;
+		}
 		if (password !== confirmPassword) {
 			setLoading(false);
 			setError("Passwords do not match.");
@@ -251,9 +233,9 @@ export default function Signup() {
 				name: fullName,
 				email,
 				password,
-				role: ROLE_VALUE_TO_API[accountType.value],
+				role: accountType.value,
 				company_name: organizationName,
-				profile: { country, position },
+				profile: { country, position, factory_sector: factorySector },
 			};
 			const data = await apiRequest("/auth/register", {
 				method: "POST",
@@ -504,9 +486,9 @@ export default function Signup() {
 								<FieldShell
 									label="Account Type"
 									hint={
-										accountType.value === "F"
+										accountType.value === "factory"
 											? "Factory"
-											: accountType.value === "BH"
+											: accountType.value === "buying_house"
 												? "Buying house"
 												: "Buyer"
 									}
@@ -519,7 +501,7 @@ export default function Signup() {
 										>
 											<span class="flex items-center gap-3">
 												<span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-xs font-bold text-white">
-													{accountType.value}
+													{accountType.value.slice(0, 1).toUpperCase()}
 												</span>
 												<span class="font-medium text-slate-800 dark:text-slate-100">
 													{accountType.label}
@@ -532,7 +514,7 @@ export default function Signup() {
 
 										{accountOpen ? (
 											<div class="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
-												{ACCOUNT_TYPES.map((item) => (
+												{PUBLIC_ACCOUNT_TYPES.map((item) => (
 													<button
 														key={item.value}
 														type="button"
@@ -546,7 +528,7 @@ export default function Signup() {
 														)}
 													>
 														<span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white dark:bg-white dark:text-slate-900">
-															{item.value}
+															{item.value.slice(0, 1).toUpperCase()}
 														</span>
 														<span class="font-medium text-slate-800 dark:text-slate-100">
 															{item.label}
@@ -557,6 +539,24 @@ export default function Signup() {
 										) : null}
 									</div>
 								</FieldShell>
+
+								{accountType.value === "factory" ? (
+									<FieldShell label="Factory sector">
+										<select
+											value={factorySector}
+											onChange={(e) => setFactorySector(e.target.value)}
+											class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-slate-500"
+											required={true}
+										>
+											<option value="">Select sector</option>
+											{FACTORY_SECTOR_OPTIONS.map((item) => (
+												<option key={item.value} value={item.value}>
+													{item.label}
+												</option>
+											))}
+										</select>
+									</FieldShell>
+								) : null}
 
 								<FieldShell label="Country">
 									<div class="relative" ref={countryDropdownRef}>

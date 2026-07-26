@@ -20,6 +20,7 @@ export const ROUTE_MANIFEST = [
 	"/call",
 	"/ratings/feedback",
 	"/support",
+	"/feedback",
 	"/member-management",
 	"/org-settings",
 	"/insights",
@@ -30,6 +31,8 @@ export const ROUTE_MANIFEST = [
 	"/admin",
 	"/admin/governance",
 	"/tasks",
+	"/verification",
+	"/verification-center",
 ];
 
 const ROUTE_PATTERNS = [
@@ -40,6 +43,9 @@ const ROUTE_PATTERNS = [
 	/^\/profile\/[^/]+$/,
 	/^\/[^/]+\/meow\/[^/]+\/SignupUltra$/,
 	/^\/org-settings\?.+$/,
+	/^\/join-requests\/[^/]+$/,
+	/^\/verification$/,
+	/^\/verification-center$/,
 ];
 
 export function isRouteValid(path) {

@@ -1,6 +1,5 @@
 import { login, register } from "../../server/controllers/authController.js";
 import authRoutes from "../../server/routes/authRoutes.js";
-import { readJson } from "../../server/utils/jsonStore.js";
 
 function createMockRes() {
 	return {
@@ -55,6 +54,8 @@ describe("auth routes and controller", () => {
 				email: "invalid-role@example.com",
 				password: "pw123456",
 				role: "hacker",
+				company_name: "Test Org",
+				profile: { country: "Bangladesh", position: "Owner" },
 			},
 		};
 		const res = createMockRes();
@@ -77,6 +78,8 @@ describe("auth routes and controller", () => {
 				email,
 				password,
 				role: "buyer",
+				company_name: "Auth Org",
+				profile: { country: "Bangladesh", position: "Owner" },
 			},
 		};
 		const registerRes = createMockRes();
@@ -99,8 +102,26 @@ describe("auth routes and controller", () => {
 		expect(loginRes.body?.user?.email).toBe(email);
 		expect(loginRes.body?.token).toBeTruthy();
 
-		const users = await readJson("users.json");
-		expect(users.some((u) => u.email === email)).toBe(true);
+	});
+
+	test("register rejects factory accounts without a sector", async () => {
+		process.env.NODE_ENV = "test";
+		const req = {
+			body: {
+				name: "Factory User",
+				email: "factory-no-sector@example.com",
+				password: "pw123456",
+				role: "factory",
+				company_name: "Factory Org",
+				profile: { country: "Bangladesh", position: "Owner" },
+			},
+		};
+		const res = createMockRes();
+
+		await register(req, res);
+
+		expect(res.statusCode).toBe(400);
+		expect(res.body).toEqual({ error: "Missing field: factory_sector" });
 	});
 });
 

@@ -189,7 +189,7 @@ export default function OnboardingWizard() {
 									<StepHeader
 										step={1}
 										title="Add your profile image"
-										subtitle="Optional. You can paste a URL or upload an image."
+										subtitle="Optional. Upload an image for your profile."
 									/>
 									<ProfileImageUpload
 										value={profileImage}

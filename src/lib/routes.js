@@ -20,6 +20,7 @@ export const ROUTES = {
 	CALL: "/call",
 	RATINGS_FEEDBACK: "/ratings/feedback",
 	SUPPORT: "/support",
+	FEEDBACK: "/feedback",
 	MEMBER_MANAGEMENT: "/member-management",
 	ORG_SETTINGS: "/org-settings",
 	INSIGHTS: "/insights",

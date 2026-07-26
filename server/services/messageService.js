@@ -15,6 +15,7 @@ import {
 import { upsertLeadFromMessage } from "./leadService.js";
 import { getOrgAiSettings } from "./orgAiService.js";
 import { assertMessagingAllowed, moderateTextOrRedactWithContext } from "./policyService.js";
+import { hasPendingRatingForCounterparty } from "./ratingsService.js";
 import { getRequirementById } from "./requirementService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
 
@@ -323,6 +324,30 @@ export async function postMessage(
 		throw err;
 	}
 
+	let recipientId = null;
+	if (String(matchId).startsWith("friend:")) {
+		const pair = parseFriendMatchId(matchId);
+		if (pair) {
+			recipientId = String(pair[0]) === String(senderId) ? pair[1] : pair[0];
+		}
+	} else {
+		const parts = String(matchId).split(":");
+		if (parts.length === 2) {
+			const supplierId = parts[1];
+			const requestId = parts[0];
+			if (requestId) {
+				const requirement = await getRequirementById(requestId);
+				if (requirement) {
+					if (String(senderId) === supplierId) {
+						recipientId = requirement.buyer_id;
+					} else if (String(senderId) === (requirement.buyer_id || "")) {
+						recipientId = supplierId;
+					}
+				}
+			}
+		}
+	}
+
 	const usersById = new Map();
 	usersById.set(sender.id, sender);
 	if (sender.org_owner_id) {
@@ -429,6 +454,41 @@ export async function postMessage(
 	}
 
 	await enforceConversationLock(matchId, sender);
+
+	if (!String(matchId).startsWith("friend:") && recipientId) {
+		const parts = String(matchId).split(":");
+		if (parts.length === 2) {
+			const [requestId, supplierId] = parts;
+			if (requestId) {
+				const requirement = await getRequirementById(requestId);
+				if (requirement && requirement.buyer_id) {
+					const buyerId = requirement.buyer_id;
+					const signedContract = await prisma.document.findFirst({
+						where: {
+							entity_type: "contract",
+							OR: [
+								{ buyer_id: buyerId, factory_id: supplierId },
+								{ buyer_id: supplierId, factory_id: buyerId },
+							],
+							buyer_signature_state: "signed",
+							factory_signature_state: "signed",
+						},
+					});
+					if (signedContract) {
+						const hasPending = await hasPendingRatingForCounterparty(buyerId, supplierId);
+						if (!hasPending) {
+							const err = new Error(
+								"Rating required before sending messages after a completed transaction",
+							);
+							err.status = 403;
+							err.code = "RATING_REQUIRED";
+							throw err;
+						}
+					}
+				}
+			}
+		}
+	}
 
 	const policyResult = await evaluateMessagePolicy({
 		sender,

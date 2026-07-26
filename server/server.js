@@ -34,6 +34,8 @@ import geoRoutes from "./routes/geoRoutes.js";
 import industryRoutes from "./routes/industryRoutes.js";
 import infraRoutes from "./routes/infraRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
+import joinRequestRoutes from "./routes/joinRequestRoutes.js";
+import licenseRequestRoutes from "./routes/licenseRequestRoutes.js";
 import linkPreviewRoutes from "./routes/linkPreviewRoutes.js";
 import memberRoutes from "./routes/memberRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
@@ -49,6 +51,7 @@ import productRoutes from "./routes/productRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import qdrantRoutes from "./routes/qdrantRoutes.js";
 import ratingsRoutes from "./routes/ratingsRoutes.js";
+import relationshipRoutes from "./routes/relationshipRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import requirementRoutes from "./routes/requirementRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
@@ -72,6 +75,7 @@ import { getFxHealth, refreshRates } from "./services/currencyService.js";
 import { startEsignWebhookRetryWorker } from "./services/esignRetryService.js";
 import { startEventQualityReporter } from "./services/eventIngestionService.js";
 import { runLeadReminderSweep } from "./services/leadReminderService.js";
+import { runJoinRequestReminderSweep } from "./services/companyJoinService.js";
 import { canAccessMatch, listMessagesByMatch, postMessage } from "./services/messageService.js";
 import { startOpenSearchHeartbeat } from "./services/openSearchService.js";
 import { enforcePartnerFreeTierLimits } from "./services/partnerNetworkService.js";
@@ -121,6 +125,11 @@ refreshRates().catch(() => null);
 setInterval(() => {
 	refreshRates().catch(() => null);
 }, FX_REFRESH_INTERVAL_MS).unref();
+
+runJoinRequestReminderSweep().catch(() => null);
+setInterval(() => {
+	runJoinRequestReminderSweep().catch(() => null);
+}, 30 * 60 * 1000).unref();
 
 startEventQualityReporter();
 
@@ -278,8 +287,11 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/leads", leadRoutes);
+app.use("/api/relationships", relationshipRoutes);
 app.use("/api/system", systemRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/join-requests", joinRequestRoutes);
+app.use("/api/license-requests", licenseRequestRoutes);
 app.use("/api/social", socialRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/qdrant", qdrantRoutes);

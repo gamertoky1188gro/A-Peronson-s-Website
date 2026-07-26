@@ -303,7 +303,7 @@ export default function OnboardingPage() {
 											<div>
 												<h3 class="text-xl font-semibold">Add your profile image</h3>
 												<p class="text-sm text-slate-500 dark:text-slate-400">
-													Optional. You can paste a URL or upload an image.
+													Optional. Upload an image for your profile.
 												</p>
 											</div>
 										</div>

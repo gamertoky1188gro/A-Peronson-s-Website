@@ -68,6 +68,20 @@ const TABS = [
 const TYPE_LABELS = {
 	smart_search_match: "Search Match",
 	partner_request: "Connection Request",
+	join_request: "Join Request",
+	join_request_reminder: "Join Reminder",
+	join_request_approved: "Join Approved",
+	join_request_rejected: "Join Rejected",
+	duplicate_company_detected: "Duplicate Detected",
+	duplicate_dispute: "Duplicate Dispute",
+	duplicate_dispute_resolved: "Dispute Resolved",
+	relationship_request: "Relationship Request",
+	relationship_confirmed: "Relationship Confirmed",
+	relationship_rejected: "Relationship Rejected",
+	license_request: "License Request",
+	license_request_fulfilled: "License Received",
+	license_request_rejected: "License Request Rejected",
+
 	conversation_lock: "Conversation Lock",
 	rating_feedback_request: "Rating Request",
 	monthly_summary: "Monthly Summary",
@@ -77,6 +91,15 @@ const TYPE_LABELS = {
 function feedLinkForEntity(entityType, entityId) {
 	if (!(entityType && entityId)) {
 		return "/feed";
+	}
+	if (entityType === "join_request") {
+		return `/join-requests/${encodeURIComponent(entityId)}`;
+	}
+	if (entityType === "duplicate_dispute") {
+		return "/admin";
+	}
+	if (entityType === "verification") {
+		return "/admin";
 	}
 	return `/feed?item=${encodeURIComponent(`${entityType}:${entityId}`)}`;
 }
@@ -965,7 +988,14 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 						</Link>
 					) : item.entity_type ? (
 						<Link
-							to={feedLinkForEntity(item.entity_type, item.entity_id)}
+							to={
+								item.entity_type === "join_request"
+									? feedLinkForEntity(
+											item.entity_type,
+											item?.meta?.request_id || item.id || item.entity_id,
+										)
+									: feedLinkForEntity(item.entity_type, item.entity_id)
+							}
 							class="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
 						>
 							View

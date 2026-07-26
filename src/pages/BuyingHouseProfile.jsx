@@ -383,6 +383,7 @@ export default function BuyingHouseProfile() {
 		comment: "",
 	});
 	const [reviewDeleteId, setReviewDeleteId] = useState(null);
+	const [relationshipFeedback, setRelationshipFeedback] = useState(null);
 	const viewerPerms = profile?.viewer_permissions || {
 		is_self: false,
 		is_admin: false,
@@ -747,6 +748,42 @@ export default function BuyingHouseProfile() {
 		}
 	}
 
+	async function requestRelationship() {
+		if (!id) {
+			return;
+		}
+		setRelationshipFeedback(null);
+		try {
+			const tokenValue = getToken();
+			await apiRequest("/relationships", {
+				method: "POST",
+				token: tokenValue,
+				body: { recipient_id: id, recipient_type: "user" },
+			});
+			setRelationshipFeedback("Business relationship request sent.");
+		} catch (err) {
+			setRelationshipFeedback(err.message || "Failed to send relationship request.");
+		}
+	}
+
+	async function requestLicense() {
+		if (!id) {
+			return;
+		}
+		setRelationshipFeedback(null);
+		try {
+			const tokenValue = getToken();
+			await apiRequest("/license-requests", {
+				method: "POST",
+				token: tokenValue,
+				body: { recipient_id: id, license_name: user?.profile?.industry || "General" },
+			});
+			setRelationshipFeedback("License request sent.");
+		} catch (err) {
+			setRelationshipFeedback(err.message || "Failed to send license request.");
+		}
+	}
+
 	const canRequestPartner =
 		viewer && ["factory", "buying_house", "admin"].includes(viewer.role) && !viewerPerms.is_self;
 
@@ -913,6 +950,19 @@ export default function BuyingHouseProfile() {
 										</ActionButton>
 									) : null}
 									{notice ? <p class="text-xs text-sky-600">{notice}</p> : null}
+									{viewer?.id === user?.id ? null : (
+										<>
+											<ActionButton icon={Handshake} variant="soft" onClick={requestRelationship}>
+												Confirm Business Relationship
+											</ActionButton>
+											<ActionButton icon={ShieldCheck} variant="soft" onClick={requestLicense}>
+												Request License
+											</ActionButton>
+										</>
+									)}
+									{relationshipFeedback ? (
+										<p class="w-full text-xs text-sky-600">{relationshipFeedback}</p>
+									) : null}
 								</div>
 							</div>
 						</div>

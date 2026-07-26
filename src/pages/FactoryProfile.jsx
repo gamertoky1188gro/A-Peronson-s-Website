@@ -45,6 +45,7 @@ import {
 	ExternalLink,
 	Eye,
 	Factory,
+	Handshake,
 	Landmark,
 	MapPin,
 	MessageSquare,
@@ -533,6 +534,42 @@ export default function FactoryProfile() {
 		});
 	}
 
+	async function requestRelationship() {
+		if (!id) {
+			return;
+		}
+		setFeedback(null);
+		try {
+			const tokenValue = getToken();
+			await apiRequest("/relationships", {
+				method: "POST",
+				token: tokenValue,
+				body: { recipient_id: id, recipient_type: "user" },
+			});
+			setFeedback("Business relationship request sent.");
+		} catch (err) {
+			setFeedback(err.message || "Failed to send relationship request.");
+		}
+	}
+
+	async function requestLicense() {
+		if (!id) {
+			return;
+		}
+		setFeedback(null);
+		try {
+			const tokenValue = getToken();
+			await apiRequest("/license-requests", {
+				method: "POST",
+				token: tokenValue,
+				body: { recipient_id: id, license_name: user?.profile?.industry || "General" },
+			});
+			setFeedback("License request sent.");
+		} catch (err) {
+			setFeedback(err.message || "Failed to send license request.");
+		}
+	}
+
 	const visibleVideos = useMemo(() => {
 		if (viewerPerms.is_self || viewerPerms.is_admin) {
 			return products.filter((p) => p.video_url);
@@ -546,6 +583,7 @@ export default function FactoryProfile() {
 		comment: "",
 	});
 	const [reviewDeleteId, setReviewDeleteId] = useState(null);
+	const [feedback, setFeedback] = useState(null);
 	const isBoosted = Boolean(profileBoost);
 
 	if (loading) {
@@ -672,6 +710,25 @@ export default function FactoryProfile() {
 													: "Connect"}
 										</button>
 									</div>
+									{currentUser?.id === user?.id ? null : (
+										<div class="mt-3 flex flex-wrap gap-2">
+											<button
+												onClick={requestRelationship}
+												class="inline-flex items-center gap-2 rounded-2xl border border-emerald-400/40 bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-500/30 dark:text-emerald-300"
+											>
+												<Handshake class="h-4 w-4" /> Confirm Business Relationship
+											</button>
+											<button
+												onClick={requestLicense}
+												class="inline-flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-700 transition hover:-translate-y-0.5 hover:bg-amber-500/30 dark:text-amber-300"
+											>
+												<ShieldCheck class="h-4 w-4" /> Request License
+											</button>
+										</div>
+									)}
+									{feedback ? (
+										<p class="mt-2 text-xs text-sky-600 dark:text-sky-400">{feedback}</p>
+									) : null}
 								</div>
 							</div>
 							<div class="mt-4 grid gap-3">

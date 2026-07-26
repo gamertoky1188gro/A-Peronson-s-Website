@@ -1060,6 +1060,7 @@ export default function ChatInterface() {
 						<Download size={12} />
 						Download
 					</button>
+				</div>
 			);
 		}
 
@@ -1090,7 +1091,6 @@ export default function ChatInterface() {
 							</div>
 						</div>
 					</button>
-					<a
 <button
 						type="button"
 						onClick={() => handleDownloadWithMetadata(message)}
@@ -1099,6 +1099,8 @@ export default function ChatInterface() {
 						<Download size={12} />
 						Download
 					</button>
+				</div>
+			);
 		}
 
 		if (message?.attachment?.url) {

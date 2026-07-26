@@ -16,6 +16,7 @@ import {
 	verifyPassword,
 } from "../services/userService.js";
 import { assertCouponRedeemable } from "../services/walletService.js";
+import { isValidFactorySector } from "../../shared/config/platformTaxonomy.js";
 import { requireFields, validateEmail, validatePublicRole } from "../utils/validators.js";
 
 function sanitizeUser(user) {
@@ -53,6 +54,12 @@ export async function register(req, res) {
 	}
 	if (!req.body.profile?.position) {
 		return res.status(400).json({ error: "Missing field: position" });
+	}
+	if (req.body.role === "factory" && !req.body.profile?.factory_sector) {
+		return res.status(400).json({ error: "Missing field: factory_sector" });
+	}
+	if (req.body.profile?.factory_sector && !isValidFactorySector(req.body.profile.factory_sector)) {
+		return res.status(400).json({ error: "Invalid factory sector" });
 	}
 
 	const existing = await findUserByEmail(req.body.email);

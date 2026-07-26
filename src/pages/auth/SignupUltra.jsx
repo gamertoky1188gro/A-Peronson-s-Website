@@ -1,10 +1,15 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import NeonAtom from "../../components/ui/NeonAtom.jsx";
 import { apiRequest, getRoleHome, saveSession } from "../../lib/auth.js";
 import usePageMeta from "../../lib/usePageMeta.js";
+import {
+	COUNTRY_OPTIONS,
+	ELEVATED_ACCOUNT_TYPES,
+	FACTORY_SECTOR_OPTIONS,
+} from "../../../shared/config/platformTaxonomy.js";
 
 const POSITIONS = [
 	"Owner",
@@ -84,6 +89,7 @@ export default function SignupUltra() {
 		country: "",
 		organization: "",
 		position: "",
+		factorySector: "",
 	});
 	const [passwordVisible, setPasswordVisible] = useState(false);
 	const [confirmVisible, setConfirmVisible] = useState(false);
@@ -93,6 +99,12 @@ export default function SignupUltra() {
 	}
 
 	const onChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+	useEffect(() => {
+		if (form.role !== "factory" && form.factorySector) {
+			onChange("factorySector", "");
+		}
+	}, [form.role, form.factorySector]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -108,6 +120,11 @@ export default function SignupUltra() {
 			setError("Please enter your organization name.");
 			return;
 		}
+		if (form.role === "factory" && !form.factorySector) {
+			setLoading(false);
+			setError("Please select whether the factory is Garments or Textile.");
+			return;
+		}
 		if (form.password !== form.confirmPassword) {
 			setLoading(false);
 			setError("Passwords do not match.");
@@ -120,7 +137,11 @@ export default function SignupUltra() {
 				password: form.password,
 				role: form.role,
 				company_name: form.organization,
-				profile: { country: form.country, position: form.position },
+				profile: {
+					country: form.country,
+					position: form.position,
+					factory_sector: form.factorySector,
+				},
 			};
 
 			const data = await apiRequest("/auth/register", {
@@ -240,24 +261,30 @@ export default function SignupUltra() {
 								value={form.role}
 								onChange={(e) => onChange("role", e.target.value)}
 							>
-								<option value="admin">Administrator</option>
-								<option value="owner">System Owner</option>
-								<option value="agent">Operational Agent</option>
-								<option value="buying_house">Buying House (Root)</option>
-								<option value="factory">Factory (Root)</option>
-								<option value="buyer">Buyer (Root)</option>
+								{ELEVATED_ACCOUNT_TYPES.map((item) => (
+									<option key={item.value} value={item.value}>
+										{item.label}
+									</option>
+								))}
 							</select>
 						</div>
 						<div>
 							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								HQ Country
 							</label>
-							<input
+							<select
 								class="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
 								value={form.country}
 								onChange={(e) => onChange("country", e.target.value)}
 								required={true}
-							/>
+							>
+								<option value="">Select country</option>
+								{COUNTRY_OPTIONS.map((country) => (
+									<option key={country} value={country}>
+										{country}
+									</option>
+								))}
+							</select>
 						</div>
 						<div>
 							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
@@ -288,6 +315,27 @@ export default function SignupUltra() {
 								))}
 							</select>
 						</div>
+
+						{form.role === "factory" ? (
+							<div class="md:col-span-2">
+								<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+									Factory sector
+								</label>
+								<select
+									class="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
+									value={form.factorySector}
+									onChange={(e) => onChange("factorySector", e.target.value)}
+									required={true}
+								>
+									<option value="">Select sector</option>
+									{FACTORY_SECTOR_OPTIONS.map((item) => (
+										<option key={item.value} value={item.value}>
+											{item.label}
+										</option>
+									))}
+								</select>
+							</div>
+						) : null}
 
 						<div class="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[#0a3d78] leading-relaxed shadow-borderless dark:shadow-borderlessDark dark:bg-[#0a1a33] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">
 							<p class="font-bold mb-1 underline">⚠️ Security Notice:</p>

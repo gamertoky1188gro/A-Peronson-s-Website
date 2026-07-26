@@ -789,6 +789,7 @@ export default function AdminPanel() {
 	const [signups, setSignups] = useState([]);
 	const [strikeHistory, setStrikeHistory] = useState([]);
 	const [fraudReview, setFraudReview] = useState({ items: [], duplicates: [] });
+	const [duplicateDisputes, setDuplicateDisputes] = useState([]);
 	const [orgOwnership, setOrgOwnership] = useState({
 		orgs: [],
 		staff_list: [],
@@ -1224,6 +1225,7 @@ export default function AdminPanel() {
 				fraudData,
 				orgOwnershipData,
 				walletLedgerData,
+				disputeData,
 			] = await Promise.all([
 				apiRequest("/admin/master", { token, headers }),
 				apiRequest("/admin/users", { token, headers }),
@@ -1248,6 +1250,7 @@ export default function AdminPanel() {
 				apiRequest("/admin/fraud/verification", { token, headers }),
 				apiRequest("/admin/orgs/ownership", { token, headers }),
 				apiRequest("/admin/wallet/ledger", { token, headers }),
+				apiRequest("/join-requests/disputes/all", { token, headers }).catch(() => ({ items: [] })),
 			]);
 			setMaster(masterData || null);
 			setUsers(Array.isArray(userRows) ? userRows : []);
@@ -1281,6 +1284,7 @@ export default function AdminPanel() {
 			});
 			setOrgOwnership(orgOwnershipData || { orgs: [], staff_list: [] });
 			setWalletLedger(Array.isArray(walletLedgerData?.items) ? walletLedgerData.items : []);
+			setDuplicateDisputes(Array.isArray(disputeData?.items) ? disputeData.items : []);
 			setSecurityGateOpen(false);
 			setSecurityGateMessage("");
 			setSecurityGateNotice("");
@@ -2575,6 +2579,31 @@ export default function AdminPanel() {
 		});
 	}
 
+	async function refreshDuplicateDisputes() {
+		const token = getToken();
+		if (!token) {
+			return;
+		}
+		const headers = buildAdminHeaders();
+		const data = await apiRequest("/join-requests/disputes/all", { token, headers });
+		setDuplicateDisputes(Array.isArray(data?.items) ? data.items : []);
+	}
+
+	async function resolveDuplicateDispute(disputeId, action, reason) {
+		const token = getToken();
+		if (!token) {
+			return;
+		}
+		const headers = buildAdminHeaders();
+		await apiRequest(`/join-requests/disputes/${disputeId}/resolve`, {
+			method: "POST",
+			token,
+			headers,
+			body: { action, reason },
+		});
+		await refreshDuplicateDisputes();
+	}
+
 	async function refreshOrgOwnership() {
 		const token = getToken();
 		if (!token) {
@@ -3183,9 +3212,13 @@ export default function AdminPanel() {
 													couponReport={couponReport}
 													signups={signups}
 													strikeHistory={strikeHistory}
-													fraudReview={fraudReview}
-													orgOwnership={orgOwnership}
-													policyQueueItems={policyQueueItems}
+												fraudReview={fraudReview}
+												orgOwnership={orgOwnership}
+												duplicateDisputes={duplicateDisputes}
+												setDuplicateDisputes={setDuplicateDisputes}
+												refreshDuplicateDisputes={refreshDuplicateDisputes}
+												resolveDuplicateDispute={resolveDuplicateDispute}
+												policyQueueItems={policyQueueItems}
 													policyReviewRows={policyReviewRows}
 													policyMetrics={policyMetrics}
 													reputationSenderId={reputationSenderId}

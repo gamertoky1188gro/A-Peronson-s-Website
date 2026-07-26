@@ -165,6 +165,7 @@ const navigationGroups = [
 		icon: Settings,
 		items: [
 			{ to: "/support", label: "Support" },
+			{ to: "/feedback", label: "Feedback" },
 			{
 				to: "/onboarding",
 				label: "Onboarding",

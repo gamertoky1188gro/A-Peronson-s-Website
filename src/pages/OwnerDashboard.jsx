@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Mosaic } from "react-loading-indicators";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import CountUp from "../components/CountUp.jsx";
 import HoverCard from "../components/HoverCard.jsx";
 import LeadManager from "../components/leads/LeadManager.jsx";
@@ -198,11 +198,17 @@ const quickActions = [
 
 export default function OwnerDashboard() {
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
+	const PATH_TAB_MAP = {
+		"/contracts": "contracts",
+		"/leads": "leads",
+		"/verification": "verification",
+	};
 	const active = useMemo(() => {
-		const candidate = searchParams.get("tab") || "home";
+		const candidate = searchParams.get("tab") || PATH_TAB_MAP[location.pathname] || "home";
 		return menuItems.some((t) => t.id === candidate) ? candidate : "home";
-	}, [searchParams]);
+	}, [searchParams, location.pathname]);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const goTab = useCallback(
 		(id) => {

@@ -396,6 +396,7 @@ export async function registerUser(payload) {
 				: [],
 			bank_proof: sanitizeString(payload.profile?.bank_proof || "", 200),
 			export_license: sanitizeString(payload.profile?.export_license || "", 160),
+			factory_sector: sanitizeString(payload.profile?.factory_sector || "", 40).toLowerCase(),
 			monthly_capacity: sanitizeString(payload.profile?.monthly_capacity || "", 80),
 			moq: sanitizeString(payload.profile?.moq || "", 40),
 			lead_time_days: sanitizeString(payload.profile?.lead_time_days || "", 40),
@@ -410,38 +411,58 @@ export async function registerUser(payload) {
 		},
 	};
 
-	await prisma.user.create({ data: user });
-	await upsertSubscription(user.id, user.subscription_status, true, {
-		actor_id: user.id,
-		source: "system",
-		note: "user_created",
-	});
-	// project.md: auto $5 restricted credit for all new accounts (configurable).
 	try {
-		const config = await getAdminConfig();
-		if (config?.feature_flags?.auto_credit !== false) {
-			await creditWallet({
-				userId: user.id,
-				amountUsd: 5,
-				reason: "auto_credit",
-				ref: `auto-credit:${user.id}`,
-				restricted: true,
-				metadata: { source: "signup" },
-			});
+		await prisma.user.create({ data: user });
+	} catch (error) {
+		if (error?.code === "P2002") {
+			const duplicate = new Error("Email already used");
+			duplicate.status = 409;
+			throw duplicate;
 		}
-	} catch {
-		// non-blocking: auto-credit failures should not block signup
+		throw error;
 	}
-	if (payload?.coupon_code) {
-		await redeemCouponForUser({ userId: user.id, code: payload.coupon_code });
-	}
+	void (async () => {
+		try {
+			await upsertSubscription(user.id, user.subscription_status, true, {
+				actor_id: user.id,
+				source: "system",
+				note: "user_created",
+			});
+		} catch {
+			// non-blocking: subscription setup should not block signup
+		}
 
-	try {
-		const { createUserOpencodeSession } = await import("./assistantService.js");
-		await createUserOpencodeSession(user.id);
-	} catch {
-		// non-blocking: session creation should not block signup
-	}
+		try {
+			const config = await getAdminConfig();
+			if (config?.feature_flags?.auto_credit !== false) {
+				await creditWallet({
+					userId: user.id,
+					amountUsd: 5,
+					reason: "auto_credit",
+					ref: `auto-credit:${user.id}`,
+					restricted: true,
+					metadata: { source: "signup" },
+				});
+			}
+		} catch {
+			// non-blocking: auto-credit failures should not block signup
+		}
+
+		if (payload?.coupon_code) {
+			try {
+				await redeemCouponForUser({ userId: user.id, code: payload.coupon_code });
+			} catch {
+				// non-blocking: coupon fulfillment should not block signup
+			}
+		}
+
+		try {
+			const { createUserOpencodeSession } = await import("./assistantService.js");
+			await createUserOpencodeSession(user.id);
+		} catch {
+			// non-blocking: session creation should not block signup
+		}
+	})();
 
 	return cleanUser(user);
 }

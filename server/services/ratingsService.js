@@ -599,46 +599,23 @@ export async function getProfileRatingsSummary(profileKey) {
 	};
 }
 
-export async function updateRating({ ratingId, actorId, score, comment }) {
-	const rating = await prisma.rating.findUnique({
-		where: { id: String(ratingId) },
+export async function hasPendingRatingForCounterparty(userId, counterpartyId) {
+	const profileKey = `user:${sanitizeString(String(userId), 120)}`;
+	const normalizedCounterparty = sanitizeString(String(counterpartyId), 120);
+
+	if (!(profileKey && normalizedCounterparty)) {
+		return false;
+	}
+
+	const pending = await prisma.ratingFeedbackRequest.findFirst({
+		where: {
+			profile_key: profileKey,
+			counterparty_id: normalizedCounterparty,
+			status: "pending",
+		},
 	});
-	if (!rating) {
-		return null;
-	}
-	if (String(rating.from_user_id) !== String(actorId)) {
-		const err = new Error("Only the reviewer can edit this rating");
-		err.status = 403;
-		throw err;
-	}
 
-	const nextScore =
-		score === undefined
-			? rating.score
-			: Math.min(5, Math.max(1, Math.round(safeNumber(score, rating.score || 0))));
-	const nextComment = comment === undefined ? rating.comment : sanitizeString(comment, 500);
-
-	return prisma.rating.update({
-		where: { id: String(ratingId) },
-		data: { score: nextScore, comment: nextComment },
-	});
-}
-
-export async function deleteRating({ ratingId, actorId }) {
-	const rating = await prisma.rating.findUnique({
-		where: { id: String(ratingId) },
-	});
-	if (!rating) {
-		return null;
-	}
-	if (String(rating.from_user_id) !== String(actorId)) {
-		const err = new Error("Only the reviewer can delete this rating");
-		err.status = 403;
-		throw err;
-	}
-
-	await prisma.rating.delete({ where: { id: String(ratingId) } });
-	return rating;
+	return pending !== null;
 }
 
 export async function getRatingsForProfiles(profileKeys = []) {

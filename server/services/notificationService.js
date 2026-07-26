@@ -5,7 +5,7 @@ import { sanitizeString } from "../utils/validators.js";
 
 export async function createNotification(userId, payload = {}) {
 	const row = {
-		id: crypto.randomUUID(),
+		id: sanitizeString(String(payload.id || crypto.randomUUID()), 120),
 		user_id: sanitizeString(String(userId || ""), 120),
 		type: sanitizeString(payload.type || "system", 64),
 		entity_type: sanitizeString(payload.entity_type || "", 64),

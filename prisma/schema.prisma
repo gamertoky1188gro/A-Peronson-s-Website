@@ -527,6 +527,35 @@ model PartnerRequest {
   @@map("partner_requests")
 }
 
+model BusinessRelationship {
+  id              String    @id
+  buyer_id        String
+  counterparty_id String
+  status          String    @default("pending")
+  confirmed_at    DateTime?
+  created_at      DateTime  @default(now())
+
+  @@index([buyer_id, counterparty_id])
+  @@index([buyer_id])
+  @@index([counterparty_id])
+  @@map("business_relationships")
+}
+
+model LicenseRequest {
+  id               String    @id
+  requester_id     String
+  recipient_id     String
+  license_name     String
+  status           String    @default("pending")
+  uploaded_file_url String?
+  created_at       DateTime  @default(now())
+  responded_at     DateTime?
+
+  @@index([requester_id])
+  @@index([recipient_id, status])
+  @@map("license_requests")
+}
+
 model CallSession {
   id                String           @id
   created_by        String

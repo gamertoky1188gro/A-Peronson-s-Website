@@ -47,6 +47,10 @@ export function AdminPlatformSection({
 	setFraudReview,
 	orgOwnership,
 	setOrgOwnership,
+	duplicateDisputes,
+	setDuplicateDisputes,
+	refreshDuplicateDisputes,
+	resolveDuplicateDispute,
 	policyQueueItems,
 	setPolicyQueueItems,
 	policyReviewRows,
@@ -936,6 +940,69 @@ export function AdminPlatformSection({
 							))}
 							{fraudReview.items.length === 0 ? (
 								<div class="text-[11px] text-slate-400">No fraud flags.</div>
+							) : null}
+						</div>
+					</div>
+
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
+							<div>
+								<p class="text-sm font-bold">Duplicate Disputes</p>
+								<p class="text-xs text-slate-500">Users disputing duplicate company flags.</p>
+							</div>
+							<button
+								type="button"
+								onClick={() => refreshDuplicateDisputes()}
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+							>
+								Refresh
+							</button>
+						</div>
+						<div class="mt-3 text-[11px] text-slate-500">
+							Pending disputes: {duplicateDisputes.length || 0}
+						</div>
+						<div class="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+							{duplicateDisputes.slice(0, 6).map((row) => {
+								const meta = row.meta || {};
+								return (
+									<div
+										key={row.id}
+										class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 space-y-2"
+									>
+										<div class="flex items-center justify-between gap-2">
+											<div>
+												<span class="font-semibold">{meta.applicant_name || meta.applicant_id}</span>
+												<span class="text-slate-400"> disputes flag with company </span>
+												<span class="font-semibold">{meta.company_user_id}</span>
+											</div>
+											<span class="text-[10px] text-slate-400">
+												{meta.created_at ? new Date(meta.created_at).toLocaleDateString() : "--"}
+											</span>
+										</div>
+										<div class="flex gap-2">
+											<button
+												onClick={() => resolveDuplicateDispute(row.id, "approve_applicant", "Dispute resolved: not a duplicate")}
+												class="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-600 hover:bg-emerald-500/20"
+											>
+												Not a duplicate
+											</button>
+											<button
+												onClick={() => {
+													const reason = prompt("Reason for confirming duplicate:");
+													if (reason !== null) {
+														resolveDuplicateDispute(row.id, "confirm_duplicate", reason);
+													}
+												}}
+												class="rounded-lg bg-rose-500/10 px-2 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-500/20"
+											>
+												Confirm duplicate
+											</button>
+										</div>
+									</div>
+								);
+							})}
+							{duplicateDisputes.length === 0 ? (
+								<div class="text-[11px] text-slate-400">No pending disputes.</div>
 							) : null}
 						</div>
 					</div>

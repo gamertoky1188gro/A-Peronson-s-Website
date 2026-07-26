@@ -35,11 +35,17 @@ import {
 	Star,
 	Sun,
 	Upload,
+	Users,
 	X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
-import { BUYER_COUNTRY_OPTIONS, isEuCountry } from "../../shared/config/geo.js";
+import {
+	BUYER_COUNTRY_OPTIONS,
+	VERIFICATION_FIELD_LABELS,
+	VERIFICATION_REQUIREMENTS,
+	getBuyerRegionFromCountry,
+} from "../../shared/config/platformTaxonomy.js";
 import ScrollReveal from "../components/ScrollReveal.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import UploadProgressBar from "../components/ui/UploadProgressBar.jsx";
@@ -48,62 +54,8 @@ import { apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/au
 import { useTheme } from "../lib/ThemeProvider.jsx";
 import { uploadFile } from "../lib/upload.js";
 
-const LABELS = {
-	company_registration: "Company Registration",
-	trade_license: "Trade License",
-	tin: "TIN (Tax Identification Number)",
-	authorized_person_nid: "Authorized Person NID",
-	bank_proof: "Company Bank Proof",
-	erc: "ERC (Export Registration Certificate)",
-
-	vat: "VAT Number",
-	eori: "EORI (Economic Operators Registration and Identification)",
-	ein: "EIN (Employer Identification Number)",
-	ior: "IOR (Importer of Record)",
-};
-
-const REQUIRED_BY_ROLE = {
-	factory: [
-		"company_registration",
-		"trade_license",
-		"tin",
-		"authorized_person_nid",
-		"bank_proof",
-		"erc",
-	],
-	buying_house: [
-		"company_registration",
-		"trade_license",
-		"tin",
-		"authorized_person_nid",
-		"bank_proof",
-	],
-};
-
-const REQUIRED_BUYER_BY_REGION = {
-	EU: ["company_registration", "vat", "eori", "bank_proof"],
-	USA: ["company_registration", "ein", "ior", "bank_proof"],
-	OTHER: ["company_registration", "bank_proof"],
-};
-
 function normalizeBuyerRegionFromCountry(country) {
-	const value = String(country || "").trim();
-	if (!value) {
-		return "OTHER";
-	}
-	if (isEuCountry(value)) {
-		return "EU";
-	}
-	const upper = value.toUpperCase();
-	if (
-		upper === "USA" ||
-		upper === "US" ||
-		upper === "UNITED STATES" ||
-		upper === "UNITED STATES OF AMERICA"
-	) {
-		return "USA";
-	}
-	return "OTHER";
+	return getBuyerRegionFromCountry(country);
 }
 
 export default function VerificationPage({ embedded = false }) {
@@ -129,9 +81,40 @@ export default function VerificationPage({ embedded = false }) {
 	});
 	const [code, setCode] = useState("");
 	const [verifyingCode, setVerifyingCode] = useState(false);
+	const [duplicatePrompt, setDuplicatePrompt] = useState(null);
+	const [joiningCompany, setJoiningCompany] = useState(false);
+	const [joinFeedback, setJoinFeedback] = useState("");
+	const [joinName, setJoinName] = useState("");
+	const [joinEmail, setJoinEmail] = useState("");
+	const [joinPosition, setJoinPosition] = useState("");
+	const [joinMessage, setJoinMessage] = useState("");
+	const [disputingDuplicate, setDisputingDuplicate] = useState(false);
 
 	const fileInputRef = useRef(null);
 	const pendingDocRef = useRef("");
+
+	function handleDuplicateResult(result) {
+		const tier = String(result?.duplicate_match_tier || result?.duplicate_candidate?.match?.tier || "").toLowerCase();
+		if (!["exact", "strong"].includes(tier)) {
+			return;
+		}
+		const candidate = result?.duplicate_candidate || null;
+		if (!candidate) {
+			return;
+		}
+		setDuplicatePrompt({
+			tier,
+			company_id: candidate.user_id || "",
+			name: candidate.name || candidate.company_name || "Verified Company",
+			logo: candidate.logo || "",
+			banner: candidate.banner || "",
+			email: candidate.email || "",
+			country: candidate.country || "",
+			website: candidate.website || "",
+			matchReason: candidate.match?.reason || "",
+			matchedFields: Array.isArray(candidate.match?.matched_fields) ? candidate.match.matched_fields : [],
+		});
+	}
 
 	const buyerRegion = useMemo(() => {
 		if (role !== "buyer") {
@@ -142,9 +125,9 @@ export default function VerificationPage({ embedded = false }) {
 
 	const requiredDocs = useMemo(() => {
 		if (role === "buyer") {
-			return REQUIRED_BUYER_BY_REGION[buyerRegion] || REQUIRED_BUYER_BY_REGION.OTHER;
+			return VERIFICATION_REQUIREMENTS.buyer[buyerRegion] || VERIFICATION_REQUIREMENTS.buyer.OTHER;
 		}
-		return REQUIRED_BY_ROLE[role] || [];
+		return VERIFICATION_REQUIREMENTS[role] || [];
 	}, [buyerRegion, role]);
 
 	const documents = verification?.documents || {};
@@ -305,13 +288,16 @@ export default function VerificationPage({ embedded = false }) {
 					: {}),
 			};
 
-			await apiRequest("/verification/me", {
+			const updated = await apiRequest("/verification/me", {
 				method: "POST",
 				token,
 				body: { documents: updatedDocs },
 			});
-			setVerification((prev) => ({ ...(prev || {}), documents: updatedDocs }));
-			setFeedback(`${LABELS[documentKey] || documentKey} uploaded and verification state updated.`);
+			setVerification(updated);
+			setFeedback(
+				`${VERIFICATION_FIELD_LABELS[documentKey] || documentKey} uploaded and verification state updated.`,
+			);
+			handleDuplicateResult(updated);
 		} catch (err) {
 			setError(err.message || "Upload failed");
 		} finally {
@@ -363,6 +349,7 @@ export default function VerificationPage({ embedded = false }) {
 				throw new Error(updated.error);
 			}
 			setVerification(updated);
+			handleDuplicateResult(updated);
 			setFeedback("Optional license saved.");
 		} catch (err) {
 			setError(err.message || "Could not save optional license");
@@ -392,9 +379,74 @@ export default function VerificationPage({ embedded = false }) {
 				body: { documents: updatedDocs },
 			});
 			setVerification(updated);
+			handleDuplicateResult(updated);
 			setFeedback("Optional license removed.");
 		} catch (err) {
 			setError(err.message || "Could not remove optional license");
+		}
+	}
+
+	async function requestJoinFromDuplicate() {
+		if (!(token && duplicatePrompt?.company_id)) {
+			return;
+		}
+		setJoiningCompany(true);
+		setError("");
+		setJoinFeedback("");
+		try {
+			const res = await apiRequest("/join-requests", {
+				method: "POST",
+				token,
+				body: {
+					company_id: duplicatePrompt.company_id,
+					source_verification_id: verification?.user_id || "",
+					position: joinPosition || user?.profile?.position || "",
+					message: joinMessage || "",
+					name: joinName || user?.name || "",
+					email: joinEmail || user?.email || "",
+				},
+			});
+			const requestId = res?.request?.id || res?.request?.meta?.request_id || "";
+			setJoinFeedback("Request to join sent to the verified company admin.");
+			setDuplicatePrompt(null);
+			setJoinName("");
+			setJoinEmail("");
+			setJoinPosition("");
+			setJoinMessage("");
+			if (requestId) {
+				window.location.href = `/join-requests/${encodeURIComponent(requestId)}`;
+			}
+		} catch (err) {
+			setError(err.message || "Could not send join request");
+		} finally {
+			setJoiningCompany(false);
+		}
+	}
+
+	async function disputeDuplicate() {
+		if (!(token && duplicatePrompt?.company_id)) {
+			return;
+		}
+		setDisputingDuplicate(true);
+		setError("");
+		try {
+			await apiRequest("/join-requests/dispute", {
+				method: "POST",
+				token,
+				body: {
+					company_id: duplicatePrompt.company_id,
+					applicant_id: user?.id || "",
+					source_verification_id: verification?.user_id || "",
+					applicant_name: user?.name || "",
+					applicant_email: user?.email || "",
+				},
+			});
+			setJoinFeedback("This duplicate flag has been sent to admin review. You will be notified of the outcome.");
+			setDuplicatePrompt(null);
+		} catch (err) {
+			setError(err.message || "Could not submit dispute");
+		} finally {
+			setDisputingDuplicate(false);
 		}
 	}
 
@@ -445,7 +497,7 @@ export default function VerificationPage({ embedded = false }) {
 		: "bg-white hover:bg-sky-50 border-slate-200 text-slate-900";
 
 	const requirements = requiredDocs.map((key) => ({
-		title: LABELS[key] || key,
+		title: VERIFICATION_FIELD_LABELS[key] || key,
 		desc: documents?.[key] ? "Submitted" : "Missing",
 		done: Boolean(documents?.[key]),
 	}));
@@ -873,6 +925,114 @@ export default function VerificationPage({ embedded = false }) {
 			</main>
 
 			<input ref={fileInputRef} type="file" class="hidden" onChange={onFileSelected} />
+
+			{duplicatePrompt && (
+				<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+					<div class={`relative w-full max-w-lg rounded-3xl border p-6 sm:p-8 shadow-2xl ${cardBg}`}>
+						<button
+							onClick={() => setDuplicatePrompt(null)}
+							class="absolute right-4 top-4 rounded-full p-1 hover:bg-white/10 transition"
+						>
+							<X class="h-5 w-5" />
+						</button>
+
+						{duplicatePrompt.banner && (
+							<div class="mb-4 -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 rounded-t-3xl overflow-hidden h-32 sm:h-40">
+								<img
+									src={duplicatePrompt.banner}
+									alt=""
+									class="h-full w-full object-cover"
+								/>
+							</div>
+						)}
+
+						<div class="flex items-center gap-3 mb-4">
+							{duplicatePrompt.logo ? (
+								<img
+									src={duplicatePrompt.logo}
+									alt=""
+									class="h-14 w-14 rounded-2xl object-cover border border-white/10"
+								/>
+							) : (
+								<div class="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white text-lg font-bold">
+									{duplicatePrompt.name?.charAt(0) || "?"}
+								</div>
+							)}
+							<div>
+								<h3 class="text-lg font-semibold">{duplicatePrompt.name}</h3>
+								<p class={`text-sm ${mutedText}`}>
+									{duplicatePrompt.country && `${duplicatePrompt.country}`}
+									{duplicatePrompt.country && duplicatePrompt.website && " · "}
+									{duplicatePrompt.website && (
+										<a href={`https://${duplicatePrompt.website}`} target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">
+											{duplicatePrompt.website}
+										</a>
+									)}
+								</p>
+							</div>
+						</div>
+
+						<div class={`mb-4 rounded-2xl border p-4 ${isDark ? "bg-amber-500/10 border-amber-400/20" : "bg-amber-50 border-amber-200"}`}>
+							<p class={`text-sm font-medium ${isDark ? "text-amber-200" : "text-amber-800"}`}>
+								A Verified Company Account already exists with this information. Are you a representative of this company?
+							</p>
+							{duplicatePrompt.matchedFields?.length > 0 && (
+								<p class={`mt-2 text-xs ${isDark ? "text-amber-300/70" : "text-amber-600"}`}>
+									Match confidence: {duplicatePrompt.tier === "exact" ? "Exact legal identifier match" : "Strong multi-field match"} — matched: {duplicatePrompt.matchedFields.join(", ")}
+								</p>
+							)}
+						</div>
+
+						<div class="space-y-3 mb-5">
+							<p class={`text-sm font-semibold ${softText}`}>Your details for the join request:</p>
+							<input
+								value={joinName}
+								onChange={(e) => setJoinName(e.target.value)}
+								placeholder="Your full name"
+								class={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+							/>
+							<input
+								value={joinEmail}
+								onChange={(e) => setJoinEmail(e.target.value)}
+								placeholder="Your email"
+								type="email"
+								class={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+							/>
+							<input
+								value={joinPosition}
+								onChange={(e) => setJoinPosition(e.target.value)}
+								placeholder="Position (e.g. Merchandiser, Sample Manager)"
+								class={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+							/>
+							<textarea
+								value={joinMessage}
+								onChange={(e) => setJoinMessage(e.target.value)}
+								placeholder="Optional short message (e.g. I am the sample manager)"
+								rows={2}
+								class={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition resize-none placeholder:text-slate-400 ${fieldBg}`}
+							/>
+						</div>
+
+						<div class="flex flex-col gap-3 sm:flex-row">
+							<button
+								onClick={requestJoinFromDuplicate}
+								disabled={joiningCompany}
+								class={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary} ${joiningCompany ? "opacity-60 cursor-not-allowed" : ""}`}
+							>
+								<Users class="h-4 w-4" />
+								{joiningCompany ? "Sending..." : "Request to Join"}
+							</button>
+							<button
+								onClick={disputeDuplicate}
+								disabled={disputingDuplicate}
+								class={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost} ${disputingDuplicate ? "opacity-60 cursor-not-allowed" : ""}`}
+							>
+								{disputingDuplicate ? "Submitting..." : "No, this is a different company"}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</>
 	);
 
