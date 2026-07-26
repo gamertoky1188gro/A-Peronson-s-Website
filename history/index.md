@@ -1,13 +1,13 @@
 # Project History Index
 
-> Complete chronological documentation of all 617 commits in the GarTexHub B2B Textile Marketplace repository.
+> Complete chronological documentation of all 621 commits in the GarTexHub B2B Textile Marketplace repository.
 
 ## Summary Statistics
 
 | Metric                            | Value                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Total commits documented**      | 617                                                                                                                         |
-| **Date range**                    | 2026-03-01 → 2026-07-25                                                                                                                     |
+| **Total commits documented**      | 621                                                                                                                         |
+| **Date range**                    | 2026-03-01 → 2026-07-26                                                                                                                     |
 | **Unique files ever touched**     | 2,200+                                                                                                                                      |
 | **Most frequently changed files** | `src/pages/SearchResults.jsx` (77x), `server/server.js` (76x), `src/App.jsx` (65x), `src/components/NavBar.jsx` (59x), `package.json` (58x) |
 | **Largest commits (by files)**    | 936 files (commit `bdbbbc1` "meow"), 515 files (commit `6b75ca5` "Fixed"), 299 files (commit `bb22700` "Fixed")                            |
@@ -30,7 +30,8 @@
 | **11. Search & Feed**            | 0501–0560 | Jun 2–6      | Search features, semantic search, markdown rendering, link previews, live feed SSE          |
 | **12. Polish & A11Y**            | 0561–0588 | Jun 7–22     | SEO, accessibility, perf, comment UI, custom cursor, final cleanup |
 | **13. History & Lint**           | 0589–0594 | Jun 23–Jul 19 | History documentation framework, HTML/PDF exports, lint fixes, massive rebuild |
-| **14. Audit & Quality**          | 0595–0610 | Jul 19–21 | Post-rebuild lint fixes, security audit resolution (HIGH/LOW items), Prisma transaction wrapping, unused import cleanup, progress documentation |
+| **14. Audit & Quality**          | 0595–0617 | Jul 19–25 | Post-rebuild lint fixes, security audit resolution (HIGH/LOW items), Prisma transaction wrapping, unused import cleanup, build errors, AdminPanel modularization, progress documentation |
+| **15. Features & Tooling**       | 0618–0621 | Jul 25–26 | History documentation, build-error fixes, Biome reformat (+ karpathy-coder skill), B2B relationships, feedback, join requests, verification expansion |
 
 ## Complete Commit List
 
@@ -96,14 +97,18 @@
 | [0615](./0615_2026-07-22_21-47-32_cc5c8ce_fix-error-boundaries-and-form-validation.md)       | 2026-07-22 21:47 | `cc5c8ce` | Fix Error Boundaries and Form Validation                         | safeLazy fallback for chunk failures, ErrorBoundary wrapping, email validation |
 | [0616](./0616_2026-07-22_21-57-46_4b141b2_fix-database-indexes-env-vars-cors-aria-and-focus-trap.md)| 2026-07-22 21:57 | `4b141b2` | Fix Database Indexes, Env Vars, CORS, ARIA, and Focus Trap       | @@index on 18+ model FKs, ADMIN_TEST_EMAIL fallback, env validation, focus trap hook |
 | [0617](./0617_2026-07-25_09-56-04_4277269_fix-audit-issues-31-to-50-across-71-files.md)       | 2026-07-25 09:56 | `4277269` | Fix Audit Issues 31 to 50 Across 71 Files                        | Dead code, memory leaks, test pollution, build config, Docker, env restoration, AdminPanel split |
+| [0618](./0618_2026-07-25_10-05-22_0ffab80_document-history-for-commits-0611-0617.md)          | 2026-07-25 10:05 | `0ffab80` | Document History for Commits 0611-0617                           | Created markdown documentation for 7 audit-fix commits (611-617)            |
+| [0619](./0619_2026-07-25_13-46-16_cdb4cc4_resolve-build-errors-wrong-import-paths-missing-timeouts-export-circular-vendor-chunks.md)| 2026-07-25 13:46 | `cdb4cc4` | Resolve Build Errors — Import Paths, TIMEOUTS, Vendor Chunks     | Fixed 8 admin section imports, added TIMEOUTS export, restructured vendor chunks |
+| [0620](./0620_2026-07-26_00-45-49_54bb516_workspace-save-biome-rebuild-karpathy.md)           | 2026-07-26 00:45 | `54bb516` | Workspace Save — Biome Reformat, Rebuild, Karpathy-Coder Skill   | 690-file Biome reformat, dist/ rebuild, new karpathy-coder agent skill suite, config consolidation |
+| [0621](./0621_2026-07-26_15-42-09_65a448e_workspace-save-feedback-join-request-relationships.md)| 2026-07-26 15:42 | `65a448e` | Workspace Save — Feedback, Join Requests, B2B Relationships       | New FeedbackPage, JoinRequestPage, B2B relationship services, verification expansion, Prisma schema |
 
-> **Note**: Due to the large number of commits (617), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
+> **Note**: Due to the large number of commits (621), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
 
 ## File Naming Convention
 
 `history/NNNN_YYYY-MM-DD_HH-MM-SS_ABBREV_HASH_descriptive-title.md`
 
-- `NNNN` = 4-digit commit sequence number (0001-0617)
+- `NNNN` = 4-digit commit sequence number (0001-0621)
 - `YYYY-MM-DD_HH-MM-SS` = commit date/time
 - `ABBREV_HASH` = first 7 characters of commit hash
 - `descriptive-title` = generated title (kebab-case)
@@ -118,6 +123,8 @@
 - **AI integration**: Local llama.cpp → opencode SDK with SSE streaming
 - **History documentation**: Commits 0589–0591 retroactively documented all prior commits; 0593–0594 fixed lint errors and rebuilt the entire codebase
 - **Audit remediation (0595–0617)**: Systematic security audit fix rounds (HIGH items → LOW items), Prisma transaction safety, unused import cleanup, JWT secret removal, error boundaries, form validation, database indexes, ARIA/focus trap, AdminPanel modularization, and ongoing progress documentation
+- **Biome reformat (0620)**: A massive 690-file reformat using Biome, replacing ESLint/Prettier, plus karpathy-coder skill suite and file catalogs
+- **B2B relationships (0621)**: New B2B relationship management, join requests, feedback page, company licensing, and verification expansion
 
 ## Progress Tracking
 
