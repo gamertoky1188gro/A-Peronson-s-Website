@@ -104,5 +104,5 @@ services:
       - key: RERANKER_MODEL
         value: BAAI/bge-reranker-v2-m3
     buildCommand: npm install --include=dev && npm install -g opencode-ai && npm run build && npm run db:generate && npm run ci:reindex
-    startCommand: SKIP_BUILD=true ./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=10000
+    startCommand: npm run start:prod
     releaseCommand: npx prisma migrate deploy
