@@ -947,6 +947,9 @@ function isOpencodeBinaryAvailable() {
 }
 
 async function ensureOpencodeServer() {
+	if (process.env.OPENCODE_ENABLED === "false") {
+		return null;
+	}
 	const cfg = aiConfig.opencode;
 	const defaultPort = Number.parseInt(cfg.baseUrl.split(":").pop(), 10) || 4096;
 
