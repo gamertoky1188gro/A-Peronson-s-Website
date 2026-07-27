@@ -77,25 +77,23 @@ function _formatValue(value, indent = 0) {
 	return String(value);
 }
 
-export function logInfo(_message, data = null) {
-	const _stamp = new Date().toISOString();
-	if (data) {
-	}
+function timestamp() {
+	return new Date().toISOString().slice(11, 23);
 }
 
-export function logWarn(_message, data = null) {
-	const _stamp = new Date().toISOString();
-	if (data) {
-	}
+export function logInfo(message, data = null) {
+	const line = data ? `${message} ${JSON.stringify(data)}` : message;
+	console.log(`[${timestamp()}] [INFO] ${line}`);
 }
 
-export function logError(_message, error = null) {
-	const _stamp = new Date().toISOString();
-	if (error) {
-		if (error instanceof Error) {
-		} else {
-		}
-	}
+export function logWarn(message, data = null) {
+	const line = data ? `${message} ${JSON.stringify(data)}` : message;
+	console.warn(`[${timestamp()}] [WARN] ${line}`);
+}
+
+export function logError(message, error = null) {
+	const line = error ? `${message} ${error instanceof Error ? error.stack || error.message : JSON.stringify(error)}` : message;
+	console.error(`[${timestamp()}] [ERROR] ${line}`);
 }
 
 export const logger = {
