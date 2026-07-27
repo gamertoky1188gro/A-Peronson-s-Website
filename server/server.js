@@ -150,13 +150,10 @@ const corsOptions = {
 			"https://gartexhub.onrender.com", // production
 		];
 
-		// Allow requests with no origin (like mobile apps, curl, Postman) only in dev
+		// Allow requests with no origin (curl, health checks, server-to-server, mobile apps)
+		// Safe because auth is JWT-in-Header, not cookies — CSRF is not a concern.
 		if (!origin) {
-			if (process.env.NODE_ENV === "production") {
-				callback(new Error("Origin is required in production"));
-			} else {
-				callback(null, true); // Dev: allow all
-			}
+			callback(null, true);
 			return;
 		}
 
