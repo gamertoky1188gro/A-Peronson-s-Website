@@ -25,6 +25,7 @@ import conversationRoutes from "./routes/conversationRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import crmRoutes from "./routes/crmRoutes.js";
 import dealJourneyRoutes from "./routes/dealJourneyRoutes.js";
+import diagnosticsRoutes from "./routes/diagnosticsRoutes.js";
 import devRoutes from "./routes/devRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
@@ -71,7 +72,7 @@ import {
 } from "./services/assistantService.js";
 import { getCallSession } from "./services/callSessionService.js";
 import { maybeGenerateBotReply } from "./services/chatbotService.js";
-import { getFxHealth, refreshRates } from "./services/currencyService.js";
+import { refreshRates } from "./services/currencyService.js";
 import { startEsignWebhookRetryWorker } from "./services/esignRetryService.js";
 import { startEventQualityReporter } from "./services/eventIngestionService.js";
 import { runLeadReminderSweep } from "./services/leadReminderService.js";
@@ -258,13 +259,7 @@ if (serveDist && fs.existsSync(distRoot)) {
 
 app.use("/api", requestLogger({ timeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 45_000) }));
 
-app.get("/api/health", (_req, res) => {
-	res.json({
-		ok: true,
-		service: "textile-trust-verification-mvp",
-		fx: getFxHealth(),
-	});
-});
+app.use("/api", diagnosticsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/requirements", requirementRoutes);
