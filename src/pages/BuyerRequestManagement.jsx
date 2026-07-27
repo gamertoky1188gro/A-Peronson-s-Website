@@ -139,20 +139,20 @@ const badge =
 	"inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium tracking-wide";
 
 function Pill({ children, className = "" }) {
-	return <span class={`${badge} ${className}`}>{children}</span>;
+	return <span className={`${badge} ${className}`}>{children}</span>;
 }
 
 function Field({ label, children, hint, error, required }) {
 	return (
-		<label class="block space-y-1.5">
-			<div class="flex items-center justify-between gap-3">
-				<span class="text-sm font-medium text-slate-700 dark:text-slate-200">
-					{label} {required ? <span class="text-sky-500">*</span> : null}
+		<label className="block space-y-1.5">
+			<div className="flex items-center justify-between gap-3">
+				<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+					{label} {required ? <span className="text-sky-500">*</span> : null}
 				</span>
-				{hint ? <span class="text-xs text-slate-400 dark:text-slate-500">{hint}</span> : null}
+				{hint ? <span className="text-xs text-slate-400 dark:text-slate-500">{hint}</span> : null}
 			</div>
 			{children}
-			{error ? <p class="text-xs font-semibold text-rose-500">{error}</p> : null}
+			{error ? <p className="text-xs font-semibold text-rose-500">{error}</p> : null}
 		</label>
 	);
 }
@@ -161,7 +161,7 @@ function Input(props) {
 	return (
 		<input
 			{...props}
-			class={`w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/15 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 ${props.className || ""}`}
+			className={`w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/15 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 ${props.className || ""}`}
 		/>
 	);
 }
@@ -170,7 +170,7 @@ function TextArea(props) {
 	return (
 		<textarea
 			{...props}
-			class={`w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/15 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 ${props.className || ""}`}
+			className={`w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/15 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 ${props.className || ""}`}
 		/>
 	);
 }
@@ -179,7 +179,7 @@ function Select(props) {
 	return (
 		<select
 			{...props}
-			class={`w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/15 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 ${props.className || ""}`}
+			className={`w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/15 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 ${props.className || ""}`}
 		/>
 	);
 }
@@ -812,39 +812,39 @@ export default function BuyerRequestManagement() {
 	}
 
 	return (
-		<div class={`min-h-screen ${shell}`}>
-			<div class="mx-auto max-w-[1600px] px-4 py-5 sm:px-6 lg:px-8">
-				<div class={`overflow-hidden rounded-[32px] border ${panel}`}>
-					<div class="border-b border-white/10 bg-gradient-to-r from-sky-500/15 via-cyan-500/10 to-blue-500/10 px-4 py-4 sm:px-6">
-						<div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-							<div class="flex items-start gap-4">
-								<div class="rounded-3xl bg-gradient-to-br from-sky-500 to-cyan-400 p-4 text-white shadow-lg shadow-sky-500/20">
-									<ClipboardList class="h-7 w-7" />
+		<div className={`min-h-screen ${shell}`}>
+			<div className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6 lg:px-8">
+				<div className={`overflow-hidden rounded-[32px] border ${panel}`}>
+					<div className="border-b border-white/10 bg-gradient-to-r from-sky-500/15 via-cyan-500/10 to-blue-500/10 px-4 py-4 sm:px-6">
+						<div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+							<div className="flex items-start gap-4">
+								<div className="rounded-3xl bg-gradient-to-br from-sky-500 to-cyan-400 p-4 text-white shadow-lg shadow-sky-500/20">
+									<ClipboardList className="h-7 w-7" />
 								</div>
 								<div>
-									<div class="mb-2 flex flex-wrap items-center gap-2">
-										<Pill class="border-sky-400/30 bg-sky-500/15 text-sky-300">
+									<div className="mb-2 flex flex-wrap items-center gap-2">
+										<Pill className="border-sky-400/30 bg-sky-500/15 text-sky-300">
 											/buyer-requests
 										</Pill>
 										<Pill
-											class={`border-white/10 bg-white/5 ${dark ? "text-slate-300" : "text-slate-600"}`}
+											className={`border-white/10 bg-white/5 ${dark ? "text-slate-300" : "text-slate-600"}`}
 										>
 											Role: {role}
 										</Pill>
 									</div>
-									<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">{headerTitle}</h1>
-									<p class={`mt-1 max-w-3xl text-sm sm:text-base ${soft}`}>{roleSubtitle}</p>
+									<h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{headerTitle}</h1>
+									<p className={`mt-1 max-w-3xl text-sm sm:text-base ${soft}`}>{roleSubtitle}</p>
 								</div>
 							</div>
 
-							<div class="flex flex-wrap items-center gap-2">
+							<div className="flex flex-wrap items-center gap-2">
 								<div
-									class={`flex items-center gap-2 rounded-2xl border px-2 py-2 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+									className={`flex items-center gap-2 rounded-2xl border px-2 py-2 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 								>
 									{roles.map((r) => (
 										<span
 											key={r}
-											class={`rounded-xl px-3 py-2 text-sm font-medium ${role === r ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : dark ? "text-slate-500" : "text-slate-400"}`}
+											className={`rounded-xl px-3 py-2 text-sm font-medium ${role === r ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : dark ? "text-slate-500" : "text-slate-400"}`}
 										>
 											{r === "buying_house"
 												? "Buying House"
@@ -855,38 +855,38 @@ export default function BuyerRequestManagement() {
 								{role === "buyer" ? null : (
 									<Link
 										to="/owner"
-										class={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition ${dark ? "border-white/10 bg-white/5 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
+										className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition ${dark ? "border-white/10 bg-white/5 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
 									>
 										Back to Dashboard
 									</Link>
 								)}
 								<button
 									onClick={toggleTheme}
-									class={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition ${dark ? "border-white/10 bg-white/5 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
+									className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition ${dark ? "border-white/10 bg-white/5 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
 								>
-									{dark ? <SunMedium class="h-4 w-4" /> : <MoonStar class="h-4 w-4" />}
+									{dark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
 									{dark ? "Light" : "Dark"}
 								</button>
 							</div>
 						</div>
 					</div>
 
-					<div class="grid gap-4 p-4 lg:grid-cols-12 lg:p-6">
+					<div className="grid gap-4 p-4 lg:grid-cols-12 lg:p-6">
 						<div class={role === "buyer" ? "lg:col-span-8 xl:col-span-8" : "lg:col-span-12"}>
 							<ScrollReveal as="section">
-								<div class={`rounded-[28px] border p-5 ${panel}`}>
-									<div class="mb-5 flex items-center justify-between gap-3">
-										<div class="flex items-center gap-3">
+								<div className={`rounded-[28px] border p-5 ${panel}`}>
+									<div className="mb-5 flex items-center justify-between gap-3">
+										<div className="flex items-center gap-3">
 											<div
-												class={`rounded-2xl p-3 ${dark ? "bg-sky-500/15 text-sky-300" : "bg-sky-100 text-sky-700"}`}
+												className={`rounded-2xl p-3 ${dark ? "bg-sky-500/15 text-sky-300" : "bg-sky-100 text-sky-700"}`}
 											>
-												<Sparkles class="h-5 w-5" />
+												<Sparkles className="h-5 w-5" />
 											</div>
 											<div>
-												<h2 class="text-lg font-semibold tracking-tight">
+												<h2 className="text-lg font-semibold tracking-tight">
 													{role === "buyer" ? "Request Builder" : "Request Management Hub"}
 												</h2>
-												<p class={`text-sm ${soft}`}>
+												<p className={`text-sm ${soft}`}>
 													{role === "buyer"
 														? "Premium workflow UI with dense controls and polished spacing."
 														: "Lead queue with agent assignment and tracking."}
@@ -896,25 +896,25 @@ export default function BuyerRequestManagement() {
 									</div>
 
 									{(error || success || attachmentFeedback || aiParseFeedback) && (
-										<div class="mb-5 space-y-2">
+										<div className="mb-5 space-y-2">
 											{success ? (
-												<div class="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200">
-													<CheckCircle2 class="mr-2 inline-block h-4 w-4" /> {success}
+												<div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200">
+													<CheckCircle2 className="mr-2 inline-block h-4 w-4" /> {success}
 												</div>
 											) : null}
 											{error ? (
-												<div class="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
-													<X class="mr-2 inline-block h-4 w-4" /> {error}
+												<div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
+													<X className="mr-2 inline-block h-4 w-4" /> {error}
 												</div>
 											) : null}
 											{attachmentFeedback ? (
-												<div class="rounded-2xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-sm text-sky-700 dark:text-sky-200">
-													<CloudUpload class="mr-2 inline-block h-4 w-4" /> {attachmentFeedback}
+												<div className="rounded-2xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-sm text-sky-700 dark:text-sky-200">
+													<CloudUpload className="mr-2 inline-block h-4 w-4" /> {attachmentFeedback}
 												</div>
 											) : null}
 											{aiParseFeedback ? (
-												<div class="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-700 dark:text-cyan-200">
-													<Bot class="mr-2 inline-block h-4 w-4" /> {aiParseFeedback}
+												<div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-700 dark:text-cyan-200">
+													<Bot className="mr-2 inline-block h-4 w-4" /> {aiParseFeedback}
 												</div>
 											) : null}
 										</div>
@@ -922,41 +922,41 @@ export default function BuyerRequestManagement() {
 
 									{role === "buyer" ? (
 										<>
-											<div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+											<div className="mb-5 flex flex-wrap items-center justify-between gap-3">
 												<div>
-													<div class="text-sm text-slate-500 dark:text-slate-400">
+													<div className="text-sm text-slate-500 dark:text-slate-400">
 														Step {step + 1} of {steps.length} —{" "}
-														<span class="font-medium text-slate-700 dark:text-slate-200">
+														<span className="font-medium text-slate-700 dark:text-slate-200">
 															{steps[step]}
 														</span>
 													</div>
-													<div class={`mt-1 text-sm ${soft}`}>
+													<div className={`mt-1 text-sm ${soft}`}>
 														Complete each step so verified suppliers can quote faster.
 													</div>
 												</div>
-												<div class="flex items-center gap-2">
+												<div className="flex items-center gap-2">
 													<button
 														onClick={() => setMoreFieldsOpen((v) => !v)}
-														class={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition ${dark ? "border-white/10 bg-white/5 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
+														className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition ${dark ? "border-white/10 bg-white/5 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
 													>
-														<Filter class="h-4 w-4" />
+														<Filter className="h-4 w-4" />
 														{moreFieldsOpen ? "Hide more fields" : "More fields"}
 													</button>
 													<button
 														onClick={parseDescriptionWithAi}
 														disabled={aiParsing || !form.customDescription.trim()}
-														class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5 disabled:opacity-50"
+														className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5 disabled:opacity-50"
 													>
-														<Bot class="h-4 w-4" /> {aiParsing ? "Parsing..." : "AI parse my text"}
+														<Bot className="h-4 w-4" /> {aiParsing ? "Parsing..." : "AI parse my text"}
 													</button>
 												</div>
 											</div>
 
-											<div class="mb-5 grid gap-2 sm:grid-cols-6">
+											<div className="mb-5 grid gap-2 sm:grid-cols-6">
 												{steps.map((label, i) => (
 													<div
 														key={label}
-														class={`rounded-2xl border px-3 py-3 text-center text-xs font-semibold ${i === step ? "border-sky-400 bg-sky-500/15 text-sky-300" : dark ? "border-white/10 bg-white/5 text-slate-300" : "border-slate-200 bg-white text-slate-500"}`}
+														className={`rounded-2xl border px-3 py-3 text-center text-xs font-semibold ${i === step ? "border-sky-400 bg-sky-500/15 text-sky-300" : dark ? "border-white/10 bg-white/5 text-slate-300" : "border-slate-200 bg-white text-slate-500"}`}
 													>
 														{i + 1}. {label}
 													</div>
@@ -964,51 +964,51 @@ export default function BuyerRequestManagement() {
 											</div>
 
 											{aiParseWarnings.length > 0 ? (
-												<div class="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-700 dark:text-amber-200">
+												<div className="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-700 dark:text-amber-200">
 													Missing data confidence warning: {aiParseWarnings.join(", ")}
 												</div>
 											) : null}
 
-											<div class="space-y-5">
+											<div className="space-y-5">
 												{step === 0 ? (
-													<div class="grid gap-4 md:grid-cols-2">
+													<div className="grid gap-4 md:grid-cols-2">
 														<button
 															type="button"
-															class={`group rounded-[26px] border p-5 text-left transition hover:-translate-y-1 ${form.requestType === "garments" ? "border-sky-400 bg-sky-500/10 shadow-lg shadow-sky-500/10" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}${fieldErrors.requestType ? " ring-2 ring-rose-400" : ""}`}
+															className={`group rounded-[26px] border p-5 text-left transition hover:-translate-y-1 ${form.requestType === "garments" ? "border-sky-400 bg-sky-500/10 shadow-lg shadow-sky-500/10" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}${fieldErrors.requestType ? " ring-2 ring-rose-400" : ""}`}
 															onClick={() => setForm({ ...form, requestType: "garments" })}
 														>
-															<div class="mb-3 flex items-center justify-between">
-																<div class="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-3 text-white shadow-lg shadow-sky-500/20">
-																	<Layers3 class="h-5 w-5" />
+															<div className="mb-3 flex items-center justify-between">
+																<div className="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-3 text-white shadow-lg shadow-sky-500/20">
+																	<Layers3 className="h-5 w-5" />
 																</div>
 																{form.requestType === "garments" ? (
-																	<CheckCircle2 class="h-5 w-5 text-sky-400" />
+																	<CheckCircle2 className="h-5 w-5 text-sky-400" />
 																) : (
-																	<ChevronRight class="h-5 w-5 text-slate-400 group-hover:text-sky-400" />
+																	<ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-sky-400" />
 																)}
 															</div>
-															<div class="text-lg font-semibold">Garments Buyer</div>
-															<div class={`mt-1 text-sm ${soft}`}>
+															<div className="text-lg font-semibold">Garments Buyer</div>
+															<div className={`mt-1 text-sm ${soft}`}>
 																Finished garments with design + construction focus.
 															</div>
 														</button>
 														<button
 															type="button"
-															class={`group rounded-[26px] border p-5 text-left transition hover:-translate-y-1 ${form.requestType === "textile" ? "border-sky-400 bg-sky-500/10 shadow-lg shadow-sky-500/10" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}${fieldErrors.requestType ? " ring-2 ring-rose-400" : ""}`}
+															className={`group rounded-[26px] border p-5 text-left transition hover:-translate-y-1 ${form.requestType === "textile" ? "border-sky-400 bg-sky-500/10 shadow-lg shadow-sky-500/10" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}${fieldErrors.requestType ? " ring-2 ring-rose-400" : ""}`}
 															onClick={() => setForm({ ...form, requestType: "textile" })}
 														>
-															<div class="mb-3 flex items-center justify-between">
-																<div class="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-3 text-white shadow-lg shadow-sky-500/20">
-																	<FileText class="h-5 w-5" />
+															<div className="mb-3 flex items-center justify-between">
+																<div className="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-3 text-white shadow-lg shadow-sky-500/20">
+																	<FileText className="h-5 w-5" />
 																</div>
 																{form.requestType === "textile" ? (
-																	<CheckCircle2 class="h-5 w-5 text-sky-400" />
+																	<CheckCircle2 className="h-5 w-5 text-sky-400" />
 																) : (
-																	<ChevronRight class="h-5 w-5 text-slate-400 group-hover:text-sky-400" />
+																	<ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-sky-400" />
 																)}
 															</div>
-															<div class="text-lg font-semibold">Textile Buyer</div>
-															<div class={`mt-1 text-sm ${soft}`}>
+															<div className="text-lg font-semibold">Textile Buyer</div>
+															<div className={`mt-1 text-sm ${soft}`}>
 																Fabric/yarn/trim requests with technical specs.
 															</div>
 														</button>
@@ -1016,7 +1016,7 @@ export default function BuyerRequestManagement() {
 												) : null}
 
 												{step === 1 ? (
-													<div class="grid gap-4 md:grid-cols-2">
+													<div className="grid gap-4 md:grid-cols-2">
 														<Field
 															label="Request title"
 															required={true}
@@ -1205,7 +1205,7 @@ export default function BuyerRequestManagement() {
 												) : null}
 
 												{step === 2 && isTextile ? (
-													<div class="grid gap-4 md:grid-cols-2">
+													<div className="grid gap-4 md:grid-cols-2">
 														<Field
 															label="Fiber composition"
 															required={true}
@@ -1320,7 +1320,7 @@ export default function BuyerRequestManagement() {
 												) : null}
 
 												{step === 2 && !isTextile ? (
-													<div class="grid gap-4 md:grid-cols-2">
+													<div className="grid gap-4 md:grid-cols-2">
 														<Field label="Fabric composition">
 															<Input
 																value={form.fabricComposition}
@@ -1418,21 +1418,21 @@ export default function BuyerRequestManagement() {
 														</Field>
 														<Field label="Tech pack upload" hint="optional">
 															<div
-																class={`rounded-2xl border border-dashed p-4 ${dark ? "border-white/15 bg-white/5" : "border-sky-200 bg-sky-50/70"}`}
+																className={`rounded-2xl border border-dashed p-4 ${dark ? "border-white/15 bg-white/5" : "border-sky-200 bg-sky-50/70"}`}
 															>
 																{pendingAttachments.length > 0 ? (
-																	<div class="space-y-2">
+																	<div className="space-y-2">
 																		{pendingAttachments.map((fileRow, index) => (
 																			<div
 																				key={`${fileRow.file?.name}-${index}`}
-																				class={`flex items-center justify-between rounded-2xl border px-3 py-2 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																				className={`flex items-center justify-between rounded-2xl border px-3 py-2 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																			>
-																				<span class="text-xs text-slate-600 dark:text-slate-400">
+																				<span className="text-xs text-slate-600 dark:text-slate-400">
 																					{fileRow.file?.name || "File"}
 																				</span>
 																				<button
 																					type="button"
-																					class="text-xs font-semibold text-rose-500"
+																					className="text-xs font-semibold text-rose-500"
 																					onClick={() =>
 																						setPendingAttachments((prev) =>
 																							prev.filter((_, i) => i !== index),
@@ -1445,16 +1445,16 @@ export default function BuyerRequestManagement() {
 																		))}
 																	</div>
 																) : (
-																	<p class="text-xs text-slate-500">
+																	<p className="text-xs text-slate-500">
 																		You can upload tech packs and sketches after posting too.
 																	</p>
 																)}
-																<div class="mt-3 flex items-center gap-2">
-																	<label class="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20">
-																		<CloudUpload class="h-4 w-4" /> Add file
+																<div className="mt-3 flex items-center gap-2">
+																	<label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20">
+																		<CloudUpload className="h-4 w-4" /> Add file
 																		<input
 																			type="file"
-																			class="hidden"
+																			className="hidden"
 																			onChange={(event) => {
 																				const file = event.target.files?.[0];
 																				if (file) {
@@ -1474,7 +1474,7 @@ export default function BuyerRequestManagement() {
 												) : null}
 
 												{step === 3 ? (
-													<div class="grid gap-4 md:grid-cols-2">
+													<div className="grid gap-4 md:grid-cols-2">
 														{isTextile ? (
 															<>
 																<Field
@@ -1747,7 +1747,7 @@ export default function BuyerRequestManagement() {
 																	label="Messaging access"
 																	hint="Normal: verified goes to inbox, unverified goes to requests. Verified request only: only verified suppliers can message."
 																>
-																	<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+																	<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 																		<button
 																			type="button"
 																			onClick={() =>
@@ -1756,20 +1756,20 @@ export default function BuyerRequestManagement() {
 																					verifiedOnly: false,
 																				})
 																			}
-																			class={`rounded-2xl border p-4 text-left text-sm transition ${form.verifiedOnly ? (dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white") : "border-sky-400 bg-sky-500/10"}`}
+																			className={`rounded-2xl border p-4 text-left text-sm transition ${form.verifiedOnly ? (dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white") : "border-sky-400 bg-sky-500/10"}`}
 																		>
-																			<div class="font-semibold">Normal</div>
-																			<div class={`mt-1 text-xs ${soft}`}>
+																			<div className="font-semibold">Normal</div>
+																			<div className={`mt-1 text-xs ${soft}`}>
 																				verified goes to inbox, unverified goes to requests
 																			</div>
 																		</button>
 																		<button
 																			type="button"
 																			onClick={() => setForm({ ...form, verifiedOnly: true })}
-																			class={`rounded-2xl border p-4 text-left text-sm transition ${form.verifiedOnly ? "border-sky-400 bg-sky-500/10" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																			className={`rounded-2xl border p-4 text-left text-sm transition ${form.verifiedOnly ? "border-sky-400 bg-sky-500/10" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																		>
-																			<div class="font-semibold">Verified request only</div>
-																			<div class={`mt-1 text-xs ${soft}`}>
+																			<div className="font-semibold">Verified request only</div>
+																			<div className={`mt-1 text-xs ${soft}`}>
 																				only verified suppliers can message
 																			</div>
 																		</button>
@@ -1781,9 +1781,9 @@ export default function BuyerRequestManagement() {
 												) : null}
 
 												{step === 4 ? (
-													<div class="grid gap-4 xl:grid-cols-2">
-														<div class={`rounded-[26px] border p-5 ${panel}`}>
-															<h3 class="mb-4 text-base font-semibold">Compliance / Lab</h3>
+													<div className="grid gap-4 xl:grid-cols-2">
+														<div className={`rounded-[26px] border p-5 ${panel}`}>
+															<h3 className="mb-4 text-base font-semibold">Compliance / Lab</h3>
 															{isTextile ? (
 																<Field label="Lab/Certification notes">
 																	<TextArea
@@ -1801,11 +1801,11 @@ export default function BuyerRequestManagement() {
 															) : (
 																<>
 																	<Field label="Compliance certifications">
-																		<div class="grid grid-cols-2 gap-3">
+																		<div className="grid grid-cols-2 gap-3">
 																			{GARMENT_COMPLIANCE_CERTS.map((cert) => (
 																				<label
 																					key={cert}
-																					class={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																					className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																				>
 																					<input
 																						type="checkbox"
@@ -1819,7 +1819,7 @@ export default function BuyerRequestManagement() {
 																								complianceCerts: next,
 																							});
 																						}}
-																						class="h-4 w-4 accent-sky-500"
+																						className="h-4 w-4 accent-sky-500"
 																					/>
 																					<span>{cert}</span>
 																				</label>
@@ -1827,11 +1827,11 @@ export default function BuyerRequestManagement() {
 																		</div>
 																	</Field>
 																	<Field label="Sustainability certifications">
-																		<div class="grid grid-cols-2 gap-3">
+																		<div className="grid grid-cols-2 gap-3">
 																			{GARMENT_SUSTAIN_CERTS.map((cert) => (
 																				<label
 																					key={cert}
-																					class={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																					className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																				>
 																					<input
 																						type="checkbox"
@@ -1847,7 +1847,7 @@ export default function BuyerRequestManagement() {
 																								sustainabilityCerts: next,
 																							});
 																						}}
-																						class="h-4 w-4 accent-sky-500"
+																						className="h-4 w-4 accent-sky-500"
 																					/>
 																					<span>{cert}</span>
 																				</label>
@@ -1870,7 +1870,7 @@ export default function BuyerRequestManagement() {
 																</>
 															)}
 
-															<div class="mt-4 grid gap-4 md:grid-cols-2">
+															<div className="mt-4 grid gap-4 md:grid-cols-2">
 																<Field label="Preferred factory location">
 																	<Input
 																		value={form.preferredFactoryLocation}
@@ -1909,7 +1909,7 @@ export default function BuyerRequestManagement() {
 																</Field>
 																<Field label="Confidentiality">
 																	<label
-																		class={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																		className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																	>
 																		<input
 																			type="checkbox"
@@ -1920,7 +1920,7 @@ export default function BuyerRequestManagement() {
 																					confidentialityToggle: e.target.checked,
 																				})
 																			}
-																			class="h-4 w-4 accent-sky-500"
+																			className="h-4 w-4 accent-sky-500"
 																		/>
 																		Hide brand name (only verified suppliers can see it)
 																	</label>
@@ -1928,10 +1928,10 @@ export default function BuyerRequestManagement() {
 															</div>
 														</div>
 
-														<div class="space-y-4">
-															<div class={`rounded-[26px] border p-5 ${panel}`}>
-																<h3 class="mb-4 text-base font-semibold">Packaging & Shipment</h3>
-																<div class="grid gap-4">
+														<div className="space-y-4">
+															<div className={`rounded-[26px] border p-5 ${panel}`}>
+																<h3 className="mb-4 text-base font-semibold">Packaging & Shipment</h3>
+																<div className="grid gap-4">
 																	<Field label="Packaging requirement">
 																		<Input
 																			value={form.packagingRequirement}
@@ -1995,23 +1995,23 @@ export default function BuyerRequestManagement() {
 																</div>
 															</div>
 
-															<div class={`rounded-[26px] border p-5 ${panel}`}>
-																<div class="mb-3 flex items-center justify-between">
-																	<h3 class="text-base font-semibold">Custom fields</h3>
+															<div className={`rounded-[26px] border p-5 ${panel}`}>
+																<div className="mb-3 flex items-center justify-between">
+																	<h3 className="text-base font-semibold">Custom fields</h3>
 																	<button
 																		type="button"
 																		onClick={addCustomField}
-																		class="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-3 py-2 text-xs font-semibold text-white"
+																		className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-3 py-2 text-xs font-semibold text-white"
 																	>
-																		<Plus class="h-3.5 w-3.5" /> Add custom field
+																		<Plus className="h-3.5 w-3.5" /> Add custom field
 																	</button>
 																</div>
-																<div class="space-y-3">
+																<div className="space-y-3">
 																	{(Array.isArray(form.customFields) ? form.customFields : []).map(
 																		(row, index) => (
 																			<div
 																				key={`custom-${index}`}
-																				class="grid gap-2 md:grid-cols-[1fr_1fr_auto]"
+																				className="grid gap-2 md:grid-cols-[1fr_1fr_auto]"
 																			>
 																				<Input
 																					placeholder="Label"
@@ -2030,7 +2030,7 @@ export default function BuyerRequestManagement() {
 																				<button
 																					type="button"
 																					onClick={() => removeCustomField(index)}
-																					class="rounded-2xl border px-3 py-2 text-sm text-rose-500"
+																					className="rounded-2xl border px-3 py-2 text-sm text-rose-500"
 																				>
 																					Remove
 																				</button>
@@ -2038,7 +2038,7 @@ export default function BuyerRequestManagement() {
 																		),
 																	)}
 																</div>
-																<div class="mt-4">
+																<div className="mt-4">
 																	<Field
 																		label="Custom description"
 																		hint="Use this for extra notes, design details, or negotiation context."
@@ -2074,32 +2074,32 @@ export default function BuyerRequestManagement() {
 
 												{step === 5 ? (
 													<div>
-														<div class="mb-4 flex items-center justify-between">
+														<div className="mb-4 flex items-center justify-between">
 															<div>
-																<h3 class="text-xl font-semibold">Preview summary</h3>
-																<p class={`text-sm ${soft}`}>Review all fields before posting.</p>
+																<h3 className="text-xl font-semibold">Preview summary</h3>
+																<p className={`text-sm ${soft}`}>Review all fields before posting.</p>
 															</div>
-															<Pill class="bg-sky-500/15 text-sky-300">
+															<Pill className="bg-sky-500/15 text-sky-300">
 																{previewRows.length} visible fields
 															</Pill>
 														</div>
 														{previewRows.length === 0 ? (
 															<div
-																class={`rounded-[24px] border p-6 text-sm ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																className={`rounded-[24px] border p-6 text-sm ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 															>
 																No fields filled yet.
 															</div>
 														) : (
-															<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+															<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
 																{previewRows.map((row) => (
 																	<div
 																		key={row.label}
-																		class={`rounded-[22px] border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																		className={`rounded-[22px] border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																	>
-																		<div class="text-xs uppercase tracking-wider text-slate-400">
+																		<div className="text-xs uppercase tracking-wider text-slate-400">
 																			{row.label}
 																		</div>
-																		<div class="mt-1 text-sm font-medium break-words">
+																		<div className="mt-1 text-sm font-medium break-words">
 																			{row.value}
 																		</div>
 																	</div>
@@ -2110,23 +2110,23 @@ export default function BuyerRequestManagement() {
 												) : null}
 											</div>
 
-											<div class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5">
-												<div class="flex gap-2">
+											<div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5">
+												<div className="flex gap-2">
 													<button
 														type="button"
 														onClick={handleBack}
 														disabled={isFirstStep}
-														class={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition ${isFirstStep ? "cursor-not-allowed opacity-40" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+														className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition ${isFirstStep ? "cursor-not-allowed opacity-40" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 													>
-														<ArrowLeft class="h-4 w-4" /> Back
+														<ArrowLeft className="h-4 w-4" /> Back
 													</button>
 													<button
 														type="button"
 														disabled={saving}
 														onClick={saveDraft}
-														class="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-70 dark:text-sky-200"
+														className="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-70 dark:text-sky-200"
 													>
-														<CloudUpload class="h-4 w-4" />{" "}
+														<CloudUpload className="h-4 w-4" />{" "}
 														{saving ? (
 															<ThreeDot
 																variant="bounce"
@@ -2140,13 +2140,13 @@ export default function BuyerRequestManagement() {
 														)}
 													</button>
 												</div>
-												<div class="flex gap-2">
+												<div className="flex gap-2">
 													{isLastStep ? (
 														<button
 															type="button"
 															disabled={saving}
 															onClick={() => createRequest()}
-															class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5 disabled:opacity-70"
+															className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5 disabled:opacity-70"
 														>
 															{saving ? (
 																<ThreeDot
@@ -2159,85 +2159,85 @@ export default function BuyerRequestManagement() {
 															) : (
 																"Post Request"
 															)}{" "}
-															<Sparkles class="h-4 w-4" />
+															<Sparkles className="h-4 w-4" />
 														</button>
 													) : (
 														<button
 															type="button"
 															disabled={saving}
 															onClick={handleNext}
-															class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5 disabled:opacity-50"
+															className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5 disabled:opacity-50"
 														>
-															Next <ArrowRight class="h-4 w-4" />
+															Next <ArrowRight className="h-4 w-4" />
 														</button>
 													)}
 												</div>
 											</div>
 										</>
 									) : (
-										<div class="space-y-6">
-											<div class="flex flex-wrap items-center gap-2">
-												<Pill class="bg-sky-500/15 text-sky-300">Open Buyer Requests</Pill>
-												<Pill class="bg-cyan-500/15 text-cyan-300">Assign to agents</Pill>
-												<Pill class={`bg-white/5 ${dark ? "text-slate-300" : "text-slate-600"}`}>
+										<div className="space-y-6">
+											<div className="flex flex-wrap items-center gap-2">
+												<Pill className="bg-sky-500/15 text-sky-300">Open Buyer Requests</Pill>
+												<Pill className="bg-cyan-500/15 text-cyan-300">Assign to agents</Pill>
+												<Pill className={`bg-white/5 ${dark ? "text-slate-300" : "text-slate-600"}`}>
 													Manual refresh only
 												</Pill>
 											</div>
 
-											<div class={`rounded-[26px] border p-5 ${panel}`}>
-												<div class="mb-4 flex items-center justify-between gap-3">
+											<div className={`rounded-[26px] border p-5 ${panel}`}>
+												<div className="mb-4 flex items-center justify-between gap-3">
 													<div>
-														<h3 class="text-lg font-semibold">Lead queue</h3>
-														<p class={`text-sm ${soft}`}>
+														<h3 className="text-lg font-semibold">Lead queue</h3>
+														<p className={`text-sm ${soft}`}>
 															Use Assign to route a request to a specific agent.
 														</p>
 													</div>
 													<button
 														type="button"
 														onClick={loadRequests}
-														class="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition dark:border-white/10 dark:bg-white/5"
+														className="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition dark:border-white/10 dark:bg-white/5"
 													>
-														<RefreshCw class="h-4 w-4" /> Refresh
+														<RefreshCw className="h-4 w-4" /> Refresh
 													</button>
 												</div>
 
 												{myRequests.length > 0 ? (
-													<div class="overflow-x-auto rounded-[22px] border border-white/10">
-														<table class="min-w-full divide-y divide-white/10 text-left text-sm">
-															<thead class="bg-white/5 text-slate-300">
+													<div className="overflow-x-auto rounded-[22px] border border-white/10">
+														<table className="min-w-full divide-y divide-white/10 text-left text-sm">
+															<thead className="bg-white/5 text-slate-300">
 																<tr>
-																	<th class="px-4 py-3 font-medium">Title</th>
-																	<th class="px-4 py-3 font-medium">Status</th>
-																	<th class="px-4 py-3 font-medium">Qty</th>
-																	<th class="px-4 py-3 font-medium">Target</th>
-																	<th class="px-4 py-3 font-medium">Delivery</th>
-																	<th class="px-4 py-3 font-medium">Assign</th>
+																	<th className="px-4 py-3 font-medium">Title</th>
+																	<th className="px-4 py-3 font-medium">Status</th>
+																	<th className="px-4 py-3 font-medium">Qty</th>
+																	<th className="px-4 py-3 font-medium">Target</th>
+																	<th className="px-4 py-3 font-medium">Delivery</th>
+																	<th className="px-4 py-3 font-medium">Assign</th>
 																</tr>
 															</thead>
-															<tbody class="divide-y divide-white/10">
+															<tbody className="divide-y divide-white/10">
 																{myRequests.map((r) => (
-																	<tr key={r.id} class="hover:bg-white/5">
-																		<td class="px-4 py-4">
-																			<div class="font-medium">
+																	<tr key={r.id} className="hover:bg-white/5">
+																		<td className="px-4 py-4">
+																			<div className="font-medium">
 																				{r.title || r.category || "Buyer Request"}
 																			</div>
-																			<div class="mt-1 text-xs text-slate-400">
+																			<div className="mt-1 text-xs text-slate-400">
 																				Buyer: {String(r.buyer_id || "").slice(0, 8)}
 																				...
 																				{r.ai_summary ? ` - ${r.ai_summary}` : ""}
 																			</div>
 																		</td>
-																		<td class="px-4 py-4">
-																			<span class={`${badge} ${requestStatusBadge(r.status)}`}>
+																		<td className="px-4 py-4">
+																			<span className={`${badge} ${requestStatusBadge(r.status)}`}>
 																				{formatRequestStatus(r.status)}
 																			</span>
 																		</td>
-																		<td class="px-4 py-4">{r.quantity || "--"}</td>
-																		<td class="px-4 py-4">{r.target_market || "--"}</td>
-																		<td class="px-4 py-4">
+																		<td className="px-4 py-4">{r.quantity || "--"}</td>
+																		<td className="px-4 py-4">{r.target_market || "--"}</td>
+																		<td className="px-4 py-4">
 																			{r.delivery_timeline || r.timeline_days || "--"}
 																		</td>
-																		<td class="px-4 py-4">
+																		<td className="px-4 py-4">
 																			<Select
 																				value={r.assigned_agent_id || ""}
 																				onChange={(e) => assignRequest(r.id, e.target.value)}
@@ -2256,7 +2256,7 @@ export default function BuyerRequestManagement() {
 														</table>
 													</div>
 												) : (
-													<div class={`text-sm ${soft}`}>No open requests.</div>
+													<div className={`text-sm ${soft}`}>No open requests.</div>
 												)}
 											</div>
 										</div>
@@ -2266,33 +2266,33 @@ export default function BuyerRequestManagement() {
 						</div>
 
 						{role === "buyer" ? (
-							<div class="space-y-4 lg:col-span-4 xl:col-span-4">
-								<div class={`rounded-[28px] border p-5 ${panel}`}>
-									<div class="mb-4 flex items-center justify-between">
+							<div className="space-y-4 lg:col-span-4 xl:col-span-4">
+								<div className={`rounded-[28px] border p-5 ${panel}`}>
+									<div className="mb-4 flex items-center justify-between">
 										<div>
-											<h3 class="font-semibold">Premium feature</h3>
-											<p class={`text-xs ${soft}`}>Smart supplier matching</p>
+											<h3 className="font-semibold">Premium feature</h3>
+											<p className={`text-xs ${soft}`}>Smart supplier matching</p>
 										</div>
-										<Star class="h-5 w-5 text-sky-400" />
+										<Star className="h-5 w-5 text-sky-400" />
 									</div>
 									{canSmartMatch ? null : (
 										<>
-											<div class="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-4 text-sm text-slate-700 dark:text-slate-200">
+											<div className="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-4 text-sm text-slate-700 dark:text-slate-200">
 												Smart supplier matching is a Premium feature.
 											</div>
 											<Link
 												to="/pricing"
-												class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20"
+												className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20"
 											>
-												<Zap class="h-4 w-4" /> Upgrade to unlock
+												<Zap className="h-4 w-4" /> Upgrade to unlock
 											</Link>
 										</>
 									)}
 									{canSmartMatch ? (
-										<div class="mt-4 rounded-2xl border border-white/10 p-4">
-											<div class="mb-3 flex items-center justify-between">
-												<span class="text-sm font-medium">Smart match</span>
-												<Pill class="bg-white/5 text-slate-300">
+										<div className="mt-4 rounded-2xl border border-white/10 p-4">
+											<div className="mb-3 flex items-center justify-between">
+												<span className="text-sm font-medium">Smart match</span>
+												<Pill className="bg-white/5 text-slate-300">
 													GET /api/requirements/{"{id}"}/matches
 												</Pill>
 											</div>
@@ -2304,27 +2304,27 @@ export default function BuyerRequestManagement() {
 
 						{role === "buyer" ? (
 							<ScrollReveal as="section">
-								<div class="grid gap-4 border-t border-white/10 p-4 lg:grid-cols-12 lg:p-6">
-									<div class="lg:col-span-7">
-										<div class={`rounded-[28px] border p-5 ${panel}`}>
-											<div class="mb-4 flex items-center justify-between gap-3">
+								<div className="grid gap-4 border-t border-white/10 p-4 lg:grid-cols-12 lg:p-6">
+									<div className="lg:col-span-7">
+										<div className={`rounded-[28px] border p-5 ${panel}`}>
+											<div className="mb-4 flex items-center justify-between gap-3">
 												<div>
-													<h3 class="text-lg font-semibold">My Requests</h3>
-													<p class={`text-sm ${soft}`}>
+													<h3 className="text-lg font-semibold">My Requests</h3>
+													<p className={`text-sm ${soft}`}>
 														Duplicate, smart match, edit, delete, and manage attachments.
 													</p>
 												</div>
 												<button
 													type="button"
 													onClick={loadRequests}
-													class="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium dark:border-white/10 dark:bg-white/5"
+													className="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium dark:border-white/10 dark:bg-white/5"
 												>
-													<RefreshCw class="h-4 w-4" /> Refresh
+													<RefreshCw className="h-4 w-4" /> Refresh
 												</button>
 											</div>
 
 											{myRequests.length > 0 ? (
-												<div class="grid gap-4">
+												<div className="grid gap-4">
 													<AnimatePresence>
 														{myRequests.map((r) => {
 															const attachments = attachmentsByRequest[r.id] || [];
@@ -2340,10 +2340,10 @@ export default function BuyerRequestManagement() {
 																		duration: 0.25,
 																		ease: [0.16, 1, 0.3, 1],
 																	}}
-																	class={`rounded-[24px] border p-5 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																	className={`rounded-[24px] border p-5 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																>
 																	{editingId === r.id ? (
-																		<div class="space-y-3">
+																		<div className="space-y-3">
 																			<Field label="Title">
 																				<Input
 																					value={editForm.title}
@@ -2404,7 +2404,7 @@ export default function BuyerRequestManagement() {
 																				label="Messaging access"
 																				hint="Normal: verified goes to inbox, unverified goes to requests. Verified request only: only verified suppliers can message."
 																			>
-																				<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+																				<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
 																					<button
 																						type="button"
 																						onClick={() =>
@@ -2413,9 +2413,9 @@ export default function BuyerRequestManagement() {
 																								verifiedOnly: false,
 																							})
 																						}
-																						class={`rounded-2xl border p-4 text-left text-sm transition ${editForm.verifiedOnly ? (dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white") : "border-sky-400 bg-sky-500/10"}`}
+																						className={`rounded-2xl border p-4 text-left text-sm transition ${editForm.verifiedOnly ? (dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white") : "border-sky-400 bg-sky-500/10"}`}
 																					>
-																						<div class="font-semibold">Normal</div>
+																						<div className="font-semibold">Normal</div>
 																					</button>
 																					<button
 																						type="button"
@@ -2425,61 +2425,61 @@ export default function BuyerRequestManagement() {
 																								verifiedOnly: true,
 																							})
 																						}
-																						class={`rounded-2xl border p-4 text-left text-sm transition ${editForm.verifiedOnly ? "border-sky-400 bg-sky-500/10" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																						className={`rounded-2xl border p-4 text-left text-sm transition ${editForm.verifiedOnly ? "border-sky-400 bg-sky-500/10" : dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																					>
-																						<div class="font-semibold">Verified request only</div>
+																						<div className="font-semibold">Verified request only</div>
 																					</button>
 																				</div>
 																			</Field>
-																			<div class="flex gap-2">
+																			<div className="flex gap-2">
 																				<button
 																					type="button"
 																					disabled={saving}
 																					onClick={saveEdit}
-																					class="rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-70"
+																					className="rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-70"
 																				>
 																					Save
 																				</button>
 																				<button
 																					type="button"
 																					onClick={() => setEditingId("")}
-																					class="rounded-2xl border px-4 py-2.5 text-sm font-medium dark:border-white/10 dark:bg-white/5"
+																					className="rounded-2xl border px-4 py-2.5 text-sm font-medium dark:border-white/10 dark:bg-white/5"
 																				>
 																					Cancel
 																				</button>
 																			</div>
 																		</div>
 																	) : (
-																		<div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+																		<div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
 																			<div>
-																				<div class="flex flex-wrap items-center gap-2">
-																					<h4 class="text-base font-semibold">
+																				<div className="flex flex-wrap items-center gap-2">
+																					<h4 className="text-base font-semibold">
 																						{r.title || r.category || "Buyer Request"}
 																					</h4>
-																					<span class={`${badge} ${requestStatusBadge(r.status)}`}>
+																					<span className={`${badge} ${requestStatusBadge(r.status)}`}>
 																						{formatRequestStatus(r.status)}
 																					</span>
 																				</div>
-																				<div class={`mt-2 text-sm ${soft}`}>
+																				<div className={`mt-2 text-sm ${soft}`}>
 																					Qty {r.quantity || "--"} - {r.material || "--"} - Target{" "}
 																					{r.target_market || "--"} - Delivery{" "}
 																					{r.delivery_timeline || r.timeline_days || "--"}
 																				</div>
-																				<div class="mt-3 flex flex-wrap gap-2">
+																				<div className="mt-3 flex flex-wrap gap-2">
 																					<button
 																						type="button"
 																						onClick={() => duplicateRequest(r)}
-																						class="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium dark:border-white/10 dark:bg-white/5"
+																						className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium dark:border-white/10 dark:bg-white/5"
 																					>
-																						<ClipboardList class="h-3.5 w-3.5" /> Duplicate
+																						<ClipboardList className="h-3.5 w-3.5" /> Duplicate
 																					</button>
 																					<button
 																						type="button"
 																						disabled={!canSmartMatch}
 																						onClick={() => loadSmartMatches(r.id)}
-																						class="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium dark:border-white/10 dark:bg-white/5 disabled:opacity-60"
+																						className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium dark:border-white/10 dark:bg-white/5 disabled:opacity-60"
 																					>
-																						<Sparkles class="h-3.5 w-3.5" />{" "}
+																						<Sparkles className="h-3.5 w-3.5" />{" "}
 																						{smartMatchLoading === r.id ? (
 																							<ThreeDot
 																								variant="bounce"
@@ -2495,26 +2495,26 @@ export default function BuyerRequestManagement() {
 																					<button
 																						type="button"
 																						onClick={() => startEditing(r)}
-																						class="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium dark:border-white/10 dark:bg-white/5"
+																						className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium dark:border-white/10 dark:bg-white/5"
 																					>
-																						<Edit3 class="h-3.5 w-3.5" /> Edit
+																						<Edit3 className="h-3.5 w-3.5" /> Edit
 																					</button>
 																					<button
 																						type="button"
 																						onClick={() => deleteRequest(r.id)}
-																						class="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium text-rose-500 dark:border-white/10 dark:bg-white/5"
+																						className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium text-rose-500 dark:border-white/10 dark:bg-white/5"
 																					>
-																						<Trash2 class="h-3.5 w-3.5" /> Delete
+																						<Trash2 className="h-3.5 w-3.5" /> Delete
 																					</button>
 																				</div>
 																			</div>
 
 																			<div
-																				class={`rounded-2xl border border-white/10 bg-sky-500/10 px-4 py-3 text-sm ${dark ? "text-sky-300" : "text-sky-700"}`}
+																				className={`rounded-2xl border border-white/10 bg-sky-500/10 px-4 py-3 text-sm ${dark ? "text-sky-300" : "text-sky-700"}`}
 																			>
-																				<div class="font-medium">Attachments</div>
+																				<div className="font-medium">Attachments</div>
 																				<div
-																					class={`mt-1 text-xs ${dark ? "text-sky-200/80" : "text-sky-600/80"}`}
+																					className={`mt-1 text-xs ${dark ? "text-sky-200/80" : "text-sky-600/80"}`}
 																				>
 																					Tech pack, sketch, reference image, compliance, other
 																				</div>
@@ -2523,12 +2523,12 @@ export default function BuyerRequestManagement() {
 																	)}
 
 																	{canSmartMatch ? null : (
-																		<div class="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-200">
+																		<div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-200">
 																			Smart supplier matching is a Premium feature.
-																			<div class="mt-2">
+																			<div className="mt-2">
 																				<Link
 																					to="/pricing"
-																					class="text-xs font-semibold text-sky-400 hover:underline"
+																					className="text-xs font-semibold text-sky-400 hover:underline"
 																				>
 																					Upgrade to unlock
 																				</Link>
@@ -2537,7 +2537,7 @@ export default function BuyerRequestManagement() {
 																	)}
 
 																	{smartMatchError[r.id] ? (
-																		<p class="mt-2 text-xs text-rose-500">
+																		<p className="mt-2 text-xs text-rose-500">
 																			{smartMatchError[r.id]}
 																		</p>
 																	) : null}
@@ -2545,57 +2545,57 @@ export default function BuyerRequestManagement() {
 																	{canSmartMatch &&
 																	(smartMatches[r.id]?.length > 0 || smartMatchLoading === r.id) ? (
 																		<div
-																			class={`mt-4 rounded-[22px] border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																			className={`mt-4 rounded-[22px] border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																		>
-																			<p class="text-xs font-semibold">Smart matches</p>
-																			<div class="mt-2 space-y-2">
+																			<p className="text-xs font-semibold">Smart matches</p>
+																			<div className="mt-2 space-y-2">
 																				{(smartMatches[r.id] || []).slice(0, 3).map((match) => (
 																					<div
 																						key={match.id || match.supplier_id}
-																						class={`flex items-center justify-between rounded-2xl border px-3 py-2 text-xs ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																						className={`flex items-center justify-between rounded-2xl border px-3 py-2 text-xs ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																					>
-																						<span class="truncate">
+																						<span className="truncate">
 																							{match.name ||
 																								match.supplier_name ||
 																								match.supplier_id}
 																						</span>
-																						<Pill class="bg-emerald-500/15 text-emerald-300">
+																						<Pill className="bg-emerald-500/15 text-emerald-300">
 																							{match.score || match.match_score || "--"}
 																						</Pill>
 																					</div>
 																				))}
 																				{smartMatches[r.id]?.length === 0 &&
 																				smartMatchLoading === r.id ? (
-																					<div class={`text-xs ${soft}`}>Finding matches...</div>
+																					<div className={`text-xs ${soft}`}>Finding matches...</div>
 																				) : null}
 																			</div>
 																		</div>
 																	) : null}
 
 																	{editingId === r.id ? null : (
-																		<div class="mt-4">
+																		<div className="mt-4">
 																			<div
-																				class={`rounded-[22px] border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																				className={`rounded-[22px] border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																			>
-																				<div class="flex items-center justify-between">
-																					<p class="text-xs font-semibold">Attachments</p>
+																				<div className="flex items-center justify-between">
+																					<p className="text-xs font-semibold">Attachments</p>
 																					<button
 																						type="button"
 																						onClick={() => loadAttachments(r.id)}
-																						class="text-xs font-semibold text-sky-400"
+																						className="text-xs font-semibold text-sky-400"
 																					>
 																						Refresh
 																					</button>
 																				</div>
-																				<div class="mt-2 space-y-2">
+																				<div className="mt-2 space-y-2">
 																					{attachments.length > 0 ? (
 																						attachments.map((doc) => (
 																							<div
 																								key={doc.id}
-																								class={`flex items-center justify-between gap-2 rounded-2xl border px-3 py-2 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																								className={`flex items-center justify-between gap-2 rounded-2xl border px-3 py-2 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 																							>
 																								<a
-																									class="text-xs font-semibold truncate"
+																									className="text-xs font-semibold truncate"
 																									href={toPublicFileUrl(doc.file_path)}
 																									target="_blank"
 																									rel="noreferrer"
@@ -2608,20 +2608,20 @@ export default function BuyerRequestManagement() {
 																								<button
 																									type="button"
 																									onClick={() => removeAttachment(doc.id, r.id)}
-																									class="text-xs font-semibold text-rose-500"
+																									className="text-xs font-semibold text-rose-500"
 																								>
 																									Remove
 																								</button>
 																							</div>
 																						))
 																					) : (
-																						<div class="text-xs text-slate-500">
+																						<div className="text-xs text-slate-500">
 																							No attachments uploaded yet.
 																						</div>
 																					)}
 																				</div>
 
-																				<div class="mt-3 flex flex-wrap items-center gap-2">
+																				<div className="mt-3 flex flex-wrap items-center gap-2">
 																					<Select
 																						value={selectedType}
 																						onChange={(e) =>
@@ -2637,7 +2637,7 @@ export default function BuyerRequestManagement() {
 																						<option value="compliance">Compliance</option>
 																						<option value="other">Other</option>
 																					</Select>
-																					<label class="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white">
+																					<label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white">
 																						{uploadingAttachmentId === r.id ? (
 																							<ThreeDot
 																								variant="bounce"
@@ -2651,7 +2651,7 @@ export default function BuyerRequestManagement() {
 																						)}
 																						<input
 																							type="file"
-																							class="hidden"
+																							className="hidden"
 																							onChange={(event) => {
 																								const file = event.target.files?.[0];
 																								if (file) {
@@ -2664,7 +2664,7 @@ export default function BuyerRequestManagement() {
 																					{uploadingAttachmentId === r.id && (
 																						<UploadProgressBar
 																							progress={attachmentUploadProgress}
-																							class="w-24"
+																							className="w-24"
 																						/>
 																					)}
 																				</div>
@@ -2677,26 +2677,26 @@ export default function BuyerRequestManagement() {
 													</AnimatePresence>
 												</div>
 											) : (
-												<div class={`text-sm ${soft}`}>No requests yet.</div>
+												<div className={`text-sm ${soft}`}>No requests yet.</div>
 											)}
 										</div>
 									</div>
 
-									<div class="space-y-4 lg:col-span-5">
-										<div class={`rounded-[28px] border p-5 ${panel}`}>
-											<div class="mb-4 flex items-center justify-between">
+									<div className="space-y-4 lg:col-span-5">
+										<div className={`rounded-[28px] border p-5 ${panel}`}>
+											<div className="mb-4 flex items-center justify-between">
 												<div>
-													<h3 class="text-lg font-semibold">Browse Requests (Summary Only)</h3>
-													<p class={`text-sm ${soft}`}>
+													<h3 className="text-lg font-semibold">Browse Requests (Summary Only)</h3>
+													<p className={`text-sm ${soft}`}>
 														You can research market demand, but full details remain private.
 													</p>
 												</div>
 												<button
 													type="button"
 													onClick={loadBrowse}
-													class="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium dark:border-white/10 dark:bg-white/5"
+													className="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium dark:border-white/10 dark:bg-white/5"
 												>
-													<RefreshCw class="h-4 w-4" />{" "}
+													<RefreshCw className="h-4 w-4" />{" "}
 													{loadingBrowse ? (
 														<ThreeDot
 															variant="bounce"
@@ -2712,40 +2712,40 @@ export default function BuyerRequestManagement() {
 											</div>
 
 											{browse.length > 0 ? (
-												<div class="space-y-3">
+												<div className="space-y-3">
 													{browse
 														.filter((r) => r.buyer_id !== user?.id)
 														.slice(0, 12)
 														.map((r) => (
 															<div
 																key={r.id}
-																class={`rounded-[22px] border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+																className={`rounded-[22px] border p-4 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 															>
-																<div class="flex items-center justify-between gap-3">
-																	<div class="font-medium">
+																<div className="flex items-center justify-between gap-3">
+																	<div className="font-medium">
 																		{r.title || r.category || "Buyer Request"}
 																	</div>
 																	<Pill
-																		class={`bg-white/5 ${dark ? "text-slate-300" : "text-slate-600"}`}
+																		className={`bg-white/5 ${dark ? "text-slate-300" : "text-slate-600"}`}
 																	>
 																		{String(r.buyer_id || "").slice(0, 8)}
 																	</Pill>
 																</div>
-																<div class={`mt-2 text-sm ${soft}`}>
+																<div className={`mt-2 text-sm ${soft}`}>
 																	Qty {r.quantity || "--"} - {r.material || "--"} - Target{" "}
 																	{r.target_market || "--"} - Delivery {r.delivery_timeline || "--"}
 																</div>
 																<Link
 																	to={`/buyer/${encodeURIComponent(r.buyer_id)}`}
-																	class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-400 hover:text-sky-300"
+																	className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-400 hover:text-sky-300"
 																>
-																	View Buyer Profile <ChevronRight class="h-4 w-4" />
+																	View Buyer Profile <ChevronRight className="h-4 w-4" />
 																</Link>
 															</div>
 														))}
 												</div>
 											) : (
-												<div class={`text-sm ${soft}`}>No requests to browse yet.</div>
+												<div className={`text-sm ${soft}`}>No requests to browse yet.</div>
 											)}
 										</div>
 									</div>

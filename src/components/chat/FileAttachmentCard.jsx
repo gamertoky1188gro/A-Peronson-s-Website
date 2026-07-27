@@ -126,7 +126,7 @@ function FileTypeBadge({ kind, isLight, ext }) {
 
 	return (
 		<div
-			class={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl${palette.bg}${palette.text}text-[11px] font-extrabold tracking-wide`}
+			className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl${palette.bg}${palette.text}text-[11px] font-extrabold tracking-wide`}
 		>
 			{label.slice(0, 4)}
 		</div>
@@ -373,25 +373,25 @@ function FileAttachmentCard({
 
 	return (
 		<div
-			class={`w-full overflow-hidden rounded-2xl shadow-borderless dark:shadow-borderlessDark${containerTone}`}
+			className={`w-full overflow-hidden rounded-2xl shadow-borderless dark:shadow-borderlessDark${containerTone}`}
 		>
 			{kind === "pdf" ? (
 				<button
 					type="button"
 					onClick={() => onOpen?.()}
-					class={`block w-full${previewBg}`}
+					className={`block w-full${previewBg}`}
 					title="Open preview"
 				>
-					<div class="flex h-28 w-full items-center justify-center overflow-hidden">
+					<div className="flex h-28 w-full items-center justify-center overflow-hidden">
 						{pdfPreview.thumbUrl ? (
 							<img
 								src={pdfPreview.thumbUrl}
 								alt={`${name} preview`}
-								class="h-full w-full object-contain"
+								className="h-full w-full object-contain"
 								loading="lazy"
 							/>
 						) : (
-							<div class="px-3 text-[11px] font-semibold opacity-70">
+							<div className="px-3 text-[11px] font-semibold opacity-70">
 								{pdfPreview.loading ? (
 									<Atom
 										color="#5900ff"
@@ -412,16 +412,16 @@ function FileAttachmentCard({
 				<button
 					type="button"
 					onClick={() => onOpen?.()}
-					class={`block w-full${previewBg}`}
+					className={`block w-full${previewBg}`}
 					title="Open preview"
 				>
-					<div class="max-h-28 overflow-hidden p-3 text-left">
+					<div className="max-h-28 overflow-hidden p-3 text-left">
 						{textPreview.loading ? (
 							<Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" />
 						) : textPreview.error ? (
-							<div class="text-[11px] font-semibold opacity-70">{textPreview.error}</div>
+							<div className="text-[11px] font-semibold opacity-70">{textPreview.error}</div>
 						) : (
-							<pre class="whitespace-pre-wrap break-words font-mono text-[11px] leading-snug opacity-90">
+							<pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-snug opacity-90">
 								{textPreview.snippet || " "}
 							</pre>
 						)}
@@ -432,28 +432,28 @@ function FileAttachmentCard({
 			<button
 				type="button"
 				onClick={() => onOpen?.()}
-				class={`flex w-full items-center gap-3 px-3 py-3 text-left${kind === "file" ? "" : ""}`}
+				className={`flex w-full items-center gap-3 px-3 py-3 text-left${kind === "file" ? "" : ""}`}
 				title="Open preview"
 			>
 				<FileTypeBadge kind={kind} isLight={isLight && !isOwn} ext={ext} />
-				<div class="min-w-0 flex-1">
-					<div class="truncate text-[12px] font-semibold">{name}</div>
-					{metaLine ? <div class="truncate text-[11px] opacity-70">{metaLine}</div> : null}
+				<div className="min-w-0 flex-1">
+					<div className="truncate text-[12px] font-semibold">{name}</div>
+					{metaLine ? <div className="truncate text-[11px] opacity-70">{metaLine}</div> : null}
 				</div>
 			</button>
 
-			<div class="grid grid-cols-2 shadow-dividerT dark:shadow-dividerTDark">
+			<div className="grid grid-cols-2 shadow-dividerT dark:shadow-dividerTDark">
 				<button
 					type="button"
 					onClick={() => onOpen?.()}
-					class={`px-3 py-2 text-[12px] font-semibold transition-colors${buttonTone}`}
+					className={`px-3 py-2 text-[12px] font-semibold transition-colors${buttonTone}`}
 				>
 					Open
 				</button>
 				<a
 					href={url}
 					download={downloadName}
-					class={`px-3 py-2 text-center text-[12px] font-semibold transition-colors${buttonTone}shadow-dividerL dark:shadow-dividerLDark`}
+					className={`px-3 py-2 text-center text-[12px] font-semibold transition-colors${buttonTone}shadow-dividerL dark:shadow-dividerLDark`}
 				>
 					Save as...
 				</a>

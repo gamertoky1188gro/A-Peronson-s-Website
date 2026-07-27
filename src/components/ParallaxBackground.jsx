@@ -35,7 +35,7 @@ export default function ParallaxBackground({ className = "", scrollRange = 800, 
 	const items = customBlobs || blobs;
 
 	return (
-		<div class={`absolute inset-0 -z-10 overflow-hidden ${className}`}>
+		<div className={`absolute inset-0 -z-10 overflow-hidden ${className}`}>
 			{items.map((blob, i) => (
 				<ParallaxBlob key={i} blob={blob} scrollY={scrollY} scrollRange={scrollRange} />
 			))}

@@ -66,23 +66,23 @@ export default function RoleSelect({ value, onChange, options = [], className = 
 	const currentLabel = (options.find((o) => o.value === value) || options[0])?.label || "";
 
 	return (
-		<div ref={rootRef} class={`relative ${className}`}>
+		<div ref={rootRef} className={`relative ${className}`}>
 			<button
 				type="button"
 				aria-haspopup="listbox"
 				aria-expanded={open}
 				onClick={toggle}
 				onKeyDown={handleKeyDown}
-				class="w-full flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-3 text-sm font-semibold bg-white dark:bg-[#0b1224]"
+				className="w-full flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-3 text-sm font-semibold bg-white dark:bg-[#0b1224]"
 			>
-				<div class="flex items-center gap-3">
-					<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] text-white font-semibold text-xs shrink-0">
+				<div className="flex items-center gap-3">
+					<span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] text-white font-semibold text-xs shrink-0">
 						{currentLabel ? String(currentLabel).charAt(0).toUpperCase() : ""}
 					</span>
-					<span class="truncate text-slate-900 dark:text-slate-100">{currentLabel}</span>
+					<span className="truncate text-slate-900 dark:text-slate-100">{currentLabel}</span>
 				</div>
 				<svg
-					class={`h-4 w-4 ml-2 text-slate-600 dark:text-slate-300 transition-transform ${open ? "rotate-180" : ""}`}
+					className={`h-4 w-4 ml-2 text-slate-600 dark:text-slate-300 transition-transform ${open ? "rotate-180" : ""}`}
 					viewBox="0 0 20 20"
 					fill="none"
 					xmlns="http://www.w3.org/2000/svg"
@@ -101,13 +101,13 @@ export default function RoleSelect({ value, onChange, options = [], className = 
 			{open ? (
 				<ul
 					aria-label="Account type"
-					class="absolute z-50 mt-2 w-full rounded-lg bg-white dark:bg-[#071228] shadow-borderless dark:shadow-borderlessDark p-1"
+					className="absolute z-50 mt-2 w-full rounded-lg bg-white dark:bg-[#071228] shadow-borderless dark:shadow-borderlessDark p-1"
 					onKeyDown={handleKeyDown}
 				>
 					{options.map((opt, idx) => {
 						const isSelected = opt.value === value;
 						return (
-							<li key={opt.value} aria-selected={isSelected} class="p-1">
+							<li key={opt.value} aria-selected={isSelected} className="p-1">
 								<button
 									ref={(el) => (optionRefs.current[idx] = el)}
 									type="button"
@@ -116,18 +116,18 @@ export default function RoleSelect({ value, onChange, options = [], className = 
 										setOpen(false);
 									}}
 									onMouseEnter={() => setFocused(idx)}
-									class={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ${
+									className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ${
 										isSelected
 											? "text-gtBlue bg-blue-50 dark:bg-[rgba(10,102,194,0.08)]"
 											: "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/40"
 									}`}
 								>
 									<span
-										class={`w-6 h-6 inline-flex items-center justify-center rounded-full text-xs font-semibold ${isSelected ? "bg-gtBlue text-white" : "bg-slate-100 dark:bg-[#071228] dark:text-slate-200"}`}
+										className={`w-6 h-6 inline-flex items-center justify-center rounded-full text-xs font-semibold ${isSelected ? "bg-gtBlue text-white" : "bg-slate-100 dark:bg-[#071228] dark:text-slate-200"}`}
 									>
 										{String(opt.label || "").charAt(0) || ""}
 									</span>
-									<span class="truncate">{opt.label}</span>
+									<span className="truncate">{opt.label}</span>
 								</button>
 							</li>
 						);

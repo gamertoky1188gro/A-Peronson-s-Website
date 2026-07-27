@@ -53,7 +53,7 @@ export default function MarkdownReadme({ content = "" }) {
 	}
 
 	return (
-		<div class="prose prose-sm max-w-none prose-slate dark:prose-invert prose-headings:font-semibold prose-pre:rounded-xl prose-pre:bg-slate-900 prose-code:before:content-none prose-code:after:content-none">
+		<div className="prose prose-sm max-w-none prose-slate dark:prose-invert prose-headings:font-semibold prose-pre:rounded-xl prose-pre:bg-slate-900 prose-code:before:content-none prose-code:after:content-none">
 			<ReactMarkdown
 				remarkPlugins={[
 					[remarkGfm, { singleTilde: false }],
@@ -76,7 +76,7 @@ export default function MarkdownReadme({ content = "" }) {
 								alt={alt || ""}
 								title={title}
 								loading="lazy"
-								class="max-w-full rounded-xl"
+								className="max-w-full rounded-xl"
 								{...props}
 							/>
 						);

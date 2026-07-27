@@ -221,27 +221,27 @@ export default function PartnerNetwork() {
 				"min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.24),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_30%),linear-gradient(to_bottom,_#f8fcff,_#edf6ff_35%,_#e2efff)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(96,165,250,0.14),_transparent_25%),linear-gradient(to_bottom,_#0b1120,_#090d18_48%,_#050816)] dark:text-slate-100",
 			)}
 		>
-			<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-					<div class="space-y-4">
-						<div class="inline-flex items-center gap-2 rounded-full border border-sky-300/50 bg-white/70 px-3 py-1 text-xs font-semibold tracking-wide text-sky-700 shadow-sm backdrop-blur dark:border-sky-400/20 dark:bg-white/5 dark:text-sky-200">
-							<Sparkles class="h-3.5 w-3.5" />
+			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+				<div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+					<div className="space-y-4">
+						<div className="inline-flex items-center gap-2 rounded-full border border-sky-300/50 bg-white/70 px-3 py-1 text-xs font-semibold tracking-wide text-sky-700 shadow-sm backdrop-blur dark:border-sky-400/20 dark:bg-white/5 dark:text-sky-200">
+							<Sparkles className="h-3.5 w-3.5" />
 							Partner Network · Protected workspace
 						</div>
 
 						<div>
-							<h1 class="text-3xl font-black tracking-tight sm:text-4xl">Partner Network</h1>
-							<p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+							<h1 className="text-3xl font-black tracking-tight sm:text-4xl">Partner Network</h1>
+							<p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
 								Manage connected factories and request workflow by account ID
 							</p>
 							{permissions.view_only && (
-								<p class="mt-1 text-xs font-medium text-amber-700 dark:text-amber-200">
+								<p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-200">
 									Agent mode: view-only access enabled.
 								</p>
 							)}
 						</div>
 
-						<div class="flex flex-wrap gap-2">
+						<div className="flex flex-wrap gap-2">
 							{badges.map((item) => (
 								<StatusPill key={item.label} tone={item.tone}>
 									{item.label}
@@ -250,51 +250,51 @@ export default function PartnerNetwork() {
 						</div>
 					</div>
 
-					<div class="flex flex-wrap items-center gap-3">
-						<Card class="flex items-center gap-3 px-4 py-3">
-							<div class="rounded-2xl bg-sky-500/10 p-3 text-sky-600 dark:text-sky-300">
-								<UserRound class="h-5 w-5" />
+					<div className="flex flex-wrap items-center gap-3">
+						<Card className="flex items-center gap-3 px-4 py-3">
+							<div className="rounded-2xl bg-sky-500/10 p-3 text-sky-600 dark:text-sky-300">
+								<UserRound className="h-5 w-5" />
 							</div>
 							<div>
-								<div class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+								<div className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
 									Signed in as
 								</div>
-								<div class="font-semibold">{user?.role || "unknown"}</div>
+								<div className="font-semibold">{user?.role || "unknown"}</div>
 							</div>
 						</Card>
 
 						<ActionButton variant="secondary" onClick={toggleTheme}>
-							{isDark ? <SunMedium class="h-4 w-4" /> : <MoonStar class="h-4 w-4" />}
+							{isDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
 							{isDark ? "Light" : "Dark"}
 						</ActionButton>
 					</div>
 				</div>
 
-				<div class="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-					<div class="space-y-6">
+				<div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
+					<div className="space-y-6">
 						<ScrollReveal as="section">
 							<Card>
-								<div class="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-									<ArrowRightLeft class="h-4 w-4 text-sky-500" />
+								<div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+									<ArrowRightLeft className="h-4 w-4 text-sky-500" />
 									Send Request
 								</div>
 
-								<div class="space-y-3">
-									<label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+								<div className="space-y-3">
+									<label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
 										Target account ID
 									</label>
-									<div class="flex gap-3">
+									<div className="flex gap-3">
 										<input
 											value={targetAccountId}
 											onChange={(e) => setTargetAccountId(e.target.value)}
 											placeholder="Target account ID"
 											disabled={!canManage || loading}
-											class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-0 transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950/70 dark:text-white dark:placeholder:text-slate-500"
+											className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-0 transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950/70 dark:text-white dark:placeholder:text-slate-500"
 										/>
 										<ActionButton
 											onClick={sendRequest}
 											disabled={!canManage || loading || !targetAccountId.trim()}
-											class="min-w-32"
+											className="min-w-32"
 										>
 											{loading ? (
 												<ThreeDot
@@ -305,7 +305,7 @@ export default function PartnerNetwork() {
 													textColor=""
 												/>
 											) : (
-												<Sparkles class="h-4 w-4" />
+												<Sparkles className="h-4 w-4" />
 											)}
 											Send Request
 										</ActionButton>
@@ -316,55 +316,55 @@ export default function PartnerNetwork() {
 
 						<ScrollReveal as="section">
 							<Card>
-								<div class="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-									<Search class="h-4 w-4 text-sky-500" />
+								<div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+									<Search className="h-4 w-4 text-sky-500" />
 									Search and filter
 								</div>
-								<div class="space-y-3">
+								<div className="space-y-3">
 									<input
 										value={query}
 										onChange={(e) => setQuery(e.target.value)}
 										placeholder="Search partners"
-										class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 dark:border-slate-700 dark:bg-slate-950/70 dark:text-white dark:placeholder:text-slate-500"
+										className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 dark:border-slate-700 dark:bg-slate-950/70 dark:text-white dark:placeholder:text-slate-500"
 									/>
-									<div class="flex items-center justify-between rounded-2xl border border-dashed border-sky-300/50 bg-sky-50/70 px-4 py-3 text-sm text-slate-700 dark:border-sky-500/20 dark:bg-sky-500/5 dark:text-slate-300">
-										<span class="inline-flex items-center gap-2">
-											<Filter class="h-4 w-4 text-sky-500" />
+									<div className="flex items-center justify-between rounded-2xl border border-dashed border-sky-300/50 bg-sky-50/70 px-4 py-3 text-sm text-slate-700 dark:border-sky-500/20 dark:bg-sky-500/5 dark:text-slate-300">
+										<span className="inline-flex items-center gap-2">
+											<Filter className="h-4 w-4 text-sky-500" />
 											Search by name or ID
 										</span>
-										<span class="font-medium">{filteredRows.length} visible</span>
+										<span className="font-medium">{filteredRows.length} visible</span>
 									</div>
 								</div>
 							</Card>
 						</ScrollReveal>
 
 						<ScrollReveal as="section">
-							<Card class="bg-gradient-to-br from-sky-500/10 via-blue-500/5 to-transparent dark:from-sky-500/15 dark:via-blue-500/10">
-								<div class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-									<Shield class="h-4 w-4 text-sky-500" />
+							<Card className="bg-gradient-to-br from-sky-500/10 via-blue-500/5 to-transparent dark:from-sky-500/15 dark:via-blue-500/10">
+								<div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+									<Shield className="h-4 w-4 text-sky-500" />
 									Permission snapshot
 								</div>
-								<div class="grid gap-3 sm:grid-cols-2">
-									<div class="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-950/50">
-										<div class="text-xs text-slate-500 dark:text-slate-400">View access</div>
-										<div class="mt-1 font-semibold">
+								<div className="grid gap-3 sm:grid-cols-2">
+									<div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-950/50">
+										<div className="text-xs text-slate-500 dark:text-slate-400">View access</div>
+										<div className="mt-1 font-semibold">
 											{permissions.view_only ? "Read only" : "Allowed"}
 										</div>
 									</div>
-									<div class="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-950/50">
-										<div class="text-xs text-slate-500 dark:text-slate-400">Manage access</div>
-										<div class="mt-1 font-semibold">{canManage ? "Enabled" : "Read only"}</div>
+									<div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-700 dark:bg-slate-950/50">
+										<div className="text-xs text-slate-500 dark:text-slate-400">Manage access</div>
+										<div className="mt-1 font-semibold">{canManage ? "Enabled" : "Read only"}</div>
 									</div>
 								</div>
 							</Card>
 						</ScrollReveal>
 					</div>
 
-					<div class="space-y-6">
+					<div className="space-y-6">
 						<ScrollReveal as="section">
 							<Card>
-								<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-									<div class="flex flex-wrap gap-2">
+								<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+									<div className="flex flex-wrap gap-2">
 										{STATUS_TABS.map((item) => (
 											<button
 												key={item.key}
@@ -385,15 +385,15 @@ export default function PartnerNetwork() {
 						</ScrollReveal>
 
 						{error && (
-							<div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
-								<div class="flex items-start gap-3">
-									<AlertCircle class="mt-0.5 h-4 w-4 flex-none" />
+							<div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+								<div className="flex items-start gap-3">
+									<AlertCircle className="mt-0.5 h-4 w-4 flex-none" />
 									<div>{error}</div>
 								</div>
 							</div>
 						)}
 
-						<StaggerContainer class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+						<StaggerContainer className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
 							{filteredRows.length > 0
 								? filteredRows.map((row) => {
 										const counterparty = row.counterparty || {};
@@ -409,44 +409,44 @@ export default function PartnerNetwork() {
 
 										return (
 											<StaggerItem key={row.id}>
-												<Card class="group relative overflow-hidden">
-													<div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400" />
-													<div class="flex items-start justify-between gap-3">
+												<Card className="group relative overflow-hidden">
+													<div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400" />
+													<div className="flex items-start justify-between gap-3">
 														<div>
-															<div class="flex items-center gap-2">
-																<h3 class="text-lg font-bold text-slate-900 dark:text-white">
+															<div className="flex items-center gap-2">
+																<h3 className="text-lg font-bold text-slate-900 dark:text-white">
 																	{counterparty.name || "Unknown account"}
 																</h3>
 																{counterparty.verified && (
 																	<StatusPill tone="emerald">
-																		<CheckCircle2 class="mr-1 h-3.5 w-3.5" />
+																		<CheckCircle2 className="mr-1 h-3.5 w-3.5" />
 																		Verified
 																	</StatusPill>
 																)}
 															</div>
-															<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+															<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 																Account ID: {counterparty.id}
 															</p>
 														</div>
 														<StatusPill tone={tone}>{capitalize(row.status)}</StatusPill>
 													</div>
 
-													<div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-														<div class="rounded-2xl bg-slate-50 p-3 dark:bg-white/5">
-															<div class="text-xs text-slate-500 dark:text-slate-400">Role</div>
-															<div class="mt-1 font-semibold">
+													<div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+														<div className="rounded-2xl bg-slate-50 p-3 dark:bg-white/5">
+															<div className="text-xs text-slate-500 dark:text-slate-400">Role</div>
+															<div className="mt-1 font-semibold">
 																{capitalize(counterparty.role || "unknown")}
 															</div>
 														</div>
-														<div class="rounded-2xl bg-slate-50 p-3 dark:bg-white/5">
-															<div class="text-xs text-slate-500 dark:text-slate-400">
+														<div className="rounded-2xl bg-slate-50 p-3 dark:bg-white/5">
+															<div className="text-xs text-slate-500 dark:text-slate-400">
 																Direction
 															</div>
-															<div class="mt-1 font-semibold">{capitalize(row.direction)}</div>
+															<div className="mt-1 font-semibold">{capitalize(row.direction)}</div>
 														</div>
 													</div>
 
-													<div class="mt-5 flex flex-wrap gap-2">
+													<div className="mt-5 flex flex-wrap gap-2">
 														<Link to={counterpartyRoute}>
 															<ActionButton variant="secondary">View Profile</ActionButton>
 														</Link>
@@ -485,14 +485,14 @@ export default function PartnerNetwork() {
 										);
 									})
 								: !loading && (
-										<Card class="lg:col-span-2 xl:col-span-3">
-											<div class="flex flex-col items-center justify-center gap-3 py-14 text-center">
-												<div class="rounded-full bg-sky-500/10 p-4 text-sky-500 dark:bg-sky-500/15">
-													<Users class="h-6 w-6" />
+										<Card className="lg:col-span-2 xl:col-span-3">
+											<div className="flex flex-col items-center justify-center gap-3 py-14 text-center">
+												<div className="rounded-full bg-sky-500/10 p-4 text-sky-500 dark:bg-sky-500/15">
+													<Users className="h-6 w-6" />
 												</div>
 												<div>
-													<h3 class="text-lg font-semibold">No requests found for this filter.</h3>
-													<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+													<h3 className="text-lg font-semibold">No requests found for this filter.</h3>
+													<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 														Try another tab or search term.
 													</p>
 												</div>
@@ -503,10 +503,10 @@ export default function PartnerNetwork() {
 
 						<ScrollReveal as="section">
 							<Card>
-								<div class="flex flex-wrap items-center justify-between gap-3">
+								<div className="flex flex-wrap items-center justify-between gap-3">
 									<div>
-										<h4 class="font-semibold">Summary</h4>
-										<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+										<h4 className="font-semibold">Summary</h4>
+										<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 											{rows.filter((r) => r.status === tab).length} request(s) in the current tab.
 										</p>
 									</div>

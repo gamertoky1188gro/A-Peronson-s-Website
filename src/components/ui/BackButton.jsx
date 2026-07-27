@@ -21,7 +21,7 @@ export default function BackButton({
 				viewBox="0 0 24 24"
 				fill="none"
 				aria-hidden={true}
-				class="shrink-0"
+				className="shrink-0"
 			>
 				<path
 					d="M15 18l-6-6 6-6"

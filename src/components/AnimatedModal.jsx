@@ -119,14 +119,14 @@ export default function AnimatedModal({
 		return (
 			<div
 				ref={containerRef}
-				class="fixed inset-0 z-50 flex items-center justify-center"
+				className="fixed inset-0 z-50 flex items-center justify-center"
 				role="dialog"
 				aria-modal="true"
 			>
 				{overlay && (
-					<div class="absolute inset-0 bg-black/50" onClick={onClose} aria-label="Close modal" />
+					<div className="absolute inset-0 bg-black/50" onClick={onClose} aria-label="Close modal" />
 				)}
-				<div class={`relative ${className}`}>{children}</div>
+				<div className={`relative ${className}`}>{children}</div>
 			</div>
 		);
 	}
@@ -138,13 +138,13 @@ export default function AnimatedModal({
 			{open && (
 				<div
 					ref={containerRef}
-					class="fixed inset-0 z-50 flex items-center justify-center"
+					className="fixed inset-0 z-50 flex items-center justify-center"
 					role="dialog"
 					aria-modal="true"
 				>
 					{overlay && (
 						<motion.div
-							class="absolute inset-0 bg-black/50"
+							className="absolute inset-0 bg-black/50"
 							variants={overlayVariants}
 							initial="hidden"
 							animate="visible"
@@ -154,7 +154,7 @@ export default function AnimatedModal({
 						/>
 					)}
 					<motion.div
-						class={`relative ${className}`}
+						className={`relative ${className}`}
 						variants={contentVariants}
 						initial="hidden"
 						animate="visible"

@@ -33,25 +33,25 @@ import { cn } from "../../../lib/cn.js";
 function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
 	if (loading) {
 		return (
-			<div class="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-				<div class="flex items-center justify-center">
+			<div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+				<div className="flex items-center justify-center">
 					<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 				</div>
 			</div>
 		);
 	}
 	return (
-		<div class="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-sky-300/70 hover:shadow-[0_24px_80px_-28px_rgba(14,165,233,0.45)] dark:border-white/10 dark:bg-slate-950/70">
-			<div class="flex items-start justify-between gap-4">
+		<div className="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-sky-300/70 hover:shadow-[0_24px_80px_-28px_rgba(14,165,233,0.45)] dark:border-white/10 dark:bg-slate-950/70">
+			<div className="flex items-start justify-between gap-4">
 				<div>
-					<p class="text-sm text-slate-500 dark:text-slate-400">{label}</p>
-					<div class="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+					<p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+					<div className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
 						{value}
 					</div>
-					<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+					<p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
 				</div>
-				<div class="rounded-2xl border border-sky-400/15 bg-gradient-to-br from-sky-400/20 to-blue-500/10 p-3 text-sky-500 shadow-lg shadow-sky-500/10 dark:text-sky-300">
-					<CardIcon class="h-5 w-5" />
+				<div className="rounded-2xl border border-sky-400/15 bg-gradient-to-br from-sky-400/20 to-blue-500/10 p-3 text-sky-500 shadow-lg shadow-sky-500/10 dark:text-sky-300">
+					<CardIcon className="h-5 w-5" />
 				</div>
 			</div>
 		</div>
@@ -60,7 +60,7 @@ function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
 
 function Pill({ children }) {
 	return (
-		<span class="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/8 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm shadow-sky-500/5 dark:text-sky-300">
+		<span className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/8 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm shadow-sky-500/5 dark:text-sky-300">
 			{children}
 		</span>
 	);
@@ -142,7 +142,7 @@ export function AdminServerSection({
 				adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 			)}
 		>
-			<div class="absolute inset-0 -z-10 overflow-hidden">
+			<div className="absolute inset-0 -z-10 overflow-hidden">
 				<div
 					class={cn(
 						"absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full blur-3xl",
@@ -163,14 +163,14 @@ export function AdminServerSection({
 				/>
 			</div>
 
-			<div class="mx-auto max-w-7xl space-y-6">
+			<div className="mx-auto max-w-7xl space-y-6">
 				<header
 					class={cn(
 						"flex flex-col gap-4 rounded-[2rem] border p-5 shadow-2xl shadow-sky-900/10 backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 					)}
 				>
-					<div class="flex items-start gap-4">
+					<div className="flex items-start gap-4">
 						<div
 							class={cn(
 								"rounded-3xl border bg-gradient-to-br p-4 shadow-lg",
@@ -179,10 +179,10 @@ export function AdminServerSection({
 									: "border-sky-200 from-sky-100 to-blue-50 text-sky-700 shadow-sky-200/40",
 							)}
 						>
-							<Sparkles class="h-7 w-7" />
+							<Sparkles className="h-7 w-7" />
 						</div>
 						<div>
-							<div class="flex flex-wrap items-center gap-2">
+							<div className="flex flex-wrap items-center gap-2">
 								<h1
 									class={cn(
 										"text-2xl font-semibold tracking-tight sm:text-3xl",
@@ -216,7 +216,7 @@ export function AdminServerSection({
 						</div>
 					</div>
 
-					<div class="flex flex-wrap items-center gap-3">
+					<div className="flex flex-wrap items-center gap-3">
 						<button
 							type="button"
 							onClick={toggleTheme}
@@ -227,7 +227,7 @@ export function AdminServerSection({
 									: "border-slate-200 bg-white text-slate-700 shadow-slate-200/40 hover:bg-slate-50",
 							)}
 						>
-							{adminDark ? <SunMedium class="h-4 w-4" /> : <MoonStar class="h-4 w-4" />}
+							{adminDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
 							{adminDark ? "Light mode" : "Dark mode"}
 						</button>
 						<button
@@ -245,7 +245,7 @@ export function AdminServerSection({
 									: "border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100",
 							)}
 						>
-							<RefreshCw class="h-4 w-4" /> Refresh
+							<RefreshCw className="h-4 w-4" /> Refresh
 						</button>
 						<button
 							type="button"
@@ -341,12 +341,12 @@ export function AdminServerSection({
 									: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
 							)}
 						>
-							<Download class="h-4 w-4" /> Export
+							<Download className="h-4 w-4" /> Export
 						</button>
 					</div>
 				</header>
 
-				<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+				<section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 					<MetricCard
 						loading={loading}
 						label="Total accounts"
@@ -377,14 +377,14 @@ export function AdminServerSection({
 					/>
 				</section>
 
-				<section class="grid gap-4 xl:grid-cols-3">
+				<section className="grid gap-4 xl:grid-cols-3">
 					<div
 						class={cn(
 							"xl:col-span-2 rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 						)}
 					>
-						<div class="flex items-center justify-between gap-4">
+						<div className="flex items-center justify-between gap-4">
 							<div>
 								<p
 									class={cn(
@@ -406,7 +406,7 @@ export function AdminServerSection({
 							<Pill>24/7 active</Pill>
 						</div>
 
-						<div class="mt-5 grid gap-4 md:grid-cols-2">
+						<div className="mt-5 grid gap-4 md:grid-cols-2">
 							{[
 								{
 									title: "Web Server + PHP",
@@ -475,8 +475,8 @@ export function AdminServerSection({
 												: "border-slate-200 bg-white",
 										)}
 									>
-										<div class="flex items-start justify-between gap-3">
-											<div class="flex items-start gap-3">
+										<div className="flex items-start justify-between gap-3">
+											<div className="flex items-start gap-3">
 												<div
 													class={cn(
 														"rounded-2xl border p-3 backdrop-blur-md",
@@ -485,10 +485,10 @@ export function AdminServerSection({
 															: "border-sky-200 bg-sky-50 text-sky-700",
 													)}
 												>
-													<Icon class="h-5 w-5" />
+													<Icon className="h-5 w-5" />
 												</div>
 												<div>
-													<div class="flex items-center gap-2">
+													<div className="flex items-center gap-2">
 														<h3
 															class={cn(
 																"font-semibold",
@@ -519,11 +519,11 @@ export function AdminServerSection({
 														: "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100",
 												)}
 											>
-												<RefreshCw class="h-3.5 w-3.5" /> Refresh
+												<RefreshCw className="h-3.5 w-3.5" /> Refresh
 											</button>
 										</div>
 
-										<div class="mt-4 space-y-2">
+										<div className="mt-4 space-y-2">
 											{card.lines
 												.filter(Boolean)
 												.slice(0, 6)
@@ -553,7 +553,7 @@ export function AdminServerSection({
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 						)}
 					>
-						<div class="flex items-center justify-between gap-3">
+						<div className="flex items-center justify-between gap-3">
 							<div>
 								<p
 									class={cn(
@@ -575,7 +575,7 @@ export function AdminServerSection({
 							<Shield class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 						</div>
 
-						<div class="mt-5 space-y-3">
+						<div className="mt-5 space-y-3">
 							{[
 								["MFA Required", securityContext.mfa_required ? "On" : "Off"],
 								["Exec Enabled", securityContext.exec_enabled ? "On" : "Simulated"],
@@ -593,7 +593,7 @@ export function AdminServerSection({
 										adminDark ? "border-white/10 bg-slate-950/35" : "border-slate-200 bg-white",
 									)}
 								>
-									<div class="flex items-center justify-between gap-3">
+									<div className="flex items-center justify-between gap-3">
 										<span class={cn("text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
 											{label}
 										</span>
@@ -609,7 +609,7 @@ export function AdminServerSection({
 								adminDark ? "border-sky-400/20 bg-sky-500/10" : "border-sky-200 bg-sky-50",
 							)}
 						>
-							<div class="flex items-start gap-3">
+							<div className="flex items-start gap-3">
 								<TerminalSquare
 									class={cn("mt-0.5 h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")}
 								/>
@@ -636,7 +636,7 @@ export function AdminServerSection({
 									adminDark ? "bg-sky-500 shadow-sky-500/25" : "bg-sky-600 shadow-sky-500/20",
 								)}
 							>
-								Enable OpenSearch <ArrowRight class="h-4 w-4" />
+								Enable OpenSearch <ArrowRight className="h-4 w-4" />
 							</button>
 						</div>
 					</div>
@@ -648,7 +648,7 @@ export function AdminServerSection({
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 					)}
 				>
-					<div class="flex flex-wrap items-center justify-between gap-3">
+					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<p
 								class={cn(
@@ -670,14 +670,14 @@ export function AdminServerSection({
 						<Pill>Premium controls</Pill>
 					</div>
 
-					<div class="mt-5 grid gap-5 lg:grid-cols-2">
+					<div className="mt-5 grid gap-5 lg:grid-cols-2">
 						<div
 							class={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<Search class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
 									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
@@ -694,8 +694,8 @@ export function AdminServerSection({
 								{openSearchStatus?.reachable ? "yes" : "no"}
 							</div>
 
-							<div class="mt-4 grid gap-4 md:grid-cols-2">
-								<label class="md:col-span-2">
+							<div className="mt-4 grid gap-4 md:grid-cols-2">
+								<label className="md:col-span-2">
 									<span
 										class={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
@@ -830,7 +830,7 @@ export function AdminServerSection({
 								</label>
 							</div>
 
-							<div class="mt-4 flex flex-wrap items-center gap-3">
+							<div className="mt-4 flex flex-wrap items-center gap-3">
 								<label
 									class={cn(
 										"inline-flex items-center gap-2 text-sm",
@@ -846,7 +846,7 @@ export function AdminServerSection({
 												enabled: e.target.checked,
 											}))
 										}
-										class="h-4 w-4"
+										className="h-4 w-4"
 									/>
 									Enabled
 								</label>
@@ -865,7 +865,7 @@ export function AdminServerSection({
 												verify_tls: e.target.checked,
 											}))
 										}
-										class="h-4 w-4"
+										className="h-4 w-4"
 									/>
 									Verify TLS certificate
 								</label>
@@ -879,18 +879,18 @@ export function AdminServerSection({
 											: "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100",
 									)}
 								>
-									<RefreshCw class="h-4 w-4" /> Refresh status
+									<RefreshCw className="h-4 w-4" /> Refresh status
 								</button>
 							</div>
 
 							{openSearchNotice ? (
-								<div class="mt-3 text-sm text-emerald-400">{openSearchNotice}</div>
+								<div className="mt-3 text-sm text-emerald-400">{openSearchNotice}</div>
 							) : null}
 							{openSearchError ? (
-								<div class="mt-3 text-sm text-rose-300">{openSearchError}</div>
+								<div className="mt-3 text-sm text-rose-300">{openSearchError}</div>
 							) : null}
 
-							<div class="mt-4 flex flex-wrap gap-2">
+							<div className="mt-4 flex flex-wrap gap-2">
 								<button
 									type="button"
 									onClick={saveOpenSearchConfig}
@@ -953,7 +953,7 @@ export function AdminServerSection({
 								</button>
 							</div>
 
-							<div class="mt-3 flex flex-wrap items-center gap-3">
+							<div className="mt-3 flex flex-wrap items-center gap-3">
 								<label
 									class={cn(
 										"inline-flex items-center gap-2 text-sm",
@@ -964,7 +964,7 @@ export function AdminServerSection({
 										type="checkbox"
 										checked={openSearchReset}
 										onChange={(e) => setOpenSearchReset(e.target.checked)}
-										class="h-4 w-4"
+										className="h-4 w-4"
 									/>
 									Reset
 								</label>
@@ -1008,7 +1008,7 @@ export function AdminServerSection({
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<Mail class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
 									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
@@ -1020,8 +1020,8 @@ export function AdminServerSection({
 								</div>
 							</div>
 
-							<div class="mt-4 grid gap-4 md:grid-cols-2">
-								<label class="md:col-span-2">
+							<div className="mt-4 grid gap-4 md:grid-cols-2">
+								<label className="md:col-span-2">
 									<span
 										class={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
@@ -1045,7 +1045,7 @@ export function AdminServerSection({
 													enabled: e.target.checked,
 												}))
 											}
-											class="h-4 w-4"
+											className="h-4 w-4"
 										/>
 										{emailConfig.enabled ? "On" : "Off"}
 									</label>
@@ -1134,7 +1134,7 @@ export function AdminServerSection({
 									/>
 								</label>
 
-								<label class="md:col-span-2">
+								<label className="md:col-span-2">
 									<span
 										class={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
@@ -1163,18 +1163,18 @@ export function AdminServerSection({
 							</div>
 
 							{emailConfigNotice ? (
-								<div class="mt-3 text-sm text-emerald-400">{emailConfigNotice}</div>
+								<div className="mt-3 text-sm text-emerald-400">{emailConfigNotice}</div>
 							) : null}
 							{emailConfigError ? (
-								<div class="mt-3 text-sm text-rose-300">{emailConfigError}</div>
+								<div className="mt-3 text-sm text-rose-300">{emailConfigError}</div>
 							) : null}
 
-							<div class="mt-4 flex flex-wrap items-center gap-2">
+							<div className="mt-4 flex flex-wrap items-center gap-2">
 								<button
 									type="button"
 									onClick={saveEmailConfig}
 									disabled={emailConfigBusy}
-									class="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] disabled:opacity-60"
+									className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] disabled:opacity-60"
 								>
 									{emailConfigBusy ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
@@ -1217,7 +1217,7 @@ export function AdminServerSection({
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 					)}
 				>
-					<div class="flex flex-wrap items-center justify-between gap-3">
+					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<p
 								class={cn(
@@ -1243,7 +1243,7 @@ export function AdminServerSection({
 							>
 								These settings control what the Admin Panel UI shows when backend inventory is
 								unavailable, and which roles may view the admin panel UI. Backend security still
-								enforces access for all <span class="font-medium">/api/admin</span> routes.
+								enforces access for all <span className="font-medium">/api/admin</span> routes.
 							</p>
 						</div>
 						<button
@@ -1266,20 +1266,20 @@ export function AdminServerSection({
 					</div>
 
 					{adminUiSettingsNotice ? (
-						<div class="mt-3 text-sm text-emerald-400">{adminUiSettingsNotice}</div>
+						<div className="mt-3 text-sm text-emerald-400">{adminUiSettingsNotice}</div>
 					) : null}
 					{adminUiSettingsError ? (
-						<div class="mt-3 text-sm text-rose-300">{adminUiSettingsError}</div>
+						<div className="mt-3 text-sm text-rose-300">{adminUiSettingsError}</div>
 					) : null}
 
-					<div class="mt-5 grid gap-5 lg:grid-cols-2">
+					<div className="mt-5 grid gap-5 lg:grid-cols-2">
 						<div
 							class={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<ShieldCheck class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
 									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
@@ -1317,7 +1317,7 @@ export function AdminServerSection({
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<LayoutDashboard
 									class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")}
 								/>
@@ -1377,14 +1377,14 @@ export function AdminServerSection({
 						</div>
 					</div>
 
-					<div class="mt-5 grid gap-5 lg:grid-cols-2">
+					<div className="mt-5 grid gap-5 lg:grid-cols-2">
 						<div
 							class={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<BarChart3 class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
 									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
@@ -1396,7 +1396,7 @@ export function AdminServerSection({
 								</div>
 							</div>
 
-							<label class="mt-4 block">
+							<label className="mt-4 block">
 								<div
 									class={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
@@ -1425,7 +1425,7 @@ export function AdminServerSection({
 								/>
 							</label>
 
-							<label class="mt-4 block">
+							<label className="mt-4 block">
 								<div
 									class={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
@@ -1460,7 +1460,7 @@ export function AdminServerSection({
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<Gauge class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
 									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
@@ -1491,14 +1491,14 @@ export function AdminServerSection({
 						</div>
 					</div>
 
-					<div class="mt-5 grid gap-5 lg:grid-cols-2">
+					<div className="mt-5 grid gap-5 lg:grid-cols-2">
 						<div
 							class={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<ShieldAlert class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
 									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
@@ -1510,7 +1510,7 @@ export function AdminServerSection({
 								</div>
 							</div>
 
-							<label class="mt-4 block">
+							<label className="mt-4 block">
 								<div
 									class={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
@@ -1538,7 +1538,7 @@ export function AdminServerSection({
 								/>
 							</label>
 
-							<label class="mt-4 block">
+							<label className="mt-4 block">
 								<div
 									class={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
@@ -1566,7 +1566,7 @@ export function AdminServerSection({
 								/>
 							</label>
 
-							<label class="mt-4 block">
+							<label className="mt-4 block">
 								<div
 									class={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
@@ -1601,7 +1601,7 @@ export function AdminServerSection({
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<FileText class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
 									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
@@ -1633,14 +1633,14 @@ export function AdminServerSection({
 					</div>
 				</section>
 
-				<section class="mt-6 grid gap-4 lg:grid-cols-2">
+				<section className="mt-6 grid gap-4 lg:grid-cols-2">
 					<div
 						class={cn(
 							"rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 						)}
 					>
-						<div class="flex items-center justify-between gap-3">
+						<div className="flex items-center justify-between gap-3">
 							<div>
 								<p
 									class={cn(
@@ -1661,7 +1661,7 @@ export function AdminServerSection({
 							</div>
 							<Pill>7 groups</Pill>
 						</div>
-						<div class="mt-4 grid gap-3 sm:grid-cols-2">
+						<div className="mt-4 grid gap-3 sm:grid-cols-2">
 							{[
 								{
 									title: "Real-Time Monitoring & Analytics",
@@ -1708,8 +1708,8 @@ export function AdminServerSection({
 											adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 										)}
 									>
-										<div class="flex items-start justify-between gap-3">
-											<div class="flex items-start gap-3">
+										<div className="flex items-start justify-between gap-3">
+											<div className="flex items-start gap-3">
 												<div
 													class={cn(
 														"rounded-2xl border p-2.5",
@@ -1718,7 +1718,7 @@ export function AdminServerSection({
 															: "border-sky-200 bg-sky-50 text-sky-600",
 													)}
 												>
-													<Icon class="h-4 w-4" />
+													<Icon className="h-4 w-4" />
 												</div>
 												<div>
 													<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
@@ -1743,7 +1743,7 @@ export function AdminServerSection({
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 						)}
 					>
-						<div class="flex flex-wrap items-center justify-between gap-3">
+						<div className="flex flex-wrap items-center justify-between gap-3">
 							<div>
 								<p
 									class={cn(
@@ -1796,7 +1796,7 @@ export function AdminServerSection({
 							/>
 						</div>
 
-						<div class="mt-4 space-y-3">
+						<div className="mt-4 space-y-3">
 							{filteredServerAdminAuditRows.slice(0, 6).map((item) => (
 								<div
 									key={`${item.id || item.at}`}
@@ -1805,7 +1805,7 @@ export function AdminServerSection({
 										adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 									)}
 								>
-									<div class="flex flex-wrap items-start justify-between gap-3">
+									<div className="flex flex-wrap items-start justify-between gap-3">
 										<div>
 											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												{item.path || item.action || "--"}
@@ -1852,7 +1852,7 @@ export function AdminServerSection({
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 					)}
 				>
-					<div class="flex flex-wrap items-center justify-between gap-3">
+					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<p
 								class={cn(
@@ -1873,7 +1873,7 @@ export function AdminServerSection({
 						</div>
 						<Pill>Responsive</Pill>
 					</div>
-					<div class="mt-4 grid gap-4 md:grid-cols-3">
+					<div className="mt-4 grid gap-4 md:grid-cols-3">
 						{[
 							["Clean surface", "Large rounded cards, soft borders, and glassy depth."],
 							["Fast scanning", "Strong hierarchy, compact labels, and clear live states."],
@@ -1886,7 +1886,7 @@ export function AdminServerSection({
 									adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 								)}
 							>
-								<div class="flex items-center gap-2">
+								<div className="flex items-center gap-2">
 									<CheckCircle2
 										class={cn("h-4 w-4", adminDark ? "text-sky-300" : "text-sky-600")}
 									/>

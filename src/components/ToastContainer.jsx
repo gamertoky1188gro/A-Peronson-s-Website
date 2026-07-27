@@ -76,13 +76,13 @@ export function ToastProvider({ children }) {
 	return (
 		<ToastContext.Provider value={toast}>
 			{children}
-			<div class="fixed bottom-6 left-1/2 z-[200] flex -translate-x-1/2 flex-col items-center gap-2 pointer-events-none">
+			<div className="fixed bottom-6 left-1/2 z-[200] flex -translate-x-1/2 flex-col items-center gap-2 pointer-events-none">
 				<AnimatePresence mode="popLayout">
 					{toasts.map((t) => (
 						<motion.div
 							key={t.id}
 							layout={true}
-							class={`pointer-events-auto rounded-2xl px-5 py-3 text-sm font-semibold shadow-xl ${typeStyles[t.type] || typeStyles.info}`}
+							className={`pointer-events-auto rounded-2xl px-5 py-3 text-sm font-semibold shadow-xl ${typeStyles[t.type] || typeStyles.info}`}
 							initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 20, scale: 0.9 }}
 							animate={{ opacity: 1, y: 0, scale: 1 }}
 							exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.9 }}

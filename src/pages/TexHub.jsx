@@ -83,22 +83,22 @@ function SectionTitle({ eyebrow, title, text }) {
 	const reduceMotion = useReducedMotion();
 	const words = String(title || "").split(" ");
 	return (
-		<div class="max-w-3xl">
+		<div className="max-w-3xl">
 			<ScrollVelocityText>
-				<div class="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
-					<Stars class="h-3.5 w-3.5" />
+				<div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+					<Stars className="h-3.5 w-3.5" />
 					{eyebrow}
 				</div>
 			</ScrollVelocityText>
-			<h2 class="mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
+			<h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
 				{reduceMotion ? (
 					title
 				) : (
-					<span class="inline-flex flex-wrap gap-x-[0.25em]">
+					<span className="inline-flex flex-wrap gap-x-[0.25em]">
 						{words.map((word, i) => (
 							<motion.span
 								key={i}
-								class="inline-block"
+								className="inline-block"
 								initial={{ opacity: 0, y: 12 }}
 								whileInView={{ opacity: 1, y: 0 }}
 								viewport={{ once: true, margin: "-60px" }}
@@ -114,14 +114,14 @@ function SectionTitle({ eyebrow, title, text }) {
 					</span>
 				)}
 			</h2>
-			<p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base">{text}</p>
+			<p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base">{text}</p>
 		</div>
 	);
 }
 
 function Pill({ children }) {
 	return (
-		<div class="rounded-full border border-slate-200/50 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:border-white/10 dark:bg-white/10 dark:text-white/85">
+		<div className="rounded-full border border-slate-200/50 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:border-white/10 dark:bg-white/10 dark:text-white/85">
 			{children}
 		</div>
 	);
@@ -146,10 +146,10 @@ function Card({ className = "", children }) {
 function VerifiedBadge({ label = "Verified" }) {
 	return (
 		<span
-			class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]"
+			className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]"
 			title="Verified"
 		>
-			<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
+			<span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
 			{label}
 		</span>
 	);
@@ -187,19 +187,19 @@ function AnimatedHeroHeading({ text, className = "" }) {
 	let globalIndex = 0;
 	return (
 		<span class={className}>
-			<span class="sr-only">{text}</span>
+			<span className="sr-only">{text}</span>
 			<span aria-hidden="true">
 				{words.map((word, wordIndex) => {
 					const chars = Array.from(word);
 					return (
 						<span key={`${word}-${wordIndex}`}>
-							<span class="inline-block whitespace-nowrap">
+							<span className="inline-block whitespace-nowrap">
 								{chars.map((ch, idx) => {
 									const charIndex = globalIndex++;
 									return (
 										<motion.span
 											key={`${ch}-${idx}`}
-											class="inline-block"
+											className="inline-block"
 											initial={{ opacity: 0, y: 10 }}
 											animate={{ opacity: 1, y: 0 }}
 											transition={{
@@ -255,7 +255,7 @@ function MagneticLinkButton({ to, className = "", children }) {
 	}
 
 	return (
-		<Link to={to} class="inline-flex">
+		<Link to={to} className="inline-flex">
 			<motion.span
 				class={className}
 				style={{ x: springX, y: springY }}
@@ -278,7 +278,7 @@ const SkeletonLine = ({ className = "", size = 24 }) => (
 		style={{ fontSize: `${size}px` }}
 		text=""
 		textColor=""
-		class={`inline-block ${className}`}
+		className={`inline-block ${className}`}
 	/>
 );
 
@@ -680,13 +680,13 @@ export default function TexHub() {
 	}
 
 	return (
-		<div class="relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white">
+		<div className="relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white">
 			{!reduceMotion && (
 				<nav
-					class="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block"
+					className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 lg:block"
 					aria-label="Section navigation"
 				>
-					<div class="flex flex-col items-center gap-3">
+					<div className="flex flex-col items-center gap-3">
 						{sectionIds.map((id, i) => (
 							<a
 								key={id}
@@ -695,11 +695,11 @@ export default function TexHub() {
 									e.preventDefault();
 									document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 								}}
-								class="flex items-center justify-center min-w-[48px] min-h-[48px] rounded-full"
+								className="flex items-center justify-center min-w-[48px] min-h-[48px] rounded-full"
 								aria-label={sectionLabels[i]}
 							>
 								<span
-									class={`block rounded-full transition-all duration-300 ${
+									className={`block rounded-full transition-all duration-300 ${
 										activeSection === id
 											? "h-3 w-3 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]"
 											: "h-2 w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-400"
@@ -710,39 +710,39 @@ export default function TexHub() {
 					</div>
 				</nav>
 			)}
-			<div class="absolute inset-0 -z-10 overflow-hidden">
-				<div class="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 max-sm:h-[360px] max-sm:w-[360px] animate-blob-spin-1">
+			<div className="absolute inset-0 -z-10 overflow-hidden">
+				<div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 max-sm:h-[360px] max-sm:w-[360px] animate-blob-spin-1">
 					<motion.div
 						style={{
 							y: reduceMotion ? 0 : blob1Spring,
 							backgroundImage:
 								"conic-gradient(from 0deg, rgba(14,165,233,0.25), rgba(99,102,241,0.15), transparent 70%)",
 						}}
-						class="h-full w-full rounded-full blur-3xl"
+						className="h-full w-full rounded-full blur-3xl"
 					/>
 				</div>
-				<div class="absolute right-[-80px] top-[260px] h-[360px] w-[360px] max-sm:hidden animate-blob-spin-2">
+				<div className="absolute right-[-80px] top-[260px] h-[360px] w-[360px] max-sm:hidden animate-blob-spin-2">
 					<motion.div
 						style={{
 							y: reduceMotion ? 0 : blob2Spring,
 							backgroundImage:
 								"conic-gradient(from 120deg, rgba(59,130,246,0.20), rgba(99,102,241,0.12), transparent 70%)",
 						}}
-						class="h-full w-full rounded-full blur-3xl"
+						className="h-full w-full rounded-full blur-3xl"
 					/>
 				</div>
-				<div class="absolute left-[-120px] top-[760px] h-[280px] w-[280px] max-sm:hidden animate-blob-spin-3">
+				<div className="absolute left-[-120px] top-[760px] h-[280px] w-[280px] max-sm:hidden animate-blob-spin-3">
 					<motion.div
 						style={{
 							y: reduceMotion ? 0 : blob3Spring,
 							backgroundImage:
 								"conic-gradient(from 240deg, rgba(6,182,212,0.18), rgba(14,165,233,0.10), transparent 70%)",
 						}}
-						class="h-full w-full rounded-full blur-3xl"
+						className="h-full w-full rounded-full blur-3xl"
 					/>
 				</div>
 				<svg
-					class="absolute inset-0 h-full w-full opacity-[0.04] pointer-events-none"
+					className="absolute inset-0 h-full w-full opacity-[0.04] pointer-events-none"
 					xmlns="http://www.w3.org/2000/svg"
 				>
 					<defs>
@@ -760,11 +760,11 @@ export default function TexHub() {
 				</svg>
 			</div>
 
-			<main class="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8">
+			<main className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 lg:px-8">
 				<ScrollReveal
 					as="section"
 					transition={srWave(0)}
-					class="grid items-center gap-8 lg:grid-cols-[1.25fr_0.95fr]"
+					className="grid items-center gap-8 lg:grid-cols-[1.25fr_0.95fr]"
 				>
 					<motion.div
 						variants={staggerContainerVariants}
@@ -772,7 +772,7 @@ export default function TexHub() {
 						whileInView="visible"
 						viewport={{ once: true, margin: "-60px" }}
 					>
-						<motion.div variants={staggerChildVariants} class="flex flex-wrap gap-2">
+						<motion.div variants={staggerChildVariants} className="flex flex-wrap gap-2">
 							<Pill>Bangladesh-centric</Pill>
 							<Pill>Global-facing</Pill>
 							<Pill>Garments</Pill>
@@ -781,36 +781,36 @@ export default function TexHub() {
 
 						<motion.h1
 							variants={staggerChildVariants}
-							class="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl"
+							className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl"
 						>
 							<AnimatedHeroHeading text={heroHeadline} />
 						</motion.h1>
 						<motion.div variants={staggerChildVariants}>
-							<p class="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
+							<p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
 								{heroSubheadline}
 							</p>
-							<p class="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+							<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
 								{heroShortDescription}
 							</p>
 							{heroPresentation ? (
-								<p class="mt-2 max-w-2xl text-xs italic text-slate-500 dark:text-slate-400">
+								<p className="mt-2 max-w-2xl text-xs italic text-slate-500 dark:text-slate-400">
 									{heroPresentation}
 								</p>
 							) : null}
 						</motion.div>
 
-						<motion.div variants={staggerChildVariants} class="mt-8 flex flex-wrap gap-3">
+						<motion.div variants={staggerChildVariants} className="mt-8 flex flex-wrap gap-3">
 							{isLoggedIn ? (
 								<>
 									<MagneticLinkButton
 										to="/feed"
-										class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5"
+										className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5"
 									>
-										Go to Dashboard <ArrowRight class="h-4 w-4" />
+										Go to Dashboard <ArrowRight className="h-4 w-4" />
 									</MagneticLinkButton>
 									<MagneticLinkButton
 										to="/search"
-										class="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200"
+										className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200"
 									>
 										Browse Suppliers
 									</MagneticLinkButton>
@@ -819,19 +819,19 @@ export default function TexHub() {
 								<>
 									<MagneticLinkButton
 										to="/signup"
-										class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5"
+										className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:-translate-y-0.5"
 									>
-										Create Buyer Account <ArrowRight class="h-4 w-4" />
+										Create Buyer Account <ArrowRight className="h-4 w-4" />
 									</MagneticLinkButton>
 									<MagneticLinkButton
 										to="/signup"
-										class="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200"
+										className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-white px-5 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 dark:bg-white/5 dark:text-sky-200"
 									>
 										Register Factory
 									</MagneticLinkButton>
 									<MagneticLinkButton
 										to="/login"
-										class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+										className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
 									>
 										View enterprise plans
 									</MagneticLinkButton>
@@ -839,43 +839,43 @@ export default function TexHub() {
 							)}
 						</motion.div>
 
-						<motion.div variants={staggerChildVariants} class="mt-8 grid gap-3 sm:grid-cols-3">
+						<motion.div variants={staggerChildVariants} className="mt-8 grid gap-3 sm:grid-cols-3">
 							{buyerStats.map((item) => (
-								<Card key={item.label} class="p-4">
-									<div class="text-sm text-slate-500 dark:text-slate-400">{item.label}</div>
-									<div class="mt-2 text-2xl font-semibold tracking-tight">{item.value}</div>
+								<Card key={item.label} className="p-4">
+									<div className="text-sm text-slate-500 dark:text-slate-400">{item.label}</div>
+									<div className="mt-2 text-2xl font-semibold tracking-tight">{item.value}</div>
 								</Card>
 							))}
 						</motion.div>
 					</motion.div>
 
-					<div class="relative">
-						<Card class="overflow-hidden p-5">
-							<div class="rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 shadow-2xl shadow-sky-200/30 dark:from-slate-950 dark:to-sky-950 dark:text-white dark:shadow-sky-950/25">
-								<div class="flex items-center justify-between">
+					<div className="relative">
+						<Card className="overflow-hidden p-5">
+							<div className="rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 shadow-2xl shadow-sky-200/30 dark:from-slate-950 dark:to-sky-950 dark:text-white dark:shadow-sky-950/25">
+								<div className="flex items-center justify-between">
 									<div>
-										<div class="text-sm font-medium text-sky-600/80 dark:text-sky-100/80">
+										<div className="text-sm font-medium text-sky-600/80 dark:text-sky-100/80">
 											Buyer Request
 										</div>
-										<div class="mt-1 text-xl font-semibold">{heroBuyerRequest.title}</div>
+										<div className="mt-1 text-xl font-semibold">{heroBuyerRequest.title}</div>
 									</div>
 									<VerifiedBadge label={heroBuyerRequest.badge} />
 								</div>
 
-								<div class="mt-6 grid gap-3">
+								<div className="mt-6 grid gap-3">
 									{timeline.map((item) => {
 										const Icon = iconMap[item.icon] || Search;
 										return (
 											<div
 												key={item.label}
-												class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
+												className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
 											>
-												<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/10">
-													<Icon class="h-5 w-5 text-sky-600 dark:text-sky-200" />
+												<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/10">
+													<Icon className="h-5 w-5 text-sky-600 dark:text-sky-200" />
 												</div>
-												<div class="flex-1">
-													<div class="text-sm font-medium">{item.label}</div>
-													<div class="text-xs text-slate-600 dark:text-sky-200/90">
+												<div className="flex-1">
+													<div className="text-sm font-medium">{item.label}</div>
+													<div className="text-xs text-slate-600 dark:text-sky-200/90">
 														{item.status}
 													</div>
 												</div>
@@ -884,19 +884,19 @@ export default function TexHub() {
 									})}
 								</div>
 
-								<div class="mt-5 rounded-3xl border border-slate-200 bg-slate-100 p-4 dark:border-white/10 dark:bg-white/10">
-									<div class="flex items-center justify-between">
-										<div class="flex items-center gap-2 text-sm font-medium">
-											<BadgeCheck class="h-4 w-4 text-cyan-600 dark:text-cyan-200" />{" "}
+								<div className="mt-5 rounded-3xl border border-slate-200 bg-slate-100 p-4 dark:border-white/10 dark:bg-white/10">
+									<div className="flex items-center justify-between">
+										<div className="flex items-center gap-2 text-sm font-medium">
+											<BadgeCheck className="h-4 w-4 text-cyan-600 dark:text-cyan-200" />{" "}
 											{heroFactories.title}
 										</div>
-										<div class="text-xs text-slate-600 dark:text-sky-200/90">
+										<div className="text-xs text-slate-600 dark:text-sky-200/90">
 											{heroFactories.subtitle}
 										</div>
 									</div>
-									<div class="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2 dark:text-sky-200">
+									<div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2 dark:text-sky-200">
 										{heroValueProps.slice(0, 4).map((t) => (
-											<div key={t} class="rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5">
+											<div key={t} className="rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5">
 												{t}
 											</div>
 										))}
@@ -907,21 +907,21 @@ export default function TexHub() {
 					</div>
 				</ScrollReveal>
 
-				<ScrollReveal as="section" id="why" class="mt-20">
+				<ScrollReveal as="section" id="why" className="mt-20">
 					<SectionTitle
 						eyebrow="Why GarTexHub"
 						title="A sourcing workflow network built only for garments and textiles."
 						text="Low noise, structured requests, and trust by design. Designed to strengthen business workflow, increase transparency, improve efficiency, and build trust."
 					/>
 					<CardStack>
-						<div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+						<div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 							{whyCards.map((card) => (
-								<Card key={card.title} class="p-6">
-									<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
-										<CheckCircle2 class="h-6 w-6" />
+								<Card key={card.title} className="p-6">
+									<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
+										<CheckCircle2 className="h-6 w-6" />
 									</div>
-									<h3 class="mt-4 text-lg font-semibold">{card.title}</h3>
-									<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+									<h3 className="mt-4 text-lg font-semibold">{card.title}</h3>
+									<p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 										{card.text}
 									</p>
 								</Card>
@@ -930,13 +930,13 @@ export default function TexHub() {
 					</CardStack>
 				</ScrollReveal>
 
-				<ScrollReveal as="section" id="workflow" class="mt-20">
+				<ScrollReveal as="section" id="workflow" className="mt-20">
 					<SectionTitle
 						eyebrow="How GarTexHub works"
 						title="A simple flow that stays structured end-to-end."
 						text="From the first request to the final agreement, every step is organized to keep sourcing calm, clear, and fast."
 					/>
-					<div class="mt-8 flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-3">
+					<div className="mt-8 flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-3">
 						{workflowSteps.map((item, idx) => {
 							const Icon = workflowIconMap[item.icon] || ClipboardList;
 							const parallaxStyle = reduceMotion
@@ -946,19 +946,19 @@ export default function TexHub() {
 									};
 							return (
 								<motion.div key={item.title} style={parallaxStyle}>
-									<Card class="min-w-[280px] snap-start lg:min-w-0 p-6">
-										<div class="flex items-center justify-between">
-											<div class="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
+									<Card className="min-w-[280px] snap-start lg:min-w-0 p-6">
+										<div className="flex items-center justify-between">
+											<div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
 												<TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(99,102,241)">
 													{item.step}
 												</TextColorReveal>
 											</div>
-											<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-100">
-												<Icon class="h-5 w-5" />
+											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-100">
+												<Icon className="h-5 w-5" />
 											</div>
 										</div>
-										<h3 class="mt-5 text-xl font-semibold">{item.title}</h3>
-										<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<h3 className="mt-5 text-xl font-semibold">{item.title}</h3>
+										<p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											{item.text}
 										</p>
 									</Card>
@@ -968,27 +968,27 @@ export default function TexHub() {
 					</div>
 				</ScrollReveal>
 
-				<ScrollReveal as="section" id="platform" class="mt-20">
+				<ScrollReveal as="section" id="platform" className="mt-20">
 					<SectionTitle
 						eyebrow="Platform features"
 						title="Borderless surfaces, clean hierarchy, and strong trust indicators."
 						text="Professional feed, structured buyer requests, contract vault, enterprise analytics, a subtle lock system, and a premium AI assistant — all aligned around clarity."
 					/>
-					<div class="mt-8 grid gap-4 lg:grid-cols-2">
+					<div className="mt-8 grid gap-4 lg:grid-cols-2">
 						{platformFeatures.map((item) => (
-							<Card key={item.title} class="p-6">
-								<div class="flex items-start justify-between gap-4">
+							<Card key={item.title} className="p-6">
+								<div className="flex items-start justify-between gap-4">
 									<div>
-										<h3 class="text-xl font-semibold">{item.title}</h3>
-										<p class="mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<h3 className="text-xl font-semibold">{item.title}</h3>
+										<p className="mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300">
 											{item.text}
 										</p>
 									</div>
-									<div class="rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 p-3 text-white shadow-lg shadow-sky-500/20">
-										<Layers3 class="h-5 w-5" />
+									<div className="rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 p-3 text-white shadow-lg shadow-sky-500/20">
+										<Layers3 className="h-5 w-5" />
 									</div>
 								</div>
-								<div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+								<div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
 									{item.meta}
 								</div>
 							</Card>
@@ -996,15 +996,15 @@ export default function TexHub() {
 					</div>
 				</ScrollReveal>
 
-				<ScrollReveal as="section" class="mt-20 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-					<Card class="p-6" id="trust">
+				<ScrollReveal as="section" className="mt-20 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+					<Card className="p-6" id="trust">
 						<SectionTitle
 							eyebrow="Trust"
 							title="Verified and documented by design."
 							text="GarTexHub increases trust with organization-based verification, controlled communication flow, and secure contract records."
 						/>
 						<StickySection top={120}>
-							<div class="mt-6 space-y-3">
+							<div className="mt-6 space-y-3">
 								{trustPoints.map((item, i) => (
 									<motion.div
 										key={item}
@@ -1016,7 +1016,7 @@ export default function TexHub() {
 											duration: 0.4,
 											ease: [0.16, 1, 0.3, 1],
 										}}
-										class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5"
+										className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5"
 									>
 										<motion.div
 											initial={reduceMotion ? {} : { scale: 0 }}
@@ -1029,19 +1029,19 @@ export default function TexHub() {
 												damping: 15,
 											}}
 										>
-											<ShieldCheck class="h-5 w-5 text-sky-500" />
+											<ShieldCheck className="h-5 w-5 text-sky-500" />
 										</motion.div>
-										<div class="text-sm text-slate-700 dark:text-slate-200">{item}</div>
+										<div className="text-sm text-slate-700 dark:text-slate-200">{item}</div>
 									</motion.div>
 								))}
 							</div>
 							{/* Trust grid - animated checkmark cells */}
 							{!reduceMotion && (
-								<div class="mt-4 grid grid-cols-8 gap-1">
+								<div className="mt-4 grid grid-cols-8 gap-1">
 									{Array.from({ length: 32 }).map((_, i) => (
 										<motion.div
 											key={i}
-											class={`aspect-square rounded-md ${i % 3 === 0 ? "bg-emerald-400/30" : i % 3 === 1 ? "bg-sky-400/20" : "bg-slate-200/30 dark:bg-slate-700/30"}`}
+											className={`aspect-square rounded-md ${i % 3 === 0 ? "bg-emerald-400/30" : i % 3 === 1 ? "bg-sky-400/20" : "bg-slate-200/30 dark:bg-slate-700/30"}`}
 											initial={{ opacity: 0, scale: 0.5 }}
 											whileInView={{ opacity: 1, scale: 1 }}
 											viewport={{ once: true }}
@@ -1053,36 +1053,36 @@ export default function TexHub() {
 						</StickySection>
 					</Card>
 
-					<Card class="overflow-hidden p-0">
-						<div class="grid gap-0 lg:grid-cols-2">
-							<div class="flex h-full flex-col bg-gradient-to-br from-sky-500 to-blue-700 p-6 text-white">
-								<div class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
-									<LockKeyhole class="h-3.5 w-3.5" /> Internal Agent Lock System
+					<Card className="overflow-hidden p-0">
+						<div className="grid gap-0 lg:grid-cols-2">
+							<div className="flex h-full flex-col bg-gradient-to-br from-sky-500 to-blue-700 p-6 text-white">
+								<div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
+									<LockKeyhole className="h-3.5 w-3.5" /> Internal Agent Lock System
 								</div>
-								<div class="mt-4 text-2xl font-semibold tracking-tight">
+								<div className="mt-4 text-2xl font-semibold tracking-tight">
 									Subtle, conflict-free lead ownership
 								</div>
-								<p class="mt-3 text-sm leading-6 text-sky-50/90">
+								<p className="mt-3 text-sm leading-6 text-sky-50/90">
 									Multi-agent buying house teams can claim leads, avoid overlap, and keep ownership
 									visible without friction.
 								</p>
-								<div class="mt-6 rounded-3xl border border-white/15 bg-white/10 p-4">
-									<div class="flex items-center justify-between text-sm">
+								<div className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-4">
+									<div className="flex items-center justify-between text-sm">
 										<span>{bentoView.agentLock.requestLabel}</span>
-										<span class="rounded-full bg-white/15 px-3 py-1 text-xs">
+										<span className="rounded-full bg-white/15 px-3 py-1 text-xs">
 											{bentoView.agentLock.status}
 										</span>
 									</div>
-									<p class="mt-3 text-xs leading-5 text-sky-50/85">{bentoView.agentLock.note}</p>
+									<p className="mt-3 text-xs leading-5 text-sky-50/85">{bentoView.agentLock.note}</p>
 								</div>
 							</div>
-							<div class="flex h-full flex-col bg-white p-6 dark:bg-slate-950/70">
-								<div class="flex items-center justify-between">
+							<div className="flex h-full flex-col bg-white p-6 dark:bg-slate-950/70">
+								<div className="flex items-center justify-between">
 									<div>
-										<div class="text-sm font-medium text-slate-500 dark:text-slate-400">
+										<div className="text-sm font-medium text-slate-500 dark:text-slate-400">
 											Unique toggle
 										</div>
-										<div class="mt-1 text-xl font-semibold">
+										<div className="mt-1 text-xl font-semibold">
 											A tactile switch for diverse content modes
 										</div>
 									</div>
@@ -1090,23 +1090,23 @@ export default function TexHub() {
 										type="button"
 										disabled={true}
 										aria-label="Toggle content mode"
-										class="relative h-8 w-16 cursor-not-allowed rounded-full bg-slate-200 p-1 opacity-50 dark:bg-slate-800"
+										className="relative h-8 w-16 cursor-not-allowed rounded-full bg-slate-200 p-1 opacity-50 dark:bg-slate-800"
 									>
 										<motion.div
 											layout={true}
-											class="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow-md transition-transform dark:bg-sky-400"
+											className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow-md transition-transform dark:bg-sky-400"
 											animate={{ x: mode === "professional" ? 0 : 32 }}
 										/>
 									</button>
 								</div>
-								<div class="mt-6 flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-									<div class="text-sm font-medium">
+								<div className="mt-6 flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+									<div className="text-sm font-medium">
 										{mode === "professional" ? "Professional" : "Diverse"}
 									</div>
-									<div class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+									<div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
 										Factory video gallery
 									</div>
-									<div class="mt-4 flex-1 grid grid-cols-3 auto-rows-fr gap-2">
+									<div className="mt-4 flex-1 grid grid-cols-3 auto-rows-fr gap-2">
 										{Array.from({ length: 6 }).map((_, i) => (
 											<motion.div
 												key={i}
@@ -1116,7 +1116,7 @@ export default function TexHub() {
 													stiffness: 300,
 													damping: 25,
 												}}
-												class="rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700"
+												className="rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700"
 											/>
 										))}
 									</div>
@@ -1126,23 +1126,23 @@ export default function TexHub() {
 					</Card>
 				</ScrollReveal>
 
-				<ScrollReveal as="section" class="mt-20">
+				<ScrollReveal as="section" className="mt-20">
 					<SectionTitle
 						eyebrow="Built for growing buying houses"
 						title="Enterprise control, dedicated analytics, and organization-level workflow."
 						text="Unlimited sub-accounts, dedicated analytics, organization control, and contract management designed for serious sourcing teams."
 					/>
-					<div class="mt-8 grid gap-4 lg:grid-cols-2">
-						<Card class="p-6">
-							<div class="flex items-center justify-between">
-								<div class="text-lg font-semibold">Enterprise analytics</div>
-								<BriefcaseBusiness class="h-5 w-5 text-sky-500" />
+					<div className="mt-8 grid gap-4 lg:grid-cols-2">
+						<Card className="p-6">
+							<div className="flex items-center justify-between">
+								<div className="text-lg font-semibold">Enterprise analytics</div>
+								<BriefcaseBusiness className="h-5 w-5 text-sky-500" />
 							</div>
-							<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+							<p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 								Decision-ready reporting for buying houses — without turning the UI into a
 								spreadsheet.
 							</p>
-							<div class="mt-6 grid gap-3 sm:grid-cols-3">
+							<div className="mt-6 grid gap-3 sm:grid-cols-3">
 								{[
 									["Active leads", "120"],
 									["Verified matches", "60"],
@@ -1150,25 +1150,25 @@ export default function TexHub() {
 								].map(([label, value]) => (
 									<div
 										key={label}
-										class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
+										className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
 									>
-										<div class="text-xs text-slate-500 dark:text-slate-400">{label}</div>
-										<div class="mt-2 text-2xl font-semibold">{value}</div>
+										<div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
+										<div className="mt-2 text-2xl font-semibold">{value}</div>
 									</div>
 								))}
 							</div>
 						</Card>
 
-						<Card class="p-6">
-							<div class="flex items-center justify-between">
-								<div class="text-lg font-semibold">Platform features</div>
-								<Users2 class="h-5 w-5 text-sky-500" />
+						<Card className="p-6">
+							<div className="flex items-center justify-between">
+								<div className="text-lg font-semibold">Platform features</div>
+								<Users2 className="h-5 w-5 text-sky-500" />
 							</div>
-							<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+							<p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 								Focused only on garments and textiles. Clear categories help the right people find
 								the right partners.
 							</p>
-							<div class="mt-6 flex flex-wrap gap-2">
+							<div className="mt-6 flex flex-wrap gap-2">
 								{categories.map((item, i) => (
 									<motion.span
 										key={item}
@@ -1180,29 +1180,29 @@ export default function TexHub() {
 											duration: 0.3,
 											ease: [0.16, 1, 0.3, 1],
 										}}
-										class="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+										className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
 									>
 										{item}
 									</motion.span>
 								))}
 							</div>
-							<div class="mt-6 rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 dark:from-slate-950 dark:to-sky-950 dark:text-white">
-								<div class="text-sm text-sky-600/75 dark:text-sky-100/75">
+							<div className="mt-6 rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 text-slate-900 dark:from-slate-950 dark:to-sky-950 dark:text-white">
+								<div className="text-sm text-sky-600/75 dark:text-sky-100/75">
 									Start connecting with the right partners
 								</div>
-								<div class="mt-1 text-lg font-semibold">Create account • Login</div>
-								<div class="mt-4 flex gap-3">
+								<div className="mt-1 text-lg font-semibold">Create account • Login</div>
+								<div className="mt-4 flex gap-3">
 									{isLoggedIn ? (
 										<>
 											<MagneticLinkButton
 												to="/feed"
-												class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900"
+												className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900"
 											>
 												Go to Dashboard
 											</MagneticLinkButton>
 											<MagneticLinkButton
 												to="/search"
-												class="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white"
+												className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white"
 											>
 												Browse Suppliers
 											</MagneticLinkButton>
@@ -1211,13 +1211,13 @@ export default function TexHub() {
 										<>
 											<MagneticLinkButton
 												to="/signup"
-												class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900"
+												className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900"
 											>
 												Create account
 											</MagneticLinkButton>
 											<MagneticLinkButton
 												to="/login"
-												class="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white"
+												className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white"
 											>
 												Login
 											</MagneticLinkButton>
@@ -1229,26 +1229,26 @@ export default function TexHub() {
 					</div>
 				</ScrollReveal>
 
-				<ScrollReveal as="section" class="mt-20">
+				<ScrollReveal as="section" className="mt-20">
 					<SectionTitle
 						eyebrow="Audience"
 						title="Clear surfaces and structured workflows for every role in the sourcing chain."
 						text="Buyers, factories, and buying houses each get a focused experience that keeps the system calm at scale."
 					/>
-					<div class="mt-8 grid gap-4 xl:grid-cols-3">
+					<div className="mt-8 grid gap-4 xl:grid-cols-3">
 						{audience.map((item) => (
-							<Card key={item.title} class="p-6">
-								<h3 class="text-xl font-semibold">{item.title}</h3>
-								<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+							<Card key={item.title} className="p-6">
+								<h3 className="text-xl font-semibold">{item.title}</h3>
+								<p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 									<TextColorReveal>{item.text}</TextColorReveal>
 								</p>
-								<div class="mt-5 space-y-3">
+								<div className="mt-5 space-y-3">
 									{item.points.map((point) => (
 										<div
 											key={point}
-											class="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-200"
+											className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-200"
 										>
-											<CheckCircle2 class="mt-0.5 h-4 w-4 text-sky-500" />
+											<CheckCircle2 className="mt-0.5 h-4 w-4 text-sky-500" />
 											<span>{point}</span>
 										</div>
 									))}
@@ -1259,39 +1259,39 @@ export default function TexHub() {
 				</ScrollReveal>
 
 				{marketingSections.length > 0 ? (
-					<ScrollReveal as="section" class="mt-20">
+					<ScrollReveal as="section" className="mt-20">
 						<SectionTitle
 							eyebrow="More"
 							title="Additional features and capabilities."
 							text="Explore more ways GarTexHub supports your sourcing workflow."
 						/>
-						<div class="mt-8 grid gap-6 md:grid-cols-2">
+						<div className="mt-8 grid gap-6 md:grid-cols-2">
 							{marketingSections.map((section, idx) => (
 								<BentoMotion
 									key={section.id || section.title || String(idx)}
 									index={idx}
-									class="md:col-span-1"
+									className="md:col-span-1"
 								>
-									<Card class="p-7">
+									<Card className="p-7">
 										{section.eyebrow ? (
-											<p class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+											<p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
 												{section.eyebrow}
 											</p>
 										) : null}
-										<h3 class="mt-2 text-base font-bold tracking-tight text-slate-900 dark:text-white">
+										<h3 className="mt-2 text-base font-bold tracking-tight text-slate-900 dark:text-white">
 											{section.title}
 										</h3>
 										{section.description ? (
-											<p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+											<p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
 												{section.description}
 											</p>
 										) : null}
 										{Array.isArray(section.bullets) && section.bullets.length > 0 ? (
-											<ul class="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+											<ul className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-300">
 												{section.bullets.map((bullet) => (
-													<li key={bullet} class="flex items-start gap-2">
-														<span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
-														<span class="leading-relaxed">{bullet}</span>
+													<li key={bullet} className="flex items-start gap-2">
+														<span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+														<span className="leading-relaxed">{bullet}</span>
 													</li>
 												))}
 											</ul>
@@ -1305,28 +1305,28 @@ export default function TexHub() {
 
 				<ScrollReveal
 					as="section"
-					class="mt-20 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500 to-blue-800 p-8 text-white shadow-2xl shadow-sky-500/20 md:p-10"
+					className="mt-20 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500 to-blue-800 p-8 text-white shadow-2xl shadow-sky-500/20 md:p-10"
 				>
-					<div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+					<div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
 						<div>
-							<div class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
-								<Sparkles class="h-3.5 w-3.5" /> {aiWorkflow.eyebrow}
+							<div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
+								<Sparkles className="h-3.5 w-3.5" /> {aiWorkflow.eyebrow}
 							</div>
-							<h2 class="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
+							<h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
 								{aiWorkflow.title}
 							</h2>
-							<p class="mt-4 max-w-2xl text-sm leading-6 text-sky-50/90 md:text-base">
+							<p className="mt-4 max-w-2xl text-sm leading-6 text-sky-50/90 md:text-base">
 								{aiWorkflow.text}
 							</p>
 						</div>
-						<div class="rounded-[1.75rem] border border-white/15 bg-white/10 p-5 backdrop-blur">
-							<div class="flex items-center justify-between text-sm font-medium">
+						<div className="rounded-[1.75rem] border border-white/15 bg-white/10 p-5 backdrop-blur">
+							<div className="flex items-center justify-between text-sm font-medium">
 								<span>Focused only on garments & textile</span>
-								<FileSignature class="h-4 w-4" />
+								<FileSignature className="h-4 w-4" />
 							</div>
-							<div class="mt-4 grid gap-2 text-sm text-sky-50/85">
+							<div className="mt-4 grid gap-2 text-sm text-sky-50/85">
 								{aiWorkflow.features.map((feature) => (
-									<div key={feature} class="rounded-2xl bg-white/10 px-4 py-3">
+									<div key={feature} className="rounded-2xl bg-white/10 px-4 py-3">
 										{feature}
 									</div>
 								))}
@@ -1336,7 +1336,7 @@ export default function TexHub() {
 				</ScrollReveal>
 
 				{loadError ? (
-					<p class="mt-8 text-center text-xs text-amber-700 dark:text-amber-300">{loadError}</p>
+					<p className="mt-8 text-center text-xs text-amber-700 dark:text-amber-300">{loadError}</p>
 				) : null}
 			</main>
 		</div>

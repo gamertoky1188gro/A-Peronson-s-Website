@@ -147,56 +147,56 @@ export default function CommentsDrawer({ open, onClose, item }) {
 		const visibleChildren = shouldCollapse ? children.slice(0, 3) : children;
 
 		return (
-			<div key={comment.id} class="relative">
+			<div key={comment.id} className="relative">
 				{depth > 0 ? (
 					<>
 						<div
-							class="absolute top-0 bottom-0 w-px bg-slate-200"
+							className="absolute top-0 bottom-0 w-px bg-slate-200"
 							style={{ left: `${indent - 8}px` }}
 						/>
-						<div class="absolute top-6 h-px w-3 bg-slate-200" style={{ left: `${indent - 8}px` }} />
+						<div className="absolute top-6 h-px w-3 bg-slate-200" style={{ left: `${indent - 8}px` }} />
 					</>
 				) : null}
 				<div
-					class="bg-white shadow-borderless dark:shadow-borderlessDark rounded-xl p-3"
+					className="bg-white shadow-borderless dark:shadow-borderlessDark rounded-xl p-3"
 					style={{ marginLeft: `${indent}px` }}
 				>
-					<div class="flex items-center justify-between gap-3">
-						<div class="min-w-0">
-							<p class="text-xs font-semibold text-slate-900 truncate">
+					<div className="flex items-center justify-between gap-3">
+						<div className="min-w-0">
+							<p className="text-xs font-semibold text-slate-900 truncate">
 								{comment.actor_name || "User"}{" "}
 								{comment.actor_verified ? (
-									<span class="ml-1 text-[10px] text-[#0A66C2] font-bold" title="Verified">
+									<span className="ml-1 text-[10px] text-[#0A66C2] font-bold" title="Verified">
 										Verified
 									</span>
 								) : null}
 							</p>
-							<p class="text-[10px] text-slate-500">{formatDateTime(comment.created_at)}</p>
+							<p className="text-[10px] text-slate-500">{formatDateTime(comment.created_at)}</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => setReplyingTo(comment.id)}
-							class="text-[11px] font-semibold text-[#0A66C2] hover:text-[#084b8a]"
+							className="text-[11px] font-semibold text-[#0A66C2] hover:text-[#084b8a]"
 						>
 							Reply
 						</button>
 					</div>
-					<p class="mt-2 text-sm text-slate-800 whitespace-pre-wrap">{comment.text}</p>
+					<p className="mt-2 text-sm text-slate-800 whitespace-pre-wrap">{comment.text}</p>
 
 					{replyingTo === comment.id ? (
-						<div class="mt-3 flex gap-2 items-center">
+						<div className="mt-3 flex gap-2 items-center">
 							<input
 								value={replyInput}
 								onChange={(e) => setReplyInput(e.target.value)}
 								onKeyDown={(e) => e.key === "Enter" && submitReply(comment.id)}
 								placeholder="Write a reply..."
-								class="flex-1 rounded-full bg-slate-100 shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+								className="flex-1 rounded-full bg-slate-100 shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
 							/>
 							<button
 								type="button"
 								onClick={() => submitReply(comment.id)}
 								disabled={submitting || !replyInput.trim()}
-								class="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
+								className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
 							>
 								{submitting ? (
 									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
@@ -207,7 +207,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
 							<button
 								type="button"
 								onClick={resetReply}
-								class="text-[11px] font-semibold text-slate-500 hover:text-slate-700"
+								className="text-[11px] font-semibold text-slate-500 hover:text-slate-700"
 							>
 								Cancel
 							</button>
@@ -216,13 +216,13 @@ export default function CommentsDrawer({ open, onClose, item }) {
 				</div>
 
 				{hasChildren ? (
-					<div class="mt-3 space-y-3">
+					<div className="mt-3 space-y-3">
 						{visibleChildren.map((child) => renderCommentNode(child, depth + 1))}
 						{shouldCollapse ? (
 							<button
 								type="button"
 								onClick={() => toggleThread(comment.id)}
-								class="ml-4 text-[11px] font-semibold text-[#0A66C2] hover:text-[#084b8a]"
+								className="ml-4 text-[11px] font-semibold text-[#0A66C2] hover:text-[#084b8a]"
 							>
 								View {children.length - 3} more replies
 							</button>
@@ -231,7 +231,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
 							<button
 								type="button"
 								onClick={() => toggleThread(comment.id)}
-								class="ml-4 text-[11px] font-semibold text-slate-500 hover:text-slate-700"
+								className="ml-4 text-[11px] font-semibold text-slate-500 hover:text-slate-700"
 							>
 								Hide replies
 							</button>
@@ -247,30 +247,30 @@ export default function CommentsDrawer({ open, onClose, item }) {
 	}
 
 	return (
-		<div class="fixed inset-0 z-50">
+		<div className="fixed inset-0 z-50">
 			<button
 				type="button"
 				aria-label="Close comments"
 				onClick={onClose}
-				class="absolute inset-0 bg-black/40"
+				className="absolute inset-0 bg-black/40"
 			/>
-			<aside class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col shadow-dividerL dark:shadow-dividerLDark">
-				<header class="flex items-center justify-between gap-3 px-4 py-3 shadow-dividerB dark:shadow-dividerBDark">
+			<aside className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col shadow-dividerL dark:shadow-dividerLDark">
+				<header className="flex items-center justify-between gap-3 px-4 py-3 shadow-dividerB dark:shadow-dividerBDark">
 					<div>
-						<p class="text-sm font-semibold text-slate-900">Comments</p>
-						<p class="text-[11px] text-slate-500 truncate">{item?.author?.name || "Post"}</p>
+						<p className="text-sm font-semibold text-slate-900">Comments</p>
+						<p className="text-[11px] text-slate-500 truncate">{item?.author?.name || "Post"}</p>
 					</div>
 					<button
 						type="button"
 						onClick={onClose}
-						class="rounded-full p-2 hover:bg-slate-100"
+						className="rounded-full p-2 hover:bg-slate-100"
 						aria-label="Close"
 					>
 						<X size={18} />
 					</button>
 				</header>
 
-				<div data-lenis-prevent={true} class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
+				<div data-lenis-prevent={true} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
 					{loading ? (
 						<Mosaic
 							color="#3b00ff"
@@ -281,31 +281,31 @@ export default function CommentsDrawer({ open, onClose, item }) {
 						/>
 					) : null}
 					{!loading && error ? (
-						<div class="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">
+						<div className="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">
 							{error}
 						</div>
 					) : null}
 					{!(loading || error) && comments.length === 0 ? (
-						<div class="text-sm text-slate-500">No comments yet.</div>
+						<div className="text-sm text-slate-500">No comments yet.</div>
 					) : null}
 
 					{!loading && commentTree.map((node) => renderCommentNode(node, 0))}
 				</div>
 
-				<footer class="p-4 shadow-dividerT dark:shadow-dividerTDark bg-white">
-					<div class="flex gap-2 items-center">
+				<footer className="p-4 shadow-dividerT dark:shadow-dividerTDark bg-white">
+					<div className="flex gap-2 items-center">
 						<input
 							value={input}
 							onChange={(e) => setInput(e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && submitComment()}
 							placeholder="Write a comment..."
-							class="flex-1 rounded-full bg-slate-100 shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+							className="flex-1 rounded-full bg-slate-100 shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
 						/>
 						<button
 							type="button"
 							onClick={submitComment}
 							disabled={submitting || !input.trim()}
-							class="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
+							className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
 						>
 							{submitting ? (
 								<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
@@ -314,7 +314,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
 							)}
 						</button>
 					</div>
-					<p class="mt-2 text-[10px] text-slate-500">
+					<p className="mt-2 text-[10px] text-slate-500">
 						Unverified senders may appear as message requests elsewhere.
 					</p>
 				</footer>

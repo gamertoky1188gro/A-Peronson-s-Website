@@ -42,11 +42,11 @@ export function MagneticNavLink({ to, label, active }) {
 			{active ? (
 				<Motion.span
 					layoutId="nav-active"
-					class="absolute inset-0 rounded-full bg-sky-500/15 ring-1 ring-sky-400/30 shadow-[0_0_0_1px_rgba(56,189,248,0.12)]"
+					className="absolute inset-0 rounded-full bg-sky-500/15 ring-1 ring-sky-400/30 shadow-[0_0_0_1px_rgba(56,189,248,0.12)]"
 					transition={{ type: "spring", stiffness: 500, damping: 42 }}
 				/>
 			) : null}
-			<Motion.span style={{ x: springX, y: springY }} class="relative z-10 inline-block">
+			<Motion.span style={{ x: springX, y: springY }} className="relative z-10 inline-block">
 				{label}
 			</Motion.span>
 		</Link>

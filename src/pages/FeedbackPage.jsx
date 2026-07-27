@@ -81,21 +81,21 @@ export default function FeedbackPage() {
 	}
 
 	return (
-		<div class={`min-h-screen ${theme} transition-colors duration-300`}>
-			<div class="absolute inset-0 pointer-events-none overflow-hidden">
-				<div class="absolute -top-24 left-[-6rem] h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
-				<div class="absolute top-40 right-[-6rem] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
-				<div class="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
+		<div className={`min-h-screen ${theme} transition-colors duration-300`}>
+			<div className="absolute inset-0 pointer-events-none overflow-hidden">
+				<div className="absolute -top-24 left-[-6rem] h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
+				<div className="absolute top-40 right-[-6rem] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
+				<div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
 			</div>
 
-			<div class="relative mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-				<header class={`mb-6 overflow-hidden rounded-[28px] border ${cardTheme} backdrop-blur-xl`}>
-					<div class="p-6 lg:p-8">
-						<h1 class="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+			<div className="relative mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+				<header className={`mb-6 overflow-hidden rounded-[28px] border ${cardTheme} backdrop-blur-xl`}>
+					<div className="p-6 lg:p-8">
+						<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
 							Feedback
 						</h1>
 						<p
-							class={`mt-4 max-w-2xl text-sm leading-6 sm:text-base ${darkMode ? "text-slate-300" : "text-slate-600"}`}
+							className={`mt-4 max-w-2xl text-sm leading-6 sm:text-base ${darkMode ? "text-slate-300" : "text-slate-600"}`}
 						>
 							Help us improve. Submit bug reports, feature requests, or general feedback and we'll
 							track everything as a support ticket.
@@ -105,7 +105,7 @@ export default function FeedbackPage() {
 
 				{feedback && (
 					<div
-						class={`mb-6 rounded-2xl border px-4 py-3 ${
+						className={`mb-6 rounded-2xl border px-4 py-3 ${
 							feedback.includes("success")
 								? "border-emerald-400/20 bg-emerald-500/10 text-emerald-300"
 								: "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -115,16 +115,16 @@ export default function FeedbackPage() {
 					</div>
 				)}
 
-				<section class={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
-					<form onSubmit={handleSubmit} class="space-y-5">
-						<label class="block">
-							<span class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+				<section className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
+					<form onSubmit={handleSubmit} className="space-y-5">
+						<label className="block">
+							<span className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
 								Category
 							</span>
 							<select
 								value={category}
 								onChange={(e) => setCategory(e.target.value)}
-								class={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
+								className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
 								required={true}
 							>
 								{FEEDBACK_CATEGORIES.map((item) => (
@@ -135,21 +135,21 @@ export default function FeedbackPage() {
 							</select>
 						</label>
 
-						<label class="block">
-							<span class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+						<label className="block">
+							<span className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
 								Subject
 							</span>
 							<input
 								value={subject}
 								onChange={(e) => setSubject(e.target.value)}
 								placeholder="Brief summary of your feedback"
-								class={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
+								className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
 								required={true}
 							/>
 						</label>
 
-						<label class="block">
-							<span class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+						<label className="block">
+							<span className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
 								Description
 							</span>
 							<textarea
@@ -157,43 +157,43 @@ export default function FeedbackPage() {
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
 								placeholder="Provide as much detail as possible"
-								class={`w-full rounded-3xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
+								className={`w-full rounded-3xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
 								required={true}
 							/>
 						</label>
 
-						<div class={`rounded-[24px] border border-dashed p-5 ${darkMode ? "border-white/10 bg-slate-900/30" : "border-slate-200 bg-slate-50"}`}>
-							<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-								<div class="flex items-start gap-3">
-									<Upload class={`mt-0.5 h-5 w-5 ${darkMode ? "text-sky-300" : "text-sky-600"}`} />
+						<div className={`rounded-[24px] border border-dashed p-5 ${darkMode ? "border-white/10 bg-slate-900/30" : "border-slate-200 bg-slate-50"}`}>
+							<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+								<div className="flex items-start gap-3">
+									<Upload className={`mt-0.5 h-5 w-5 ${darkMode ? "text-sky-300" : "text-sky-600"}`} />
 									<div>
-										<p class="font-medium">
+										<p className="font-medium">
 											File attachment{" "}
 											<span class={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
 										</p>
-										<p class={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
+										<p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
 											{attachment ? attachment.name : "No file chosen"}
 										</p>
 									</div>
 								</div>
 								<label
-									class={`inline-flex cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:scale-[1.01] active:scale-[0.99] ${darkMode ? "border-white/10 bg-white/5 text-white hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
+									className={`inline-flex cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:scale-[1.01] active:scale-[0.99] ${darkMode ? "border-white/10 bg-white/5 text-white hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
 								>
 									<input
 										type="file"
-										class="hidden"
+										className="hidden"
 										onChange={(e) => setAttachment(e.target.files?.[0] || null)}
 									/>
 									{attachment ? "Change" : "Choose file"}
 								</label>
 							</div>
 							{attachmentUploadProgress > 0 && (
-								<UploadProgressBar progress={attachmentUploadProgress} class="mt-2" />
+								<UploadProgressBar progress={attachmentUploadProgress} className="mt-2" />
 							)}
 						</div>
 
-						<label class="block">
-							<span class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+						<label className="block">
+							<span className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
 								Contact Email{" "}
 								<span class={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
 							</span>
@@ -202,14 +202,14 @@ export default function FeedbackPage() {
 								value={contactEmail}
 								onChange={(e) => setContactEmail(e.target.value)}
 								placeholder="you@example.com"
-								class={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
+								className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
 							/>
 						</label>
 
 						<button
 							type="submit"
 							disabled={loading}
-							class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-500 px-5 py-4 text-sm font-semibold text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+							className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-500 px-5 py-4 text-sm font-semibold text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
 						>
 							{loading ? <NeonAtom fill={true} size="small" /> : null}
 							{loading ? "Submitting..." : "Submit Feedback"}

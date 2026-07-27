@@ -12,13 +12,13 @@ export default function ScrollProgressBar({ sectionIds }) {
 
 	if (reduceMotion) {
 		return (
-			<div class="fixed inset-x-0 top-0 z-[100] h-[3px] bg-gradient-to-r from-sky-500 to-indigo-500" />
+			<div className="fixed inset-x-0 top-0 z-[100] h-[3px] bg-gradient-to-r from-sky-500 to-indigo-500" />
 		);
 	}
 
 	return (
 		<motion.div
-			class="fixed inset-x-0 top-0 z-[100] h-[3px] origin-left bg-gradient-to-r from-sky-500 via-cyan-400 to-indigo-500"
+			className="fixed inset-x-0 top-0 z-[100] h-[3px] origin-left bg-gradient-to-r from-sky-500 via-cyan-400 to-indigo-500"
 			style={{ scaleX }}
 		/>
 	);

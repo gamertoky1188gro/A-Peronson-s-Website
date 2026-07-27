@@ -31,9 +31,9 @@ export default function GooBlobs({ className = "", count = 4, size = 180, colors
 	return (
 		<div
 			ref={ref}
-			class={`absolute inset-0 -z-10 overflow-hidden pointer-events-none ${className}`}
+			className={`absolute inset-0 -z-10 overflow-hidden pointer-events-none ${className}`}
 		>
-			<svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+			<svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
 				<defs>
 					<filter id="goo">
 						<feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />

@@ -18,9 +18,9 @@ import { trackClientEvent } from "./lib/events.js";
 
 function LazyLoadError() {
 	return (
-		<div class="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8 text-center">
-			<div class="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
-				<svg class="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8 text-center">
+			<div className="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
+				<svg className="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -29,13 +29,13 @@ function LazyLoadError() {
 					/>
 				</svg>
 			</div>
-			<h2 class="text-xl font-semibold text-slate-900 dark:text-white">Failed to load page</h2>
-			<p class="max-w-md text-sm text-slate-500 dark:text-slate-400">
+			<h2 className="text-xl font-semibold text-slate-900 dark:text-white">Failed to load page</h2>
+			<p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
 				The page could not be loaded. This may be a network issue or a new version was deployed.
 			</p>
 			<button
 				onClick={() => window.location.reload()}
-				class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
+				className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
 			>
 				Refresh Page
 			</button>
@@ -380,7 +380,7 @@ function AppLayout() {
 			<ErrorBoundary>
 				<Suspense
 					fallback={
-						<div class="flex min-h-screen items-center justify-center">
+						<div className="flex min-h-screen items-center justify-center">
 							<NeonAtom size={48} />
 						</div>
 					}
@@ -391,17 +391,17 @@ function AppLayout() {
 		) : (
 			<>
 				{hideChrome ? null : <ScrollProgressBar />}
-				<div class="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
+				<div className="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
 					<div
-						class="app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden"
+						className="app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden"
 						style={{ zoom: 0.8, width: "100%" }}
 					>
 						{hideChrome ? null : <NavBar />}
-						<main class="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
+						<main className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
 							<ErrorBoundary>
 								<Suspense
 									fallback={
-										<div class="flex min-h-screen items-center justify-center">
+										<div className="flex min-h-screen items-center justify-center">
 											<NeonAtom size={48} />
 										</div>
 									}

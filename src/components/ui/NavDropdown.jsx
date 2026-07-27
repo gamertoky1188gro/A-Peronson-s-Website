@@ -82,7 +82,7 @@ export function NavDropdown({
 	const show = isTouchDevice ? isOpen : isOpen || hover.intent;
 
 	return (
-		<div ref={containerRef} class="relative" onPointerMove={hover.handlePointerMove}>
+		<div ref={containerRef} className="relative" onPointerMove={hover.handlePointerMove}>
 			<button
 				onClick={isTouchDevice ? handleToggle : handleTriggerEnter}
 				onMouseEnter={isTouchDevice ? undefined : handleTriggerEnter}
@@ -94,14 +94,14 @@ export function NavDropdown({
 						: "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white",
 				)}
 			>
-				<span class="inline-flex items-center gap-2">
-					{IconComponent && <IconComponent class="h-4 w-4" />}
-					<span class="hidden lg:inline">{group.label}</span>
+				<span className="inline-flex items-center gap-2">
+					{IconComponent && <IconComponent className="h-4 w-4" />}
+					<span className="hidden lg:inline">{group.label}</span>
 				</span>
 				<ChevronDown class={cn("h-4 w-4 transition-transform", show ? "rotate-180" : "")} />
 			</button>
 
-			{show && !isTouchDevice && <div class="absolute left-0 right-0 top-full h-4 z-40" />}
+			{show && !isTouchDevice && <div className="absolute left-0 right-0 top-full h-4 z-40" />}
 
 			<div
 				ref={dropdownRef}
@@ -119,20 +119,20 @@ export function NavDropdown({
 							: "hidden",
 				)}
 			>
-				<div class="px-3 pb-2 pt-1">
-					<div class="flex items-center justify-between text-xs uppercase tracking-[0.22em] text-slate-400">
+				<div className="px-3 pb-2 pt-1">
+					<div className="flex items-center justify-between text-xs uppercase tracking-[0.22em] text-slate-400">
 						<span>{group.label}</span>
-						<span class="rounded-full bg-sky-500/10 px-2 py-1 text-sky-700 dark:text-sky-300">
+						<span className="rounded-full bg-sky-500/10 px-2 py-1 text-sky-700 dark:text-sky-300">
 							{visibleItems.length} links
 						</span>
 					</div>
 				</div>
 				{group.label === "Communication" && badgeCount > 0 && (
-					<div class="mt-2 mx-3 mb-2 rounded-2xl bg-sky-500/10 px-3 py-2 text-xs text-sky-700 dark:text-sky-300">
+					<div className="mt-2 mx-3 mb-2 rounded-2xl bg-sky-500/10 px-3 py-2 text-xs text-sky-700 dark:text-sky-300">
 						{badgeCount} unread notifications
 					</div>
 				)}
-				<div class="space-y-1">
+				<div className="space-y-1">
 					{visibleItems.map((item) => {
 						const isActive =
 							location.pathname === item.to ||
@@ -149,33 +149,33 @@ export function NavDropdown({
 										: "text-slate-600 hover:bg-slate-900/5 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white",
 								)}
 							>
-								<span class="flex items-center gap-3">
-									<span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900/5 text-slate-700 dark:bg-white/5 dark:text-slate-200">
-										{item.label === "My Profile" && <Vote class="h-4 w-4" />}
-										{item.label === "Feed" && <LayoutDashboard class="h-4 w-4" />}
-										{item.label === "Manage Listings" && <Package class="h-4 w-4" />}
-										{item.label === "Search" && <Search class="h-4 w-4" />}
-										{item.label === "Contracts" && <FileText class="h-4 w-4" />}
-										{item.label === "Verification" && <ShieldCheck class="h-4 w-4" />}
-										{item.label === "Notifications" && <Bell class="h-4 w-4" />}
-										{item.label === "Chat" && <MessageSquare class="h-4 w-4" />}
-										{item.label === "Requests" && <FileText class="h-4 w-4" />}
-										{item.label === "Products" && <Package class="h-4 w-4" />}
-										{item.label === "Partners" && <Users class="h-4 w-4" />}
-										{item.label === "Ratings" && <Star class="h-4 w-4" />}
-										{item.label === "Members" && <Users class="h-4 w-4" />}
-										{item.label === "Settings" && <Settings class="h-4 w-4" />}
-										{item.label === "Insights" && <FileText class="h-4 w-4" />}
-										{item.label === "Owner Dashboard" && <Star class="h-4 w-4" />}
-										{item.label === "Agent Dashboard" && <Star class="h-4 w-4" />}
-										{item.label === "Admin Panel" && <ShieldCheck class="h-4 w-4" />}
-										{item.label === "Governance" && <Settings class="h-4 w-4" />}
-										{item.label === "Support" && <Settings class="h-4 w-4" />}
-										{item.label === "Onboarding" && <Star class="h-4 w-4" />}
+								<span className="flex items-center gap-3">
+									<span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900/5 text-slate-700 dark:bg-white/5 dark:text-slate-200">
+										{item.label === "My Profile" && <Vote className="h-4 w-4" />}
+										{item.label === "Feed" && <LayoutDashboard className="h-4 w-4" />}
+										{item.label === "Manage Listings" && <Package className="h-4 w-4" />}
+										{item.label === "Search" && <Search className="h-4 w-4" />}
+										{item.label === "Contracts" && <FileText className="h-4 w-4" />}
+										{item.label === "Verification" && <ShieldCheck className="h-4 w-4" />}
+										{item.label === "Notifications" && <Bell className="h-4 w-4" />}
+										{item.label === "Chat" && <MessageSquare className="h-4 w-4" />}
+										{item.label === "Requests" && <FileText className="h-4 w-4" />}
+										{item.label === "Products" && <Package className="h-4 w-4" />}
+										{item.label === "Partners" && <Users className="h-4 w-4" />}
+										{item.label === "Ratings" && <Star className="h-4 w-4" />}
+										{item.label === "Members" && <Users className="h-4 w-4" />}
+										{item.label === "Settings" && <Settings className="h-4 w-4" />}
+										{item.label === "Insights" && <FileText className="h-4 w-4" />}
+										{item.label === "Owner Dashboard" && <Star className="h-4 w-4" />}
+										{item.label === "Agent Dashboard" && <Star className="h-4 w-4" />}
+										{item.label === "Admin Panel" && <ShieldCheck className="h-4 w-4" />}
+										{item.label === "Governance" && <Settings className="h-4 w-4" />}
+										{item.label === "Support" && <Settings className="h-4 w-4" />}
+										{item.label === "Onboarding" && <Star className="h-4 w-4" />}
 									</span>
 									<span>{item.label}</span>
 								</span>
-								<ChevronRight class="h-4 w-4 opacity-40 transition group-hover/item:translate-x-0.5 group-hover/item:opacity-80" />
+								<ChevronRight className="h-4 w-4 opacity-40 transition group-hover/item:translate-x-0.5 group-hover/item:opacity-80" />
 							</Link>
 						);
 					})}

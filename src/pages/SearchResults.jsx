@@ -191,7 +191,7 @@ function highlightText(text, query) {
 	const safe = DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
 	return safe.replace(
 		new RegExp(`(${escaped})`, "gi"),
-		'<strong class="text-sky-600 dark:text-sky-400">$1</strong>',
+		'<strong className="text-sky-600 dark:text-sky-400">$1</strong>',
 	);
 }
 
@@ -204,15 +204,15 @@ function pillClass(active) {
 function SectionCard({ title, icon: Icon, children, className = "" }) {
 	return (
 		<div
-			class={`rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 backdrop-blur-xl shadow-[0_20px_60px_-30px_rgba(15,23,42,0.35)] ${className}`}
+			className={`rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 backdrop-blur-xl shadow-[0_20px_60px_-30px_rgba(15,23,42,0.35)] ${className}`}
 		>
-			<div class="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 px-5 py-4">
-				<div class="rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 p-2">
-					<Icon class="h-4 w-4" />
+			<div className="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 px-5 py-4">
+				<div className="rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 p-2">
+					<Icon className="h-4 w-4" />
 				</div>
-				<h3 class="font-semibold text-slate-900 dark:text-white">{title}</h3>
+				<h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
 			</div>
-			<div class="p-5">{children}</div>
+			<div className="p-5">{children}</div>
 		</div>
 	);
 }
@@ -222,11 +222,11 @@ function PlanGate({ premium, children }) {
 		return children;
 	}
 	return (
-		<div class="group relative">
-			<div class="pointer-events-none opacity-40 blur-[0.5px]">{children}</div>
-			<div class="invisible group-hover:visible absolute inset-0 flex items-center justify-center">
-				<div class="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-sky-500/25">
-					<Crown class="h-3.5 w-3.5" /> Premium feature
+		<div className="group relative">
+			<div className="pointer-events-none opacity-40 blur-[0.5px]">{children}</div>
+			<div className="invisible group-hover:visible absolute inset-0 flex items-center justify-center">
+				<div className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-sky-500/25">
+					<Crown className="h-3.5 w-3.5" /> Premium feature
 				</div>
 			</div>
 		</div>
@@ -244,7 +244,7 @@ function Badge({ children, tone = "default" }) {
 	};
 	return (
 		<span
-			class={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]}`}
+			className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]}`}
 		>
 			{children}
 		</span>
@@ -253,27 +253,27 @@ function Badge({ children, tone = "default" }) {
 
 function ToastStack({ toasts, onDismiss }) {
 	return (
-		<div class="fixed right-4 top-4 z-50 flex w-[min(100vw-2rem,420px)] flex-col gap-3 pointer-events-none">
+		<div className="fixed right-4 top-4 z-50 flex w-[min(100vw-2rem,420px)] flex-col gap-3 pointer-events-none">
 			{toasts.map((t) => (
 				<div
 					key={t.id}
-					class="pointer-events-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl p-4 shadow-xl"
+					className="pointer-events-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl p-4 shadow-xl"
 				>
-					<div class="flex items-start gap-3">
+					<div className="flex items-start gap-3">
 						<div
-							class={`mt-0.5 rounded-xl p-2 ${t.kind === "error" ? "bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300" : "bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300"}`}
+							className={`mt-0.5 rounded-xl p-2 ${t.kind === "error" ? "bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300" : "bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300"}`}
 						>
-							{t.kind === "error" ? <X class="h-4 w-4" /> : <Check class="h-4 w-4" />}
+							{t.kind === "error" ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
 						</div>
-						<div class="flex-1">
-							<p class="font-medium text-slate-900 dark:text-white">{t.title}</p>
-							<p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{t.message}</p>
+						<div className="flex-1">
+							<p className="font-medium text-slate-900 dark:text-white">{t.title}</p>
+							<p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t.message}</p>
 						</div>
 						<button
 							onClick={() => onDismiss(t.id)}
-							class="rounded-xl p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+							className="rounded-xl p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
 						>
-							<X class="h-4 w-4" />
+							<X className="h-4 w-4" />
 						</button>
 					</div>
 				</div>
@@ -288,22 +288,22 @@ function SearchModal({ open, searchInputRef, query, onQueryChange, onClose, exec
 	}
 	const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 	return (
-		<div class="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/40 px-4 pt-24 backdrop-blur-sm">
-			<div class="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
-				<div class="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 p-4">
-					<Search class="h-5 w-5 text-sky-500" />
+		<div className="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/40 px-4 pt-24 backdrop-blur-sm">
+			<div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
+				<div className="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 p-4">
+					<Search className="h-5 w-5 text-sky-500" />
 					<input
 						ref={searchInputRef}
 						value={query}
 						onChange={(e) => onQueryChange(e.target.value)}
 						placeholder="Search requests, factories, products..."
-						class="w-full bg-transparent text-slate-900 dark:text-white outline-none placeholder:text-slate-400"
+						className="w-full bg-transparent text-slate-900 dark:text-white outline-none placeholder:text-slate-400"
 					/>
-					<span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 text-xs text-slate-500">
+					<span className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 text-xs text-slate-500">
 						{isMac ? "\u2318K" : "Ctrl K"}
 					</span>
 				</div>
-				<div class="grid gap-3 p-4 sm:grid-cols-2">
+				<div className="grid gap-3 p-4 sm:grid-cols-2">
 					{["Buyer requests", "Factories", "Products", "Verified suppliers"].map((item) => (
 						<button
 							key={item}
@@ -312,10 +312,10 @@ function SearchModal({ open, searchInputRef, query, onQueryChange, onClose, exec
 								onClose();
 								executeSearchRef.current?.();
 							}}
-							class="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 text-left hover:border-sky-300 dark:hover:border-sky-700"
+							className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 text-left hover:border-sky-300 dark:hover:border-sky-700"
 						>
-							<div class="text-sm font-medium text-slate-900 dark:text-white">{item}</div>
-							<div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+							<div className="text-sm font-medium text-slate-900 dark:text-white">{item}</div>
+							<div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
 								Jump straight to this search theme.
 							</div>
 						</button>
@@ -328,7 +328,7 @@ function SearchModal({ open, searchInputRef, query, onQueryChange, onClose, exec
 
 function ResultTabs({ estimatedCounts, activeTab, onTabChange }) {
 	return (
-		<div class="inline-flex rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-1 shadow-sm">
+		<div className="inline-flex rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-1 shadow-sm">
 			{[
 				{ key: "all", label: `All (${estimatedCounts.total})` },
 				{
@@ -342,7 +342,7 @@ function ResultTabs({ estimatedCounts, activeTab, onTabChange }) {
 				<button
 					key={tab.key}
 					onClick={() => onTabChange(tab.key)}
-					class={`rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === tab.key ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"}`}
+					className={`rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === tab.key ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"}`}
 				>
 					{tab.label}
 				</button>
@@ -371,11 +371,11 @@ function ResultCards({
 }) {
 	if (totalResults === 0 && query && !loading) {
 		return (
-			<div class="space-y-4">
-				<div class="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 text-center">
-					<p class="text-lg font-medium">No results for &ldquo;{query}&rdquo;</p>
-					<p class="mt-1 text-sm text-slate-500">Try these categories instead:</p>
-					<div class="mt-4 flex flex-wrap justify-center gap-2">
+			<div className="space-y-4">
+				<div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 text-center">
+					<p className="text-lg font-medium">No results for &ldquo;{query}&rdquo;</p>
+					<p className="mt-1 text-sm text-slate-500">Try these categories instead:</p>
+					<div className="mt-4 flex flex-wrap justify-center gap-2">
 						{["Fabrics", "Yarn", "Garments", "Accessories", "Home Textile"].map((cat) => (
 							<button
 								key={cat}
@@ -386,7 +386,7 @@ function ResultCards({
 										allCategories: false,
 									}))
 								}
-								class="rounded-full border border-slate-200/80 dark:border-slate-700 px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10"
+								className="rounded-full border border-slate-200/80 dark:border-slate-700 px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-sky-500/10"
 							>
 								{cat}
 							</button>
@@ -394,13 +394,13 @@ function ResultCards({
 					</div>
 					{trendingSearches.length > 0 && (
 						<>
-							<p class="mt-6 text-sm text-slate-500">Trending searches:</p>
-							<div class="mt-2 flex flex-wrap justify-center gap-2">
+							<p className="mt-6 text-sm text-slate-500">Trending searches:</p>
+							<div className="mt-2 flex flex-wrap justify-center gap-2">
 								{trendingSearches.slice(0, 5).map((t) => (
 									<button
 										key={t}
 										onClick={() => setQuery(t)}
-										class="rounded-full bg-slate-100 px-4 py-2 text-sm hover:bg-slate-200 dark:bg-slate-800"
+										className="rounded-full bg-slate-100 px-4 py-2 text-sm hover:bg-slate-200 dark:bg-slate-800"
 									>
 										{t}
 									</button>
@@ -416,21 +416,21 @@ function ResultCards({
 		const items = filteredRequests;
 		if (items.length === 0 && !loading) {
 			return (
-				<div class="flex flex-col items-center justify-center py-16 text-center space-y-4">
-					<PackageSearch class="h-12 w-12 text-slate-300 dark:text-slate-600" />
-					<p class="text-lg font-medium text-slate-900 dark:text-white">No buyer requests found</p>
-					<p class="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+				<div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+					<PackageSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+					<p className="text-lg font-medium text-slate-900 dark:text-white">No buyer requests found</p>
+					<p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
 					{query && (
-						<div class="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
-							<p class="text-sm font-semibold text-gtBlue dark:text-sky-300">
+						<div className="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
+							<p className="text-sm font-semibold text-gtBlue dark:text-sky-300">
 								Similar Requests Alert
 							</p>
-							<p class="mt-1 text-xs text-slate-600 dark:text-slate-400">
+							<p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
 								Be the first to know when buyers post matching requests. Save a search alert now.
 							</p>
 							<button
 								onClick={() => saveSearch?.()}
-								class="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
+								className="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
 							>
 								Save Alert
 							</button>
@@ -440,7 +440,7 @@ function ResultCards({
 			);
 		}
 		return (
-			<div class="space-y-4">
+			<div className="space-y-4">
 				<AnimatePresence mode="popLayout">
 					<MasonryGrid columnCount={2} gap={4}>
 						{items.map((item) => (
@@ -450,24 +450,24 @@ function ResultCards({
 								initial={{ opacity: 0, scale: 0.95 }}
 								animate={{ opacity: 1, scale: 1 }}
 								exit={{ opacity: 0, scale: 0.95 }}
-								class="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+								className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
 							>
-								<div class="flex items-start justify-between gap-3">
-									<div class="flex items-start gap-2">
+								<div className="flex items-start justify-between gap-3">
+									<div className="flex items-start gap-2">
 										<button
 											onClick={() => toggleShortlist(item.id, "buyer")}
-											class={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+											className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
 										>
-											<ArrowLeftRight class="h-3.5 w-3.5" />
+											<ArrowLeftRight className="h-3.5 w-3.5" />
 										</button>
 										<Link
 											to={`/buyer/${item.buyer_id}`}
-											class="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+											className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
 											dangerouslySetInnerHTML={{
 												__html: highlightText(item.title || item.name || "Untitled Request", query),
 											}}
 										/>
-										<div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+										<div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
 											<span>{item.location || item.country || "N/A"}</span>
 											{item.category && (
 												<>
@@ -481,7 +481,7 @@ function ResultCards({
 											)}
 										</div>
 									</div>
-									<div class="flex flex-wrap justify-end gap-2">
+									<div className="flex flex-wrap justify-end gap-2">
 										{item.status === "verified" && <Badge tone="green">verified</Badge>}
 										{item.isPriority && <Badge tone="violet">priority</Badge>}
 										{item.status === "active" && <Badge tone="blue">active</Badge>}
@@ -489,7 +489,7 @@ function ResultCards({
 								</div>
 
 								{(item.gender || item.season || item.material) && (
-									<div class="mt-4 flex flex-wrap gap-2">
+									<div className="mt-4 flex flex-wrap gap-2">
 										{item.gender && <Badge tone="default">Gender: {item.gender}</Badge>}
 										{item.season && <Badge tone="default">Season: {item.season}</Badge>}
 										{item.material && <Badge tone="default">Material: {item.material}</Badge>}
@@ -503,7 +503,7 @@ function ResultCards({
 
 								{item.description && (
 									<p
-										class="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300"
+										className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300"
 										dangerouslySetInnerHTML={{
 											__html: highlightText(item.description, query),
 										}}
@@ -511,41 +511,41 @@ function ResultCards({
 								)}
 
 								{(item.quantity || item.targetPrice) && (
-									<div class="mt-4 grid gap-3 sm:grid-cols-3">
+									<div className="mt-4 grid gap-3 sm:grid-cols-3">
 										{item.quantity && (
-											<div class="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-												<div class="text-xs text-slate-500 dark:text-slate-400">Quantity</div>
-												<div class="mt-1 font-semibold text-slate-900 dark:text-white">
+											<div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+												<div className="text-xs text-slate-500 dark:text-slate-400">Quantity</div>
+												<div className="mt-1 font-semibold text-slate-900 dark:text-white">
 													{item.quantity}
 												</div>
 											</div>
 										)}
 										{item.targetPrice && (
-											<div class="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-												<div class="text-xs text-slate-500 dark:text-slate-400">Target price</div>
-												<div class="mt-1 font-semibold text-slate-900 dark:text-white">
+											<div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+												<div className="text-xs text-slate-500 dark:text-slate-400">Target price</div>
+												<div className="mt-1 font-semibold text-slate-900 dark:text-white">
 													{item.targetPrice}
 												</div>
 											</div>
 										)}
-										<div class="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-											<div class="text-xs text-slate-500 dark:text-slate-400">Discussion</div>
-											<div class="mt-1 font-semibold text-slate-900 dark:text-white">
+										<div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+											<div className="text-xs text-slate-500 dark:text-slate-400">Discussion</div>
+											<div className="mt-1 font-semibold text-slate-900 dark:text-white">
 												{item.discussions?.length > 0 ? "Active" : "None"}
 											</div>
 										</div>
 									</div>
 								)}
 
-								<div class="mt-5 flex flex-wrap gap-2">
-									<button class="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
-										<Eye class="h-4 w-4" /> Quick View
+								<div className="mt-5 flex flex-wrap gap-2">
+									<button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
+										<Eye className="h-4 w-4" /> Quick View
 									</button>
-									<button class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
-										<Share2 class="h-4 w-4" /> Share
+									<button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
+										<Share2 className="h-4 w-4" /> Share
 									</button>
-									<button class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
-										<MessageSquareMore class="h-4 w-4" /> Discuss
+									<button className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700">
+										<MessageSquareMore className="h-4 w-4" /> Discuss
 									</button>
 								</div>
 							</motion.article>
@@ -564,20 +564,20 @@ function ResultCards({
 			filteredUsers.length > 0;
 		if (!(hasAny || loading)) {
 			return (
-				<div class="flex flex-col items-center justify-center py-16 text-center space-y-4">
-					<SearchX class="h-12 w-12 text-slate-300 dark:text-slate-600" />
-					<p class="text-lg font-medium text-slate-900 dark:text-white">No results found</p>
-					<p class="text-sm text-slate-500 dark:text-slate-400">
+				<div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+					<SearchX className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+					<p className="text-lg font-medium text-slate-900 dark:text-white">No results found</p>
+					<p className="text-sm text-slate-500 dark:text-slate-400">
 						Try adjusting your search or filters
 					</p>
 				</div>
 			);
 		}
 		return (
-			<div class="space-y-8">
+			<div className="space-y-8">
 				{filteredRequests.length > 0 && (
 					<section>
-						<h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+						<h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
 							Buyer Requests ({filteredRequests.length})
 						</h3>
 						<AnimatePresence mode="popLayout">
@@ -589,19 +589,19 @@ function ResultCards({
 										initial={{ opacity: 0, scale: 0.95 }}
 										animate={{ opacity: 1, scale: 1 }}
 										exit={{ opacity: 0, scale: 0.95 }}
-										class="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+										className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
 									>
-										<div class="flex items-start justify-between gap-3">
-											<div class="flex items-start gap-2">
+										<div className="flex items-start justify-between gap-3">
+											<div className="flex items-start gap-2">
 												<button
 													onClick={() => toggleShortlist(item.id, "buyer")}
-													class={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+													className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "buyer") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
 												>
-													<ArrowLeftRight class="h-3.5 w-3.5" />
+													<ArrowLeftRight className="h-3.5 w-3.5" />
 												</button>
 												<Link
 													to={`/buyer/${item.buyer_id}`}
-													class="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+													className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
 													dangerouslySetInnerHTML={{
 														__html: highlightText(
 															item.title || item.name || "Untitled Request",
@@ -609,7 +609,7 @@ function ResultCards({
 														),
 													}}
 												/>
-												<div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+												<div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
 													<span>{item.location || item.country || "N/A"}</span>
 													{item.category && (
 														<>
@@ -626,7 +626,7 @@ function ResultCards({
 										</div>
 										{item.description && (
 											<p
-												class="mt-4 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300"
+												className="mt-4 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300"
 												dangerouslySetInnerHTML={{
 													__html: highlightText(item.description, query),
 												}}
@@ -641,7 +641,7 @@ function ResultCards({
 
 				{filteredCompanies.length > 0 && (
 					<section>
-						<h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+						<h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
 							Companies ({filteredCompanies.length})
 						</h3>
 						<MasonryGrid columnCount={2} gap={4}>
@@ -650,17 +650,17 @@ function ResultCards({
 									key={item.id}
 									initial={{ opacity: 0, scale: 0.95 }}
 									animate={{ opacity: 1, scale: 1 }}
-									class="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
+									className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
 								>
-									<div class="flex items-start gap-2">
+									<div className="flex items-start gap-2">
 										<Link
 											to={`/factory/${item.company_id}`}
-											class="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+											className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
 											dangerouslySetInnerHTML={{
 												__html: highlightText(item.name || item.title || "Untitled Company", query),
 											}}
 										/>
-										<div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+										<div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
 											<span>{item.location || item.country || "N/A"}</span>
 										</div>
 									</div>
@@ -672,7 +672,7 @@ function ResultCards({
 
 				{filteredFeedPosts.length > 0 && (
 					<section>
-						<h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+						<h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
 							Feed Posts ({filteredFeedPosts.length})
 						</h3>
 						<MasonryGrid columnCount={2} gap={4}>
@@ -681,29 +681,29 @@ function ResultCards({
 									key={item.id}
 									initial={{ opacity: 0, scale: 0.95 }}
 									animate={{ opacity: 1, scale: 1 }}
-									class="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
+									className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
 								>
 									<div
-										class="text-lg font-semibold text-slate-900 dark:text-white"
+										className="text-lg font-semibold text-slate-900 dark:text-white"
 										dangerouslySetInnerHTML={{
 											__html: highlightText(item.title || "Untitled Post", query),
 										}}
 									/>
-									<div class="mt-2 flex flex-wrap gap-2">
+									<div className="mt-2 flex flex-wrap gap-2">
 										{item.category && <Badge tone="default">{item.category}</Badge>}
 										{item.type && <Badge tone="default">{item.type}</Badge>}
 									</div>
 									{item.caption && (
 										<p
-											class="mt-3 text-sm text-slate-600 dark:text-slate-300"
+											className="mt-3 text-sm text-slate-600 dark:text-slate-300"
 											dangerouslySetInnerHTML={{
 												__html: highlightText(item.caption, query),
 											}}
 										/>
 									)}
-									<div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
-										<UserSearch class="h-3 w-3" /> {item.author?.name || "Unknown"}
-										<Clock class="h-3 w-3" />{" "}
+									<div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
+										<UserSearch className="h-3 w-3" /> {item.author?.name || "Unknown"}
+										<Clock className="h-3 w-3" />{" "}
 										{item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}
 									</div>
 								</motion.article>
@@ -714,7 +714,7 @@ function ResultCards({
 
 				{filteredUsers.length > 0 && (
 					<section>
-						<h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+						<h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
 							Users ({filteredUsers.length})
 						</h3>
 						<MasonryGrid columnCount={2} gap={4}>
@@ -723,27 +723,27 @@ function ResultCards({
 									key={item.id}
 									initial={{ opacity: 0, scale: 0.95 }}
 									animate={{ opacity: 1, scale: 1 }}
-									class="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
+									className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
 								>
-									<div class="flex items-start gap-3">
-										<div class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+									<div className="flex items-start gap-3">
+										<div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700" />
 										<div>
 											<Link
 												to={`/user/${item.id}`}
-												class="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+												className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
 												dangerouslySetInnerHTML={{
 													__html: highlightText(item.name || "Untitled User", query),
 												}}
 											/>
-											<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+											<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 												{item.role || "Member"}
 											</div>
 										</div>
 									</div>
-									<div class="mt-3 flex flex-wrap gap-2">
+									<div className="mt-3 flex flex-wrap gap-2">
 										{item.verified && <Badge tone="green">verified</Badge>}
 										{item.country && <span>{item.country}</span>}
-										{item.company && <span class="truncate">{item.company}</span>}
+										{item.company && <span className="truncate">{item.company}</span>}
 									</div>
 								</motion.article>
 							))}
@@ -758,15 +758,15 @@ function ResultCards({
 		const items = filteredCompanies;
 		if (items.length === 0 && !loading) {
 			return (
-				<div class="flex flex-col items-center justify-center py-16 text-center space-y-4">
-					<Factory class="h-12 w-12 text-slate-300 dark:text-slate-600" />
-					<p class="text-lg font-medium text-slate-900 dark:text-white">No companies found</p>
-					<p class="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+				<div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+					<Factory className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+					<p className="text-lg font-medium text-slate-900 dark:text-white">No companies found</p>
+					<p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
 				</div>
 			);
 		}
 		return (
-			<div class="space-y-4">
+			<div className="space-y-4">
 				<AnimatePresence mode="popLayout">
 					<MasonryGrid columnCount={2} gap={4}>
 						{items.map((item) => (
@@ -776,24 +776,24 @@ function ResultCards({
 								initial={{ opacity: 0, scale: 0.95 }}
 								animate={{ opacity: 1, scale: 1 }}
 								exit={{ opacity: 0, scale: 0.95 }}
-								class="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+								className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
 							>
-								<div class="flex items-start gap-2">
+								<div className="flex items-start gap-2">
 									<button
 										onClick={() => toggleShortlist(item.id, "company")}
-										class={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "company") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
+										className={`mt-1 shrink-0 rounded-lg border p-1.5 ${isShortlisted(item.id, "company") ? "border-sky-400 bg-sky-50 text-sky-600 dark:bg-sky-500/10" : "border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"} hover:border-sky-300`}
 									>
-										<ArrowLeftRight class="h-3.5 w-3.5" />
+										<ArrowLeftRight className="h-3.5 w-3.5" />
 									</button>
 									<div>
 										<Link
 											to={`/factory/${item.company_id}`}
-											class="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+											className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
 											dangerouslySetInnerHTML={{
 												__html: highlightText(item.name || item.title || "Untitled Company", query),
 											}}
 										/>
-										<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+										<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 											{item.type && (
 												<span
 													dangerouslySetInnerHTML={{
@@ -816,15 +816,15 @@ function ResultCards({
 		const items = filteredFeedPosts;
 		if (items.length === 0 && !loading) {
 			return (
-				<div class="flex flex-col items-center justify-center py-16 text-center space-y-4">
-					<FileText class="h-12 w-12 text-slate-300 dark:text-slate-600" />
-					<p class="text-lg font-medium text-slate-900 dark:text-white">No feed posts found</p>
-					<p class="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+				<div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+					<FileText className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+					<p className="text-lg font-medium text-slate-900 dark:text-white">No feed posts found</p>
+					<p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
 				</div>
 			);
 		}
 		return (
-			<div class="space-y-4">
+			<div className="space-y-4">
 				<AnimatePresence mode="popLayout">
 					<MasonryGrid columnCount={2} gap={4}>
 						{items.map((item) => (
@@ -834,29 +834,29 @@ function ResultCards({
 								initial={{ opacity: 0, scale: 0.95 }}
 								animate={{ opacity: 1, scale: 1 }}
 								exit={{ opacity: 0, scale: 0.95 }}
-								class="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
+								className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5"
 							>
 								<div
-									class="text-lg font-semibold text-slate-900 dark:text-white"
+									className="text-lg font-semibold text-slate-900 dark:text-white"
 									dangerouslySetInnerHTML={{
 										__html: highlightText(item.title || "Untitled Post", query),
 									}}
 								/>
-								<div class="mt-2 flex flex-wrap gap-2">
+								<div className="mt-2 flex flex-wrap gap-2">
 									{item.category && <Badge tone="default">{item.category}</Badge>}
 									{item.type && <Badge tone="default">{item.type}</Badge>}
 								</div>
 								{item.caption && (
 									<p
-										class="mt-3 text-sm text-slate-600 dark:text-slate-300"
+										className="mt-3 text-sm text-slate-600 dark:text-slate-300"
 										dangerouslySetInnerHTML={{
 											__html: highlightText(item.caption, query),
 										}}
 									/>
 								)}
-								<div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
-									<UserSearch class="h-3 w-3" /> {item.author?.name || "Unknown"}
-									<Clock class="h-3 w-3" />{" "}
+								<div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
+									<UserSearch className="h-3 w-3" /> {item.author?.name || "Unknown"}
+									<Clock className="h-3 w-3" />{" "}
 									{item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}
 								</div>
 							</motion.article>
@@ -871,15 +871,15 @@ function ResultCards({
 		const items = filteredUsers;
 		if (items.length === 0 && !loading) {
 			return (
-				<div class="flex flex-col items-center justify-center py-16 text-center space-y-4">
-					<UserSearch class="h-12 w-12 text-slate-300 dark:text-slate-600" />
-					<p class="text-lg font-medium text-slate-900 dark:text-white">No users found</p>
-					<p class="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+				<div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+					<UserSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+					<p className="text-lg font-medium text-slate-900 dark:text-white">No users found</p>
+					<p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
 				</div>
 			);
 		}
 		return (
-			<div class="space-y-4">
+			<div className="space-y-4">
 				<AnimatePresence mode="popLayout">
 					<MasonryGrid columnCount={2} gap={4}>
 						{items.map((item) => (
@@ -889,29 +889,29 @@ function ResultCards({
 								initial={{ opacity: 0, scale: 0.95 }}
 								animate={{ opacity: 1, scale: 1 }}
 								exit={{ opacity: 0, scale: 0.95 }}
-								class="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+								className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
 							>
-								<div class="flex items-start gap-3">
-									<div class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-500 dark:text-slate-300">
+								<div className="flex items-start gap-3">
+									<div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-500 dark:text-slate-300">
 										{(item.name || "U").charAt(0).toUpperCase()}
 									</div>
 									<div>
 										<Link
 											to={`/user/${item.id}`}
-											class="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+											className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
 											dangerouslySetInnerHTML={{
 												__html: highlightText(item.name || "Untitled User", query),
 											}}
 										/>
-										<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+										<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 											{item.role || "Member"}
 										</div>
 									</div>
 								</div>
-								<div class="mt-3 flex flex-wrap gap-2">
+								<div className="mt-3 flex flex-wrap gap-2">
 									{item.verified && <Badge tone="green">verified</Badge>}
 									{item.country && <span>{item.country}</span>}
-									{item.company && <span class="truncate">{item.company}</span>}
+									{item.company && <span className="truncate">{item.company}</span>}
 								</div>
 							</motion.article>
 						))}
@@ -926,24 +926,24 @@ function ResultCards({
 
 function MapPreview({ selectedLocation, filtersLocation }) {
 	return (
-		<div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-sky-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-			<div class="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800 px-4 py-3">
-				<div class="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white">
-					<MapPinned class="h-4 w-4 text-sky-500" />
+		<div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-sky-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
+			<div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800 px-4 py-3">
+				<div className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white">
+					<MapPinned className="h-4 w-4 text-sky-500" />
 					Map preview
 				</div>
-				<span class="text-xs text-slate-500 dark:text-slate-400">
+				<span className="text-xs text-slate-500 dark:text-slate-400">
 					OpenStreetMap / Leaflet ready
 				</span>
 			</div>
-			<div class="relative h-44 overflow-hidden">
-				<div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.18),transparent_25%),radial-gradient(circle_at_80%_30%,rgba(59,130,246,0.16),transparent_22%),linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.02))]" />
-				<div class="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(15,23,42,.18)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,.18)_1px,transparent_1px)] [background-size:24px_24px]" />
-				<div class="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
-					<div class="rounded-full bg-sky-600 p-3 text-white shadow-lg shadow-sky-500/30">
-						<MapPinned class="h-5 w-5" />
+			<div className="relative h-44 overflow-hidden">
+				<div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.18),transparent_25%),radial-gradient(circle_at_80%_30%,rgba(59,130,246,0.16),transparent_22%),linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.02))]" />
+				<div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(15,23,42,.18)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,.18)_1px,transparent_1px)] [background-size:24px_24px]" />
+				<div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+					<div className="rounded-full bg-sky-600 p-3 text-white shadow-lg shadow-sky-500/30">
+						<MapPinned className="h-5 w-5" />
 					</div>
-					<div class="mt-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
+					<div className="mt-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
 						{selectedLocation?.name || filtersLocation || "No location selected"}
 					</div>
 				</div>
@@ -2113,7 +2113,7 @@ export default function SearchResults() {
 	}
 
 	return (
-		<div class="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] text-slate-900 dark:text-white transition-colors">
+		<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] text-slate-900 dark:text-white transition-colors">
 			<ToastStack toasts={toasts} onDismiss={removeToast} />
 			<SearchModal
 				open={searchModalOpen}
@@ -2124,14 +2124,14 @@ export default function SearchResults() {
 				executeSearchRef={executeSearchRef}
 			/>
 			{batchOpen && (
-				<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-					<div class="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
-						<h3 class="text-lg font-semibold">Batch Search</h3>
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+					<div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+						<h3 className="text-lg font-semibold">Batch Search</h3>
 						<textarea
 							value={batchTerms}
 							onChange={(e) => setBatchTerms(e.target.value)}
 							placeholder="Paste terms, one per line..."
-							class="w-full mt-3 rounded-2xl border p-3 h-32"
+							className="w-full mt-3 rounded-2xl border p-3 h-32"
 						/>
 						<input
 							type="file"
@@ -2148,9 +2148,9 @@ export default function SearchResults() {
 								};
 								reader.readAsText(e.target.files[0]);
 							}}
-							class="mt-2"
+							className="mt-2"
 						/>
-						<div class="mt-4 flex gap-2">
+						<div className="mt-4 flex gap-2">
 							<button
 								onClick={async () => {
 									const terms = batchTerms
@@ -2177,7 +2177,7 @@ export default function SearchResults() {
 										addToast("Batch search failed", "Unable to run batch search", "error");
 									}
 								}}
-								class="rounded-2xl bg-sky-600 px-6 py-2 text-white"
+								className="rounded-2xl bg-sky-600 px-6 py-2 text-white"
 							>
 								Search All
 							</button>
@@ -2187,13 +2187,13 @@ export default function SearchResults() {
 									setBatchResults(null);
 									setBatchTerms("");
 								}}
-								class="rounded-2xl border px-6 py-2"
+								className="rounded-2xl border px-6 py-2"
 							>
 								Close
 							</button>
 						</div>
 						{batchResults && (
-							<div class="mt-4 text-sm space-y-1">
+							<div className="mt-4 text-sm space-y-1">
 								<p>Requirements: {batchResults.requirements?.length || 0} matches</p>
 								<p>Products: {batchResults.products?.length || 0} matches</p>
 							</div>
@@ -2202,107 +2202,107 @@ export default function SearchResults() {
 				</div>
 			)}
 
-			<div class="mx-auto max-w-[1700px] px-4 py-5 sm:px-6 lg:px-8">
-				<div class="grid gap-5 xl:grid-cols-1">
-					<main class="space-y-5">
-						<section class="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
-							<div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-								<div class="flex items-start gap-4">
-									<div class="rounded-3xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 p-4 text-white shadow-xl shadow-sky-500/25">
-										<Search class="h-7 w-7" />
+			<div className="mx-auto max-w-[1700px] px-4 py-5 sm:px-6 lg:px-8">
+				<div className="grid gap-5 xl:grid-cols-1">
+					<main className="space-y-5">
+						<section className="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
+							<div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+								<div className="flex items-start gap-4">
+									<div className="rounded-3xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 p-4 text-white shadow-xl shadow-sky-500/25">
+										<Search className="h-7 w-7" />
 									</div>
 									<div>
-										<div class="flex flex-wrap items-center gap-3">
-											<h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">Search</h1>
+										<div className="flex flex-wrap items-center gap-3">
+											<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Search</h1>
 											<Badge tone="blue">
-												<Sparkles class="h-3.5 w-3.5" /> Premium discovery
+												<Sparkles className="h-3.5 w-3.5" /> Premium discovery
 											</Badge>
 										</div>
-										<p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+										<p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
 											Garments & Textile marketplace
 										</p>
-										<div class="mt-4 flex flex-wrap gap-2">
+										<div className="mt-4 flex flex-wrap gap-2">
 											<button
 												onClick={() => setFiltersOpen((v) => !v)}
-												class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
 											>
-												<SlidersHorizontal class="h-4 w-4" /> Filters{" "}
+												<SlidersHorizontal className="h-4 w-4" /> Filters{" "}
 												{filtersOpen ? (
-													<ChevronUp class="h-4 w-4" />
+													<ChevronUp className="h-4 w-4" />
 												) : (
-													<ChevronDown class="h-4 w-4" />
+													<ChevronDown className="h-4 w-4" />
 												)}
 											</button>
 											<button
 												onClick={saveSearch}
 												disabled={isSearchAlreadySaved}
-												class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
+												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
 											>
-												<Save class="h-4 w-4" />{" "}
+												<Save className="h-4 w-4" />{" "}
 												{isSearchAlreadySaved ? "Already saved" : "Save search"}
 											</button>
 											<button
 												onClick={shareSearch}
-												class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
 											>
-												<Share2 class="h-4 w-4" /> Share
+												<Share2 className="h-4 w-4" /> Share
 											</button>
 											<Link
 												to="/notifications"
-												class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
 											>
-												<Bell class="h-4 w-4" /> Alerts
+												<Bell className="h-4 w-4" /> Alerts
 											</Link>
 											<button
 												onClick={toggleTheme}
-												class="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 lg:ml-0"
+												className="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 lg:ml-0"
 											>
-												{dark ? <Sun class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+												{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 												{dark ? "Light" : "Dark"} mode
 											</button>
 										</div>
 									</div>
 								</div>
 
-								<div class="grid gap-3 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 sm:grid-cols-3 lg:w-[420px]">
-									<div class="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
-										<div class="text-xs text-slate-500 dark:text-slate-400">Requests</div>
-										<div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+								<div className="grid gap-3 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 sm:grid-cols-3 lg:w-[420px]">
+									<div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
+										<div className="text-xs text-slate-500 dark:text-slate-400">Requests</div>
+										<div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
 											{fmtNumber(estimatedCounts.buyerRequests)}
 										</div>
 									</div>
-									<div class="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
-										<div class="text-xs text-slate-500 dark:text-slate-400">Companies</div>
-										<div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+									<div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
+										<div className="text-xs text-slate-500 dark:text-slate-400">Companies</div>
+										<div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
 											{fmtNumber(estimatedCounts.companies)}
 										</div>
 									</div>
-									<div class="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
-										<div class="text-xs text-slate-500 dark:text-slate-400">Feed</div>
-										<div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+									<div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
+										<div className="text-xs text-slate-500 dark:text-slate-400">Feed</div>
+										<div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
 											{fmtNumber(estimatedCounts.feedPosts)}
 										</div>
 									</div>
-									<div class="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
-										<div class="text-xs text-slate-500 dark:text-slate-400">Alerts left</div>
-										<div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+									<div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
+										<div className="text-xs text-slate-500 dark:text-slate-400">Alerts left</div>
+										<div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
 											{alertsQuota === null ? "—" : alertsQuota}
 										</div>
 									</div>
 								</div>
 							</div>
 
-							<div class="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
+							<div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
 								<motion.div
-									class="relative"
+									className="relative"
 									animate={{ width: searchFocused ? "104%" : "100%" }}
 									transition={{ type: "spring", stiffness: 300, damping: 25 }}
 								>
-									<div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+									<div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
 										{searchField === "all" ? (
-											<Search class="h-5 w-5" />
+											<Search className="h-5 w-5" />
 										) : (
-											<UserSearch class="h-5 w-5" />
+											<UserSearch className="h-5 w-5" />
 										)}
 									</div>
 									<input
@@ -2325,10 +2325,10 @@ export default function SearchResults() {
 													? "Search by company name..."
 													: "Search requests, factories, products..."
 										}
-										class="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-36 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
+										className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-36 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
 									/>
 									{suggestionsOpen && suggestions.length > 0 && (
-										<div class="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
+										<div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
 											{suggestions.map((s) => (
 												<button
 													key={s}
@@ -2336,17 +2336,17 @@ export default function SearchResults() {
 														setQuery(s);
 														setSuggestionsOpen(false);
 													}}
-													class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
+													className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
 												>
-													<Search class="h-4 w-4 text-slate-400 shrink-0" />
-													<span class="text-slate-700 dark:text-slate-200">{s}</span>
+													<Search className="h-4 w-4 text-slate-400 shrink-0" />
+													<span className="text-slate-700 dark:text-slate-200">{s}</span>
 												</button>
 											))}
 										</div>
 									)}
 									{searchFocused && !query.trim() && history.length > 0 && (
-										<div class="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
-											<div class="px-4 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 border-b border-slate-200/70 dark:border-slate-800">
+										<div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
+											<div className="px-4 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 border-b border-slate-200/70 dark:border-slate-800">
 												Recent searches
 											</div>
 											{history.map((h) => (
@@ -2356,25 +2356,25 @@ export default function SearchResults() {
 														setQuery(h.query);
 														setSuggestionsOpen(false);
 													}}
-													class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
+													className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
 												>
-													<Clock class="h-4 w-4 text-slate-400 shrink-0" />
-													<span class="text-slate-700 dark:text-slate-200">{h.query}</span>
+													<Clock className="h-4 w-4 text-slate-400 shrink-0" />
+													<span className="text-slate-700 dark:text-slate-200">{h.query}</span>
 												</button>
 											))}
 										</div>
 									)}
-									<div class="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">
+									<div className="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">
 										<button
 											onClick={() =>
 												setSearchField((f) =>
 													f === "all" ? "buyer" : f === "buyer" ? "company" : "all",
 												)
 											}
-											class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300 hover:border-sky-300"
+											className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300 hover:border-sky-300"
 											title={`Search: ${searchField === "all" ? "All fields" : searchField === "buyer" ? "Buyer names" : "Company names"}`}
 										>
-											<UserSearch class="h-3.5 w-3.5 inline mr-1" />
+											<UserSearch className="h-3.5 w-3.5 inline mr-1" />
 											{searchField === "all"
 												? "All"
 												: searchField === "buyer"
@@ -2383,20 +2383,20 @@ export default function SearchResults() {
 										</button>
 										<button
 											onClick={() => setSearchModalOpen(true)}
-											class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300"
+											className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300"
 										>
 											{isMac ? "⌘K" : "Ctrl K"}
 										</button>
 									</div>
 								</motion.div>
-								<div class="flex items-center gap-2">
-									<label class="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700">
+								<div className="flex items-center gap-2">
+									<label className="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700">
 										{imagePreview ? (
-											<div class="relative">
+											<div className="relative">
 												<img
 													src={imagePreview}
 													alt="search"
-													class="h-8 w-8 rounded-lg object-cover"
+													className="h-8 w-8 rounded-lg object-cover"
 												/>
 												<button
 													onClick={(e) => {
@@ -2404,37 +2404,37 @@ export default function SearchResults() {
 														setImageSearchFile(null);
 														setImagePreview(null);
 													}}
-													class="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white"
+													className="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white"
 												>
-													<X class="h-3 w-3" />
+													<X className="h-3 w-3" />
 												</button>
 											</div>
 										) : (
-											<ImagePlus class="h-5 w-5" />
+											<ImagePlus className="h-5 w-5" />
 										)}
 										<input
 											type="file"
 											accept=".jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
 											onChange={handleImageSearch}
-											class="hidden"
+											className="hidden"
 										/>
 									</label>
 									{searchImageUploadProgress > 0 && (
-										<UploadProgressBar progress={searchImageUploadProgress} class="w-16" />
+										<UploadProgressBar progress={searchImageUploadProgress} className="w-16" />
 									)}
 									<button
 										onClick={() => setBatchOpen(true)}
-										class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700"
+										className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700"
 										title="Batch search"
 									>
-										<FileSpreadsheet class="h-5 w-5" />
+										<FileSpreadsheet className="h-5 w-5" />
 									</button>
 									<button
 										onClick={executeSearch}
 										disabled={loading}
-										class="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+										className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
 									>
-										<Search class="h-5 w-5" />{" "}
+										<Search className="h-5 w-5" />{" "}
 										{loading ? (
 											<ThreeDot
 												variant="bounce"
@@ -2450,13 +2450,13 @@ export default function SearchResults() {
 								</div>
 							</div>
 
-							<div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+							<div className="mt-5 flex flex-wrap items-center justify-between gap-3">
 								<ResultTabs
 									estimatedCounts={estimatedCounts}
 									activeTab={activeTab}
 									onTabChange={setActiveTab}
 								/>
-								<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+								<div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
 									<Badge tone="blue">
 										{loading ? (
 											<ThreeDot
@@ -2473,7 +2473,7 @@ export default function SearchResults() {
 								</div>
 							</div>
 
-							<div class="mt-4 flex flex-wrap gap-2">
+							<div className="mt-4 flex flex-wrap gap-2">
 								{CATEGORY_OPTIONS.map((cat) => {
 									const active =
 										cat.key === "all"
@@ -2491,7 +2491,7 @@ export default function SearchResults() {
 											<button
 												key={cat.key}
 												onClick={() => toggleCategory(cat.key)}
-												class={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${pillClass(active)}`}
+												className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${pillClass(active)}`}
 											>
 												{cat.label}
 											</button>
@@ -2500,23 +2500,23 @@ export default function SearchResults() {
 								})}
 							</div>
 
-							<div class="mt-5 flex flex-wrap items-center gap-2">
+							<div className="mt-5 flex flex-wrap items-center gap-2">
 								{activeFilterChips.length > 0 ? (
 									activeFilterChips.map((chip) => (
 										<button
 											key={chip.label}
 											onClick={chip.onRemove}
-											class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
+											className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
 										>
-											{chip.label} <X class="h-3.5 w-3.5" />
+											{chip.label} <X className="h-3.5 w-3.5" />
 										</button>
 									))
 								) : (
-									<span class="text-sm text-slate-500 dark:text-slate-400">No filters active.</span>
+									<span className="text-sm text-slate-500 dark:text-slate-400">No filters active.</span>
 								)}
 								<button
 									onClick={clearAll}
-									class="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+									className="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
 								>
 									Clear all
 								</button>
@@ -2524,16 +2524,16 @@ export default function SearchResults() {
 						</section>
 
 						{facetCounts.countries.length > 0 && (
-							<section class="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-4 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl">
-								<div class="flex flex-wrap items-center gap-2">
-									<span class="text-sm font-medium text-slate-500 dark:text-slate-400 mr-1">
+							<section className="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-4 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl">
+								<div className="flex flex-wrap items-center gap-2">
+									<span className="text-sm font-medium text-slate-500 dark:text-slate-400 mr-1">
 										Filter by country:
 									</span>
 									{facetCounts.countries.slice(0, 8).map((c) => (
 										<button
 											key={c.value}
 											onClick={() => setFilters((f) => ({ ...f, country: c.value }))}
-											class={`rounded-full border px-3 py-1 text-xs font-medium transition ${filters.country === c.value ? "bg-sky-600 text-white border-sky-500" : "hover:bg-sky-50 dark:hover:bg-sky-500/10 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800"}`}
+											className={`rounded-full border px-3 py-1 text-xs font-medium transition ${filters.country === c.value ? "bg-sky-600 text-white border-sky-500" : "hover:bg-sky-50 dark:hover:bg-sky-500/10 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800"}`}
 										>
 											{c.value} ({c.count})
 										</button>
@@ -2543,11 +2543,11 @@ export default function SearchResults() {
 						)}
 
 						{filtersOpen && (
-							<section class="grid gap-5 xl:grid-cols-3">
+							<section className="grid gap-5 xl:grid-cols-3">
 								<SectionCard title="Product Filters" icon={ClipboardList}>
-									<div class="space-y-5">
+									<div className="space-y-5">
 										<div>
-											<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+											<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 												Industry
 											</label>
 											<select
@@ -2558,7 +2558,7 @@ export default function SearchResults() {
 														industry: e.target.value,
 													}))
 												}
-												class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+												className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 											>
 												{INDUSTRIES.map((i) => (
 													<option key={i}>{i}</option>
@@ -2567,24 +2567,24 @@ export default function SearchResults() {
 										</div>
 
 										<div>
-											<div class="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
 												<span>MOQ range</span>
 												<span>
 													{fmtNumber(filters.moqMin)} - {fmtNumber(filters.moqMax)} pcs
 												</span>
 											</div>
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{["Any", "0-500", "500-1K", "1K-5K", "5K+"].map((b) => (
 													<button
 														key={b}
 														onClick={() => setFilters((f) => ({ ...f, moqBucket: b }))}
-														class={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.moqBucket === b)}`}
+														className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.moqBucket === b)}`}
 													>
 														{b}
 													</button>
 												))}
 											</div>
-											<div class="mt-4 space-y-3">
+											<div className="mt-4 space-y-3">
 												<input
 													type="range"
 													min="0"
@@ -2597,7 +2597,7 @@ export default function SearchResults() {
 															moqMin: Math.min(Number(e.target.value), f.moqMax),
 														}))
 													}
-													class="w-full"
+													className="w-full"
 												/>
 												<input
 													type="range"
@@ -2611,19 +2611,19 @@ export default function SearchResults() {
 															moqMax: Math.max(Number(e.target.value), f.moqMin),
 														}))
 													}
-													class="w-full"
+													className="w-full"
 												/>
 											</div>
 										</div>
 
 										<div>
-											<div class="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
 												<span>Price per unit</span>
 												<span>
 													${filters.priceMin} - ${filters.priceMax}
 												</span>
 											</div>
-											<div class="grid grid-cols-[110px_1fr] gap-3">
+											<div className="grid grid-cols-[110px_1fr] gap-3">
 												<select
 													value={filters.currency}
 													onChange={(e) =>
@@ -2632,13 +2632,13 @@ export default function SearchResults() {
 															currency: e.target.value,
 														}))
 													}
-													class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-3 outline-none focus:border-sky-400"
+													className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-3 outline-none focus:border-sky-400"
 												>
 													{CURRENCIES.map((i) => (
 														<option key={i}>{i}</option>
 													))}
 												</select>
-												<div class="space-y-3 pt-1">
+												<div className="space-y-3 pt-1">
 													<input
 														type="range"
 														min="0"
@@ -2651,7 +2651,7 @@ export default function SearchResults() {
 																priceMin: Math.min(Number(e.target.value), f.priceMax),
 															}))
 														}
-														class="w-full"
+														className="w-full"
 													/>
 													<input
 														type="range"
@@ -2665,22 +2665,22 @@ export default function SearchResults() {
 																priceMax: Math.max(Number(e.target.value), f.priceMin),
 															}))
 														}
-														class="w-full"
+														className="w-full"
 													/>
 												</div>
 											</div>
 										</div>
 
 										<div>
-											<div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
 												Incoterms
 											</div>
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{INCOTERMS.map((i) => (
 													<button
 														key={i}
 														onClick={() => toggleArrayFilter("incoterms", i)}
-														class={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.incoterms.includes(i))}`}
+														className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.incoterms.includes(i))}`}
 													>
 														{i}
 													</button>
@@ -2690,20 +2690,20 @@ export default function SearchResults() {
 
 										<button
 											onClick={() => setExpandedMore((v) => !v)}
-											class="inline-flex items-center gap-2 text-sm font-medium text-sky-600 dark:text-sky-400"
+											className="inline-flex items-center gap-2 text-sm font-medium text-sky-600 dark:text-sky-400"
 										>
 											More filters{" "}
 											{expandedMore ? (
-												<ChevronUp class="h-4 w-4" />
+												<ChevronUp className="h-4 w-4" />
 											) : (
-												<ChevronDown class="h-4 w-4" />
+												<ChevronDown className="h-4 w-4" />
 											)}
 										</button>
 
 										{expandedMore && (
-											<div class="space-y-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4">
+											<div className="space-y-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4">
 												<div>
-													<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+													<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 														Country
 													</label>
 													<input
@@ -2715,13 +2715,13 @@ export default function SearchResults() {
 															}))
 														}
 														placeholder="Bangladesh, Vietnam, Turkey"
-														class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+														className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 													/>
 												</div>
 												<PlanGate premium={isPremium}>
 													<div>
-														<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-															<Shirt class="h-4 w-4 inline mr-1" /> Season / Collection
+														<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+															<Shirt className="h-4 w-4 inline mr-1" /> Season / Collection
 														</label>
 														<select
 															value={filters.season}
@@ -2731,7 +2731,7 @@ export default function SearchResults() {
 																	season: e.target.value,
 																}))
 															}
-															class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+															className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 														>
 															{SEASON_OPTIONS.map((s) => (
 																<option key={s} value={s}>
@@ -2743,8 +2743,8 @@ export default function SearchResults() {
 												</PlanGate>
 												<PlanGate premium={isPremium}>
 													<div>
-														<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-															<Wrench class="h-4 w-4 inline mr-1" /> Machinery / Equipment
+														<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+															<Wrench className="h-4 w-4 inline mr-1" /> Machinery / Equipment
 														</label>
 														<input
 															value={filters.machinery}
@@ -2755,14 +2755,14 @@ export default function SearchResults() {
 																}))
 															}
 															placeholder="e.g. Dyeing, Spinning, Cutting"
-															class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+															className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 														/>
 													</div>
 												</PlanGate>
 												<PlanGate premium={isPremium}>
 													<div>
-														<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-															<PackageCheck class="h-4 w-4 inline mr-1" /> Availability
+														<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+															<PackageCheck className="h-4 w-4 inline mr-1" /> Availability
 														</label>
 														<select
 															value={filters.stockStatus}
@@ -2772,7 +2772,7 @@ export default function SearchResults() {
 																	stockStatus: e.target.value,
 																}))
 															}
-															class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+															className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 														>
 															{STOCK_STATUS_OPTIONS.map((opt) => (
 																<option key={opt.key} value={opt.key}>
@@ -2784,7 +2784,7 @@ export default function SearchResults() {
 												</PlanGate>
 												<PlanGate premium={isPremium}>
 													<div>
-														<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+														<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 															Posted after
 														</label>
 														<input
@@ -2796,13 +2796,13 @@ export default function SearchResults() {
 																	postedAfter: e.target.value,
 																}))
 															}
-															class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+															className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 														/>
 													</div>
 												</PlanGate>
 												<PlanGate premium={isPremium}>
 													<div>
-														<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+														<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 															Posted before
 														</label>
 														<input
@@ -2814,21 +2814,21 @@ export default function SearchResults() {
 																	postedBefore: e.target.value,
 																}))
 															}
-															class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+															className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 														/>
 													</div>
 												</PlanGate>
 												<PlanGate premium={isPremium}>
 													<div>
-														<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+														<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 															Certifications
 														</label>
-														<div class="flex flex-wrap gap-2">
+														<div className="flex flex-wrap gap-2">
 															{CERTIFICATION_OPTIONS.map((cert) => (
 																<button
 																	key={cert}
 																	onClick={() => toggleArrayFilter("certifications", cert)}
-																	class={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(cert))}`}
+																	className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(cert))}`}
 																>
 																	{cert}
 																</button>
@@ -2838,8 +2838,8 @@ export default function SearchResults() {
 												</PlanGate>
 												<PlanGate premium={isPremium}>
 													<div>
-														<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-															<Star class="h-4 w-4 inline mr-1" /> Minimum Rating
+														<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+															<Star className="h-4 w-4 inline mr-1" /> Minimum Rating
 														</label>
 														<select
 															value={filters.minRating}
@@ -2849,7 +2849,7 @@ export default function SearchResults() {
 																	minRating: e.target.value,
 																}))
 															}
-															class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+															className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 														>
 															<option value="">Any</option>
 															<option value="3">3+</option>
@@ -2860,8 +2860,8 @@ export default function SearchResults() {
 												</PlanGate>
 												<PlanGate premium={isPremium}>
 													<div>
-														<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-															<Languages class="h-4 w-4 inline mr-1" /> Language
+														<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+															<Languages className="h-4 w-4 inline mr-1" /> Language
 														</label>
 														<select
 															value={filters.language}
@@ -2871,7 +2871,7 @@ export default function SearchResults() {
 																	language: e.target.value,
 																}))
 															}
-															class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+															className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 														>
 															<option value="">Any</option>
 															<option value="en">English</option>
@@ -2881,7 +2881,7 @@ export default function SearchResults() {
 														</select>
 													</div>
 												</PlanGate>
-												<label class="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
+												<label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
 													<input
 														type="checkbox"
 														checked={filters.verifiedOnly}
@@ -2900,17 +2900,17 @@ export default function SearchResults() {
 								</SectionCard>
 
 								<SectionCard title="Supplier Filters" icon={Factory}>
-									<div class="space-y-5">
+									<div className="space-y-5">
 										<div>
-											<div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
 												Company type
 											</div>
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{COMPANY_TYPES.map((i) => (
 													<button
 														key={i}
 														onClick={() => toggleArrayFilter("companyType", i)}
-														class={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.companyType.includes(i))}`}
+														className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.companyType.includes(i))}`}
 													>
 														{i}
 													</button>
@@ -2919,7 +2919,7 @@ export default function SearchResults() {
 										</div>
 
 										<div>
-											<div class="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
 												<span>Production capacity</span>
 												<span>
 													{fmtNumber(filters.productionMin)} - {fmtNumber(filters.productionMax)} /
@@ -2937,12 +2937,12 @@ export default function SearchResults() {
 														productionMax: Number(e.target.value),
 													}))
 												}
-												class="w-full"
+												className="w-full"
 											/>
 										</div>
 
 										<div>
-											<div class="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
 												<span>Worker count</span>
 												<span>
 													{fmtNumber(filters.workersMin)} - {fmtNumber(filters.workersMax)}
@@ -2959,20 +2959,20 @@ export default function SearchResults() {
 														workersMax: Number(e.target.value),
 													}))
 												}
-												class="w-full"
+												className="w-full"
 											/>
 										</div>
 
 										<div>
-											<div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
 												Export markets
 											</div>
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{EXPORT_MARKETS.map((i) => (
 													<button
 														key={i}
 														onClick={() => toggleArrayFilter("exportMarkets", i)}
-														class={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.exportMarkets.includes(i))}`}
+														className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.exportMarkets.includes(i))}`}
 													>
 														{i}
 													</button>
@@ -2981,24 +2981,24 @@ export default function SearchResults() {
 										</div>
 
 										<div>
-											<div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
 												Role seats
 											</div>
-											<div class="flex gap-2">
+											<div className="flex gap-2">
 												<input
 													value={roleSeatText}
 													onChange={(e) => setRoleSeatText(e.target.value)}
 													placeholder="e.g. Merchandiser: 2"
-													class="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+													className="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 												/>
 												<button
 													onClick={addRoleSeat}
-													class="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-500"
+													className="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-500"
 												>
 													Add
 												</button>
 											</div>
-											<div class="mt-3 flex flex-wrap gap-2">
+											<div className="mt-3 flex flex-wrap gap-2">
 												{filters.roles.map((r) => (
 													<button
 														key={r}
@@ -3008,9 +3008,9 @@ export default function SearchResults() {
 																roles: f.roles.filter((x) => x !== r),
 															}))
 														}
-														class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
+														className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
 													>
-														{r} <X class="h-3.5 w-3.5" />
+														{r} <X className="h-3.5 w-3.5" />
 													</button>
 												))}
 											</div>
@@ -3019,9 +3019,9 @@ export default function SearchResults() {
 								</SectionCard>
 
 								<SectionCard title="Location & Advanced" icon={Globe2}>
-									<div class="space-y-5">
-										<div class="relative">
-											<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+									<div className="space-y-5">
+										<div className="relative">
+											<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 												Location search
 											</label>
 											<input
@@ -3029,18 +3029,18 @@ export default function SearchResults() {
 												value={filters.location}
 												onChange={(e) => onLocationChange(e.target.value)}
 												placeholder="Search geo location..."
-												class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+												className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 											/>
 											{locationSuggestions.length > 0 && (
-												<div class="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl">
+												<div className="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl">
 													{locationSuggestions.map((item) => (
 														<button
 															key={item.name}
 															onClick={() => setLocationFromSuggestion(item)}
-															class="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
+															className="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
 														>
 															<span>{item.name}</span>
-															<span class="text-xs text-slate-500">Set location</span>
+															<span className="text-xs text-slate-500">Set location</span>
 														</button>
 													))}
 												</div>
@@ -3054,13 +3054,13 @@ export default function SearchResults() {
 
 										<button
 											onClick={useCurrentLocation}
-											class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-3 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+											className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-3 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
 										>
-											<LocateFixed class="h-4 w-4" /> Use current location
+											<LocateFixed className="h-4 w-4" /> Use current location
 										</button>
 
 										<div>
-											<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+											<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 												Distance radius (km)
 											</label>
 											<input
@@ -3076,29 +3076,29 @@ export default function SearchResults() {
 													}))
 												}
 												placeholder="Radius in km"
-												class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+												className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 											/>
 										</div>
 
 										<div>
-											<div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
 												Pantone colors
 											</div>
-											<div class="flex gap-2">
+											<div className="flex gap-2">
 												<input
 													value={colorText}
 													onChange={(e) => setColorText(e.target.value)}
 													placeholder="PMS 185C"
-													class="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+													className="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 												/>
 												<button
 													onClick={addColorChip}
-													class="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-500"
+													className="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-500"
 												>
 													Add
 												</button>
 											</div>
-											<div class="mt-3 flex flex-wrap gap-2">
+											<div className="mt-3 flex flex-wrap gap-2">
 												{filters.colorPants.map((c) => (
 													<button
 														key={c}
@@ -3108,24 +3108,24 @@ export default function SearchResults() {
 																colorPants: f.colorPants.filter((x) => x !== c),
 															}))
 														}
-														class="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-1.5 text-sm"
+														className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-1.5 text-sm"
 													>
-														{c} <X class="h-3.5 w-3.5" />
+														{c} <X className="h-3.5 w-3.5" />
 													</button>
 												))}
 											</div>
 										</div>
 
 										<div>
-											<div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
 												Customization
 											</div>
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{CUSTOMIZATION.map((i) => (
 													<button
 														key={i}
 														onClick={() => toggleArrayFilter("customization", i)}
-														class={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.customization.includes(i))}`}
+														className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.customization.includes(i))}`}
 													>
 														{i}
 													</button>
@@ -3133,7 +3133,7 @@ export default function SearchResults() {
 											</div>
 										</div>
 
-										<label class="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
+										<label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
 											<input
 												type="checkbox"
 												checked={filters.sampleAvailable}
@@ -3148,7 +3148,7 @@ export default function SearchResults() {
 										</label>
 
 										<div>
-											<div class="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
 												<span>Sample lead time</span>
 												<span>{filters.sampleLeadTime} days</span>
 											</div>
@@ -3163,20 +3163,20 @@ export default function SearchResults() {
 														sampleLeadTime: Number(e.target.value),
 													}))
 												}
-												class="w-full"
+												className="w-full"
 											/>
 										</div>
 
 										<div>
-											<div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
 												Certifications
 											</div>
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{CERTIFICATIONS.map((i) => (
 													<button
 														key={i}
 														onClick={() => toggleArrayFilter("certifications", i)}
-														class={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(i))}`}
+														className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(i))}`}
 													>
 														{i}
 													</button>
@@ -3185,7 +3185,7 @@ export default function SearchResults() {
 										</div>
 
 										<div>
-											<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+											<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 												Audit date
 											</label>
 											<input
@@ -3197,20 +3197,20 @@ export default function SearchResults() {
 														auditDate: e.target.value,
 													}))
 												}
-												class="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+												className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
 											/>
 										</div>
 
 										<div>
-											<div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+											<div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
 												Payment terms
 											</div>
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{PAYMENT_TERMS.map((i) => (
 													<button
 														key={i}
 														onClick={() => toggleArrayFilter("paymentTerms", i)}
-														class={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.paymentTerms.includes(i))}`}
+														className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.paymentTerms.includes(i))}`}
 													>
 														{i}
 													</button>
@@ -3222,23 +3222,23 @@ export default function SearchResults() {
 							</section>
 						)}
 
-						<section class="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
-							<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:flex-wrap lg:justify-between">
+						<section className="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
+							<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:flex-wrap lg:justify-between">
 								<div>
-									<h2 class="text-xl font-semibold text-slate-900 dark:text-white">Results</h2>
-									<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+									<h2 className="text-xl font-semibold text-slate-900 dark:text-white">Results</h2>
+									<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 										{totalResults > 0
 											? `${totalResults} total results`
 											: "Buyer requests, companies, and marketplace data."}
 									</p>
 								</div>
-								<div class="flex flex-wrap items-center gap-2">
-									<div class="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2">
-										<ArrowUpDown class="h-4 w-4 text-slate-400" />
+								<div className="flex flex-wrap items-center gap-2">
+									<div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2">
+										<ArrowUpDown className="h-4 w-4 text-slate-400" />
 										<select
 											value={sortBy}
 											onChange={(e) => setSortBy(e.target.value)}
-											class="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200"
+											className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200"
 										>
 											{SORT_OPTIONS.map((opt) => (
 												<option key={opt.key} value={opt.key}>
@@ -3247,51 +3247,51 @@ export default function SearchResults() {
 											))}
 										</select>
 									</div>
-									<div class="relative flex items-center">
-										<ScanSearch class="absolute left-3 h-4 w-4 text-slate-400" />
+									<div className="relative flex items-center">
+										<ScanSearch className="absolute left-3 h-4 w-4 text-slate-400" />
 										<input
 											value={refineQuery}
 											onChange={(e) => setRefineQuery(e.target.value)}
 											placeholder="Refine results..."
-											class="w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 py-2 pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-sky-400"
+											className="w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 py-2 pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-sky-400"
 										/>
 										{refineQuery && (
 											<button
 												onClick={() => setRefineQuery("")}
-												class="absolute right-2 text-slate-400 hover:text-slate-600"
+												className="absolute right-2 text-slate-400 hover:text-slate-600"
 											>
-												<X class="h-3.5 w-3.5" />
+												<X className="h-3.5 w-3.5" />
 											</button>
 										)}
 									</div>
 									<button
 										onClick={exportCSV}
 										disabled={exportingCsv}
-										class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:opacity-50"
+										className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:opacity-50"
 									>
-										<Download class="h-4 w-4" /> CSV
+										<Download className="h-4 w-4" /> CSV
 									</button>
 									<button
 										onClick={() => setShowShortlist((v) => !v)}
-										class={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium ${shortlist.length > 0 ? "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300" : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200"} hover:border-sky-300 dark:hover:border-sky-700`}
+										className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium ${shortlist.length > 0 ? "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300" : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200"} hover:border-sky-300 dark:hover:border-sky-700`}
 									>
-										<ArrowLeftRight class="h-4 w-4" /> Compare ({shortlist.length})
+										<ArrowLeftRight className="h-4 w-4" /> Compare ({shortlist.length})
 									</button>
 									<button
 										onClick={() => setViewMode("all")}
-										class={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "all")}`}
+										className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "all")}`}
 									>
 										All
 									</button>
 									<button
 										onClick={() => setViewMode("requests")}
-										class={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "requests")}`}
+										className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "requests")}`}
 									>
 										Buyer Requests
 									</button>
 									<button
 										onClick={() => setViewMode("companies")}
-										class={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "companies")}`}
+										className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "companies")}`}
 									>
 										Companies
 									</button>
@@ -3299,15 +3299,15 @@ export default function SearchResults() {
 							</div>
 
 							{spellingSuggestion && !loading && (
-								<div class="mt-4 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 px-5 py-3 text-sm">
-									<span class="text-slate-700 dark:text-slate-300">
+								<div className="mt-4 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 px-5 py-3 text-sm">
+									<span className="text-slate-700 dark:text-slate-300">
 										Did you mean{" "}
 										<button
 											onClick={() => {
 												setQuery(spellingSuggestion);
 												setSpellingSuggestion(null);
 											}}
-											class="font-semibold text-sky-600 dark:text-sky-400 underline hover:no-underline"
+											className="font-semibold text-sky-600 dark:text-sky-400 underline hover:no-underline"
 										>
 											{spellingSuggestion}
 										</button>
@@ -3316,7 +3316,7 @@ export default function SearchResults() {
 								</div>
 							)}
 
-							<div class="mt-5">
+							<div className="mt-5">
 								<AnimatePresence mode="wait">
 									{loading ? (
 										<motion.div
@@ -3360,11 +3360,11 @@ export default function SearchResults() {
 												saveSearch={saveSearch}
 											/>
 											{!loading && nextCursor !== null && !refineQuery && (
-												<div class="mt-6 flex justify-center">
+												<div className="mt-6 flex justify-center">
 													<button
 														onClick={loadMore}
 														disabled={loadingMore}
-														class="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500 disabled:opacity-60"
+														className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500 disabled:opacity-60"
 													>
 														{loadingMore ? (
 															<ThreeDot
@@ -3375,7 +3375,7 @@ export default function SearchResults() {
 																textColor=""
 															/>
 														) : (
-															<ChevronDown class="h-4 w-4" />
+															<ChevronDown className="h-4 w-4" />
 														)}
 														{loadingMore
 															? "Loading..."
@@ -3390,19 +3390,19 @@ export default function SearchResults() {
 						</section>
 
 						{showShortlist && shortlist.length > 0 && (
-							<section class="rounded-[2rem] border border-sky-200/80 dark:border-sky-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
-								<div class="flex items-center justify-between mb-4">
-									<h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-										<ArrowLeftRight class="h-5 w-5 text-sky-500" /> Compare ({shortlist.length})
+							<section className="rounded-[2rem] border border-sky-200/80 dark:border-sky-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
+								<div className="flex items-center justify-between mb-4">
+									<h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+										<ArrowLeftRight className="h-5 w-5 text-sky-500" /> Compare ({shortlist.length})
 									</h2>
 									<button
 										onClick={() => setShowShortlist(false)}
-										class="text-slate-400 hover:text-slate-600"
+										className="text-slate-400 hover:text-slate-600"
 									>
-										<X class="h-5 w-5" />
+										<X className="h-5 w-5" />
 									</button>
 								</div>
-								<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+								<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 									{shortlist.map((key) => {
 										const [type, id] = key.split(":");
 										const item =
@@ -3415,15 +3415,15 @@ export default function SearchResults() {
 										return (
 											<div
 												key={key}
-												class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-4"
+												className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-4"
 											>
-												<div class="flex items-start justify-between">
+												<div className="flex items-start justify-between">
 													<div>
-														<div class="text-xs text-sky-500 font-medium uppercase">
+														<div className="text-xs text-sky-500 font-medium uppercase">
 															{type === "buyer" ? "Buyer Request" : "Company"}
 														</div>
 														<div
-															class="mt-1 font-medium text-slate-900 dark:text-white"
+															className="mt-1 font-medium text-slate-900 dark:text-white"
 															dangerouslySetInnerHTML={{
 																__html: highlightText(item.title || item.name || "Untitled", query),
 															}}
@@ -3431,38 +3431,38 @@ export default function SearchResults() {
 													</div>
 													<button
 														onClick={() => toggleShortlist(id, type)}
-														class="text-slate-400 hover:text-red-400"
+														className="text-slate-400 hover:text-red-400"
 													>
-														<X class="h-4 w-4" />
+														<X className="h-4 w-4" />
 													</button>
 												</div>
 												{item.category && (
 													<div
-														class="mt-2 text-xs text-slate-500"
+														className="mt-2 text-xs text-slate-500"
 														dangerouslySetInnerHTML={{
 															__html: highlightText(item.category, query),
 														}}
 													/>
 												)}
 												{item.country && (
-													<div class="text-xs text-slate-500">Country: {item.country}</div>
+													<div className="text-xs text-slate-500">Country: {item.country}</div>
 												)}
-												{item.moq && <div class="text-xs text-slate-500">MOQ: {item.moq}</div>}
+												{item.moq && <div className="text-xs text-slate-500">MOQ: {item.moq}</div>}
 											</div>
 										);
 									})}
 								</div>
-								<div class="mt-4 flex gap-2">
+								<div className="mt-4 flex gap-2">
 									<button
 										onClick={exportCSV}
 										disabled={exportingCsv}
-										class="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-50"
+										className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-50"
 									>
-										<Download class="h-4 w-4" /> Export compared
+										<Download className="h-4 w-4" /> Export compared
 									</button>
 									<button
 										onClick={() => setShortlist([])}
-										class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-sm font-medium hover:border-red-300"
+										className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-sm font-medium hover:border-red-300"
 									>
 										Clear all
 									</button>
@@ -3471,45 +3471,45 @@ export default function SearchResults() {
 						)}
 					</main>
 
-					<aside class="space-y-5">
+					<aside className="space-y-5">
 						<SectionCard title="Recent Views" icon={Eye}>
-							<div class="space-y-3">
+							<div className="space-y-3">
 								{recentViews.length > 0 ? (
 									recentViews.slice(0, 5).map((item) => (
 										<Link
 											key={item.id}
 											to={`/product/${item.id}`}
-											class="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-3 hover:border-sky-300 dark:hover:border-sky-700"
+											className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-3 hover:border-sky-300 dark:hover:border-sky-700"
 										>
-											<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
-												<Camera class="h-5 w-5" />
+											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
+												<Camera className="h-5 w-5" />
 											</div>
-											<div class="min-w-0 flex-1">
+											<div className="min-w-0 flex-1">
 												<div
-													class="truncate text-sm font-medium text-slate-900 dark:text-white"
+													className="truncate text-sm font-medium text-slate-900 dark:text-white"
 													dangerouslySetInnerHTML={{
 														__html: highlightText(item.title || item.name, query),
 													}}
 												/>
 												<div
-													class="truncate text-xs text-slate-500 dark:text-slate-400"
+													className="truncate text-xs text-slate-500 dark:text-slate-400"
 													dangerouslySetInnerHTML={{
 														__html: highlightText(item.subtitle || item.description, query),
 													}}
 												/>
 											</div>
-											<ArrowUpRight class="h-4 w-4 text-slate-400" />
+											<ArrowUpRight className="h-4 w-4 text-slate-400" />
 										</Link>
 									))
 								) : (
-									<div class="text-sm text-slate-500 dark:text-slate-400">No recent views</div>
+									<div className="text-sm text-slate-500 dark:text-slate-400">No recent views</div>
 								)}
 							</div>
 						</SectionCard>
 
 						{trendingSearches.length > 0 && (
 							<SectionCard title="Trending Now" icon={TrendingUp}>
-								<div class="flex flex-wrap gap-2">
+								<div className="flex flex-wrap gap-2">
 									{trendingSearches.map((term) => (
 										<button
 											key={term}
@@ -3517,7 +3517,7 @@ export default function SearchResults() {
 												setQuery(term);
 												executeSearchRef.current?.();
 											}}
-											class="rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-sm hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-500/10"
+											className="rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-sm hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-500/10"
 										>
 											{term}
 										</button>
@@ -3527,21 +3527,21 @@ export default function SearchResults() {
 						)}
 						{analytics && (
 							<SectionCard title="Search Stats" icon={BarChart3}>
-								<div class="text-sm space-y-2">
-									<div class="flex justify-between">
+								<div className="text-sm space-y-2">
+									<div className="flex justify-between">
 										<span>Searches (30d)</span>
-										<span class="font-semibold">{analytics?.totalSearches || "—"}</span>
+										<span className="font-semibold">{analytics?.totalSearches || "—"}</span>
 									</div>
-									<div class="flex justify-between">
+									<div className="flex justify-between">
 										<span>Zero-result rate</span>
-										<span class="font-semibold">{analytics?.zeroResultRate || "—"}%</span>
+										<span className="font-semibold">{analytics?.zeroResultRate || "—"}%</span>
 									</div>
 								</div>
 							</SectionCard>
 						)}
 						{relatedSearches.length > 0 && (
 							<SectionCard title="Related Searches" icon={Search}>
-								<div class="flex flex-wrap gap-2">
+								<div className="flex flex-wrap gap-2">
 									{relatedSearches.map((term) => (
 										<button
 											key={term}
@@ -3549,7 +3549,7 @@ export default function SearchResults() {
 												setQuery(term);
 												executeSearchRef.current?.();
 											}}
-											class="rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-sm hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-500/10"
+											className="rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-sm hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-500/10"
 										>
 											{term}
 										</button>
@@ -3559,20 +3559,20 @@ export default function SearchResults() {
 						)}
 
 						<SectionCard title="Shortcuts & Actions" icon={WandSparkles}>
-							<div class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
-								<div class="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+							<div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
+								<div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
 									<span>Open search modal</span>
 									<Badge tone="blue">Ctrl K / ⌘K</Badge>
 								</div>
-								<div class="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+								<div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
 									<span>Save search</span>
 									<Badge tone="blue">Click Save</Badge>
 								</div>
-								<div class="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+								<div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
 									<span>Share search</span>
 									<Badge tone="blue">Click Share</Badge>
 								</div>
-								<div class="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+								<div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
 									<span>Toggle dark mode</span>
 									<Badge tone="blue">Click icon</Badge>
 								</div>

@@ -122,7 +122,7 @@ function Pill({ children, tone = "default", title }) {
 	return (
 		<span
 			title={title}
-			class={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}
+			className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}
 		>
 			{children}
 		</span>
@@ -139,12 +139,12 @@ function Pill({ children, tone = "default", title }) {
  */
 function Metric({ label, value, helper }) {
 	return (
-		<div class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
-			<div class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+		<div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
+			<div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
 				{label}
 			</div>
-			<div class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
-			{helper ? <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
+			<div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+			{helper ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
 		</div>
 	);
 }
@@ -169,10 +169,10 @@ function AvatarFallback({ name, imageUrl }) {
 			.join("");
 	};
 	return (
-		<div class="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
-			<div class="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
+		<div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
+			<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
 				{imageUrl ? (
-					<img src={imageUrl} alt={name || "Profile avatar"} class="h-full w-full object-cover" />
+					<img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
 				) : (
 					initials(name)
 				)}
@@ -191,7 +191,7 @@ function AvatarFallback({ name, imageUrl }) {
 function SoftCard({ children, className = "" }) {
 	return (
 		<div
-			class={`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${className}`}
+			className={`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${className}`}
 		>
 			{children}
 		</div>
@@ -209,16 +209,16 @@ function SoftCard({ children, className = "" }) {
  */
 function SectionTitle({ icon: Icon, title, subtitle, action }) {
 	return (
-		<div class="mb-4 flex items-start justify-between gap-3">
+		<div className="mb-4 flex items-start justify-between gap-3">
 			<div>
-				<div class="flex items-center gap-2">
-					{Icon ? <Icon class="h-4 w-4 text-sky-500" /> : null}
-					<h3 class="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">
+				<div className="flex items-center gap-2">
+					{Icon ? <Icon className="h-4 w-4 text-sky-500" /> : null}
+					<h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">
 						{title}
 					</h3>
 				</div>
 				{subtitle ? (
-					<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
 				) : null}
 			</div>
 			{action}
@@ -599,14 +599,14 @@ export default function BuyerProfile() {
 	}
 	if (error) {
 		return (
-			<div class="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200">
+			<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200">
 				{error}
 			</div>
 		);
 	}
 	if (!user) {
 		return (
-			<div class="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200">
+			<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200">
 				Profile not found.
 			</div>
 		);
@@ -643,61 +643,61 @@ export default function BuyerProfile() {
 	const avatarImage = user?.profile?.profile_image;
 
 	return (
-		<div class="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100">
-			<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				<div class="mb-5 flex items-center justify-between gap-3">
+		<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100">
+			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+				<div className="mb-5 flex items-center justify-between gap-3">
 					<button
 						onClick={() => navigate(-1)}
-						class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300"
+						className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300"
 					>
-						<ChevronLeft class="h-4 w-4" /> Back
+						<ChevronLeft className="h-4 w-4" /> Back
 					</button>
-					<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-						<ShieldCheck class="h-3.5 w-3.5" /> Role:{" "}
-						<span class="font-medium text-slate-700 dark:text-slate-200">{roleLabel}</span>
+					<div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+						<ShieldCheck className="h-3.5 w-3.5" /> Role:{" "}
+						<span className="font-medium text-slate-700 dark:text-slate-200">{roleLabel}</span>
 					</div>
 				</div>
 
-				<div class="grid grid-cols-1 gap-6 xl:grid-cols-[1.55fr_0.85fr]">
-					<div class="w-full space-y-6">
+				<div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.55fr_0.85fr]">
+					<div className="w-full space-y-6">
 						<motion.div
 							initial={reduceMotion ? false : { opacity: 0, y: 16 }}
 							animate={reduceMotion ? false : { opacity: 1, y: 0 }}
 							transition={{ duration: 0.45 }}
-							class="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_100px_rgba(14,165,233,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70"
+							className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/80 shadow-[0_24px_100px_rgba(14,165,233,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70"
 						>
-							<div class="relative h-[280px] overflow-hidden sm:h-[340px]">
+							<div className="relative h-[280px] overflow-hidden sm:h-[340px]">
 								{coverImage ? (
 									<motion.img
 										src={coverImage}
 										alt="Cover"
-										class="absolute inset-0 h-full w-full object-cover"
+										className="absolute inset-0 h-full w-full object-cover"
 										style={{ y: reduceMotion ? 0 : coverParallax }}
 									/>
 								) : (
-									<div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.35),transparent_25%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.22),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(14,165,233,0.3))]" />
+									<div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.35),transparent_25%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.22),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.95),rgba(14,165,233,0.3))]" />
 								)}
-								<div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent" />
-								<div class="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-									<div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-										<div class="flex items-end gap-4">
-											<div class="-mb-10 sm:-mb-12">
+								<div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent" />
+								<div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+									<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+										<div className="flex items-end gap-4">
+											<div className="-mb-10 sm:-mb-12">
 												<AvatarFallback name={displayName} imageUrl={avatarImage} />
 											</div>
-											<div class="pb-1 text-white">
-												<div class="flex flex-wrap items-center gap-2">
-													<h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">
+											<div className="pb-1 text-white">
+												<div className="flex flex-wrap items-center gap-2">
+													<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
 														{displayName}
 													</h1>
 													<Pill tone="info">{roleLabel}</Pill>
 													{country === "—" ? null : (
 														<Pill tone="info">
-															<MapPin class="h-3.5 w-3.5" /> {country}
+															<MapPin className="h-3.5 w-3.5" /> {country}
 														</Pill>
 													)}
 												</div>
-												<p class="mt-1 text-sm text-slate-200/90">{organization}</p>
-												<div class="mt-3 flex flex-wrap gap-2">
+												<p className="mt-1 text-sm text-slate-200/90">{organization}</p>
+												<div className="mt-3 flex flex-wrap gap-2">
 													{badges.map((badge) => (
 														<Pill key={badge.label} tone={badge.tone} title={badge.title}>
 															{badge.label}
@@ -706,25 +706,25 @@ export default function BuyerProfile() {
 												</div>
 											</div>
 										</div>
-										<div class="flex flex-wrap items-center gap-2 pb-1">
+										<div className="flex flex-wrap items-center gap-2 pb-1">
 											<button
 												onClick={contact}
-												class="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
+												className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
 											>
-												<Mail class="h-4 w-4" /> Contact
+												<Mail className="h-4 w-4" /> Contact
 											</button>
 											<button
 												onClick={follow}
-												class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
+												className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
 											>
-												<Heart class={`h-4 w-4 ${relationship.following ? "fill-white" : ""}`} />{" "}
+												<Heart className={`h-4 w-4 ${relationship.following ? "fill-white" : ""}`} />{" "}
 												{relationship.following ? "Following" : "Follow"}
 											</button>
 											<button
 												onClick={connect}
-												class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
+												className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
 											>
-												<Users class="h-4 w-4" />{" "}
+												<Users className="h-4 w-4" />{" "}
 												{relationship.friend_status === "friends"
 													? "Connected"
 													: relationship.friend_status === "requested"
@@ -735,35 +735,35 @@ export default function BuyerProfile() {
 												<>
 													<button
 														onClick={requestRelationship}
-														class="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-100 backdrop-blur transition hover:-translate-y-0.5 hover:bg-emerald-500/30"
+														className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-100 backdrop-blur transition hover:-translate-y-0.5 hover:bg-emerald-500/30"
 													>
-														<Handshake class="h-4 w-4" /> Confirm Business Relationship
+														<Handshake className="h-4 w-4" /> Confirm Business Relationship
 													</button>
 													<button
 														onClick={requestLicense}
-														class="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/20 px-4 py-2 text-sm font-semibold text-amber-100 backdrop-blur transition hover:-translate-y-0.5 hover:bg-amber-500/30"
+														className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/20 px-4 py-2 text-sm font-semibold text-amber-100 backdrop-blur transition hover:-translate-y-0.5 hover:bg-amber-500/30"
 													>
-														<ShieldCheck class="h-4 w-4" /> Request License
+														<ShieldCheck className="h-4 w-4" /> Request License
 													</button>
 												</>
 											)}
 											{feedback ? (
-												<p class="w-full text-center text-xs text-white/80">{feedback}</p>
+												<p className="w-full text-center text-xs text-white/80">{feedback}</p>
 											) : null}
 										</div>
 									</div>
 								</div>
 							</div>
 
-							<div class="grid gap-4 p-5 pt-12 sm:grid-cols-2 lg:grid-cols-4 lg:pt-14">
+							<div className="grid gap-4 p-5 pt-12 sm:grid-cols-2 lg:grid-cols-4 lg:pt-14">
 								<Metric
 									label="Trust"
 									value={
-										<span class="inline-flex items-center gap-2">
+										<span className="inline-flex items-center gap-2">
 											{user?.verified ? (
-												<CheckCircle2 class="h-4 w-4 text-emerald-500" />
+												<CheckCircle2 className="h-4 w-4 text-emerald-500" />
 											) : (
-												<CircleDashed class="h-4 w-4 text-slate-400" />
+												<CircleDashed className="h-4 w-4 text-slate-400" />
 											)}{" "}
 											{user?.verified ? "Verified" : "Unverified"}
 										</span>
@@ -773,8 +773,8 @@ export default function BuyerProfile() {
 								<Metric
 									label="Rating"
 									value={
-										<span class="inline-flex items-center gap-1">
-											<Star class="h-4 w-4 text-amber-500" /> {avg.toFixed(1)} / 5
+										<span className="inline-flex items-center gap-1">
+											<Star className="h-4 w-4 text-amber-500" /> {avg.toFixed(1)} / 5
 										</span>
 									}
 									helper={`${totalRatings} reviews`}
@@ -795,7 +795,7 @@ export default function BuyerProfile() {
 						</motion.div>
 
 						<SoftCard>
-							<div class="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-2">
 								{["overview", "requests", "work", "reviews"].map((tab) => {
 									const active = activeTab === tab;
 									const label =
@@ -810,7 +810,7 @@ export default function BuyerProfile() {
 										<button
 											key={tab}
 											onClick={() => setActiveTab(tab)}
-											class={`rounded-full px-4 py-2 text-sm font-semibold transition ${active ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`}
+											className={`rounded-full px-4 py-2 text-sm font-semibold transition ${active ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`}
 										>
 											{label}
 										</button>
@@ -826,7 +826,7 @@ export default function BuyerProfile() {
 									initial={{ opacity: 0, y: 10 }}
 									animate={{ opacity: 1, y: 0 }}
 									exit={{ opacity: 0, y: -10 }}
-									class="space-y-6"
+									className="space-y-6"
 								>
 									<SoftCard>
 										<SectionTitle
@@ -834,19 +834,19 @@ export default function BuyerProfile() {
 											title="About"
 											subtitle="Buyer profile summary and positioning."
 										/>
-										<p class="text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+										<p className="text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
 											{user?.profile?.about || "No description added yet."}
 										</p>
 									</SoftCard>
 
-									<div class="grid gap-6 lg:grid-cols-2">
+									<div className="grid gap-6 lg:grid-cols-2">
 										<SoftCard>
 											<SectionTitle
 												icon={ClipboardList}
 												title="Core Profile"
 												subtitle="Quick facts and profile metadata."
 											/>
-											<div class="grid gap-3 sm:grid-cols-2">
+											<div className="grid gap-3 sm:grid-cols-2">
 												<Metric label="Country" value={user?.profile?.country || "—"} />
 												<Metric
 													label="Certifications"
@@ -866,13 +866,13 @@ export default function BuyerProfile() {
 												title="Trust Indicators"
 												subtitle="Verification and commercial status."
 											/>
-											<div class="space-y-3">
-												<div class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+											<div className="space-y-3">
+												<div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
 													<div>
-														<div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+														<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 															Verification Panel
 														</div>
-														<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+														<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 															Status and credibility snapshot.
 														</div>
 													</div>
@@ -904,29 +904,29 @@ export default function BuyerProfile() {
 												title="Brand Kit"
 												subtitle="Visible only to self or admins."
 											/>
-											<div class="flex items-center gap-3">
-												<div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
+											<div className="flex items-center gap-3">
+												<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
 													{brandProfile.brand_logo_url ? (
 														<img
 															src={brandProfile.brand_logo_url}
 															alt="Brand logo"
-															class="h-full w-full object-cover"
+															className="h-full w-full object-cover"
 														/>
 													) : (
-														<Building class="h-5 w-5 text-sky-500" />
+														<Building className="h-5 w-5 text-sky-500" />
 													)}
 												</div>
-												<div class="min-w-0">
-													<div class="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+												<div className="min-w-0">
+													<div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
 														{brandProfile.brand_name || user?.name}
 													</div>
 													{brandProfile.brand_tagline ? (
-														<div class="text-xs text-slate-500 dark:text-slate-400">
+														<div className="text-xs text-slate-500 dark:text-slate-400">
 															{brandProfile.brand_tagline}
 														</div>
 													) : null}
 													{brandProfile.brand_website ? (
-														<div class="text-xs text-slate-500 dark:text-slate-400">
+														<div className="text-xs text-slate-500 dark:text-slate-400">
 															{brandProfile.brand_website}
 														</div>
 													) : null}
@@ -942,7 +942,7 @@ export default function BuyerProfile() {
 												title="Dedicated Account Manager"
 												subtitle="Premium support contact."
 											/>
-											<div class="grid gap-4 md:grid-cols-3">
+											<div className="grid gap-4 md:grid-cols-3">
 												<Metric
 													label="Name"
 													value={brandProfile.account_manager_name || "Assigned manager"}
@@ -960,29 +960,29 @@ export default function BuyerProfile() {
 											subtitle="Selected brand and organizational history."
 										/>
 										{(user?.profile?.companies_worked_with || []).length > 0 ? (
-											<div class="grid gap-3 md:grid-cols-2">
+											<div className="grid gap-3 md:grid-cols-2">
 												{(user.profile.companies_worked_with || []).map((company, idx) => (
 													<div
 														key={idx}
-														class="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+														className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
 													>
-														<div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
+														<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
 															{company.logo ? (
 																<img
 																	src={company.logo}
 																	alt={company.name || "Company"}
-																	class="h-full w-full object-cover"
+																	className="h-full w-full object-cover"
 																/>
 															) : (
-																<Building2 class="h-5 w-5 text-sky-500" />
+																<Building2 className="h-5 w-5 text-sky-500" />
 															)}
 														</div>
-														<div class="min-w-0">
-															<div class="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+														<div className="min-w-0">
+															<div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
 																{company.name || "Untitled company"}
 															</div>
 															{company.location ? (
-																<div class="truncate text-xs text-slate-500 dark:text-slate-400">
+																<div className="truncate text-xs text-slate-500 dark:text-slate-400">
 																	{company.location}
 																</div>
 															) : null}
@@ -991,7 +991,7 @@ export default function BuyerProfile() {
 												))}
 											</div>
 										) : (
-											<p class="text-sm text-slate-500 dark:text-slate-400">
+											<p className="text-sm text-slate-500 dark:text-slate-400">
 												No companies listed yet.
 											</p>
 										)}
@@ -1005,7 +1005,7 @@ export default function BuyerProfile() {
 									initial={{ opacity: 0, y: 10 }}
 									animate={{ opacity: 1, y: 0 }}
 									exit={{ opacity: 0, y: -10 }}
-									class="space-y-6"
+									className="space-y-6"
 								>
 									<SoftCard>
 										<SectionTitle
@@ -1020,16 +1020,16 @@ export default function BuyerProfile() {
 											}
 										/>
 										{viewerPerms.is_self || viewerPerms.is_admin ? (
-											<div class="space-y-3">
+											<div className="space-y-3">
 												{requests.map((r) => (
 													<div
 														key={r.id}
-														class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+														className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
 													>
-														<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-															<div class="min-w-0">
-																<div class="flex flex-wrap items-center gap-2">
-																	<div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+														<div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+															<div className="min-w-0">
+																<div className="flex flex-wrap items-center gap-2">
+																	<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 																		{r.category || "Request"}
 																	</div>
 																	<Pill
@@ -1044,18 +1044,18 @@ export default function BuyerProfile() {
 																		{r.status || "Unknown"}
 																	</Pill>
 																</div>
-																<p class="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+																<p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
 																	{r.custom_description || ""}
 																</p>
 															</div>
 															<button
 																onClick={contact}
-																class="inline-flex shrink-0 items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300"
+																className="inline-flex shrink-0 items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300"
 															>
-																<MessageSquare class="h-4 w-4" /> Contact
+																<MessageSquare className="h-4 w-4" /> Contact
 															</button>
 														</div>
-														<div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+														<div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 															<Metric label="Quantity" value={r.quantity || "-"} />
 															<Metric
 																label="Timeline"
@@ -1077,32 +1077,32 @@ export default function BuyerProfile() {
 													/>
 												) : null}
 												{requestsNext !== null && !loadingRequests ? (
-													<div class="flex items-center justify-between gap-3">
-														<div class="text-sm text-slate-500 dark:text-slate-400">
+													<div className="flex items-center justify-between gap-3">
+														<div className="text-sm text-slate-500 dark:text-slate-400">
 															Cursor-based pagination, limit 10.
 														</div>
 														<button
 															type="button"
 															onClick={() => loadRequests({ reset: false })}
-															class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+															className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
 														>
 															Load more
 														</button>
 													</div>
 												) : null}
 												{requests.length > 0 || loadingRequests ? null : (
-													<div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
+													<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
 														No requests found.
 													</div>
 												)}
 											</div>
 										) : (
-											<div class="space-y-4">
-												<div class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-													<div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+											<div className="space-y-4">
+												<div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40">
+													<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 														Request details are private
 													</div>
-													<p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+													<p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
 														Only the buyer can view detailed request information to protect business
 														privacy.
 													</p>
@@ -1123,7 +1123,7 @@ export default function BuyerProfile() {
 									initial={{ opacity: 0, y: 10 }}
 									animate={{ opacity: 1, y: 0 }}
 									exit={{ opacity: 0, y: -10 }}
-									class="space-y-6"
+									className="space-y-6"
 								>
 									<SoftCard>
 										<SectionTitle
@@ -1132,42 +1132,42 @@ export default function BuyerProfile() {
 											subtitle="Previously worked companies and engagement history."
 										/>
 										{(user?.profile?.companies_worked_with || []).length > 0 ? (
-											<div class="space-y-3">
+											<div className="space-y-3">
 												{(user.profile.companies_worked_with || []).map((company, idx) => (
 													<div
 														key={idx}
-														class="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40"
+														className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40"
 													>
-														<div class="flex items-center gap-3 min-w-0">
-															<div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10">
+														<div className="flex items-center gap-3 min-w-0">
+															<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10">
 																{company.logo ? (
 																	<img
 																		src={company.logo}
 																		alt={company.name || "Company"}
-																		class="h-full w-full object-cover"
+																		className="h-full w-full object-cover"
 																	/>
 																) : (
-																	<Building2 class="h-5 w-5 text-sky-500" />
+																	<Building2 className="h-5 w-5 text-sky-500" />
 																)}
 															</div>
-															<div class="min-w-0">
-																<div class="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+															<div className="min-w-0">
+																<div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
 																	{company.name || "Untitled company"}
 																</div>
-																<div class="truncate text-xs text-slate-500 dark:text-slate-400">
+																<div className="truncate text-xs text-slate-500 dark:text-slate-400">
 																	{company.role || "Role not specified"}
 																</div>
 															</div>
 														</div>
-														<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-															<CalendarDays class="h-4 w-4" />{" "}
+														<div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+															<CalendarDays className="h-4 w-4" />{" "}
 															{company.period || company.location || "Period not specified"}
 														</div>
 													</div>
 												))}
 											</div>
 										) : (
-											<div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
+											<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
 												No work history added yet.
 											</div>
 										)}
@@ -1181,7 +1181,7 @@ export default function BuyerProfile() {
 									initial={{ opacity: 0, y: 10 }}
 									animate={{ opacity: 1, y: 0 }}
 									exit={{ opacity: 0, y: -10 }}
-									class="space-y-6"
+									className="space-y-6"
 								>
 									<SoftCard>
 										<SectionTitle
@@ -1189,7 +1189,7 @@ export default function BuyerProfile() {
 											title="Rating summary"
 											subtitle="Public reviews and confidence scoring."
 										/>
-										<div class="grid gap-4 md:grid-cols-3">
+										<div className="grid gap-4 md:grid-cols-3">
 											<Metric label="Average score" value={`${avg.toFixed(1)} / 5`} />
 											<Metric label="Total reviews" value={totalRatings} />
 											<Metric
@@ -1200,8 +1200,8 @@ export default function BuyerProfile() {
 										</div>
 									</SoftCard>
 
-									<div class="rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100">
-										<strong class="font-semibold">Review Policy:</strong> Reviews can only be edited
+									<div className="rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100">
+										<strong className="font-semibold">Review Policy:</strong> Reviews can only be edited
 										or deleted by the person who wrote them. Profile owners cannot delete reviews to
 										maintain transparency and trust.
 									</div>
@@ -1213,7 +1213,7 @@ export default function BuyerProfile() {
 											subtitle="Public feedback from past collaborations."
 										/>
 										{(ratingSummary?.recent_reviews || []).length > 0 ? (
-											<div class="space-y-3">
+											<div className="space-y-3">
 												{(ratingSummary.recent_reviews || []).map((review) => {
 													const canEdit =
 														currentUser?.id &&
@@ -1221,33 +1221,33 @@ export default function BuyerProfile() {
 													return (
 														<div
 															key={review.id}
-															class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+															className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
 														>
-															<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-																<div class="min-w-0">
-																	<div class="flex flex-wrap items-center gap-2">
+															<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+																<div className="min-w-0">
+																	<div className="flex flex-wrap items-center gap-2">
 																		<Pill tone="warning">
-																			<Star class="h-3.5 w-3.5" />{" "}
+																			<Star className="h-3.5 w-3.5" />{" "}
 																			{Number(review.score || 0).toFixed(1)}
 																		</Pill>
-																		<div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+																		<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 																			{review.reviewer_name || "Anonymous"}
 																		</div>
 																	</div>
-																	<p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+																	<p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
 																		{review.comment || "No comment provided."}
 																	</p>
-																	<div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+																	<div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
 																		{review.created_at
 																			? new Date(review.created_at).toLocaleDateString()
 																			: ""}
 																	</div>
 																</div>
 																{canEdit ? (
-																	<div class="flex items-center gap-2">
+																	<div className="flex items-center gap-2">
 																		<button
 																			type="button"
-																			class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
+																			className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
 																			onClick={() => {
 																				setReviewEditModal({
 																					open: true,
@@ -1257,16 +1257,16 @@ export default function BuyerProfile() {
 																				});
 																			}}
 																		>
-																			<Edit3 class="h-4 w-4" /> Edit
+																			<Edit3 className="h-4 w-4" /> Edit
 																		</button>
 																		<button
 																			type="button"
-																			class="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300"
+																			className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300"
 																			onClick={() => {
 																				setReviewDeleteId(review.id);
 																			}}
 																		>
-																			<Trash2 class="h-4 w-4" /> Delete
+																			<Trash2 className="h-4 w-4" /> Delete
 																		</button>
 																	</div>
 																) : null}
@@ -1276,7 +1276,7 @@ export default function BuyerProfile() {
 												})}
 											</div>
 										) : (
-											<div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
+											<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
 												No reviews yet.
 											</div>
 										)}
@@ -1295,7 +1295,7 @@ export default function BuyerProfile() {
 						<CrmSummaryPanel targetId={user.id} />
 					</div>
 
-					<div class="space-y-6 xl:sticky xl:top-6 xl:h-fit">
+					<div className="space-y-6 xl:sticky xl:top-6 xl:h-fit">
 						<SoftCard>
 							<SectionTitle
 								icon={ShieldCheck}
@@ -1312,13 +1312,13 @@ export default function BuyerProfile() {
 									title="Order Completion Certification"
 									subtitle="Signed contract record."
 								/>
-								<div class="space-y-3">
-									<div class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+								<div className="space-y-3">
+									<div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
 										<div>
-											<div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+											<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 												Status
 											</div>
-											<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+											<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 												Certification status
 											</div>
 										</div>
@@ -1336,7 +1336,7 @@ export default function BuyerProfile() {
 
 			{reviewEditModal.open ? (
 				<div
-					class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+					className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
 					onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
 					onKeyDown={(e) =>
 						e.key === "Escape" && setReviewEditModal({ ...reviewEditModal, open: false })
@@ -1344,13 +1344,13 @@ export default function BuyerProfile() {
 					tabIndex={-1}
 				>
 					<div
-						class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+						className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h3 class="text-lg font-semibold text-slate-900 dark:text-white">Edit Review</h3>
-						<div class="mt-4 space-y-4">
+						<h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Review</h3>
+						<div className="mt-4 space-y-4">
 							<div>
-								<label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+								<label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
 									Score (1-5)
 								</label>
 								<input
@@ -1364,11 +1364,11 @@ export default function BuyerProfile() {
 											score: Number(e.target.value),
 										})
 									}
-									class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+									className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
 								/>
 							</div>
 							<div>
-								<label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+								<label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
 									Comment
 								</label>
 								<textarea
@@ -1380,14 +1380,14 @@ export default function BuyerProfile() {
 										})
 									}
 									rows={3}
-									class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+									className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
 								/>
 							</div>
 						</div>
-						<div class="mt-6 flex items-center justify-end gap-3">
+						<div className="mt-6 flex items-center justify-end gap-3">
 							<button
 								onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
-								class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+								className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
 							>
 								Cancel
 							</button>
@@ -1413,7 +1413,7 @@ export default function BuyerProfile() {
 										comment: "",
 									});
 								}}
-								class="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
+								className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
 							>
 								Save
 							</button>
@@ -1424,23 +1424,23 @@ export default function BuyerProfile() {
 
 			{reviewDeleteId ? (
 				<div
-					class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+					className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
 					onClick={() => setReviewDeleteId(null)}
 					onKeyDown={(e) => e.key === "Escape" && setReviewDeleteId(null)}
 					tabIndex={-1}
 				>
 					<div
-						class="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+						className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h3 class="text-lg font-semibold text-slate-900 dark:text-white">Delete Review</h3>
-						<p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+						<h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete Review</h3>
+						<p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
 							Are you sure you want to delete this review? This action cannot be undone.
 						</p>
-						<div class="mt-6 flex items-center justify-end gap-3">
+						<div className="mt-6 flex items-center justify-end gap-3">
 							<button
 								onClick={() => setReviewDeleteId(null)}
-								class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+								className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
 							>
 								Cancel
 							</button>
@@ -1457,7 +1457,7 @@ export default function BuyerProfile() {
 									}
 									setReviewDeleteId(null);
 								}}
-								class="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-400"
+								className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-400"
 							>
 								Delete
 							</button>

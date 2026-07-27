@@ -373,23 +373,23 @@ export default function FeedManagementPage() {
 					theme === "dark" ? "border-white/10 bg-slate-950/70" : "border-slate-200 bg-white/80",
 				)}
 			>
-				<div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-					<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-						<div class="space-y-2">
+				<div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+					<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+						<div className="space-y-2">
 							<div>
-								<h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">Feed Management</h1>
+								<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Feed Management</h1>
 								<p class={cn("mt-1 text-sm sm:text-base", subtleText)}>
 									Create and manage your feed posts.
 								</p>
 							</div>
 						</div>
 
-						<div class="flex flex-wrap items-center gap-3">
+						<div className="flex flex-wrap items-center gap-3">
 							<Link
 								to="/feed"
-								class="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg"
+								className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg"
 							>
-								<ArrowLeft class="h-4 w-4" />
+								<ArrowLeft className="h-4 w-4" />
 								Back to Feed
 							</Link>
 							<button
@@ -407,31 +407,31 @@ export default function FeedManagementPage() {
 				</div>
 			</div>
 
-			<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 				{error ? (
-					<div class="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200 shadow-lg">
-						<div class="flex items-start gap-3">
-							<div class="mt-0.5 rounded-full bg-red-500/20 p-1.5 text-red-300">
-								<X class="h-4 w-4" />
+					<div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200 shadow-lg">
+						<div className="flex items-start gap-3">
+							<div className="mt-0.5 rounded-full bg-red-500/20 p-1.5 text-red-300">
+								<X className="h-4 w-4" />
 							</div>
 							<div>
-								<p class="font-medium text-red-100">Something went wrong</p>
-								<p class="mt-1 text-red-200/90">{error}</p>
+								<p className="font-medium text-red-100">Something went wrong</p>
+								<p className="mt-1 text-red-200/90">{error}</p>
 							</div>
 						</div>
 					</div>
 				) : null}
 
-				<div class="grid gap-6 lg:grid-cols-5">
-					<div class="lg:col-span-3 space-y-6">
+				<div className="grid gap-6 lg:grid-cols-5">
+					<div className="lg:col-span-3 space-y-6">
 						<section class={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
 							<div class={cn("border-b px-5 py-4", mutedBorder)}>
-								<div class="flex items-center gap-3">
-									<div class="rounded-2xl bg-sky-500/15 p-2 text-sky-400">
-										<Plus class="h-5 w-5" />
+								<div className="flex items-center gap-3">
+									<div className="rounded-2xl bg-sky-500/15 p-2 text-sky-400">
+										<Plus className="h-5 w-5" />
 									</div>
 									<div>
-										<h2 class="text-lg font-semibold">
+										<h2 className="text-lg font-semibold">
 											{editingPost ? "Edit Post" : "Post Editor"}
 										</h2>
 										<p class={cn("text-sm", subtleText)}>
@@ -443,7 +443,7 @@ export default function FeedManagementPage() {
 								</div>
 							</div>
 
-							<div class="grid gap-5 p-5 sm:grid-cols-2">
+							<div className="grid gap-5 p-5 sm:grid-cols-2">
 								<Field label="Title" required={true}>
 									<input
 										value={form.title}
@@ -468,7 +468,7 @@ export default function FeedManagementPage() {
 									/>
 								</Field>
 
-								<Field label="Caption" class="sm:col-span-2">
+								<Field label="Caption" className="sm:col-span-2">
 									<textarea
 										value={form.caption}
 										onChange={(e) => updateField("caption", e.target.value)}
@@ -481,7 +481,7 @@ export default function FeedManagementPage() {
 									/>
 								</Field>
 
-								<Field label="README / Longform" class="sm:col-span-2">
+								<Field label="README / Longform" className="sm:col-span-2">
 									<textarea
 										value={form.readme}
 										onChange={(e) => updateField("readme", e.target.value)}
@@ -568,7 +568,7 @@ export default function FeedManagementPage() {
 									/>
 								</Field>
 
-								<Field label="Location Tag" class="sm:col-span-2">
+								<Field label="Location Tag" className="sm:col-span-2">
 									<input
 										value={form.location}
 										onChange={(e) => updateField("location", e.target.value)}
@@ -582,9 +582,9 @@ export default function FeedManagementPage() {
 							</div>
 
 							<div class={cn("border-t px-5 py-5", mutedBorder)}>
-								<div class="flex items-center justify-between gap-4">
+								<div className="flex items-center justify-between gap-4">
 									<div>
-										<h3 class="text-sm font-semibold uppercase tracking-wide text-sky-400">
+										<h3 className="text-sm font-semibold uppercase tracking-wide text-sky-400">
 											Media (images / videos)
 										</h3>
 										<p class={cn("mt-1 text-sm", subtleText)}>
@@ -596,14 +596,14 @@ export default function FeedManagementPage() {
 										type="file"
 										multiple={true}
 										accept=".jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr,.mp4,.webm,.mkv,.flv,.vob,.ogv,.ogg,.rrc,.gifv,.mng,.mov,.avi,.qt,.wmv,.yuv,.rm,.asf,.amv,.m4p,.m4v,.mpg,.mp2,.mpeg,.mpe,.mpv,.svi,.3gp,.3g2,.mxf,.roq,.nsv,.f4v,.f4p,.f4a,.f4b,.mod"
-										class="hidden"
+										className="hidden"
 										onChange={(e) => handleFiles(e.target.files)}
 									/>
 									<button
 										type="button"
 										onClick={openPicker}
 										disabled={uploading}
-										class="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:translate-y-[-1px] hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
+										className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:translate-y-[-1px] hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
 									>
 										{uploading ? (
 											<ThreeDot
@@ -614,13 +614,13 @@ export default function FeedManagementPage() {
 												textColor=""
 											/>
 										) : (
-											<Upload class="h-4 w-4" />
+											<Upload className="h-4 w-4" />
 										)}
 										{uploading ? "Uploading..." : "Upload"}
 									</button>
 								</div>
 
-								<div class="mt-5">
+								<div className="mt-5">
 									{mediaRows.length === 0 ? (
 										<div
 											class={cn(
@@ -631,13 +631,13 @@ export default function FeedManagementPage() {
 											)}
 										>
 											<Image class={cn("mx-auto h-10 w-10", subtleText)} />
-											<p class="mt-3 text-sm font-medium">No media uploaded yet</p>
+											<p className="mt-3 text-sm font-medium">No media uploaded yet</p>
 											<p class={cn("mt-1 text-sm", subtleText)}>
 												Choose one or more images/videos to build a richer post.
 											</p>
 										</div>
 									) : (
-										<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+										<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 											{mediaRows.map((media) => {
 												const isVideo = media.type.startsWith("video");
 												return (
@@ -650,18 +650,18 @@ export default function FeedManagementPage() {
 																: "border-slate-200 bg-white",
 														)}
 													>
-														<div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-500/20 via-cyan-400/10 to-transparent">
+														<div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-500/20 via-cyan-400/10 to-transparent">
 															{isVideo ? (
 																<>
 																	<video
 																		src={media.url}
-																		class="h-full w-full object-cover"
+																		className="h-full w-full object-cover"
 																		muted={true}
 																		playsInline={true}
 																	/>
-																	<div class="absolute inset-0 grid place-items-center bg-black/20">
-																		<div class="rounded-full bg-black/40 p-3 text-white backdrop-blur-sm">
-																			<Play class="h-6 w-6 fill-white" />
+																	<div className="absolute inset-0 grid place-items-center bg-black/20">
+																		<div className="rounded-full bg-black/40 p-3 text-white backdrop-blur-sm">
+																			<Play className="h-6 w-6 fill-white" />
 																		</div>
 																	</div>
 																</>
@@ -674,29 +674,29 @@ export default function FeedManagementPage() {
 																		duration: 0.5,
 																		ease: [0.16, 1, 0.3, 1],
 																	}}
-																	class="h-full w-full"
+																	className="h-full w-full"
 																>
 																	<img
 																		src={media.url}
 																		alt={media.name}
-																		class="h-full w-full object-cover"
+																		className="h-full w-full object-cover"
 																	/>
 																</motion.div>
 															)}
 															<button
 																type="button"
 																onClick={() => removeMedia(media.id)}
-																class="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white opacity-100 transition hover:bg-black"
+																className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white opacity-100 transition hover:bg-black"
 																aria-label="Remove media"
 															>
-																<X class="h-4 w-4" />
+																<X className="h-4 w-4" />
 															</button>
 														</div>
-														<div class="space-y-1 p-3">
-															<div class="text-xs font-medium uppercase tracking-wide text-sky-400">
+														<div className="space-y-1 p-3">
+															<div className="text-xs font-medium uppercase tracking-wide text-sky-400">
 																{isVideo ? "Video" : "Image"}
 															</div>
-															<p class="truncate text-sm font-medium">{media.name}</p>
+															<p className="truncate text-sm font-medium">{media.name}</p>
 														</div>
 													</div>
 												);
@@ -712,7 +712,7 @@ export default function FeedManagementPage() {
 									mutedBorder,
 								)}
 							>
-								<div class="flex gap-3">
+								<div className="flex gap-3">
 									<button
 										type="button"
 										onClick={clearForm}
@@ -721,11 +721,11 @@ export default function FeedManagementPage() {
 											panelBg,
 										)}
 									>
-										<RefreshCw class="h-4 w-4" />
+										<RefreshCw className="h-4 w-4" />
 										{editingPost ? "Cancel" : "Clear"}
 									</button>
 									{editingPost && (
-										<span class="inline-flex items-center gap-2 rounded-2xl bg-sky-500/10 px-4 py-3 text-sm font-medium text-sky-400">
+										<span className="inline-flex items-center gap-2 rounded-2xl bg-sky-500/10 px-4 py-3 text-sm font-medium text-sky-400">
 											Editing post
 										</span>
 									)}
@@ -735,12 +735,12 @@ export default function FeedManagementPage() {
 									type="button"
 									onClick={createPost}
 									disabled={saving}
-									class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] hover:shadow-xl hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:opacity-70"
+									className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] hover:shadow-xl hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:opacity-70"
 								>
 									{saving ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 									) : (
-										<Check class="h-4 w-4" />
+										<Check className="h-4 w-4" />
 									)}
 									{saving ? "Saving..." : editingPost ? "Update post" : "Save post"}
 								</button>
@@ -748,14 +748,14 @@ export default function FeedManagementPage() {
 						</section>
 					</div>
 
-					<div class="lg:col-span-2 space-y-6">
+					<div className="lg:col-span-2 space-y-6">
 						<section class={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
 							<div class={cn("border-b px-5 py-4", mutedBorder)}>
-								<h2 class="text-lg font-semibold">Live Preview</h2>
+								<h2 className="text-lg font-semibold">Live Preview</h2>
 								<p class={cn("text-sm", subtleText)}>Rendered markdown from your README field.</p>
 							</div>
 
-							<div class="px-5 py-5">
+							<div className="px-5 py-5">
 								{previewHasText ? (
 									<article
 										class={cn(
@@ -786,7 +786,7 @@ export default function FeedManagementPage() {
 															alt={alt || ""}
 															title={title}
 															loading="lazy"
-															class="max-w-full rounded-xl"
+															className="max-w-full rounded-xl"
 															{...props}
 														/>
 													);
@@ -820,7 +820,7 @@ export default function FeedManagementPage() {
 										)}
 									>
 										<Sparkles class={cn("mx-auto h-10 w-10", subtleText)} />
-										<p class="mt-3 text-sm font-medium">No preview content yet</p>
+										<p className="mt-3 text-sm font-medium">No preview content yet</p>
 										<p class={cn("mt-1 text-sm", subtleText)}>
 											Start writing markdown to see it rendered instantly.
 										</p>
@@ -829,15 +829,15 @@ export default function FeedManagementPage() {
 							</div>
 
 							<div class={cn("border-t px-5 py-5", mutedBorder)}>
-								<div class="flex items-center justify-between gap-3">
-									<h3 class="text-sm font-semibold uppercase tracking-wide text-sky-400">
+								<div className="flex items-center justify-between gap-3">
+									<h3 className="text-sm font-semibold uppercase tracking-wide text-sky-400">
 										Content summary
 									</h3>
-									<div class="rounded-full border px-3 py-1 text-xs font-medium text-sky-400 border-sky-400/20 bg-sky-400/10">
+									<div className="rounded-full border px-3 py-1 text-xs font-medium text-sky-400 border-sky-400/20 bg-sky-400/10">
 										{mediaRows.length} media
 									</div>
 								</div>
-								<div class="mt-4 grid gap-3 text-sm">
+								<div className="mt-4 grid gap-3 text-sm">
 									<InfoRow
 										label="CTA"
 										value={
@@ -877,13 +877,13 @@ export default function FeedManagementPage() {
 
 						<section class={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
 							<div class={cn("border-b px-5 py-4", mutedBorder)}>
-								<h2 class="text-lg font-semibold">Your posts</h2>
+								<h2 className="text-lg font-semibold">Your posts</h2>
 								<p class={cn("text-sm", subtleText)}>Fetched from /api/feed/posts/mine</p>
 							</div>
 
-							<div class="p-5">
+							<div className="p-5">
 								{loadingPosts ? (
-									<div class="flex items-center justify-center py-10">
+									<div className="flex items-center justify-center py-10">
 										<Mosaic
 											color="#3b00ff"
 											size="large"
@@ -901,16 +901,16 @@ export default function FeedManagementPage() {
 												: "border-slate-200 bg-slate-50",
 										)}
 									>
-										<div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-500/10 text-sky-400">
-											<Image class="h-6 w-6" />
+										<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-500/10 text-sky-400">
+											<Image className="h-6 w-6" />
 										</div>
-										<p class="mt-3 text-sm font-medium">No posts yet</p>
+										<p className="mt-3 text-sm font-medium">No posts yet</p>
 										<p class={cn("mt-1 text-sm", subtleText)}>
 											Create your first post to populate this list.
 										</p>
 									</div>
 								) : (
-									<Reorder.Group axis="y" values={posts} onReorder={setPosts} class="space-y-4">
+									<Reorder.Group axis="y" values={posts} onReorder={setPosts} className="space-y-4">
 										{posts.map((post) => (
 											<Reorder.Item key={post.id} value={post}>
 												<article
@@ -921,28 +921,28 @@ export default function FeedManagementPage() {
 															: "border-slate-200 bg-white",
 													)}
 												>
-													<div class="flex items-start justify-between gap-3">
-														<div class="min-w-0">
-															<h3 class="truncate text-base font-semibold">{post.title}</h3>
-															<p class="mt-0.5 text-xs uppercase tracking-wide text-slate-400">
+													<div className="flex items-start justify-between gap-3">
+														<div className="min-w-0">
+															<h3 className="truncate text-base font-semibold">{post.title}</h3>
+															<p className="mt-0.5 text-xs uppercase tracking-wide text-slate-400">
 																{post.category || "Uncategorized"}
 															</p>
 														</div>
-														<div class="flex items-center gap-2">
+														<div className="flex items-center gap-2">
 															<button
 																type="button"
 																onClick={() => editPost(post)}
-																class="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-sm font-medium text-sky-300 transition hover:bg-sky-500/15"
+																className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-sm font-medium text-sky-300 transition hover:bg-sky-500/15"
 															>
-																<Pencil class="h-4 w-4" />
+																<Pencil className="h-4 w-4" />
 																Edit
 															</button>
 															<button
 																type="button"
 																onClick={() => deletePost(post.id)}
-																class="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/15"
+																className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/15"
 															>
-																<Trash2 class="h-4 w-4" />
+																<Trash2 className="h-4 w-4" />
 																Delete
 															</button>
 														</div>
@@ -952,7 +952,7 @@ export default function FeedManagementPage() {
 														{post.caption || "No caption provided."}
 													</p>
 
-													<div class="mt-4 flex items-center justify-between gap-3 text-xs">
+													<div className="mt-4 flex items-center justify-between gap-3 text-xs">
 														<div
 															class={cn(
 																"inline-flex items-center gap-2 rounded-full border px-3 py-1.5",
@@ -961,10 +961,10 @@ export default function FeedManagementPage() {
 																	: "border-slate-200 bg-slate-50 text-slate-600",
 															)}
 														>
-															<span class="h-2 w-2 rounded-full bg-sky-400" />
+															<span className="h-2 w-2 rounded-full bg-sky-400" />
 															Created {timeAgo(post.createdAt)}
 														</div>
-														<div class="text-sky-400/90">Published</div>
+														<div className="text-sky-400/90">Published</div>
 													</div>
 												</article>
 											</Reorder.Item>
@@ -983,8 +983,8 @@ export default function FeedManagementPage() {
 function Field({ label, required, className, children }) {
 	return (
 		<div class={className}>
-			<label class="mb-2 block text-sm font-medium">
-				{label} {required ? <span class="text-sky-400">*</span> : null}
+			<label className="mb-2 block text-sm font-medium">
+				{label} {required ? <span className="text-sky-400">*</span> : null}
 			</label>
 			{children}
 		</div>
@@ -993,9 +993,9 @@ function Field({ label, required, className, children }) {
 
 function InfoRow({ label, value }) {
 	return (
-		<div class="flex flex-col gap-1 rounded-2xl border border-white/5 bg-white/5 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-			<span class="text-xs font-semibold uppercase tracking-wide text-sky-400">{label}</span>
-			<span class="text-sm text-slate-300 sm:text-right">{value}</span>
+		<div className="flex flex-col gap-1 rounded-2xl border border-white/5 bg-white/5 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+			<span className="text-xs font-semibold uppercase tracking-wide text-sky-400">{label}</span>
+			<span className="text-sm text-slate-300 sm:text-right">{value}</span>
 		</div>
 	);
 }

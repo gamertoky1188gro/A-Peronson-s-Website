@@ -191,61 +191,61 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 
 		return (
 			<div key={comment.id}>
-				<div class="flex gap-2.5">
+				<div className="flex gap-2.5">
 					{comment.actor_avatar ? (
 						<img
 							src={comment.actor_avatar}
 							alt=""
-							class="mt-0.5 h-8 w-8 shrink-0 rounded-full object-cover"
+							className="mt-0.5 h-8 w-8 shrink-0 rounded-full object-cover"
 						/>
 					) : (
 						<div
-							class={`mt-0.5 h-8 w-8 shrink-0 rounded-full ${avatarColors(comment.actor_name)} flex items-center justify-center text-xs font-bold text-white`}
+							className={`mt-0.5 h-8 w-8 shrink-0 rounded-full ${avatarColors(comment.actor_name)} flex items-center justify-center text-xs font-bold text-white`}
 						>
 							{getInitials(comment.actor_name)}
 						</div>
 					)}
-					<div class="flex-1 min-w-0">
-						<div class="rounded-2xl bg-slate-100 dark:bg-slate-800 px-3.5 py-2.5">
-							<div class="flex items-center gap-2">
-								<span class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+					<div className="flex-1 min-w-0">
+						<div className="rounded-2xl bg-slate-100 dark:bg-slate-800 px-3.5 py-2.5">
+							<div className="flex items-center gap-2">
+								<span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 									{comment.actor_name || "User"}
 								</span>
 								{comment.actor_verified ? (
-									<span class="text-[10px] text-[#0A66C2] font-bold">Verified</span>
+									<span className="text-[10px] text-[#0A66C2] font-bold">Verified</span>
 								) : null}
 							</div>
-							<p class="mt-0.5 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+							<p className="mt-0.5 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
 								{comment.text}
 							</p>
 						</div>
-						<div class="flex items-center gap-4 mt-0.5 px-1">
-							<span class="text-[11px] text-slate-400 dark:text-slate-500">
+						<div className="flex items-center gap-4 mt-0.5 px-1">
+							<span className="text-[11px] text-slate-400 dark:text-slate-500">
 								{formatDateTime(comment.created_at)}
 							</span>
 							<button
 								type="button"
 								onClick={() => setReplyingTo(replyingTo === comment.id ? "" : comment.id)}
-								class="text-[11px] font-semibold text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400"
+								className="text-[11px] font-semibold text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400"
 							>
 								Reply
 							</button>
 						</div>
 
 						{replyingTo === comment.id ? (
-							<div class="mt-1.5 flex gap-2 items-center ml-1">
+							<div className="mt-1.5 flex gap-2 items-center ml-1">
 								<input
 									value={replyInput}
 									onChange={(e) => setReplyInput(e.target.value)}
 									onKeyDown={(e) => e.key === "Enter" && submitReply(comment.id)}
 									placeholder="Write a reply..."
-									class="flex-1 rounded-full bg-slate-100 dark:bg-slate-800 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+									className="flex-1 rounded-full bg-slate-100 dark:bg-slate-800 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
 								/>
 								<button
 									type="button"
 									onClick={() => submitReply(comment.id)}
 									disabled={submitting || !replyInput.trim()}
-									class="rounded-full bg-[#0A66C2] text-white px-3.5 py-2 text-sm font-semibold disabled:opacity-50"
+									className="rounded-full bg-[#0A66C2] text-white px-3.5 py-2 text-sm font-semibold disabled:opacity-50"
 								>
 									{submitting ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
@@ -256,7 +256,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 								<button
 									type="button"
 									onClick={resetReply}
-									class="text-[11px] font-semibold text-slate-400 hover:text-slate-600"
+									className="text-[11px] font-semibold text-slate-400 hover:text-slate-600"
 								>
 									Cancel
 								</button>
@@ -264,13 +264,13 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 						) : null}
 
 						{hasChildren ? (
-							<div class="mt-2 space-y-2 ml-1 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
+							<div className="mt-2 space-y-2 ml-1 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
 								{visibleChildren.map((child) => renderCommentNode(child, depth + 1))}
 								{children.length > 2 ? (
 									<button
 										type="button"
 										onClick={() => toggleThread(comment.id)}
-										class="flex items-center gap-1.5 text-xs font-semibold text-[#0A66C2] hover:text-[#084b8a]"
+										className="flex items-center gap-1.5 text-xs font-semibold text-[#0A66C2] hover:text-[#084b8a]"
 									>
 										{expanded ? (
 											<>
@@ -297,24 +297,24 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 
 	return (
 		<div
-			class="fixed inset-0 z-50 flex items-start justify-center pt-4 pb-4 sm:pt-10"
+			className="fixed inset-0 z-50 flex items-start justify-center pt-4 pb-4 sm:pt-10"
 			style={{ overflow: "hidden" }}
 		>
 			<button
 				type="button"
 				aria-label="Close"
 				onClick={onClose}
-				class="fixed inset-0 bg-black/50"
+				className="fixed inset-0 bg-black/50"
 			/>
-			<div class="relative z-10 w-full max-w-2xl mx-2 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overscroll-contain">
-				<header class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
-					<div class="flex items-center gap-3">
-						<div class="h-10 w-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 shrink-0" />
+			<div className="relative z-10 w-full max-w-2xl mx-2 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overscroll-contain">
+				<header className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
+					<div className="flex items-center gap-3">
+						<div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 shrink-0" />
 						<div>
-							<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+							<p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 								{item?.author?.name || "Unknown"}
 							</p>
-							<p class="text-[11px] text-slate-500 dark:text-slate-400">
+							<p className="text-[11px] text-slate-500 dark:text-slate-400">
 								{item?.entityType === "user_feed_post"
 									? "Feed Post"
 									: item?.entityType === "buyer_request"
@@ -326,18 +326,18 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 					<button
 						type="button"
 						onClick={onClose}
-						class="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+						className="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
 						aria-label="Close"
 					>
-						<X size={20} class="text-slate-500 dark:text-slate-400" />
+						<X size={20} className="text-slate-500 dark:text-slate-400" />
 					</button>
 				</header>
 
-				<div class="flex border-b border-slate-200 dark:border-slate-700 shrink-0">
+				<div className="flex border-b border-slate-200 dark:border-slate-700 shrink-0">
 					<button
 						type="button"
 						onClick={() => setActiveTab("post")}
-						class={`flex-1 px-4 py-3 text-sm font-semibold text-center transition ${
+						className={`flex-1 px-4 py-3 text-sm font-semibold text-center transition ${
 							activeTab === "post"
 								? "text-sky-600 border-b-2 border-sky-500"
 								: "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
@@ -348,7 +348,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 					<button
 						type="button"
 						onClick={() => setActiveTab("comments")}
-						class={`flex-1 px-4 py-3 text-sm font-semibold text-center transition ${
+						className={`flex-1 px-4 py-3 text-sm font-semibold text-center transition ${
 							activeTab === "comments"
 								? "text-sky-600 border-b-2 border-sky-500"
 								: "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
@@ -358,16 +358,16 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 					</button>
 				</div>
 
-				<div class="flex-1 min-h-0">
+				<div className="flex-1 min-h-0">
 					{activeTab === "post" ? (
-						<div data-lenis-prevent={true} class="h-full overflow-y-auto p-5">
+						<div data-lenis-prevent={true} className="h-full overflow-y-auto p-5">
 							<PostPreview item={item} />
 
-							<div class="mt-6 flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+							<div className="mt-6 flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
 								<button
 									type="button"
 									onClick={() => setActiveTab("comments")}
-									class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400"
+									className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400"
 								>
 									<MessageSquareText size={18} />
 									Comments
@@ -375,7 +375,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 								<button
 									type="button"
 									onClick={onShare}
-									class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400"
+									className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400"
 								>
 									<Share2 size={18} />
 									Share
@@ -383,7 +383,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 								<button
 									type="button"
 									onClick={() => setShowReport(true)}
-									class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400"
+									className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400"
 								>
 									<Flag size={18} />
 									Report
@@ -393,10 +393,10 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 					) : null}
 
 					{activeTab === "comments" ? (
-						<div class="flex flex-col h-full">
-							<div data-lenis-prevent={true} class="flex-1 overflow-y-auto p-5 space-y-5">
+						<div className="flex flex-col h-full">
+							<div data-lenis-prevent={true} className="flex-1 overflow-y-auto p-5 space-y-5">
 								{loading ? (
-									<div class="flex justify-center py-8">
+									<div className="flex justify-center py-8">
 										<ThreeDot
 											variant="bounce"
 											color="#6100ff"
@@ -408,35 +408,35 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 									</div>
 								) : null}
 								{!loading && error ? (
-									<div class="text-sm text-rose-700 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-300 rounded-lg p-3">
+									<div className="text-sm text-rose-700 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-300 rounded-lg p-3">
 										{error}
 									</div>
 								) : null}
 								{!(loading || error) && comments.length === 0 ? (
-									<div class="text-sm text-slate-500 dark:text-slate-400 text-center py-12">
-										<MessageSquareText size={32} class="mx-auto mb-3 opacity-40" />
+									<div className="text-sm text-slate-500 dark:text-slate-400 text-center py-12">
+										<MessageSquareText size={32} className="mx-auto mb-3 opacity-40" />
 										<p>No comments yet.</p>
-										<p class="text-xs mt-1">Be the first to share your thoughts.</p>
+										<p className="text-xs mt-1">Be the first to share your thoughts.</p>
 									</div>
 								) : null}
 
 								{!loading && commentTree.map((node) => renderCommentNode(node, 0))}
 							</div>
 
-							<div class="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-								<div class="flex gap-2 items-center">
+							<div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+								<div className="flex gap-2 items-center">
 									<input
 										value={input}
 										onChange={(e) => setInput(e.target.value)}
 										onKeyDown={(e) => e.key === "Enter" && submitComment()}
 										placeholder="Write a comment..."
-										class="flex-1 rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+										className="flex-1 rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
 									/>
 									<button
 										type="button"
 										onClick={submitComment}
 										disabled={submitting || !input.trim()}
-										class="rounded-full bg-[#0A66C2] text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-[#084b8a] transition"
+										className="rounded-full bg-[#0A66C2] text-white px-5 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-[#084b8a] transition"
 									>
 										{submitting ? (
 											<ThreeDot

@@ -582,15 +582,15 @@ export default function NavBar() {
 	return (
 		<Motion.nav
 			style={{ y: navY }}
-			class="sticky top-0 z-50 w-full border-b border-white/10 bg-white/65 backdrop-blur-2xl dark:bg-slate-950/55"
+			className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/65 backdrop-blur-2xl dark:bg-slate-950/55"
 		>
-			<div class="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
-				<div class="flex min-h-20 flex-nowrap items-center justify-between gap-1 sm:gap-3 py-3">
-					<div class="flex min-w-0 flex-shrink items-center gap-1 md:gap-4">
+			<div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
+				<div className="flex min-h-20 flex-nowrap items-center justify-between gap-1 sm:gap-3 py-3">
+					<div className="flex min-w-0 flex-shrink items-center gap-1 md:gap-4">
 						{location.pathname !== "/" && (
 							<button
 								onClick={() => navigate(-1)}
-								class="inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
+								className="inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
 								aria-label="Go back"
 							>
 								<svg
@@ -610,17 +610,17 @@ export default function NavBar() {
 						)}
 						<Link
 							to={user ? getRoleHome(user.role) : "/"}
-							class="group inline-flex items-center gap-3 rounded-full px-2 py-1 transition"
+							className="group inline-flex items-center gap-3 rounded-full px-2 py-1 transition"
 						>
-							<span class="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-cyan-500 to-blue-600 text-white shadow-lg shadow-sky-500/20 ring-1 ring-white/30">
-								<span class="absolute inset-0 rounded-2xl bg-white/10 opacity-0 blur-xl transition group-hover:opacity-100" />
-								<ShoppingCart class="h-5 w-5" />
+							<span className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-cyan-500 to-blue-600 text-white shadow-lg shadow-sky-500/20 ring-1 ring-white/30">
+								<span className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 blur-xl transition group-hover:opacity-100" />
+								<ShoppingCart className="h-5 w-5" />
 							</span>
-							<span class="min-w-0">
-								<span class="block text-sm font-semibold tracking-[0.18em] text-slate-900 dark:text-white">
+							<span className="min-w-0">
+								<span className="block text-sm font-semibold tracking-[0.18em] text-slate-900 dark:text-white">
 									GarTexHub
 								</span>
-								<span class="block text-xs text-slate-500 dark:text-slate-400">
+								<span className="block text-xs text-slate-500 dark:text-slate-400">
 									B2B Textile Marketplace
 								</span>
 							</span>
@@ -629,7 +629,7 @@ export default function NavBar() {
 						<SlideIn
 							direction="down"
 							as="div"
-							class="hidden min-w-0 flex-shrink items-center gap-1 md:flex"
+							className="hidden min-w-0 flex-shrink items-center gap-1 md:flex"
 						>
 							{user
 								? validNavGroups.map((group, idx) => (
@@ -672,8 +672,8 @@ export default function NavBar() {
 						</SlideIn>
 					</div>
 
-					<div class="flex flex-shrink-0 items-center gap-2 sm:gap-3">
-						<div ref={searchRef} class="relative hidden items-center md:flex">
+					<div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
+						<div ref={searchRef} className="relative hidden items-center md:flex">
 							{searchExpanded ? (
 								<div
 									class={cn(
@@ -681,7 +681,7 @@ export default function NavBar() {
 										"dark:bg-slate-950/70",
 									)}
 								>
-									<Search class="h-4 w-4 text-slate-400" />
+									<Search className="h-4 w-4 text-slate-400" />
 									<input
 										ref={searchInputRef}
 										value={searchQuery}
@@ -703,7 +703,7 @@ export default function NavBar() {
 											}
 										}}
 										placeholder="Search users..."
-										class="min-w-0 flex-1 bg-transparent px-2 text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+										className="min-w-0 flex-1 bg-transparent px-2 text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
 									/>
 									<button
 										type="button"
@@ -712,7 +712,7 @@ export default function NavBar() {
 											setSearchQuery("");
 											setSearchOpen(false);
 										}}
-										class="pointer-events-auto rounded-full bg-slate-900/5 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
+										className="pointer-events-auto rounded-full bg-slate-900/5 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
 									>
 										✕
 									</button>
@@ -721,57 +721,57 @@ export default function NavBar() {
 								<button
 									type="button"
 									onClick={() => setSearchExpanded(true)}
-									class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/65 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-sky-600 dark:bg-slate-950/70 dark:text-slate-300 dark:hover:text-sky-300"
+									className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/65 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-sky-600 dark:bg-slate-950/70 dark:text-slate-300 dark:hover:text-sky-300"
 									aria-label="Open search"
 								>
-									<Search class="h-5 w-5" />
+									<Search className="h-5 w-5" />
 								</button>
 							)}
 
 							{user && searchOpen && searchQuery.trim().length > 0 ? (
-								<div class="absolute left-0 top-[calc(100%+10px)] z-50 w-[360px] overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.16)] backdrop-blur-2xl dark:bg-slate-950/95">
+								<div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[360px] overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.16)] backdrop-blur-2xl dark:bg-slate-950/95">
 									{searchLoading ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 									) : null}
 									{!searchLoading && searchError ? (
-										<p class="px-2 py-3 text-xs text-rose-500">{searchError}</p>
+										<p className="px-2 py-3 text-xs text-rose-500">{searchError}</p>
 									) : null}
 									{!(searchLoading || searchError) && searchResults.length === 0 ? (
-										<p class="px-2 py-3 text-xs text-slate-500">No users found.</p>
+										<p className="px-2 py-3 text-xs text-slate-500">No users found.</p>
 									) : null}
 									{!(searchLoading || searchError) && searchResults.length > 0 ? (
-										<p class="px-3 pb-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+										<p className="px-3 pb-2 text-[11px] uppercase tracking-[0.2em] text-slate-400">
 											Suggestions
 										</p>
 									) : null}
 									{actionStatus ? (
-										<p class="px-3 pb-2 text-[11px] text-emerald-600">{actionStatus}</p>
+										<p className="px-3 pb-2 text-[11px] text-emerald-600">{actionStatus}</p>
 									) : null}
 
 									{!(searchLoading || searchError) &&
 										searchResults.map((result) => (
 											<div
 												key={result.id}
-												class="mb-1 rounded-2xl px-2 py-2 last:mb-0 transition hover:bg-slate-900/5 dark:hover:bg-white/5"
+												className="mb-1 rounded-2xl px-2 py-2 last:mb-0 transition hover:bg-slate-900/5 dark:hover:bg-white/5"
 											>
-												<div class="flex items-center justify-between gap-2">
+												<div className="flex items-center justify-between gap-2">
 													<div>
-														<p class="text-sm font-semibold text-slate-800 dark:text-slate-100">
+														<p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
 															{result.name}
 															{result.is_self ? " (You)" : ""}
 														</p>
-														<p class="text-xs text-slate-500">
+														<p className="text-xs text-slate-500">
 															{result.role} - {result.email}
 														</p>
 													</div>
 													{result.verified ? (
-														<span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+														<span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
 															Verified
 														</span>
 													) : null}
 												</div>
 
-												<div class="mt-2 flex flex-wrap gap-2">
+												<div className="mt-2 flex flex-wrap gap-2">
 													<button
 														disabled={
 															result.is_self ||
@@ -779,7 +779,7 @@ export default function NavBar() {
 															actionBusyKey === `follow:${result.id}`
 														}
 														onClick={() => followUser(result.id)}
-														class="inline-flex items-center rounded-xl bg-sky-500/10 px-2.5 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-sky-300"
+														className="inline-flex items-center rounded-xl bg-sky-500/10 px-2.5 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-sky-300"
 													>
 														{actionBusyKey === `follow:${result.id}`
 															? "Following..."
@@ -796,7 +796,7 @@ export default function NavBar() {
 															actionBusyKey === `friend:${result.id}`
 														}
 														onClick={() => addFriend(result.id)}
-														class="inline-flex items-center rounded-xl bg-indigo-500/10 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
+														className="inline-flex items-center rounded-xl bg-indigo-500/10 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
 													>
 														{actionBusyKey === `friend:${result.id}` ? (
 															<ThreeDot
@@ -819,14 +819,14 @@ export default function NavBar() {
 															<button
 																disabled={actionBusyKey === `message:${result.id}`}
 																onClick={() => messageFriend(result.id)}
-																class="inline-flex items-center rounded-xl bg-emerald-500/10 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-300"
+																className="inline-flex items-center rounded-xl bg-emerald-500/10 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-300"
 															>
 																Message
 															</button>
 															<button
 																disabled={actionBusyKey === `call:${result.id}`}
 																onClick={() => callFriend(result.id)}
-																class="inline-flex items-center rounded-xl bg-violet-500/10 px-2.5 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-violet-300"
+																className="inline-flex items-center rounded-xl bg-violet-500/10 px-2.5 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-violet-300"
 															>
 																Call
 															</button>
@@ -839,8 +839,8 @@ export default function NavBar() {
 							) : null}
 						</div>
 
-						<div class="ml-auto flex items-center gap-2">
-							<div class="hidden md:block">
+						<div className="ml-auto flex items-center gap-2">
+							<div className="hidden md:block">
 								<IconNavLink
 									to="/notifications"
 									Icon={Bell}
@@ -852,24 +852,24 @@ export default function NavBar() {
 
 							<button
 								onClick={toggleTheme}
-								class="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/65 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white"
+								className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/65 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white"
 								aria-label="Toggle dark mode"
 							>
-								{dark ? <Sun class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
-								<span class="hidden sm:inline">{dark ? "Light" : "Dark"}</span>
+								{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+								<span className="hidden sm:inline">{dark ? "Light" : "Dark"}</span>
 							</button>
 
 							{user ? (
 								<button
 									onClick={handleLogout}
-									class="hidden md:inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
+									className="hidden md:inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
 								>
 									Logout
 								</button>
 							) : (
 								<Link
 									to="/login"
-									class="hidden md:inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
+									className="hidden md:inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110"
 								>
 									Login
 								</Link>
@@ -878,17 +878,17 @@ export default function NavBar() {
 							<button
 								type="button"
 								onClick={() => navigate("/search")}
-								class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-sky-600 dark:bg-slate-950/70 dark:text-slate-300 dark:hover:text-sky-300 md:hidden"
+								className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-sky-600 dark:bg-slate-950/70 dark:text-slate-300 dark:hover:text-sky-300 md:hidden"
 								aria-label="Search"
 							>
-								<Search class="h-5 w-5" />
+								<Search className="h-5 w-5" />
 							</button>
 							<button
 								onClick={() => setMobileOpen((v) => !v)}
-								class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white md:hidden"
+								className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white md:hidden"
 								aria-label={mobileOpen ? "Close menu" : "Open menu"}
 							>
-								{mobileOpen ? <X class="h-5 w-5" /> : <Menu class="h-5 w-5" />}
+								{mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
 							</button>
 						</div>
 					</div>
@@ -901,7 +901,7 @@ export default function NavBar() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						class="fixed inset-0 z-[60] bg-slate-950/35 backdrop-blur-sm md:hidden"
+						className="fixed inset-0 z-[60] bg-slate-950/35 backdrop-blur-sm md:hidden"
 					>
 						<Motion.div
 							ref={mobileMenuRef}
@@ -909,35 +909,35 @@ export default function NavBar() {
 							animate={{ x: 0, opacity: 1 }}
 							exit={{ x: "-100%", opacity: 0 }}
 							transition={{ type: "spring", stiffness: 300, damping: 30 }}
-							class="mx-auto mt-16 w-[min(92vw,28rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-white/85 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-2xl dark:bg-slate-950/90"
+							className="mx-auto mt-16 w-[min(92vw,28rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-white/85 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-2xl dark:bg-slate-950/90"
 						>
-							<div class="flex items-center justify-between border-b border-slate-900/5 px-5 py-4 dark:border-white/10">
+							<div className="flex items-center justify-between border-b border-slate-900/5 px-5 py-4 dark:border-white/10">
 								<div>
-									<div class="text-sm font-semibold text-slate-900 dark:text-white">GarTexHub</div>
-									<div class="text-xs text-slate-500 dark:text-slate-400">Navigation</div>
+									<div className="text-sm font-semibold text-slate-900 dark:text-white">GarTexHub</div>
+									<div className="text-xs text-slate-500 dark:text-slate-400">Navigation</div>
 								</div>
 								<button
 									onClick={() => setMobileOpen(false)}
-									class="rounded-full p-2 text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
+									className="rounded-full p-2 text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10"
 									aria-label="Close menu"
 								>
-									<X class="h-5 w-5" />
+									<X className="h-5 w-5" />
 								</button>
 							</div>
 
-							<div data-lenis-prevent={true} class="max-h-[70vh] overflow-y-auto p-4">
-								<div class="space-y-3">
+							<div data-lenis-prevent={true} className="max-h-[70vh] overflow-y-auto p-4">
+								<div className="space-y-3">
 									{user
 										? validNavGroups.map((group) => (
 												<div
 													key={group.label}
-													class="rounded-3xl border border-slate-900/5 bg-white/70 p-3 dark:border-white/10 dark:bg-white/5"
+													className="rounded-3xl border border-slate-900/5 bg-white/70 p-3 dark:border-white/10 dark:bg-white/5"
 												>
-													<div class="mb-2 flex items-center gap-2 px-1 text-sm font-semibold text-slate-900 dark:text-white">
-														<group.icon class="h-4 w-4 text-sky-500" />
+													<div className="mb-2 flex items-center gap-2 px-1 text-sm font-semibold text-slate-900 dark:text-white">
+														<group.icon className="h-4 w-4 text-sky-500" />
 														{group.label}
 													</div>
-													<div class="space-y-1">
+													<div className="space-y-1">
 														{group.items
 															.filter(
 																(item) =>
@@ -982,8 +982,8 @@ export default function NavBar() {
 																				: "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10",
 																		)}
 																	>
-																		<span class="flex items-center gap-3">
-																			<ItemIcon class="h-4 w-4" />
+																		<span className="flex items-center gap-3">
+																			<ItemIcon className="h-4 w-4" />
 																			{item.label}
 																		</span>
 																		{item.badge &&
@@ -996,12 +996,12 @@ export default function NavBar() {
 																						repeat: Number.POSITIVE_INFINITY,
 																						ease: "easeInOut",
 																					}}
-																					class="rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-semibold text-white"
+																					className="rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-semibold text-white"
 																				>
 																					{unreadCount > 99 ? "99+" : unreadCount}
 																				</Motion.span>
 																			)}
-																		<ChevronRight class="h-4 w-4 opacity-40" />
+																		<ChevronRight className="h-4 w-4 opacity-40" />
 																	</Link>
 																);
 															})}
@@ -1021,43 +1021,43 @@ export default function NavBar() {
 													)}
 												>
 													<span>{label}</span>
-													<ChevronRight class="h-4 w-4 opacity-40" />
+													<ChevronRight className="h-4 w-4 opacity-40" />
 												</Link>
 											))}
 								</div>
 
 								{user ? null : (
-									<div class="mt-4 rounded-3xl border border-sky-400/10 bg-gradient-to-br from-sky-500/10 to-cyan-500/10 p-4">
-										<div class="text-sm font-semibold text-slate-900 dark:text-white">
+									<div className="mt-4 rounded-3xl border border-sky-400/10 bg-gradient-to-br from-sky-500/10 to-cyan-500/10 p-4">
+										<div className="text-sm font-semibold text-slate-900 dark:text-white">
 											Guest access
 										</div>
-										<div class="mt-3 flex flex-col gap-2">
+										<div className="mt-3 flex flex-col gap-2">
 											<Link
 												to="/login"
 												onClick={() => setMobileOpen(false)}
-												class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
+												className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
 											>
 												Login
 											</Link>
 											<Link
 												to="/signup"
 												onClick={() => setMobileOpen(false)}
-												class="inline-flex items-center justify-center rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
+												className="inline-flex items-center justify-center rounded-2xl border border-slate-900/10 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
 											>
 												Signup
 											</Link>
-											<div class="mt-1 grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400">
+											<div className="mt-1 grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400">
 												<Link
 													to="/terms"
 													onClick={() => setMobileOpen(false)}
-													class="hover:text-sky-600"
+													className="hover:text-sky-600"
 												>
 													Terms
 												</Link>
 												<Link
 													to="/privacy"
 													onClick={() => setMobileOpen(false)}
-													class="text-right hover:text-sky-600"
+													className="text-right hover:text-sky-600"
 												>
 													Privacy
 												</Link>
@@ -1067,18 +1067,18 @@ export default function NavBar() {
 								)}
 							</div>
 
-							<div class="flex items-center justify-between border-t border-slate-900/5 px-5 py-4 dark:border-white/10">
+							<div className="flex items-center justify-between border-t border-slate-900/5 px-5 py-4 dark:border-white/10">
 								<button
 									onClick={toggleTheme}
-									class="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
+									className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
 								>
-									{dark ? <Sun class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+									{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 									{dark ? "Light mode" : "Dark mode"}
 								</button>
 								{user ? (
 									<button
 										onClick={handleLogout}
-										class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
+										className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white"
 									>
 										Logout
 									</button>

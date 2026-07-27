@@ -52,9 +52,9 @@ function Icon({ path, className = "" }) {
 
 const ProgressBar = memo(function ProgressBar({ value }) {
 	return (
-		<div class="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800">
+		<div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800">
 			<div
-				class="h-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400"
+				className="h-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400"
 				style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
 			/>
 		</div>
@@ -79,17 +79,17 @@ const monthLabels = [
 const MiniBarChart = memo(function MiniBarChart({ values }) {
 	const max = Math.max(...values, 1);
 	return (
-		<div class="flex h-44 items-end gap-2 rounded-2xl bg-gradient-to-b from-sky-50/70 to-white p-3 dark:from-sky-950/30 dark:to-slate-950/20">
+		<div className="flex h-44 items-end gap-2 rounded-2xl bg-gradient-to-b from-sky-50/70 to-white p-3 dark:from-sky-950/30 dark:to-slate-950/20">
 			{values.map((v, idx) => (
-				<div key={idx} class="flex-1">
-					<div class="flex h-full items-end">
+				<div key={idx} className="flex-1">
+					<div className="flex h-full items-end">
 						<div
-							class="w-full rounded-t-xl bg-gradient-to-t from-sky-500 via-cyan-400 to-sky-300 shadow-sm"
+							className="w-full rounded-t-xl bg-gradient-to-t from-sky-500 via-cyan-400 to-sky-300 shadow-sm"
 							style={{ height: `${(v / max) * 100}%` }}
 							title={`${monthLabels[idx]}: ${v}`}
 						/>
 					</div>
-					<div class="mt-2 text-center text-[10px] font-medium text-slate-400 dark:text-slate-500">
+					<div className="mt-2 text-center text-[10px] font-medium text-slate-400 dark:text-slate-500">
 						{monthLabels[idx]}
 					</div>
 				</div>
@@ -112,11 +112,11 @@ const SectionCard = memo(function SectionCard({
 				className,
 			)}
 		>
-			<div class="mb-4 flex items-start justify-between gap-3">
+			<div className="mb-4 flex items-start justify-between gap-3">
 				<div>
-					<h3 class="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+					<h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
 					{subtitle ? (
-						<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+						<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
 					) : null}
 				</div>
 				{action}
@@ -134,12 +134,12 @@ const StatCard = memo(function StatCard({
 }) {
 	const isNumeric = typeof value === "number" && !Number.isNaN(value);
 	return (
-		<HoverCard class="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
+		<HoverCard className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
 			<div class={cn("absolute inset-x-0 top-0 h-1 bg-gradient-to-r", accent)} />
-			<p class="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
-			<div class="mt-3 flex items-end justify-between gap-3">
+			<p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+			<div className="mt-3 flex items-end justify-between gap-3">
 				<div>
-					<div class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
+					<div className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
 						{isNumeric ? (
 							<ScaleIn>
 								<CountUp value={value} />
@@ -148,7 +148,7 @@ const StatCard = memo(function StatCard({
 							value
 						)}
 					</div>
-					<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{sub}</p>
+					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sub}</p>
 				</div>
 				<div
 					class={cn(
@@ -156,7 +156,7 @@ const StatCard = memo(function StatCard({
 						accent,
 					)}
 				>
-					<SparkIcon class="h-5 w-5" />
+					<SparkIcon className="h-5 w-5" />
 				</div>
 			</div>
 		</HoverCard>
@@ -318,7 +318,7 @@ export default function OwnerDashboard() {
 		<div class={theme === "dark" ? "dark" : ""}>
 			<div
 				style={{ height: "100vh", overflow: "hidden" }}
-				class="flex w-full bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100"
+				className="flex w-full bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100"
 			>
 				<aside
 					data-lenis-prevent={true}
@@ -328,31 +328,31 @@ export default function OwnerDashboard() {
 					)}
 					style={{ height: "100vh", overflow: "auto" }}
 				>
-					<div class="flex min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-slate-950/65">
-						<div class="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-4 dark:border-white/10">
-							<div class="flex items-center gap-3">
-								<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/20">
-									<SparkIcon class="h-6 w-6" />
+					<div className="flex min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-slate-950/65">
+						<div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-4 dark:border-white/10">
+							<div className="flex items-center gap-3">
+								<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/20">
+									<SparkIcon className="h-6 w-6" />
 								</div>
 								<div>
-									<div class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+									<div className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
 										Owner Console
 									</div>
-									<div class="text-xs text-slate-500 dark:text-slate-400">
+									<div className="text-xs text-slate-500 dark:text-slate-400">
 										Premium control center
 									</div>
 								</div>
 							</div>
 							<button
-								class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-sky-600 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 lg:hidden"
+								className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-sky-600 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 lg:hidden"
 								onClick={() => setSidebarOpen(false)}
 								aria-label="Close sidebar"
 							>
-								<Icon path="M6 18L18 6M6 6l12 12" class="h-5 w-5" />
+								<Icon path="M6 18L18 6M6 6l12 12" className="h-5 w-5" />
 							</button>
 						</div>
 
-						<nav class="mt-4 space-y-1 pr-1">
+						<nav className="mt-4 space-y-1 pr-1">
 							{menuItems.map((item) => (
 								<button
 									key={item.id}
@@ -366,7 +366,7 @@ export default function OwnerDashboard() {
 											: "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5",
 									)}
 								>
-									<span class="font-medium">{item.label}</span>
+									<span className="font-medium">{item.label}</span>
 									<span
 										class={cn(
 											"rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
@@ -381,24 +381,24 @@ export default function OwnerDashboard() {
 							))}
 						</nav>
 
-						<div class="mt-4 space-y-3 border-t border-slate-200/70 pt-4 dark:border-white/10">
+						<div className="mt-4 space-y-3 border-t border-slate-200/70 pt-4 dark:border-white/10">
 							<button
 								onClick={toggleTheme}
-								class="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
+								className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
 							>
 								<span>{theme === "dark" ? "Dark mode" : "Light mode"}</span>
-								<span class="rounded-full bg-sky-100 px-2.5 py-1 text-xs text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+								<span className="rounded-full bg-sky-100 px-2.5 py-1 text-xs text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
 									Toggle
 								</span>
 							</button>
 							<button
 								onClick={logout}
-								class="flex w-full items-center justify-between rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
+								className="flex w-full items-center justify-between rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
 							>
 								<span>Logout</span>
 								<Icon
 									path="M16 17l5-5-5-5M21 12H9M13 5v2.2A2.8 2.8 0 0 1 10.2 10H6"
-									class="h-4 w-4"
+									className="h-4 w-4"
 								/>
 							</button>
 						</div>
@@ -407,34 +407,34 @@ export default function OwnerDashboard() {
 
 				<div
 					data-lenis-prevent={true}
-					class="flex flex-1 flex-col min-h-0"
+					className="flex flex-1 flex-col min-h-0"
 					style={{ overflowY: "auto" }}
 				>
-					<header class="sticky top-0 z-30 border-b border-slate-200/60 bg-white/70 px-4 py-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 sm:px-6 xl:px-8">
-						<div class="flex items-center gap-3">
+					<header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/70 px-4 py-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 sm:px-6 xl:px-8">
+						<div className="flex items-center gap-3">
 							<button
 								onClick={() => setSidebarOpen(true)}
-								class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 lg:hidden"
+								className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 lg:hidden"
 								aria-label="Open sidebar"
 							>
-								<Icon path="M4 6h16M4 12h16M4 18h16" class="h-5 w-5" />
+								<Icon path="M4 6h16M4 12h16M4 18h16" className="h-5 w-5" />
 							</button>
 
-							<div class="flex-1">
-								<div class="flex flex-wrap items-center gap-3">
+							<div className="flex-1">
+								<div className="flex flex-wrap items-center gap-3">
 									<div>
-										<h1 class="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+										<h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
 											Owner Page
 										</h1>
-										<p class="text-sm text-slate-500 dark:text-slate-400">
+										<p className="text-sm text-slate-500 dark:text-slate-400">
 											Modern control center for requests, leads, partners, and operations.
 										</p>
 									</div>
-									<div class="ml-auto hidden items-center gap-2 sm:flex">
-										<span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+									<div className="ml-auto hidden items-center gap-2 sm:flex">
+										<span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
 											{currentPlanLabel}
 										</span>
-										<span class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700 dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-300">
+										<span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700 dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-300">
 											Blue-Sky Theme
 										</span>
 									</div>
@@ -443,7 +443,7 @@ export default function OwnerDashboard() {
 						</div>
 					</header>
 
-					<main class="flex flex-col flex-1 min-h-0 px-4 py-6 sm:px-6 xl:px-8">
+					<main className="flex flex-col flex-1 min-h-0 px-4 py-6 sm:px-6 xl:px-8">
 						{loading && (
 							<Mosaic
 								color="#3b00ff"
@@ -454,16 +454,16 @@ export default function OwnerDashboard() {
 							/>
 						)}
 						{error && (
-							<div class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl p-4 flex items-center gap-3">
-								<span class="text-xl">⚠️</span>
+							<div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl p-4 flex items-center gap-3">
+								<span className="text-xl">⚠️</span>
 								<span>{error}</span>
 							</div>
 						)}
 
 						{active === "home" && !loading && (
-							<div class="space-y-6">
+							<div className="space-y-6">
 								<ScrollReveal as="section">
-									<StaggerContainer class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+									<StaggerContainer className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 										<StaggerItem>
 											<StatCard
 												label="Requests"
@@ -499,26 +499,26 @@ export default function OwnerDashboard() {
 								</ScrollReveal>
 
 								<ScrollReveal as="section">
-									<div class="grid gap-6 xl:grid-cols-3">
+									<div className="grid gap-6 xl:grid-cols-3">
 										<SectionCard
 											title="Quick Actions"
 											subtitle="Jump to the most common operational screens."
-											class="xl:col-span-2"
+											className="xl:col-span-2"
 										>
-											<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+											<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 												{quickActions.map((item) => (
 													<button
 														key={item.label}
 														onClick={() => go(item.href)}
-														class="group rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-white/10 dark:bg-slate-950/50"
+														className="group rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-white/10 dark:bg-slate-950/50"
 													>
-														<div class="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/15 transition group-hover:scale-105">
-															<Icon path="M13 2L3 14h7l-1 8 10-12h-7l1-8z" class="h-5 w-5" />
+														<div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/15 transition group-hover:scale-105">
+															<Icon path="M13 2L3 14h7l-1 8 10-12h-7l1-8z" className="h-5 w-5" />
 														</div>
-														<div class="font-semibold text-slate-900 dark:text-white">
+														<div className="font-semibold text-slate-900 dark:text-white">
 															{item.label}
 														</div>
-														<div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+														<div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
 															{item.desc}
 														</div>
 													</button>
@@ -530,21 +530,21 @@ export default function OwnerDashboard() {
 											title="Current Plan"
 											subtitle="Subscription overview and next step."
 											action={
-												<span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+												<span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
 													{currentPlanLabel}
 												</span>
 											}
 										>
-											<div class="space-y-4">
-												<div class="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-4 text-white shadow-lg shadow-cyan-500/20">
-													<div class="text-sm opacity-90">Current subscription</div>
-													<div class="mt-1 text-2xl font-semibold">{currentPlanLabel}</div>
+											<div className="space-y-4">
+												<div className="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-4 text-white shadow-lg shadow-cyan-500/20">
+													<div className="text-sm opacity-90">Current subscription</div>
+													<div className="mt-1 text-2xl font-semibold">{currentPlanLabel}</div>
 													{plan === "ENTERPRISE" ? (
-														<div class="mt-2 text-sm opacity-90">
+														<div className="mt-2 text-sm opacity-90">
 															Enterprise-grade limits and analytics enabled.
 														</div>
 													) : (
-														<div class="mt-2 text-sm opacity-90">
+														<div className="mt-2 text-sm opacity-90">
 															Unlock larger limits and enterprise analytics.
 														</div>
 													)}
@@ -552,7 +552,7 @@ export default function OwnerDashboard() {
 												{plan !== "ENTERPRISE" && (
 													<button
 														onClick={() => go("/pricing")}
-														class="w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
+														className="w-full rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
 													>
 														Upgrade Now
 													</button>
@@ -563,9 +563,9 @@ export default function OwnerDashboard() {
 								</ScrollReveal>
 
 								<ScrollReveal as="section">
-									<div class="grid gap-6 xl:grid-cols-3">
+									<div className="grid gap-6 xl:grid-cols-3">
 										<SectionCard title="Platform Stats" subtitle="Key totals across the workspace.">
-											<ul class="space-y-3 text-sm">
+											<ul className="space-y-3 text-sm">
 												{[
 													["Requests", totals.buyer_requests ?? 0],
 													["Chats", totals.chats ?? 0],
@@ -574,10 +574,10 @@ export default function OwnerDashboard() {
 												].map(([label, value]) => (
 													<li
 														key={label}
-														class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-white/5"
+														className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-white/5"
 													>
-														<span class="text-slate-600 dark:text-slate-300">{label}</span>
-														<span class="font-semibold text-slate-950 dark:text-white">
+														<span className="text-slate-600 dark:text-slate-300">{label}</span>
+														<span className="font-semibold text-slate-950 dark:text-white">
 															{value}
 														</span>
 													</li>
@@ -589,22 +589,22 @@ export default function OwnerDashboard() {
 											title="Org Operations Policy"
 											subtitle="How the team handles new demand and escalation."
 										>
-											<div class="space-y-4 text-sm">
+											<div className="space-y-4 text-sm">
 												<div>
-													<div class="mb-2 flex items-center justify-between">
-														<span class="text-slate-500 dark:text-slate-400">
+													<div className="mb-2 flex items-center justify-between">
+														<span className="text-slate-500 dark:text-slate-400">
 															Assignment strategy
 														</span>
-														<span class="font-medium text-slate-900 dark:text-white">
+														<span className="font-medium text-slate-900 dark:text-white">
 															{policyData.assignmentStrategy}
 														</span>
 													</div>
 													<ProgressBar value={vaultHealth} />
 												</div>
 												<div>
-													<div class="mb-2 flex items-center justify-between">
-														<span class="text-slate-500 dark:text-slate-400">SLA target</span>
-														<span class="font-medium text-slate-900 dark:text-white">
+													<div className="mb-2 flex items-center justify-between">
+														<span className="text-slate-500 dark:text-slate-400">SLA target</span>
+														<span className="font-medium text-slate-900 dark:text-white">
 															{policyData.slaTarget}
 														</span>
 													</div>
@@ -617,11 +617,11 @@ export default function OwnerDashboard() {
 													/>
 												</div>
 												<div>
-													<div class="mb-2 flex items-center justify-between">
-														<span class="text-slate-500 dark:text-slate-400">
+													<div className="mb-2 flex items-center justify-between">
+														<span className="text-slate-500 dark:text-slate-400">
 															Escalation window
 														</span>
-														<span class="font-medium text-slate-900 dark:text-white">
+														<span className="font-medium text-slate-900 dark:text-white">
 															{policyData.escalationWindow}
 														</span>
 													</div>
@@ -638,22 +638,22 @@ export default function OwnerDashboard() {
 											title="At a glance"
 											subtitle="A compact view of the owner workspace."
 										>
-											<div class="grid gap-3">
-												<div class="rounded-2xl border border-slate-200/80 bg-gradient-to-br from-sky-50 to-cyan-50 p-4 dark:border-white/10 dark:from-sky-500/10 dark:to-cyan-500/10">
-													<div class="text-sm text-slate-500 dark:text-slate-400">
+											<div className="grid gap-3">
+												<div className="rounded-2xl border border-slate-200/80 bg-gradient-to-br from-sky-50 to-cyan-50 p-4 dark:border-white/10 dark:from-sky-500/10 dark:to-cyan-500/10">
+													<div className="text-sm text-slate-500 dark:text-slate-400">
 														Buyer request health
 													</div>
-													<div class="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
+													<div className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
 														{escalationsData.length === 0
 															? "Healthy pipeline"
 															: `${escalationsData.length} active escalations`}
 													</div>
 												</div>
-												<div class="rounded-2xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-slate-950/40">
-													<div class="text-sm text-slate-500 dark:text-slate-400">
+												<div className="rounded-2xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-slate-950/40">
+													<div className="text-sm text-slate-500 dark:text-slate-400">
 														Team coverage
 													</div>
-													<div class="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
+													<div className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
 														{subscription?.member_limit ?? 10} seats
 													</div>
 												</div>
@@ -665,9 +665,9 @@ export default function OwnerDashboard() {
 						)}
 
 						{active === "requests" && !loading && (
-							<div class="space-y-6">
+							<div className="space-y-6">
 								<ScrollReveal as="section">
-									<div class="grid gap-4 md:grid-cols-3">
+									<div className="grid gap-4 md:grid-cols-3">
 										<StatCard
 											label="Total Requests"
 											value={totals.buyer_requests ?? 0}
@@ -693,28 +693,28 @@ export default function OwnerDashboard() {
 									action={
 										<button
 											onClick={() => go("/buyer-requests")}
-											class="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/15"
+											className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/15"
 										>
 											View All Requests
 										</button>
 									}
 								>
-									<div class="grid gap-4 md:grid-cols-3">
-										<div class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-											<div class="text-sm text-slate-500 dark:text-slate-400">Assigned</div>
-											<div class="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+									<div className="grid gap-4 md:grid-cols-3">
+										<div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+											<div className="text-sm text-slate-500 dark:text-slate-400">Assigned</div>
+											<div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
 												{totals.assigned_requests ?? 0}
 											</div>
 										</div>
-										<div class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-											<div class="text-sm text-slate-500 dark:text-slate-400">Unassigned</div>
-											<div class="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+										<div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+											<div className="text-sm text-slate-500 dark:text-slate-400">Unassigned</div>
+											<div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
 												{(totals.buyer_requests ?? 0) - (totals.assigned_requests ?? 0)}
 											</div>
 										</div>
-										<div class="rounded-2xl bg-gradient-to-br from-sky-500/10 to-cyan-400/10 p-4">
-											<div class="text-sm text-slate-500 dark:text-slate-400">Open rate</div>
-											<div class="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+										<div className="rounded-2xl bg-gradient-to-br from-sky-500/10 to-cyan-400/10 p-4">
+											<div className="text-sm text-slate-500 dark:text-slate-400">Open rate</div>
+											<div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
 												{totals.buyer_requests
 													? Math.round((totals.open_buyer_requests / totals.buyer_requests) * 100)
 													: 0}
@@ -723,30 +723,30 @@ export default function OwnerDashboard() {
 										</div>
 									</div>
 
-									<div class="mt-6 space-y-3">
+									<div className="mt-6 space-y-3">
 										{(dashboard?.recent_requests || []).length === 0 ? (
-											<div class="text-sm text-slate-500 dark:text-slate-400">
+											<div className="text-sm text-slate-500 dark:text-slate-400">
 												No recent buyer requests
 											</div>
 										) : (
 											(dashboard?.recent_requests || []).map((req, i) => (
 												<div
 													key={i}
-													class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5"
+													className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5"
 												>
-													<div class="flex-1">
-														<div class="font-semibold text-slate-900 dark:text-white">
+													<div className="flex-1">
+														<div className="font-semibold text-slate-900 dark:text-white">
 															{req.title || req.name || `Request #${i + 1}`}
 														</div>
-														<div class="text-sm text-slate-500">
+														<div className="text-sm text-slate-500">
 															{req.buyer_name || req.buyer || "Unknown buyer"}
 														</div>
 													</div>
-													<div class="flex items-center gap-3">
-														<span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+													<div className="flex items-center gap-3">
+														<span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
 															{req.status || "Open"}
 														</span>
-														<span class="text-xs text-slate-400">
+														<span className="text-xs text-slate-400">
 															{req.created_at ? new Date(req.created_at).toLocaleDateString() : ""}
 														</span>
 													</div>
@@ -759,9 +759,9 @@ export default function OwnerDashboard() {
 						)}
 
 						{active === "chats" && !loading && (
-							<div class="space-y-6">
+							<div className="space-y-6">
 								<ScrollReveal as="section">
-									<div class="grid gap-4 md:grid-cols-3">
+									<div className="grid gap-4 md:grid-cols-3">
 										<StatCard
 											label="Active Chats"
 											value={totals.chats ?? 0}
@@ -787,37 +787,37 @@ export default function OwnerDashboard() {
 									action={
 										<button
 											onClick={() => go("/chat")}
-											class="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
+											className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
 										>
 											Open Chat
 										</button>
 									}
 								>
-									<div class="space-y-3">
+									<div className="space-y-3">
 										{(dashboard?.recent_chats || []).length === 0 ? (
-											<div class="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500 dark:bg-white/5 dark:text-slate-400">
+											<div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500 dark:bg-white/5 dark:text-slate-400">
 												No conversations yet
 											</div>
 										) : (
 											(dashboard?.recent_chats || []).map((chat, i) => (
 												<div
 													key={i}
-													class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5"
+													className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5"
 												>
-													<div class="flex-1">
-														<div class="flex items-center gap-2">
-															<span class="font-semibold text-slate-900 dark:text-white">
+													<div className="flex-1">
+														<div className="flex items-center gap-2">
+															<span className="font-semibold text-slate-900 dark:text-white">
 																{chat.contact_name || chat.name || `Chat #${i + 1}`}
 															</span>
 															{chat.unread ? (
-																<span class="h-2 w-2 rounded-full bg-sky-500" />
+																<span className="h-2 w-2 rounded-full bg-sky-500" />
 															) : null}
 														</div>
-														<div class="mt-1 text-sm text-slate-500 line-clamp-1">
+														<div className="mt-1 text-sm text-slate-500 line-clamp-1">
 															{chat.last_message || chat.preview || ""}
 														</div>
 													</div>
-													<span class="shrink-0 text-xs text-slate-400">
+													<span className="shrink-0 text-xs text-slate-400">
 														{chat.last_message_at || chat.updated_at
 															? new Date(
 																	chat.last_message_at || chat.updated_at,
@@ -829,7 +829,7 @@ export default function OwnerDashboard() {
 										)}
 										<button
 											onClick={() => go("/chat")}
-											class="mt-2 w-fit text-sm font-semibold text-sky-600 hover:text-sky-500 dark:text-sky-300"
+											className="mt-2 w-fit text-sm font-semibold text-sky-600 hover:text-sky-500 dark:text-sky-300"
 										>
 											Start a new conversation →
 										</button>
@@ -839,9 +839,9 @@ export default function OwnerDashboard() {
 						)}
 
 						{active === "network" && !loading && (
-							<div class="space-y-6">
+							<div className="space-y-6">
 								<ScrollReveal as="section">
-									<div class="grid gap-4 md:grid-cols-3">
+									<div className="grid gap-4 md:grid-cols-3">
 										<StatCard
 											label="Connected"
 											value={totals.partner_network ?? 0}
@@ -867,53 +867,53 @@ export default function OwnerDashboard() {
 									action={
 										<button
 											onClick={() => go("/partner-network")}
-											class="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
+											className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
 										>
 											Manage Partners
 										</button>
 									}
 								>
-									<div class="grid gap-4 md:grid-cols-3">
-										<div class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-											<div class="text-sm text-slate-500 dark:text-slate-400">Total partners</div>
-											<div class="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+									<div className="grid gap-4 md:grid-cols-3">
+										<div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+											<div className="text-sm text-slate-500 dark:text-slate-400">Total partners</div>
+											<div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
 												{totals.partner_network ?? 0}
 											</div>
 										</div>
-										<div class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-											<div class="text-sm text-slate-500 dark:text-slate-400">Factories</div>
-											<div class="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+										<div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+											<div className="text-sm text-slate-500 dark:text-slate-400">Factories</div>
+											<div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
 												{totals.factories ?? 0}
 											</div>
 										</div>
-										<div class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-											<div class="text-sm text-slate-500 dark:text-slate-400">Buying houses</div>
-											<div class="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+										<div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+											<div className="text-sm text-slate-500 dark:text-slate-400">Buying houses</div>
+											<div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
 												{totals.buying_houses ?? 0}
 											</div>
 										</div>
 									</div>
 
-									<div class="mt-6 space-y-3">
+									<div className="mt-6 space-y-3">
 										{(dashboard?.partners || []).length === 0 ? (
-											<div class="text-sm text-slate-500 dark:text-slate-400">No partners yet</div>
+											<div className="text-sm text-slate-500 dark:text-slate-400">No partners yet</div>
 										) : (
 											(dashboard?.partners || []).map((partner, i) => (
 												<div
 													key={i}
-													class="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5"
+													className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5"
 												>
-													<div class="flex-1">
-														<div class="font-semibold text-slate-900 dark:text-white">
+													<div className="flex-1">
+														<div className="font-semibold text-slate-900 dark:text-white">
 															{partner.name || `Partner #${i + 1}`}
 														</div>
-														<div class="text-sm text-slate-500">{partner.type || "—"}</div>
+														<div className="text-sm text-slate-500">{partner.type || "—"}</div>
 													</div>
-													<div class="flex items-center gap-3">
-														<span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 dark:bg-green-500/10 dark:text-green-300">
+													<div className="flex items-center gap-3">
+														<span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 dark:bg-green-500/10 dark:text-green-300">
 															{partner.status || "Active"}
 														</span>
-														<span class="text-xs text-slate-400">
+														<span className="text-xs text-slate-400">
 															{partner.request_count ?? 0} requests
 														</span>
 													</div>
@@ -926,30 +926,30 @@ export default function OwnerDashboard() {
 						)}
 
 						{active === "leads" && !loading && (
-							<div class="space-y-6">
-								<div class="grid gap-6 xl:grid-cols-3">
+							<div className="space-y-6">
+								<div className="grid gap-6 xl:grid-cols-3">
 									<SectionCard
 										title="Org Operations Policy"
 										subtitle="Rules that govern assignment, response times, and escalation."
 									>
-										<div class="space-y-3 text-sm">
-											<div class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-												<div class="text-slate-500 dark:text-slate-400">Assignment strategy</div>
-												<div class="mt-1 font-semibold text-slate-950 dark:text-white">
+										<div className="space-y-3 text-sm">
+											<div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+												<div className="text-slate-500 dark:text-slate-400">Assignment strategy</div>
+												<div className="mt-1 font-semibold text-slate-950 dark:text-white">
 													{policyData.assignmentStrategy}
 												</div>
 											</div>
-											<div class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-												<div class="text-slate-500 dark:text-slate-400">SLA target</div>
-												<div class="mt-1 font-semibold text-slate-950 dark:text-white">
+											<div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+												<div className="text-slate-500 dark:text-slate-400">SLA target</div>
+												<div className="mt-1 font-semibold text-slate-950 dark:text-white">
 													{policyData.slaTarget}
 												</div>
 											</div>
-											<div class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-												<div class="text-slate-500 dark:text-slate-400">
+											<div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+												<div className="text-slate-500 dark:text-slate-400">
 													Escalation breach window
 												</div>
-												<div class="mt-1 font-semibold text-slate-950 dark:text-white">
+												<div className="mt-1 font-semibold text-slate-950 dark:text-white">
 													{policyData.escalationWindow}
 												</div>
 											</div>
@@ -959,28 +959,28 @@ export default function OwnerDashboard() {
 									<SectionCard
 										title="Escalation Queue"
 										subtitle="Leads that need immediate attention."
-										class="xl:col-span-2"
+										className="xl:col-span-2"
 									>
-										<div class="space-y-3">
+										<div className="space-y-3">
 											{escalationsData.length === 0 ? (
-												<div class="text-sm text-slate-500 dark:text-slate-400">
+												<div className="text-sm text-slate-500 dark:text-slate-400">
 													No active escalations.
 												</div>
 											) : (
 												escalationsData.map((item) => (
 													<div
 														key={item.id}
-														class="flex flex-col gap-2 rounded-2xl bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between dark:bg-white/5"
+														className="flex flex-col gap-2 rounded-2xl bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between dark:bg-white/5"
 													>
 														<div>
-															<div class="font-semibold text-slate-950 dark:text-white">
+															<div className="font-semibold text-slate-950 dark:text-white">
 																{item.id}
 															</div>
-															<div class="text-sm text-slate-500 dark:text-slate-400">
+															<div className="text-sm text-slate-500 dark:text-slate-400">
 																{item.reason}
 															</div>
 														</div>
-														<div class="text-sm font-medium text-sky-600 dark:text-sky-300">
+														<div className="text-sm font-medium text-sky-600 dark:text-sky-300">
 															Owner: {item.owner}
 														</div>
 													</div>
@@ -990,26 +990,26 @@ export default function OwnerDashboard() {
 									</SectionCard>
 								</div>
 
-								<div class="grid gap-6 xl:grid-cols-3">
+								<div className="grid gap-6 xl:grid-cols-3">
 									<SectionCard
 										title="Agent Workload"
 										subtitle="Current leads versus maximum capacity."
 									>
-										<div class="space-y-4">
+										<div className="space-y-4">
 											{agentsData.length === 0 ? (
-												<div class="text-sm text-slate-500 dark:text-slate-400">
+												<div className="text-sm text-slate-500 dark:text-slate-400">
 													No workload records.
 												</div>
 											) : (
 												agentsData.map((agent) => {
 													const percent = agent.cap > 0 ? (agent.current / agent.cap) * 100 : 0;
 													return (
-														<div key={agent.name} class="space-y-2">
-															<div class="flex items-center justify-between text-sm">
-																<span class="font-medium text-slate-900 dark:text-white">
+														<div key={agent.name} className="space-y-2">
+															<div className="flex items-center justify-between text-sm">
+																<span className="font-medium text-slate-900 dark:text-white">
 																	{agent.name}
 																</span>
-																<span class="text-slate-500 dark:text-slate-400">
+																<span className="text-slate-500 dark:text-slate-400">
 																	{agent.current}/{agent.cap}
 																</span>
 															</div>
@@ -1021,7 +1021,7 @@ export default function OwnerDashboard() {
 										</div>
 									</SectionCard>
 
-									<div class="xl:col-span-2">
+									<div className="xl:col-span-2">
 										<LeadManager title="LeadManager" allowAssign={true} showOperations={true} />
 									</div>
 								</div>
@@ -1029,32 +1029,32 @@ export default function OwnerDashboard() {
 						)}
 
 						{active === "members" && !loading && (
-							<div class="space-y-6">
+							<div className="space-y-6">
 								<SectionCard
 									title="Member Management"
 									subtitle="Team members, agents, and access control in one place."
 									action={
-										<div class="flex gap-2">
+										<div className="flex gap-2">
 											<button
 												onClick={() => go("/member-management")}
-												class="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
+												className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
 											>
 												Manage Members
 											</button>
 											<button
 												onClick={() => go("/member-management")}
-												class="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-white/10 dark:bg-slate-950/40 dark:text-slate-200"
+												className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-white/10 dark:bg-slate-950/40 dark:text-slate-200"
 											>
 												Go to Member Management
 											</button>
 										</div>
 									}
 								>
-									<div class="grid gap-4 md:grid-cols-4">
+									<div className="grid gap-4 md:grid-cols-4">
 										{["Owners", "Managers", "Agents", "Observers"].map((role, idx) => (
-											<div key={role} class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-												<div class="text-sm text-slate-500 dark:text-slate-400">{role}</div>
-												<div class="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+											<div key={role} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+												<div className="text-sm text-slate-500 dark:text-slate-400">{role}</div>
+												<div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
 													{
 														[
 															memberStats.owners,
@@ -1072,29 +1072,29 @@ export default function OwnerDashboard() {
 						)}
 
 						{active === "contracts" && !loading && (
-							<div class="flex-1 min-h-0 space-y-6" data-lenis-prevent={true}>
+							<div className="flex-1 min-h-0 space-y-6" data-lenis-prevent={true}>
 								<ContractVaultPage embedded={true} />
 							</div>
 						)}
 
 						{active === "insights" && !loading && (
-							<div class="space-y-6">
+							<div className="space-y-6">
 								{!isEnterprise && (
 									<SectionCard
 										title="Enterprise Analytics"
 										subtitle="Advanced analytics requires an Enterprise plan."
 									>
-										<div class="flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 sm:flex-row sm:items-center sm:justify-between">
+										<div className="flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 sm:flex-row sm:items-center sm:justify-between">
 											<div>
-												<div class="font-semibold">Upgrade required</div>
-												<div class="text-sm opacity-90">
+												<div className="font-semibold">Upgrade required</div>
+												<div className="text-sm opacity-90">
 													Unlock advanced trend analysis, deeper attribution, and more accurate
 													forecasting.
 												</div>
 											</div>
 											<button
 												onClick={() => go("/pricing")}
-												class="rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
+												className="rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
 											>
 												Upgrade Now
 											</button>
@@ -1102,7 +1102,7 @@ export default function OwnerDashboard() {
 									</SectionCard>
 								)}
 
-								<div class="grid gap-6 xl:grid-cols-3">
+								<div className="grid gap-6 xl:grid-cols-3">
 									<SectionCard
 										title="Buyer Requests / Month"
 										subtitle="Monthly bar chart visualization."
@@ -1123,48 +1123,48 @@ export default function OwnerDashboard() {
 						)}
 
 						{active === "verification" && !loading && (
-							<div class="flex-1 min-h-0 space-y-6" data-lenis-prevent={true}>
+							<div className="flex-1 min-h-0 space-y-6" data-lenis-prevent={true}>
 								<VerificationPage embedded={true} />
 							</div>
 						)}
 
 						{active === "settings" && !loading && (
-							<div class="flex-1 min-h-0" data-lenis-prevent={true}>
+							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
 								<OrgSettings embedded={true} />
 							</div>
 						)}
 
 						{active === "subscription" && !loading && (
-							<div class="space-y-6">
+							<div className="space-y-6">
 								<SectionCard
 									title="Current Plan"
 									subtitle="Subscription, billing, and limits at a glance."
 									action={
-										<span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+										<span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
 											{currentPlanLabel}
 										</span>
 									}
 								>
-									<div class="grid gap-4 md:grid-cols-3">
-										<div class="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-5 text-white shadow-lg shadow-cyan-500/20">
-											<div class="text-sm opacity-90">Plan name</div>
-											<div class="mt-1 text-3xl font-semibold">{currentPlanLabel}</div>
-											<div class="mt-2 text-sm opacity-90">Status: Active</div>
+									<div className="grid gap-4 md:grid-cols-3">
+										<div className="rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 p-5 text-white shadow-lg shadow-cyan-500/20">
+											<div className="text-sm opacity-90">Plan name</div>
+											<div className="mt-1 text-3xl font-semibold">{currentPlanLabel}</div>
+											<div className="mt-2 text-sm opacity-90">Status: Active</div>
 										</div>
-										<div class="rounded-2xl bg-slate-50 p-5 dark:bg-white/5">
-											<div class="text-sm text-slate-500 dark:text-slate-400">Billing Settings</div>
+										<div className="rounded-2xl bg-slate-50 p-5 dark:bg-white/5">
+											<div className="text-sm text-slate-500 dark:text-slate-400">Billing Settings</div>
 											<button
 												onClick={() => go("/org-settings?tab=billing")}
-												class="mt-2 text-lg font-semibold text-slate-950 hover:text-sky-600 dark:text-white dark:hover:text-sky-300"
+												className="mt-2 text-lg font-semibold text-slate-950 hover:text-sky-600 dark:text-white dark:hover:text-sky-300"
 											>
 												Open billing →
 											</button>
 										</div>
-										<div class="rounded-2xl bg-slate-50 p-5 dark:bg-white/5">
-											<div class="text-sm text-slate-500 dark:text-slate-400">View Plans</div>
+										<div className="rounded-2xl bg-slate-50 p-5 dark:bg-white/5">
+											<div className="text-sm text-slate-500 dark:text-slate-400">View Plans</div>
 											<button
 												onClick={() => go("/pricing")}
-												class="mt-2 text-lg font-semibold text-slate-950 hover:text-sky-600 dark:text-white dark:hover:text-sky-300"
+												className="mt-2 text-lg font-semibold text-slate-950 hover:text-sky-600 dark:text-white dark:hover:text-sky-300"
 											>
 												Compare plans →
 											</button>
@@ -1173,16 +1173,16 @@ export default function OwnerDashboard() {
 								</SectionCard>
 
 								<SectionCard title="Plan Features" subtitle="Limits and capability summary.">
-									<div class="grid gap-4 md:grid-cols-4">
+									<div className="grid gap-4 md:grid-cols-4">
 										{[
 											["Agent seats", subscription?.member_limit ?? 10],
 											["Analytics level", isEnterprise ? "Enterprise" : "Basic"],
 											["Partner network", plan === "FREE" ? "Limited" : "Enabled"],
 											["Lead management", plan === "FREE" ? "Limited" : "Enabled"],
 										].map(([label, value]) => (
-											<div key={label} class="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-												<div class="text-sm text-slate-500 dark:text-slate-400">{label}</div>
-												<div class="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
+											<div key={label} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+												<div className="text-sm text-slate-500 dark:text-slate-400">{label}</div>
+												<div className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
 													{value}
 												</div>
 											</div>

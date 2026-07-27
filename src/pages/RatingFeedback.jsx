@@ -34,7 +34,7 @@ function buildSignals(row) {
 
 function Stars({ value, onChange }) {
 	return (
-		<div class="flex items-center gap-1">
+		<div className="flex items-center gap-1">
 			{STAR_OPTIONS.map((score) => {
 				const active = score <= value;
 				return (
@@ -51,7 +51,7 @@ function Stars({ value, onChange }) {
 								: "border-slate-200/70 bg-white/70 text-slate-300 hover:border-sky-300/60 hover:text-sky-400 dark:border-white/10 dark:bg-slate-950/40 dark:text-slate-600 dark:hover:border-sky-400/50 dark:hover:text-sky-300",
 						].join(" ")}
 					>
-						<Star class={`h-5 w-5 ${active ? "fill-current" : ""}`} />
+						<Star className={`h-5 w-5 ${active ? "fill-current" : ""}`} />
 					</button>
 				);
 			})}
@@ -61,9 +61,9 @@ function Stars({ value, onChange }) {
 
 function StatChip({ icon: Icon, label, value }) {
 	return (
-		<div class="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/5 px-3 py-1.5 text-sm text-slate-600 shadow-sm dark:text-slate-300">
-			<Icon class="h-4 w-4 text-sky-400" />
-			<span class="font-medium">{label}:</span>
+		<div className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/5 px-3 py-1.5 text-sm text-slate-600 shadow-sm dark:text-slate-300">
+			<Icon className="h-4 w-4 text-sky-400" />
+			<span className="font-medium">{label}:</span>
 			<span>{value}</span>
 		</div>
 	);
@@ -187,10 +187,10 @@ export default function RatingFeedback() {
 
 	if (error) {
 		return (
-			<div class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)]">
-				<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-					<div class="rounded-[2rem] border border-red-500/20 bg-white/80 p-6 shadow-[0_10px_40px_rgba(239,68,68,0.08)] dark:bg-slate-950/70">
-						<p class="text-sm font-medium text-red-600 dark:text-red-300">{error}</p>
+			<div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)]">
+				<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+					<div className="rounded-[2rem] border border-red-500/20 bg-white/80 p-6 shadow-[0_10px_40px_rgba(239,68,68,0.08)] dark:bg-slate-950/70">
+						<p className="text-sm font-medium text-red-600 dark:text-red-300">{error}</p>
 					</div>
 				</div>
 			</div>
@@ -198,21 +198,21 @@ export default function RatingFeedback() {
 	}
 
 	return (
-		<div class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)] dark:text-white">
-			<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+		<div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#f8fbff,_#eef7ff_48%,_#f8fafc)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(to_bottom,_#020617,_#07111f_55%,_#020617)] dark:text-white">
+			<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 				<ScrollReveal as="section">
-					<div class="mb-6 rounded-[2rem] border border-sky-500/15 bg-white/75 p-6 shadow-[0_10px_40px_rgba(56,189,248,0.08)] backdrop-blur-xl dark:bg-slate-950/70">
-						<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-							<div class="max-w-3xl space-y-3">
-								<div class="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300">
-									<Sparkles class="h-3.5 w-3.5" />
+					<div className="mb-6 rounded-[2rem] border border-sky-500/15 bg-white/75 p-6 shadow-[0_10px_40px_rgba(56,189,248,0.08)] backdrop-blur-xl dark:bg-slate-950/70">
+						<div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+							<div className="max-w-3xl space-y-3">
+								<div className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300">
+									<Sparkles className="h-3.5 w-3.5" />
 									GarTexHub / Ratings
 								</div>
 								<div>
-									<h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+									<h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
 										Rate recent interactions
 									</h1>
-									<p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
+									<p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
 										Feedback helps strengthen trust signals across GarTexHub.
 									</p>
 								</div>
@@ -222,27 +222,27 @@ export default function RatingFeedback() {
 				</ScrollReveal>
 
 				{feedback ? (
-					<div class="mb-5 rounded-2xl border border-emerald-500/20 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+					<div className="mb-5 rounded-2xl border border-emerald-500/20 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
 						{feedback}
 					</div>
 				) : null}
 
 				{items.length === 0 ? (
-					<div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-10 text-center shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-slate-950/70">
-						<div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-500/15 bg-sky-500/10">
-							<MessageSquareText class="h-7 w-7 text-sky-500" />
+					<div className="rounded-[2rem] border border-slate-200/70 bg-white/80 p-10 text-center shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-slate-950/70">
+						<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-500/15 bg-sky-500/10">
+							<MessageSquareText className="h-7 w-7 text-sky-500" />
 						</div>
-						<h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+						<h2 className="text-lg font-semibold text-slate-900 dark:text-white">
 							No pending rating requests right now.
 						</h2>
-						<p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+						<p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
 							New requests will appear here after qualifying interactions are completed.
 						</p>
 					</div>
 				) : null}
 
 				<ScrollReveal as="section">
-					<div class="space-y-5">
+					<div className="space-y-5">
 						{items.map((row) => {
 							const targetId = String(row.profile_key || "").replace(/^user:/, "");
 							const target = lookup[targetId] || {};
@@ -265,58 +265,58 @@ export default function RatingFeedback() {
 											: "border-slate-200/70 dark:border-white/10",
 									].join(" ")}
 								>
-									<div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 opacity-80" />
+									<div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500 opacity-80" />
 
-									<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-										<div class="space-y-3">
-											<div class="flex flex-wrap items-center gap-2">
-												<h3 class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+									<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+										<div className="space-y-3">
+											<div className="flex flex-wrap items-center gap-2">
+												<h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
 													{target.name || "Counterparty"}
 												</h3>
-												<span class="rounded-full border border-sky-500/15 bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-600 dark:text-sky-300">
+												<span className="rounded-full border border-sky-500/15 bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-600 dark:text-sky-300">
 													{target.role || "User"}
 												</span>
 												{isFocused ? (
-													<span class="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300">
-														<Sparkles class="h-3.5 w-3.5" />
+													<span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-300">
+														<Sparkles className="h-3.5 w-3.5" />
 														Focused
 													</span>
 												) : null}
 											</div>
 
-											<div class="grid gap-2 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2 xl:grid-cols-4">
-												<div class="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
-													<UserRound class="h-4 w-4 text-sky-500" />
-													<span class="truncate">{target.email || "--"}</span>
+											<div className="grid gap-2 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2 xl:grid-cols-4">
+												<div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+													<UserRound className="h-4 w-4 text-sky-500" />
+													<span className="truncate">{target.email || "--"}</span>
 												</div>
-												<div class="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
-													<ShieldCheck class="h-4 w-4 text-sky-500" />
+												<div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+													<ShieldCheck className="h-4 w-4 text-sky-500" />
 													<span>{row.interaction_type || "deal"}</span>
 												</div>
-												<div class="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
-													<MessageSquareText class="h-4 w-4 text-sky-500" />
+												<div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+													<MessageSquareText className="h-4 w-4 text-sky-500" />
 													<span>{formatDate(row.created_at)}</span>
 												</div>
-												<div class="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
-													<CheckCircle2 class="h-4 w-4 text-sky-500" />
+												<div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+													<CheckCircle2 className="h-4 w-4 text-sky-500" />
 													<span>profile_key: {row.profile_key || "—"}</span>
 												</div>
 											</div>
 
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{signalsList.map((signal) => (
 													<StatChip key={signal} icon={Sparkles} label="Signal" value={signal} />
 												))}
 											</div>
 										</div>
 
-										<div class="w-full max-w-[360px] rounded-3xl border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-cyan-500/5 to-transparent p-4 dark:from-sky-500/15 dark:via-sky-500/5 dark:to-transparent">
-											<div class="mb-2 flex items-center justify-between gap-2">
+										<div className="w-full max-w-[360px] rounded-3xl border border-sky-500/15 bg-gradient-to-br from-sky-500/10 via-cyan-500/5 to-transparent p-4 dark:from-sky-500/15 dark:via-sky-500/5 dark:to-transparent">
+											<div className="mb-2 flex items-center justify-between gap-2">
 												<div>
-													<p class="text-sm font-semibold text-slate-900 dark:text-white">
+													<p className="text-sm font-semibold text-slate-900 dark:text-white">
 														Suggested rating
 													</p>
-													<p class="text-xs text-slate-500 dark:text-slate-400">
+													<p className="text-xs text-slate-500 dark:text-slate-400">
 														{suggested === null
 															? "Default score 4"
 															: `Score ${suggested.toFixed(1)}`}
@@ -330,7 +330,7 @@ export default function RatingFeedback() {
 																score: Math.round(suggested),
 															})
 														}
-														class="rounded-full border border-sky-500/20 bg-white px-3 py-1.5 text-xs font-medium text-sky-600 shadow-sm transition hover:border-sky-400/40 hover:bg-sky-50 dark:bg-slate-950 dark:text-sky-300 dark:hover:bg-slate-900"
+														className="rounded-full border border-sky-500/20 bg-white px-3 py-1.5 text-xs font-medium text-sky-600 shadow-sm transition hover:border-sky-400/40 hover:bg-sky-50 dark:bg-slate-950 dark:text-sky-300 dark:hover:bg-slate-900"
 													>
 														Use suggested
 													</button>
@@ -338,22 +338,22 @@ export default function RatingFeedback() {
 											</div>
 
 											{suggested === null ? null : (
-												<div class="mb-3 rounded-2xl border border-sky-500/10 bg-white/80 p-3 text-sm text-slate-600 dark:bg-slate-950/60 dark:text-slate-300">
-													<div class="mb-1 font-medium text-slate-800 dark:text-slate-100">
+												<div className="mb-3 rounded-2xl border border-sky-500/10 bg-white/80 p-3 text-sm text-slate-600 dark:bg-slate-950/60 dark:text-slate-300">
+													<div className="mb-1 font-medium text-slate-800 dark:text-slate-100">
 														Why this score?
 													</div>
-													<div class="flex flex-wrap gap-2">
+													<div className="flex flex-wrap gap-2">
 														{suggestedReasons.length > 0 ? (
 															suggestedReasons.map((reason) => (
 																<span
 																	key={reason}
-																	class="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs text-sky-700 dark:text-sky-300"
+																	className="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs text-sky-700 dark:text-sky-300"
 																>
 																	{reason}
 																</span>
 															))
 														) : (
-															<span class="text-xs text-slate-500 dark:text-slate-400">
+															<span className="text-xs text-slate-500 dark:text-slate-400">
 																No suggested reasons available.
 															</span>
 														)}
@@ -361,9 +361,9 @@ export default function RatingFeedback() {
 												</div>
 											)}
 
-											<div class="space-y-3">
+											<div className="space-y-3">
 												<div>
-													<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+													<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
 														Rating
 													</label>
 													<Stars
@@ -373,7 +373,7 @@ export default function RatingFeedback() {
 												</div>
 
 												<div>
-													<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+													<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
 														Comment
 													</label>
 													<textarea
@@ -381,15 +381,15 @@ export default function RatingFeedback() {
 														value={draft.comment}
 														onChange={(e) => updateDraft(row.id, { comment: e.target.value })}
 														placeholder="Optional comment for this interaction..."
-														class="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-950/50 dark:text-white dark:placeholder:text-slate-500"
+														className="w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-950/50 dark:text-white dark:placeholder:text-slate-500"
 													/>
-													<div class="mt-1 text-right text-xs text-slate-500 dark:text-slate-400">
+													<div className="mt-1 text-right text-xs text-slate-500 dark:text-slate-400">
 														{draft.comment.length}/{MAX_COMMENT_LEN}
 													</div>
 												</div>
 
-												<div class="rounded-2xl border border-slate-200/70 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-													<span class="font-medium text-slate-800 dark:text-slate-100">
+												<div className="rounded-2xl border border-slate-200/70 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+													<span className="font-medium text-slate-800 dark:text-slate-100">
 														Signals:
 													</span>{" "}
 													{signalsList.join(" · ")}
@@ -399,7 +399,7 @@ export default function RatingFeedback() {
 													type="button"
 													onClick={() => submitRating(row)}
 													disabled={submittingId === row.id}
-													class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
+													className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-400 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
 												>
 													{submittingId === row.id ? "Submitting..." : "Submit rating"}
 												</button>

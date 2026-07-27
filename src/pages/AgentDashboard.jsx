@@ -53,10 +53,10 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
 					: "border-slate-200/70 bg-white/80 dark:border-slate-800/70 dark:bg-slate-950/60",
 			)}
 		>
-			<div class="flex items-start justify-between gap-4">
+			<div className="flex items-start justify-between gap-4">
 				<div>
-					<p class="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
-					<p class="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+					<p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+					<p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
 						{isNumeric ? (
 							<ScaleIn>
 								<CountUp value={value} />
@@ -66,7 +66,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
 						)}
 					</p>
 					{sublabel ? (
-						<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{sublabel}</p>
+						<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sublabel}</p>
 					) : null}
 				</div>
 				<div
@@ -77,7 +77,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
 							: "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300",
 					)}
 				>
-					<Icon class="h-5 w-5" />
+					<Icon className="h-5 w-5" />
 				</div>
 			</div>
 		</HoverCard>
@@ -93,10 +93,10 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
  * @returns {JSX.Element}
  */
 const SectionTitle = ({ title, subtitle, right }) => (
-	<div class="mb-5 flex items-end justify-between gap-4">
+	<div className="mb-5 flex items-end justify-between gap-4">
 		<div>
-			<h2 class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{title}</h2>
-			{subtitle ? <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p> : null}
+			<h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{title}</h2>
+			{subtitle ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p> : null}
 		</div>
 		{right}
 	</div>
@@ -261,30 +261,30 @@ export default function AgentDashboard() {
 	}
 
 	return (
-		<div class="min-h-full bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.12),_transparent_26%),linear-gradient(180deg,_#f8fbff_0%,_#eef6ff_48%,_#f8fafc_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.12),_transparent_26%),linear-gradient(180deg,_#020617_0%,_#06101f_52%,_#020617_100%)] dark:text-slate-100">
-			<div class="mx-auto flex min-h-full max-w-[1600px] flex-col lg:flex-row">
+		<div className="min-h-full bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.12),_transparent_26%),linear-gradient(180deg,_#f8fbff_0%,_#eef6ff_48%,_#f8fafc_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(56,189,248,0.12),_transparent_26%),linear-gradient(180deg,_#020617_0%,_#06101f_52%,_#020617_100%)] dark:text-slate-100">
+			<div className="mx-auto flex min-h-full max-w-[1600px] flex-col lg:flex-row">
 				<aside
 					data-lenis-prevent={true}
-					class="border-b border-white/20 bg-white/70 p-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/70 lg:sticky lg:top-0 lg:h-screen lg:w-80 lg:overflow-y-auto lg:border-b-0 lg:border-r"
+					className="border-b border-white/20 bg-white/70 p-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/70 lg:sticky lg:top-0 lg:h-screen lg:w-80 lg:overflow-y-auto lg:border-b-0 lg:border-r"
 				>
-					<div class="flex items-center gap-3 rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-500/10 to-cyan-400/10 p-4 shadow-sm">
-						<div class="flex items-center gap-3">
-							<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/25">
-								<LayoutDashboard class="h-6 w-6" />
+					<div className="flex items-center gap-3 rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-500/10 to-cyan-400/10 p-4 shadow-sm">
+						<div className="flex items-center gap-3">
+							<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/25">
+								<LayoutDashboard className="h-6 w-6" />
 							</div>
 							<div>
-								<p class="text-xs uppercase tracking-[0.25em] text-sky-500">gTBlue</p>
-								<h1 class="text-lg font-semibold">Agent Dashboard</h1>
+								<p className="text-xs uppercase tracking-[0.25em] text-sky-500">gTBlue</p>
+								<h1 className="text-lg font-semibold">Agent Dashboard</h1>
 							</div>
 						</div>
 					</div>
 
-					<div class="mt-5 space-y-4">
-						<div class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/60">
-							<div class="flex items-center justify-between">
+					<div className="mt-5 space-y-4">
+						<div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/60">
+							<div className="flex items-center justify-between">
 								<div>
-									<p class="text-sm text-slate-500 dark:text-slate-400">Plan</p>
-									<p class="mt-1 text-2xl font-semibold capitalize">
+									<p className="text-sm text-slate-500 dark:text-slate-400">Plan</p>
+									<p className="mt-1 text-2xl font-semibold capitalize">
 										{subscription?.plan || "free"} plan
 									</p>
 								</div>
@@ -301,12 +301,12 @@ export default function AgentDashboard() {
 							</div>
 						</div>
 
-						<div class="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
+						<div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
 							<SectionTitle
 								title="Operational snapshot"
 								subtitle="High-signal metrics designed for quick scanning."
 							/>
-							<div class="space-y-3">
+							<div className="space-y-3">
 								{[
 									{
 										label: "Active conversations",
@@ -331,17 +331,17 @@ export default function AgentDashboard() {
 								].map((row) => (
 									<div
 										key={row.label}
-										class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60"
+										className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60"
 									>
-										<div class="flex items-center gap-3">
-											<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
-												<row.icon class="h-4 w-4" />
+										<div className="flex items-center gap-3">
+											<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
+												<row.icon className="h-4 w-4" />
 											</div>
-											<p class="font-medium text-slate-700 dark:text-slate-200">{row.label}</p>
+											<p className="font-medium text-slate-700 dark:text-slate-200">{row.label}</p>
 										</div>
-										<div class="text-right">
-											<p class="font-semibold text-slate-900 dark:text-white">{row.value}</p>
-											<p class="text-xs text-slate-500 dark:text-slate-400">Live signal</p>
+										<div className="text-right">
+											<p className="font-semibold text-slate-900 dark:text-white">{row.value}</p>
+											<p className="text-xs text-slate-500 dark:text-slate-400">Live signal</p>
 										</div>
 									</div>
 								))}
@@ -350,37 +350,37 @@ export default function AgentDashboard() {
 
 						<Link
 							to="/login"
-							class="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 shadow-sm transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-200"
+							className="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 shadow-sm transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-200"
 						>
-							<span class="flex items-center gap-3 font-medium">
-								<LogOut class="h-5 w-5" />
+							<span className="flex items-center gap-3 font-medium">
+								<LogOut className="h-5 w-5" />
 								Logout
 							</span>
-							<ChevronRight class="h-4 w-4" />
+							<ChevronRight className="h-4 w-4" />
 						</Link>
 					</div>
 				</aside>
 
-				<main class="flex-1 p-4 md:p-6 xl:p-8">
+				<main className="flex-1 p-4 md:p-6 xl:p-8">
 					<ScrollReveal as="section">
-						<div class="mb-6 rounded-3xl border border-sky-500/20 bg-white/75 p-5 shadow-lg shadow-sky-500/5 backdrop-blur-xl dark:bg-slate-950/55">
-							<div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+						<div className="mb-6 rounded-3xl border border-sky-500/20 bg-white/75 p-5 shadow-lg shadow-sky-500/5 backdrop-blur-xl dark:bg-slate-950/55">
+							<div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 								<div>
-									<div class="flex items-center gap-2 text-sm text-sky-600 dark:text-sky-300">
-										<Sparkles class="h-4 w-4" />
+									<div className="flex items-center gap-2 text-sm text-sky-600 dark:text-sky-300">
+										<Sparkles className="h-4 w-4" />
 										Agent Dashboard
 									</div>
-									<h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+									<h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
 										Agent Activity
 									</h2>
-									<p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+									<p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
 										Assigned request tracking, live chat analytics, connected factory visibility,
 										plan status, activity tabs, and an AI reply assistant for textile sourcing
 										workflows.
 									</p>
 								</div>
 
-								<StaggerContainer class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-[460px]">
+								<StaggerContainer className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-[460px]">
 									<StaggerItem>
 										<StatCard
 											icon={Users2}
@@ -412,25 +412,25 @@ export default function AgentDashboard() {
 					</ScrollReveal>
 
 					{loading ? (
-						<div class="mb-5 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm dark:border-slate-800 dark:bg-slate-950/60">
+						<div className="mb-5 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm dark:border-slate-800 dark:bg-slate-950/60">
 							Loading agent metrics...
 						</div>
 					) : null}
 					{error ? (
-						<div class="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/25 dark:text-red-200">
+						<div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/25 dark:text-red-200">
 							{error}
 						</div>
 					) : null}
 
 					<ScrollReveal as="section">
-						<div class="grid gap-6 xl:grid-cols-[1.55fr_1fr]">
-							<section class="space-y-6">
-								<div class="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
+						<div className="grid gap-6 xl:grid-cols-[1.55fr_1fr]">
+							<section className="space-y-6">
+								<div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
 									<SectionTitle
 										title="Agent Activity"
 										subtitle="Switch between requests, chats, and leads while keeping the core overview in one place."
 										right={
-											<div class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-900/60">
+											<div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-900/60">
 												{activityTabs.map((tab) => (
 													<button
 														key={tab.key}
@@ -450,7 +450,7 @@ export default function AgentDashboard() {
 									/>
 
 									{activeTab === "requests" ? (
-										<StaggerContainer class="grid gap-4 md:grid-cols-3">
+										<StaggerContainer className="grid gap-4 md:grid-cols-3">
 											<StaggerItem>
 												<StatCard
 													icon={FileText}
@@ -477,7 +477,7 @@ export default function AgentDashboard() {
 									) : null}
 
 									{activeTab === "chats" ? (
-										<StaggerContainer class="grid gap-4 md:grid-cols-3">
+										<StaggerContainer className="grid gap-4 md:grid-cols-3">
 											<StaggerItem>
 												<StatCard
 													icon={MessageSquareText}
@@ -504,8 +504,8 @@ export default function AgentDashboard() {
 									) : null}
 
 									{activeTab === "leads" ? (
-										<div class="space-y-4">
-											<StaggerContainer class="grid gap-4 md:grid-cols-3">
+										<div className="space-y-4">
+											<StaggerContainer className="grid gap-4 md:grid-cols-3">
 												<StaggerItem>
 													<StatCard
 														icon={Users2}
@@ -533,16 +533,16 @@ export default function AgentDashboard() {
 												</StaggerItem>
 											</StaggerContainer>
 
-											<div class="flex flex-wrap items-center gap-3">
+											<div className="flex flex-wrap items-center gap-3">
 												<button
 													type="button"
 													onClick={refreshQueueSummary}
-													class="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-600"
+													className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-600"
 												>
-													<RefreshCcw class="h-4 w-4" />
+													<RefreshCcw className="h-4 w-4" />
 													Refresh queue
 												</button>
-												<div class="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
+												<div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
 													{queueSummary.queue.length} leads currently in queue
 												</div>
 											</div>
@@ -557,7 +557,7 @@ export default function AgentDashboard() {
 								</div>
 
 								<ScrollReveal as="section">
-									<StaggerContainer class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+									<StaggerContainer className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 										<StaggerItem>
 											<StatCard
 												icon={CheckCircle2}
@@ -583,12 +583,12 @@ export default function AgentDashboard() {
 								</ScrollReveal>
 							</section>
 
-							<aside class="space-y-6">
-								<div class="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
+							<aside className="space-y-6">
+								<div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/60">
 									<SectionTitle
 										title="AI Suggested Reply"
 										subtitle="Paste a short prompt or let the assistant draft a default reply."
-										right={<Bot class="h-5 w-5 text-sky-500" />}
+										right={<Bot className="h-5 w-5 text-sky-500" />}
 									/>
 
 									<textarea
@@ -596,17 +596,17 @@ export default function AgentDashboard() {
 										onChange={(e) => setAiPrompt(e.target.value)}
 										rows={3}
 										placeholder="Example: Reply to a buyer asking for MOQ and lead time."
-										class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-500"
+										className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-500"
 									/>
 
-									<div class="mt-3 flex flex-wrap gap-2">
+									<div className="mt-3 flex flex-wrap gap-2">
 										<button
 											type="button"
 											onClick={generateAiReply}
 											disabled={aiLoading}
-											class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+											className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
 										>
-											<Sparkles class="h-4 w-4" />
+											<Sparkles className="h-4 w-4" />
 											{aiLoading ? (
 												<ThreeDot
 													variant="bounce"
@@ -623,77 +623,77 @@ export default function AgentDashboard() {
 											type="button"
 											onClick={copySuggestion}
 											disabled={!aiSuggestion}
-											class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-200"
+											className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-200"
 										>
-											<ClipboardCopy class="h-4 w-4" />
+											<ClipboardCopy className="h-4 w-4" />
 											Copy suggestion
 										</button>
 									</div>
 
 									{aiError ? (
-										<div class="mt-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/25 dark:text-red-200">
+										<div className="mt-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/25 dark:text-red-200">
 											{aiError}
 										</div>
 									) : null}
 
-									<div class="mt-4">
+									<div className="mt-4">
 										{aiSuggestion ? (
 											<textarea
 												value={aiSuggestion}
 												onChange={(e) => setAiSuggestion(e.target.value)}
 												rows={6}
-												class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900/70"
+												className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900/70"
 											/>
 										) : (
-											<div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
+											<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
 												No suggestion yet.
 											</div>
 										)}
 									</div>
 
 									{aiSuggestion && aiChecklist.length > 0 ? (
-										<div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-100">
-											<p class="font-medium">Missing-info checklist</p>
-											<p class="mt-1 text-amber-800/90 dark:text-amber-200">
+										<div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-100">
+											<p className="font-medium">Missing-info checklist</p>
+											<p className="mt-1 text-amber-800/90 dark:text-amber-200">
 												{aiChecklist.join(", ")}
 											</p>
 										</div>
 									) : null}
 
-									<div class="mt-4 flex flex-wrap gap-2">
+									<div className="mt-4 flex flex-wrap gap-2">
 										<button
 											type="button"
 											onClick={approveSuggestion}
 											disabled={aiLoading || !aiSuggestion}
-											class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-200"
+											className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-200"
 										>
-											<ShieldCheck class="h-4 w-4" />
+											<ShieldCheck className="h-4 w-4" />
 											Approve draft
 										</button>
 										<button
 											type="button"
 											onClick={sendSuggestion}
 											disabled={aiLoading || !aiSuggestion}
-											class="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+											className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
 										>
-											<Send class="h-4 w-4" />
+											<Send className="h-4 w-4" />
 											One-click send
 										</button>
 									</div>
 
-									<div class="mt-4 grid gap-3 sm:grid-cols-2">
-										<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/60">
-											<p class="text-slate-500 dark:text-slate-400">Approval</p>
-											<p class="mt-1 font-medium">{approvalState?.status || "idle"}</p>
+									<div className="mt-4 grid gap-3 sm:grid-cols-2">
+										<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/60">
+											<p className="text-slate-500 dark:text-slate-400">Approval</p>
+											<p className="mt-1 font-medium">{approvalState?.status || "idle"}</p>
 											{approvalState?.reason ? (
-												<p class="mt-1 text-rose-600 dark:text-rose-300">{approvalState.reason}</p>
+												<p className="mt-1 text-rose-600 dark:text-rose-300">{approvalState.reason}</p>
 											) : null}
 										</div>
-										<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/60">
-											<p class="text-slate-500 dark:text-slate-400">Send status</p>
-											<p class="mt-1 font-medium">{sendState?.status || "idle"}</p>
+										<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/60">
+											<p className="text-slate-500 dark:text-slate-400">Send status</p>
+											<p className="mt-1 font-medium">{sendState?.status || "idle"}</p>
 											{sendState?.message ? (
-												<p class="mt-1 text-slate-500 dark:text-slate-400">{sendState.message}</p>
+												<p className="mt-1 text-slate-500 dark:text-slate-400">{sendState.message}</p>
 											) : null}
 										</div>
 									</div>

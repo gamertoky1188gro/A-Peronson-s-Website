@@ -123,7 +123,7 @@ export function AdminNetworkSection({
 				adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 			)}
 		>
-			<div class="absolute inset-0 -z-10 overflow-hidden">
+			<div className="absolute inset-0 -z-10 overflow-hidden">
 				<div
 					class={cn(
 						"absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full blur-3xl",
@@ -144,17 +144,17 @@ export function AdminNetworkSection({
 				/>
 			</div>
 
-			<div class="mx-auto max-w-[1600px] space-y-6">
+			<div className="mx-auto max-w-[1600px] space-y-6">
 				<section
 					class={cn(
 						"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
 				>
-					<div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-						<div class="flex items-center gap-4">
-							<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg">
-								<CircuitBoard class="h-6 w-6" />
+					<div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+						<div className="flex items-center gap-4">
+							<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg">
+								<CircuitBoard className="h-6 w-6" />
 							</div>
 							<div>
 								<h1
@@ -176,12 +176,12 @@ export function AdminNetworkSection({
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 							)}
 						>
-							{adminDark ? <SunMedium class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+							{adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 							Toggle Theme
 						</button>
 					</div>
 
-					<div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+					<div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 						{[
 							{ id: "overview", label: "Overview", icon: LayoutDashboard },
 							{ id: "inventory", label: "Inventory", icon: Wifi },
@@ -203,16 +203,16 @@ export function AdminNetworkSection({
 											: "bg-slate-100 text-slate-900 hover:bg-slate-200",
 								)}
 							>
-								<span class="flex items-center gap-2">
-									<Icon class="h-4 w-4" />
+								<span className="flex items-center gap-2">
+									<Icon className="h-4 w-4" />
 									{label}
 								</span>
-								<ChevronRight class="h-4 w-4 opacity-70" />
+								<ChevronRight className="h-4 w-4 opacity-70" />
 							</button>
 						))}
 					</div>
 
-					<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+					<div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 						{["SLA 99.98%", "Security Green", "Latency Stable", "Infra Healthy"].map((item) => (
 							<div
 								key={item}
@@ -233,10 +233,10 @@ export function AdminNetworkSection({
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
 				>
-					<div class="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-						<div class="max-w-3xl">
-							<div class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-sky-400 shadow-sm backdrop-blur-xl">
-								<span class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.9)]" />
+					<div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+						<div className="max-w-3xl">
+							<div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-sky-400 shadow-sm backdrop-blur-xl">
+								<span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.9)]" />
 								Network Monitoring & Management
 								<span
 									class={cn(
@@ -266,7 +266,7 @@ export function AdminNetworkSection({
 							</p>
 						</div>
 
-						<div class="flex flex-wrap items-center gap-3">
+						<div className="flex flex-wrap items-center gap-3">
 							<button
 								type="button"
 								onClick={toggleTheme}
@@ -277,7 +277,7 @@ export function AdminNetworkSection({
 										: "border-slate-200 bg-white hover:bg-slate-50",
 								)}
 							>
-								{adminDark ? <SunMedium class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+								{adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 								{adminDark ? "Light mode" : "Dark mode"}
 							</button>
 							<button
@@ -336,15 +336,15 @@ export function AdminNetworkSection({
 											: [],
 									})
 								}
-								class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition-transform hover:-translate-y-0.5"
+								className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition-transform hover:-translate-y-0.5"
 							>
-								<Download class="h-4 w-4" />
+								<Download className="h-4 w-4" />
 								Export report
 							</button>
 						</div>
 					</div>
 
-					<div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+					<div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 						{[
 							{
 								label: "Devices",
@@ -382,12 +382,12 @@ export function AdminNetworkSection({
 											: "border-slate-200 bg-white hover:shadow-lg",
 									)}
 								>
-									<div class="flex items-start justify-between gap-4">
+									<div className="flex items-start justify-between gap-4">
 										<div>
 											<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 												{card.label}
 											</p>
-											<div class="mt-2 flex items-end gap-2">
+											<div className="mt-2 flex items-end gap-2">
 												<h3
 													class={cn(
 														"text-3xl font-semibold tracking-tight",
@@ -403,8 +403,8 @@ export function AdminNetworkSection({
 												{card.sub}
 											</p>
 										</div>
-										<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400 ring-1 ring-inset ring-sky-400/20">
-											<Icon class="h-5 w-5" />
+										<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400 ring-1 ring-inset ring-sky-400/20">
+											<Icon className="h-5 w-5" />
 										</div>
 									</div>
 								</div>
@@ -412,16 +412,16 @@ export function AdminNetworkSection({
 						})}
 					</div>
 
-					<div class="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+					<div className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
 						<div
 							class={cn(
 								"rounded-[28px] border p-5",
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 								<div>
-									<p class="text-xs uppercase tracking-[0.22em] text-sky-400">Device Inventory</p>
+									<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Device Inventory</p>
 									<h3
 										class={cn(
 											"mt-1 text-xl font-semibold",
@@ -431,7 +431,7 @@ export function AdminNetworkSection({
 										Realtime device status
 									</h3>
 								</div>
-								<div class="flex gap-2">
+								<div className="flex gap-2">
 									<button
 										type="button"
 										onClick={() => refreshNetworkInventory()}
@@ -442,7 +442,7 @@ export function AdminNetworkSection({
 												: "bg-slate-100 hover:bg-slate-200",
 										)}
 									>
-										<RefreshCw class="h-4 w-4" />
+										<RefreshCw className="h-4 w-4" />
 										Refresh
 									</button>
 									<div
@@ -453,14 +453,14 @@ export function AdminNetworkSection({
 												: "bg-emerald-50 text-emerald-700",
 										)}
 									>
-										<div class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
+										<div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
 										Live data
 									</div>
 								</div>
 							</div>
 
-							<div class="mt-4">
-								<div class="relative">
+							<div className="mt-4">
+								<div className="relative">
 									<Search
 										class={cn(
 											"pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2",
@@ -481,7 +481,7 @@ export function AdminNetworkSection({
 								</div>
 							</div>
 
-							<div class="mt-4 space-y-3">
+							<div className="mt-4 space-y-3">
 								{filteredNetworkDevices.map((device) => {
 									const status = String(device?.status || "").toLowerCase();
 									const isUp = status === "up" || status === "online" || status === "healthy";
@@ -495,20 +495,20 @@ export function AdminNetworkSection({
 													: "border-slate-200 bg-slate-50",
 											)}
 										>
-											<div class="flex items-center gap-3">
+											<div className="flex items-center gap-3">
 												<div
 													class={cn(
 														"flex h-11 w-11 items-center justify-center rounded-2xl",
 														adminDark ? "bg-sky-500/15 text-sky-400" : "bg-sky-100 text-sky-600",
 													)}
 												>
-													<HardDrive class="h-5 w-5" />
+													<HardDrive className="h-5 w-5" />
 												</div>
 												<div>
 													<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 														{device.name || device.id}
 													</p>
-													<div class="mt-1 flex items-center gap-2 text-sm">
+													<div className="mt-1 flex items-center gap-2 text-sm">
 														<span
 															class={cn(
 																"inline-flex items-center gap-1 rounded-full px-2.5 py-1",
@@ -548,7 +548,7 @@ export function AdminNetworkSection({
 												)}
 											>
 												Reboot
-												<ArrowRight class="h-4 w-4" />
+												<ArrowRight className="h-4 w-4" />
 											</button>
 										</div>
 									);
@@ -575,7 +575,7 @@ export function AdminNetworkSection({
 							)}
 						>
 							<div>
-								<p class="text-xs uppercase tracking-[0.22em] text-sky-400">Quick Actions</p>
+								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Quick Actions</p>
 								<h3
 									class={cn(
 										"mt-1 text-xl font-semibold",
@@ -585,7 +585,7 @@ export function AdminNetworkSection({
 									Operations toolkit
 								</h3>
 							</div>
-							<div class="mt-4 space-y-3">
+							<div className="mt-4 space-y-3">
 								{[
 									{
 										label: "VLAN Management",
@@ -624,11 +624,11 @@ export function AdminNetworkSection({
 													: "border-slate-200 bg-slate-50",
 											)}
 										>
-											<div class="flex items-start gap-3">
-												<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400">
-													<Icon class="h-4 w-4" />
+											<div className="flex items-start gap-3">
+												<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400">
+													<Icon className="h-4 w-4" />
 												</div>
-												<div class="min-w-0 flex-1">
+												<div className="min-w-0 flex-1">
 													<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 														{item.label}
 													</p>
@@ -653,16 +653,16 @@ export function AdminNetworkSection({
 					</div>
 				</section>
 
-				<section class="grid gap-6 xl:grid-cols-2">
+				<section className="grid gap-6 xl:grid-cols-2">
 					<div
 						class={cn(
 							"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 						)}
 					>
-						<div class="flex items-start justify-between gap-3">
+						<div className="flex items-start justify-between gap-3">
 							<div>
-								<p class="text-xs uppercase tracking-[0.22em] text-sky-400">VLAN Management</p>
+								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">VLAN Management</p>
 								<h3
 									class={cn(
 										"mt-1 text-2xl font-semibold",
@@ -672,9 +672,9 @@ export function AdminNetworkSection({
 									Create and retire VLANs
 								</h3>
 							</div>
-							<BadgeCheck class="h-6 w-6 text-sky-400" />
+							<BadgeCheck className="h-6 w-6 text-sky-400" />
 						</div>
-						<div class="mt-5 grid gap-3 sm:grid-cols-2">
+						<div className="mt-5 grid gap-3 sm:grid-cols-2">
 							{[
 								[
 									"VLAN ID",
@@ -728,12 +728,12 @@ export function AdminNetworkSection({
 						<button
 							type="button"
 							onClick={() => runNetworkAction("vlan.create", vlanForm)}
-							class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
+							className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
 						>
 							Add VLAN
-							<ArrowRight class="h-4 w-4" />
+							<ArrowRight className="h-4 w-4" />
 						</button>
-						<div class="mt-4 space-y-2">
+						<div className="mt-4 space-y-2">
 							{(networkInventory?.vlans || []).slice(0, 6).map((vlan) => (
 								<div
 									key={vlan.id}
@@ -786,9 +786,9 @@ export function AdminNetworkSection({
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 						)}
 					>
-						<div class="flex items-start justify-between gap-3">
+						<div className="flex items-start justify-between gap-3">
 							<div>
-								<p class="text-xs uppercase tracking-[0.22em] text-sky-400">
+								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">
 									IPAM + Config Backups
 								</p>
 								<h3
@@ -800,9 +800,9 @@ export function AdminNetworkSection({
 									Reserve IPs and capture configs
 								</h3>
 							</div>
-							<Lock class="h-6 w-6 text-sky-400" />
+							<Lock className="h-6 w-6 text-sky-400" />
 						</div>
-						<div class="mt-5 grid gap-3 sm:grid-cols-2">
+						<div className="mt-5 grid gap-3 sm:grid-cols-2">
 							{[
 								[
 									"IP address",
@@ -866,7 +866,7 @@ export function AdminNetworkSection({
 								</p>
 							</div>
 						</div>
-						<div class="mt-4 flex flex-wrap gap-3">
+						<div className="mt-4 flex flex-wrap gap-3">
 							<button
 								type="button"
 								onClick={() => runNetworkAction("ipam.reserve", ipamForm)}
@@ -882,12 +882,12 @@ export function AdminNetworkSection({
 							<button
 								type="button"
 								onClick={() => runNetworkAction("config.backup", backupForm)}
-								class="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
+								className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
 							>
 								Run config backup
 							</button>
 						</div>
-						<div class="mt-4 space-y-2">
+						<div className="mt-4 space-y-2">
 							{(networkInventory?.ipam_reservations || []).slice(0, 4).map((row) => (
 								<div
 									key={row.id}
@@ -951,9 +951,9 @@ export function AdminNetworkSection({
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
 				>
-					<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<p class="text-xs uppercase tracking-[0.22em] text-sky-400">Operational Surfaces</p>
+							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Operational Surfaces</p>
 							<h3
 								class={cn(
 									"mt-1 text-2xl font-semibold",
@@ -971,18 +971,18 @@ export function AdminNetworkSection({
 								adminDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200",
 							)}
 						>
-							<RefreshCw class="h-4 w-4" />
+							<RefreshCw className="h-4 w-4" />
 							Refresh
 						</button>
 					</div>
-					<div class="mt-5 grid gap-4 md:grid-cols-3">
+					<div className="mt-5 grid gap-4 md:grid-cols-3">
 						<div
 							class={cn(
 								"rounded-[24px] border p-5",
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
 						>
-							<p class="text-xs uppercase tracking-[0.22em] text-sky-400">IDS/IPS + Rogue AP</p>
+							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">IDS/IPS + Rogue AP</p>
 							<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 								Security monitoring feeds.
 							</p>
@@ -1038,7 +1038,7 @@ export function AdminNetworkSection({
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
 						>
-							<p class="text-xs uppercase tracking-[0.22em] text-sky-400">
+							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">
 								NetFlow + Alert Integrations
 							</p>
 							<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
@@ -1107,7 +1107,7 @@ export function AdminNetworkSection({
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
 						>
-							<p class="text-xs uppercase tracking-[0.22em] text-sky-400">
+							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">
 								Client Monitoring + Auth Servers
 							</p>
 							<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
@@ -1177,9 +1177,9 @@ export function AdminNetworkSection({
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
 				>
-					<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+					<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 						<div>
-							<p class="text-xs uppercase tracking-[0.22em] text-sky-400">Network Capabilities</p>
+							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Network Capabilities</p>
 							<h3
 								class={cn(
 									"mt-1 text-2xl font-semibold",
@@ -1189,7 +1189,7 @@ export function AdminNetworkSection({
 								6 capability groups
 							</h3>
 						</div>
-						<div class="flex items-center gap-3">
+						<div className="flex items-center gap-3">
 							<div
 								class={cn(
 									"flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
@@ -1198,7 +1198,7 @@ export function AdminNetworkSection({
 										: "bg-emerald-50 text-emerald-700",
 								)}
 							>
-								<span class="h-2 w-2 rounded-full bg-emerald-400" />
+								<span className="h-2 w-2 rounded-full bg-emerald-400" />
 								live
 							</div>
 							<button
@@ -1208,7 +1208,7 @@ export function AdminNetworkSection({
 									adminDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200",
 								)}
 							>
-								<Filter class="h-4 w-4" />
+								<Filter className="h-4 w-4" />
 								Filter
 							</button>
 							<button
@@ -1218,13 +1218,13 @@ export function AdminNetworkSection({
 									adminDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200",
 								)}
 							>
-								<SlidersHorizontal class="h-4 w-4" />
+								<SlidersHorizontal className="h-4 w-4" />
 								Sort
 							</button>
 						</div>
 					</div>
 
-					<div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+					<div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{(Array.isArray(networkCapabilities) && networkCapabilities.length > 0
 							? networkCapabilities
 							: []
@@ -1240,9 +1240,9 @@ export function AdminNetworkSection({
 									adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 								)}
 							>
-								<div class="flex items-start justify-between gap-3">
+								<div className="flex items-start justify-between gap-3">
 									<div>
-										<p class="text-xs uppercase tracking-[0.2em] text-sky-400">live</p>
+										<p className="text-xs uppercase tracking-[0.2em] text-sky-400">live</p>
 										<h4
 											class={cn(
 												"mt-1 text-lg font-semibold",
@@ -1268,8 +1268,8 @@ export function AdminNetworkSection({
 									)}
 								>
 									{section.items.map((item) => (
-										<li key={item} class="flex items-center gap-2">
-											<CheckCircle2 class="h-4 w-4 text-sky-400" />
+										<li key={item} className="flex items-center gap-2">
+											<CheckCircle2 className="h-4 w-4 text-sky-400" />
 											{item}
 										</li>
 									))}
@@ -1279,16 +1279,16 @@ export function AdminNetworkSection({
 					</div>
 				</section>
 
-				<section class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+				<section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
 					<div
 						class={cn(
 							"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 						)}
 					>
-						<div class="flex items-start justify-between gap-3">
+						<div className="flex items-start justify-between gap-3">
 							<div>
-								<p class="text-xs uppercase tracking-[0.22em] text-sky-400">Verification Queue</p>
+								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Verification Queue</p>
 								<h3
 									class={cn(
 										"mt-1 text-2xl font-semibold",
@@ -1298,7 +1298,7 @@ export function AdminNetworkSection({
 									EU/USA docs pending review
 								</h3>
 							</div>
-							<Bell class="h-6 w-6 text-sky-400" />
+							<Bell className="h-6 w-6 text-sky-400" />
 						</div>
 						<div
 							class={cn(
@@ -1307,7 +1307,7 @@ export function AdminNetworkSection({
 							)}
 						>
 							{verificationQueue.length > 0 ? (
-								<div class="space-y-2">
+								<div className="space-y-2">
 									{verificationQueue.slice(0, 4).map((row) => (
 										<div
 											key={row.id || row.user_id}
@@ -1338,35 +1338,35 @@ export function AdminNetworkSection({
 							<button
 								type="button"
 								onClick={() => refreshVerificationQueue()}
-								class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
+								className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
 							>
 								Refresh
-								<RefreshCw class="h-4 w-4" />
+								<RefreshCw className="h-4 w-4" />
 							</button>
 						</div>
 
-						<div class="mt-4 space-y-3">
+						<div className="mt-4 space-y-3">
 							<div
 								class={cn(
 									"rounded-2xl border p-4",
 									adminDark ? "border-white/10 bg-white/[0.03]" : "border-slate-200 bg-slate-50",
 								)}
 							>
-								<div class="flex items-center justify-between gap-3">
+								<div className="flex items-center justify-between gap-3">
 									<h4 class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										Dispute Radar
 									</h4>
 									<button
 										type="button"
 										onClick={() => refreshDisputes()}
-										class="inline-flex items-center gap-2 text-sm text-sky-400"
+										className="inline-flex items-center gap-2 text-sm text-sky-400"
 									>
 										Sync
-										<ArrowRight class="h-4 w-4" />
+										<ArrowRight className="h-4 w-4" />
 									</button>
 								</div>
 								{disputes.length > 0 ? (
-									<div class="mt-2 space-y-2">
+									<div className="mt-2 space-y-2">
 										{disputes.slice(0, 3).map((dispute) => (
 											<div
 												key={dispute.id}
@@ -1397,9 +1397,9 @@ export function AdminNetworkSection({
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 						)}
 					>
-						<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 							<div>
-								<p class="text-xs uppercase tracking-[0.22em] text-sky-400">Audit Pulse</p>
+								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Audit Pulse</p>
 								<h3
 									class={cn(
 										"mt-1 text-2xl font-semibold",
@@ -1417,11 +1417,11 @@ export function AdminNetworkSection({
 									adminDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200",
 								)}
 							>
-								<RefreshCw class="h-4 w-4" />
+								<RefreshCw className="h-4 w-4" />
 								Refresh
 							</button>
 						</div>
-						<div class="mt-5 grid gap-3 lg:grid-cols-2">
+						<div className="mt-5 grid gap-3 lg:grid-cols-2">
 							{filteredNetworkAuditRows.slice(0, 6).map((entry) => (
 								<div
 									key={entry.id || entry.at}
@@ -1430,11 +1430,11 @@ export function AdminNetworkSection({
 										adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 									)}
 								>
-									<div class="flex items-center justify-between gap-3">
+									<div className="flex items-center justify-between gap-3">
 										<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 											{entry.path || entry.action || "Admin action"}
 										</p>
-										<span class="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">
+										<span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">
 											{entry.status ?? 200}
 										</span>
 									</div>
@@ -1465,9 +1465,9 @@ export function AdminNetworkSection({
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
 				>
-					<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+					<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 						<div>
-							<p class="text-xs uppercase tracking-[0.22em] text-sky-400">Admin Audit Log</p>
+							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Admin Audit Log</p>
 							<h3
 								class={cn(
 									"mt-1 text-2xl font-semibold",
@@ -1477,7 +1477,7 @@ export function AdminNetworkSection({
 								Immutable, tamper-evident audit trail
 							</h3>
 						</div>
-						<div class="relative w-full max-w-md">
+						<div className="relative w-full max-w-md">
 							<Search
 								class={cn(
 									"pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2",
@@ -1533,13 +1533,13 @@ export function AdminNetworkSection({
 										{entry.at ? new Date(entry.at).toLocaleString() : "--"}
 									</div>
 									<div class={adminDark ? "text-slate-300" : "text-slate-700"}>
-										<div class="truncate">Actor: {entry.actor_id || entry.actor || "system"}</div>
+										<div className="truncate">Actor: {entry.actor_id || entry.actor || "system"}</div>
 										<div class={adminDark ? "text-slate-500" : "text-slate-500"}>
 											IP: {entry.ip || "--"} / Device: {entry.device_id || "--"}
 										</div>
 									</div>
 									<div>
-										<span class="inline-flex rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">
+										<span className="inline-flex rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">
 											{entry.status ?? 200}
 										</span>
 									</div>

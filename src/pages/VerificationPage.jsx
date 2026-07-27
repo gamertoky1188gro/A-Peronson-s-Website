@@ -509,22 +509,22 @@ export default function VerificationPage({ embedded = false }) {
 	const content = (
 		<>
 			<header
-				class={`mb-6 flex items-center justify-between rounded-3xl border px-4 py-4 ${cardBg}`}
+				className={`mb-6 flex items-center justify-between rounded-3xl border px-4 py-4 ${cardBg}`}
 			>
-				<div class="flex items-center gap-3">
-					<div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/25">
-						<Shield class="h-6 w-6" />
+				<div className="flex items-center gap-3">
+					<div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/25">
+						<Shield className="h-6 w-6" />
 					</div>
 					<div>
-						<div class="flex items-center gap-2">
-							<h1 class="text-xl font-semibold tracking-tight sm:text-2xl">Verification Center</h1>
+						<div className="flex items-center gap-2">
+							<h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Verification Center</h1>
 							<span
-								class={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] ${chipBg}`}
+								className={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] ${chipBg}`}
 							>
 								{reviewStatus}
 							</span>
 						</div>
-						<p class={`mt-1 text-sm ${softText}`}>
+						<p className={`mt-1 text-sm ${softText}`}>
 							Verification is subscription-based and renews monthly. First month: $
 							{verificationPrice.firstMonth.toFixed(2)} • Renewals: $
 							{verificationPrice.renewal.toFixed(2)}/month
@@ -535,92 +535,92 @@ export default function VerificationPage({ embedded = false }) {
 				{!embedded && (
 					<button
 						onClick={toggleTheme}
-						class={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
+						className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
 					>
-						{isDark ? <Sun class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+						{isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 						{isDark ? "Light" : "Dark"}
 					</button>
 				)}
 			</header>
 
 			{feedback && (
-				<div class="mb-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-3 text-emerald-200">
+				<div className="mb-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-3 text-emerald-200">
 					{feedback}
 				</div>
 			)}
 			{error && (
-				<div class="mb-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 px-4 py-3 text-rose-300">
+				<div className="mb-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 px-4 py-3 text-rose-300">
 					{error}
 				</div>
 			)}
 
-			<main class="grid flex-1 gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-				<section class="space-y-6">
-					<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-						<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+			<main className="grid flex-1 gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+				<section className="space-y-6">
+					<div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+						<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 							<div>
 								<div
-									class={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${chipBg}`}
+									className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${chipBg}`}
 								>
-									<Sparkles class="h-3.5 w-3.5" />
+									<Sparkles className="h-3.5 w-3.5" />
 									Review status: {reviewStatus}
 									{reviewReason && ` • ${reviewReason}`}
 								</div>
-								<h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">
+								<h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
 									Build trust with verified proof
 								</h2>
-								<p class={`mt-4 max-w-2xl text-base leading-7 ${softText}`}>
+								<p className={`mt-4 max-w-2xl text-base leading-7 ${softText}`}>
 									Upload the right documents for your role, add optional licenses, and strengthen
 									credibility for buyers and partners.
 								</p>
 							</div>
 
 							<div
-								class={`min-w-[240px] rounded-3xl border p-5 ${isDark ? "bg-slate-900/70 border-white/10" : "bg-sky-50/70 border-sky-100"}`}
+								className={`min-w-[240px] rounded-3xl border p-5 ${isDark ? "bg-slate-900/70 border-white/10" : "bg-sky-50/70 border-sky-100"}`}
 							>
-								<div class={`flex items-center justify-between text-sm ${mutedText}`}>
+								<div className={`flex items-center justify-between text-sm ${mutedText}`}>
 									<span>Credibility</span>
 									<span>{credibility}/100</span>
 								</div>
-								<div class="mt-3 h-3 w-full overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800">
+								<div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800">
 									<div
-										class="h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 transition-all duration-500"
+										className="h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 transition-all duration-500"
 										style={{ width: `${credibility}%` }}
 									/>
 								</div>
-								<div class="mt-4 flex items-center justify-between">
+								<div className="mt-4 flex items-center justify-between">
 									<div>
-										<div class="text-sm font-semibold">Basic credibility</div>
-										<div class={`mt-1 text-xs ${mutedText}`}>
+										<div className="text-sm font-semibold">Basic credibility</div>
+										<div className={`mt-1 text-xs ${mutedText}`}>
 											More licensing proof increases credibility and international trust.
 										</div>
 									</div>
-									<Star class="h-7 w-7 text-sky-400" />
+									<Star className="h-7 w-7 text-sky-400" />
 								</div>
 							</div>
 						</div>
 					</div>
 
 					{role === "buyer" && (
-						<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-							<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+						<div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+							<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 								<div>
-									<h3 class="text-xl font-semibold">Buyer region</h3>
-									<p class={`mt-1 text-sm ${softText}`}>
+									<h3 className="text-xl font-semibold">Buyer region</h3>
+									<p className={`mt-1 text-sm ${softText}`}>
 										Select your country to determine required documents.
 									</p>
 								</div>
-								<div class="flex items-center gap-2 text-sm text-sky-500">
-									<HelpCircle class="h-4 w-4" />
+								<div className="flex items-center gap-2 text-sm text-sky-500">
+									<HelpCircle className="h-4 w-4" />
 									Region: {buyerRegion}
 								</div>
 							</div>
 
-							<div class="mt-5 flex flex-col gap-3 sm:flex-row">
+							<div className="mt-5 flex flex-col gap-3 sm:flex-row">
 								<select
 									value={buyerCountry}
 									onChange={(e) => setBuyerCountry(e.target.value)}
-									class={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition ${fieldBg}`}
+									className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition ${fieldBg}`}
 								>
 									<option value="">Select country</option>
 									{BUYER_COUNTRY_OPTIONS.map((country) => (
@@ -630,23 +630,23 @@ export default function VerificationPage({ embedded = false }) {
 									))}
 								</select>
 								{savingCountry && (
-									<span class="flex items-center">
+									<span className="flex items-center">
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 									</span>
 								)}
 							</div>
 
-							<p class={`mt-3 text-sm ${softText}`}>
+							<p className={`mt-3 text-sm ${softText}`}>
 								EU buyers need:{" "}
-								<span class="font-semibold">
+								<span className="font-semibold">
 									Business Registration + VAT Number + EORI + Bank proof
 								</span>
 								. USA buyers need:{" "}
-								<span class="font-semibold">Business Registration + EIN + IOR + Bank proof</span>.
+								<span className="font-semibold">Business Registration + EIN + IOR + Bank proof</span>.
 							</p>
 
 							{!buyerCountry && (
-								<p class="mt-3 text-sm text-rose-400">
+								<p className="mt-3 text-sm text-rose-400">
 									Buyer country is required before completing buyer verification.
 								</p>
 							)}
@@ -654,34 +654,34 @@ export default function VerificationPage({ embedded = false }) {
 					)}
 
 					<ScrollReveal as="section">
-						<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-							<div class="flex items-center justify-between gap-4">
+						<div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+							<div className="flex items-center justify-between gap-4">
 								<div>
-									<h3 class="text-xl font-semibold">Your requirements</h3>
-									<p class={`mt-1 text-sm ${softText}`}>
+									<h3 className="text-xl font-semibold">Your requirements</h3>
+									<p className={`mt-1 text-sm ${softText}`}>
 										Role-based checklist. Uploading more proof increases credibility.
 									</p>
 								</div>
-								<span class={`rounded-full border px-3 py-1 text-sm ${chipBg}`}>
+								<span className={`rounded-full border px-3 py-1 text-sm ${chipBg}`}>
 									{verified ? "Verified" : "Not verified"}
 								</span>
 							</div>
 
-							<div class="mt-6 grid gap-4 md:grid-cols-3">
+							<div className="mt-6 grid gap-4 md:grid-cols-3">
 								{requirements.map((item, idx) => (
 									<div
 										key={idx}
-										class={`rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+										className={`rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 									>
-										<div class="flex items-start gap-3">
+										<div className="flex items-start gap-3">
 											<div
-												class={`mt-0.5 grid h-10 w-10 place-items-center rounded-2xl ${item.done ? "bg-emerald-500/15 text-emerald-300" : "bg-sky-500/10 text-sky-500"}`}
+												className={`mt-0.5 grid h-10 w-10 place-items-center rounded-2xl ${item.done ? "bg-emerald-500/15 text-emerald-300" : "bg-sky-500/10 text-sky-500"}`}
 											>
-												{item.done ? <Check class="h-5 w-5" /> : <Clock class="h-5 w-5" />}
+												{item.done ? <Check className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
 											</div>
 											<div>
-												<h4 class="font-semibold">{item.title}</h4>
-												<p class={`mt-1 text-sm leading-6 ${softText}`}>{item.desc}</p>
+												<h4 className="font-semibold">{item.title}</h4>
+												<p className={`mt-1 text-sm leading-6 ${softText}`}>{item.desc}</p>
 											</div>
 										</div>
 										<button
@@ -689,7 +689,7 @@ export default function VerificationPage({ embedded = false }) {
 											disabled={
 												busyDoc === requiredDocs[idx] || (role === "buyer" && !buyerCountry)
 											}
-											class={`mt-4 w-full rounded-2xl border px-3 py-2 text-sm font-medium transition-all ${
+											className={`mt-4 w-full rounded-2xl border px-3 py-2 text-sm font-medium transition-all ${
 												busyDoc === requiredDocs[idx] || (role === "buyer" && !buyerCountry)
 													? "opacity-50 cursor-not-allowed border-white/10"
 													: buttonGhost
@@ -708,7 +708,7 @@ export default function VerificationPage({ embedded = false }) {
 											)}
 										</button>
 										{busyDoc === requiredDocs[idx] && (
-											<UploadProgressBar progress={uploadProgress} class="mt-2" />
+											<UploadProgressBar progress={uploadProgress} className="mt-2" />
 										)}
 									</div>
 								))}
@@ -716,67 +716,67 @@ export default function VerificationPage({ embedded = false }) {
 						</div>
 					</ScrollReveal>
 
-					<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-						<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+					<div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+						<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 							<div>
-								<h3 class="text-xl font-semibold">Optional licenses</h3>
-								<p class={`mt-1 text-sm ${softText}`}>
+								<h3 className="text-xl font-semibold">Optional licenses</h3>
+								<p className={`mt-1 text-sm ${softText}`}>
 									Optional proofs can be added anytime. More proof = more trust.
 								</p>
 							</div>
-							<div class={`flex items-center gap-2 text-sm ${softText}`}>
-								<HelpCircle class="h-4 w-4 text-sky-400" />
+							<div className={`flex items-center gap-2 text-sm ${softText}`}>
+								<HelpCircle className="h-4 w-4 text-sky-400" />
 								e.g. OEKO-TEX, BSCI, WRAP...
 							</div>
 						</div>
 
-						<div class="mt-5 flex flex-col gap-3 sm:flex-row">
+						<div className="mt-5 flex flex-col gap-3 sm:flex-row">
 							<input
 								value={optionalLicenseInput}
 								onChange={(e) => setOptionalLicenseInput(e.target.value)}
 								placeholder="Add a license or certification"
-								class={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition placeholder:text-slate-400 focus:border-sky-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition placeholder:text-slate-400 focus:border-sky-400 ${fieldBg}`}
 							/>
 							<button
 								onClick={addOptionalLicense}
-								class={`rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
+								className={`rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
 							>
 								Add
 							</button>
 						</div>
 
-						<div class="mt-5 min-h-[92px] rounded-3xl border border-dashed border-sky-400/30 bg-sky-500/5 p-4">
+						<div className="mt-5 min-h-[92px] rounded-3xl border border-dashed border-sky-400/30 bg-sky-500/5 p-4">
 							{optionalLicenses.length > 0 ? (
-								<div class="flex flex-wrap gap-2">
+								<div className="flex flex-wrap gap-2">
 									{optionalLicenses.map((lic) => (
 										<button
 											key={lic}
 											onClick={() => removeOptionalLicense(lic)}
-											class={`rounded-full border px-3 py-2 text-sm ${chipBg}`}
+											className={`rounded-full border px-3 py-2 text-sm ${chipBg}`}
 										>
 											{lic}
-											<X class="ml-2 inline h-3 w-3" />
+											<X className="ml-2 inline h-3 w-3" />
 										</button>
 									))}
 								</div>
 							) : (
-								<div class={`flex h-full items-center justify-center text-sm ${mutedText}`}>
+								<div className={`flex h-full items-center justify-center text-sm ${mutedText}`}>
 									No optional licenses yet.
 								</div>
 							)}
 						</div>
 					</div>
 
-					<div class={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
-						<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+					<div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+						<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 							<div>
-								<h3 class="text-xl font-semibold">Verification code</h3>
-								<p class={`mt-1 text-sm ${softText}`}>
+								<h3 className="text-xl font-semibold">Verification code</h3>
+								<p className={`mt-1 text-sm ${softText}`}>
 									Enter the 6-digit code sent to your email on file.
 								</p>
 							</div>
 						</div>
-						<div class="mt-5">
+						<div className="mt-5">
 							<WordleInput
 								maxLength={6}
 								onChange={(val) => {
@@ -808,7 +808,7 @@ export default function VerificationPage({ embedded = false }) {
 								placeholder="●"
 							/>
 							{verifyingCode && (
-								<div class="mt-3 flex items-center gap-2 text-sm text-sky-400">
+								<div className="mt-3 flex items-center gap-2 text-sm text-sky-400">
 									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 									<span>Verifying code...</span>
 								</div>
@@ -817,79 +817,79 @@ export default function VerificationPage({ embedded = false }) {
 					</div>
 				</section>
 
-				<aside class="space-y-6">
-					<div class={`rounded-[28px] border p-6 ${cardBg}`}>
-						<div class="flex items-center gap-3">
-							<div class="grid h-11 w-11 place-items-center rounded-2xl bg-sky-500/10 text-sky-500">
-								<CreditCard class="h-5 w-5" />
+				<aside className="space-y-6">
+					<div className={`rounded-[28px] border p-6 ${cardBg}`}>
+						<div className="flex items-center gap-3">
+							<div className="grid h-11 w-11 place-items-center rounded-2xl bg-sky-500/10 text-sky-500">
+								<CreditCard className="h-5 w-5" />
 							</div>
 							<div>
-								<h3 class="font-semibold">Subscription</h3>
-								<p class={`text-sm ${mutedText}`}>
+								<h3 className="font-semibold">Subscription</h3>
+								<p className={`text-sm ${mutedText}`}>
 									Verification approval requires an active verification subscription.
 								</p>
 							</div>
 						</div>
 
 						<div
-							class={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}
+							className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}
 						>
-							<div class="flex items-center justify-between text-sm">
+							<div className="flex items-center justify-between text-sm">
 								<span class={softText}>Status</span>
-								<span class="rounded-full bg-rose-500/10 px-3 py-1 font-semibold text-rose-400">
+								<span className="rounded-full bg-rose-500/10 px-3 py-1 font-semibold text-rose-400">
 									{remainingDays > 0 ? "Active" : "Inactive"}
 								</span>
 							</div>
-							<div class={`mt-3 text-sm leading-6 ${softText}`}>
+							<div className={`mt-3 text-sm leading-6 ${softText}`}>
 								Activate your verification plan to unlock review eligibility and progress toward
 								approval.
 							</div>
 							{remainingDays > 0 && (
-								<p class={`mt-3 text-xs ${mutedText}`}>
+								<p className={`mt-3 text-xs ${mutedText}`}>
 									Remaining: {remainingDays} day
 									{remainingDays === 1 ? "" : "s"}
 								</p>
 							)}
 						</div>
 
-						<div class="mt-4 grid gap-3">
+						<div className="mt-4 grid gap-3">
 							<button
 								onClick={handleRenewVerification}
 								disabled={renewing}
-								class={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
+								className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
 							>
-								<RefreshCw class="h-4 w-4" />
+								<RefreshCw className="h-4 w-4" />
 								{renewing ? "Processing..." : "Pay / Renew Verification"}
 							</button>
 							<button
 								onClick={loadStatus}
-								class={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost}`}
+								className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost}`}
 							>
-								<RefreshCw class="h-4 w-4" />
+								<RefreshCw className="h-4 w-4" />
 								Refresh status
 							</button>
 						</div>
 					</div>
 
-					<div class={`rounded-[28px] border p-6 ${cardBg}`}>
-						<div class="flex items-center gap-3">
-							<div class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-500/10 text-cyan-500">
-								<HelpCircle class="h-5 w-5" />
+					<div className={`rounded-[28px] border p-6 ${cardBg}`}>
+						<div className="flex items-center gap-3">
+							<div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-500/10 text-cyan-500">
+								<HelpCircle className="h-5 w-5" />
 							</div>
 							<div>
-								<h3 class="font-semibold">Need help?</h3>
-								<p class={`text-sm ${mutedText}`}>Visit the Help Center.</p>
+								<h3 className="font-semibold">Need help?</h3>
+								<p className={`text-sm ${mutedText}`}>Visit the Help Center.</p>
 							</div>
 						</div>
 
 						<div
-							class={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-sky-50/60"}`}
+							className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-sky-50/60"}`}
 						>
-							<div class="flex items-start gap-3">
-								<Upload class="mt-0.5 h-5 w-5 text-sky-400" />
+							<div className="flex items-start gap-3">
+								<Upload className="mt-0.5 h-5 w-5 text-sky-400" />
 								<div>
-									<p class="text-sm font-semibold">Upload stronger proof</p>
-									<p class={`mt-1 text-sm leading-6 ${softText}`}>
+									<p className="text-sm font-semibold">Upload stronger proof</p>
+									<p className={`mt-1 text-sm leading-6 ${softText}`}>
 										Higher-quality documents and licenses can improve review confidence and
 										credibility.
 									</p>
@@ -898,24 +898,24 @@ export default function VerificationPage({ embedded = false }) {
 						</div>
 					</div>
 
-					<div class={`rounded-[28px] border p-6 ${cardBg}`}>
-						<h3 class="font-semibold">Overview</h3>
-						<div class="mt-4 space-y-3 text-sm">
-							<div class="flex items-center justify-between">
+					<div className={`rounded-[28px] border p-6 ${cardBg}`}>
+						<h3 className="font-semibold">Overview</h3>
+						<div className="mt-4 space-y-3 text-sm">
+							<div className="flex items-center justify-between">
 								<span class={softText}>First month</span>
-								<span class="font-semibold">${verificationPrice.firstMonth.toFixed(2)}</span>
+								<span className="font-semibold">${verificationPrice.firstMonth.toFixed(2)}</span>
 							</div>
-							<div class="flex items-center justify-between">
+							<div className="flex items-center justify-between">
 								<span class={softText}>Renewals</span>
-								<span class="font-semibold">{verificationPrice.renewal.toFixed(2)}/month</span>
+								<span className="font-semibold">{verificationPrice.renewal.toFixed(2)}/month</span>
 							</div>
-							<div class="flex items-center justify-between">
+							<div className="flex items-center justify-between">
 								<span class={softText}>Review status</span>
-								<span class="font-semibold text-amber-400">{reviewStatus}</span>
+								<span className="font-semibold text-amber-400">{reviewStatus}</span>
 							</div>
-							<div class="flex items-center justify-between">
+							<div className="flex items-center justify-between">
 								<span class={softText}>Verification</span>
-								<span class="font-semibold text-rose-400">
+								<span className="font-semibold text-rose-400">
 									{verified ? "Verified" : "Not verified"}
 								</span>
 							</div>
@@ -924,47 +924,47 @@ export default function VerificationPage({ embedded = false }) {
 				</aside>
 			</main>
 
-			<input ref={fileInputRef} type="file" class="hidden" onChange={onFileSelected} />
+			<input ref={fileInputRef} type="file" className="hidden" onChange={onFileSelected} />
 
 			{duplicatePrompt && (
-				<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-					<div class={`relative w-full max-w-lg rounded-3xl border p-6 sm:p-8 shadow-2xl ${cardBg}`}>
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+					<div className={`relative w-full max-w-lg rounded-3xl border p-6 sm:p-8 shadow-2xl ${cardBg}`}>
 						<button
 							onClick={() => setDuplicatePrompt(null)}
-							class="absolute right-4 top-4 rounded-full p-1 hover:bg-white/10 transition"
+							className="absolute right-4 top-4 rounded-full p-1 hover:bg-white/10 transition"
 						>
-							<X class="h-5 w-5" />
+							<X className="h-5 w-5" />
 						</button>
 
 						{duplicatePrompt.banner && (
-							<div class="mb-4 -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 rounded-t-3xl overflow-hidden h-32 sm:h-40">
+							<div className="mb-4 -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 rounded-t-3xl overflow-hidden h-32 sm:h-40">
 								<img
 									src={duplicatePrompt.banner}
 									alt=""
-									class="h-full w-full object-cover"
+									className="h-full w-full object-cover"
 								/>
 							</div>
 						)}
 
-						<div class="flex items-center gap-3 mb-4">
+						<div className="flex items-center gap-3 mb-4">
 							{duplicatePrompt.logo ? (
 								<img
 									src={duplicatePrompt.logo}
 									alt=""
-									class="h-14 w-14 rounded-2xl object-cover border border-white/10"
+									className="h-14 w-14 rounded-2xl object-cover border border-white/10"
 								/>
 							) : (
-								<div class="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white text-lg font-bold">
+								<div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white text-lg font-bold">
 									{duplicatePrompt.name?.charAt(0) || "?"}
 								</div>
 							)}
 							<div>
-								<h3 class="text-lg font-semibold">{duplicatePrompt.name}</h3>
-								<p class={`text-sm ${mutedText}`}>
+								<h3 className="text-lg font-semibold">{duplicatePrompt.name}</h3>
+								<p className={`text-sm ${mutedText}`}>
 									{duplicatePrompt.country && `${duplicatePrompt.country}`}
 									{duplicatePrompt.country && duplicatePrompt.website && " · "}
 									{duplicatePrompt.website && (
-										<a href={`https://${duplicatePrompt.website}`} target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">
+										<a href={`https://${duplicatePrompt.website}`} target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">
 											{duplicatePrompt.website}
 										</a>
 									)}
@@ -972,60 +972,60 @@ export default function VerificationPage({ embedded = false }) {
 							</div>
 						</div>
 
-						<div class={`mb-4 rounded-2xl border p-4 ${isDark ? "bg-amber-500/10 border-amber-400/20" : "bg-amber-50 border-amber-200"}`}>
-							<p class={`text-sm font-medium ${isDark ? "text-amber-200" : "text-amber-800"}`}>
+						<div className={`mb-4 rounded-2xl border p-4 ${isDark ? "bg-amber-500/10 border-amber-400/20" : "bg-amber-50 border-amber-200"}`}>
+							<p className={`text-sm font-medium ${isDark ? "text-amber-200" : "text-amber-800"}`}>
 								A Verified Company Account already exists with this information. Are you a representative of this company?
 							</p>
 							{duplicatePrompt.matchedFields?.length > 0 && (
-								<p class={`mt-2 text-xs ${isDark ? "text-amber-300/70" : "text-amber-600"}`}>
+								<p className={`mt-2 text-xs ${isDark ? "text-amber-300/70" : "text-amber-600"}`}>
 									Match confidence: {duplicatePrompt.tier === "exact" ? "Exact legal identifier match" : "Strong multi-field match"} — matched: {duplicatePrompt.matchedFields.join(", ")}
 								</p>
 							)}
 						</div>
 
-						<div class="space-y-3 mb-5">
-							<p class={`text-sm font-semibold ${softText}`}>Your details for the join request:</p>
+						<div className="space-y-3 mb-5">
+							<p className={`text-sm font-semibold ${softText}`}>Your details for the join request:</p>
 							<input
 								value={joinName}
 								onChange={(e) => setJoinName(e.target.value)}
 								placeholder="Your full name"
-								class={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
 							/>
 							<input
 								value={joinEmail}
 								onChange={(e) => setJoinEmail(e.target.value)}
 								placeholder="Your email"
 								type="email"
-								class={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
 							/>
 							<input
 								value={joinPosition}
 								onChange={(e) => setJoinPosition(e.target.value)}
 								placeholder="Position (e.g. Merchandiser, Sample Manager)"
-								class={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
 							/>
 							<textarea
 								value={joinMessage}
 								onChange={(e) => setJoinMessage(e.target.value)}
 								placeholder="Optional short message (e.g. I am the sample manager)"
 								rows={2}
-								class={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition resize-none placeholder:text-slate-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition resize-none placeholder:text-slate-400 ${fieldBg}`}
 							/>
 						</div>
 
-						<div class="flex flex-col gap-3 sm:flex-row">
+						<div className="flex flex-col gap-3 sm:flex-row">
 							<button
 								onClick={requestJoinFromDuplicate}
 								disabled={joiningCompany}
-								class={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary} ${joiningCompany ? "opacity-60 cursor-not-allowed" : ""}`}
+								className={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary} ${joiningCompany ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
-								<Users class="h-4 w-4" />
+								<Users className="h-4 w-4" />
 								{joiningCompany ? "Sending..." : "Request to Join"}
 							</button>
 							<button
 								onClick={disputeDuplicate}
 								disabled={disputingDuplicate}
-								class={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost} ${disputingDuplicate ? "opacity-60 cursor-not-allowed" : ""}`}
+								className={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost} ${disputingDuplicate ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
 								{disputingDuplicate ? "Submitting..." : "No, this is a different company"}
 							</button>
@@ -1040,13 +1040,13 @@ export default function VerificationPage({ embedded = false }) {
 		return content;
 	}
 	return (
-		<div class={`min-h-screen ${pageBg} transition-colors duration-300`}>
-			<div class="absolute inset-0 overflow-hidden pointer-events-none">
-				<div class="absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-sky-500/20 blur-3xl" />
-				<div class="absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
-				<div class="absolute bottom-[-6rem] left-[-4rem] h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+		<div className={`min-h-screen ${pageBg} transition-colors duration-300`}>
+			<div className="absolute inset-0 overflow-hidden pointer-events-none">
+				<div className="absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-sky-500/20 blur-3xl" />
+				<div className="absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
+				<div className="absolute bottom-[-6rem] left-[-4rem] h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
 			</div>
-			<div class="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+			<div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
 				{content}
 			</div>
 		</div>

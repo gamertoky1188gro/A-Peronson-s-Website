@@ -91,14 +91,14 @@ export default function CountryAutocomplete({
 		return (
 			<>
 				{text.slice(0, idx)}
-				<span class="font-semibold text-gtBlue">{text.slice(idx, idx + q.length)}</span>
+				<span className="font-semibold text-gtBlue">{text.slice(idx, idx + q.length)}</span>
 				{text.slice(idx + q.length)}
 			</>
 		);
 	}
 
 	return (
-		<div ref={rootRef} class="relative">
+		<div ref={rootRef} className="relative">
 			<input
 				name="country"
 				id={id}
@@ -113,7 +113,7 @@ export default function CountryAutocomplete({
 				onKeyDown={onKeyDown}
 				required={required}
 				placeholder={placeholder}
-				class="w-full px-4 py-3 shadow-borderless dark:shadow-borderlessDark rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100"
+				className="w-full px-4 py-3 shadow-borderless dark:shadow-borderlessDark rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100"
 			/>
 
 			{open && filtered.length > 0 ? (
@@ -121,18 +121,18 @@ export default function CountryAutocomplete({
 					data-lenis-prevent={true}
 					id={`${id}-list`}
 					aria-label="Country suggestions"
-					class="absolute z-50 mt-2 max-h-56 w-full overflow-auto rounded-lg bg-white p-1 shadow-lg dark:bg-[#071228]"
+					className="absolute z-50 mt-2 max-h-56 w-full overflow-auto rounded-lg bg-white p-1 shadow-lg dark:bg-[#071228]"
 				>
 					{filtered.map((opt, idx) => {
 						const isSelected = opt === value;
 						return (
-							<li key={opt} aria-selected={isSelected} class="p-1">
+							<li key={opt} aria-selected={isSelected} className="p-1">
 								<button
 									ref={(el) => (optionRefs.current[idx] = el)}
 									type="button"
 									onClick={() => selectOption(opt)}
 									onMouseEnter={() => setFocused(idx)}
-									class={`w-full text-left px-3 py-2 rounded-md text-sm transition ${
+									className={`w-full text-left px-3 py-2 rounded-md text-sm transition ${
 										isSelected
 											? "bg-blue-50 text-gtBlue dark:bg-[rgba(10,102,194,0.08)]"
 											: "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/40"

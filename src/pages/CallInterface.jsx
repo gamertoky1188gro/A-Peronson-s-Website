@@ -122,9 +122,9 @@ function IconButton({
 				className,
 			)}
 		>
-			<Icon class="h-5 w-5" />
+			<Icon className="h-5 w-5" />
 			{badge ? (
-				<span class="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white shadow">
+				<span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white shadow">
 					{badge}
 				</span>
 			) : null}
@@ -134,14 +134,14 @@ function IconButton({
 
 function MiniStat({ label, value, icon: Icon }) {
 	return (
-		<div class="rounded-2xl border border-white/10 bg-white/8 p-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/60">
-			<div class="flex items-center gap-3">
-				<div class="grid h-10 w-10 place-items-center rounded-xl bg-sky-500/15 text-sky-200 ring-1 ring-sky-400/20 dark:text-sky-300">
-					<Icon class="h-4 w-4" />
+		<div className="rounded-2xl border border-white/10 bg-white/8 p-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/60">
+			<div className="flex items-center gap-3">
+				<div className="grid h-10 w-10 place-items-center rounded-xl bg-sky-500/15 text-sky-200 ring-1 ring-sky-400/20 dark:text-sky-300">
+					<Icon className="h-4 w-4" />
 				</div>
 				<div>
-					<div class="text-xs text-slate-500 dark:text-slate-400">{label}</div>
-					<div class="text-sm font-semibold text-slate-900 dark:text-white">{value}</div>
+					<div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
+					<div className="text-sm font-semibold text-slate-900 dark:text-white">{value}</div>
 				</div>
 			</div>
 		</div>
@@ -150,7 +150,7 @@ function MiniStat({ label, value, icon: Icon }) {
 
 function ToastStack({ toasts, onDismiss }) {
 	return (
-		<div class="pointer-events-none fixed right-4 top-4 z-[80] flex w-[min(92vw,380px)] flex-col gap-3">
+		<div className="pointer-events-none fixed right-4 top-4 z-[80] flex w-[min(92vw,380px)] flex-col gap-3">
 			{toasts.map((toast) => (
 				<div
 					key={toast.id}
@@ -161,25 +161,25 @@ function ToastStack({ toasts, onDismiss }) {
 						toast.type === "info" && "border-slate-500/20 bg-slate-950/85 text-white",
 					)}
 				>
-					<div class="flex items-start gap-3">
-						<div class="mt-0.5">
+					<div className="flex items-start gap-3">
+						<div className="mt-0.5">
 							{toast.type === "error" ? (
-								<AlertTriangle class="h-5 w-5" />
+								<AlertTriangle className="h-5 w-5" />
 							) : toast.type === "success" ? (
-								<CheckCircle2 class="h-5 w-5" />
+								<CheckCircle2 className="h-5 w-5" />
 							) : (
-								<CircleDot class="h-5 w-5" />
+								<CircleDot className="h-5 w-5" />
 							)}
 						</div>
-						<div class="min-w-0 flex-1">
-							<div class="text-sm font-semibold">{toast.title}</div>
-							<div class="mt-1 text-sm opacity-90">{toast.message}</div>
+						<div className="min-w-0 flex-1">
+							<div className="text-sm font-semibold">{toast.title}</div>
+							<div className="mt-1 text-sm opacity-90">{toast.message}</div>
 						</div>
 						<button
 							onClick={() => onDismiss(toast.id)}
-							class="rounded-lg p-1 opacity-70 hover:bg-white/10 hover:opacity-100"
+							className="rounded-lg p-1 opacity-70 hover:bg-white/10 hover:opacity-100"
 						>
-							<X class="h-4 w-4" />
+							<X className="h-4 w-4" />
 						</button>
 					</div>
 				</div>
@@ -193,30 +193,30 @@ function MediaGate({ gate, onAction, onDismiss }) {
 		return null;
 	}
 	return (
-		<div class="absolute inset-0 z-30 grid place-items-center bg-slate-950/70 p-4 backdrop-blur-md">
-			<div class="w-full max-w-lg rounded-[2rem] border border-white/10 bg-white/90 p-6 shadow-2xl dark:bg-slate-950/90">
-				<div class="flex items-start gap-4">
-					<div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-sky-500/15 text-sky-600 ring-1 ring-sky-500/20 dark:text-sky-300">
-						<ShieldAlert class="h-7 w-7" />
+		<div className="absolute inset-0 z-30 grid place-items-center bg-slate-950/70 p-4 backdrop-blur-md">
+			<div className="w-full max-w-lg rounded-[2rem] border border-white/10 bg-white/90 p-6 shadow-2xl dark:bg-slate-950/90">
+				<div className="flex items-start gap-4">
+					<div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-sky-500/15 text-sky-600 ring-1 ring-sky-500/20 dark:text-sky-300">
+						<ShieldAlert className="h-7 w-7" />
 					</div>
-					<div class="min-w-0 flex-1">
-						<h3 class="text-xl font-bold text-slate-900 dark:text-white">{gate.title}</h3>
-						<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{gate.message}</p>
+					<div className="min-w-0 flex-1">
+						<h3 className="text-xl font-bold text-slate-900 dark:text-white">{gate.title}</h3>
+						<p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{gate.message}</p>
 						{gate.detail ? (
-							<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{gate.detail}</p>
+							<p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{gate.detail}</p>
 						) : null}
 					</div>
 				</div>
-				<div class="mt-6 flex flex-wrap items-center justify-end gap-3">
+				<div className="mt-6 flex flex-wrap items-center justify-end gap-3">
 					<button
 						onClick={onDismiss}
-						class="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
+						className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
 					>
 						Dismiss
 					</button>
 					<button
 						onClick={onAction}
-						class="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20"
+						className="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20"
 					>
 						{gate.actionLabel || "Try again"}
 					</button>
@@ -1979,35 +1979,35 @@ export default function CallInterface() {
 	}
 
 	return (
-		<div class="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.30),transparent_28%),radial-gradient(circle_at_top_right,rgba(37,99,235,0.22),transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#e7f1ff_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.20),transparent_28%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_45%,#0b1728_100%)] dark:text-white">
+		<div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.30),transparent_28%),radial-gradient(circle_at_top_right,rgba(37,99,235,0.22),transparent_30%),linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#e7f1ff_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.20),transparent_28%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_45%,#0b1728_100%)] dark:text-white">
 			<ToastStack
 				toasts={toastQueue}
 				onDismiss={(id) => setToastQueue((prev) => prev.filter((t) => t.id !== id))}
 			/>
 
-			<div ref={stageRef} class="relative flex min-h-screen flex-col">
-				<div class="pointer-events-none absolute inset-0 opacity-70">
-					<div class="absolute left-[-10%] top-[-10%] h-72 w-72 rounded-full bg-sky-400/20 blur-3xl dark:bg-sky-500/10" />
-					<div class="absolute right-[-8%] top-[12%] h-80 w-80 rounded-full bg-blue-500/20 blur-3xl dark:bg-blue-500/10" />
-					<div class="absolute bottom-[-18%] left-[22%] h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl dark:bg-cyan-400/10" />
+			<div ref={stageRef} className="relative flex min-h-screen flex-col">
+				<div className="pointer-events-none absolute inset-0 opacity-70">
+					<div className="absolute left-[-10%] top-[-10%] h-72 w-72 rounded-full bg-sky-400/20 blur-3xl dark:bg-sky-500/10" />
+					<div className="absolute right-[-8%] top-[12%] h-80 w-80 rounded-full bg-blue-500/20 blur-3xl dark:bg-blue-500/10" />
+					<div className="absolute bottom-[-18%] left-[22%] h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl dark:bg-cyan-400/10" />
 				</div>
 
-				<header class="relative z-20 border-b border-white/12 bg-white/45 backdrop-blur-xl dark:bg-slate-950/50">
-					<div class="mx-auto flex max-w-[1800px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-						<div class="flex min-w-0 items-center gap-3">
+				<header className="relative z-20 border-b border-white/12 bg-white/45 backdrop-blur-xl dark:bg-slate-950/50">
+					<div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+						<div className="flex min-w-0 items-center gap-3">
 							<button
 								type="button"
 								onClick={() => navigate(-1)}
-								class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-slate-800 ring-1 ring-white/10 hover:bg-white/15 dark:text-white"
+								className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-slate-800 ring-1 ring-white/10 hover:bg-white/15 dark:text-white"
 							>
-								<ArrowLeft class="h-5 w-5" />
+								<ArrowLeft className="h-5 w-5" />
 							</button>
-							<div class="min-w-0">
-								<div class="flex flex-wrap items-center gap-2">
-									<h1 class="truncate text-lg font-extrabold tracking-tight sm:text-xl">
+							<div className="min-w-0">
+								<div className="flex flex-wrap items-center gap-2">
+									<h1 className="truncate text-lg font-extrabold tracking-tight sm:text-xl">
 										Live Call
 									</h1>
-									<Badge tone={conn.tone} class="gap-1.5">
+									<Badge tone={conn.tone} className="gap-1.5">
 										<span
 											class={cx("h-2 w-2 rounded-full bg-current", conn.pulse && "animate-pulse")}
 										/>
@@ -2026,45 +2026,45 @@ export default function CallInterface() {
 															: "neutral"
 										}
 									>
-										<Radio class="h-3.5 w-3.5" /> {recordingLabel}
+										<Radio className="h-3.5 w-3.5" /> {recordingLabel}
 									</Badge>
 									{recordingState === "uploading" && (
-										<UploadProgressBar progress={recordingUploadProgress} class="w-24" />
+										<UploadProgressBar progress={recordingUploadProgress} className="w-24" />
 									)}
 								</div>
-								<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
-									<span class="inline-flex items-center gap-1.5">
-										<Clock3 class="h-3.5 w-3.5" />
+								<div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
+									<span className="inline-flex items-center gap-1.5">
+										<Clock3 className="h-3.5 w-3.5" />
 										{timer}
 									</span>
-									<span class="hidden sm:inline">•</span>
-									<span class="truncate">{statusMessage}</span>
+									<span className="hidden sm:inline">•</span>
+									<span className="truncate">{statusMessage}</span>
 								</div>
 							</div>
 						</div>
 
-						<div class="flex items-center gap-2">
+						<div className="flex items-center gap-2">
 							<button
 								type="button"
 								onClick={() => setIsEmojiOpen((prev) => !prev)}
-								class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-slate-800 ring-1 ring-white/10 hover:bg-white/15 dark:text-white lg:hidden"
+								className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-slate-800 ring-1 ring-white/10 hover:bg-white/15 dark:text-white lg:hidden"
 								title="Emoji"
 							>
-								<Smile class="h-5 w-5" />
+								<Smile className="h-5 w-5" />
 							</button>
 							<Badge tone={conn.tone}>{conn.label}</Badge>
 						</div>
 					</div>
 				</header>
 
-				<main class="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-4 py-4 sm:px-6 lg:px-8">
+				<main className="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-4 py-4 sm:px-6 lg:px-8">
 					<section class={cx("flex min-w-0 flex-1 flex-col gap-4", isChatOpen ? "lg:pr-0" : "")}>
-						<div class="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
-							<div class="rounded-[2rem] border border-white/12 bg-white/40 p-4 shadow-[0_25px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:bg-slate-950/50">
-								<div class="flex flex-wrap items-center justify-between gap-3">
+						<div className="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
+							<div className="rounded-[2rem] border border-white/12 bg-white/40 p-4 shadow-[0_25px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:bg-slate-950/50">
+								<div className="flex flex-wrap items-center justify-between gap-3">
 									<div>
-										<div class="flex flex-wrap items-center gap-2">
-											<h2 class="text-base font-bold text-slate-900 dark:text-white">
+										<div className="flex flex-wrap items-center gap-2">
+											<h2 className="text-base font-bold text-slate-900 dark:text-white">
 												{remoteName}
 											</h2>
 											<Badge tone="sky">{localName}</Badge>
@@ -2074,11 +2074,11 @@ export default function CallInterface() {
 												<Badge tone="neutral">Listening</Badge>
 											)}
 										</div>
-										<p class="mt-1 text-sm text-slate-500 dark:text-slate-300">
+										<p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
 											{statusMessage || "Live call in progress."}
 										</p>
 									</div>
-									<div class="flex items-center gap-2">
+									<div className="flex items-center gap-2">
 										<MiniStat
 											label="Mic level"
 											value={`${Math.round(micLevel * 100)}%`}
@@ -2092,13 +2092,13 @@ export default function CallInterface() {
 									</div>
 								</div>
 
-								<div class="mt-4 grid gap-4 xl:grid-cols-[1.6fr_0.9fr]">
-									<div class="relative overflow-hidden rounded-[2rem] border border-white/12 bg-slate-950 shadow-2xl shadow-slate-950/20">
-										<div class="absolute left-4 top-4 z-10 flex items-center gap-2">
+								<div className="mt-4 grid gap-4 xl:grid-cols-[1.6fr_0.9fr]">
+									<div className="relative overflow-hidden rounded-[2rem] border border-white/12 bg-slate-950 shadow-2xl shadow-slate-950/20">
+										<div className="absolute left-4 top-4 z-10 flex items-center gap-2">
 											<Badge tone="sky">{statusMessage || "Live call in progress."}</Badge>
 											{recordingState === "recording" ? <Badge tone="rose">REC</Badge> : null}
 										</div>
-										<div class="absolute right-4 top-4 z-10 flex gap-2">
+										<div className="absolute right-4 top-4 z-10 flex gap-2">
 											<IconButton
 												icon={isFullscreen ? ChevronDown : Maximize}
 												label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
@@ -2107,30 +2107,30 @@ export default function CallInterface() {
 											/>
 										</div>
 
-										<div class="relative aspect-[16/10] w-full bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950">
+										<div className="relative aspect-[16/10] w-full bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950">
 											<video
 												ref={remoteVideoRef}
 												autoPlay={true}
 												playsInline={true}
 												muted={isSpeakerMuted}
-												class="absolute inset-0 h-full w-full object-cover"
+												className="absolute inset-0 h-full w-full object-cover"
 											/>
 
-											<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-4 text-white">
-												<div class="flex flex-wrap items-center justify-between gap-3">
-													<div class="min-w-0">
-														<div class="flex flex-wrap items-center gap-2">
-															<span class="text-lg font-bold">{remoteName}</span>
-															<span class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium backdrop-blur">
+											<div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-4 text-white">
+												<div className="flex flex-wrap items-center justify-between gap-3">
+													<div className="min-w-0">
+														<div className="flex flex-wrap items-center gap-2">
+															<span className="text-lg font-bold">{remoteName}</span>
+															<span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium backdrop-blur">
 																{rtcConnectionState}
 															</span>
 														</div>
-														<div class="mt-1 max-w-2xl text-sm text-white/80">
+														<div className="mt-1 max-w-2xl text-sm text-white/80">
 															{statusMessage || "Call is ready."}
 														</div>
 													</div>
-													<div class="flex items-center gap-2 text-white/80">
-														<div class="flex h-9 items-end gap-1 rounded-2xl bg-white/10 px-3 py-2 ring-1 ring-white/10">
+													<div className="flex items-center gap-2 text-white/80">
+														<div className="flex h-9 items-end gap-1 rounded-2xl bg-white/10 px-3 py-2 ring-1 ring-white/10">
 															{[0, 1, 2, 3, 4].map((i) => {
 																const active = micLevel * 5 > i;
 																return (
@@ -2144,7 +2144,7 @@ export default function CallInterface() {
 																);
 															})}
 														</div>
-														<span class="text-xs">Mic</span>
+														<span className="text-xs">Mic</span>
 													</div>
 												</div>
 											</div>
@@ -2169,14 +2169,14 @@ export default function CallInterface() {
 										</div>
 									</div>
 
-									<div class="grid gap-4">
-										<div class="rounded-[2rem] border border-white/12 bg-white/70 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/55">
-											<div class="flex items-center justify-between gap-3">
+									<div className="grid gap-4">
+										<div className="rounded-[2rem] border border-white/12 bg-white/70 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/55">
+											<div className="flex items-center justify-between gap-3">
 												<div>
-													<h3 class="text-sm font-bold text-slate-900 dark:text-white">
+													<h3 className="text-sm font-bold text-slate-900 dark:text-white">
 														Call controls
 													</h3>
-													<p class="text-xs text-slate-500 dark:text-slate-400">
+													<p className="text-xs text-slate-500 dark:text-slate-400">
 														Mic, camera, speaker, screen.
 													</p>
 												</div>
@@ -2185,13 +2185,13 @@ export default function CallInterface() {
 												</Badge>
 											</div>
 
-											<div class="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 xl:grid-cols-3">
+											<div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 xl:grid-cols-3">
 												<IconButton
 													icon={PhoneOff}
 													label="End call"
 													onClick={endCall}
 													tone="danger"
-													class="col-span-2 sm:col-span-2 xl:col-span-3 w-full"
+													className="col-span-2 sm:col-span-2 xl:col-span-3 w-full"
 												/>
 												<IconButton
 													icon={isMuted ? MicOff : Mic}
@@ -2235,7 +2235,7 @@ export default function CallInterface() {
 												/>
 											</div>
 
-											<div class="mt-4 grid gap-3 md:grid-cols-3">
+											<div className="mt-4 grid gap-3 md:grid-cols-3">
 												<MiniStat
 													label="Connection"
 													value={conn.label}
@@ -2250,12 +2250,12 @@ export default function CallInterface() {
 											</div>
 										</div>
 
-										<div class="rounded-[2rem] border border-white/12 bg-white/70 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/55">
-											<h3 class="text-sm font-bold text-slate-900 dark:text-white">Status</h3>
-											<div class="mt-2 rounded-2xl border border-white/10 bg-white/60 p-3 text-sm text-slate-700 dark:bg-white/5 dark:text-slate-200">
+										<div className="rounded-[2rem] border border-white/12 bg-white/70 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/55">
+											<h3 className="text-sm font-bold text-slate-900 dark:text-white">Status</h3>
+											<div className="mt-2 rounded-2xl border border-white/10 bg-white/60 p-3 text-sm text-slate-700 dark:bg-white/5 dark:text-slate-200">
 												{statusMessage || "Live call in progress."}
 											</div>
-											<div class="mt-3 flex flex-wrap gap-2">
+											<div className="mt-3 flex flex-wrap gap-2">
 												{[
 													"😀",
 													"🤝",
@@ -2283,7 +2283,7 @@ export default function CallInterface() {
 																chatInputRef.current.focus();
 															}
 														}}
-														class="rounded-xl border border-white/10 bg-white/70 px-3 py-2 text-base hover:bg-sky-50 dark:bg-white/5 dark:hover:bg-white/10"
+														className="rounded-xl border border-white/10 bg-white/70 px-3 py-2 text-base hover:bg-sky-50 dark:bg-white/5 dark:hover:bg-white/10"
 													>
 														{emoji}
 													</button>
@@ -2291,15 +2291,15 @@ export default function CallInterface() {
 											</div>
 										</div>
 
-										<div class="rounded-[2rem] border border-white/12 bg-white/40 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/50">
+										<div className="rounded-[2rem] border border-white/12 bg-white/40 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-950/50">
 											<JourneyTimeline title="Journey Timeline" matchId={effectiveMatchId || ""} />
 										</div>
 									</div>
 								</div>
 							</div>
 
-							<div class="grid gap-4">
-								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+							<div className="grid gap-4">
+								<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
 									<MiniStat label="Call ID" value={callId || "\u2014"} icon={Circle} />
 									<MiniStat
 										label="Match ID"
@@ -2309,7 +2309,7 @@ export default function CallInterface() {
 									<MiniStat label="Remote" value={remoteName} icon={CheckCircle2} />
 									<MiniStat label="Local" value={localName} icon={CheckCircle2} />
 								</div>
-								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+								<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
 									<MiniStat
 										label="WebSocket"
 										value={wsStatus === "online" ? "Online" : wsStatus}
@@ -2333,23 +2333,23 @@ export default function CallInterface() {
 							isChatOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0",
 						)}
 					>
-						<div class="flex h-full flex-col">
-							<div class="flex items-center justify-between gap-3 border-b border-white/10 p-4">
+						<div className="flex h-full flex-col">
+							<div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
 								<div>
-									<h3 class="text-base font-bold text-slate-900 dark:text-white">Chat</h3>
-									<p class="text-xs text-slate-500 dark:text-slate-400">
+									<h3 className="text-base font-bold text-slate-900 dark:text-white">Chat</h3>
+									<p className="text-xs text-slate-500 dark:text-slate-400">
 										{effectiveMatchId ? "Connected to the call room" : "Waiting for match id"}
 									</p>
 								</div>
-								<div class="flex items-center gap-2">
+								<div className="flex items-center gap-2">
 									<Badge tone={effectiveMatchId ? "emerald" : "rose"}>
 										{effectiveMatchId ? "Live" : "Closed"}
 									</Badge>
 									<button
 										onClick={() => setIsChatOpen(false)}
-										class="rounded-xl border border-white/10 bg-white/60 p-2 text-slate-700 hover:bg-white/90 dark:bg-white/5 dark:text-slate-200 lg:hidden"
+										className="rounded-xl border border-white/10 bg-white/60 p-2 text-slate-700 hover:bg-white/90 dark:bg-white/5 dark:text-slate-200 lg:hidden"
 									>
-										<X class="h-4 w-4" />
+										<X className="h-4 w-4" />
 									</button>
 								</div>
 							</div>
@@ -2357,7 +2357,7 @@ export default function CallInterface() {
 							<div
 								data-lenis-prevent={true}
 								ref={chatScrollRef}
-								class="flex-1 space-y-3 overflow-y-auto p-4"
+								className="flex-1 space-y-3 overflow-y-auto p-4"
 							>
 								{sortedChatMessages.length > 0 ? (
 									sortedChatMessages.map((msg) => {
@@ -2374,27 +2374,27 @@ export default function CallInterface() {
 														: "bg-white/70 text-slate-800 dark:bg-white/8 dark:text-slate-100",
 												)}
 											>
-												<div class="flex items-center justify-between gap-3 text-[11px] font-semibold opacity-80">
+												<div className="flex items-center justify-between gap-3 text-[11px] font-semibold opacity-80">
 													<span>{isOwn ? "You" : senderName}</span>
 													<span>{formatMessageTime(msg.timestamp)}</span>
 												</div>
-												<div class="mt-1 whitespace-pre-wrap text-sm leading-6">
+												<div className="mt-1 whitespace-pre-wrap text-sm leading-6">
 													<MarkdownMessage text={msg.message || ""} />
 												</div>
 											</div>
 										);
 									})
 								) : (
-									<div class="rounded-2xl border border-dashed border-slate-200 bg-white/40 p-5 text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+									<div className="rounded-2xl border border-dashed border-slate-200 bg-white/40 p-5 text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
 										No messages yet.
 									</div>
 								)}
 								<div ref={chatEndRef} />
 							</div>
 
-							<div class="border-t border-white/10 p-4">
-								<div class="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
-									<div ref={emojiPopoverRef} class="relative ml-1">
+							<div className="border-t border-white/10 p-4">
+								<div className="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
+									<div ref={emojiPopoverRef} className="relative ml-1">
 										<button
 											type="button"
 											onClick={() => {
@@ -2411,8 +2411,8 @@ export default function CallInterface() {
 										</button>
 
 										{isEmojiOpen ? (
-											<div class="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
-												<div class="grid grid-cols-8 gap-1">
+											<div className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
+												<div className="grid grid-cols-8 gap-1">
 													{QUICK_EMOJIS.map((emoji) => (
 														<button
 															key={emoji}
@@ -2422,14 +2422,14 @@ export default function CallInterface() {
 																setIsEmojiOpen(false);
 																chatInputRef.current?.focus?.();
 															}}
-															class="flex h-8 w-8 items-center justify-center rounded-xl text-lg transition hover:bg-slate-100 dark:hover:bg-white/10"
+															className="flex h-8 w-8 items-center justify-center rounded-xl text-lg transition hover:bg-slate-100 dark:hover:bg-white/10"
 															title={`Insert ${emoji}`}
 														>
 															{emoji}
 														</button>
 													))}
 												</div>
-												<div class="mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-300/70">
+												<div className="mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-300/70">
 													Press Esc to close.
 												</div>
 											</div>
@@ -2439,7 +2439,7 @@ export default function CallInterface() {
 										ref={chatInputRef}
 										type="text"
 										placeholder="Type here..."
-										class="flex-1 bg-transparent px-1 text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400/70"
+										className="flex-1 bg-transparent px-1 text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400/70"
 										value={chatDraft}
 										onChange={(e) => setChatDraft(e.target.value)}
 										onKeyDown={(e) => {
@@ -2452,7 +2452,7 @@ export default function CallInterface() {
 									<button
 										type="button"
 										onClick={sendChatMessage}
-										class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-600 hover:to-blue-600 active:scale-95"
+										className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/20 transition hover:from-sky-600 hover:to-blue-600 active:scale-95"
 										title="Send"
 									>
 										<Send size={16} />
@@ -2463,45 +2463,45 @@ export default function CallInterface() {
 					</aside>
 				</main>
 
-				<div class="fixed bottom-4 left-4 z-40 flex flex-wrap gap-2" data-more-menu={true}>
-					<div class="relative">
+				<div className="fixed bottom-4 left-4 z-40 flex flex-wrap gap-2" data-more-menu={true}>
+					<div className="relative">
 						{isMoreOpen ? (
-							<div class="absolute bottom-14 left-0 w-72 overflow-hidden rounded-3xl border border-white/12 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:bg-slate-950/95">
+							<div className="absolute bottom-14 left-0 w-72 overflow-hidden rounded-3xl border border-white/12 bg-white/95 p-2 shadow-2xl backdrop-blur-xl dark:bg-slate-950/95">
 								<button
 									onClick={() => {
 										copyCallLink();
 										setIsMoreOpen(false);
 									}}
-									class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
+									className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
 								>
-									<Copy class="h-4 w-4" /> Copy call link
+									<Copy className="h-4 w-4" /> Copy call link
 								</button>
 								<button
 									onClick={() => {
 										requestMediaPermissions();
 										setIsMoreOpen(false);
 									}}
-									class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
+									className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
 								>
-									<Camera class="h-4 w-4" /> Request permissions
+									<Camera className="h-4 w-4" /> Request permissions
 								</button>
 								<button
 									onClick={() => {
 										reconnectCall();
 										setIsMoreOpen(false);
 									}}
-									class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
+									className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
 								>
-									<RefreshCw class="h-4 w-4" /> Reconnect
+									<RefreshCw className="h-4 w-4" /> Reconnect
 								</button>
 								<button
 									onClick={() => {
 										setIsChatOpen(false);
 										setIsMoreOpen(false);
 									}}
-									class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
+									className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium hover:bg-sky-50 dark:hover:bg-white/5"
 								>
-									<MessageSquare class="h-4 w-4" /> Hide chat
+									<MessageSquare className="h-4 w-4" /> Hide chat
 								</button>
 							</div>
 						) : null}

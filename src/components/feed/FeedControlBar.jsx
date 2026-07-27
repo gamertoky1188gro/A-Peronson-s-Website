@@ -17,10 +17,10 @@ export default function FeedControlBar({
 	onCategoryChange,
 }) {
 	return (
-		<div class="sticky top-[64px] z-10 bg-slate-50/90 backdrop-blur supports-[backdrop-filter]:bg-slate-50/70 shadow-dividerB dark:shadow-dividerBDark dark:bg-[#020617]/80 dark:supports-[backdrop-filter]:bg-[#020617]/70 dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
-			<div class="max-w-7xl mx-auto px-4 py-3">
-				<div class="flex items-center justify-between gap-3">
-					<div class="flex items-center gap-2">
+		<div className="sticky top-[64px] z-10 bg-slate-50/90 backdrop-blur supports-[backdrop-filter]:bg-slate-50/70 shadow-dividerB dark:shadow-dividerBDark dark:bg-[#020617]/80 dark:supports-[backdrop-filter]:bg-[#020617]/70 dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+			<div className="max-w-7xl mx-auto px-4 py-3">
+				<div className="flex items-center justify-between gap-3">
+					<div className="flex items-center gap-2">
 						{TYPE_OPTIONS.map((opt) => {
 							const _Icon = opt.icon;
 							const active = activeType === opt.id;
@@ -29,7 +29,7 @@ export default function FeedControlBar({
 									key={opt.id}
 									type="button"
 									onClick={() => onTypeChange(opt.id)}
-									class={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
+									className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
 										active
 											? "bg-white text-gtBlue ring-[rgba(10,102,194,0.35)] shadow-sm dark:bg-white/5 dark:text-gtBlue dark:ring-[rgba(10,102,194,0.35)]"
 											: "bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8"
@@ -38,7 +38,7 @@ export default function FeedControlBar({
 									title={opt.label}
 								>
 									<_Icon size={16} />
-									<span class="hidden sm:inline">{opt.label}</span>
+									<span className="hidden sm:inline">{opt.label}</span>
 								</button>
 							);
 						})}
@@ -47,7 +47,7 @@ export default function FeedControlBar({
 					<button
 						type="button"
 						onClick={() => onUniqueChange(!unique)}
-						class={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
+						className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
 							unique
 								? "bg-violet-50 text-violet-700 ring-violet-200 shadow-sm dark:bg-violet-500/10 dark:text-violet-200 dark:ring-violet-400/25"
 								: "bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8"
@@ -56,16 +56,16 @@ export default function FeedControlBar({
 						title="Diversify feed"
 					>
 						<Sparkles size={16} />
-						<span class="hidden sm:inline">{unique ? "Unique ON" : "Unique OFF"}</span>
+						<span className="hidden sm:inline">{unique ? "Unique ON" : "Unique OFF"}</span>
 					</button>
 				</div>
 
 				{Array.isArray(categories) && categories.length > 0 ? (
-					<div class="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+					<div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
 						<button
 							type="button"
 							onClick={() => onCategoryChange("")}
-							class={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1 active:scale-95${
+							className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1 active:scale-95${
 								activeCategory
 									? "bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8"
 									: "bg-white text-gtBlue ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-gtBlue dark:ring-[rgba(10,102,194,0.35)]"
@@ -78,7 +78,7 @@ export default function FeedControlBar({
 								key={c}
 								type="button"
 								onClick={() => onCategoryChange(String(c))}
-								class={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1 active:scale-95${
+								className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1 active:scale-95${
 									activeCategory === c
 										? "bg-white text-gtBlue ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-gtBlue dark:ring-[rgba(10,102,194,0.35)]"
 										: "bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8"

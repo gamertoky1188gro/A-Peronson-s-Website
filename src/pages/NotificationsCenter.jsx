@@ -405,23 +405,23 @@ export default function NotificationsCenter() {
 
 	return (
 		<div class={cn("min-h-screen transition-colors duration-500", pageBg)}>
-			<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				<div class="absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-500/20 via-cyan-400/10 to-transparent blur-3xl" />
+			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+				<div className="absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-500/20 via-cyan-400/10 to-transparent blur-3xl" />
 
 				<div class={cn("overflow-hidden rounded-[28px] border p-5 sm:p-6 lg:p-8", cardBg)}>
-					<div class="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-						<div class="flex-1">
-							<div class="flex flex-wrap items-center gap-3">
-								<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30">
-									<Bell class="h-6 w-6" />
+					<div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+						<div className="flex-1">
+							<div className="flex flex-wrap items-center gap-3">
+								<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30">
+									<Bell className="h-6 w-6" />
 								</div>
 								<div>
-									<h1 class="text-3xl font-black tracking-tight sm:text-4xl">Notifications</h1>
+									<h1 className="text-3xl font-black tracking-tight sm:text-4xl">Notifications</h1>
 									<p class={cn("mt-1 text-sm sm:text-base", subtleText)}>
 										Smart search matches, system alerts, and your viewed history.
 									</p>
 								</div>
-								<div class="flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-200">
+								<div className="flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-200">
 									<span
 										class={cn(
 											"h-2 w-2 rounded-full",
@@ -432,7 +432,7 @@ export default function NotificationsCenter() {
 								</div>
 							</div>
 
-							<div class="mt-5 flex flex-wrap items-center gap-3">
+							<div className="mt-5 flex flex-wrap items-center gap-3">
 								<label
 									class={cn(
 										"inline-flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium",
@@ -444,15 +444,15 @@ export default function NotificationsCenter() {
 										type="checkbox"
 										checked={unreadOnly}
 										onChange={(e) => setUnreadOnly(e.target.checked)}
-										class="h-4 w-4 rounded border-sky-400 text-sky-500 focus:ring-sky-400"
+										className="h-4 w-4 rounded border-sky-400 text-sky-500 focus:ring-sky-400"
 									/>
 									<span>Unread only</span>
-									<span class="rounded-full bg-sky-500/10 px-2 py-0.5 text-xs text-sky-300">
+									<span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-xs text-sky-300">
 										{unreadCount}
 									</span>
 								</label>
 
-								<div class="ml-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1 shadow-lg shadow-black/10">
+								<div className="ml-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1 shadow-lg shadow-black/10">
 									<button
 										onClick={() => setTheme("dark")}
 										class={cn(
@@ -478,7 +478,7 @@ export default function NotificationsCenter() {
 								</div>
 							</div>
 
-							<div class="mt-5 flex flex-wrap gap-2">
+							<div className="mt-5 flex flex-wrap gap-2">
 								{TABS.map((item) => {
 									const active = tab === item.key;
 									const Icon = item.icon;
@@ -495,7 +495,7 @@ export default function NotificationsCenter() {
 													: cn("border-white/10", softBg, "hover:bg-white/10", mutedText),
 											)}
 										>
-											<span class="relative inline-flex items-center gap-2">
+											<span className="relative inline-flex items-center gap-2">
 												<Icon size={16} />
 												{item.label}
 											</span>
@@ -512,18 +512,18 @@ export default function NotificationsCenter() {
 								theme === "dark" ? "border-white/10" : "border-sky-100",
 							)}
 						>
-							<div class="flex items-center justify-between">
+							<div className="flex items-center justify-between">
 								<div>
-									<div class="text-sm font-semibold text-sky-300">Real-time feed</div>
+									<div className="text-sm font-semibold text-sky-300">Real-time feed</div>
 									<div class={cn("mt-1 text-xs", subtleText)}>
 										WebSocket updates appear instantly at the top.
 									</div>
 								</div>
-								<div class="rounded-2xl bg-sky-500/10 p-3 text-sky-300 ring-1 ring-sky-400/20">
-									<ArrowRight class="h-5 w-5" />
+								<div className="rounded-2xl bg-sky-500/10 p-3 text-sky-300 ring-1 ring-sky-400/20">
+									<ArrowRight className="h-5 w-5" />
 								</div>
 							</div>
-							<div class="mt-4 grid grid-cols-3 gap-3">
+							<div className="mt-4 grid grid-cols-3 gap-3">
 								<Stat label="Unread" value={String(unreadCount)} />
 								<Stat label="Alerts" value={String(alerts.length)} />
 								<Stat label="Viewed" value={String(views.length)} />
@@ -531,13 +531,13 @@ export default function NotificationsCenter() {
 						</div>
 					</div>
 
-					<div class="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-						<div class="space-y-6">
+					<div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+						<div className="space-y-6">
 							<ScrollReveal as="section">
 								<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
-									<div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+									<div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 										<div>
-											<h2 class="text-xl font-bold">Notifications feed</h2>
+											<h2 className="text-xl font-bold">Notifications feed</h2>
 											<p class={cn("mt-1 text-sm", subtleText)}>
 												{tab === "viewed"
 													? "Showing viewed products history from Quick View."
@@ -550,7 +550,7 @@ export default function NotificationsCenter() {
 										</div>
 									</div>
 
-									<StaggerContainer class="space-y-3">
+									<StaggerContainer className="space-y-3">
 										{loading ? (
 											<Mosaic
 												color="#3b00ff"
@@ -560,7 +560,7 @@ export default function NotificationsCenter() {
 												textColor=""
 											/>
 										) : error ? (
-											<div class="text-sm text-rose-300">{error}</div>
+											<div className="text-sm text-rose-300">{error}</div>
 										) : filteredItems.length === 0 ? (
 											<EmptyState
 												title="No notifications found"
@@ -602,10 +602,10 @@ export default function NotificationsCenter() {
 								{tab === "viewed" && (
 									<ScrollReveal as="section">
 										<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
-											<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+											<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 												<div>
-													<div class="flex items-center gap-3">
-														<h2 class="text-xl font-bold">Viewed Products</h2>
+													<div className="flex items-center gap-3">
+														<h2 className="text-xl font-bold">Viewed Products</h2>
 														<Badge tone="sky">Private to you</Badge>
 													</div>
 													<p class={cn("mt-1 text-sm", subtleText)}>
@@ -614,14 +614,14 @@ export default function NotificationsCenter() {
 												</div>
 												<button
 													onClick={refreshViewed}
-													class="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-2.5 text-sm font-semibold text-sky-200 transition hover:bg-sky-500/15"
+													className="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-2.5 text-sm font-semibold text-sky-200 transition hover:bg-sky-500/15"
 												>
-													<RefreshCw class="h-4 w-4" />
+													<RefreshCw className="h-4 w-4" />
 													Refresh
 												</button>
 											</div>
 
-											<div class="mt-5 space-y-3">
+											<div className="mt-5 space-y-3">
 												{loadingViews ? (
 													<ThreeDot
 														variant="bounce"
@@ -653,10 +653,10 @@ export default function NotificationsCenter() {
 											</div>
 
 											{viewsNext !== null && !loadingViews && (
-												<div class="mt-5 flex justify-center">
+												<div className="mt-5 flex justify-center">
 													<button
 														onClick={() => loadViews({ reset: false })}
-														class="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400"
+														className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400"
 													>
 														Load more
 													</button>
@@ -668,12 +668,12 @@ export default function NotificationsCenter() {
 							</AnimatePresence>
 						</div>
 
-						<aside class="space-y-6">
+						<aside className="space-y-6">
 							<ScrollReveal as="section">
 								<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
-									<div class="flex items-start justify-between gap-3">
+									<div className="flex items-start justify-between gap-3">
 										<div>
-											<h3 class="text-lg font-bold">Saved Search Alerts</h3>
+											<h3 className="text-lg font-bold">Saved Search Alerts</h3>
 											<p class={cn("mt-1 text-sm", subtleText)}>
 												These power smart notifications for new matching posts.
 											</p>
@@ -681,7 +681,7 @@ export default function NotificationsCenter() {
 										<Badge tone="blue">Active</Badge>
 									</div>
 
-									<div class="mt-4 space-y-3">
+									<div className="mt-4 space-y-3">
 										{loadingAlerts ? (
 											<ThreeDot
 												variant="bounce"
@@ -708,7 +708,7 @@ export default function NotificationsCenter() {
 													)}
 												>
 													<div>
-														<div class="font-semibold text-slate-100 dark:text-slate-900">
+														<div className="font-semibold text-slate-100 dark:text-slate-900">
 															{alert.query}
 														</div>
 														<div class={cn("mt-1 text-xs", subtleText)}>
@@ -718,10 +718,10 @@ export default function NotificationsCenter() {
 													</div>
 													<button
 														onClick={() => deleteAlert(alert.id)}
-														class="rounded-xl p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
+														className="rounded-xl p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
 														aria-label="Delete alert"
 													>
-														<Trash2 class="h-4 w-4" />
+														<Trash2 className="h-4 w-4" />
 													</button>
 												</div>
 											))
@@ -732,8 +732,8 @@ export default function NotificationsCenter() {
 
 							<ScrollReveal as="section">
 								<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
-									<h3 class="text-lg font-bold">Tips</h3>
-									<div class="mt-4 space-y-3 text-sm leading-6">
+									<h3 className="text-lg font-bold">Tips</h3>
+									<div className="mt-4 space-y-3 text-sm leading-6">
 										<TipItem
 											tone="emerald"
 											text="Smart matches trigger when new buyer requests or products match your saved alert keywords."
@@ -752,8 +752,8 @@ export default function NotificationsCenter() {
 
 							<ScrollReveal as="section">
 								<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
-									<h3 class="text-lg font-bold">API endpoints</h3>
-									<div class="mt-4 space-y-3 text-sm">
+									<h3 className="text-lg font-bold">API endpoints</h3>
+									<div className="mt-4 space-y-3 text-sm">
 										<ApiChip method="GET" path="/notifications" />
 										<ApiChip method="PATCH" path="/notifications/:id/read" />
 										<ApiChip method="DELETE" path="/notifications/search-alerts/:id" />
@@ -767,21 +767,21 @@ export default function NotificationsCenter() {
 			</div>
 
 			{quickViewItem && (
-				<div class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center">
+				<div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center">
 					<div
 						class={cn(
 							"w-full max-w-2xl rounded-[28px] border p-5 shadow-2xl",
 							theme === "dark" ? "border-white/10 bg-[#0b1324]" : "border-sky-100 bg-white",
 						)}
 					>
-						<div class="flex items-start justify-between gap-4">
+						<div className="flex items-start justify-between gap-4">
 							<div>
-								<h3 class="text-2xl font-black">Quick View</h3>
+								<h3 className="text-2xl font-black">Quick View</h3>
 								<p class={cn("mt-1 text-sm", subtleText)}>Full product details preview.</p>
 							</div>
 							<button
 								onClick={() => setQuickViewItem(null)}
-								class="rounded-2xl bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10"
+								className="rounded-2xl bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10"
 							>
 								Close
 							</button>
@@ -794,17 +794,17 @@ export default function NotificationsCenter() {
 							)}
 						>
 							<div>
-								<div class="flex flex-wrap items-center gap-2">
+								<div className="flex flex-wrap items-center gap-2">
 									<Badge tone="sky">Product</Badge>
 									<Badge tone="blue">Company profile</Badge>
 								</div>
-								<h4 class="mt-3 text-xl font-bold">
+								<h4 className="mt-3 text-xl font-bold">
 									{quickViewItem.product?.title || quickViewItem.title || "Product"}
 								</h4>
 								<p class={cn("mt-2 text-sm leading-6", mutedText)}>
 									{quickViewItem.product?.description || quickViewItem.description || "--"}
 								</p>
-								<div class="mt-4 flex gap-3">
+								<div className="mt-4 flex gap-3">
 									<ActionButton variant="primary">Quick view</ActionButton>
 									<ActionButton
 										variant="ghost"
@@ -872,9 +872,9 @@ export default function NotificationsCenter() {
 
 function Stat({ label, value }) {
 	return (
-		<div class="rounded-2xl border border-white/10 bg-white/5 p-3 text-center">
-			<div class="text-xl font-black text-sky-300">{value}</div>
-			<div class="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">{label}</div>
+		<div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-center">
+			<div className="text-xl font-black text-sky-300">{value}</div>
+			<div className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">{label}</div>
 		</div>
 	);
 }
@@ -886,20 +886,20 @@ function TipItem({ tone, text }) {
 		sky: "bg-cyan-400",
 	};
 	return (
-		<div class="flex gap-3">
+		<div className="flex gap-3">
 			<span class={cn("mt-2 h-2.5 w-2.5 rounded-full shrink-0", dot[tone] || dot.sky)} />
-			<p class="text-slate-300 dark:text-slate-700">{text}</p>
+			<p className="text-slate-300 dark:text-slate-700">{text}</p>
 		</div>
 	);
 }
 
 function ApiChip({ method, path }) {
 	return (
-		<div class="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5">
-			<span class="rounded-lg bg-sky-500/10 px-2.5 py-1 text-xs font-bold text-sky-300">
+		<div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5">
+			<span className="rounded-lg bg-sky-500/10 px-2.5 py-1 text-xs font-bold text-sky-300">
 				{method}
 			</span>
-			<code class="text-xs text-slate-300">{path}</code>
+			<code className="text-xs text-slate-300">{path}</code>
 		</div>
 	);
 }
@@ -912,11 +912,11 @@ function EmptyState({ title, description, compact = false }) {
 				compact ? "p-5" : "p-8",
 			)}
 		>
-			<div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-300">
-				<Plus class="h-6 w-6" />
+			<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-300">
+				<Plus className="h-6 w-6" />
 			</div>
-			<h4 class="mt-4 text-base font-bold">{title}</h4>
-			<p class="mt-2 text-sm text-slate-400">{description}</p>
+			<h4 className="mt-4 text-base font-bold">{title}</h4>
+			<p className="mt-2 text-sm text-slate-400">{description}</p>
 		</div>
 	);
 }
@@ -935,18 +935,18 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 				item.read ? "" : "ring-1 ring-sky-400/20",
 			)}
 		>
-			<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-				<div class="min-w-0 flex-1">
-					<div class="flex flex-wrap items-center gap-2">
+			<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+				<div className="min-w-0 flex-1">
+					<div className="flex flex-wrap items-center gap-2">
 						<Badge tone={tone}>{TYPE_LABELS[item.type] || "Update"}</Badge>
 						{!item.read && <Badge tone="emerald">New</Badge>}
 						{item?.meta?.request_id && (
-							<span class="rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-semibold text-slate-300 ring-1 ring-white/10">
+							<span className="rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-semibold text-slate-300 ring-1 ring-white/10">
 								{item.meta.request_id}
 							</span>
 						)}
 					</div>
-					<h3 class="mt-3 text-lg font-bold leading-7">
+					<h3 className="mt-3 text-lg font-bold leading-7">
 						{item.message || item.title || "Notification"}
 					</h3>
 					<p
@@ -967,7 +967,7 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 					</div>
 				</div>
 
-				<div class="flex shrink-0 flex-col gap-2 sm:flex-row md:flex-col lg:flex-row">
+				<div className="flex shrink-0 flex-col gap-2 sm:flex-row md:flex-col lg:flex-row">
 					{item.type === "partner_request" &&
 						(user?.role === "factory" || user?.role === "admin" || user?.role === "owner") && (
 							<>
@@ -982,7 +982,7 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 					{item.type === "rating_feedback_request" ? (
 						<Link
 							to={`/ratings/feedback?profile_key=${encodeURIComponent(item?.entity_id || item?.meta?.profile_key || "")}`}
-							class="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
+							className="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
 						>
 							Rate now
 						</Link>
@@ -996,7 +996,7 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 										)
 									: feedLinkForEntity(item.entity_type, item.entity_id)
 							}
-							class="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
+							className="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
 						>
 							View
 						</Link>
@@ -1021,29 +1021,29 @@ function ViewedCard({ product, theme, onQuickView }) {
 				theme === "dark" ? "border-white/10 bg-white/5" : "border-sky-100 bg-white/85",
 			)}
 		>
-			<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+			<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 				<div>
-					<div class="flex flex-wrap items-center gap-2">
+					<div className="flex flex-wrap items-center gap-2">
 						<Badge tone="sky">Viewed</Badge>
 						<Badge tone="blue">{product.product?.category || product.category || "--"}</Badge>
 					</div>
-					<h3 class="mt-3 text-lg font-bold">
+					<h3 className="mt-3 text-lg font-bold">
 						{product.product?.title || product.title || "Product"}
 					</h3>
 					<div class={cn("mt-1 text-sm", theme === "dark" ? "text-slate-300" : "text-slate-700")}>
 						{product.author?.name || product.company || "--"} · Viewed{" "}
 						{new Date(product.viewed_at).toLocaleDateString()}
 					</div>
-					<div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
-						<span class="rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10">
+					<div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
+						<span className="rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10">
 							MOQ {product.product?.moq || product.moq || "--"}
 						</span>
-						<span class="rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10">
+						<span className="rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10">
 							Lead time {product.product?.lead_time_days || product.leadTime || "--"}
 						</span>
 					</div>
 				</div>
-				<div class="flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
+				<div className="flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
 					<ActionButton variant="primary" onClick={onQuickView}>
 						Quick view
 					</ActionButton>
@@ -1054,7 +1054,7 @@ function ViewedCard({ product, theme, onQuickView }) {
 									? `/buying-house/${product.author.id}`
 									: `/factory/${product.author.id}`
 							}
-							class="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
+							className="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
 						>
 							Company
 						</Link>
@@ -1067,9 +1067,9 @@ function ViewedCard({ product, theme, onQuickView }) {
 
 function DetailRow({ label, value }) {
 	return (
-		<div class="mb-3 flex items-center justify-between gap-4 border-b border-white/10 pb-3 last:mb-0 last:border-0 last:pb-0">
-			<span class="text-xs uppercase tracking-[0.2em] text-slate-400">{label}</span>
-			<span class="text-sm font-semibold text-slate-100 dark:text-slate-900">{value}</span>
+		<div className="mb-3 flex items-center justify-between gap-4 border-b border-white/10 pb-3 last:mb-0 last:border-0 last:pb-0">
+			<span className="text-xs uppercase tracking-[0.2em] text-slate-400">{label}</span>
+			<span className="text-sm font-semibold text-slate-100 dark:text-slate-900">{value}</span>
 		</div>
 	);
 }

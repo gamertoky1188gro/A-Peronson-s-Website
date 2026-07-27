@@ -181,16 +181,16 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	];
 
 	return (
-		<div class="space-y-6">
+		<div className="space-y-6">
 			<div
 				class={cn(
 					"rounded-3xl border p-6",
 					adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 				)}
 			>
-				<div class="flex items-center gap-4">
-					<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-400 text-white">
-						<Bot class="h-6 w-6" />
+				<div className="flex items-center gap-4">
+					<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-400 text-white">
+						<Bot className="h-6 w-6" />
 					</div>
 					<div>
 						<h2 class={cn("text-2xl font-semibold", adminDark ? "text-white" : "text-slate-900")}>
@@ -204,15 +204,15 @@ export function AdminAISection({ activeCategory, adminDark }) {
 			</div>
 
 			{notice && (
-				<div class="flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400">
-					<CheckCircle class="h-5 w-5" />
+				<div className="flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400">
+					<CheckCircle className="h-5 w-5" />
 					{notice}
 				</div>
 			)}
 
 			{error && (
-				<div class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400">
-					<AlertCircle class="h-5 w-5" />
+				<div className="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400">
+					<AlertCircle className="h-5 w-5" />
 					{error}
 				</div>
 			)}
@@ -240,7 +240,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 									: "text-slate-600 hover:text-slate-900",
 						)}
 					>
-						<tab.icon class="h-4 w-4" />
+						<tab.icon className="h-4 w-4" />
 						{tab.label}
 					</button>
 				))}
@@ -249,7 +249,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 			{loading ? (
 				<Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 			) : activeTab === "settings" ? (
-				<div class="space-y-6">
+				<div className="space-y-6">
 					{/* System Prompt */}
 					<div
 						class={cn(
@@ -257,8 +257,8 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div class="mb-4 flex items-center gap-2">
-							<Code2 class="h-5 w-5 text-indigo-400" />
+						<div className="mb-4 flex items-center gap-2">
+							<Code2 className="h-5 w-5 text-indigo-400" />
 							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								System Prompt
 							</h3>
@@ -287,8 +287,8 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div class="mb-4 flex items-center gap-2">
-							<Bot class="h-5 w-5 text-indigo-400" />
+						<div className="mb-4 flex items-center gap-2">
+							<Bot className="h-5 w-5 text-indigo-400" />
 							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								Agent Prompt
 							</h3>
@@ -317,9 +317,9 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div class="mb-4 flex items-center justify-between">
-							<div class="flex items-center gap-2">
-								<Code2 class="h-5 w-5 text-indigo-400" />
+						<div className="mb-4 flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<Code2 className="h-5 w-5 text-indigo-400" />
 								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									Code Context Search
 								</h3>
@@ -332,12 +332,12 @@ export function AdminAISection({ activeCategory, adminDark }) {
 										codeContextEnabled: !prev.codeContextEnabled,
 									}))
 								}
-								class="text-indigo-400"
+								className="text-indigo-400"
 							>
 								{config.codeContextEnabled ? (
-									<ToggleRight class="h-6 w-6" />
+									<ToggleRight className="h-6 w-6" />
 								) : (
-									<ToggleLeft class="h-6 w-6" />
+									<ToggleLeft className="h-6 w-6" />
 								)}
 							</button>
 						</div>
@@ -381,18 +381,18 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						type="button"
 						onClick={saveConfig}
 						disabled={saving}
-						class="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/20 px-6 py-3 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-500/30 disabled:opacity-50"
+						className="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/20 px-6 py-3 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-500/30 disabled:opacity-50"
 					>
 						{saving ? (
 							<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 						) : (
-							<Save class="h-4 w-4" />
+							<Save className="h-4 w-4" />
 						)}
 						{saving ? "Saving..." : "Save Settings"}
 					</button>
 				</div>
 			) : (
-				<div class="space-y-4">
+				<div className="space-y-4">
 					{/* Rules List */}
 					<div
 						class={cn(
@@ -400,8 +400,8 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div class="border-b border-slate-200/10 px-6 py-4">
-							<div class="flex items-center justify-between">
+						<div className="border-b border-slate-200/10 px-6 py-4">
+							<div className="flex items-center justify-between">
 								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									{activeTab === "global" ? "Global Rules" : "Small Talk Rules"} (
 									{currentRules.length})
@@ -409,16 +409,16 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								<button
 									type="button"
 									onClick={() => setShowAddForm(!showAddForm)}
-									class="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
+									className="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
 								>
-									<Plus class="h-4 w-4" />
+									<Plus className="h-4 w-4" />
 									Add Rule
 								</button>
 							</div>
 						</div>
 
 						{currentRules.length === 0 ? (
-							<div class="px-6 py-12 text-center">
+							<div className="px-6 py-12 text-center">
 								<Bot
 									class={cn(
 										"mx-auto h-12 w-12 mb-4",
@@ -430,12 +430,12 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								</p>
 							</div>
 						) : (
-							<div class="divide-y divide-slate-200/10">
+							<div className="divide-y divide-slate-200/10">
 								{currentRules.map((rule) => (
-									<div key={rule.id} class="px-6 py-4 hover:bg-white/5">
-										<div class="flex items-start justify-between gap-4">
-											<div class="min-w-0 flex-1">
-												<div class="flex items-center gap-2 flex-wrap">
+									<div key={rule.id} className="px-6 py-4 hover:bg-white/5">
+										<div className="flex items-start justify-between gap-4">
+											<div className="min-w-0 flex-1">
+												<div className="flex items-center gap-2 flex-wrap">
 													<span
 														class={cn(
 															"text-sm font-medium",
@@ -445,7 +445,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 														{rule.source}
 													</span>
 												</div>
-												<div class="mt-2 flex items-center gap-2 flex-wrap">
+												<div className="mt-2 flex items-center gap-2 flex-wrap">
 													{rule.keywords?.map((kw, idx) => (
 														<span
 															key={idx}
@@ -472,9 +472,9 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											<button
 												type="button"
 												onClick={() => deleteRule(rule.id)}
-												class="shrink-0 rounded-xl border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20"
+												className="shrink-0 rounded-xl border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20"
 											>
-												<Trash2 class="h-4 w-4" />
+												<Trash2 className="h-4 w-4" />
 											</button>
 										</div>
 									</div>
@@ -494,7 +494,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							<h3 class={cn("mb-4 font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								Add New Rule
 							</h3>
-							<div class="space-y-4">
+							<div className="space-y-4">
 								<div>
 									<label
 										class={cn(
@@ -576,13 +576,13 @@ export function AdminAISection({ activeCategory, adminDark }) {
 										)}
 									/>
 								</div>
-								<div class="flex gap-2">
+								<div className="flex gap-2">
 									<button
 										type="button"
 										onClick={addRule}
-										class="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
+										className="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
 									>
-										<Plus class="h-4 w-4" />
+										<Plus className="h-4 w-4" />
 										Add Rule
 									</button>
 									<button

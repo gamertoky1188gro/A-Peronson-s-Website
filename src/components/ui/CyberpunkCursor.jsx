@@ -572,11 +572,11 @@ export default function CyberpunkCursor() {
 			<style>{styles}</style>
 			<canvas id="cp-canvas" ref={canvasRef} />
 
-			<div ref={glowRef} class="cp-glow" />
-			<div ref={ringRef} class="cp-ring" />
-			<div ref={coreRef} class="cp-core" />
-			<div ref={spinnerRef} class="cp-spinner" />
-			<div ref={dotRef} class="cp-dot" />
+			<div ref={glowRef} className="cp-glow" />
+			<div ref={ringRef} className="cp-ring" />
+			<div ref={coreRef} className="cp-core" />
+			<div ref={spinnerRef} className="cp-spinner" />
+			<div ref={dotRef} className="cp-dot" />
 		</>
 	);
 }

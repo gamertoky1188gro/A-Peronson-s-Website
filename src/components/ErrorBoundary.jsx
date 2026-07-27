@@ -38,9 +38,9 @@ export default class ErrorBoundary extends Component {
 				return this.props.fallback(this.state.error);
 			}
 			return (
-				<div class="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8 text-center">
-					<div class="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
-						<svg class="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8 text-center">
+					<div className="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
+						<svg className="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -49,13 +49,13 @@ export default class ErrorBoundary extends Component {
 							/>
 						</svg>
 					</div>
-					<h2 class="text-xl font-semibold text-slate-900 dark:text-white">Something went wrong</h2>
-					<p class="max-w-md text-sm text-slate-500 dark:text-slate-400">
+					<h2 className="text-xl font-semibold text-slate-900 dark:text-white">Something went wrong</h2>
+					<p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
 						An unexpected error occurred. Please try refreshing the page.
 					</p>
 					<button
 						onClick={() => window.location.reload()}
-						class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
+						className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
 					>
 						Refresh Page
 					</button>

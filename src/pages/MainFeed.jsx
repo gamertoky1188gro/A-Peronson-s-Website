@@ -235,13 +235,13 @@ const Pill = memo(function Pill({ children, active = false, onClick }) {
 
 const StatCard = memo(function StatCard({ icon, label, value, accent = "sky" }) {
 	return (
-		<div class="rounded-3xl border border-white/60 bg-white/80 p-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
-			<div class="flex items-center justify-between gap-2">
-				<div class="flex-1">
-					<p class="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
+		<div className="rounded-3xl border border-white/60 bg-white/80 p-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
+			<div className="flex items-center justify-between gap-2">
+				<div className="flex-1">
+					<p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
 						{label}
 					</p>
-					<p class="text-xl font-semibold text-slate-900 dark:text-white">{value}</p>
+					<p className="text-xl font-semibold text-slate-900 dark:text-white">{value}</p>
 				</div>
 				<div
 					class={cx(
@@ -262,7 +262,7 @@ const ActionButton = memo(function ActionButton({ icon, label, onClick }) {
 	return (
 		<button
 			onClick={onClick}
-			class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-500 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-sky-500 dark:hover:text-white"
+			className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-500 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-sky-500 dark:hover:text-white"
 		>
 			{icon}
 			{label}
@@ -702,108 +702,108 @@ export default function MainFeed() {
 	}
 
 	return (
-		<div class="flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
+		<div className="flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
 			<motion.div
 				style={{ y: reduceMotion ? 0 : bgParallax }}
-				class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"
+				className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"
 			/>
-			<div class="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
-				<div class="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6">
+			<div className="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
+				<div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6">
 					{/* ====== SIDEBAR ====== */}
 					<aside
 						data-lenis-prevent={true}
-						class="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto"
+						className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto"
 					>
 						{/* Header */}
-						<div class="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-3">
+						<div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
+							<div className="flex items-center justify-between">
+								<div className="flex items-center gap-3">
 									{user?.profile?.profile_image || user?.avatar_url ? (
 										<img
 											src={user.profile?.profile_image || user.avatar_url}
 											alt={user?.name || "User"}
-											class="h-12 w-12 rounded-2xl object-cover"
+											className="h-12 w-12 rounded-2xl object-cover"
 										/>
 									) : (
-										<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-											<LayoutGrid class="h-6 w-6" />
+										<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+											<LayoutGrid className="h-6 w-6" />
 										</div>
 									)}
 									<div>
-										<p class="text-sm/none font-medium opacity-90">
+										<p className="text-sm/none font-medium opacity-90">
 											{user?.role
 												? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ")
 												: "User"}
 										</p>
-										<p class="text-xl font-semibold">{user?.name || "Feed Center"}</p>
+										<p className="text-xl font-semibold">{user?.name || "Feed Center"}</p>
 									</div>
 								</div>
 							</div>
-							<div class="mt-4 flex items-center gap-2 text-sm opacity-95">
-								<BadgeCheck class="h-4 w-4" />
+							<div className="mt-4 flex items-center gap-2 text-sm opacity-95">
+								<BadgeCheck className="h-4 w-4" />
 								{user?.profile?.bio || feedConfig.labels.premium_badge}
 							</div>
-							{user?.email && <div class="mt-2 text-xs opacity-75">{user.email}</div>}
+							{user?.email && <div className="mt-2 text-xs opacity-75">{user.email}</div>}
 						</div>
 
 						{/* Quick Actions */}
-						<div class="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-							<div class="flex items-center justify-between">
-								<h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+						<div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+							<div className="flex items-center justify-between">
+								<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
 									{feedConfig.labels.quick_actions}
 								</h2>
-								<span class="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+								<span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
 									{feedConfig.labels.live_status}
 								</span>
 							</div>
-							<div class="mt-4 grid gap-3">
+							<div className="mt-4 grid gap-3">
 								{quickActions.map((a) => (
 									<Link
 										key={a.to}
 										to={a.to}
-										class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-sky-500/10 dark:hover:text-sky-300"
+										className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-sky-500/10 dark:hover:text-sky-300"
 									>
-										<span class="flex items-center gap-2">
+										<span className="flex items-center gap-2">
 											{a.label.includes("Post") ? (
-												<Upload class="h-4 w-4" />
+												<Upload className="h-4 w-4" />
 											) : (
-												<Plus class="h-4 w-4" />
+												<Plus className="h-4 w-4" />
 											)}
 											{a.label}
 										</span>
-										<ChevronDown class="h-4 w-4" />
+										<ChevronDown className="h-4 w-4" />
 									</Link>
 								))}
 							</div>
 						</div>
 
 						{/* Search */}
-						<div class="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-							<div class="flex items-center justify-between gap-3">
-								<h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+						<div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+							<div className="flex items-center justify-between gap-3">
+								<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
 									Search
 								</h2>
-								<span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+								<span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
 									Feed
 								</span>
 							</div>
-							<div class="mt-4 relative">
-								<Search class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+							<div className="mt-4 relative">
+								<Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 								<input
 									value={search}
 									onChange={(e) => setSearch(e.target.value)}
 									placeholder={feedConfig.labels.search_placeholder}
-									class="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+									className="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
 								/>
 							</div>
 						</div>
 
 						{/* Categories */}
-						<div class="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-							<h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+						<div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+							<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
 								{feedConfig.labels.categories}
 							</h2>
-							<div class="mt-4 flex flex-wrap gap-2">
+							<div className="mt-4 flex flex-wrap gap-2">
 								<Pill
 									active={activeCategory === feedConfig.labels.categories}
 									onClick={() => setActiveCategory(feedConfig.labels.categories)}
@@ -826,29 +826,29 @@ export default function MainFeed() {
 					{/* ====== MAIN CONTENT ====== */}
 					<main
 						data-lenis-prevent={true}
-						class="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0"
+						className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0"
 					>
 						{/* Hero Section */}
 						<motion.section
-							class="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6"
+							className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6"
 							style={{ scale: reduceMotion ? 1 : heroScale }}
 						>
-							<div class="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-								<div class="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:w-[540px]">
+							<div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+								<div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:w-[540px]">
 									<StatCard
-										icon={<BriefcaseBusiness class="h-3 w-3" />}
+										icon={<BriefcaseBusiness className="h-3 w-3" />}
 										label={feedConfig.labels.stats.buyer_requests}
 										value={String(stats.requests)}
 										accent="sky"
 									/>
 									<StatCard
-										icon={<LayoutGrid class="h-3 w-3" />}
+										icon={<LayoutGrid className="h-3 w-3" />}
 										label={feedConfig.labels.stats.company_products}
 										value={String(stats.products)}
 										accent="blue"
 									/>
 									<StatCard
-										icon={<Bell class="h-3 w-3" />}
+										icon={<Bell className="h-3 w-3" />}
 										label={feedConfig.labels.stats.feed_posts}
 										value={String(stats.posts)}
 										accent="indigo"
@@ -858,28 +858,28 @@ export default function MainFeed() {
 						</motion.section>
 
 						{/* Tabs & Filters */}
-						<section class="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5">
-							<div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-								<div class="flex flex-wrap gap-2">
+						<section className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5">
+							<div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+								<div className="flex flex-wrap gap-2">
 									{feedConfig.tabs.map((tab) => (
 										<Pill key={tab} active={activeType === tab} onClick={() => setActiveType(tab)}>
 											{tab}
 										</Pill>
 									))}
 								</div>
-								<div class="flex flex-wrap items-center gap-3">
+								<div className="flex flex-wrap items-center gap-3">
 									<button
 										onClick={() => setFiltersOpen((v) => !v)}
-										class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300"
+										className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300"
 									>
-										<Filter class="h-4 w-4" />
+										<Filter className="h-4 w-4" />
 										Filters
 									</button>
 									<Link
 										to="/feed/manage"
-										class="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600"
+										className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600"
 									>
-										<Plus class="h-4 w-4" />
+										<Plus className="h-4 w-4" />
 										Create post
 									</Link>
 								</div>
@@ -889,7 +889,7 @@ export default function MainFeed() {
 						{/* Notice */}
 						{notice?.message && (
 							<div
-								class={`rounded-2xl p-4 text-sm ring-1 ${
+								className={`rounded-2xl p-4 text-sm ring-1 ${
 									notice.type === "error"
 										? "bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30"
 										: notice.type === "success"
@@ -897,8 +897,8 @@ export default function MainFeed() {
 											: "bg-sky-50 text-sky-800 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-200 dark:ring-sky-500/25"
 								}`}
 							>
-								<div class="flex items-center justify-between gap-3">
-									<p class="font-medium">{notice.message}</p>
+								<div className="flex items-center justify-between gap-3">
+									<p className="font-medium">{notice.message}</p>
 									{claimedRequestId && (
 										<button
 											type="button"
@@ -909,7 +909,7 @@ export default function MainFeed() {
 													},
 												})
 											}
-											class="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+											className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 										>
 											Open Chat
 										</button>
@@ -919,15 +919,15 @@ export default function MainFeed() {
 						)}
 
 						{/* Feed Items */}
-						<section class="grid gap-5">
+						<section className="grid gap-5">
 							{error ? (
-								<div class="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
+								<div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
 									{error}
-									<div class="mt-3">
+									<div className="mt-3">
 										<button
 											type="button"
 											onClick={() => loadFeedPage({ reset: true })}
-											class="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+											className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 										>
 											Retry
 										</button>
@@ -936,7 +936,7 @@ export default function MainFeed() {
 							) : null}
 
 							{!(loading || error) && filtered.length === 0 && (
-								<div class="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-400">
+								<div className="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-400">
 									{feedConfig.messages.no_results}
 								</div>
 							)}
@@ -984,16 +984,16 @@ export default function MainFeed() {
 									);
 								})}
 
-							<div ref={sentinelRef} class="h-10" />
+							<div ref={sentinelRef} className="h-10" />
 
 							{loadingMore ? (
-								<div class="rounded-[28px] border border-white/60 bg-white/85 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 p-5">
-									<div class="h-3 w-40 mx-auto rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5" />
+								<div className="rounded-[28px] border border-white/60 bg-white/85 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 p-5">
+									<div className="h-3 w-40 mx-auto rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5" />
 								</div>
 							) : null}
 
 							{!(loading || error) && nextCursor === null ? (
-								<div class="text-center text-xs text-slate-400 dark:text-slate-500 py-3">
+								<div className="text-center text-xs text-slate-400 dark:text-slate-500 py-3">
 									{feedConfig.messages.all_caught_up}
 								</div>
 							) : null}

@@ -34,17 +34,17 @@ export default function AnimatedAccordion({ items, className = "", allowMultiple
 	}
 
 	return (
-		<div class={`space-y-2 ${className}`}>
+		<div className={`space-y-2 ${className}`}>
 			{items.map((item) => {
 				const isOpen = openSet.has(item.id);
 				return (
 					<div
 						key={item.id}
-						class="rounded-2xl border border-slate-200/70 bg-white dark:border-slate-800/60 dark:bg-slate-950/80 overflow-hidden"
+						className="rounded-2xl border border-slate-200/70 bg-white dark:border-slate-800/60 dark:bg-slate-950/80 overflow-hidden"
 					>
 						<button
 							onClick={() => toggle(item.id)}
-							class="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white"
+							className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white"
 						>
 							{item.title}
 							<motion.svg
@@ -72,9 +72,9 @@ export default function AnimatedAccordion({ items, className = "", allowMultiple
 									animate={{ height: "auto", opacity: 1 }}
 									exit={{ height: 0, opacity: 0 }}
 									transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-									class="overflow-hidden"
+									className="overflow-hidden"
 								>
-									<div class="px-5 pb-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
+									<div className="px-5 pb-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
 										{item.content}
 									</div>
 								</motion.div>

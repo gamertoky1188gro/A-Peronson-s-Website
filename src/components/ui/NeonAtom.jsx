@@ -45,7 +45,7 @@ export default function NeonAtom({ size = 180, className = "", text = "", fill =
 
 	return (
 		<div
-			class={`flex flex-col items-center justify-center gap-3 overflow-hidden ${
+			className={`flex flex-col items-center justify-center gap-3 overflow-hidden ${
 				fill
 					? "min-h-screen w-full bg-[#050212] bg-[radial-gradient(circle_at_center,#150833_0%,#050212_60%)]"
 					: ""
@@ -68,7 +68,7 @@ export default function NeonAtom({ size = 180, className = "", text = "", fill =
         @keyframes na-particle3 { 0% { transform: rotateZ(-100deg) rotateX(-60deg) rotateY(60deg); } 100% { transform: rotateZ(-460deg) rotateX(-60deg) rotateY(60deg); } }
       `}</style>
 			<div
-				class="relative"
+				className="relative"
 				style={{
 					width: s,
 					height: s,
@@ -78,7 +78,7 @@ export default function NeonAtom({ size = 180, className = "", text = "", fill =
 				}}
 			>
 				<div
-					class="absolute inset-0 m-auto rounded-full z-10"
+					className="absolute inset-0 m-auto rounded-full z-10"
 					style={{
 						width: coreSize,
 						height: coreSize,
@@ -90,7 +90,7 @@ export default function NeonAtom({ size = 180, className = "", text = "", fill =
 				{rings.map((ring, i) => (
 					<div
 						key={i}
-						class="absolute inset-0 m-auto rounded-full border border-white/5"
+						className="absolute inset-0 m-auto rounded-full border border-white/5"
 						style={{
 							width: orbitSize,
 							height: orbitSize,
@@ -102,7 +102,7 @@ export default function NeonAtom({ size = 180, className = "", text = "", fill =
 						}}
 					>
 						<div
-							class="absolute rounded-full z-20"
+							className="absolute rounded-full z-20"
 							style={{
 								top: -particleSize / 2,
 								left: 0,
@@ -121,7 +121,7 @@ export default function NeonAtom({ size = 180, className = "", text = "", fill =
 				))}
 			</div>
 			{text && (
-				<span class="text-sm text-gray-400 animate-pulse tracking-wider uppercase">{text}</span>
+				<span className="text-sm text-gray-400 animate-pulse tracking-wider uppercase">{text}</span>
 			)}
 		</div>
 	);

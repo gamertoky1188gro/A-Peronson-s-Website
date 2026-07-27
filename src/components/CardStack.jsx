@@ -18,7 +18,7 @@ function CardStackItem({ child, scrollYProgress, index, count, overlap }) {
 	const opacity = useTransform(scrollYProgress, [progress * 0.2, progress * 0.5], [0.6, 1]);
 	const scale = useTransform(scrollYProgress, [progress * 0.2, progress * 0.5], [0.92, 1]);
 	return (
-		<motion.div style={{ y, opacity, scale, zIndex: count - index }} class="relative">
+		<motion.div style={{ y, opacity, scale, zIndex: count - index }} className="relative">
 			{child}
 		</motion.div>
 	);
@@ -49,7 +49,7 @@ export default function CardStack({ children, className = "", stackDistance = 80
 	const count = Array.isArray(children) ? children.length : 1;
 
 	return (
-		<div ref={ref} class={`relative ${className}`}>
+		<div ref={ref} className={`relative ${className}`}>
 			{Array.isArray(children)
 				? children.map((child, i) => (
 						<CardStackItem

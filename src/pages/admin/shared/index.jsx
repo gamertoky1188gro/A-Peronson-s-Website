@@ -4,7 +4,7 @@ import { cn } from "../../../lib/cn.js";
 
 export function SkeletonChart({ height = 320 }) {
 	return (
-		<div class="flex items-center justify-center" style={{ height }}>
+		<div className="flex items-center justify-center" style={{ height }}>
 			<Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 		</div>
 	);
@@ -12,17 +12,17 @@ export function SkeletonChart({ height = 320 }) {
 
 export function SectionTitle({ title, subtitle, icon: TitleIcon }) {
 	return (
-		<div class="mb-4 flex items-center justify-between gap-4">
+		<div className="mb-4 flex items-center justify-between gap-4">
 			<div>
-				<div class="flex items-center gap-2">
-					<div class="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-2 text-sky-300 shadow-lg shadow-sky-500/10">
-						<TitleIcon class="h-4 w-4" />
+				<div className="flex items-center gap-2">
+					<div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-2 text-sky-300 shadow-lg shadow-sky-500/10">
+						<TitleIcon className="h-4 w-4" />
 					</div>
-					<h2 class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+					<h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
 						{title}
 					</h2>
 				</div>
-				<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+				<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
 			</div>
 		</div>
 	);
@@ -31,25 +31,25 @@ export function SectionTitle({ title, subtitle, icon: TitleIcon }) {
 export function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
 	if (loading) {
 		return (
-			<div class="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-				<div class="flex items-center justify-center">
+			<div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+				<div className="flex items-center justify-center">
 					<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 				</div>
 			</div>
 		);
 	}
 	return (
-		<div class="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-sky-300/70 hover:shadow-[0_24px_80px_-28px_rgba(14,165,233,0.45)] dark:border-white/10 dark:bg-slate-950/70">
-			<div class="flex items-start justify-between gap-4">
+		<div className="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-sky-300/70 hover:shadow-[0_24px_80px_-28px_rgba(14,165,233,0.45)] dark:border-white/10 dark:bg-slate-950/70">
+			<div className="flex items-start justify-between gap-4">
 				<div>
-					<p class="text-sm text-slate-500 dark:text-slate-400">{label}</p>
-					<div class="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+					<p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+					<div className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
 						{value}
 					</div>
-					<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+					<p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
 				</div>
-				<div class="rounded-2xl border border-sky-400/15 bg-gradient-to-br from-sky-400/20 to-blue-500/10 p-3 text-sky-500 shadow-lg shadow-sky-500/10 dark:text-sky-300">
-					<CardIcon class="h-5 w-5" />
+				<div className="rounded-2xl border border-sky-400/15 bg-gradient-to-br from-sky-400/20 to-blue-500/10 p-3 text-sky-500 shadow-lg shadow-sky-500/10 dark:text-sky-300">
+					<CardIcon className="h-5 w-5" />
 				</div>
 			</div>
 		</div>
@@ -58,7 +58,7 @@ export function MetricCard({ label, value, hint, icon: CardIcon, loading = false
 
 export function Pill({ children }) {
 	return (
-		<span class="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/8 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm shadow-sky-500/5 dark:text-sky-300">
+		<span className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/8 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm shadow-sky-500/5 dark:text-sky-300">
 			{children}
 		</span>
 	);
@@ -66,27 +66,27 @@ export function Pill({ children }) {
 
 export function BenefitCard({ title, items, accent = "sky" }) {
 	return (
-		<div class="rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_60px_-30px_rgba(59,130,246,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-			<div class="flex items-center justify-between gap-4">
+		<div className="rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_60px_-30px_rgba(59,130,246,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+			<div className="flex items-center justify-between gap-4">
 				<div>
-					<h3 class="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
-					<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+					<h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 						Premium capability stack and operational advantages.
 					</p>
 				</div>
 				<div
-					class={`rounded-2xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
+					className={`rounded-2xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
 				>
-					<Sparkles class="h-4 w-4" />
+					<Sparkles className="h-4 w-4" />
 				</div>
 			</div>
-			<div class="mt-5 grid gap-2 sm:grid-cols-2">
+			<div className="mt-5 grid gap-2 sm:grid-cols-2">
 				{items.map((item) => (
 					<div
 						key={item}
-						class="flex items-start gap-2 rounded-2xl border border-slate-200/70 bg-slate-50/90 p-3 text-sm text-slate-700 dark:border-white/5 dark:bg-white/5 dark:text-slate-300"
+						className="flex items-start gap-2 rounded-2xl border border-slate-200/70 bg-slate-50/90 p-3 text-sm text-slate-700 dark:border-white/5 dark:bg-white/5 dark:text-slate-300"
 					>
-						<CheckCircle2 class="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
+						<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
 						<span>{item}</span>
 					</div>
 				))}
@@ -113,54 +113,54 @@ export function AdminSecurityGate({
 	}
 
 	return (
-		<div class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/90 p-6 backdrop-blur-md">
-			<div class="admin-panel admin-sweep w-full max-w-lg rounded-3xl p-6 shadow-2xl">
-				<h2 class="text-lg font-bold text-white">Security verification required</h2>
-				<p class="mt-2 text-sm text-slate-300">
+		<div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/90 p-6 backdrop-blur-md">
+			<div className="admin-panel admin-sweep w-full max-w-lg rounded-3xl p-6 shadow-2xl">
+				<h2 className="text-lg font-bold text-white">Security verification required</h2>
+				<p className="mt-2 text-sm text-slate-300">
 					{message ||
 						"Admin security verification required. Use any one of the following methods to unlock the panel."}
 				</p>
 
-				<div class="mt-5 grid grid-cols-1 gap-3">
-					<label class="text-xs text-slate-400">
+				<div className="mt-5 grid grid-cols-1 gap-3">
+					<label className="text-xs text-slate-400">
 						MFA code
 						<input
 							value={mfaCode}
 							onChange={(e) => setMfaCode(e.target.value)}
-							class="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
+							className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
 							placeholder="Enter MFA code"
 						/>
 					</label>
-					<label class="text-xs text-slate-400">
+					<label className="text-xs text-slate-400">
 						Passkey
 						<button
 							type="button"
 							onClick={onPasskeyAuth}
 							disabled={passkeyBusy}
-							class="mt-1 w-full rounded-xl bg-indigo-500/80 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+							className="mt-1 w-full rounded-xl bg-indigo-500/80 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
 						>
 							{passkeyBusy ? "Opening passkey..." : "Verify with passkey"}
 						</button>
 					</label>
-					<label class="text-xs text-slate-400">
+					<label className="text-xs text-slate-400">
 						Setup/step-up code
 						<input
 							value={stepUpCode}
 							onChange={(e) => setStepUpCode(e.target.value)}
-							class="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
+							className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
 							placeholder="Enter setup code"
 						/>
 					</label>
 				</div>
 
-				{notice ? <p class="mt-3 text-xs text-sky-200">{notice}</p> : null}
+				{notice ? <p className="mt-3 text-xs text-sky-200">{notice}</p> : null}
 
-				<div class="mt-5 flex flex-wrap gap-2">
+				<div className="mt-5 flex flex-wrap gap-2">
 					<button
 						type="button"
 						onClick={onUnlock}
 						disabled={passkeyBusy}
-						class="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+						className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
 					>
 						Unlock access
 					</button>
@@ -168,7 +168,7 @@ export function AdminSecurityGate({
 						type="button"
 						onClick={onDecline}
 						disabled={passkeyBusy}
-						class="rounded-full border border-slate-600 px-4 py-2 text-xs font-semibold text-slate-200 disabled:opacity-60"
+						className="rounded-full border border-slate-600 px-4 py-2 text-xs font-semibold text-slate-200 disabled:opacity-60"
 					>
 						Decline
 					</button>
@@ -179,7 +179,7 @@ export function AdminSecurityGate({
 }
 
 export function SkeletonLine({ className = "" }) {
-	return <div class={`skeleton rounded-xl ${className}`} />;
+	return <div className={`skeleton rounded-xl ${className}`} />;
 }
 
 export function Badge({ children, tone = "default", darkMode = true }) {
@@ -236,7 +236,7 @@ export function StatCard({ icon: Icon, title, value, meta, tone = "sky", darkMod
 					toneClasses[tone],
 				)}
 			>
-				<Icon class="h-3.5 w-3.5" />
+				<Icon className="h-3.5 w-3.5" />
 				{title}
 			</div>
 			<div
@@ -276,10 +276,10 @@ export function SectionCard({
 
 	return (
 		<section class={cn("rounded-[28px] border p-5 transition", shell)}>
-			<div class="mb-5 flex flex-wrap items-start justify-between gap-3">
-				<div class="flex items-start gap-3">
+			<div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+				<div className="flex items-start gap-3">
 					<div class={cn("rounded-2xl border p-3", iconShell)}>
-						<Icon class="h-5 w-5" />
+						<Icon className="h-5 w-5" />
 					</div>
 					<div>
 						<h3 class={cn("text-lg font-semibold tracking-tight", titleClass)}>{title}</h3>
@@ -296,7 +296,7 @@ export function SectionCard({
 							buttonClass,
 						)}
 					>
-						<ActionIcon class="h-4 w-4" />
+						<ActionIcon className="h-4 w-4" />
 						{actionLabel}
 					</button>
 				) : null}
@@ -345,8 +345,8 @@ export function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 					: "border-slate-200/80 bg-white text-slate-900 shadow-[0_12px_30px_rgba(15,23,42,0.06)]",
 			].join(" ")}
 		>
-			<div class="absolute inset-0 bg-gradient-to-br from-sky-400/10 via-transparent to-blue-500/5 opacity-0 transition group-hover:opacity-100" />
-			<div class="relative flex items-start justify-between gap-4">
+			<div className="absolute inset-0 bg-gradient-to-br from-sky-400/10 via-transparent to-blue-500/5 opacity-0 transition group-hover:opacity-100" />
+			<div className="relative flex items-start justify-between gap-4">
 				<div>
 					<p
 						class={
@@ -357,18 +357,18 @@ export function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 					>
 						{label}
 					</p>
-					<div class="mt-2 flex items-end gap-3">
-						<h3 class="text-3xl font-semibold tracking-tight">{value}</h3>
+					<div className="mt-2 flex items-end gap-3">
+						<h3 className="text-3xl font-semibold tracking-tight">{value}</h3>
 						{trend ? (
-							<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-500">
-								<ArrowUpRight class="h-3 w-3" /> {trend}
+							<span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-500">
+								<ArrowUpRight className="h-3 w-3" /> {trend}
 							</span>
 						) : null}
 					</div>
 					<p class={dark ? "mt-2 text-sm text-slate-400" : "mt-2 text-sm text-slate-600"}>{meta}</p>
 				</div>
-				<div class="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-3 text-sky-400">
-					<Icon class="h-5 w-5" />
+				<div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-3 text-sky-400">
+					<Icon className="h-5 w-5" />
 				</div>
 			</div>
 		</div>
@@ -393,12 +393,12 @@ export function CmsSectionCard({
 					: "border-slate-200/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]",
 			].join(" ")}
 		>
-			<div class="flex items-center justify-between gap-4 border-b border-slate-200/50 px-6 py-4 dark:border-white/5">
-				<div class="flex items-center gap-3">
+			<div className="flex items-center justify-between gap-4 border-b border-slate-200/50 px-6 py-4 dark:border-white/5">
+				<div className="flex items-center gap-3">
 					<div
-						class={`rounded-xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
+						className={`rounded-xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
 					>
-						<Icon class="h-5 w-5" />
+						<Icon className="h-5 w-5" />
 					</div>
 					<div>
 						<h3
@@ -415,7 +415,7 @@ export function CmsSectionCard({
 				</div>
 				{action}
 			</div>
-			<div class="px-6 py-4">{children}</div>
+			<div className="px-6 py-4">{children}</div>
 		</section>
 	);
 }

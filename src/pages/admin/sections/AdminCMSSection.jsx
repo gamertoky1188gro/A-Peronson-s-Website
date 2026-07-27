@@ -76,19 +76,19 @@ export function AdminCMSSection({
 						: "border-slate-200/80 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.16),_transparent_32%),linear-gradient(180deg,#f8fbff_0%,#eef7ff_48%,#f8fafc_100%)] text-slate-900",
 				)}
 			>
-				<div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-					<div class="max-w-3xl">
-						<div class="mb-3 flex flex-wrap items-center gap-2">
+				<div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+					<div className="max-w-3xl">
+						<div className="mb-3 flex flex-wrap items-center gap-2">
 							<CmsMiniBadge dark={adminDark}>CMS + Content Management</CmsMiniBadge>
 							<span class={cmsChipClass(adminDark, true)}>
-								<span class="h-2 w-2 rounded-full bg-sky-400" /> live
+								<span className="h-2 w-2 rounded-full bg-sky-400" /> live
 							</span>
 							<span class={cmsChipClass(adminDark)}>
-								<ShieldCheck class="h-3.5 w-3.5" /> secured
+								<ShieldCheck className="h-3.5 w-3.5" /> secured
 							</span>
 						</div>
 
-						<div class="flex items-center gap-3">
+						<div className="flex items-center gap-3">
 							<div
 								class={cn(
 									"rounded-2xl border p-3",
@@ -97,10 +97,10 @@ export function AdminCMSSection({
 										: "border-sky-200 bg-sky-50 text-sky-600",
 								)}
 							>
-								<LayoutDashboard class="h-6 w-6" />
+								<LayoutDashboard className="h-6 w-6" />
 							</div>
 							<div>
-								<h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">
+								<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
 									Admin Command Center
 								</h1>
 								<p
@@ -116,14 +116,14 @@ export function AdminCMSSection({
 						</div>
 					</div>
 
-					<div class="flex flex-wrap items-center gap-3">
+					<div className="flex flex-wrap items-center gap-3">
 						<div
 							class={cn(
 								"flex items-center gap-2 rounded-2xl border px-3 py-2",
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200/80 bg-white/80",
 							)}
 						>
-							<Search class="h-4 w-4 text-sky-400" />
+							<Search className="h-4 w-4 text-sky-400" />
 							<input
 								value={cmsAuditQuery}
 								onChange={(e) => setCmsAuditQuery(e.target.value)}
@@ -147,22 +147,22 @@ export function AdminCMSSection({
 							)}
 						>
 							{adminDark ? (
-								<SunMedium class="h-4 w-4 text-amber-300" />
+								<SunMedium className="h-4 w-4 text-amber-300" />
 							) : (
-								<Moon class="h-4 w-4 text-slate-700" />
+								<Moon className="h-4 w-4 text-slate-700" />
 							)}
 							{adminDark ? "Light mode" : "Dark mode"}
 						</button>
 						<button
 							type="button"
-							class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+							className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
 						>
-							<Sparkles class="h-4 w-4" /> Premium Action
+							<Sparkles className="h-4 w-4" /> Premium Action
 						</button>
 					</div>
 				</div>
 
-				<div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+				<div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 					<CmsStatCard
 						dark={adminDark}
 						icon={BookOpen}
@@ -199,39 +199,39 @@ export function AdminCMSSection({
 				</div>
 			</div>
 
-			<div class="mt-6 flex flex-wrap gap-2">
+			<div className="mt-6 flex flex-wrap gap-2">
 				<button
 					type="button"
 					onClick={() => setCmsTab("cms")}
 					class={cmsChipClass(adminDark, cmsTab === "cms")}
 				>
-					<BookOpen class="h-3.5 w-3.5" /> CMS
+					<BookOpen className="h-3.5 w-3.5" /> CMS
 				</button>
 				<button
 					type="button"
 					onClick={() => setCmsTab("frontend")}
 					class={cmsChipClass(adminDark, cmsTab === "frontend")}
 				>
-					<Globe2 class="h-3.5 w-3.5" /> Frontend
+					<Globe2 className="h-3.5 w-3.5" /> Frontend
 				</button>
 				<button
 					type="button"
 					onClick={() => setCmsTab("deploy")}
 					class={cmsChipClass(adminDark, cmsTab === "deploy")}
 				>
-					<Workflow class="h-3.5 w-3.5" /> Deployment
+					<Workflow className="h-3.5 w-3.5" /> Deployment
 				</button>
 				<button
 					type="button"
 					onClick={() => setCmsTab("audit")}
 					class={cmsChipClass(adminDark, cmsTab === "audit")}
 				>
-					<ShieldCheck class="h-3.5 w-3.5" /> Audit
+					<ShieldCheck className="h-3.5 w-3.5" /> Audit
 				</button>
 			</div>
 
-			<div class="mt-6 grid gap-6 lg:grid-cols-12">
-				<div class="space-y-6 lg:col-span-8">
+			<div className="mt-6 grid gap-6 lg:grid-cols-12">
+				<div className="space-y-6 lg:col-span-8">
 					{cmsTab === "cms" || cmsTab === "frontend" || cmsTab === "deploy" ? (
 						<CmsSectionCard
 							dark={adminDark}
@@ -249,11 +249,11 @@ export function AdminCMSSection({
 											: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
 									)}
 								>
-									<RefreshCw class="h-4 w-4" /> Refresh
+									<RefreshCw className="h-4 w-4" /> Refresh
 								</button>
 							}
 						>
-							<div class="grid gap-4 md:grid-cols-3">
+							<div className="grid gap-4 md:grid-cols-3">
 								{[
 									{
 										title: "Articles + Pages",
@@ -278,7 +278,7 @@ export function AdminCMSSection({
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/70",
 										)}
 									>
-										<div class="flex items-center justify-between gap-3">
+										<div className="flex items-center justify-between gap-3">
 											<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 												{card.title}
 											</h3>
@@ -289,12 +289,12 @@ export function AdminCMSSection({
 										<p class={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 											{card.desc}
 										</p>
-										<div class="mt-4 flex items-center justify-between gap-3">
+										<div className="mt-4 flex items-center justify-between gap-3">
 											<span class={cn("text-xs", adminDark ? "text-slate-400" : "text-slate-500")}>
 												{card.meta}
 											</span>
 											<span class={cmsChipClass(adminDark)}>
-												<Clock3 class="h-3.5 w-3.5" /> synced
+												<Clock3 className="h-3.5 w-3.5" /> synced
 											</span>
 										</div>
 									</div>
@@ -304,7 +304,7 @@ export function AdminCMSSection({
 					) : null}
 
 					{cmsTab === "cms" || cmsTab === "frontend" ? (
-						<div class="grid gap-6 xl:grid-cols-2">
+						<div className="grid gap-6 xl:grid-cols-2">
 							<CmsSectionCard
 								dark={adminDark}
 								icon={LockKeyhole}
@@ -312,7 +312,7 @@ export function AdminCMSSection({
 								subtitle="3 capabilities · live"
 								action={<CmsMiniBadge dark={adminDark}>Ready</CmsMiniBadge>}
 							>
-								<div class="space-y-3">
+								<div className="space-y-3">
 									{[
 										["Content API", "Deliver structured data to every surface."],
 										["Media pipeline", "Image transforms, upload tracking, and delivery."],
@@ -327,8 +327,8 @@ export function AdminCMSSection({
 													: "border-slate-200 bg-slate-50/70",
 											)}
 										>
-											<div class="mt-1 rounded-xl bg-sky-400/10 p-2 text-sky-400">
-												<Database class="h-4 w-4" />
+											<div className="mt-1 rounded-xl bg-sky-400/10 p-2 text-sky-400">
+												<Database className="h-4 w-4" />
 											</div>
 											<div>
 												<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
@@ -364,11 +364,11 @@ export function AdminCMSSection({
 												: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
 										)}
 									>
-										<RefreshCw class="h-4 w-4" /> Refresh
+										<RefreshCw className="h-4 w-4" /> Refresh
 									</button>
 								}
 							>
-								<div class="space-y-3">
+								<div className="space-y-3">
 									{[
 										[
 											"Theme",
@@ -426,7 +426,7 @@ export function AdminCMSSection({
 							subtitle="3 capabilities · live"
 							action={<CmsMiniBadge dark={adminDark}>Cron-enabled</CmsMiniBadge>}
 						>
-							<div class="grid gap-4 md:grid-cols-3">
+							<div className="grid gap-4 md:grid-cols-3">
 								{[
 									["Build orchestration", "Versioned deploys with clear audit roots."],
 									["Backup jobs", "Automated snapshots and restore paths."],
@@ -439,17 +439,17 @@ export function AdminCMSSection({
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/70",
 										)}
 									>
-										<div class="flex items-center justify-between">
+										<div className="flex items-center justify-between">
 											<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 												{title}
 											</h3>
-											<TerminalSquare class="h-4 w-4 text-sky-400" />
+											<TerminalSquare className="h-4 w-4 text-sky-400" />
 										</div>
 										<p class={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 											{desc}
 										</p>
-										<div class="mt-4 flex items-center gap-2 text-xs text-sky-400">
-											<ArrowRight class="h-3.5 w-3.5" /> operational
+										<div className="mt-4 flex items-center gap-2 text-xs text-sky-400">
+											<ArrowRight className="h-3.5 w-3.5" /> operational
 										</div>
 									</div>
 								))}
@@ -474,11 +474,11 @@ export function AdminCMSSection({
 											: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
 									)}
 								>
-									<RefreshCw class="h-4 w-4" /> Refresh
+									<RefreshCw className="h-4 w-4" /> Refresh
 								</button>
 							}
 						>
-							<div class="space-y-3">
+							<div className="space-y-3">
 								{filteredCmsAuditRows.slice(0, 5).map((item) => (
 									<div
 										key={`${item.id || item.at || item.path}`}
@@ -498,7 +498,7 @@ export function AdminCMSSection({
 											</p>
 										</div>
 										<span class={cmsChipClass(adminDark)}>
-											<Activity class="h-3.5 w-3.5" /> {item.status ?? 200}
+											<Activity className="h-3.5 w-3.5" /> {item.status ?? 200}
 										</span>
 									</div>
 								))}
@@ -519,7 +519,7 @@ export function AdminCMSSection({
 					) : null}
 				</div>
 
-				<div class="space-y-6 lg:col-span-4">
+				<div className="space-y-6 lg:col-span-4">
 					<CmsSectionCard
 						dark={adminDark}
 						icon={Gauge}
@@ -533,7 +533,7 @@ export function AdminCMSSection({
 								adminDark ? "border-white/10 bg-slate-950/80" : "border-slate-200 bg-white",
 							)}
 						>
-							<div class="mb-4 flex items-center justify-between">
+							<div className="mb-4 flex items-center justify-between">
 								<div>
 									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										Command health
@@ -547,11 +547,11 @@ export function AdminCMSSection({
 										98.7%
 									</p>
 								</div>
-								<div class="rounded-2xl bg-sky-400/10 p-3 text-sky-400">
-									<Activity class="h-5 w-5" />
+								<div className="rounded-2xl bg-sky-400/10 p-3 text-sky-400">
+									<Activity className="h-5 w-5" />
 								</div>
 							</div>
-							<div class="h-56">
+							<div className="h-56">
 								<ResponsiveContainer width="100%" height="100%">
 									<AreaChart data={cmsTrendData}>
 										<defs>
@@ -626,7 +626,7 @@ export function AdminCMSSection({
 										: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
 								)}
 							>
-								<RefreshCw class="h-4 w-4" /> Refresh
+								<RefreshCw className="h-4 w-4" /> Refresh
 							</button>
 						}
 					>
@@ -636,7 +636,7 @@ export function AdminCMSSection({
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/70",
 							)}
 						>
-							<div class="flex items-start justify-between gap-3">
+							<div className="flex items-start justify-between gap-3">
 								<div>
 									<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										{verificationQueue.length > 0
@@ -648,7 +648,7 @@ export function AdminCMSSection({
 									</p>
 								</div>
 								<span class={cmsChipClass(adminDark)}>
-									<BadgeCheck class="h-3.5 w-3.5" />{" "}
+									<BadgeCheck className="h-3.5 w-3.5" />{" "}
 									{verificationQueue.length > 0 ? "pending" : "clear"}
 								</span>
 							</div>
@@ -671,7 +671,7 @@ export function AdminCMSSection({
 										: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
 								)}
 							>
-								<RefreshCw class="h-4 w-4" /> Sync
+								<RefreshCw className="h-4 w-4" /> Sync
 							</button>
 						}
 					>
@@ -708,11 +708,11 @@ export function AdminCMSSection({
 										: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
 								)}
 							>
-								<RefreshCw class="h-4 w-4" /> Refresh log
+								<RefreshCw className="h-4 w-4" /> Refresh log
 							</button>
 						}
 					>
-						<div data-lenis-prevent={true} class="max-h-[540px] space-y-3 overflow-auto pr-1">
+						<div data-lenis-prevent={true} className="max-h-[540px] space-y-3 overflow-auto pr-1">
 							{filteredCmsAuditRows.map((log) => (
 								<div
 									key={`${log.id || log.at}-${log.path || log.action}`}
@@ -721,7 +721,7 @@ export function AdminCMSSection({
 										adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 									)}
 								>
-									<div class="flex items-start justify-between gap-4">
+									<div className="flex items-start justify-between gap-4">
 										<div>
 											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												{log.path || log.action || "--"}

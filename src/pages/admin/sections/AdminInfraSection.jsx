@@ -143,7 +143,7 @@ export function AdminInfraSection({
 						: "bg-[radial-gradient(circle_at_top,_rgba(125,211,252,0.22),_transparent_36%),linear-gradient(180deg,#f8fdff_0%,#eef7ff_100%)] text-slate-900",
 				)}
 			>
-				<div class="mx-auto max-w-[1700px]">
+				<div className="mx-auto max-w-[1700px]">
 					<header
 						class={cn(
 							"sticky top-3 z-30 mb-6 rounded-[28px] border px-4 py-4 lg:px-6",
@@ -152,13 +152,13 @@ export function AdminInfraSection({
 								: "border-slate-200 bg-white shadow-sm",
 						)}
 					>
-						<div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-							<div class="flex flex-wrap items-center gap-3">
-								<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30">
-									<LayoutDashboard class="h-6 w-6" />
+						<div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+							<div className="flex flex-wrap items-center gap-3">
+								<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30">
+									<LayoutDashboard className="h-6 w-6" />
 								</div>
 								<div>
-									<div class="flex flex-wrap items-center gap-2">
+									<div className="flex flex-wrap items-center gap-2">
 										<h1
 											class={cn(
 												"text-xl font-semibold tracking-tight sm:text-2xl",
@@ -178,9 +178,9 @@ export function AdminInfraSection({
 								</div>
 							</div>
 
-							<div class="flex flex-1 flex-col gap-3 xl:max-w-3xl xl:flex-row xl:items-center xl:justify-end">
-								<div class="relative w-full xl:max-w-xl">
-									<Search class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+							<div className="flex flex-1 flex-col gap-3 xl:max-w-3xl xl:flex-row xl:items-center xl:justify-end">
+								<div className="relative w-full xl:max-w-xl">
+									<Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 									<input
 										value={infraSearch}
 										onChange={(event) => setInfraSearch(event.target.value)}
@@ -188,7 +188,7 @@ export function AdminInfraSection({
 										class={cn(infraInputClass, "pl-11")}
 									/>
 								</div>
-								<div class="flex items-center gap-3">
+								<div className="flex items-center gap-3">
 									<button
 										type="button"
 										onClick={toggleTheme}
@@ -199,7 +199,7 @@ export function AdminInfraSection({
 												: "border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100",
 										)}
 									>
-										{adminDark ? <SunMedium class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+										{adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 										{adminDark ? "Light mode" : "Dark mode"}
 									</button>
 								</div>
@@ -207,7 +207,7 @@ export function AdminInfraSection({
 						</div>
 					</header>
 
-					<div class="mb-6 grid gap-4 lg:grid-cols-4">
+					<div className="mb-6 grid gap-4 lg:grid-cols-4">
 						<StatCard
 							icon={Server}
 							title="CPU"
@@ -242,8 +242,8 @@ export function AdminInfraSection({
 						/>
 					</div>
 
-					<div class="grid gap-6 xl:grid-cols-12">
-						<div class="space-y-6 xl:col-span-8">
+					<div className="grid gap-6 xl:grid-cols-12">
+						<div className="space-y-6 xl:col-span-8">
 							<SectionCard
 								title="System Overview"
 								subtitle="CPU, memory, storage, and services pulled from infra adapters."
@@ -252,7 +252,7 @@ export function AdminInfraSection({
 								onAction={() => refreshInfraAll()}
 								darkMode={adminDark}
 							>
-								<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+								<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 									{[
 										[
 											"CPU",
@@ -297,7 +297,7 @@ export function AdminInfraSection({
 								</div>
 							</SectionCard>
 
-							<div class="grid gap-6 md:grid-cols-2">
+							<div className="grid gap-6 md:grid-cols-2">
 								<SectionCard
 									title="Verification Queue"
 									subtitle="EU/USA docs pending review."
@@ -307,7 +307,7 @@ export function AdminInfraSection({
 									onAction={() => refreshVerificationQueue()}
 									darkMode={adminDark}
 								>
-									<div class="space-y-3">
+									<div className="space-y-3">
 										{verificationQueue.slice(0, 3).map((row) => (
 											<div
 												key={row.id || row.user_id}
@@ -357,7 +357,7 @@ export function AdminInfraSection({
 									onAction={() => refreshDisputes()}
 									darkMode={adminDark}
 								>
-									<div class="space-y-3">
+									<div className="space-y-3">
 										{disputes.slice(0, 3).map((dispute) => (
 											<div
 												key={dispute.id}
@@ -408,7 +408,7 @@ export function AdminInfraSection({
 								onAction={() => refreshAudit()}
 								darkMode={adminDark}
 							>
-								<div class="space-y-3">
+								<div className="space-y-3">
 									{filteredInfraAuditRows.slice(0, 5).map((entry) => (
 										<div
 											key={entry.id || entry.at}
@@ -419,14 +419,14 @@ export function AdminInfraSection({
 													: "border-slate-200 bg-white",
 											)}
 										>
-											<div class="flex items-center gap-3">
+											<div className="flex items-center gap-3">
 												<div
 													class={cn(
 														"flex h-9 w-9 items-center justify-center rounded-2xl",
 														adminDark ? "bg-sky-500/10 text-sky-300" : "bg-sky-50 text-sky-600",
 													)}
 												>
-													<TerminalSquare class="h-4 w-4" />
+													<TerminalSquare className="h-4 w-4" />
 												</div>
 												<div>
 													<div
@@ -462,7 +462,7 @@ export function AdminInfraSection({
 								</div>
 							</SectionCard>
 
-							<div class="grid gap-6 md:grid-cols-2">
+							<div className="grid gap-6 md:grid-cols-2">
 								<SectionCard
 									title="Firewall Rules"
 									subtitle="Safe presets for allow/deny."
@@ -471,7 +471,7 @@ export function AdminInfraSection({
 									onAction={() => refreshInfraState()}
 									darkMode={adminDark}
 								>
-									<div class="space-y-3">
+									<div className="space-y-3">
 										<div>
 											<label
 												class={cn(
@@ -481,7 +481,7 @@ export function AdminInfraSection({
 											>
 												Preset
 											</label>
-											<div class="relative">
+											<div className="relative">
 												<select
 													value={`${firewallForm.action}:${firewallForm.port || ""}`}
 													onChange={(event) => {
@@ -501,10 +501,10 @@ export function AdminInfraSection({
 													<option value="allow:443">Allow HTTPS 443</option>
 													<option value="block:25">Block SMTP 25</option>
 												</select>
-												<ChevronDown class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+												<ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 											</div>
 										</div>
-										<div class="grid grid-cols-2 gap-3">
+										<div className="grid grid-cols-2 gap-3">
 											<div>
 												<label
 													class={cn(
@@ -589,7 +589,7 @@ export function AdminInfraSection({
 										>
 											Apply rule
 										</button>
-										<div class="space-y-2">
+										<div className="space-y-2">
 											{(infraState?.firewall_rules || []).slice(0, 6).map((rule) => (
 												<div
 													key={rule.id}
@@ -622,7 +622,7 @@ export function AdminInfraSection({
 																: "border-rose-200 bg-rose-50 text-rose-700",
 														)}
 													>
-														<Trash2 class="h-3.5 w-3.5" /> Remove
+														<Trash2 className="h-3.5 w-3.5" /> Remove
 													</button>
 												</div>
 											))}
@@ -656,8 +656,8 @@ export function AdminInfraSection({
 									}
 									darkMode={adminDark}
 								>
-									<div class="space-y-3">
-										<div class="relative">
+									<div className="space-y-3">
+										<div className="relative">
 											<select
 												value={packageForm.mode}
 												onChange={(event) =>
@@ -673,9 +673,9 @@ export function AdminInfraSection({
 												<option value="security">Apply security updates</option>
 												<option value="all">Apply all updates</option>
 											</select>
-											<ChevronDown class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+											<ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 										</div>
-										<div class="grid gap-3 sm:grid-cols-2">
+										<div className="grid gap-3 sm:grid-cols-2">
 											<div class={infraFieldPanel}>
 												<div
 													class={cn(
@@ -683,7 +683,7 @@ export function AdminInfraSection({
 														adminDark ? "text-white" : "text-slate-900",
 													)}
 												>
-													<CheckCircle2 class="h-4 w-4 text-emerald-500" /> Safe check
+													<CheckCircle2 className="h-4 w-4 text-emerald-500" /> Safe check
 												</div>
 												<p
 													class={
@@ -702,7 +702,7 @@ export function AdminInfraSection({
 														adminDark ? "text-white" : "text-slate-900",
 													)}
 												>
-													<ShieldCheck class="h-4 w-4 text-sky-500" /> Admin guard
+													<ShieldCheck className="h-4 w-4 text-sky-500" /> Admin guard
 												</div>
 												<p
 													class={
@@ -733,7 +733,7 @@ export function AdminInfraSection({
 								</SectionCard>
 							</div>
 
-							<div class="grid gap-6 md:grid-cols-2">
+							<div className="grid gap-6 md:grid-cols-2">
 								<SectionCard
 									title="Cron Manager"
 									subtitle="Schedule safe recurring tasks."
@@ -743,8 +743,8 @@ export function AdminInfraSection({
 									onAction={() => runInfraAction("cron.add", cronForm)}
 									darkMode={adminDark}
 								>
-									<div class="space-y-3">
-										<div class="relative">
+									<div className="space-y-3">
+										<div className="relative">
 											<select
 												value={cronForm.schedule}
 												onChange={(event) => {
@@ -774,7 +774,7 @@ export function AdminInfraSection({
 												<option value="0 2 * * *">Daily backup at 2am</option>
 												<option value="0 0 * * 0">Weekly cleanup (Sunday)</option>
 											</select>
-											<ChevronDown class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+											<ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 										</div>
 										<input
 											value={cronForm.name}
@@ -809,7 +809,7 @@ export function AdminInfraSection({
 											placeholder="Command"
 											class={infraInputClass}
 										/>
-										<div class="space-y-2">
+										<div className="space-y-2">
 											{(infraState?.cron_jobs || []).slice(0, 4).map((job) => (
 												<div
 													key={job.id}
@@ -842,7 +842,7 @@ export function AdminInfraSection({
 																: "border-rose-200 bg-rose-50 text-rose-700",
 														)}
 													>
-														<Trash2 class="h-3.5 w-3.5" /> Remove
+														<Trash2 className="h-3.5 w-3.5" /> Remove
 													</button>
 												</div>
 											))}
@@ -876,7 +876,7 @@ export function AdminInfraSection({
 									}
 									darkMode={adminDark}
 								>
-									<div class="space-y-3">
+									<div className="space-y-3">
 										<button
 											type="button"
 											onClick={() => runInfraAction("process.scan_zombies")}
@@ -889,7 +889,7 @@ export function AdminInfraSection({
 										>
 											Scan zombies
 										</button>
-										<div class="grid gap-3 sm:grid-cols-2">
+										<div className="grid gap-3 sm:grid-cols-2">
 											<div class={infraFieldPanel}>
 												<div
 													class={
@@ -906,7 +906,7 @@ export function AdminInfraSection({
 														adminDark ? "text-white" : "text-slate-900",
 													)}
 												>
-													<Lock class="h-4 w-4 text-emerald-500" /> Tamper-evident
+													<Lock className="h-4 w-4 text-emerald-500" /> Tamper-evident
 												</div>
 											</div>
 											<div class={infraFieldPanel}>
@@ -927,18 +927,18 @@ export function AdminInfraSection({
 												>
 													{(infraState?.zombie_processes || []).length > 0 ? (
 														<>
-															<XCircle class="h-4 w-4 text-rose-500" />{" "}
+															<XCircle className="h-4 w-4 text-rose-500" />{" "}
 															{(infraState?.zombie_processes || []).length} anomalies
 														</>
 													) : (
 														<>
-															<CheckCircle2 class="h-4 w-4 text-sky-500" /> No anomalies
+															<CheckCircle2 className="h-4 w-4 text-sky-500" /> No anomalies
 														</>
 													)}
 												</div>
 											</div>
 										</div>
-										<div class="space-y-2">
+										<div className="space-y-2">
 											{(infraState?.logs || []).slice(0, 4).map((log) => (
 												<div
 													key={log.id}
@@ -983,7 +983,7 @@ export function AdminInfraSection({
 							</div>
 						</div>
 
-						<div class="space-y-6 xl:col-span-4">
+						<div className="space-y-6 xl:col-span-4">
 							<SectionCard
 								title="OS Users + SSH Keys"
 								subtitle="Create/delete accounts and manage keys."
@@ -993,7 +993,7 @@ export function AdminInfraSection({
 								onAction={() => refreshInfraState()}
 								darkMode={adminDark}
 							>
-								<div class="space-y-3">
+								<div className="space-y-3">
 									<input
 										value={osUserForm.username}
 										onChange={(event) =>
@@ -1055,7 +1055,7 @@ export function AdminInfraSection({
 										Add SSH key
 									</button>
 
-									<div class="space-y-2 pt-2">
+									<div className="space-y-2 pt-2">
 										{(infraState?.os_users || []).slice(0, 4).map((userRow) => (
 											<div
 												key={userRow.id}
@@ -1072,7 +1072,7 @@ export function AdminInfraSection({
 														adminDark ? "text-white" : "text-slate-900",
 													)}
 												>
-													<Shield class="h-4 w-4 text-sky-500" /> {userRow.username}
+													<Shield className="h-4 w-4 text-sky-500" /> {userRow.username}
 												</div>
 												<button
 													type="button"
@@ -1088,7 +1088,7 @@ export function AdminInfraSection({
 															: "border-rose-200 bg-rose-50 text-rose-700",
 													)}
 												>
-													<Trash2 class="h-3.5 w-3.5" /> Delete
+													<Trash2 className="h-3.5 w-3.5" /> Delete
 												</button>
 											</div>
 										))}
@@ -1108,7 +1108,7 @@ export function AdminInfraSection({
 														adminDark ? "text-white" : "text-slate-900",
 													)}
 												>
-													<LockKeyhole class="h-4 w-4 text-sky-500" /> {key.label}
+													<LockKeyhole className="h-4 w-4 text-sky-500" /> {key.label}
 												</div>
 												<button
 													type="button"
@@ -1124,7 +1124,7 @@ export function AdminInfraSection({
 															: "border-rose-200 bg-rose-50 text-rose-700",
 													)}
 												>
-													<Trash2 class="h-3.5 w-3.5" /> Remove
+													<Trash2 className="h-3.5 w-3.5" /> Remove
 												</button>
 											</div>
 										))}
@@ -1170,7 +1170,7 @@ export function AdminInfraSection({
 								}}
 								darkMode={adminDark}
 							>
-								<div class="space-y-3">
+								<div className="space-y-3">
 									<input
 										value={sslForm.domain}
 										onChange={(event) =>
@@ -1196,7 +1196,7 @@ export function AdminInfraSection({
 									>
 										Issue SSL cert
 									</button>
-									<div class="grid grid-cols-2 gap-3">
+									<div className="grid grid-cols-2 gap-3">
 										<input
 											value={infraBackupForm.retention_days}
 											onChange={(event) =>
@@ -1260,7 +1260,7 @@ export function AdminInfraSection({
 												: "border border-slate-200 bg-slate-50 text-slate-600",
 										)}
 									>
-										<div class="flex items-center justify-between gap-4">
+										<div className="flex items-center justify-between gap-4">
 											<span>
 												Retention: {infraState?.backups?.retention_days || 0} days · SSLs:{" "}
 												{(infraState?.ssl_certs || []).length}
@@ -1271,7 +1271,7 @@ export function AdminInfraSection({
 												Timezone: {infraState?.time_settings?.timezone || "unset"}
 											</span>
 										</div>
-										<div class="mt-2 text-xs">
+										<div className="mt-2 text-xs">
 											NTP sync: {infraState?.time_settings?.last_sync_at || "never"}
 										</div>
 									</div>
@@ -1287,7 +1287,7 @@ export function AdminInfraSection({
 								onAction={() => refreshAudit()}
 								darkMode={adminDark}
 							>
-								<div class="space-y-3">
+								<div className="space-y-3">
 									{filteredInfraAuditRows.slice(0, 8).map((entry) => (
 										<div
 											key={entry.id || entry.at}
@@ -1298,7 +1298,7 @@ export function AdminInfraSection({
 													: "border-slate-200 bg-white",
 											)}
 										>
-											<div class="flex items-start justify-between gap-3">
+											<div className="flex items-start justify-between gap-3">
 												<div>
 													<div
 														class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}
@@ -1351,7 +1351,7 @@ export function AdminInfraSection({
 						</div>
 					</div>
 
-					<div class="mt-6 grid gap-4 xl:grid-cols-5">
+					<div className="mt-6 grid gap-4 xl:grid-cols-5">
 						{INFRA_CAPABILITIES.map((cap) => {
 							const Icon = cap.icon;
 							return (
@@ -1364,7 +1364,7 @@ export function AdminInfraSection({
 											: "border-slate-200 bg-white shadow-sm",
 									)}
 								>
-									<div class="flex items-start justify-between gap-3">
+									<div className="flex items-start justify-between gap-3">
 										<div
 											class={cn(
 												"rounded-2xl border p-3",
@@ -1373,7 +1373,7 @@ export function AdminInfraSection({
 													: "border-sky-200 bg-sky-50 text-sky-600",
 											)}
 										>
-											<Icon class="h-5 w-5" />
+											<Icon className="h-5 w-5" />
 										</div>
 										<Badge tone="live" darkMode={adminDark}>
 											live
@@ -1415,12 +1415,12 @@ export function AdminInfraSection({
 								: "border-slate-200 bg-white text-slate-500 shadow-sm",
 						)}
 					>
-						<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-							<div class="flex items-center gap-2">
-								<Server class="h-4 w-4 text-sky-500" /> Premium infrastructure control surface
+						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex items-center gap-2">
+								<Server className="h-4 w-4 text-sky-500" /> Premium infrastructure control surface
 							</div>
-							<div class="flex items-center gap-2">
-								<Sparkles class="h-4 w-4 text-cyan-400" /> Blue-sky themed • audit-first •
+							<div className="flex items-center gap-2">
+								<Sparkles className="h-4 w-4 text-cyan-400" /> Blue-sky themed • audit-first •
 								responsive
 							</div>
 						</div>

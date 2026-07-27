@@ -171,25 +171,25 @@ function SignatureMark() {
 	return (
 		<svg
 			viewBox="0 0 420 180"
-			class="absolute inset-0 h-full w-full opacity-20"
+			className="absolute inset-0 h-full w-full opacity-20"
 			aria-hidden="true"
 			fill="none"
 		>
 			<path
 				d="M18 116c28-34 44-54 62-58 16-4 28 2 39 16 10 14 14 31 26 39 16 10 31-2 47-21 20-24 36-55 63-55 21 0 34 15 41 37 7 21 5 50 18 55 14 5 27-15 41-43 13-27 24-48 45-48 17 0 29 11 39 24"
-				class="stroke-sky-500"
+				className="stroke-sky-500"
 				strokeWidth="6"
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
 			<path
 				d="M41 139c37-7 58-19 83-39 18-15 40-38 62-39 18-1 27 10 34 27 7 16 9 35 25 40 18 6 37-11 56-33 16-18 31-36 51-39 18-3 29 4 43 19"
-				class="stroke-cyan-300"
+				className="stroke-cyan-300"
 				strokeWidth="4"
 				strokeLinecap="round"
 				strokeLinejoin="round"
 			/>
-			<circle cx="362" cy="38" r="9" class="fill-sky-400" />
+			<circle cx="362" cy="38" r="9" className="fill-sky-400" />
 		</svg>
 	);
 }
@@ -206,41 +206,41 @@ function SectionCard({ section, index, visible }) {
 			].join(" ")}
 			style={{ transitionDelay: `${Math.min(index * 90, 720)}ms` }}
 		>
-			<div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.14),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.10),transparent_38%)]" />
-			<div class="relative flex items-start gap-4">
-				<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/20 dark:border-sky-900/50">
-					<Icon class="h-7 w-7" />
+			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.14),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.10),transparent_38%)]" />
+			<div className="relative flex items-start gap-4">
+				<div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/20 dark:border-sky-900/50">
+					<Icon className="h-7 w-7" />
 				</div>
 
-				<div class="min-w-0 flex-1">
-					<div class="mb-3 flex items-center gap-3">
-						<span class="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/70 dark:text-sky-300">
+				<div className="min-w-0 flex-1">
+					<div className="mb-3 flex items-center gap-3">
+						<span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/70 dark:text-sky-300">
 							{section.index}
 						</span>
-						<span class="text-xs font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+						<span className="text-xs font-medium uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
 							Legal Section
 						</span>
 					</div>
 
-					<h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+					<h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
 						{section.title}
 					</h2>
 
-					<div class="mt-5 space-y-3 text-[15px] leading-7 text-slate-600 dark:text-slate-300">
+					<div className="mt-5 space-y-3 text-[15px] leading-7 text-slate-600 dark:text-slate-300">
 						{section.bullets.map((bullet) => (
 							<div
 								key={bullet}
-								class="flex gap-3 rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 dark:border-slate-800/70 dark:bg-slate-900/50"
+								className="flex gap-3 rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 dark:border-slate-800/70 dark:bg-slate-900/50"
 							>
-								<ChevronRight class="mt-1 h-4 w-4 shrink-0 text-sky-500" />
+								<ChevronRight className="mt-1 h-4 w-4 shrink-0 text-sky-500" />
 								<p>{bullet}</p>
 							</div>
 						))}
 					</div>
 
 					{section.alert ? (
-						<div class="mt-5 rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-4 text-[15px] leading-7 text-amber-950 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100">
-							<strong class="block text-amber-900 dark:text-amber-200">
+						<div className="mt-5 rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-4 text-[15px] leading-7 text-amber-950 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100">
+							<strong className="block text-amber-900 dark:text-amber-200">
 								Strict policy: No third-party contact sharing
 							</strong>
 							{section.alert}
@@ -248,14 +248,14 @@ function SectionCard({ section, index, visible }) {
 					) : null}
 
 					{section.process ? (
-						<div class="mt-5 rounded-2xl border border-sky-200 bg-sky-50/80 p-4 dark:border-sky-900/60 dark:bg-sky-950/20">
-							<div class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-300">
+						<div className="mt-5 rounded-2xl border border-sky-200 bg-sky-50/80 p-4 dark:border-sky-900/60 dark:bg-sky-950/20">
+							<div className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-300">
 								Process
 							</div>
-							<div class="space-y-2 text-[15px] leading-7 text-slate-700 dark:text-slate-200">
+							<div className="space-y-2 text-[15px] leading-7 text-slate-700 dark:text-slate-200">
 								{section.process.map((line) => (
-									<div key={line} class="flex gap-3">
-										<span class="mt-2 h-2 w-2 rounded-full bg-sky-500" />
+									<div key={line} className="flex gap-3">
+										<span className="mt-2 h-2 w-2 rounded-full bg-sky-500" />
 										<p>{line}</p>
 									</div>
 								))}
@@ -266,7 +266,7 @@ function SectionCard({ section, index, visible }) {
 			</div>
 
 			{section.signatureMark ? (
-				<div class="relative mt-6 overflow-hidden rounded-3xl border border-sky-200/80 bg-gradient-to-br from-sky-50 via-cyan-50 to-white p-5 dark:border-sky-900/60 dark:from-sky-950/50 dark:via-cyan-950/30 dark:to-slate-950">
+				<div className="relative mt-6 overflow-hidden rounded-3xl border border-sky-200/80 bg-gradient-to-br from-sky-50 via-cyan-50 to-white p-5 dark:border-sky-900/60 dark:from-sky-950/50 dark:via-cyan-950/30 dark:to-slate-950">
 					<SignatureMark />
 				</div>
 			) : null}
@@ -320,25 +320,25 @@ export default function Terms() {
 	}, []);
 
 	return (
-		<main class="min-h-screen bg-[#f3f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
-			<div class="absolute inset-x-0 top-0 -z-0 h-[520px] bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.22),transparent_40%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.20),transparent_36%),linear-gradient(to_bottom,rgba(255,255,255,0.8),transparent)] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.24),transparent_38%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_34%),linear-gradient(to_bottom,rgba(7,17,31,1),rgba(7,17,31,0))]" />
+		<main className="min-h-screen bg-[#f3f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
+			<div className="absolute inset-x-0 top-0 -z-0 h-[520px] bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.22),transparent_40%),radial-gradient(circle_at_top_right,rgba(56,189,248,0.20),transparent_36%),linear-gradient(to_bottom,rgba(255,255,255,0.8),transparent)] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.24),transparent_38%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_34%),linear-gradient(to_bottom,rgba(7,17,31,1),rgba(7,17,31,0))]" />
 
-			<div class="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-				<section class="relative overflow-hidden rounded-[2rem] border border-sky-200/70 bg-white/75 px-6 py-8 shadow-[0_30px_100px_-50px_rgba(2,132,199,0.5)] backdrop-blur-xl dark:border-sky-900/60 dark:bg-slate-950/70 sm:px-8 lg:px-10">
-					<div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(125,211,252,0.16),transparent_28%)]" />
+			<div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+				<section className="relative overflow-hidden rounded-[2rem] border border-sky-200/70 bg-white/75 px-6 py-8 shadow-[0_30px_100px_-50px_rgba(2,132,199,0.5)] backdrop-blur-xl dark:border-sky-900/60 dark:bg-slate-950/70 sm:px-8 lg:px-10">
+					<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(125,211,252,0.16),transparent_28%)]" />
 
-					<div class="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-						<div class="max-w-3xl">
-							<div class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/70 dark:text-sky-300">
-								<Scale class="h-4 w-4" />
+					<div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+						<div className="max-w-3xl">
+							<div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/70 dark:text-sky-300">
+								<Scale className="h-4 w-4" />
 								Legal Agreement
 							</div>
 
-							<h1 class="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
+							<h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
 								Terms & Conditions
 							</h1>
 
-							<p class="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
+							<p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
 								This platform is an international B2B Garments and Textiles Marketplace, where
 								Buyer, Factory and Buying House connect for professional business purposes. By
 								creating or using an account on the platform, you agree to the following terms and
@@ -346,27 +346,27 @@ export default function Terms() {
 							</p>
 						</div>
 
-						<div class="grid gap-3 sm:grid-cols-2 lg:w-[410px] lg:grid-cols-1">
-							<div class="rounded-2xl border border-sky-200/70 bg-white/80 p-5 shadow-sm dark:border-sky-900/60 dark:bg-slate-900/50">
-								<div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+						<div className="grid gap-3 sm:grid-cols-2 lg:w-[410px] lg:grid-cols-1">
+							<div className="rounded-2xl border border-sky-200/70 bg-white/80 p-5 shadow-sm dark:border-sky-900/60 dark:bg-slate-900/50">
+								<div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
 									Platform
 								</div>
-								<div class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+								<div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
 									GarTexHub Professional Network
 								</div>
-								<div class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+								<div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
 									Public route: /terms
 								</div>
 							</div>
 
-							<div class="rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50 to-cyan-50 p-5 shadow-sm dark:border-sky-900/60 dark:from-sky-950/40 dark:to-cyan-950/20">
-								<div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+							<div className="rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50 to-cyan-50 p-5 shadow-sm dark:border-sky-900/60 dark:from-sky-950/40 dark:to-cyan-950/20">
+								<div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
 									Last Updated
 								</div>
-								<div class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+								<div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
 									{lastUpdated}
 								</div>
-								<div class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+								<div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
 									Dynamically generated on render.
 								</div>
 							</div>
@@ -374,7 +374,7 @@ export default function Terms() {
 					</div>
 				</section>
 
-				<section class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+				<section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 					{[
 						["Public Access", "No authentication required"],
 						["Business Use", "Legitimate B2B activity only"],
@@ -383,19 +383,19 @@ export default function Terms() {
 					].map(([label, value]) => (
 						<div
 							key={label}
-							class="rounded-3xl border border-slate-200/80 bg-white/75 p-5 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/60"
+							className="rounded-3xl border border-slate-200/80 bg-white/75 p-5 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/60"
 						>
-							<div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+							<div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
 								{label}
 							</div>
-							<div class="mt-2 text-base font-medium text-slate-800 dark:text-slate-100">
+							<div className="mt-2 text-base font-medium text-slate-800 dark:text-slate-100">
 								{value}
 							</div>
 						</div>
 					))}
 				</section>
 
-				<section class="mt-10 space-y-5">
+				<section className="mt-10 space-y-5">
 					{sections.map((section, index) => (
 						<div
 							key={section.id}
@@ -408,8 +408,8 @@ export default function Terms() {
 					))}
 				</section>
 
-				<footer class="mt-10 rounded-[2rem] border border-sky-200/70 bg-white/75 px-6 py-6 text-center shadow-sm backdrop-blur dark:border-sky-900/60 dark:bg-slate-950/60 sm:px-8">
-					<p class="text-sm leading-7 text-slate-600 dark:text-slate-300">
+				<footer className="mt-10 rounded-[2rem] border border-sky-200/70 bg-white/75 px-6 py-6 text-center shadow-sm backdrop-blur dark:border-sky-900/60 dark:bg-slate-950/60 sm:px-8">
+					<p className="text-sm leading-7 text-slate-600 dark:text-slate-300">
 						&copy; 2026 GarTexHub Professional Network. All Rights Reserved.
 					</p>
 				</footer>

@@ -1213,7 +1213,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 
 	return (
 		<div
-			class="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-4"
+			className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-4"
 			onMouseDown={(event) => {
 				if (event.target === event.currentTarget) {
 					onClose?.();
@@ -1222,39 +1222,39 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		>
 			<style>{PRISM_TOMORROW_CSS}</style>
 			<div
-				class="prism-scope w-full max-w-4xl overflow-hidden rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[#0f0d22] shadow-2xl"
+				className="prism-scope w-full max-w-4xl overflow-hidden rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[#0f0d22] shadow-2xl"
 				onMouseDown={(event) => event.stopPropagation()}
 			>
-				<div class="flex items-center justify-between gap-3 shadow-dividerB dark:shadow-dividerBDark px-4 py-3">
-					<div class="min-w-0">
-						<div class="truncate text-sm font-semibold text-white">{title}</div>
-						{subtitle ? <div class="truncate text-[11px] text-slate-400">{subtitle}</div> : null}
+				<div className="flex items-center justify-between gap-3 shadow-dividerB dark:shadow-dividerBDark px-4 py-3">
+					<div className="min-w-0">
+						<div className="truncate text-sm font-semibold text-white">{title}</div>
+						{subtitle ? <div className="truncate text-[11px] text-slate-400">{subtitle}</div> : null}
 					</div>
-					<div class="flex items-center gap-2">
+					<div className="flex items-center gap-2">
 					<button
 						type="button"
 						onClick={() => downloadAttachmentMetadata(attachment)}
-						class="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/20"
+						className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/20"
 						title="Download file + metadata"
 					>
 						<Download size={14} />
-						<span class="hidden sm:inline">Download</span>
+						<span className="hidden sm:inline">Download</span>
 					</button>
 						<a
 							href={file.url}
 							download={downloadName}
 							target="_blank"
 							rel="noreferrer"
-							class="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/20"
+							className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/20"
 							title="Download"
 						>
 							<Download size={14} />
-							<span class="hidden sm:inline">Download</span>
+							<span className="hidden sm:inline">Download</span>
 						</a>
 						<button
 							type="button"
 							onClick={() => onClose?.()}
-							class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-white/20"
+							className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-white/20"
 							title="Close"
 						>
 							<X size={16} />
@@ -1262,22 +1262,22 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					</div>
 				</div>
 
-				<div data-lenis-prevent={true} class="max-h-[75vh] overflow-auto p-4">
+				<div data-lenis-prevent={true} className="max-h-[75vh] overflow-auto p-4">
 					{kind === "image" ? (
-						<div class="flex justify-center">
+						<div className="flex justify-center">
 							<img
 								src={file.url}
 								alt={file.name || "Preview"}
-								class="max-h-[70vh] w-auto max-w-full rounded-xl object-contain"
+								className="max-h-[70vh] w-auto max-w-full rounded-xl object-contain"
 								loading="lazy"
 							/>
 						</div>
 					) : null}
 
 					{kind === "video" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{videoError ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-sm text-slate-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-sm text-slate-200">
 									This video format can't be previewed in your browser. Please download the file to
 									play it.
 								</div>
@@ -1287,7 +1287,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 									controls={true}
 									autoPlay={true}
 									playsInline={true}
-									class="w-full max-h-[70vh] rounded-xl bg-black"
+									className="w-full max-h-[70vh] rounded-xl bg-black"
 									onError={() => setVideoError(true)}
 								/>
 							)}
@@ -1295,9 +1295,9 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "pdf" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{pdfState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1307,16 +1307,16 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{pdfState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
 									{pdfState.error}
 								</div>
 							) : null}
 							{pdfState.loading || pdfState.error ? null : (
-								<div class="h-[70vh] overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5">
+								<div className="h-[70vh] overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5">
 									<iframe
 										src={pdfState.blobUrl || file.url}
 										title={file.name || "PDF Preview"}
-										class="h-full w-full"
+										className="h-full w-full"
 									/>
 								</div>
 							)}
@@ -1324,7 +1324,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								href={file.url}
 								target="_blank"
 								rel="noreferrer"
-								class="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
+								className="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
 							>
 								Open in new tab
 							</a>
@@ -1332,20 +1332,20 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "office" || kind === "presentation" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{officeIsPrivate ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
 									Microsoft Office Web Viewer needs a publicly reachable URL. Your file URL looks
 									local/private ({absoluteFileUrl}). Please use Cloudflare Tunnel / a public domain,
 									or download the file.
 								</div>
 							) : null}
 							{!officeIsPrivate && officeEmbed ? (
-								<div class="h-[70vh] overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5">
+								<div className="h-[70vh] overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5">
 									<iframe
 										src={officeEmbed}
 										title={file.name || "Office Preview"}
-										class="h-full w-full"
+										className="h-full w-full"
 									/>
 								</div>
 							) : null}
@@ -1353,7 +1353,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								href={officeIsPrivate ? absoluteFileUrl : officeEmbed || absoluteFileUrl}
 								target="_blank"
 								rel="noreferrer"
-								class="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
+								className="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
 							>
 								Open in new tab
 							</a>
@@ -1361,9 +1361,9 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "spreadsheet" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{spreadsheetState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1373,20 +1373,20 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{spreadsheetState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
 									{spreadsheetState.error}
 								</div>
 							) : null}
 
 							{spreadsheetState.loading || spreadsheetState.error ? null : (
-								<div class="space-y-3">
+								<div className="space-y-3">
 									{spreadsheetState.sheetNames.length > 1 ? (
-										<div class="flex flex-wrap items-center gap-2">
-											<label class="text-[11px] font-semibold text-slate-300">Sheet</label>
+										<div className="flex flex-wrap items-center gap-2">
+											<label className="text-[11px] font-semibold text-slate-300">Sheet</label>
 											<select
 												value={spreadsheetState.activeSheet}
 												onChange={(event) => selectSpreadsheetSheet(event.target.value)}
-												class="rounded-lg shadow-borderless dark:shadow-borderlessDark bg-white/5 px-2 py-1 text-[11px] text-white outline-none"
+												className="rounded-lg shadow-borderless dark:shadow-borderlessDark bg-white/5 px-2 py-1 text-[11px] text-white outline-none"
 											>
 												{spreadsheetState.sheetNames.map((name) => (
 													<option key={name} value={name}>
@@ -1394,25 +1394,25 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 													</option>
 												))}
 											</select>
-											<div class="text-[11px] text-slate-400">
+											<div className="text-[11px] text-slate-400">
 												Showing up to 200 rows × 40 columns
 											</div>
 										</div>
 									) : (
-										<div class="text-[11px] text-slate-400">
+										<div className="text-[11px] text-slate-400">
 											Showing up to 200 rows × 40 columns
 										</div>
 									)}
 
-									<div class="max-h-[70vh] overflow-x-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40">
-										<table class="min-w-full text-[12px] text-slate-100 shadow-borderless dark:shadow-borderlessDark">
+									<div className="max-h-[70vh] overflow-x-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40">
+										<table className="min-w-full text-[12px] text-slate-100 shadow-borderless dark:shadow-borderlessDark">
 											<tbody>
 												{(spreadsheetState.rows || []).map((row, rowIndex) => (
 													<tr key={rowIndex} class={rowIndex === 0 ? "bg-white/5" : ""}>
 														{(row || []).map((cell, cellIndex) => (
 															<td
 																key={cellIndex}
-																class="shadow-borderless dark:shadow-borderlessDark px-2 py-1 align-top"
+																className="shadow-borderless dark:shadow-borderlessDark px-2 py-1 align-top"
 															>
 																{String(cell ?? "")}
 															</td>
@@ -1428,9 +1428,9 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "rtf" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{rtfState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1440,14 +1440,14 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{rtfState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
 									{rtfState.error}
 								</div>
 							) : null}
 							{rtfState.loading || rtfState.error ? null : (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-slate-100">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-slate-100">
 									<div
-										class="prose prose-invert max-w-none text-[13px] leading-relaxed"
+										className="prose prose-invert max-w-none text-[13px] leading-relaxed"
 										dangerouslySetInnerHTML={{
 											__html: sanitizeHtml(rtfState.html || ""),
 										}}
@@ -1458,16 +1458,16 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "odt" ? (
-						<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-sm text-slate-200">
+						<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4 text-sm text-slate-200">
 							ODT preview requires WebODF, which is not included in this build. Please download the
 							file to view it.
 						</div>
 					) : null}
 
 					{kind === "html" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{textState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1477,17 +1477,17 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{textState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
 									{textState.error}
 								</div>
 							) : null}
 							{textState.loading || textState.error ? null : (
-								<div class="h-[70vh] overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5">
+								<div className="h-[70vh] overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5">
 									<iframe
 										title={file.name || "HTML Preview"}
 										sandbox=""
 										referrerPolicy="no-referrer"
-										class="h-full w-full bg-white"
+										className="h-full w-full bg-white"
 										srcDoc={String(textState.content || "")}
 									/>
 								</div>
@@ -1496,7 +1496,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								href={absoluteFileUrl}
 								target="_blank"
 								rel="noreferrer"
-								class="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
+								className="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
 							>
 								Open file URL in new tab
 							</a>
@@ -1504,9 +1504,9 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "xml" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{textState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1516,12 +1516,12 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{textState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
 									{textState.error}
 								</div>
 							) : null}
 							{highlightState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1531,14 +1531,14 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{highlightState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
 									{highlightState.error}
 								</div>
 							) : null}
 							{textState.loading || textState.error || highlightState.loading ? null : (
 								<pre
 									data-lenis-prevent={true}
-									class="language-markup overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100"
+									className="language-markup overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100"
 								>
 									<code
 										dangerouslySetInnerHTML={{
@@ -1553,9 +1553,9 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "code" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{textState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1565,24 +1565,24 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{textState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
 									{textState.error}
 								</div>
 							) : null}
 							{highlightState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom color="#5900ff" size="small" text="Highlighting..." textColor="#94a3b8" />
 								</div>
 							) : null}
 							{highlightState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
 									{highlightState.error}
 								</div>
 							) : null}
 							{textState.loading || textState.error || highlightState.loading ? null : (
 								<pre
 									data-lenis-prevent={true}
-									class={`language-${highlightState.language || prismLanguageForExt(fileExt) || "markup"}overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100`}
+									className={`language-${highlightState.language || prismLanguageForExt(fileExt) || "markup"}overflow-auto rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100`}
 								>
 									<code
 										dangerouslySetInnerHTML={{
@@ -1597,9 +1597,9 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "markdown" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{textState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1609,12 +1609,12 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{textState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
 									{textState.error}
 								</div>
 							) : null}
 							{textState.loading || textState.error ? null : (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-4">
 									<MarkdownMessage text={textState.content} />
 								</div>
 							)}
@@ -1622,9 +1622,9 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "text" ? (
-						<div class="space-y-3">
+						<div className="space-y-3">
 							{textState.loading ? (
-								<div class="text-sm text-slate-300">
+								<div className="text-sm text-slate-300">
 									<Atom
 										color="#5900ff"
 										size="small"
@@ -1634,12 +1634,12 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : null}
 							{textState.error ? (
-								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
+								<div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 p-4 text-sm text-red-200">
 									{textState.error}
 								</div>
 							) : null}
 							{textState.loading || textState.error ? null : (
-								<pre class="whitespace-pre-wrap break-words rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
+								<pre className="whitespace-pre-wrap break-words rounded-xl shadow-borderless dark:shadow-borderlessDark bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
 									{textState.content}
 								</pre>
 							)}
@@ -1647,11 +1647,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					) : null}
 
 					{kind === "file" ? (
-						<div class="flex flex-col items-center justify-center gap-3 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-10 text-center">
-							<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-white">
+						<div className="flex flex-col items-center justify-center gap-3 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white/5 p-10 text-center">
+							<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-white">
 								<File size={26} />
 							</div>
-							<div class="max-w-lg text-sm text-slate-200">
+							<div className="max-w-lg text-sm text-slate-200">
 								Preview isn't available for this file type. You can still download it.
 							</div>
 						</div>

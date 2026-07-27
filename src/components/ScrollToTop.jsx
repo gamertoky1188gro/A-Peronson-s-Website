@@ -47,7 +47,7 @@ export default function ScrollToTop({ className = "" }) {
 	return (
 		<motion.button
 			onClick={scrollUp}
-			class={`fixed bottom-24 right-6 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/30 transition-colors hover:from-sky-400 hover:to-blue-500 ${className}`}
+			className={`fixed bottom-24 right-6 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/30 transition-colors hover:from-sky-400 hover:to-blue-500 ${className}`}
 			initial={{ opacity: 0, scale: 0.5 }}
 			animate={{ opacity: 1, scale: 1 }}
 			exit={{ opacity: 0, scale: 0.5 }}

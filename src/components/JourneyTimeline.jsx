@@ -53,21 +53,21 @@ export default function JourneyTimeline({ title = "Journey Timeline", matchId = 
 	);
 
 	return (
-		<section class="rounded-2xl bg-white p-4 ring-1 ring-slate-200/70">
-			<div class="flex flex-wrap items-center justify-between gap-2">
-				<h3 class="text-sm font-semibold text-slate-900">{title}</h3>
+		<section className="rounded-2xl bg-white p-4 ring-1 ring-slate-200/70">
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<h3 className="text-sm font-semibold text-slate-900">{title}</h3>
 				{journey?.id ? (
-					<span class="text-[11px] text-slate-500">Journey #{journey.id.slice(0, 8)}</span>
+					<span className="text-[11px] text-slate-500">Journey #{journey.id.slice(0, 8)}</span>
 				) : null}
 			</div>
 
-			<div class="mt-3 flex flex-wrap gap-2">
+			<div className="mt-3 flex flex-wrap gap-2">
 				{ORDERED_STATES.map((state, idx) => {
 					const done = currentIndex >= idx;
 					return (
 						<span
 							key={state}
-							class={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${done ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-slate-50 text-slate-500 ring-slate-200"}`}
+							className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${done ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-slate-50 text-slate-500 ring-slate-200"}`}
 						>
 							{toLabel(state)}
 						</span>
@@ -76,9 +76,9 @@ export default function JourneyTimeline({ title = "Journey Timeline", matchId = 
 			</div>
 
 			{journey?.transitions?.length > 0 ? (
-				<div class="mt-3 text-xs text-slate-600">
+				<div className="mt-3 text-xs text-slate-600">
 					Recent transitions:
-					<ul class="mt-1 list-disc pl-5">
+					<ul className="mt-1 list-disc pl-5">
 						{journey.transitions
 							.slice(-3)
 							.reverse()
@@ -91,7 +91,7 @@ export default function JourneyTimeline({ title = "Journey Timeline", matchId = 
 				</div>
 			) : null}
 
-			{!journey && error ? <div class="mt-2 text-xs text-slate-500">{error}</div> : null}
+			{!journey && error ? <div className="mt-2 text-xs text-slate-500">{error}</div> : null}
 		</section>
 	);
 }

@@ -21,7 +21,7 @@ export default function StickySection({
 	);
 
 	return (
-		<Tag ref={ref} class={`sticky z-10 ${className}`} style={{ top: `${top}px` }} {...rest}>
+		<Tag ref={ref} className={`sticky z-10 ${className}`} style={{ top: `${top}px` }} {...rest}>
 			{parallaxSpeed === 0 ? (
 				children
 			) : (

@@ -142,19 +142,19 @@ function HelpSection({
 	return (
 		<section
 			id={id}
-			class="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-950/70"
+			className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-950/70"
 		>
-			<div class={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent} opacity-100`} />
-			<div class="relative">
-				<div class="mb-5 flex items-start gap-4">
-					<div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-slate-900 text-white shadow-lg shadow-sky-500/20 dark:bg-sky-400 dark:text-slate-950">
-						<Icon class="h-6 w-6" />
+			<div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent} opacity-100`} />
+			<div className="relative">
+				<div className="mb-5 flex items-start gap-4">
+					<div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-slate-900 text-white shadow-lg shadow-sky-500/20 dark:bg-sky-400 dark:text-slate-950">
+						<Icon className="h-6 w-6" />
 					</div>
 					<div>
-						<h2 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+						<h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
 							{title}
 						</h2>
-						<p class="mt-1 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+						<p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
 							{subtitle}
 						</p>
 					</div>
@@ -167,12 +167,12 @@ function HelpSection({
 
 function StatCard({ icon: Icon, title, text }) {
 	return (
-		<div class="rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
-			<div class="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-				<Icon class="h-5 w-5" />
+		<div className="rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
+			<div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+				<Icon className="h-5 w-5" />
 			</div>
-			<h3 class="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-			<p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{text}</p>
+			<h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
+			<p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{text}</p>
 		</div>
 	);
 }
@@ -325,32 +325,32 @@ export default function HelpCenterPage() {
 	}
 
 	return (
-		<div class="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.24),transparent_34%),linear-gradient(180deg,#eff8ff_0%,#f8fbff_35%,#ffffff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_52%,#020617_100%)] dark:text-slate-100">
-			<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				<header class="mb-6 overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/70 shadow-[0_24px_120px_rgba(15,23,42,0.1)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
-					<div class="relative px-6 py-6 sm:px-8 sm:py-8">
+		<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.24),transparent_34%),linear-gradient(180deg,#eff8ff_0%,#f8fbff_35%,#ffffff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_52%,#020617_100%)] dark:text-slate-100">
+			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+				<header className="mb-6 overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/70 shadow-[0_24px_120px_rgba(15,23,42,0.1)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
+					<div className="relative px-6 py-6 sm:px-8 sm:py-8">
 						<motion.div
 							style={{ y: reduceMotion ? 0 : headerGradientY }}
-							class="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.16),transparent_40%,rgba(59,130,246,0.08))]"
+							className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.16),transparent_40%,rgba(59,130,246,0.08))]"
 						/>
-						<div class="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-							<div class="max-w-3xl">
-								<div class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-sky-500/10 px-4 py-2 text-xs font-semibold tracking-[0.24em] text-sky-700 uppercase dark:border-sky-400/20 dark:text-sky-200">
-									<LifeBuoy class="h-4 w-4" />
+						<div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+							<div className="max-w-3xl">
+								<div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-sky-500/10 px-4 py-2 text-xs font-semibold tracking-[0.24em] text-sky-700 uppercase dark:border-sky-400/20 dark:text-sky-200">
+									<LifeBuoy className="h-4 w-4" />
 									Help Center
 								</div>
-								<h1 class="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl dark:text-white">
+								<h1 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl dark:text-white">
 									Industrial reliability, tech-forward SaaS guidance.
 								</h1>
-								<p class="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
+								<p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
 									A premium help experience for buyers, factories, and buying houses — built to
 									guide onboarding, trust, messaging, contracts, and support in one place.
 								</p>
-								<div class="mt-5 flex flex-wrap gap-2">
+								<div className="mt-5 flex flex-wrap gap-2">
 									{featurePills.map((pill) => (
 										<span
 											key={pill}
-											class="rounded-full border border-slate-200/80 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200"
+											className="rounded-full border border-slate-200/80 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200"
 										>
 											{pill}
 										</span>
@@ -358,13 +358,13 @@ export default function HelpCenterPage() {
 								</div>
 							</div>
 
-							<div class="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
-								<div class="rounded-2xl border border-slate-200/70 bg-white/75 p-2 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
+							<div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
+								<div className="rounded-2xl border border-slate-200/70 bg-white/75 p-2 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/60">
 									<button
 										onClick={toggleTheme}
-										class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
+										className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
 									>
-										{theme === "dark" ? <Sun class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+										{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 										{theme === "dark" ? "Light mode" : "Dark mode"}
 									</button>
 								</div>
@@ -373,28 +373,28 @@ export default function HelpCenterPage() {
 					</div>
 				</header>
 
-				<div class="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-					<aside class="space-y-6 lg:sticky lg:top-6 lg:h-fit">
-						<div class="rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
-							<div class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-								<ScanSearch class="h-4 w-4 text-sky-500" />
+				<div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+					<aside className="space-y-6 lg:sticky lg:top-6 lg:h-fit">
+						<div className="rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
+							<div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+								<ScanSearch className="h-4 w-4 text-sky-500" />
 								Search
 							</div>
-							<div class="relative">
-								<Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+							<div className="relative">
+								<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 								<input
 									value={search}
 									onChange={(e) => setSearch(e.target.value)}
 									placeholder="Search users, terms, workflows..."
-									class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
+									className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
 								/>
 							</div>
-							<div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
+							<div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-300">
 								{["verification", "contracts", "messages", "premium", "sub-accounts"].map((tag) => (
 									<button
 										key={tag}
 										onClick={() => setSearch(tag)}
-										class="rounded-full border border-slate-200 px-3 py-1.5 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:hover:border-sky-500/30"
+										className="rounded-full border border-slate-200 px-3 py-1.5 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:hover:border-sky-500/30"
 									>
 										{tag}
 									</button>
@@ -402,13 +402,13 @@ export default function HelpCenterPage() {
 							</div>
 						</div>
 
-						<nav class="rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
-							<div class="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-								<TerminalSquare class="h-4 w-4 text-sky-500" />
+						<nav className="rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
+							<div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+								<TerminalSquare className="h-4 w-4 text-sky-500" />
 								Quick navigation
 							</div>
 							<motion.div
-								class="space-y-1.5"
+								className="space-y-1.5"
 								variants={{
 									hidden: { opacity: 0 },
 									visible: {
@@ -432,20 +432,20 @@ export default function HelpCenterPage() {
 											},
 										}}
 										onClick={() => jumpTo(id)}
-										class={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm transition ${
+										className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm transition ${
 											activeSection === id
 												? "bg-sky-500/15 text-sky-700 dark:text-sky-200"
 												: "text-slate-700 hover:bg-sky-500/10 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
 										}`}
 									>
 										<Icon
-											class={`h-4 w-4 transition group-hover:scale-110 ${
+											className={`h-4 w-4 transition group-hover:scale-110 ${
 												activeSection === id ? "text-sky-600" : "text-sky-500"
 											}`}
 										/>
-										<span class="flex-1">{label}</span>
+										<span className="flex-1">{label}</span>
 										<ChevronRight
-											class={`h-4 w-4 transition ${
+											className={`h-4 w-4 transition ${
 												activeSection === id ? "translate-x-0.5 text-sky-500" : "text-slate-400"
 											}`}
 										/>
@@ -455,10 +455,10 @@ export default function HelpCenterPage() {
 						</nav>
 					</aside>
 
-					<main class="space-y-6">
+					<main className="space-y-6">
 						{search && (
-							<div class="rounded-3xl border border-sky-200/70 bg-sky-500/10 p-4 text-sm text-slate-700 dark:border-sky-500/20 dark:text-slate-200">
-								Showing matching sections for <span class="font-semibold">{search}</span>. Found{" "}
+							<div className="rounded-3xl border border-sky-200/70 bg-sky-500/10 p-4 text-sm text-slate-700 dark:border-sky-500/20 dark:text-slate-200">
+								Showing matching sections for <span className="font-semibold">{search}</span>. Found{" "}
 								{searchableSections.length} section
 								{searchableSections.length === 1 ? "" : "s"}.
 							</div>
@@ -472,7 +472,7 @@ export default function HelpCenterPage() {
 								subtitle="Fast setup for buyers, factories, and buying houses."
 								accent="from-sky-400/18 to-cyan-400/10"
 							>
-								<div class="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-3">
+								<div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-3">
 									{[
 										{
 											n: "Step 1",
@@ -507,22 +507,22 @@ export default function HelpCenterPage() {
 									].map((item) => (
 										<div
 											key={item.n}
-											class="min-w-[260px] snap-start md:min-w-0 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
+											className="min-w-[260px] snap-start md:min-w-0 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
 										>
-											<div class="mb-3 flex items-center gap-3">
-												<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-													<item.icon class="h-5 w-5" />
+											<div className="mb-3 flex items-center gap-3">
+												<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+													<item.icon className="h-5 w-5" />
 												</div>
 												<div>
-													<div class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
+													<div className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
 														{item.n}
 													</div>
-													<div class="text-sm font-semibold text-slate-900 dark:text-white">
+													<div className="text-sm font-semibold text-slate-900 dark:text-white">
 														{item.title}
 													</div>
 												</div>
 											</div>
-											<p class="text-sm leading-6 text-slate-600 dark:text-slate-300">
+											<p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
 												{item.text}
 											</p>
 										</div>
@@ -539,20 +539,20 @@ export default function HelpCenterPage() {
 								subtitle="Clear roles, clear permissions."
 								accent="from-blue-400/18 to-sky-400/10"
 							>
-								<div class="grid gap-4 xl:grid-cols-3">
-									<div class="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-										<div class="mb-4 flex items-center gap-3">
-											<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-												<Building2 class="h-5 w-5" />
+								<div className="grid gap-4 xl:grid-cols-3">
+									<div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+										<div className="mb-4 flex items-center gap-3">
+											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+												<Building2 className="h-5 w-5" />
 											</div>
 											<div>
-												<h3 class="font-semibold text-slate-900 dark:text-white">Buyer Account</h3>
-												<p class="text-sm text-slate-500 dark:text-slate-400">
+												<h3 className="font-semibold text-slate-900 dark:text-white">Buyer Account</h3>
+												<p className="text-sm text-slate-500 dark:text-slate-400">
 													For sourcing and requests
 												</p>
 											</div>
 										</div>
-										<ul class="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											<li>Post detailed Buyer Requests</li>
 											<li>Search and filter factories</li>
 											<li>Send direct messages</li>
@@ -560,21 +560,21 @@ export default function HelpCenterPage() {
 										</ul>
 									</div>
 
-									<div class="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-										<div class="mb-4 flex items-center gap-3">
-											<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-												<Factory class="h-5 w-5" />
+									<div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+										<div className="mb-4 flex items-center gap-3">
+											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+												<Factory className="h-5 w-5" />
 											</div>
 											<div>
-												<h3 class="font-semibold text-slate-900 dark:text-white">
+												<h3 className="font-semibold text-slate-900 dark:text-white">
 													Factory Account
 												</h3>
-												<p class="text-sm text-slate-500 dark:text-slate-400">
+												<p className="text-sm text-slate-500 dark:text-slate-400">
 													For production and product posts
 												</p>
 											</div>
 										</div>
-										<ul class="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											<li>Upload product posts and videos</li>
 											<li>Respond to Buyer Requests</li>
 											<li>Accept connection requests from Buying Houses</li>
@@ -582,21 +582,21 @@ export default function HelpCenterPage() {
 										</ul>
 									</div>
 
-									<div class="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-										<div class="mb-4 flex items-center gap-3">
-											<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-												<BriefcaseBusiness class="h-5 w-5" />
+									<div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+										<div className="mb-4 flex items-center gap-3">
+											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+												<BriefcaseBusiness className="h-5 w-5" />
 											</div>
 											<div>
-												<h3 class="font-semibold text-slate-900 dark:text-white">
+												<h3 className="font-semibold text-slate-900 dark:text-white">
 													Buying House Account
 												</h3>
-												<p class="text-sm text-slate-500 dark:text-slate-400">
+												<p className="text-sm text-slate-500 dark:text-slate-400">
 													For multi-agent deal flow
 												</p>
 											</div>
 										</div>
-										<ul class="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<ul className="space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											<li>Manage multiple agents</li>
 											<li>Connect with multiple factories</li>
 											<li>Assign Buyer Requests to specific agents</li>
@@ -615,7 +615,7 @@ export default function HelpCenterPage() {
 								subtitle="Verified status is document-based and requires backend approval. It is subscription-based and renewed monthly."
 								accent="from-cyan-400/18 to-sky-400/10"
 							>
-								<div class="grid gap-4 xl:grid-cols-3">
+								<div className="grid gap-4 xl:grid-cols-3">
 									<StatCard
 										icon={FileCheck2}
 										title="Factories must submit"
@@ -632,7 +632,7 @@ export default function HelpCenterPage() {
 										text="Business Registration, VAT (EU) or EIN (USA), EORI (EU) or IOR (USA), Bank Proof."
 									/>
 								</div>
-								<div class="mt-4 rounded-2xl border border-sky-200/70 bg-sky-500/10 p-4 text-sm leading-6 text-slate-700 dark:border-sky-500/20 dark:text-slate-200">
+								<div className="mt-4 rounded-2xl border border-sky-200/70 bg-sky-500/10 p-4 text-sm leading-6 text-slate-700 dark:border-sky-500/20 dark:text-slate-200">
 									The more verified documentation a company provides, the stronger its credibility.
 								</div>
 							</HelpSection>
@@ -646,71 +646,71 @@ export default function HelpCenterPage() {
 								subtitle="Conflict-free team conversations with verification-aware routing and a buying-house conversation lock."
 								accent="from-sky-400/18 to-blue-400/10"
 							>
-								<div class="grid gap-4 xl:grid-cols-3">
-									<div class="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-										<div class="flex items-center gap-3">
-											<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-												<BadgeCheck class="h-5 w-5" />
+								<div className="grid gap-4 xl:grid-cols-3">
+									<div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+										<div className="flex items-center gap-3">
+											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+												<BadgeCheck className="h-5 w-5" />
 											</div>
 											<div>
-												<h3 class="font-semibold text-slate-900 dark:text-white">Verified Users</h3>
-												<p class="text-sm text-slate-500 dark:text-slate-400">
+												<h3 className="font-semibold text-slate-900 dark:text-white">Verified Users</h3>
+												<p className="text-sm text-slate-500 dark:text-slate-400">
 													Direct inbox delivery
 												</p>
 											</div>
 										</div>
-										<p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											Messages go directly to inbox.
 										</p>
 									</div>
-									<div class="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-										<div class="flex items-center gap-3">
-											<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-												<MessageSquareMore class="h-5 w-5" />
+									<div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+										<div className="flex items-center gap-3">
+											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+												<MessageSquareMore className="h-5 w-5" />
 											</div>
 											<div>
-												<h3 class="font-semibold text-slate-900 dark:text-white">
+												<h3 className="font-semibold text-slate-900 dark:text-white">
 													Unverified Users
 												</h3>
-												<p class="text-sm text-slate-500 dark:text-slate-400">
+												<p className="text-sm text-slate-500 dark:text-slate-400">
 													Message Requests first
 												</p>
 											</div>
 										</div>
-										<p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											Messages appear in "Message Requests."
 										</p>
 									</div>
-									<div class="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-										<div class="flex items-center gap-3">
-											<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
-												<Lock class="h-5 w-5" />
+									<div className="rounded-2xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+										<div className="flex items-center gap-3">
+											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+												<Lock className="h-5 w-5" />
 											</div>
 											<div>
-												<h3 class="font-semibold text-slate-900 dark:text-white">
+												<h3 className="font-semibold text-slate-900 dark:text-white">
 													Buying House Conversation Lock
 												</h3>
-												<p class="text-sm text-slate-500 dark:text-slate-400">
+												<p className="text-sm text-slate-500 dark:text-slate-400">
 													Agent ownership control
 												</p>
 											</div>
 										</div>
-										<p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											When an Agent starts a conversation, it is assigned to that Agent. Other
 											Agents cannot message unless permission is granted. This prevents internal
 											conflict.
 										</p>
 									</div>
 								</div>
-								<div class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
-									<div class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white dark:bg-sky-400 dark:text-slate-950">
-										<Lock class="h-3.5 w-3.5" />
+								<div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+									<div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white dark:bg-sky-400 dark:text-slate-950">
+										<Lock className="h-3.5 w-3.5" />
 										Locked
 									</div>
-									<span class="text-sm text-slate-600 dark:text-slate-300">
+									<span className="text-sm text-slate-600 dark:text-slate-300">
 										Teammates need permission.
 									</span>
-									<button class="ml-auto rounded-full border border-sky-200 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-500/15 dark:border-sky-500/20 dark:text-sky-200">
+									<button className="ml-auto rounded-full border border-sky-200 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-500/15 dark:border-sky-500/20 dark:text-sky-200">
 										Grant permission
 									</button>
 								</div>
@@ -725,22 +725,22 @@ export default function HelpCenterPage() {
 								subtitle="Two plans available: Free and Premium. Feature visibility varies by account type."
 								accent="from-blue-400/18 to-cyan-400/10"
 							>
-								<div class="grid gap-4 md:grid-cols-2">
-									<div class="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
-										<div class="text-sm font-semibold text-slate-500 dark:text-slate-400">Free</div>
-										<div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+								<div className="grid gap-4 md:grid-cols-2">
+									<div className="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
+										<div className="text-sm font-semibold text-slate-500 dark:text-slate-400">Free</div>
+										<div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
 											Core access
 										</div>
-										<p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											Essential profile, messaging, and basic discovery.
 										</p>
 									</div>
-									<div class="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-sky-500/12 to-blue-500/10 p-6 shadow-[0_12px_60px_rgba(14,165,233,0.12)] dark:border-sky-500/20 dark:from-sky-500/12 dark:to-slate-900/20">
-										<div class="text-sm font-semibold text-sky-700 dark:text-sky-200">Premium</div>
-										<div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+									<div className="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-sky-500/12 to-blue-500/10 p-6 shadow-[0_12px_60px_rgba(14,165,233,0.12)] dark:border-sky-500/20 dark:from-sky-500/12 dark:to-slate-900/20">
+										<div className="text-sm font-semibold text-sky-700 dark:text-sky-200">Premium</div>
+										<div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
 											Advanced access
 										</div>
-										<p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											Increased profile visibility, advanced analytics for eligible accounts, and
 											extended management capabilities.
 										</p>
@@ -757,7 +757,7 @@ export default function HelpCenterPage() {
 								subtitle="Calls can be started from chat, scheduled, and recorded with prior user notification."
 								accent="from-cyan-400/18 to-sky-400/10"
 							>
-								<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+								<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 									<StatCard
 										icon={Video}
 										title="Direct from chat"
@@ -790,30 +790,30 @@ export default function HelpCenterPage() {
 								subtitle="Secure digital contracts with audit-ready history. GarTexHub does not process direct financial transactions."
 								accent="from-blue-400/18 to-sky-400/10"
 							>
-								<div class="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-									<div class="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
-										<ul class="space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+								<div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+									<div className="rounded-3xl border border-slate-200/70 bg-white/75 p-6 dark:border-slate-800 dark:bg-slate-950/60">
+										<ul className="space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											<li>Digital contracts can be signed through the platform.</li>
 											<li>PDF copies are stored securely in the Legal Vault.</li>
 											<li>Both parties can access their contract history.</li>
-											<li class="font-medium text-slate-800 dark:text-slate-200">
+											<li className="font-medium text-slate-800 dark:text-slate-200">
 												GarTexHub does not process direct financial transactions.
 											</li>
 										</ul>
 									</div>
-									<div class="rounded-3xl border border-sky-200/70 bg-sky-500/10 p-6 dark:border-sky-500/20 dark:bg-sky-500/10">
-										<div class="flex items-center gap-3">
-											<FileSignature class="h-6 w-6 text-sky-600 dark:text-sky-300" />
+									<div className="rounded-3xl border border-sky-200/70 bg-sky-500/10 p-6 dark:border-sky-500/20 dark:bg-sky-500/10">
+										<div className="flex items-center gap-3">
+											<FileSignature className="h-6 w-6 text-sky-600 dark:text-sky-300" />
 											<div>
-												<div class="text-sm font-semibold text-slate-900 dark:text-white">
+												<div className="text-sm font-semibold text-slate-900 dark:text-white">
 													Legal Vault
 												</div>
-												<div class="text-sm text-slate-600 dark:text-slate-300">
+												<div className="text-sm text-slate-600 dark:text-slate-300">
 													Contracts · history · records
 												</div>
 											</div>
 										</div>
-										<p class="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											Store and review signed PDFs in one secure place with a clean audit trail.
 										</p>
 									</div>
@@ -829,7 +829,7 @@ export default function HelpCenterPage() {
 								subtitle="Documents are securely stored, approval is backend-driven, and expired licenses may remove verified status."
 								accent="from-sky-400/18 to-blue-400/10"
 							>
-								<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+								<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 									<StatCard
 										icon={FileCheck2}
 										title="Documents stored securely"
@@ -872,18 +872,18 @@ export default function HelpCenterPage() {
 								subtitle="Searchable answers, no fluff."
 								accent="from-sky-400/18 to-blue-400/10"
 							>
-								<div class="mb-5 rounded-3xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
-									<div class="relative">
-										<Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+								<div className="mb-5 rounded-3xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+									<div className="relative">
+										<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 										<input
 											value={faqQuery}
 											onChange={(e) => setFaqQuery(e.target.value)}
 											placeholder="Search FAQs..."
-											class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
+											className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
 										/>
 									</div>
 								</div>
-								<div class="space-y-3">
+								<div className="space-y-3">
 									{filteredFaq.length > 0 ? (
 										<motion.div
 											variants={{
@@ -906,11 +906,11 @@ export default function HelpCenterPage() {
 													title: `Q: ${item.q || item.question}`,
 													content: (
 														<>
-															<div class="text-sm leading-6 text-slate-600 dark:text-slate-300">
+															<div className="text-sm leading-6 text-slate-600 dark:text-slate-300">
 																A: {item.a || item.answer}
 															</div>
 															{item.keywords && (
-																<div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+																<div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
 																	Keywords: {item.keywords}
 																</div>
 															)}
@@ -920,29 +920,29 @@ export default function HelpCenterPage() {
 											/>
 										</motion.div>
 									) : (
-										<div class="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
+										<div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
 											No FAQ matches found.
 										</div>
 									)}
 								</div>
 
 								{isAdmin && (
-									<div class="mt-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-										<div class="rounded-3xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-											<div class="text-sm font-semibold text-slate-900 dark:text-white">
+									<div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+										<div className="rounded-3xl border border-slate-200/70 bg-white/75 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+											<div className="text-sm font-semibold text-slate-900 dark:text-white">
 												Admin: Manage Knowledge Base FAQ
 											</div>
-											<div class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+											<div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
 												Owner/Admin · Question · Answer · Keywords (comma separated) · Add FAQ
 											</div>
 										</div>
-										<div class="flex flex-col gap-3 sm:flex-row lg:flex-col">
-											<button class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-sky-400 dark:text-slate-950 dark:hover:bg-sky-300">
-												<LifeBuoy class="h-4 w-4" />
+										<div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+											<button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-sky-400 dark:text-slate-950 dark:hover:bg-sky-300">
+												<LifeBuoy className="h-4 w-4" />
 												Open support ticket
 											</button>
-											<button class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500/30">
-												<MessagesSquare class="h-4 w-4" />
+											<button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500/30">
+												<MessagesSquare className="h-4 w-4" />
 												Live chat
 											</button>
 										</div>
@@ -952,14 +952,14 @@ export default function HelpCenterPage() {
 						</ScrollReveal>
 
 						<ScrollReveal>
-							<section class="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
-								<div class="grid gap-4 lg:grid-cols-2">
-									<div class="flex flex-wrap gap-3 lg:justify-end lg:self-center">
+							<section className="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
+								<div className="grid gap-4 lg:grid-cols-2">
+									<div className="flex flex-wrap gap-3 lg:justify-end lg:self-center">
 										<a
 											href="mailto:gartexhub@gmail.com"
-											class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500/30"
+											className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500/30"
 										>
-											<Headphones class="h-4 w-4" />
+											<Headphones className="h-4 w-4" />
 											Contact support team
 										</a>
 									</div>

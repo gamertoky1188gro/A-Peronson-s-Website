@@ -14,7 +14,7 @@ export default function ScrollVelocityText({
 
 	const MotionTag = motion[as];
 	return (
-		<MotionTag class={`inline-block ${className}`} style={{ x: translateX }}>
+		<MotionTag className={`inline-block ${className}`} style={{ x: translateX }}>
 			{children}
 		</MotionTag>
 	);

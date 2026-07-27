@@ -97,13 +97,13 @@ function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = "default" }
 			)}
 		>
 			<div class={cn("absolute inset-0 bg-gradient-to-br opacity-80", toneClass)} />
-			<div class="relative flex items-start justify-between gap-4">
+			<div className="relative flex items-start justify-between gap-4">
 				<div>
 					<p class={cn("text-sm font-medium", dark ? "text-slate-300" : "text-slate-600")}>
 						{label}
 					</p>
-					<div class="mt-2 flex items-end gap-2">
-						<h3 class="text-3xl font-semibold tracking-tight">{value}</h3>
+					<div className="mt-2 flex items-end gap-2">
+						<h3 className="text-3xl font-semibold tracking-tight">{value}</h3>
 						{sub ? (
 							<span class={cn("pb-1 text-xs", dark ? "text-slate-400" : "text-slate-500")}>
 								{sub}
@@ -112,7 +112,7 @@ function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = "default" }
 					</div>
 				</div>
 				<div class={cn("rounded-2xl p-3", dark ? "bg-slate-950/30" : "bg-slate-100")}>
-					<Icon class="h-5 w-5 text-cyan-300" />
+					<Icon className="h-5 w-5 text-cyan-300" />
 				</div>
 			</div>
 		</div>
@@ -127,9 +127,9 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 				"relative overflow-hidden rounded-[28px] border p-6 backdrop-blur-xl",
 			)}
 		>
-			<div class="mb-5 flex flex-wrap items-start justify-between gap-4">
+			<div className="mb-5 flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<div class="flex items-center gap-2">
+					<div className="flex items-center gap-2">
 						<h2
 							class={cn(
 								"text-xl font-semibold tracking-tight",
@@ -138,7 +138,7 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 						>
 							{title}
 						</h2>
-						<span class="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
+						<span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
 							live
 						</span>
 					</div>
@@ -174,7 +174,7 @@ function UltraToggle({ dark, on, label, hint, onToggle }) {
 					<p class={cn("mt-1 text-sm", dark ? "text-slate-400" : "text-slate-500")}>{hint}</p>
 				) : null}
 			</div>
-			<div class="flex items-center gap-3">
+			<div className="flex items-center gap-3">
 				<span
 					class={cn("text-sm", on ? "text-cyan-300" : dark ? "text-slate-400" : "text-slate-500")}
 				>
@@ -234,7 +234,7 @@ function UltraTinyChart({
 				dark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-white",
 			)}
 		>
-			<div class="mb-3 flex items-center justify-between">
+			<div className="mb-3 flex items-center justify-between">
 				<div>
 					<p class={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
 						Live Metrics
@@ -243,12 +243,12 @@ function UltraTinyChart({
 						Metrics coming from live feeds.
 					</p>
 				</div>
-				<div class="flex items-center gap-2 text-xs text-cyan-300">
-					<Activity class="h-4 w-4" />
+				<div className="flex items-center gap-2 text-xs text-cyan-300">
+					<Activity className="h-4 w-4" />
 					streaming
 				</div>
 			</div>
-			<svg viewBox={`0 0 ${width} ${height}`} class="h-44 w-full">
+			<svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full">
 				<defs>
 					<linearGradient id="ultraSkyFill" x1="0" x2="0" y1="0" y2="1">
 						<stop offset="0%" stopColor="rgba(56,189,248,0.38)" />
@@ -256,18 +256,18 @@ function UltraTinyChart({
 					</linearGradient>
 				</defs>
 				<path d={area} fill="url(#ultraSkyFill)" />
-				<path d={path} fill="none" stroke="currentColor" strokeWidth="3" class="text-cyan-300" />
+				<path d={path} fill="none" stroke="currentColor" strokeWidth="3" className="text-cyan-300" />
 				{safePoints.map((p, i) => (
 					<circle
 						key={i}
 						cx={pad + i * step}
 						cy={y(p)}
 						r="4.2"
-						class="fill-cyan-300 text-cyan-300"
+						className="fill-cyan-300 text-cyan-300"
 					/>
 				))}
 			</svg>
-			<div class="mt-2 grid grid-cols-3 gap-3 text-center text-xs">
+			<div className="mt-2 grid grid-cols-3 gap-3 text-center text-xs">
 				{safeKpis.slice(0, 3).map((row) => (
 					<div
 						key={row.label}
@@ -394,11 +394,11 @@ export function AdminSecuritySection({
 						: "border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(37,99,235,0.10),_transparent_22%),linear-gradient(180deg,_#eff8ff_0%,_#f8fbff_55%,_#eef6ff_100%)] text-slate-900",
 				)}
 			>
-				<div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+				<div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 					<div>
-						<div class="flex flex-wrap items-center gap-2">
-							<span class="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
-								<ShieldCheck class="h-4 w-4" /> ultra security layer
+						<div className="flex flex-wrap items-center gap-2">
+							<span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+								<ShieldCheck className="h-4 w-4" /> ultra security layer
 							</span>
 							<UltraPill dark={adminDark} active={true}>
 								Advanced
@@ -424,7 +424,7 @@ export function AdminSecuritySection({
 						</p>
 					</div>
 
-					<div class="flex flex-wrap items-center gap-3">
+					<div className="flex flex-wrap items-center gap-3">
 						<button
 							type="button"
 							onClick={toggleTheme}
@@ -435,7 +435,7 @@ export function AdminSecuritySection({
 									: "border-slate-200 bg-white text-slate-900",
 							)}
 						>
-							{adminDark ? <SunMedium class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+							{adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 							{adminDark ? "Light mode" : "Dark mode"}
 						</button>
 						<button
@@ -444,16 +444,16 @@ export function AdminSecuritySection({
 								refreshSecurityState();
 								refreshAudit();
 							}}
-							class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition hover:-translate-y-0.5"
+							className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition hover:-translate-y-0.5"
 						>
-							<RefreshCw class="h-4 w-4" /> Refresh
+							<RefreshCw className="h-4 w-4" /> Refresh
 						</button>
 					</div>
 				</div>
 
-				<div class="mt-6 grid gap-5 xl:grid-cols-12">
-					<div class="space-y-5 xl:col-span-8">
-						<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+				<div className="mt-6 grid gap-5 xl:grid-cols-12">
+					<div className="space-y-5 xl:col-span-8">
+						<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 							<UltraStatCard
 								dark={adminDark}
 								label="Zero-trust"
@@ -489,14 +489,14 @@ export function AdminSecuritySection({
 							title="Zero Trust + MFA"
 							subtitle="Session control and device fingerprints."
 							right={
-								<div class="flex items-center gap-2 text-sm text-cyan-300">
-									<LockKeyhole class="h-4 w-4" />
+								<div className="flex items-center gap-2 text-sm text-cyan-300">
+									<LockKeyhole className="h-4 w-4" />
 									hardened access
 								</div>
 							}
 						>
-							<div class="grid gap-4 lg:grid-cols-2">
-								<div class="space-y-4">
+							<div className="grid gap-4 lg:grid-cols-2">
+								<div className="space-y-4">
 									<UltraToggle
 										dark={adminDark}
 										on={Boolean(securityState?.zero_trust?.enabled)}
@@ -515,7 +515,7 @@ export function AdminSecuritySection({
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 										)}
 									>
-										<div class="flex items-center justify-between">
+										<div className="flex items-center justify-between">
 											<div>
 												<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													Rotate keys
@@ -527,9 +527,9 @@ export function AdminSecuritySection({
 											<button
 												type="button"
 												onClick={() => runSecurityAction("security.encryption.rotate")}
-												class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-white"
+												className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-white"
 											>
-												<KeyRound class="h-4 w-4" /> Rotate
+												<KeyRound className="h-4 w-4" /> Rotate
 											</button>
 										</div>
 
@@ -553,7 +553,7 @@ export function AdminSecuritySection({
 												>
 													Session fingerprint
 												</p>
-												<p class="mt-1 font-medium">
+												<p className="mt-1 font-medium">
 													{securityState?.device_fingerprinting?.enabled ? "Enabled" : "Off"}
 												</p>
 											</div>
@@ -571,7 +571,7 @@ export function AdminSecuritySection({
 												>
 													Geo-fence
 												</p>
-												<p class="mt-1 font-medium">
+												<p className="mt-1 font-medium">
 													{securityState?.geo_fence?.enabled ? "On" : "Off"}
 												</p>
 											</div>
@@ -579,22 +579,22 @@ export function AdminSecuritySection({
 									</div>
 								</div>
 
-								<div class="grid gap-4">
+								<div className="grid gap-4">
 									<div
 										class={cn(
 											"rounded-2xl border p-4",
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 										)}
 									>
-										<div class="mb-3 flex items-center justify-between">
+										<div className="mb-3 flex items-center justify-between">
 											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												Current security state
 											</p>
-											<span class="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300">
-												<ShieldCheck class="h-3.5 w-3.5" /> active
+											<span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300">
+												<ShieldCheck className="h-3.5 w-3.5" /> active
 											</span>
 										</div>
-										<div class="space-y-3 text-sm">
+										<div className="space-y-3 text-sm">
 											{[
 												["Zero-trust", securityState?.zero_trust?.enabled ? "On" : "Off"],
 												["MFA required", securityState?.mfa?.required ? "Yes" : "No"],
@@ -626,7 +626,7 @@ export function AdminSecuritySection({
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 										)}
 									>
-										<div class="flex items-center justify-between">
+										<div className="flex items-center justify-between">
 											<div>
 												<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													Incident Response
@@ -635,15 +635,15 @@ export function AdminSecuritySection({
 													Incident dashboard and approvals.
 												</p>
 											</div>
-											<AlertTriangle class="h-5 w-5 text-amber-400" />
+											<AlertTriangle className="h-5 w-5 text-amber-400" />
 										</div>
-										<div class="mt-4 flex flex-wrap gap-2">
+										<div className="mt-4 flex flex-wrap gap-2">
 											<button
 												type="button"
 												onClick={() =>
 													runSecurityAction("security.export.request", { dataset: "full" })
 												}
-												class="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200"
+												className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200"
 											>
 												Approvals queue
 											</button>
@@ -714,7 +714,7 @@ export function AdminSecuritySection({
 								</UltraPill>
 							}
 						>
-							<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+							<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 								<UltraStatCard
 									dark={adminDark}
 									label="Forensic logs"
@@ -744,14 +744,14 @@ export function AdminSecuritySection({
 								/>
 							</div>
 
-							<div class="mt-4 grid gap-4 lg:grid-cols-3">
+							<div className="mt-4 grid gap-4 lg:grid-cols-3">
 								<div
 									class={cn(
 										"rounded-2xl border p-4 lg:col-span-2",
 										adminDark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-white",
 									)}
 								>
-									<div class="mb-3 flex items-center justify-between">
+									<div className="mb-3 flex items-center justify-between">
 										<div>
 											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												Zero-Trust & Incident Response
@@ -760,9 +760,9 @@ export function AdminSecuritySection({
 												{ultraSecurityCapabilities.length} capabilities
 											</p>
 										</div>
-										<Sparkles class="h-5 w-5 text-cyan-300" />
+										<Sparkles className="h-5 w-5 text-cyan-300" />
 									</div>
-									<div class="grid gap-2 sm:grid-cols-2">
+									<div className="grid gap-2 sm:grid-cols-2">
 										{ultraSecurityCapabilities.map((cap) => (
 											<div
 												key={cap}
@@ -771,7 +771,7 @@ export function AdminSecuritySection({
 													adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 												)}
 											>
-												<CheckCircle2 class="mt-0.5 h-4 w-4 flex-none text-cyan-300" />
+												<CheckCircle2 className="mt-0.5 h-4 w-4 flex-none text-cyan-300" />
 												<span class={cn(adminDark ? "text-slate-200" : "text-slate-800")}>
 													{cap}
 												</span>
@@ -789,7 +789,7 @@ export function AdminSecuritySection({
 									<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										Risk posture
 									</p>
-									<div class="mt-4 space-y-4">
+									<div className="mt-4 space-y-4">
 										{[
 											["Access risk", "Low", "w-2/5", "from-sky-500 to-cyan-400", "text-cyan-300"],
 											[
@@ -808,7 +808,7 @@ export function AdminSecuritySection({
 											],
 										].map(([label, value, widthClass, gradient, valueClass]) => (
 											<div key={label}>
-												<div class="mb-2 flex items-center justify-between text-sm">
+												<div className="mb-2 flex items-center justify-between text-sm">
 													<span class={adminDark ? "text-slate-300" : "text-slate-700"}>
 														{label}
 													</span>
@@ -829,7 +829,7 @@ export function AdminSecuritySection({
 						</UltraSectionCard>
 					</div>
 
-					<div class="space-y-5 xl:col-span-4">
+					<div className="space-y-5 xl:col-span-4">
 						<UltraTinyChart
 							dark={adminDark}
 							points={ultraMiniChartPoints}
@@ -851,7 +851,7 @@ export function AdminSecuritySection({
 											: "border-slate-200 bg-white text-slate-900",
 									)}
 								>
-									<RefreshCw class="h-4 w-4" /> Refresh
+									<RefreshCw className="h-4 w-4" /> Refresh
 								</button>
 							}
 						>
@@ -861,7 +861,7 @@ export function AdminSecuritySection({
 									adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 								)}
 							>
-								<div class="space-y-2 text-xs">
+								<div className="space-y-2 text-xs">
 									{verificationQueue.slice(0, 3).map((row) => (
 										<div
 											key={row.id || row.user_id}
@@ -908,7 +908,7 @@ export function AdminSecuritySection({
 											: "border-slate-200 bg-white text-slate-900",
 									)}
 								>
-									<RefreshCw class="h-4 w-4" /> Sync
+									<RefreshCw className="h-4 w-4" /> Sync
 								</button>
 							}
 						>
@@ -918,7 +918,7 @@ export function AdminSecuritySection({
 									adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 								)}
 							>
-								<div class="space-y-2 text-xs">
+								<div className="space-y-2 text-xs">
 									{disputes.slice(0, 3).map((dispute) => (
 										<div
 											key={dispute.id}
@@ -965,11 +965,11 @@ export function AdminSecuritySection({
 											: "border-slate-200 bg-white text-slate-900",
 									)}
 								>
-									<RefreshCw class="h-4 w-4" /> Refresh
+									<RefreshCw className="h-4 w-4" /> Refresh
 								</button>
 							}
 						>
-							<div class="space-y-3">
+							<div className="space-y-3">
 								{audit.slice(0, 5).map((entry) => (
 									<div
 										key={entry.id || entry.at}
@@ -978,7 +978,7 @@ export function AdminSecuritySection({
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 										)}
 									>
-										<div class="flex items-start justify-between gap-4">
+										<div className="flex items-start justify-between gap-4">
 											<div>
 												<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													{entry.path || entry.action || "Admin action"}
@@ -992,7 +992,7 @@ export function AdminSecuritySection({
 													{entry.at ? new Date(entry.at).toLocaleString() : "--"} · system
 												</p>
 											</div>
-											<ArrowUpRight class="h-4 w-4 text-cyan-300" />
+											<ArrowUpRight className="h-4 w-4 text-cyan-300" />
 										</div>
 										<div
 											class={cn("mt-3 text-xs", adminDark ? "text-slate-400" : "text-slate-600")}
@@ -1020,7 +1020,7 @@ export function AdminSecuritySection({
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/80",
 					)}
 				>
-					<div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+					<div className="mb-5 flex flex-wrap items-center justify-between gap-4">
 						<div>
 							<h2
 								class={cn(
@@ -1034,7 +1034,7 @@ export function AdminSecuritySection({
 								Immutable, tamper-evident audit trail for every admin action.
 							</p>
 						</div>
-						<div class="flex flex-wrap items-center gap-2">
+						<div className="flex flex-wrap items-center gap-2">
 							<div
 								class={cn(
 									"flex items-center gap-2 rounded-2xl border px-3 py-2",
@@ -1064,12 +1064,12 @@ export function AdminSecuritySection({
 										: "border-slate-200 bg-white text-slate-900",
 								)}
 							>
-								<RefreshCw class="h-4 w-4" /> Refresh log
+								<RefreshCw className="h-4 w-4" /> Refresh log
 							</button>
 						</div>
 					</div>
 
-					<div class="grid gap-3">
+					<div className="grid gap-3">
 						{filteredUltraAuditRows.slice(0, 10).map((entry) => (
 							<div
 								key={`${entry.id || entry.at}-${entry.path || entry.action}`}
@@ -1078,9 +1078,9 @@ export function AdminSecuritySection({
 									adminDark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-slate-50",
 								)}
 							>
-								<div class="flex items-center gap-3">
-									<div class="rounded-2xl bg-cyan-500/10 p-2 text-cyan-300">
-										<ShieldAlert class="h-4 w-4" />
+								<div className="flex items-center gap-3">
+									<div className="rounded-2xl bg-cyan-500/10 p-2 text-cyan-300">
+										<ShieldAlert className="h-4 w-4" />
 									</div>
 									<div>
 										<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
@@ -1095,7 +1095,7 @@ export function AdminSecuritySection({
 								<div class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 									{entry.at ? new Date(entry.at).toLocaleString() : "--"}
 								</div>
-								<div class="flex items-center justify-between gap-3">
+								<div className="flex items-center justify-between gap-3">
 									<div class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										IP: {entry.ip || "--"} / Device: {entry.device_id || "--"}
 									</div>

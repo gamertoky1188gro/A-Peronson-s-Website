@@ -12,42 +12,42 @@ export function AdminMediaReviewSection({
 	setRejectionItem,
 }) {
 	return (
-		<div class="space-y-4 p-4">
-			<h2 class={`text-xl font-semibold ${adminDark ? "text-white" : "text-slate-900"}`}>
+		<div className="space-y-4 p-4">
+			<h2 className={`text-xl font-semibold ${adminDark ? "text-white" : "text-slate-900"}`}>
 				Media Review
 			</h2>
-			<p class={`text-sm ${adminDark ? "text-slate-400" : "text-slate-500"}`}>
+			<p className={`text-sm ${adminDark ? "text-slate-400" : "text-slate-500"}`}>
 				Approve or reject uploaded media
 			</p>
 
 			{loadingModeration ? (
-				<div class="flex items-center justify-center py-16">
+				<div className="flex items-center justify-center py-16">
 					<Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 				</div>
 			) : moderationPending.length > 0 ? (
-				<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 					{moderationPending.slice(0, 20).map((doc) => {
 						const aiLabel = doc.ai_label || "PENDING";
 						const isAutoApproved = doc.ai_auto_approved === true || doc.ai_auto_approved === "true";
 						return (
-							<div key={doc.id} class="relative group">
+							<div key={doc.id} className="relative group">
 								{doc.public_url ? (
 									doc.type === "video" ? (
-										<div class="w-full aspect-square bg-slate-800 rounded-xl overflow-hidden relative">
+										<div className="w-full aspect-square bg-slate-800 rounded-xl overflow-hidden relative">
 											<video
 												src={doc.public_url}
-												class="w-full h-full object-cover"
+												className="w-full h-full object-cover"
 												preload="metadata"
 											/>
-											<div class="absolute top-2 right-2 z-10">
+											<div className="absolute top-2 right-2 z-10">
 												<button
 													onClick={(e) => {
 														e.stopPropagation();
 														window.open(doc.public_url, "_blank");
 													}}
-													class="bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 hover:bg-black/90 cursor-pointer backdrop-blur-sm"
+													className="bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 hover:bg-black/90 cursor-pointer backdrop-blur-sm"
 												>
-													<ExternalLink class="h-3 w-3" />
+													<ExternalLink className="h-3 w-3" />
 													{/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "Open" : "Play"}
 												</button>
 											</div>
@@ -56,7 +56,7 @@ export function AdminMediaReviewSection({
 										<img
 											src={doc.public_url}
 											alt={doc.title || "Media"}
-											class="w-full aspect-square object-cover rounded-xl"
+											className="w-full aspect-square object-cover rounded-xl"
 											onError={(e) => {
 												e.target.style.display = "none";
 												e.target.nextSibling.style.display = "flex";
@@ -65,20 +65,20 @@ export function AdminMediaReviewSection({
 									)
 								) : null}
 								<div
-									class="w-full aspect-square bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center"
+									className="w-full aspect-square bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center"
 									style={{
 										display: doc.public_url ? "none" : undefined,
 									}}
 								>
 									{doc.type === "video" ? (
-										<Film class="h-10 w-10 text-slate-400" />
+										<Film className="h-10 w-10 text-slate-400" />
 									) : (
-										<Image class="h-10 w-10 text-slate-400" />
+										<Image className="h-10 w-10 text-slate-400" />
 									)}
 								</div>
 								{aiLabel !== "PENDING" && (
 									<div
-										class={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+										className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-[10px] font-bold ${
 											aiLabel === "HIGH RISK"
 												? "bg-red-600 text-white"
 												: aiLabel === "HARAM"
@@ -91,10 +91,10 @@ export function AdminMediaReviewSection({
 										AI: {aiLabel}
 									</div>
 								)}
-								<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col items-center justify-center gap-1.5 p-2">
+								<div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col items-center justify-center gap-1.5 p-2">
 									<button
 										onClick={() => setAiModalDoc(doc)}
-										class="bg-sky-600 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-sky-700"
+										className="bg-sky-600 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-sky-700"
 									>
 										Details
 									</button>
@@ -107,7 +107,7 @@ export function AdminMediaReviewSection({
 												});
 												setModerationPending((prev) => prev.filter((d) => d.id !== doc.id));
 											}}
-											class="bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-emerald-600"
+											className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-emerald-600"
 										>
 											Approve
 										</button>
@@ -117,7 +117,7 @@ export function AdminMediaReviewSection({
 											setRejectionModalOpen(true);
 											setRejectionItem(doc);
 										}}
-										class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-red-600"
+										className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium w-[calc(100%-24px)] hover:bg-red-600"
 									>
 										Reject
 									</button>
@@ -127,7 +127,7 @@ export function AdminMediaReviewSection({
 					})}
 				</div>
 			) : (
-				<div class={`text-center py-12 ${adminDark ? "text-slate-400" : "text-slate-500"}`}>
+				<div className={`text-center py-12 ${adminDark ? "text-slate-400" : "text-slate-500"}`}>
 					No pending media for review
 				</div>
 			)}

@@ -231,27 +231,27 @@ export default function SupportReports() {
 	}
 
 	return (
-		<div class={`min-h-screen ${theme} transition-colors duration-300`}>
-			<div class="absolute inset-0 pointer-events-none overflow-hidden">
-				<div class="absolute -top-24 left-[-6rem] h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
-				<div class="absolute top-40 right-[-6rem] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
-				<div class="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
+		<div className={`min-h-screen ${theme} transition-colors duration-300`}>
+			<div className="absolute inset-0 pointer-events-none overflow-hidden">
+				<div className="absolute -top-24 left-[-6rem] h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
+				<div className="absolute top-40 right-[-6rem] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
+				<div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
 			</div>
 
-			<div class="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				<header class={`mb-6 overflow-hidden rounded-[28px] border ${cardTheme} backdrop-blur-xl`}>
-					<div class="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between lg:p-8">
-						<div class="max-w-3xl">
-							<div class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-300">
-								<Sparkles class="h-4 w-4" />
+			<div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+				<header className={`mb-6 overflow-hidden rounded-[28px] border ${cardTheme} backdrop-blur-xl`}>
+					<div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between lg:p-8">
+						<div className="max-w-3xl">
+							<div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-300">
+								<Sparkles className="h-4 w-4" />
 								Premium support center
 							</div>
 
-							<h1 class="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+							<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
 								Support &amp; Reports
 							</h1>
 							<p
-								class={`mt-4 max-w-2xl text-sm leading-6 sm:text-base ${darkMode ? "text-slate-300" : "text-slate-600"}`}
+								className={`mt-4 max-w-2xl text-sm leading-6 sm:text-base ${darkMode ? "text-slate-300" : "text-slate-600"}`}
 							>
 								Report bugs, request features, or share any issue. We collect everything in one
 								place so it can be tracked and resolved.
@@ -259,16 +259,16 @@ export default function SupportReports() {
 
 							{canDedicatedManager && hasAccountManager ? (
 								<div
-									class={`mt-4 rounded-2xl border p-4 ${darkMode ? "border-amber-400/20 bg-amber-500/10" : "border-amber-200 bg-amber-50"}`}
+									className={`mt-4 rounded-2xl border p-4 ${darkMode ? "border-amber-400/20 bg-amber-500/10" : "border-amber-200 bg-amber-50"}`}
 								>
-									<div class="flex items-start gap-3">
+									<div className="flex items-start gap-3">
 										<Crown
-											class={`mt-0.5 h-5 w-5 ${darkMode ? "text-amber-300" : "text-amber-600"}`}
+											className={`mt-0.5 h-5 w-5 ${darkMode ? "text-amber-300" : "text-amber-600"}`}
 										/>
 										<div>
-											<p class="font-semibold">Dedicated Account Manager</p>
+											<p className="font-semibold">Dedicated Account Manager</p>
 											<p
-												class={`mt-1 text-sm leading-6 ${darkMode ? "text-amber-100/80" : "text-amber-900/70"}`}
+												className={`mt-1 text-sm leading-6 ${darkMode ? "text-amber-100/80" : "text-amber-900/70"}`}
 											>
 												{accountManager.account_manager_name || "Support manager"} —{" "}
 												{accountManager.account_manager_email || ""} —{" "}
@@ -280,26 +280,26 @@ export default function SupportReports() {
 							) : null}
 						</div>
 
-						<div class="flex flex-wrap items-center gap-3">
+						<div className="flex flex-wrap items-center gap-3">
 							<button
 								type="button"
 								onClick={toggleTheme}
-								class={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:scale-[1.01] active:scale-[0.99] ${
+								className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:scale-[1.01] active:scale-[0.99] ${
 									darkMode
 										? "border-white/10 bg-white/5 text-white hover:bg-white/10"
 										: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
 								}`}
 							>
-								{darkMode ? <Sun class="h-4 w-4" /> : <Moon class="h-4 w-4" />}
+								{darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 								{darkMode ? "Light mode" : "Dark mode"}
 							</button>
 
 							<button
 								type="button"
 								onClick={() => navigate(-1)}
-								class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5"
+								className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5"
 							>
-								<ArrowLeft class="h-4 w-4" />
+								<ArrowLeft className="h-4 w-4" />
 								Back
 							</button>
 						</div>
@@ -308,7 +308,7 @@ export default function SupportReports() {
 
 				{feedback && (
 					<div
-						class={`mb-6 rounded-2xl border px-4 py-3 ${
+						className={`mb-6 rounded-2xl border px-4 py-3 ${
 							feedback.includes("success")
 								? "border-emerald-400/20 bg-emerald-500/10 text-emerald-300"
 								: "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -318,26 +318,26 @@ export default function SupportReports() {
 					</div>
 				)}
 
-				<main class="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
+				<main className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
 					<ScrollReveal as="section">
-						<section class={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
-							<div class="mb-6 flex items-center justify-between gap-4">
+						<section className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
+							<div className="mb-6 flex items-center justify-between gap-4">
 								<div>
-									<h2 class="text-2xl font-semibold tracking-tight">Submit a report</h2>
-									<p class={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
+									<h2 className="text-2xl font-semibold tracking-tight">Submit a report</h2>
+									<p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
 										Every report gets organized, prioritized, and tracked.
 									</p>
 								</div>
-								<div class="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-3 text-sky-300">
-									<Shield class="h-5 w-5" />
+								<div className="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-3 text-sky-300">
+									<Shield className="h-5 w-5" />
 								</div>
 							</div>
 
-							<form onSubmit={submitReport} class="space-y-5">
-								<div class="grid gap-5 md:grid-cols-2">
-									<label class="block">
+							<form onSubmit={submitReport} className="space-y-5">
+								<div className="grid gap-5 md:grid-cols-2">
+									<label className="block">
 										<span
-											class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
+											className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
 										>
 											Subject
 										</span>
@@ -345,22 +345,22 @@ export default function SupportReports() {
 											value={subject}
 											onChange={(e) => setSubject(e.target.value)}
 											placeholder="Short summary of the issue"
-											class={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
+											className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
 											required={true}
 										/>
 									</label>
 
-									<label class="block">
+									<label className="block">
 										<span
-											class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
+											className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
 										>
 											Category
 										</span>
-										<div class="relative">
+										<div className="relative">
 											<select
 												value={category}
 												onChange={(e) => setCategory(e.target.value)}
-												class={`w-full appearance-none rounded-2xl border px-4 py-3 pr-11 text-sm outline-none transition ${inputTheme}`}
+												className={`w-full appearance-none rounded-2xl border px-4 py-3 pr-11 text-sm outline-none transition ${inputTheme}`}
 											>
 												{categoryOptions.map((item) => (
 													<option key={item} value={item}>
@@ -368,26 +368,26 @@ export default function SupportReports() {
 													</option>
 												))}
 											</select>
-											<ChevronDown class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+											<ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
 										</div>
 									</label>
 								</div>
 
-								<div class="grid gap-5 md:grid-cols-2">
+								<div className="grid gap-5 md:grid-cols-2">
 									<div>
 										<span
-											class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
+											className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
 										>
 											Priority
 										</span>
-										<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+										<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 											{priorityOptions.map((item) => (
 												<button
 													key={item}
 													type="button"
 													onClick={() => canPrioritySupport && setPriority(item)}
 													disabled={!canPrioritySupport}
-													class={`rounded-2xl border px-3 py-3 text-sm font-medium transition ${
+													className={`rounded-2xl border px-3 py-3 text-sm font-medium transition ${
 														priority === item
 															? "border-sky-400 bg-sky-500/15 text-sky-300 shadow-lg shadow-sky-500/10"
 															: canPrioritySupport
@@ -402,23 +402,23 @@ export default function SupportReports() {
 											))}
 										</div>
 										{!canPrioritySupport && (
-											<p class="mt-2 text-xs text-slate-500">
+											<p className="mt-2 text-xs text-slate-500">
 												Upgrade to Premium for priority support
 											</p>
 										)}
 									</div>
 
 									<div
-										class={`rounded-2xl border p-4 ${darkMode ? "border-amber-400/20 bg-amber-500/10" : "border-amber-200 bg-amber-50"}`}
+										className={`rounded-2xl border p-4 ${darkMode ? "border-amber-400/20 bg-amber-500/10" : "border-amber-200 bg-amber-50"}`}
 									>
-										<div class="flex items-start gap-3">
+										<div className="flex items-start gap-3">
 											<Crown
-												class={`mt-0.5 h-5 w-5 ${darkMode ? "text-amber-300" : "text-amber-600"}`}
+												className={`mt-0.5 h-5 w-5 ${darkMode ? "text-amber-300" : "text-amber-600"}`}
 											/>
 											<div>
-												<p class="font-semibold">Premium Priority</p>
+												<p className="font-semibold">Premium Priority</p>
 												<p
-													class={`mt-1 text-sm leading-6 ${darkMode ? "text-amber-100/80" : "text-amber-900/70"}`}
+													className={`mt-1 text-sm leading-6 ${darkMode ? "text-amber-100/80" : "text-amber-900/70"}`}
 												>
 													{canPrioritySupport
 														? "Your high-tier requests are highlighted for faster review."
@@ -429,9 +429,9 @@ export default function SupportReports() {
 									</div>
 								</div>
 
-								<label class="block">
+								<label className="block">
 									<span
-										class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
+										className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
 									>
 										Description
 									</span>
@@ -440,103 +440,103 @@ export default function SupportReports() {
 										value={description}
 										onChange={(e) => setDescription(e.target.value)}
 										placeholder="Write the full details here"
-										class={`w-full rounded-3xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
+										className={`w-full rounded-3xl border px-4 py-3 text-sm outline-none transition ${inputTheme}`}
 										required={true}
 									/>
 								</label>
 
-								<div class="grid gap-5 md:grid-cols-2">
-									<label class="block">
+								<div className="grid gap-5 md:grid-cols-2">
+									<label className="block">
 										<span
-											class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
+											className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
 										>
 											Page URL{" "}
 											<span class={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
 										</span>
-										<div class="relative">
-											<Globe class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+										<div className="relative">
+											<Globe className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
 											<input
 												value={pageUrl}
 												onChange={(e) => setPageUrl(e.target.value)}
 												placeholder="https://..."
-												class={`w-full rounded-2xl border px-10 py-3 text-sm outline-none transition ${inputTheme}`}
+												className={`w-full rounded-2xl border px-10 py-3 text-sm outline-none transition ${inputTheme}`}
 											/>
 										</div>
 									</label>
 
-									<label class="block">
+									<label className="block">
 										<span
-											class={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
+											className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
 										>
 											Contact Email{" "}
 											<span class={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
 										</span>
-										<div class="relative">
-											<Mail class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+										<div className="relative">
+											<Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
 											<input
 												value={contactEmail}
 												onChange={(e) => setContactEmail(e.target.value)}
 												placeholder="you@example.com"
-												class={`w-full rounded-2xl border px-10 py-3 text-sm outline-none transition ${inputTheme}`}
+												className={`w-full rounded-2xl border px-10 py-3 text-sm outline-none transition ${inputTheme}`}
 											/>
 										</div>
 									</label>
 								</div>
 
 								<div
-									class={`rounded-[24px] border border-dashed p-5 ${darkMode ? "border-white/10 bg-slate-900/30" : "border-slate-200 bg-slate-50"}`}
+									className={`rounded-[24px] border border-dashed p-5 ${darkMode ? "border-white/10 bg-slate-900/30" : "border-slate-200 bg-slate-50"}`}
 								>
-									<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-										<div class="flex items-start gap-3">
+									<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+										<div className="flex items-start gap-3">
 											<Upload
-												class={`mt-0.5 h-5 w-5 ${darkMode ? "text-sky-300" : "text-sky-600"}`}
+												className={`mt-0.5 h-5 w-5 ${darkMode ? "text-sky-300" : "text-sky-600"}`}
 											/>
 											<div>
-												<p class="font-medium">
+												<p className="font-medium">
 													Screenshot / File{" "}
 													<span class={darkMode ? "text-slate-500" : "text-slate-400"}>
 														(optional)
 													</span>
 												</p>
-												<p class={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
+												<p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
 													{attachment ? attachment.name : "No file chosen"}
 												</p>
 											</div>
 										</div>
 
 										<label
-											class={`inline-flex cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:scale-[1.01] active:scale-[0.99] ${darkMode ? "border-white/10 bg-white/5 text-white hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
+											className={`inline-flex cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:scale-[1.01] active:scale-[0.99] ${darkMode ? "border-white/10 bg-white/5 text-white hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
 										>
 											<input
 												type="file"
-												class="hidden"
+												className="hidden"
 												onChange={(e) => setAttachment(e.target.files?.[0] || null)}
 											/>
-											<FileText class="h-4 w-4" />
+											<FileText className="h-4 w-4" />
 											{attachment ? "Change" : "Choose file"}
 										</label>
 										{attachmentUploadProgress > 0 && (
-											<UploadProgressBar progress={attachmentUploadProgress} class="mt-2" />
+											<UploadProgressBar progress={attachmentUploadProgress} className="mt-2" />
 										)}
 									</div>
 								</div>
 
 								{reportId && (
-									<div class="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
-										<p class="font-semibold text-emerald-300">Ticket Submitted!</p>
-										<p class="text-sm text-emerald-200/80">Your ticket ID: {reportId}</p>
+									<div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
+										<p className="font-semibold text-emerald-300">Ticket Submitted!</p>
+										<p className="text-sm text-emerald-200/80">Your ticket ID: {reportId}</p>
 									</div>
 								)}
 
 								<button
 									type="submit"
 									disabled={loading}
-									class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-500 px-5 py-4 text-sm font-semibold text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+									className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-500 px-5 py-4 text-sm font-semibold text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
 								>
 									{loading ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 									) : (
-										<Check class="h-4 w-4" />
+										<Check className="h-4 w-4" />
 									)}
 									Submit Report
 								</button>
@@ -544,13 +544,13 @@ export default function SupportReports() {
 						</section>
 					</ScrollReveal>
 
-					<aside class="space-y-6">
+					<aside className="space-y-6">
 						<ScrollReveal as="section">
-							<section class={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
-								<div class="mb-5 flex items-center justify-between">
+							<section className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
+								<div className="mb-5 flex items-center justify-between">
 									<div>
-										<h3 class="text-xl font-semibold">My Support Tickets</h3>
-										<p class={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
+										<h3 className="text-xl font-semibold">My Support Tickets</h3>
+										<p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
 											Refresh and track your recent submissions.
 										</p>
 									</div>
@@ -558,7 +558,7 @@ export default function SupportReports() {
 										type="button"
 										onClick={loadTickets}
 										disabled={ticketsLoading}
-										class={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition ${
+										className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition ${
 											darkMode
 												? "border-white/10 bg-white/5 text-white hover:bg-white/10"
 												: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -573,7 +573,7 @@ export default function SupportReports() {
 												textColor=""
 											/>
 										) : (
-											<RefreshCw class="h-4 w-4" />
+											<RefreshCw className="h-4 w-4" />
 										)}
 										Refresh
 									</button>
@@ -589,51 +589,51 @@ export default function SupportReports() {
 									/>
 								) : tickets.length === 0 ? (
 									<div
-										class={`rounded-[24px] border border-dashed p-8 text-center ${darkMode ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"}`}
+										className={`rounded-[24px] border border-dashed p-8 text-center ${darkMode ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"}`}
 									>
 										<Ticket
-											class={`mx-auto h-10 w-10 ${darkMode ? "text-sky-300" : "text-sky-600"}`}
+											className={`mx-auto h-10 w-10 ${darkMode ? "text-sky-300" : "text-sky-600"}`}
 										/>
-										<p class="mt-4 text-lg font-semibold">No tickets yet.</p>
-										<p class={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
+										<p className="mt-4 text-lg font-semibold">No tickets yet.</p>
+										<p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
 											Submit a report to create your first support ticket.
 										</p>
 									</div>
 								) : (
-									<div class="space-y-4">
+									<div className="space-y-4">
 										{tickets.map((ticket) => (
 											<article
 												key={ticket.id}
-												class={`rounded-[24px] border p-4 transition hover:-translate-y-0.5 ${darkMode ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+												className={`rounded-[24px] border p-4 transition hover:-translate-y-0.5 ${darkMode ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
 											>
-												<div class="flex items-start justify-between gap-4">
+												<div className="flex items-start justify-between gap-4">
 													<div>
-														<div class="flex flex-wrap items-center gap-2">
-															<span class="rounded-full bg-sky-500/15 px-2.5 py-1 text-xs font-semibold text-sky-300">
+														<div className="flex flex-wrap items-center gap-2">
+															<span className="rounded-full bg-sky-500/15 px-2.5 py-1 text-xs font-semibold text-sky-300">
 																{ticket.id}
 															</span>
 															<span
-																class={`rounded-full px-2.5 py-1 text-xs font-semibold ${darkMode ? "bg-white/5 text-slate-300" : "bg-slate-100 text-slate-600"}`}
+																className={`rounded-full px-2.5 py-1 text-xs font-semibold ${darkMode ? "bg-white/5 text-slate-300" : "bg-slate-100 text-slate-600"}`}
 															>
 																{ticket.status || "Open"}
 															</span>
 														</div>
-														<h4 class="mt-3 font-semibold">{ticket.subject}</h4>
+														<h4 className="mt-3 font-semibold">{ticket.subject}</h4>
 														<p
-															class={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}
+															className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}
 														>
 															{ticket.category}
 														</p>
 													</div>
 													{ticket.priority && (
 														<span
-															class={`rounded-full px-3 py-1 text-xs font-semibold ${getPriorityColor(ticket.priority)}`}
+															className={`rounded-full px-3 py-1 text-xs font-semibold ${getPriorityColor(ticket.priority)}`}
 														>
 															{ticket.priority}
 														</span>
 													)}
 												</div>
-												<p class={`mt-4 text-xs ${darkMode ? "text-slate-500" : "text-slate-500"}`}>
+												<p className={`mt-4 text-xs ${darkMode ? "text-slate-500" : "text-slate-500"}`}>
 													{ticket.created_at ? new Date(ticket.created_at).toLocaleString() : ""}
 												</p>
 											</article>
@@ -644,9 +644,9 @@ export default function SupportReports() {
 						</ScrollReveal>
 
 						<ScrollReveal as="section">
-							<section class={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
-								<h3 class="text-xl font-semibold">What happens next</h3>
-								<div class="mt-5 space-y-4">
+							<section className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
+								<h3 className="text-xl font-semibold">What happens next</h3>
+								<div className="mt-5 space-y-4">
 									{(() => {
 										const statusCounts = tickets.reduce((acc, t) => {
 											const s = t.status || "open";
@@ -678,23 +678,23 @@ export default function SupportReports() {
 										return steps.map((item, index) => {
 											const LucideIcon = item.icon;
 											return (
-												<div key={item.title} class="flex gap-4">
-													<div class="flex flex-col items-center">
+												<div key={item.title} className="flex gap-4">
+													<div className="flex flex-col items-center">
 														<div
-															class={`flex h-11 w-11 items-center justify-center rounded-2xl ${darkMode ? "bg-white/5 text-sky-300" : "bg-sky-50 text-sky-600"}`}
+															className={`flex h-11 w-11 items-center justify-center rounded-2xl ${darkMode ? "bg-white/5 text-sky-300" : "bg-sky-50 text-sky-600"}`}
 														>
-															<LucideIcon class="h-5 w-5" />
+															<LucideIcon className="h-5 w-5" />
 														</div>
 														{index < 3 && (
 															<div
-																class={`mt-2 h-full w-px flex-1 ${darkMode ? "bg-white/10" : "bg-slate-200"}`}
+																className={`mt-2 h-full w-px flex-1 ${darkMode ? "bg-white/10" : "bg-slate-200"}`}
 															/>
 														)}
 													</div>
-													<div class="pb-3">
-														<p class="font-semibold">{item.title}</p>
+													<div className="pb-3">
+														<p className="font-semibold">{item.title}</p>
 														<p
-															class={`mt-1 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-600"}`}
+															className={`mt-1 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-600"}`}
 														>
 															{item.text}
 														</p>
@@ -708,15 +708,15 @@ export default function SupportReports() {
 						</ScrollReveal>
 
 						<ScrollReveal as="section">
-							<section class={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
-								<div class="flex items-start gap-3">
+							<section className={`rounded-[28px] border ${cardTheme} p-5 backdrop-blur-xl sm:p-6`}>
+								<div className="flex items-start gap-3">
 									<AlertTriangle
-										class={`mt-0.5 h-5 w-5 ${darkMode ? "text-sky-300" : "text-sky-600"}`}
+										className={`mt-0.5 h-5 w-5 ${darkMode ? "text-sky-300" : "text-sky-600"}`}
 									/>
 									<div>
-										<h3 class="font-semibold">Best practice</h3>
+										<h3 className="font-semibold">Best practice</h3>
 										<p
-											class={`mt-1 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-600"}`}
+											className={`mt-1 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-600"}`}
 										>
 											Include steps to reproduce, screenshots, page URL, and any visible error text
 											for faster resolution.

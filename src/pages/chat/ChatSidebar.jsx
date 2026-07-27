@@ -13,12 +13,12 @@ export default function ChatSidebar({
 }) {
 	return (
 		<aside
-			class="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1"
+			className="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1"
 			style={{ background: "transparent", boxShadow: "none" }}
 		>
-			<div class="space-y-2">
+			<div className="space-y-2">
 				<button
-					class={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] shadow-none text-lg transition-colors${
+					className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] shadow-none text-lg transition-colors${
 						isLight ? "bg-white text-orange-400 shadow-sm" : "bg-[#171031] text-[#D4FF59]"
 					}`}
 					onClick={() => setThemeMode((value) => (value === "light" ? "dark" : "light"))}
@@ -33,7 +33,7 @@ export default function ChatSidebar({
 						<Link
 							key={item.to}
 							to={item.to}
-							class={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all${
+							className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all${
 								isActive
 									? isLight
 										? "bg-gtBlue text-white"
@@ -50,7 +50,7 @@ export default function ChatSidebar({
 				})}
 			</div>
 			<button
-				class="flex h-10 w-10 items-center justify-center rounded-[12px] transition-colors"
+				className="flex h-10 w-10 items-center justify-center rounded-[12px] transition-colors"
 				style={{
 					background: isLight ? "#ffffff" : theme.tileBg,
 					color: isLight ? "#ef4444" : "#8f95bb",

@@ -30,11 +30,11 @@ export default function FlipCard({
 
 	return (
 		<div
-			class={`group perspective-[1000px] ${className}`}
+			className={`group perspective-[1000px] ${className}`}
 			onClick={!isControlled && flipOn === "click" ? () => onFlip?.() : undefined}
 		>
 			<motion.div
-				class="relative w-full h-full preserve-3d"
+				className="relative w-full h-full preserve-3d"
 				style={{ transformStyle: "preserve-3d" }}
 				animate={{
 					rotateY: isControlled ? (controlledFlip ? 180 : 0) : undefined,
@@ -43,13 +43,13 @@ export default function FlipCard({
 				transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
 			>
 				<div
-					class="absolute inset-0"
+					className="absolute inset-0"
 					style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
 				>
 					{front}
 				</div>
 				<div
-					class="absolute inset-0"
+					className="absolute inset-0"
 					style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
 				>
 					{back}

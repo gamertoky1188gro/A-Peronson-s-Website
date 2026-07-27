@@ -4,7 +4,7 @@ import { ThreeDot } from "react-loading-indicators";
 
 export function SkeletonLine({ className = "", size = 24 }) {
 	return (
-		<span class={`inline-block ${className}`}>
+		<span className={`inline-block ${className}`}>
 			<ThreeDot
 				variant="bounce"
 				color="#6100ff"
@@ -29,7 +29,7 @@ export function Badge({ children, tone = "default" }) {
 	};
 	return (
 		<span
-			class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+			className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
 				tones[tone] || tones.default
 			}`}
 		>
@@ -48,23 +48,23 @@ export function StatCard({ icon: Icon, title, value, meta, tone = "sky" }) {
 	};
 	const toneClass = toneClasses[tone] || toneClasses.sky;
 	return (
-		<div class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900/50 dark:ring-slate-800">
+		<div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900/50 dark:ring-slate-800">
 			<div
-				class={`absolute inset-0 bg-gradient-to-br ${toneClass} opacity-0 transition-opacity group-hover:opacity-100`}
+				className={`absolute inset-0 bg-gradient-to-br ${toneClass} opacity-0 transition-opacity group-hover:opacity-100`}
 			/>
-			<div class="relative flex items-start justify-between">
+			<div className="relative flex items-start justify-between">
 				<div>
-					<p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+					<p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
 						{title}
 					</p>
-					<p class="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
-					{meta ? <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{meta}</p> : null}
+					<p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+					{meta ? <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{meta}</p> : null}
 				</div>
 				{Icon && (
 					<div
-						class={`flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 ${toneClass}`}
+						className={`flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 ${toneClass}`}
 					>
-						<Icon class="h-5 w-5" />
+						<Icon className="h-5 w-5" />
 					</div>
 				)}
 			</div>
@@ -86,18 +86,18 @@ export function SectionCard({ title, subtitle, icon, children, className = "" })
 	const Icon = icon;
 	return (
 		<div
-			class={`rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm ring-1 ring-slate-200/60 dark:border-slate-800 dark:bg-slate-900/50 dark:ring-slate-800 ${className}`}
+			className={`rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm ring-1 ring-slate-200/60 dark:border-slate-800 dark:bg-slate-900/50 dark:ring-slate-800 ${className}`}
 		>
 			{(title || Icon) && (
-				<div class="mb-4 flex items-center gap-3">
+				<div className="mb-4 flex items-center gap-3">
 					{Icon && (
-						<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300">
-							<Icon class="h-5 w-5" />
+						<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300">
+							<Icon className="h-5 w-5" />
 						</div>
 					)}
 					<div>
-						{title && <h3 class="font-bold text-slate-900 dark:text-white">{title}</h3>}
-						{subtitle && <p class="text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
+						{title && <h3 className="font-bold text-slate-900 dark:text-white">{title}</h3>}
+						{subtitle && <p className="text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
 					</div>
 				</div>
 			)}
@@ -130,7 +130,7 @@ export function cmsChipClass(_dark, active = false) {
  */
 export function CmsMiniBadge({ dark: _dark, children }) {
 	return (
-		<span class="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+		<span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
 			{children}
 		</span>
 	);
@@ -149,18 +149,18 @@ export function CmsMiniBadge({ dark: _dark, children }) {
  */
 export function CmsStatCard({ dark: _dark, icon: Icon, label, value, meta: _meta, trend }) {
 	return (
-		<div class="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
-			<div class="flex items-center justify-between">
-				{Icon && <Icon class="h-5 w-5 text-slate-400" />}
+		<div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
+			<div className="flex items-center justify-between">
+				{Icon && <Icon className="h-5 w-5 text-slate-400" />}
 				{trend && (
-					<span class={`text-xs font-semibold ${trend > 0 ? "text-emerald-600" : "text-rose-600"}`}>
+					<span className={`text-xs font-semibold ${trend > 0 ? "text-emerald-600" : "text-rose-600"}`}>
 						{trend > 0 ? "+" : ""}
 						{trend}%
 					</span>
 				)}
 			</div>
-			<p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
-			<p class="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+			<p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+			<p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
 		</div>
 	);
 }
@@ -185,17 +185,17 @@ export function CmsSectionCard({
 	right,
 }) {
 	return (
-		<div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:border-slate-800 dark:bg-slate-900/50 dark:ring-slate-800">
-			<div class="mb-4 flex items-center justify-between">
-				<div class="flex items-center gap-3">
+		<div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:border-slate-800 dark:bg-slate-900/50 dark:ring-slate-800">
+			<div className="mb-4 flex items-center justify-between">
+				<div className="flex items-center gap-3">
 					{Icon && (
-						<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300">
-							<Icon class="h-5 w-5" />
+						<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300">
+							<Icon className="h-5 w-5" />
 						</div>
 					)}
 					<div>
-						{title && <h3 class="font-bold text-slate-900 dark:text-white">{title}</h3>}
-						{subtitle && <p class="text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
+						{title && <h3 className="font-bold text-slate-900 dark:text-white">{title}</h3>}
+						{subtitle && <p className="text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
 					</div>
 				</div>
 				{right}

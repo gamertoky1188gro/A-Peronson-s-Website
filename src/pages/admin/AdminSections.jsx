@@ -42,7 +42,7 @@ export function AdminSectionRouter({ activeCategory, ...props }) {
 	const SectionComponent = SECTIONS[activeCategory];
 
 	if (!SectionComponent) {
-		return <div class="p-8 text-center text-slate-500">Unknown category: {activeCategory}</div>;
+		return <div className="p-8 text-center text-slate-500">Unknown category: {activeCategory}</div>;
 	}
 
 	return <SectionComponent {...props} />;

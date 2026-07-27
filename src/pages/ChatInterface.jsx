@@ -1034,28 +1034,28 @@ export default function ChatInterface() {
 
 		if (isImageMessage(message) && attachmentUrl) {
 			return (
-				<div class="space-y-1">
+				<div className="space-y-1">
 					{message.message ? (
-						<div class="mb-1">
+						<div className="mb-1">
 							<MarkdownMessage text={message.message} />
 						</div>
 					) : null}
 					<button
 						type="button"
 						onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
-						class="block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left transition-opacity hover:opacity-95"
+						className="block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left transition-opacity hover:opacity-95"
 						title="View image"
 					>
 						<img
 							src={attachmentUrl}
 							alt={message?.attachment?.name || "Shared image"}
-							class="max-h-64 w-full object-cover"
+							className="max-h-64 w-full object-cover"
 						/>
 					</button>
 <button
 						type="button"
 						onClick={() => handleDownloadWithMetadata(message)}
-						class="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
+						className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
 					>
 						<Download size={12} />
 						Download
@@ -1066,16 +1066,16 @@ export default function ChatInterface() {
 
 		if (isVideoMessage(message) && attachmentUrl) {
 			return (
-				<div class="space-y-1">
+				<div className="space-y-1">
 					{message.message ? (
-						<div class="mb-1">
+						<div className="mb-1">
 							<MarkdownMessage text={message.message} />
 						</div>
 					) : null}
 					<button
 						type="button"
 						onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
-						class="relative block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left"
+						className="relative block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left"
 						title="View video"
 					>
 						<video
@@ -1083,10 +1083,10 @@ export default function ChatInterface() {
 							muted={true}
 							playsInline={true}
 							preload="metadata"
-							class="max-h-64 w-full object-cover"
+							className="max-h-64 w-full object-cover"
 						/>
-						<div class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
-							<div class="rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white">
+						<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
+							<div className="rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white">
 								Play
 							</div>
 						</div>
@@ -1094,7 +1094,7 @@ export default function ChatInterface() {
 <button
 						type="button"
 						onClick={() => handleDownloadWithMetadata(message)}
-						class="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
+						className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
 					>
 						<Download size={12} />
 						Download
@@ -1105,9 +1105,9 @@ export default function ChatInterface() {
 
 		if (message?.attachment?.url) {
 			return (
-				<div class="space-y-1">
+				<div className="space-y-1">
 					{message.message && message.message !== "Shared a file" ? (
-						<div class="mb-1">
+						<div className="mb-1">
 							<MarkdownMessage text={message.message} />
 						</div>
 					) : null}
@@ -1126,19 +1126,19 @@ export default function ChatInterface() {
 		if (firstUrl) {
 			const meta = linkPreviewMeta(firstUrl);
 			return (
-				<div class="space-y-2">
+				<div className="space-y-2">
 					<MarkdownMessage text={message.message} />
 					<a
 						href={firstUrl}
 						target="_blank"
 						rel="noreferrer"
-						class="block rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-2 dark:bg-black/20"
+						className="block rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-2 dark:bg-black/20"
 					>
-						<div class="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
+						<div className="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
 							{meta.host}
 						</div>
-						<div class="text-sm font-semibold">{meta.host}</div>
-						{meta.path ? <div class="text-xs opacity-70">{meta.path}</div> : null}
+						<div className="text-sm font-semibold">{meta.host}</div>
+						{meta.path ? <div className="text-xs opacity-70">{meta.path}</div> : null}
 					</a>
 				</div>
 			);
@@ -1472,7 +1472,7 @@ export default function ChatInterface() {
 
 	return (
 		<div
-			class="fixed inset-0 font-['Poppins',sans-serif] text-white chat-interface-container overflow-hidden"
+			className="fixed inset-0 font-['Poppins',sans-serif] text-white chat-interface-container overflow-hidden"
 			style={{
 				background: theme.pageBg,
 				color: theme.textPrimary,
@@ -1490,18 +1490,18 @@ export default function ChatInterface() {
       `}</style>
 			{notice ? (
 				<div
-					class="mx-3 mt-2 rounded-xl px-4 py-3 text-sm font-medium shadow-sm"
+					className="mx-3 mt-2 rounded-xl px-4 py-3 text-sm font-medium shadow-sm"
 					style={{
 						background: notice.type === "error" ? "#fee2e2" : "#e0f2fe",
 						color: "#0f172a",
 					}}
 				>
-					<div class="flex items-center justify-between gap-4">
+					<div className="flex items-center justify-between gap-4">
 						<div>
-							<div class="text-[13px] font-semibold">{notice.title || "Notice"}</div>
-							<div class="text-[12px] opacity-80">{notice.message || ""}</div>
+							<div className="text-[13px] font-semibold">{notice.title || "Notice"}</div>
+							<div className="text-[12px] opacity-80">{notice.message || ""}</div>
 						</div>
-						<button onClick={() => setNotice(null)} class="text-xs font-semibold">
+						<button onClick={() => setNotice(null)} className="text-xs font-semibold">
 							Dismiss
 						</button>
 					</div>
@@ -1513,44 +1513,44 @@ export default function ChatInterface() {
 				onClose={() => setPreviewAttachment(null)}
 			/>
 			{callPromptThread ? (
-				<div class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
-					<div class="w-full max-w-sm rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[#14122b] p-6 text-white shadow-2xl">
-						<div class="flex items-center gap-4">
+				<div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
+					<div className="w-full max-w-sm rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[#14122b] p-6 text-white shadow-2xl">
+						<div className="flex items-center gap-4">
 							{callPromptThread.avatar ? (
 								<img
 									src={avatarUrl(callPromptThread.avatar)}
 									alt={callPromptThread.name}
-									class="h-16 w-16 rounded-full object-cover"
+									className="h-16 w-16 rounded-full object-cover"
 								/>
 							) : (
-								<div class="flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2744] text-lg font-bold">
+								<div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2744] text-lg font-bold">
 									{getInitials(formatDisplayName(callPromptThread.name, callPromptThread.senderId))}
 								</div>
 							)}
 							<div>
-								<p class="text-sm text-slate-300">
+								<p className="text-sm text-slate-300">
 									{callPromptThread.direction === "incoming" ? "Incoming call" : "Calling"}
 								</p>
-								<p class="text-lg font-semibold">
+								<p className="text-lg font-semibold">
 									{formatDisplayName(callPromptThread.name, callPromptThread.senderId)}
 								</p>
-								<p class="text-xs text-slate-400">
+								<p className="text-xs text-slate-400">
 									{callPromptThread.direction === "incoming"
 										? "Accept to join the call."
 										: "Ready to start the call*"}
 								</p>
 							</div>
 						</div>
-						<div class="mt-6 flex items-center justify-between gap-3">
+						<div className="mt-6 flex items-center justify-between gap-3">
 							<button
 								onClick={closeCallPrompt}
-								class="flex-1 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
+								className="flex-1 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
 							>
 								Decline
 							</button>
 							<button
 								onClick={acceptCallPrompt}
-								class="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-400"
+								className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-400"
 							>
 								Accept
 							</button>
@@ -1558,7 +1558,7 @@ export default function ChatInterface() {
 					</div>
 				</div>
 			) : null}
-			<div class="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
+			<div className="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
 				<ChatSidebar
 					themeMode={themeMode}
 					setThemeMode={setThemeMode}

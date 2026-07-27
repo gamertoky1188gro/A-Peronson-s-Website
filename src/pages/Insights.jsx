@@ -200,35 +200,35 @@ function StatCard({ icon: Icon, label, value, hint = "", subtle = false, classNa
 				className,
 			)}
 		>
-			<div class="mb-4 flex items-start justify-between gap-3">
-				<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 shadow-sm dark:bg-sky-500/10 dark:text-sky-300">
-					{Icon ? <Icon class="h-5 w-5" /> : null}
+			<div className="mb-4 flex items-start justify-between gap-3">
+				<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 shadow-sm dark:bg-sky-500/10 dark:text-sky-300">
+					{Icon ? <Icon className="h-5 w-5" /> : null}
 				</div>
-				<div class="rounded-full border border-sky-200/70 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-500 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-slate-300">
+				<div className="rounded-full border border-sky-200/70 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-500 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-slate-300">
 					{hint || "Analytics"}
 				</div>
 			</div>
-			<div class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+			<div className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
 				{value}
 			</div>
-			<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">{label}</div>
+			<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{label}</div>
 		</div>
 	);
 }
 
 function SectionHeader({ icon: Icon, title, subtitle, right }) {
 	return (
-		<div class="mb-4 flex items-center justify-between gap-4">
-			<div class="flex items-center gap-3">
-				<div class="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-white text-sky-700 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-sky-300">
-					{Icon ? <Icon class="h-5 w-5" /> : null}
+		<div className="mb-4 flex items-center justify-between gap-4">
+			<div className="flex items-center gap-3">
+				<div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-white text-sky-700 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-sky-300">
+					{Icon ? <Icon className="h-5 w-5" /> : null}
 				</div>
 				<div>
-					<h2 class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+					<h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
 						{title}
 					</h2>
 					{subtitle ? (
-						<div class="text-xs text-slate-500 dark:text-slate-400">{subtitle}</div>
+						<div className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</div>
 					) : null}
 				</div>
 			</div>
@@ -264,35 +264,35 @@ function Badge({ children, tone = "default", className = "" }) {
 
 function EmptyState({ icon: Icon, title, description }) {
 	return (
-		<div class="rounded-3xl border border-dashed border-sky-200 bg-white/70 p-6 text-center shadow-sm dark:border-sky-500/20 dark:bg-slate-950/60">
-			<div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-				{Icon ? <Icon class="h-5 w-5" /> : null}
+		<div className="rounded-3xl border border-dashed border-sky-200 bg-white/70 p-6 text-center shadow-sm dark:border-sky-500/20 dark:bg-slate-950/60">
+			<div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+				{Icon ? <Icon className="h-5 w-5" /> : null}
 			</div>
-			<div class="text-base font-semibold text-slate-900 dark:text-white">{title}</div>
-			<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</div>
+			<div className="text-base font-semibold text-slate-900 dark:text-white">{title}</div>
+			<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</div>
 		</div>
 	);
 }
 
 function MiniStat({ label, value }) {
 	return (
-		<div class="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/70">
-			<div class="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+		<div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/70">
+			<div className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				{label}
 			</div>
-			<div class="mt-0.5 font-medium text-slate-900 dark:text-white">{value}</div>
+			<div className="mt-0.5 font-medium text-slate-900 dark:text-white">{value}</div>
 		</div>
 	);
 }
 
 function PanelList({ title, items, emptyText, renderItem }) {
 	return (
-		<div class="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
-			<div class="mb-4 flex items-center justify-between gap-3">
-				<h3 class="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-				<ChevronRight class="h-4 w-4 text-slate-400" />
+		<div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+			<div className="mb-4 flex items-center justify-between gap-3">
+				<h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
+				<ChevronRight className="h-4 w-4 text-slate-400" />
 			</div>
-			<div class="space-y-2">
+			<div className="space-y-2">
 				{Array.isArray(items) && items.length > 0 ? (
 					items.map((item, idx) => (
 						<div
@@ -305,13 +305,13 @@ function PanelList({ title, items, emptyText, renderItem }) {
 								item.page ||
 								idx
 							}
-							class="rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
+							className="rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
 						>
 							{typeof renderItem === "function" ? renderItem(item) : String(item)}
 						</div>
 					))
 				) : (
-					<div class="text-sm text-slate-500 dark:text-slate-400">{emptyText}</div>
+					<div className="text-sm text-slate-500 dark:text-slate-400">{emptyText}</div>
 				)}
 			</div>
 		</div>
@@ -439,39 +439,39 @@ export default function Insights() {
 
 	if (forbidden) {
 		return (
-			<div class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
+			<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
 				<AccessDeniedState message={error} />
 			</div>
 		);
 	}
 
 	return (
-		<div class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-white">
-			<div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
-				<div class="relative overflow-hidden rounded-[2rem] border border-sky-200/80 bg-white/85 p-6 shadow-[0_20px_80px_-30px_rgba(14,165,233,0.35)] backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70 lg:p-8">
-					<div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.18),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_28%)]" />
+		<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-white">
+			<div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+				<div className="relative overflow-hidden rounded-[2rem] border border-sky-200/80 bg-white/85 p-6 shadow-[0_20px_80px_-30px_rgba(14,165,233,0.35)] backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70 lg:p-8">
+					<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.18),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_28%)]" />
 
 					{error ? (
-						<div class="relative mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+						<div className="relative mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
 							{error}
 						</div>
 					) : null}
 
-					<div class="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+					<div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
 						<div>
-							<div class="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
-								<Sparkles class="h-3.5 w-3.5" />
+							<div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+								<Sparkles className="h-3.5 w-3.5" />
 								Insights &amp; Analytics
 							</div>
-							<h1 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+							<h1 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
 								Insights &amp; Analytics
 							</h1>
-							<p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+							<p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
 								Owner/admin intelligence dashboard for KPIs, interaction metrics, company analytics,
 								platform analytics, and premium insights.
 							</p>
 						</div>
-						<div class="flex flex-wrap items-center gap-2">
+						<div className="flex flex-wrap items-center gap-2">
 							<Badge tone={isEnterprise ? "green" : "slate"}>
 								{isEnterprise ? "Enterprise Plan" : "Free Plan"}
 							</Badge>
@@ -485,7 +485,7 @@ export default function Insights() {
 					</div>
 
 					<ScrollReveal as="section">
-						<div class="relative mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+						<div className="relative mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
 							{(topMetrics.length > 0
 								? topMetrics.slice(0, 5)
 								: Object.entries(totals)
@@ -509,7 +509,7 @@ export default function Insights() {
 					</ScrollReveal>
 
 					<ScrollReveal as="section">
-						<div class="relative mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+						<div className="relative mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 							<StatCard
 								icon={Users}
 								label="Total Buyer Requests"
@@ -542,7 +542,7 @@ export default function Insights() {
 					</ScrollReveal>
 
 					<ScrollReveal as="section">
-						<div class="relative mt-7 grid gap-4 xl:grid-cols-4">
+						<div className="relative mt-7 grid gap-4 xl:grid-cols-4">
 							<StatCard
 								icon={Eye}
 								label="Total Page Views"
@@ -564,28 +564,28 @@ export default function Insights() {
 								hint="Seconds"
 								subtle={true}
 							/>
-							<div class="rounded-3xl border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
-								<div class="mb-4 flex items-center justify-between">
-									<div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-										<Search class="h-5 w-5" />
+							<div className="rounded-3xl border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+								<div className="mb-4 flex items-center justify-between">
+									<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+										<Search className="h-5 w-5" />
 									</div>
 									<Badge tone="default">Top Pages</Badge>
 								</div>
-								<div class="space-y-2">
+								<div className="space-y-2">
 									{(interactionSummary.top_pages || []).length > 0 ? (
 										interactionSummary.top_pages.map((row) => (
 											<div
 												key={row.page}
-												class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900/60"
+												className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900/60"
 											>
-												<span class="truncate text-slate-700 dark:text-slate-300">{row.page}</span>
-												<span class="ml-3 font-medium text-slate-950 dark:text-white">
+												<span className="truncate text-slate-700 dark:text-slate-300">{row.page}</span>
+												<span className="ml-3 font-medium text-slate-950 dark:text-white">
 													{formatNumber(row.count)}
 												</span>
 											</div>
 										))
 									) : (
-										<div class="text-sm text-slate-500 dark:text-slate-400">
+										<div className="text-sm text-slate-500 dark:text-slate-400">
 											No page view data yet.
 										</div>
 									)}
@@ -595,7 +595,7 @@ export default function Insights() {
 					</ScrollReveal>
 
 					<ScrollReveal as="section">
-						<div class="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+						<div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
 							<SectionHeader
 								icon={Crown}
 								title="Analytics Panel"
@@ -611,27 +611,27 @@ export default function Insights() {
 							/>
 
 							{isEnterprise ? (
-								<div class="grid gap-4 lg:grid-cols-2">
-									<div class="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
-										<div class="mb-4 flex items-center justify-between">
-											<h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+								<div className="grid gap-4 lg:grid-cols-2">
+									<div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+										<div className="mb-4 flex items-center justify-between">
+											<h3 className="text-sm font-semibold text-slate-900 dark:text-white">
 												Analytics Events by Type
 											</h3>
 											<Badge tone="default">Live</Badge>
 										</div>
-										<div class="space-y-2">
+										<div className="space-y-2">
 											{Object.keys(byType).length === 0 ? (
-												<div class="text-sm text-slate-500 dark:text-slate-400">
+												<div className="text-sm text-slate-500 dark:text-slate-400">
 													No analytics events recorded yet.
 												</div>
 											) : null}
 											{Object.entries(byType).map(([type, count]) => (
 												<div
 													key={type}
-													class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
+													className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
 												>
-													<span class="truncate text-slate-700 dark:text-slate-300">{type}</span>
-													<span class="font-medium text-slate-950 dark:text-white">
+													<span className="truncate text-slate-700 dark:text-slate-300">{type}</span>
+													<span className="font-medium text-slate-950 dark:text-white">
 														{formatNumber(count)}
 													</span>
 												</div>
@@ -639,12 +639,12 @@ export default function Insights() {
 										</div>
 									</div>
 
-									<div class="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-white to-sky-50/80 p-5 dark:border-sky-500/20 dark:from-slate-950 dark:to-slate-900">
-										<div class="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-											<Download class="h-4 w-4 text-sky-600 dark:text-sky-300" />
+									<div className="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-white to-sky-50/80 p-5 dark:border-sky-500/20 dark:from-slate-950 dark:to-slate-900">
+										<div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+											<Download className="h-4 w-4 text-sky-600 dark:text-sky-300" />
 											Export Controls
 										</div>
-										<div class="grid gap-3 sm:grid-cols-2">
+										<div className="grid gap-3 sm:grid-cols-2">
 											<button
 												title={
 													canExportAnalytics
@@ -701,7 +701,7 @@ export default function Insights() {
 														textColor=""
 													/>
 												) : (
-													<FileDown class="h-4 w-4" />
+													<FileDown className="h-4 w-4" />
 												)}
 												{exportLoading ? "Exporting..." : "Export CSV"}
 											</button>
@@ -761,35 +761,35 @@ export default function Insights() {
 														textColor=""
 													/>
 												) : (
-													<FileText class="h-4 w-4" />
+													<FileText className="h-4 w-4" />
 												)}
 												{exportLoading ? "Preparing..." : "Download PDF Report"}
 											</button>
 										</div>
 										{exportError ? (
-											<div class="mt-3 text-xs text-rose-600 dark:text-rose-300">{exportError}</div>
+											<div className="mt-3 text-xs text-rose-600 dark:text-rose-300">{exportError}</div>
 										) : null}
 										{canExportAnalytics ? null : (
-											<div class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+											<div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
 												Export is disabled by organization policy.
 											</div>
 										)}
 									</div>
 								</div>
 							) : (
-								<div class="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
-									<div class="rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5 dark:border-sky-500/20 dark:from-sky-500/10 dark:to-slate-950">
-										<div class="flex items-start gap-4">
-											<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-												<Crown class="h-5 w-5" />
+								<div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
+									<div className="rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-5 dark:border-sky-500/20 dark:from-sky-500/10 dark:to-slate-950">
+										<div className="flex items-start gap-4">
+											<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+												<Crown className="h-5 w-5" />
 											</div>
 											<div>
-												<div class="text-base font-semibold text-slate-950 dark:text-white">
+												<div className="text-base font-semibold text-slate-950 dark:text-white">
 													{subscription?.plan === "premium"
 														? "Premium plan"
 														: "Upgrade to unlock advanced analytics"}
 												</div>
-												<p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+												<p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
 													{subscription?.plan === "premium"
 														? "You are on the Premium plan. Upgrade to Enterprise for unlimited advanced filters, expanded analytics, and exports."
 														: `You are currently on ${subscription?.plan || "free"}. Upgrade to Premium/Enterprise to unlock unlimited advanced filters, expanded analytics, and exports.`}
@@ -797,12 +797,12 @@ export default function Insights() {
 											</div>
 										</div>
 									</div>
-									<div class="flex items-center justify-center rounded-3xl border border-dashed border-sky-200 bg-white/70 p-5 dark:border-sky-500/20 dark:bg-slate-950/60">
+									<div className="flex items-center justify-center rounded-3xl border border-dashed border-sky-200 bg-white/70 p-5 dark:border-sky-500/20 dark:bg-slate-950/60">
 										<button
 											onClick={() => (window.location.href = "/pricing")}
-											class="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:bg-sky-500"
+											className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:bg-sky-500"
 										>
-											Upgrade to Enterprise <ArrowUpRight class="h-4 w-4" />
+											Upgrade to Enterprise <ArrowUpRight className="h-4 w-4" />
 										</button>
 									</div>
 								</div>
@@ -811,7 +811,7 @@ export default function Insights() {
 					</ScrollReveal>
 
 					<ScrollReveal as="section">
-						<div class="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+						<div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
 							<SectionHeader
 								icon={Radar}
 								title="Premium Insights"
@@ -823,8 +823,8 @@ export default function Insights() {
 							/>
 
 							{premiumInsights ? (
-								<div class="space-y-6">
-									<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+								<div className="space-y-6">
+									<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 										{premiumInsights.request_performance ? (
 											<StatCard
 												icon={CheckCircle2}
@@ -987,9 +987,9 @@ export default function Insights() {
 									</div>
 
 									{premiumInsights?.agent_performance_analytics?.length > 0 ? (
-										<div class="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
-											<div class="mb-4 flex items-center justify-between">
-												<h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+										<div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+											<div className="mb-4 flex items-center justify-between">
+												<h3 className="text-sm font-semibold text-slate-900 dark:text-white">
 													{premiumInsights?.agent_performance_analytics?.length === 1
 														? "Agent Performance"
 														: "Team Performance"}
@@ -998,21 +998,21 @@ export default function Insights() {
 													{premiumInsights?.agent_performance_analytics?.length || 0} members
 												</Badge>
 											</div>
-											<div class="space-y-2">
+											<div className="space-y-2">
 												{premiumInsights.agent_performance_analytics.map((agent) => (
 													<div
 														key={agent.agent_id}
-														class="rounded-2xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
+														className="rounded-2xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
 													>
-														<div class="flex flex-wrap items-center justify-between gap-3">
-															<div class="font-medium text-slate-950 dark:text-white">
+														<div className="flex flex-wrap items-center justify-between gap-3">
+															<div className="font-medium text-slate-950 dark:text-white">
 																{agent.name || agent.agent_id}
 															</div>
-															<div class="text-sm text-slate-600 dark:text-slate-300">
+															<div className="text-sm text-slate-600 dark:text-slate-300">
 																{formatNumber(agent.assigned_leads ?? 0)} leads
 															</div>
 														</div>
-														<div class="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+														<div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
 															<MiniStat label="Agent" value={agent.agent_id || "--"} />
 															<MiniStat
 																label="Assigned"
@@ -1038,11 +1038,11 @@ export default function Insights() {
 									) : null}
 
 									{premiumInsights?.buying_pattern_analysis?.length > 0 ? (
-										<div class="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
-											<h3 class="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+										<div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+											<h3 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
 												Buying Pattern Analysis
 											</h3>
-											<div class="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-2">
 												{premiumInsights.buying_pattern_analysis.map((row) => (
 													<Badge key={row.label} tone="slate">
 														{row.label} - {formatNumber(row.count)}
@@ -1053,19 +1053,19 @@ export default function Insights() {
 									) : null}
 
 									{premiumInsights?.lead_distribution ? (
-										<div class="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
-											<h3 class="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+										<div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+											<h3 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
 												Lead Distribution
 											</h3>
-											<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+											<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 												{Object.entries(premiumInsights.lead_distribution).map(
 													([agentId, count]) => (
 														<div
 															key={agentId}
-															class="rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
+															className="rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
 														>
-															<span class="text-slate-600 dark:text-slate-300">{agentId}</span>
-															<span class="ml-2 font-semibold text-slate-950 dark:text-white">
+															<span className="text-slate-600 dark:text-slate-300">{agentId}</span>
+															<span className="ml-2 font-semibold text-slate-950 dark:text-white">
 																{formatNumber(count)}
 															</span>
 														</div>
@@ -1076,10 +1076,10 @@ export default function Insights() {
 									) : null}
 
 									{["factory", "buying_house"].includes(String(premiumRole || "").toLowerCase()) ? (
-										<div class="grid gap-4 lg:grid-cols-2">
-											<div class="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
-												<div class="mb-4 flex items-center justify-between">
-													<h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+										<div className="grid gap-4 lg:grid-cols-2">
+											<div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+												<div className="mb-4 flex items-center justify-between">
+													<h3 className="text-sm font-semibold text-slate-900 dark:text-white">
 														Recent Profile Viewers
 													</h3>
 													<Badge tone="default">Limit 8</Badge>
@@ -1094,32 +1094,32 @@ export default function Insights() {
 														textColor=""
 													/>
 												) : (
-													<div class="space-y-2">
+													<div className="space-y-2">
 														{profileViewers.length > 0 ? (
 															profileViewers.map((row) => (
 																<div
 																	key={row.viewer_id}
-																	class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
+																	className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
 																>
-																	<span class="truncate text-slate-700 dark:text-slate-300">
+																	<span className="truncate text-slate-700 dark:text-slate-300">
 																		{row.viewer?.name || row.viewer_id}
 																	</span>
-																	<span class="ml-3 shrink-0 text-xs text-slate-500 dark:text-slate-400">
+																	<span className="ml-3 shrink-0 text-xs text-slate-500 dark:text-slate-400">
 																		{formatDateTime(row.viewed_at)}
 																	</span>
 																</div>
 															))
 														) : (
-															<div class="text-sm text-slate-500 dark:text-slate-400">
+															<div className="text-sm text-slate-500 dark:text-slate-400">
 																No viewers yet.
 															</div>
 														)}
 													</div>
 												)}
 											</div>
-											<div class="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
-												<div class="mb-4 flex items-center justify-between">
-													<h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+											<div className="rounded-3xl border border-sky-200/70 bg-slate-50/70 p-5 dark:border-sky-500/20 dark:bg-slate-900/60">
+												<div className="mb-4 flex items-center justify-between">
+													<h3 className="text-sm font-semibold text-slate-900 dark:text-white">
 														Recent Product Viewers
 													</h3>
 													<Badge tone="default">Limit 8</Badge>
@@ -1134,23 +1134,23 @@ export default function Insights() {
 														textColor=""
 													/>
 												) : (
-													<div class="space-y-2">
+													<div className="space-y-2">
 														{productViewers.length > 0 ? (
 															productViewers.map((row) => (
 																<div
 																	key={row.viewer_id}
-																	class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
+																	className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-950/60"
 																>
-																	<span class="truncate text-slate-700 dark:text-slate-300">
+																	<span className="truncate text-slate-700 dark:text-slate-300">
 																		{row.viewer?.name || row.viewer_id}
 																	</span>
-																	<span class="ml-3 shrink-0 text-xs text-slate-500 dark:text-slate-400">
+																	<span className="ml-3 shrink-0 text-xs text-slate-500 dark:text-slate-400">
 																		{formatDateTime(row.viewed_at)}
 																	</span>
 																</div>
 															))
 														) : (
-															<div class="text-sm text-slate-500 dark:text-slate-400">
+															<div className="text-sm text-slate-500 dark:text-slate-400">
 																No viewers yet.
 															</div>
 														)}
@@ -1180,7 +1180,7 @@ export default function Insights() {
 
 					<ScrollReveal as="section">
 						{companyAnalytics ? (
-							<div class="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+							<div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
 								<SectionHeader
 									icon={Building2}
 									title="Company Analytics"
@@ -1194,14 +1194,14 @@ export default function Insights() {
 								/>
 
 								{companyAnalytics.limited ? (
-									<div class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+									<div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
 										Advanced analytics (who viewed, inquiry rate, conversion metrics) require the{" "}
 										<strong>{subscription?.plan === "premium" ? "Enterprise" : "Premium"}</strong>{" "}
 										plan. You are currently on <strong>{subscription?.plan || "free"}</strong>.
 									</div>
 								) : null}
 
-								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+								<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
 									<StatCard
 										icon={Eye}
 										label="Profile Visits"
@@ -1239,15 +1239,15 @@ export default function Insights() {
 									/>
 								</div>
 
-								<div class="mt-5 grid gap-4 lg:grid-cols-3">
+								<div className="mt-5 grid gap-4 lg:grid-cols-3">
 									<PanelList
 										title="Top Viewed Products"
 										items={topProducts}
 										emptyText="No product views yet."
 										renderItem={(item) => (
-											<div class="flex items-center justify-between">
-												<span class="truncate">{item.title}</span>
-												<span class="ml-3 font-semibold text-slate-950 dark:text-white">
+											<div className="flex items-center justify-between">
+												<span className="truncate">{item.title}</span>
+												<span className="ml-3 font-semibold text-slate-950 dark:text-white">
 													{formatNumber(item.views)}
 												</span>
 											</div>
@@ -1258,9 +1258,9 @@ export default function Insights() {
 										items={visitCountries}
 										emptyText="No visits yet."
 										renderItem={(item) => (
-											<div class="flex items-center justify-between">
-												<span class="truncate">{item.country}</span>
-												<span class="ml-3 font-semibold text-slate-950 dark:text-white">
+											<div className="flex items-center justify-between">
+												<span className="truncate">{item.country}</span>
+												<span className="ml-3 font-semibold text-slate-950 dark:text-white">
 													{formatNumber(item.count)}
 												</span>
 											</div>
@@ -1272,14 +1272,14 @@ export default function Insights() {
 										emptyText="No lead source data yet."
 										renderItem={(item) => (
 											<div>
-												<div class="flex items-center justify-between">
-													<span class="truncate">{item.label}</span>
-													<span class="ml-3 font-semibold text-slate-950 dark:text-white">
+												<div className="flex items-center justify-between">
+													<span className="truncate">{item.label}</span>
+													<span className="ml-3 font-semibold text-slate-950 dark:text-white">
 														{formatNumber(item.count)}
 													</span>
 												</div>
 												{item.source_type ? (
-													<div class="text-[10px] text-slate-400">
+													<div className="text-[10px] text-slate-400">
 														{safeLabel(item.source_type)}
 													</div>
 												) : null}
@@ -1293,40 +1293,40 @@ export default function Insights() {
 
 					<ScrollReveal as="section">
 						{platformAnalytics ? (
-							<div class="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
+							<div className="relative mt-7 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70">
 								<SectionHeader
 									icon={Globe2}
 									title="Platform Analytics"
 									right={<Badge tone="default">Privacy-aware</Badge>}
 								/>
 
-								<div class="mb-4 grid gap-3 lg:grid-cols-3">
-									<div class="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
-										<div class="font-semibold">Scope: {safeLabel(scopeLevel)}</div>
-										<div class="mt-1 text-xs">
+								<div className="mb-4 grid gap-3 lg:grid-cols-3">
+									<div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
+										<div className="font-semibold">Scope: {safeLabel(scopeLevel)}</div>
+										<div className="mt-1 text-xs">
 											Privacy thresholds: {privacyThresholdApplied ? "applied" : "not applied"}.
 											{suppressedFields.length > 0
 												? ` Suppressed controls: ${suppressedFields.join(", ")}.`
 												: " No suppressed slices in this snapshot."}
 										</div>
 									</div>
-									<div class="rounded-2xl border border-sky-200 bg-white p-4 text-sm text-slate-700 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-slate-300">
+									<div className="rounded-2xl border border-sky-200 bg-white p-4 text-sm text-slate-700 shadow-sm dark:border-sky-500/20 dark:bg-slate-950 dark:text-slate-300">
 										{suppressedFields.length > 0 ? (
 											<>
-												<div class="font-semibold">Suppressed controls</div>
-												<div class="mt-1 text-xs">{suppressedFields.join(", ")}</div>
+												<div className="font-semibold">Suppressed controls</div>
+												<div className="mt-1 text-xs">{suppressedFields.join(", ")}</div>
 											</>
 										) : (
 											<div>No suppressed slices in this snapshot.</div>
 										)}
 									</div>
-									<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+									<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
 										{privacyThresholdApplied ? (
 											<div title="Anonymized platform data: identifiers removed/suppressed according to privacy policy">
-												<span class="inline-flex items-center gap-2 font-semibold">
-													<BadgeInfo class="h-4 w-4" /> Anonymized platform data
+												<span className="inline-flex items-center gap-2 font-semibold">
+													<BadgeInfo className="h-4 w-4" /> Anonymized platform data
 												</span>
-												<div class="mt-1 text-xs">
+												<div className="mt-1 text-xs">
 													Identifiers removed/suppressed according to privacy policy
 												</div>
 											</div>
@@ -1337,14 +1337,14 @@ export default function Insights() {
 								</div>
 
 								{searchDataReady ? null : (
-									<div class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+									<div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
 										Search trends are still warming up. We need more search activity to show
 										reliable demand insights. Current events: {searchEventCount}/{searchMinEvents}.
 										Showing proxy demand from buyer requests.
 									</div>
 								)}
 
-								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+								<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 									<StatCard
 										icon={Users}
 										label="Total Buyer Requests"
@@ -1370,24 +1370,24 @@ export default function Insights() {
 									/>
 								</div>
 
-								<div class="mt-5 grid gap-4 lg:grid-cols-2">
+								<div className="mt-5 grid gap-4 lg:grid-cols-2">
 									{scopeLevel === "platform_summary_aggregated" ? (
-										<div class="rounded-3xl border border-dashed border-sky-200 bg-white/70 p-6 text-sm text-slate-600 shadow-sm dark:border-sky-500/20 dark:bg-slate-950/60 dark:text-slate-300 lg:col-span-2">
+										<div className="rounded-3xl border border-dashed border-sky-200 bg-white/70 p-6 text-sm text-slate-600 shadow-sm dark:border-sky-500/20 dark:bg-slate-950/60 dark:text-slate-300 lg:col-span-2">
 											Detailed geography and segment breakdowns are hidden for this role. Switch to
 											organization-scoped or admin scope for deeper cuts.
 										</div>
 									) : (
-										<div class="grid gap-4 lg:grid-cols-2 lg:col-span-2">
+										<div className="grid gap-4 lg:grid-cols-2 lg:col-span-2">
 											<PanelList
 												title="Top Categories by Country"
 												items={platformByCountry}
 												emptyText="No data yet."
 												renderItem={(item) => (
 													<div>
-														<div class="font-medium text-slate-900 dark:text-white">
+														<div className="font-medium text-slate-900 dark:text-white">
 															{item.country}
 														</div>
-														<div class="text-xs text-slate-500 dark:text-slate-400">
+														<div className="text-xs text-slate-500 dark:text-slate-400">
 															{(item.categories || []).map((c) => c.label).join(", ") || "--"}
 														</div>
 													</div>
@@ -1398,9 +1398,9 @@ export default function Insights() {
 												items={platformPriceDemand}
 												emptyText="No price-range data yet."
 												renderItem={(item) => (
-													<div class="flex items-center justify-between">
-														<span class="truncate">{item.bucket}</span>
-														<span class="ml-3 font-semibold text-slate-950 dark:text-white">
+													<div className="flex items-center justify-between">
+														<span className="truncate">{item.bucket}</span>
+														<span className="ml-3 font-semibold text-slate-950 dark:text-white">
 															{formatNumber(item.count)}
 														</span>
 													</div>
@@ -1410,15 +1410,15 @@ export default function Insights() {
 									)}
 								</div>
 
-								<div class="mt-5 grid gap-4 lg:grid-cols-2">
+								<div className="mt-5 grid gap-4 lg:grid-cols-2">
 									<PanelList
 										title="Top Search Categories"
 										items={platformSearchGlobal}
 										emptyText="No search data yet."
 										renderItem={(item) => (
-											<div class="flex items-center justify-between">
-												<span class="truncate">{item.label}</span>
-												<span class="ml-3 font-semibold text-slate-950 dark:text-white">
+											<div className="flex items-center justify-between">
+												<span className="truncate">{item.label}</span>
+												<span className="ml-3 font-semibold text-slate-950 dark:text-white">
 													{formatNumber(item.count)}
 												</span>
 											</div>
@@ -1429,9 +1429,9 @@ export default function Insights() {
 										items={platformTrending}
 										emptyText="No trend data yet."
 										renderItem={(item) => (
-											<div class="flex items-center justify-between">
-												<span class="truncate">{item.label}</span>
-												<span class="ml-3 font-semibold text-slate-950 dark:text-white">
+											<div className="flex items-center justify-between">
+												<span className="truncate">{item.label}</span>
+												<span className="ml-3 font-semibold text-slate-950 dark:text-white">
 													{item.delta}
 												</span>
 											</div>
@@ -1439,15 +1439,15 @@ export default function Insights() {
 									/>
 								</div>
 
-								<div class="mt-5 grid gap-4 lg:grid-cols-2">
+								<div className="mt-5 grid gap-4 lg:grid-cols-2">
 									<PanelList
 										title="Search Categories by Country"
 										items={platformSearchByCountry}
 										emptyText="No search data yet."
 										renderItem={(item) => (
 											<div>
-												<div class="font-medium text-slate-900 dark:text-white">{item.country}</div>
-												<div class="text-xs text-slate-500 dark:text-slate-400">
+												<div className="font-medium text-slate-900 dark:text-white">{item.country}</div>
+												<div className="text-xs text-slate-500 dark:text-slate-400">
 													{(item.categories || []).map((c) => c.label).join(", ") || "--"}
 												</div>
 											</div>
@@ -1458,9 +1458,9 @@ export default function Insights() {
 										items={platformMonthly}
 										emptyText="No monthly data yet."
 										renderItem={(item) => (
-											<div class="flex items-center justify-between">
-												<span class="truncate">{item.month}</span>
-												<span class="ml-3 font-semibold text-slate-950 dark:text-white">
+											<div className="flex items-center justify-between">
+												<span className="truncate">{item.month}</span>
+												<span className="ml-3 font-semibold text-slate-950 dark:text-white">
 													{formatNumber(item.count)}
 												</span>
 											</div>

@@ -400,7 +400,7 @@ export default function FloatingAssistant() {
 
 	return (
 		<>
-			<motion.div class="fixed right-6 bottom-6 z-50" style={{ opacity: buttonOpacity }}>
+			<motion.div className="fixed right-6 bottom-6 z-50" style={{ opacity: buttonOpacity }}>
 				<button
 					type="button"
 					onClick={() => setOpen(!open)}
@@ -420,7 +420,7 @@ export default function FloatingAssistant() {
 							height="18"
 							viewBox="0 0 24 24"
 							fill="none"
-							class="text-white"
+							className="text-white"
 						>
 							<path
 								stroke="currentColor"
@@ -437,18 +437,18 @@ export default function FloatingAssistant() {
 			</motion.div>
 
 			{open ? (
-				<div class="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 flex flex-col overflow-x-hidden">
-					<div class="h-full w-full bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border-l border-slate-200/70 dark:border-slate-800/60 shadow-borderless dark:shadow-borderlessDark flex flex-col">
-						<div class="bg-gradient-to-r from-sky-500 via-sky-600 to-cyan-400 text-white flex items-center justify-between px-5 py-4 shrink-0">
-							<div class="flex items-center gap-3 min-w-0">
-								<div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm shrink-0">
-									<BotLogo width={22} height={22} variant="glyph" class="text-white" />
+				<div className="fixed top-0 right-0 h-full w-full md:w-[420px] z-50 flex flex-col overflow-x-hidden">
+					<div className="h-full w-full bg-white/80 dark:bg-slate-950/90 backdrop-blur-xl border-l border-slate-200/70 dark:border-slate-800/60 shadow-borderless dark:shadow-borderlessDark flex flex-col">
+						<div className="bg-gradient-to-r from-sky-500 via-sky-600 to-cyan-400 text-white flex items-center justify-between px-5 py-4 shrink-0">
+							<div className="flex items-center gap-3 min-w-0">
+								<div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm shrink-0">
+									<BotLogo width={22} height={22} variant="glyph" className="text-white" />
 								</div>
-								<div class="min-w-0">
-									<p class="font-bold tracking-tight text-[15px] truncate max-w-[200px]">
+								<div className="min-w-0">
+									<p className="font-bold tracking-tight text-[15px] truncate max-w-[200px]">
 										{title || "GarTex Assistant"}
 									</p>
-									<div class="flex items-center gap-1.5">
+									<div className="flex items-center gap-1.5">
 										{loading ? (
 											<ThreeDot
 												variant="bounce"
@@ -460,9 +460,9 @@ export default function FloatingAssistant() {
 										) : (
 											<>
 												<span
-													class={`w-2 h-2 rounded-full ${wsConnected ? "bg-green-300" : "bg-amber-400"}`}
+													className={`w-2 h-2 rounded-full ${wsConnected ? "bg-green-300" : "bg-amber-400"}`}
 												/>
-												<p class="text-[10px] uppercase tracking-wider text-white/80 font-semibold">
+												<p className="text-[10px] uppercase tracking-wider text-white/80 font-semibold">
 													{wsConnected ? "Online" : "Connecting"}
 												</p>
 											</>
@@ -470,13 +470,13 @@ export default function FloatingAssistant() {
 									</div>
 								</div>
 							</div>
-							<div class="flex items-center gap-0.5 shrink-0">
+							<div className="flex items-center gap-0.5 shrink-0">
 								<button
 									onClick={deleteSession}
 									aria-label="Delete session"
 									title="Delete session & start new chat"
 									type="button"
-									class="hover:bg-white/15 p-2 rounded-xl transition-colors"
+									className="hover:bg-white/15 p-2 rounded-xl transition-colors"
 								>
 									<svg
 										aria-hidden="true"
@@ -484,7 +484,7 @@ export default function FloatingAssistant() {
 										height="16"
 										viewBox="0 0 24 24"
 										fill="none"
-										class="text-white/80"
+										className="text-white/80"
 									>
 										<path
 											stroke="currentColor"
@@ -500,7 +500,7 @@ export default function FloatingAssistant() {
 									aria-label="Close assistant"
 									title="Close assistant"
 									type="button"
-									class="hover:bg-white/15 p-2 rounded-xl transition-colors"
+									className="hover:bg-white/15 p-2 rounded-xl transition-colors"
 								>
 									<svg
 										aria-hidden="true"
@@ -508,7 +508,7 @@ export default function FloatingAssistant() {
 										height="16"
 										viewBox="0 0 24 24"
 										fill="none"
-										class="text-white/80"
+										className="text-white/80"
 									>
 										<path
 											stroke="currentColor"
@@ -525,15 +525,15 @@ export default function FloatingAssistant() {
 						<div
 							data-lenis-prevent={true}
 							ref={scrollRef}
-							class="flex-1 overflow-y-auto px-4 py-5 space-y-4 scroll-smooth"
+							className="flex-1 overflow-y-auto px-4 py-5 space-y-4 scroll-smooth"
 						>
 							{messages.map((msg, i) => (
 								<div
 									key={i}
-									class={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+									className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
 								>
 									<div
-										class={`max-w-[88%] text-sm leading-relaxed ${
+										className={`max-w-[88%] text-sm leading-relaxed ${
 											msg.role === "user"
 												? "bg-gradient-to-br from-sky-500 to-cyan-400 text-white rounded-2xl rounded-br-none px-4 py-3 shadow-md shadow-sky-500/20"
 												: "bg-white dark:bg-slate-900/80 text-slate-800 dark:text-slate-100 rounded-2xl rounded-bl-none px-4 py-3 border border-slate-200/60 dark:border-slate-700/50 shadow-sm"
@@ -551,22 +551,22 @@ export default function FloatingAssistant() {
 							))}
 
 							{loading && !firstChunkReceived && (
-								<div class="flex justify-start animate-in fade-in duration-200">
-									<div class="bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl rounded-bl-none px-4 py-3.5 shadow-sm">
+								<div className="flex justify-start animate-in fade-in duration-200">
+									<div className="bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl rounded-bl-none px-4 py-3.5 shadow-sm">
 										<ThreeDot variant="bounce" color="#38bdf8" size="small" text="" textColor="" />
 									</div>
 								</div>
 							)}
 						</div>
 
-						<div class="px-4 pt-3 pb-5 border-t border-slate-200/60 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm shrink-0">
+						<div className="px-4 pt-3 pb-5 border-t border-slate-200/60 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm shrink-0">
 							{messages.length < 3 && !loading && (
-								<div class="flex flex-wrap gap-2 mb-3 animate-in fade-in slide-in-from-bottom-1 duration-500">
+								<div className="flex flex-wrap gap-2 mb-3 animate-in fade-in slide-in-from-bottom-1 duration-500">
 									{suggestions.map((s, i) => (
 										<button
 											key={i}
 											onClick={() => handleSend(s)}
-											class="text-[11px] font-medium bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/50 px-3 py-1.5 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all hover:scale-105 active:scale-95 shadow-sm"
+											className="text-[11px] font-medium bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/50 px-3 py-1.5 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all hover:scale-105 active:scale-95 shadow-sm"
 										>
 											{s}
 										</button>
@@ -574,24 +574,24 @@ export default function FloatingAssistant() {
 								</div>
 							)}
 
-							<div class="flex gap-2 items-center">
-								<div class="flex-1 relative">
+							<div className="flex gap-2 items-center">
+								<div className="flex-1 relative">
 									<input
 										value={input}
 										onChange={(e) => setInput(e.target.value)}
 										onKeyDown={(e) => e.key === "Enter" && handleSend()}
 										placeholder="Type your question..."
-										class="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/50"
+										className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800/60 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/50"
 									/>
 								</div>
 								<button
 									type="button"
 									onClick={() => handleSend()}
 									disabled={loading || !input.trim()}
-									class="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all hover:shadow-lg hover:shadow-sky-500/30 active:scale-90 shrink-0"
+									className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all hover:shadow-lg hover:shadow-sky-500/30 active:scale-90 shrink-0"
 								>
 									<svg
-										class="w-5 h-5 rotate-45"
+										className="w-5 h-5 rotate-45"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -605,7 +605,7 @@ export default function FloatingAssistant() {
 									</svg>
 								</button>
 							</div>
-							<p class="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-3 font-medium">
+							<p className="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-3 font-medium">
 								GarTex AI Assistant
 							</p>
 						</div>

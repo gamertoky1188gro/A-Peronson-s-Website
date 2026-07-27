@@ -29,38 +29,38 @@ export default function LinkPreviewCard({ url, preview }) {
 			href={url}
 			target="_blank"
 			rel="noreferrer"
-			class="group block overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-shadow hover:shadow-md"
+			className="group block overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-shadow hover:shadow-md"
 		>
 			{image ? (
-				<div class="aspect-[2/1] overflow-hidden bg-slate-100 dark:bg-slate-800">
+				<div className="aspect-[2/1] overflow-hidden bg-slate-100 dark:bg-slate-800">
 					<img
 						src={image}
 						alt=""
 						loading="lazy"
-						class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+						className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
 						onError={() => setImgError(true)}
 					/>
 				</div>
 			) : null}
-			<div class="p-3">
-				<div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1">
+			<div className="p-3">
+				<div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-1">
 					{favicon ? (
 						<img
 							src={favicon}
 							alt=""
-							class="h-4 w-4 rounded"
+							className="h-4 w-4 rounded"
 							onError={(e) => {
 								e.target.style.display = "none";
 							}}
 						/>
 					) : null}
-					<span class="truncate">{domain}</span>
+					<span className="truncate">{domain}</span>
 				</div>
-				<h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-gtBlue transition-colors">
+				<h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-gtBlue transition-colors">
 					{title}
 				</h4>
 				{description ? (
-					<p class="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{description}</p>
+					<p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{description}</p>
 				) : null}
 			</div>
 		</a>

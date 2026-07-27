@@ -124,7 +124,7 @@ function Pill({ children, tone = "default", title }) {
 	return (
 		<span
 			title={title}
-			class={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}
+			className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone] || tones.default}`}
 		>
 			{children}
 		</span>
@@ -133,12 +133,12 @@ function Pill({ children, tone = "default", title }) {
 
 function Metric({ label, value, helper }) {
 	return (
-		<div class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
-			<div class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+		<div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
+			<div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
 				{label}
 			</div>
-			<div class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
-			{helper ? <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
+			<div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+			{helper ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
 		</div>
 	);
 }
@@ -156,10 +156,10 @@ function AvatarFallback({ name, imageUrl }) {
 			.join("");
 	};
 	return (
-		<div class="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
-			<div class="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
+		<div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
+			<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
 				{imageUrl ? (
-					<img src={imageUrl} alt={name || "Profile avatar"} class="h-full w-full object-cover" />
+					<img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
 				) : (
 					initials(name)
 				)}
@@ -171,7 +171,7 @@ function AvatarFallback({ name, imageUrl }) {
 function SoftCard({ children, className = "" }) {
 	return (
 		<div
-			class={`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${className}`}
+			className={`rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/65 ${className}`}
 		>
 			{children}
 		</div>
@@ -180,16 +180,16 @@ function SoftCard({ children, className = "" }) {
 
 function SectionTitle({ icon: Icon, title, subtitle, action }) {
 	return (
-		<div class="mb-4 flex items-start justify-between gap-3">
+		<div className="mb-4 flex items-start justify-between gap-3">
 			<div>
-				<div class="flex items-center gap-2">
-					{Icon ? <Icon class="h-4 w-4 text-sky-500" /> : null}
-					<h3 class="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">
+				<div className="flex items-center gap-2">
+					{Icon ? <Icon className="h-4 w-4 text-sky-500" /> : null}
+					<h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-slate-100">
 						{title}
 					</h3>
 				</div>
 				{subtitle ? (
-					<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
 				) : null}
 			</div>
 			{action}
@@ -199,16 +199,16 @@ function SectionTitle({ icon: Icon, title, subtitle, action }) {
 
 function StatCard({ icon: Icon, label, value, caption }) {
 	return (
-		<div class="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50">
-			<div class="flex items-center gap-2 text-sky-600 dark:text-sky-400">
-				{Icon ? <Icon class="h-4 w-4" /> : null}
-				<span class="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+		<div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50">
+			<div className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
+				{Icon ? <Icon className="h-4 w-4" /> : null}
+				<span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
 					{label}
 				</span>
 			</div>
-			<div class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+			<div className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">{value}</div>
 			{caption ? (
-				<div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{caption}</div>
+				<div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{caption}</div>
 			) : null}
 		</div>
 	);
@@ -591,14 +591,14 @@ export default function FactoryProfile() {
 	}
 	if (error) {
 		return (
-			<div class="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200">
+			<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-rose-700 dark:text-rose-200">
 				{error}
 			</div>
 		);
 	}
 	if (!user) {
 		return (
-			<div class="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200">
+			<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] p-6 text-slate-700 dark:text-slate-200">
 				Profile not found.
 			</div>
 		);
@@ -636,23 +636,23 @@ export default function FactoryProfile() {
 	const avatarImage = user?.profile?.profile_image;
 
 	return (
-		<div class="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100">
-			<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				<div class="mb-5 flex items-center justify-between gap-3">
+		<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100">
+			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+				<div className="mb-5 flex items-center justify-between gap-3">
 					<button
 						onClick={() => navigate(-1)}
-						class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300"
+						className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300"
 					>
-						<ChevronLeft class="h-4 w-4" /> Back
+						<ChevronLeft className="h-4 w-4" /> Back
 					</button>
-					<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-						<ShieldCheck class="h-3.5 w-3.5" /> Role:{" "}
-						<span class="font-medium text-slate-700 dark:text-slate-200">{roleLabel}</span>
+					<div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+						<ShieldCheck className="h-3.5 w-3.5" /> Role:{" "}
+						<span className="font-medium text-slate-700 dark:text-slate-200">{roleLabel}</span>
 					</div>
 				</div>
 
-				<div class="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-					<aside class="space-y-6 xl:sticky xl:top-6 xl:self-start">
+				<div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+					<aside className="space-y-6 xl:sticky xl:top-6 xl:self-start">
 						<SoftCard>
 							<SectionTitle
 								icon={Factory}
@@ -660,48 +660,48 @@ export default function FactoryProfile() {
 								subtitle="Cover, identity, trust, and relationship actions"
 								action={
 									<Pill tone="info">
-										<Factory class="mr-1 h-3.5 w-3.5" /> {roleLabel}
+										<Factory className="mr-1 h-3.5 w-3.5" /> {roleLabel}
 									</Pill>
 								}
 							/>
-							<div class="overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100 dark:border-slate-800 dark:bg-slate-900">
-								<div class="h-28 bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600" />
-								<div class="relative px-5 pb-5 pt-0">
-									<div class="-mt-10 flex items-end gap-4">
+							<div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100 dark:border-slate-800 dark:bg-slate-900">
+								<div className="h-28 bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600" />
+								<div className="relative px-5 pb-5 pt-0">
+									<div className="-mt-10 flex items-end gap-4">
 										<AvatarFallback name={displayName} imageUrl={avatarImage} />
-										<div class="pb-1">
-											<div class="flex flex-wrap items-center gap-2">
-												<h1 class="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+										<div className="pb-1">
+											<div className="flex flex-wrap items-center gap-2">
+												<h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
 													{displayName}
 												</h1>
-												{user?.verified ? <BadgeCheck class="h-5 w-5 text-sky-500" /> : null}
+												{user?.verified ? <BadgeCheck className="h-5 w-5 text-sky-500" /> : null}
 											</div>
-											<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{organization}</p>
+											<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{organization}</p>
 										</div>
 									</div>
-									<div class="mt-3 flex flex-wrap gap-2">
+									<div className="mt-3 flex flex-wrap gap-2">
 										<Pill tone="info">
-											<MapPin class="h-3.5 w-3.5" /> {country}
+											<MapPin className="h-3.5 w-3.5" /> {country}
 										</Pill>
 										<Pill tone="info">{industry}</Pill>
 										<Pill tone="info">Trust {trustScore === null ? "—" : trustScore}%</Pill>
 									</div>
-									<div class="mt-4 grid grid-cols-3 gap-2">
+									<div className="mt-4 grid grid-cols-3 gap-2">
 										<button
 											onClick={contact}
-											class="rounded-2xl bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-sky-500/20 transition hover:-translate-y-0.5"
+											className="rounded-2xl bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-sky-500/20 transition hover:-translate-y-0.5"
 										>
 											Contact
 										</button>
 										<button
 											onClick={follow}
-											class="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+											className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
 										>
 											{relationship.following ? "Following" : "Follow"}
 										</button>
 										<button
 											onClick={connect}
-											class="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+											className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
 										>
 											{relationship.friend_status === "friends"
 												? "Connected"
@@ -711,27 +711,27 @@ export default function FactoryProfile() {
 										</button>
 									</div>
 									{currentUser?.id === user?.id ? null : (
-										<div class="mt-3 flex flex-wrap gap-2">
+										<div className="mt-3 flex flex-wrap gap-2">
 											<button
 												onClick={requestRelationship}
-												class="inline-flex items-center gap-2 rounded-2xl border border-emerald-400/40 bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-500/30 dark:text-emerald-300"
+												className="inline-flex items-center gap-2 rounded-2xl border border-emerald-400/40 bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-500/30 dark:text-emerald-300"
 											>
-												<Handshake class="h-4 w-4" /> Confirm Business Relationship
+												<Handshake className="h-4 w-4" /> Confirm Business Relationship
 											</button>
 											<button
 												onClick={requestLicense}
-												class="inline-flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-700 transition hover:-translate-y-0.5 hover:bg-amber-500/30 dark:text-amber-300"
+												className="inline-flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-700 transition hover:-translate-y-0.5 hover:bg-amber-500/30 dark:text-amber-300"
 											>
-												<ShieldCheck class="h-4 w-4" /> Request License
+												<ShieldCheck className="h-4 w-4" /> Request License
 											</button>
 										</div>
 									)}
 									{feedback ? (
-										<p class="mt-2 text-xs text-sky-600 dark:text-sky-400">{feedback}</p>
+										<p className="mt-2 text-xs text-sky-600 dark:text-sky-400">{feedback}</p>
 									) : null}
 								</div>
 							</div>
-							<div class="mt-4 grid gap-3">
+							<div className="mt-4 grid gap-3">
 								<StatCard icon={Building2} label="Industry" value={industry} />
 								<StatCard icon={Landmark} label="Organization" value={organization} />
 								<StatCard
@@ -771,13 +771,13 @@ export default function FactoryProfile() {
 									title="Order Completion Certification"
 									subtitle="Signed contract record."
 								/>
-								<div class="space-y-3">
-									<div class="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+								<div className="space-y-3">
+									<div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
 										<div>
-											<div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+											<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 												Status
 											</div>
-											<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+											<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 												Certification status
 											</div>
 										</div>
@@ -791,14 +791,14 @@ export default function FactoryProfile() {
 						) : null}
 					</aside>
 
-					<main class="min-w-0 space-y-6">
+					<main className="min-w-0 space-y-6">
 						<SoftCard>
 							<SectionTitle
 								icon={Factory}
 								title={displayName}
 								subtitle="Overview, products, approved media, work history, and reviews"
 							/>
-							<div class="flex flex-wrap gap-2 border-b border-slate-200 pb-4 dark:border-slate-800">
+							<div className="flex flex-wrap gap-2 border-b border-slate-200 pb-4 dark:border-slate-800">
 								{[
 									["overview", "Overview", Eye],
 									["products", "Products", Boxes],
@@ -809,23 +809,23 @@ export default function FactoryProfile() {
 									<button
 										key={key}
 										onClick={() => setActiveTab(key)}
-										class={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${activeTab === key ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`}
+										className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${activeTab === key ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`}
 									>
-										<Icon class="h-4 w-4" /> {label}
+										<Icon className="h-4 w-4" /> {label}
 									</button>
 								))}
 							</div>
 
 							{loading ? (
-								<div class="flex min-h-[280px] items-center justify-center text-slate-500 dark:text-slate-400">
+								<div className="flex min-h-[280px] items-center justify-center text-slate-500 dark:text-slate-400">
 									Loading profile...
 								</div>
 							) : error ? (
-								<div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+								<div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
 									{error}
 								</div>
 							) : (
-								<div class="pt-5">
+								<div className="pt-5">
 									<AnimatePresence mode="wait">
 										{activeTab === "overview" && (
 											<motion.div
@@ -834,16 +834,16 @@ export default function FactoryProfile() {
 												animate={{ opacity: 1, y: 0 }}
 												exit={{ opacity: 0, y: -10 }}
 												transition={{ duration: 0.2 }}
-												class="space-y-6"
+												className="space-y-6"
 											>
-												<div class="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
+												<div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
 													<SoftCard>
 														<SectionTitle
 															icon={Eye}
 															title="About"
 															subtitle="Factory overview and positioning."
 														/>
-														<p class="leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+														<p className="leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
 															{user?.profile?.about || "No description added yet."}
 														</p>
 													</SoftCard>
@@ -854,29 +854,29 @@ export default function FactoryProfile() {
 																title="Brand Kit"
 																subtitle="Visible only to self or admins."
 															/>
-															<div class="flex items-center gap-3">
-																<div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
+															<div className="flex items-center gap-3">
+																<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
 																	{brandProfile.brand_logo_url ? (
 																		<img
 																			src={brandProfile.brand_logo_url}
 																			alt="Brand logo"
-																			class="h-full w-full object-cover"
+																			className="h-full w-full object-cover"
 																		/>
 																	) : (
-																		<Building2 class="h-5 w-5 text-sky-500" />
+																		<Building2 className="h-5 w-5 text-sky-500" />
 																	)}
 																</div>
-																<div class="min-w-0">
-																	<div class="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+																<div className="min-w-0">
+																	<div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
 																		{brandProfile.brand_name || user?.name}
 																	</div>
 																	{brandProfile.brand_tagline ? (
-																		<div class="text-xs text-slate-500 dark:text-slate-400">
+																		<div className="text-xs text-slate-500 dark:text-slate-400">
 																			{brandProfile.brand_tagline}
 																		</div>
 																	) : null}
 																	{brandProfile.brand_website ? (
-																		<div class="text-xs text-slate-500 dark:text-slate-400">
+																		<div className="text-xs text-slate-500 dark:text-slate-400">
 																			{brandProfile.brand_website}
 																		</div>
 																	) : null}
@@ -893,15 +893,15 @@ export default function FactoryProfile() {
 															title="Dedicated Account Manager"
 															subtitle="Same pattern as Buyer"
 														/>
-														<div class="flex items-center gap-4">
-															<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
-																<UserRound class="h-6 w-6" />
+														<div className="flex items-center gap-4">
+															<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
+																<UserRound className="h-6 w-6" />
 															</div>
 															<div>
-																<div class="font-semibold">
+																<div className="font-semibold">
 																	{brandProfile.account_manager_name || "Assigned account manager"}
 																</div>
-																<div class="text-sm text-slate-500 dark:text-slate-400">
+																<div className="text-sm text-slate-500 dark:text-slate-400">
 																	{brandProfile.account_manager_email ||
 																		brandProfile.account_manager_phone ||
 																		""}
@@ -911,7 +911,7 @@ export default function FactoryProfile() {
 													</SoftCard>
 												) : null}
 
-												<div class="grid gap-4 md:grid-cols-3">
+												<div className="grid gap-4 md:grid-cols-3">
 													<StatCard icon={Building2} label="Industry" value={industry} />
 													<StatCard icon={Landmark} label="Organization" value={organization} />
 													<StatCard
@@ -922,7 +922,7 @@ export default function FactoryProfile() {
 													/>
 												</div>
 
-												<div class="grid gap-4 md:grid-cols-3">
+												<div className="grid gap-4 md:grid-cols-3">
 													<StatCard
 														icon={Clock3}
 														label="Lead time (days)"
@@ -947,29 +947,29 @@ export default function FactoryProfile() {
 														subtitle="Same pattern as Buyer"
 													/>
 													{(user?.profile?.companies_worked_with || []).length > 0 ? (
-														<div class="grid gap-3 md:grid-cols-2">
+														<div className="grid gap-3 md:grid-cols-2">
 															{(user.profile.companies_worked_with || []).map((company, idx) => (
 																<div
 																	key={idx}
-																	class="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+																	className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
 																>
-																	<div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
+																	<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
 																		{company.logo ? (
 																			<img
 																				src={company.logo}
 																				alt={company.name || "Company"}
-																				class="h-full w-full object-cover"
+																				className="h-full w-full object-cover"
 																			/>
 																		) : (
-																			<Building2 class="h-5 w-5 text-sky-500" />
+																			<Building2 className="h-5 w-5 text-sky-500" />
 																		)}
 																	</div>
-																	<div class="min-w-0">
-																		<div class="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+																	<div className="min-w-0">
+																		<div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
 																			{company.name || "Untitled company"}
 																		</div>
 																		{company.location ? (
-																			<div class="truncate text-xs text-slate-500 dark:text-slate-400">
+																			<div className="truncate text-xs text-slate-500 dark:text-slate-400">
 																				{company.location}
 																			</div>
 																		) : null}
@@ -978,7 +978,7 @@ export default function FactoryProfile() {
 															))}
 														</div>
 													) : (
-														<p class="text-sm text-slate-500 dark:text-slate-400">
+														<p className="text-sm text-slate-500 dark:text-slate-400">
 															No companies listed yet.
 														</p>
 													)}
@@ -993,7 +993,7 @@ export default function FactoryProfile() {
 												animate={{ opacity: 1, y: 0 }}
 												exit={{ opacity: 0, y: -10 }}
 												transition={{ duration: 0.2 }}
-												class="space-y-5"
+												className="space-y-5"
 											>
 												<SoftCard>
 													<SectionTitle
@@ -1002,29 +1002,29 @@ export default function FactoryProfile() {
 														subtitle="Horizontal scroll gallery with fullscreen lightbox"
 													/>
 													{products.length === 0 && !loadingProducts ? (
-														<div class="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
+														<div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
 															No products found.
 														</div>
 													) : (
 														<HorizontalScrollGallery>
 															{products.map((product) => (
-																<div key={product.id} class="w-[310px] snap-start">
+																<div key={product.id} className="w-[310px] snap-start">
 																	<HoverCard>
-																		<div class="overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+																		<div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
 																			<button
 																				onClick={() => {
 																					setGalleryIndex(products.indexOf(product));
 																					setShowGallery(true);
 																				}}
-																				class="group relative block h-48 w-full overflow-hidden bg-slate-200"
+																				className="group relative block h-48 w-full overflow-hidden bg-slate-200"
 																			>
 																				<img
 																					src={product.cover_image_public_url}
 																					alt={product.title}
-																					class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+																					className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
 																				/>
-																				<div class="absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent" />
-																				<div class="absolute left-3 top-3 flex gap-2">
+																				<div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent" />
+																				<div className="absolute left-3 top-3 flex gap-2">
 																					<Pill
 																						tone={
 																							product.status === "active"
@@ -1038,55 +1038,55 @@ export default function FactoryProfile() {
 																					</Pill>
 																					{product.hasVideo ? (
 																						<Pill tone="info">
-																							<Play class="mr-1 h-3 w-3" /> Video
+																							<Play className="mr-1 h-3 w-3" /> Video
 																						</Pill>
 																					) : null}
 																				</div>
-																				<div class="absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur">
+																				<div className="absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur">
 																					Open gallery
 																				</div>
 																			</button>
-																			<div class="space-y-3 p-4">
+																			<div className="space-y-3 p-4">
 																				<div>
-																					<div class="flex items-start justify-between gap-3">
-																						<h4 class="line-clamp-1 text-base font-semibold text-slate-900 dark:text-slate-100">
+																					<div className="flex items-start justify-between gap-3">
+																						<h4 className="line-clamp-1 text-base font-semibold text-slate-900 dark:text-slate-100">
 																							{product.title || "Product"}
 																						</h4>
 																						<button
-																							class="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-sky-300 hover:text-sky-600 dark:border-slate-800 dark:text-slate-400"
+																							className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-sky-300 hover:text-sky-600 dark:border-slate-800 dark:text-slate-400"
 																							onClick={() => {
 																								setGalleryIndex(products.indexOf(product));
 																								setShowGallery(true);
 																							}}
 																							aria-label={`Open gallery for ${product.title}`}
 																						>
-																							<Camera class="h-4 w-4" />
+																							<Camera className="h-4 w-4" />
 																						</button>
 																					</div>
-																					<p class="mt-1 text-xs uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
+																					<p className="mt-1 text-xs uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
 																						{product.category || "Category"}
 																					</p>
 																				</div>
-																				<div class="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
-																					<span class="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900">
+																				<div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+																					<span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900">
 																						MOQ: {product.moq ?? "--"}
 																					</span>
-																					<span class="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900">
+																					<span className="rounded-full bg-slate-100 px-2.5 py-1 dark:bg-slate-900">
 																						Lead time: {product.lead_time_days ?? "--"} days
 																					</span>
 																				</div>
-																				<p class="line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+																				<p className="line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
 																					{product.description || ""}
 																				</p>
-																				<div class="flex items-center justify-between gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400">
+																				<div className="flex items-center justify-between gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400">
 																					<span>
 																						{product.video_review_status
 																							? `Review: ${String(product.video_review_status).replace(/_/g, " ")}`
 																							: "No review status"}
 																					</span>
 																					{product.video_url ? (
-																						<span class="inline-flex items-center gap-1 text-sky-600 dark:text-sky-300">
-																							<Video class="h-3.5 w-3.5" /> Media
+																						<span className="inline-flex items-center gap-1 text-sky-600 dark:text-sky-300">
+																							<Video className="h-3.5 w-3.5" /> Media
 																						</span>
 																					) : null}
 																				</div>
@@ -1097,8 +1097,8 @@ export default function FactoryProfile() {
 															))}
 														</HorizontalScrollGallery>
 													)}
-													<div class="mt-5 flex items-center justify-between gap-3">
-														<div class="text-sm text-slate-500 dark:text-slate-400">
+													<div className="mt-5 flex items-center justify-between gap-3">
+														<div className="text-sm text-slate-500 dark:text-slate-400">
 															{loadingProducts
 																? "Loading more products..."
 																: productsNext === null
@@ -1108,7 +1108,7 @@ export default function FactoryProfile() {
 														{productsNext !== null && !loadingProducts ? (
 															<button
 																onClick={() => loadProducts({ reset: false })}
-																class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900"
+																className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-900"
 															>
 																Load more
 															</button>
@@ -1125,7 +1125,7 @@ export default function FactoryProfile() {
 												animate={{ opacity: 1, y: 0 }}
 												exit={{ opacity: 0, y: -10 }}
 												transition={{ duration: 0.2 }}
-												class="space-y-5"
+												className="space-y-5"
 											>
 												<SoftCard>
 													<SectionTitle
@@ -1134,31 +1134,31 @@ export default function FactoryProfile() {
 														subtitle="Only approved media is public. Pending or restricted media remains hidden unless you are the profile owner or an admin."
 													/>
 													{visibleVideos.length === 0 ? (
-														<div class="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
+														<div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
 															No public videos available.
 														</div>
 													) : (
-														<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+														<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 															{visibleVideos.map((item) => (
 																<div
 																	key={item.id}
-																	class="rounded-3xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950"
+																	className="rounded-3xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950"
 																>
-																	<div class="flex items-start gap-3">
-																		<div class="rounded-2xl bg-sky-500/10 p-3 text-sky-600 dark:text-sky-300">
-																			<Play class="h-5 w-5" />
+																	<div className="flex items-start gap-3">
+																		<div className="rounded-2xl bg-sky-500/10 p-3 text-sky-600 dark:text-sky-300">
+																			<Play className="h-5 w-5" />
 																		</div>
-																		<div class="min-w-0 flex-1">
-																			<div class="font-semibold text-slate-900 dark:text-slate-100">
+																		<div className="min-w-0 flex-1">
+																			<div className="font-semibold text-slate-900 dark:text-slate-100">
 																				{item.title || "Video"}
 																			</div>
-																			<div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+																			<div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
 																				{String(item.video_review_status || "--").replace(
 																					/_/g,
 																					" ",
 																				)}
 																			</div>
-																			<p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+																			<p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
 																				{item.description || ""}
 																			</p>
 																			{item.video_url ? (
@@ -1166,9 +1166,9 @@ export default function FactoryProfile() {
 																					href={item.video_url}
 																					target="_blank"
 																					rel="noreferrer"
-																					class="mt-4 inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+																					className="mt-4 inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5"
 																				>
-																					Open video link <ExternalLink class="h-4 w-4" />
+																					Open video link <ExternalLink className="h-4 w-4" />
 																				</a>
 																			) : null}
 																		</div>
@@ -1188,7 +1188,7 @@ export default function FactoryProfile() {
 												animate={{ opacity: 1, y: 0 }}
 												exit={{ opacity: 0, y: -10 }}
 												transition={{ duration: 0.2 }}
-												class="space-y-5"
+												className="space-y-5"
 											>
 												<SoftCard>
 													<SectionTitle
@@ -1197,42 +1197,42 @@ export default function FactoryProfile() {
 														subtitle="Same company list pattern"
 													/>
 													{(user?.profile?.companies_worked_with || []).length > 0 ? (
-														<div class="space-y-3">
+														<div className="space-y-3">
 															{(user.profile.companies_worked_with || []).map((company, idx) => (
 																<div
 																	key={idx}
-																	class="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40"
+																	className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/40"
 																>
-																	<div class="flex items-center gap-3 min-w-0">
-																		<div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10">
+																	<div className="flex items-center gap-3 min-w-0">
+																		<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-cyan-500/15 ring-1 ring-sky-500/10">
 																			{company.logo ? (
 																				<img
 																					src={company.logo}
 																					alt={company.name || "Company"}
-																					class="h-full w-full object-cover"
+																					className="h-full w-full object-cover"
 																				/>
 																			) : (
-																				<Building2 class="h-5 w-5 text-sky-500" />
+																				<Building2 className="h-5 w-5 text-sky-500" />
 																			)}
 																		</div>
-																		<div class="min-w-0">
-																			<div class="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+																		<div className="min-w-0">
+																			<div className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
 																				{company.name || "Untitled company"}
 																			</div>
-																			<div class="truncate text-xs text-slate-500 dark:text-slate-400">
+																			<div className="truncate text-xs text-slate-500 dark:text-slate-400">
 																				{company.role || "Partner"}
 																			</div>
 																		</div>
 																	</div>
-																	<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-																		<CalendarDays class="h-4 w-4" />{" "}
+																	<div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+																		<CalendarDays className="h-4 w-4" />{" "}
 																		{company.period || company.location || "Ongoing"}
 																	</div>
 																</div>
 															))}
 														</div>
 													) : (
-														<div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
+														<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
 															No work history added yet.
 														</div>
 													)}
@@ -1247,7 +1247,7 @@ export default function FactoryProfile() {
 												animate={{ opacity: 1, y: 0 }}
 												exit={{ opacity: 0, y: -10 }}
 												transition={{ duration: 0.2 }}
-												class="space-y-5"
+												className="space-y-5"
 											>
 												<SoftCard>
 													<SectionTitle
@@ -1255,7 +1255,7 @@ export default function FactoryProfile() {
 														title="Rating summary"
 														subtitle="Public reviews and confidence scoring."
 													/>
-													<div class="grid gap-4 md:grid-cols-3">
+													<div className="grid gap-4 md:grid-cols-3">
 														<Metric label="Average score" value={`${avg.toFixed(1)} / 5`} />
 														<Metric label="Total reviews" value={totalRatings} />
 														<Metric
@@ -1266,8 +1266,8 @@ export default function FactoryProfile() {
 													</div>
 												</SoftCard>
 
-												<div class="rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100">
-													<strong class="font-semibold">Review Policy:</strong> Reviews can only be
+												<div className="rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100">
+													<strong className="font-semibold">Review Policy:</strong> Reviews can only be
 													edited or deleted by the person who wrote them. Profile owners cannot
 													delete reviews to maintain transparency and trust.
 												</div>
@@ -1279,7 +1279,7 @@ export default function FactoryProfile() {
 														subtitle="Public feedback from past collaborations."
 													/>
 													{(ratingSummary?.recent_reviews || []).length > 0 ? (
-														<div class="space-y-3">
+														<div className="space-y-3">
 															{(ratingSummary.recent_reviews || []).map((review) => {
 																const canEdit =
 																	currentUser?.id &&
@@ -1287,33 +1287,33 @@ export default function FactoryProfile() {
 																return (
 																	<div
 																		key={review.id}
-																		class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+																		className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
 																	>
-																		<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-																			<div class="min-w-0">
-																				<div class="flex flex-wrap items-center gap-2">
+																		<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+																			<div className="min-w-0">
+																				<div className="flex flex-wrap items-center gap-2">
 																					<Pill tone="warning">
-																						<Star class="h-3.5 w-3.5" />{" "}
+																						<Star className="h-3.5 w-3.5" />{" "}
 																						{Number(review.score || 0).toFixed(1)}
 																					</Pill>
-																					<div class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+																					<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 																						{review.reviewer_name || "Anonymous"}
 																					</div>
 																				</div>
-																				<p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
+																				<p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
 																					{review.comment || "No comment provided."}
 																				</p>
-																				<div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+																				<div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
 																					{review.created_at
 																						? new Date(review.created_at).toLocaleDateString()
 																						: ""}
 																				</div>
 																			</div>
 																			{canEdit ? (
-																				<div class="flex items-center gap-2">
+																				<div className="flex items-center gap-2">
 																					<button
 																						type="button"
-																						class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
+																						className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
 																						onClick={async () => {
 																							const score = setReviewEditModal({
 																								open: true,
@@ -1323,16 +1323,16 @@ export default function FactoryProfile() {
 																							});
 																						}}
 																					>
-																						<Edit3 class="h-4 w-4" /> Edit
+																						<Edit3 className="h-4 w-4" /> Edit
 																					</button>
 																					<button
 																						type="button"
-																						class="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300"
+																						className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-900/60 dark:text-rose-300"
 																						onClick={() => {
 																							setReviewDeleteId(review.id);
 																						}}
 																					>
-																						<Trash2 class="h-4 w-4" /> Delete
+																						<Trash2 className="h-4 w-4" /> Delete
 																					</button>
 																				</div>
 																			) : null}
@@ -1342,7 +1342,7 @@ export default function FactoryProfile() {
 															})}
 														</div>
 													) : (
-														<div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
+														<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
 															No reviews yet.
 														</div>
 													)}
@@ -1361,7 +1361,7 @@ export default function FactoryProfile() {
 
 			{showGallery && products.length > 0 ? (
 				<motion.div
-					class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
@@ -1371,51 +1371,51 @@ export default function FactoryProfile() {
 					aria-label="Product gallery lightbox"
 				>
 					<motion.div
-						class="relative flex h-[86vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl"
+						className="relative flex h-[86vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl"
 						initial={{ scale: 0.96, y: 20 }}
 						animate={{ scale: 1, y: 0 }}
 						exit={{ scale: 0.96, y: 20 }}
 						transition={{ type: "spring", stiffness: 250, damping: 24 }}
 						onClick={(e) => e.stopPropagation()}
 					>
-						<div class="flex items-center justify-between border-b border-white/10 px-4 py-3 text-white">
-							<div class="min-w-0">
-								<div class="truncate text-sm font-semibold">
+						<div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-white">
+							<div className="min-w-0">
+								<div className="truncate text-sm font-semibold">
 									{products[galleryIndex]?.title || "Product"}
 								</div>
-								<div class="text-xs text-slate-400">
+								<div className="text-xs text-slate-400">
 									{galleryIndex + 1} / {products.length}
 								</div>
 							</div>
-							<div class="flex items-center gap-2">
+							<div className="flex items-center gap-2">
 								<button
 									onClick={() => setGalleryIndex((i) => Math.max(0, i - 1))}
 									disabled={galleryIndex === 0}
-									class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 disabled:opacity-40"
+									className="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 disabled:opacity-40"
 									aria-label="Previous image"
 								>
-									<ChevronLeft class="h-5 w-5" />
+									<ChevronLeft className="h-5 w-5" />
 								</button>
 								<button
 									onClick={() => setGalleryIndex((i) => Math.min(products.length - 1, i + 1))}
 									disabled={galleryIndex === products.length - 1}
-									class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 disabled:opacity-40"
+									className="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20 disabled:opacity-40"
 									aria-label="Next image"
 								>
-									<ChevronRight class="h-5 w-5" />
+									<ChevronRight className="h-5 w-5" />
 								</button>
 								<button
 									onClick={() => setShowGallery(false)}
-									class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+									className="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
 									aria-label="Close gallery"
 								>
-									<X class="h-5 w-5" />
+									<X className="h-5 w-5" />
 								</button>
 							</div>
 						</div>
-						<div class="relative flex-1 overflow-hidden">
+						<div className="relative flex-1 overflow-hidden">
 							<motion.div
-								class="flex h-full w-full items-center justify-center"
+								className="flex h-full w-full items-center justify-center"
 								drag="x"
 								dragControls={dragControls}
 								dragConstraints={{ left: 0, right: 0 }}
@@ -1433,33 +1433,33 @@ export default function FactoryProfile() {
 								<img
 									src={products[galleryIndex]?.cover_image_public_url}
 									alt={products[galleryIndex]?.title || "Gallery image"}
-									class="max-h-full max-w-full select-none object-contain"
+									className="max-h-full max-w-full select-none object-contain"
 									draggable={false}
 								/>
 							</motion.div>
 							<button
 								onClick={() => setGalleryIndex((i) => Math.max(0, i - 1))}
 								disabled={galleryIndex === 0}
-								class="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white backdrop-blur transition hover:bg-black/60 disabled:opacity-40"
+								className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white backdrop-blur transition hover:bg-black/60 disabled:opacity-40"
 								aria-label="Previous image"
 							>
-								<ArrowLeft class="h-5 w-5" />
+								<ArrowLeft className="h-5 w-5" />
 							</button>
 							<button
 								onClick={() => setGalleryIndex((i) => Math.min(products.length - 1, i + 1))}
 								disabled={galleryIndex === products.length - 1}
-								class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white backdrop-blur transition hover:bg-black/60 disabled:opacity-40"
+								className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-3 text-white backdrop-blur transition hover:bg-black/60 disabled:opacity-40"
 								aria-label="Next image"
 							>
-								<ArrowRight class="h-5 w-5" />
+								<ArrowRight className="h-5 w-5" />
 							</button>
 						</div>
-						<div class="border-t border-white/10 px-4 py-3 text-sm text-slate-300">
-							<div class="flex flex-wrap items-center justify-between gap-3">
-								<div class="truncate">
+						<div className="border-t border-white/10 px-4 py-3 text-sm text-slate-300">
+							<div className="flex flex-wrap items-center justify-between gap-3">
+								<div className="truncate">
 									{products[galleryIndex]?.description || "Gallery preview"}
 								</div>
-								<div class="text-xs text-slate-400">
+								<div className="text-xs text-slate-400">
 									Counter: {galleryIndex + 1} / {products.length}
 								</div>
 							</div>
@@ -1470,7 +1470,7 @@ export default function FactoryProfile() {
 
 			{reviewEditModal.open ? (
 				<div
-					class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+					className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
 					onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
 					onKeyDown={(e) =>
 						e.key === "Escape" && setReviewEditModal({ ...reviewEditModal, open: false })
@@ -1478,13 +1478,13 @@ export default function FactoryProfile() {
 					tabIndex={-1}
 				>
 					<div
-						class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+						className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h3 class="text-lg font-semibold text-slate-900 dark:text-white">Edit Review</h3>
-						<div class="mt-4 space-y-4">
+						<h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Review</h3>
+						<div className="mt-4 space-y-4">
 							<div>
-								<label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+								<label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
 									Score (1-5)
 								</label>
 								<input
@@ -1498,11 +1498,11 @@ export default function FactoryProfile() {
 											score: Number(e.target.value),
 										})
 									}
-									class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+									className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
 								/>
 							</div>
 							<div>
-								<label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+								<label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
 									Comment
 								</label>
 								<textarea
@@ -1514,14 +1514,14 @@ export default function FactoryProfile() {
 										})
 									}
 									rows={3}
-									class="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+									className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
 								/>
 							</div>
 						</div>
-						<div class="mt-6 flex items-center justify-end gap-3">
+						<div className="mt-6 flex items-center justify-end gap-3">
 							<button
 								onClick={() => setReviewEditModal({ ...reviewEditModal, open: false })}
-								class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+								className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
 							>
 								Cancel
 							</button>
@@ -1547,7 +1547,7 @@ export default function FactoryProfile() {
 										comment: "",
 									});
 								}}
-								class="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
+								className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
 							>
 								Save
 							</button>
@@ -1558,23 +1558,23 @@ export default function FactoryProfile() {
 
 			{reviewDeleteId ? (
 				<div
-					class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+					className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
 					onClick={() => setReviewDeleteId(null)}
 					onKeyDown={(e) => e.key === "Escape" && setReviewDeleteId(null)}
 					tabIndex={-1}
 				>
 					<div
-						class="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+						className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h3 class="text-lg font-semibold text-slate-900 dark:text-white">Delete Review</h3>
-						<p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+						<h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete Review</h3>
+						<p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
 							Are you sure you want to delete this review? This action cannot be undone.
 						</p>
-						<div class="mt-6 flex items-center justify-end gap-3">
+						<div className="mt-6 flex items-center justify-end gap-3">
 							<button
 								onClick={() => setReviewDeleteId(null)}
-								class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+								className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
 							>
 								Cancel
 							</button>
@@ -1591,7 +1591,7 @@ export default function FactoryProfile() {
 									}
 									setReviewDeleteId(null);
 								}}
-								class="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-400"
+								className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-400"
 							>
 								Delete
 							</button>

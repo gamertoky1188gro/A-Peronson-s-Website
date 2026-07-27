@@ -66,7 +66,7 @@ function Badge({ children, tone = "blue" }) {
 	};
 	return (
 		<span
-			class={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${styles[tone]}`}
+			className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${styles[tone]}`}
 		>
 			{children}
 		</span>
@@ -75,16 +75,16 @@ function Badge({ children, tone = "blue" }) {
 
 function Stat({ icon: Icon, label, value }) {
 	return (
-		<div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
-			<div class="flex items-center gap-3">
-				<div class="rounded-xl bg-sky-500/10 p-2 text-sky-600 dark:text-sky-300">
-					<Icon class="h-4 w-4" />
+		<div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
+			<div className="flex items-center gap-3">
+				<div className="rounded-xl bg-sky-500/10 p-2 text-sky-600 dark:text-sky-300">
+					<Icon className="h-4 w-4" />
 				</div>
 				<div>
-					<div class="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+					<div className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
 						{label}
 					</div>
-					<div class="text-lg font-semibold text-slate-900 dark:text-white">{value}</div>
+					<div className="text-lg font-semibold text-slate-900 dark:text-white">{value}</div>
 				</div>
 			</div>
 		</div>
@@ -93,12 +93,12 @@ function Stat({ icon: Icon, label, value }) {
 
 function Field({ label, children, hint, required }) {
 	return (
-		<label class="block space-y-1.5">
-			<div class="flex items-center justify-between gap-3">
-				<span class="text-sm font-medium text-slate-700 dark:text-slate-200">
-					{label} {required ? <span class="text-sky-500">*</span> : null}
+		<label className="block space-y-1.5">
+			<div className="flex items-center justify-between gap-3">
+				<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+					{label} {required ? <span className="text-sky-500">*</span> : null}
 				</span>
-				{hint ? <span class="text-xs text-slate-500 dark:text-slate-400">{hint}</span> : null}
+				{hint ? <span className="text-xs text-slate-500 dark:text-slate-400">{hint}</span> : null}
 			</div>
 			{children}
 		</label>
@@ -440,27 +440,27 @@ export default function ProductManagement() {
 	function getStatusBadge(status) {
 		if (status === "approved") {
 			return (
-				<span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+				<span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
 					Approved
 				</span>
 			);
 		}
 		if (status === "rejected") {
 			return (
-				<span class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-500/20 dark:text-red-300">
+				<span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-500/20 dark:text-red-300">
 					Rejected
 				</span>
 			);
 		}
 		if (status === "pending_review") {
 			return (
-				<span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+				<span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
 					Pending
 				</span>
 			);
 		}
 		return (
-			<span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-500/20 dark:text-gray-300">
+			<span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-500/20 dark:text-gray-300">
 				{status}
 			</span>
 		);
@@ -618,79 +618,79 @@ export default function ProductManagement() {
 
 	return (
 		<div class={isDark ? "dark" : ""}>
-			<div class="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-				<div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 dark:bg-none dark:from-transparent dark:via-transparent dark:to-transparent">
-					<div class="hidden dark:block absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_36%),radial_gradient(circle_at_top_right,_rgba(96,165,250,0.16),_transparent_28%),linear-gradient(180deg,_rgba(2,6,23,1)_0%,_rgba(3,7,18,1)_100%)]" />
-					<div class="hidden dark:block absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:44px_44px] opacity-35" />
+			<div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+				<div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 dark:bg-none dark:from-transparent dark:via-transparent dark:to-transparent">
+					<div className="hidden dark:block absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_36%),radial_gradient(circle_at_top_right,_rgba(96,165,250,0.16),_transparent_28%),linear-gradient(180deg,_rgba(2,6,23,1)_0%,_rgba(3,7,18,1)_100%)]" />
+					<div className="hidden dark:block absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:44px_44px] opacity-35" />
 
-					<main class="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-						<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+					<main className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+						<div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 							<div>
-								<div class="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm backdrop-blur dark:border-sky-400/20 dark:text-sky-200">
-									<Sparkles class="h-3.5 w-3.5" />
+								<div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm backdrop-blur dark:border-sky-400/20 dark:text-sky-200">
+									<Sparkles className="h-3.5 w-3.5" />
 									Premium Product Management
 								</div>
-								<h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+								<h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
 									Product Management
 								</h1>
-								<p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
+								<p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
 									Buying houses and factories can post products. Drafts stay private; published
 									items go live after media review.
 								</p>
 							</div>
 
-							<div class="flex items-center gap-3">
+							<div className="flex items-center gap-3">
 								<button
 									onClick={toggleTheme}
-									class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+									className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
 								>
 									{isDark ? (
-										<SunMedium class="h-4 w-4 text-amber-500" />
+										<SunMedium className="h-4 w-4 text-amber-500" />
 									) : (
-										<MoonStar class="h-4 w-4 text-sky-500" />
+										<MoonStar className="h-4 w-4 text-sky-500" />
 									)}
 									{isDark ? "Light mode" : "Dark mode"}
 								</button>
 								<button
 									onClick={openCreate}
-									class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:scale-[1.01] hover:shadow-sky-500/35"
+									className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:scale-[1.01] hover:shadow-sky-500/35"
 								>
-									<Plus class="h-4 w-4" />
+									<Plus className="h-4 w-4" />
 									Create product
 								</button>
 							</div>
 						</div>
 
 						<ScrollReveal as="section">
-							<div class="mb-6 grid gap-4 md:grid-cols-3">
+							<div className="mb-6 grid gap-4 md:grid-cols-3">
 								<Stat icon={LayoutGrid} label="Published" value={stats.published} />
 								<Stat icon={Clock3} label="Drafts" value={stats.drafts} />
 								<Stat icon={BadgeCheck} label="Approved media" value={stats.approved} />
 							</div>
 						</ScrollReveal>
 
-						<div class="mb-6 rounded-3xl border border-sky-200 bg-white p-5 shadow-sm dark:border-sky-400/15 dark:bg-white/5 dark:shadow-2xl dark:shadow-sky-950/20 dark:backdrop-blur">
-							<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-								<div class="max-w-4xl">
-									<div class="mb-2 flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-200">
-										<ShieldCheck class="h-4 w-4" />
+						<div className="mb-6 rounded-3xl border border-sky-200 bg-white p-5 shadow-sm dark:border-sky-400/15 dark:bg-white/5 dark:shadow-2xl dark:shadow-sky-950/20 dark:backdrop-blur">
+							<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+								<div className="max-w-4xl">
+									<div className="mb-2 flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-200">
+										<ShieldCheck className="h-4 w-4" />
 										Media & publishing help
 									</div>
-									<p class="text-sm leading-6 text-slate-600 dark:text-slate-300">
+									<p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
 										Upload product images/videos inside GarTexHub. Only internal{" "}
-										<span class="rounded-md bg-sky-100 px-1.5 py-0.5 font-mono text-sky-700 dark:bg-white/10 dark:text-sky-200">
+										<span className="rounded-md bg-sky-100 px-1.5 py-0.5 font-mono text-sky-700 dark:bg-white/10 dark:text-sky-200">
 											/uploads/...
 										</span>{" "}
 										URLs are allowed. Pending or rejected media stays hidden from buyers.
 									</p>
-									<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+									<p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
 										Use Draft to keep items private while preparing your gallery; switch to
 										Published when ready.
 									</p>
 								</div>
-								<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-300">
-									<div class="font-medium text-slate-900 dark:text-white">Status rules</div>
-									<div class="mt-2 flex flex-wrap gap-2">
+								<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-300">
+									<div className="font-medium text-slate-900 dark:text-white">Status rules</div>
+									<div className="mt-2 flex flex-wrap gap-2">
 										<Badge tone="slate">Draft private</Badge>
 										<Badge tone="green">Published live</Badge>
 										<Badge tone="amber">Media review required</Badge>
@@ -700,28 +700,28 @@ export default function ProductManagement() {
 						</div>
 
 						{notice ? (
-							<div class="mb-6 flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-400/15 dark:bg-sky-400/10 dark:text-sky-50">
-								<Eye class="mt-0.5 h-4 w-4 shrink-0 text-sky-500 dark:text-sky-200" />
+							<div className="mb-6 flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-400/15 dark:bg-sky-400/10 dark:text-sky-50">
+								<Eye className="mt-0.5 h-4 w-4 shrink-0 text-sky-500 dark:text-sky-200" />
 								<span>{notice}</span>
 							</div>
 						) : null}
 
 						{items.length === 0 ? (
-							<div class="rounded-3xl border border-slate-200 bg-white p-8 text-center dark:border-white/10 dark:bg-white/5">
-								<p class="text-slate-400">
+							<div className="rounded-3xl border border-slate-200 bg-white p-8 text-center dark:border-white/10 dark:bg-white/5">
+								<p className="text-slate-400">
 									No products yet. Create your first product to get started.
 								</p>
 							</div>
 						) : (
-							<StaggerContainer class="grid gap-4">
+							<StaggerContainer className="grid gap-4">
 								{items.map((product) => (
 									<StaggerItem key={product.id}>
 										<FlipCard
 											flipOn="click"
 											front={
-												<article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
-													<div class="flex flex-col gap-4 h-full">
-														<div class="flex flex-wrap items-center gap-2">
+												<article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
+													<div className="flex flex-col gap-4 h-full">
+														<div className="flex flex-wrap items-center gap-2">
 															<Badge tone={product.status === "published" ? "green" : "slate"}>
 																Status: {product.status}
 															</Badge>
@@ -734,28 +734,28 @@ export default function ProductManagement() {
 														</div>
 
 														<div>
-															<h2 class="truncate text-2xl font-semibold text-slate-900 dark:text-white">
+															<h2 className="truncate text-2xl font-semibold text-slate-900 dark:text-white">
 																{product.title || product.name}
 															</h2>
-															<div class="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+															<div className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
 																MOQ {product.moq || "--"} · Lead {product.lead_time_days || "--"}
 															</div>
 														</div>
 
-														<p class="flex-1 text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-4">
+														<p className="flex-1 text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-4">
 															{product.description}
 														</p>
 
-														<div class="text-xs text-slate-400 dark:text-slate-500">
+														<div className="text-xs text-slate-400 dark:text-slate-500">
 															Click to flip for details
 														</div>
 													</div>
 												</article>
 											}
 											back={
-												<article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
-													<div class="flex flex-col gap-4 h-full">
-														<div class="grid gap-3 sm:grid-cols-2">
+												<article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-xl dark:shadow-slate-950/20 h-full">
+													<div className="flex flex-col gap-4 h-full">
+														<div className="grid gap-3 sm:grid-cols-2">
 															{[
 																{
 																	label: "Industry",
@@ -776,31 +776,31 @@ export default function ProductManagement() {
 															].map((item) => (
 																<div
 																	key={item.label}
-																	class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-900/50"
+																	className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-900/50"
 																>
-																	<div class="text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
+																	<div className="text-xs uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
 																		{item.label}
 																	</div>
-																	<div class="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+																	<div className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
 																		{item.value}
 																	</div>
 																</div>
 															))}
 														</div>
 
-														<div class="mt-auto flex flex-wrap gap-3">
+														<div className="mt-auto flex flex-wrap gap-3">
 															<button
 																onClick={() => openEdit(product)}
-																class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+																className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
 															>
-																<Pencil class="h-4 w-4" />
+																<Pencil className="h-4 w-4" />
 																Edit
 															</button>
 															<button
 																onClick={() => promptDelete(product.id)}
-																class="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
+																className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
 															>
-																<Trash2 class="h-4 w-4" />
+																<Trash2 className="h-4 w-4" />
 																Delete
 															</button>
 														</div>
@@ -816,32 +816,32 @@ export default function ProductManagement() {
 				</div>
 
 				{modalOpen ? (
-					<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8 backdrop-blur-sm dark:bg-slate-950/70">
+					<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8 backdrop-blur-sm dark:bg-slate-950/70">
 						<div
 							data-lenis-prevent={true}
-							class="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40"
+							className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[28px] border border-slate-200 bg-white text-slate-900 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40"
 						>
-							<div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 px-6 py-5 backdrop-blur dark:border-white/10 dark:bg-slate-950/95">
+							<div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 px-6 py-5 backdrop-blur dark:border-white/10 dark:bg-slate-950/95">
 								<div>
-									<h3 class="text-2xl font-semibold text-slate-900 dark:text-white">
+									<h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
 										{isEditing ? "Edit product" : "Create product"}
 									</h3>
-									<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+									<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 										No music uploads. Videos and images must be uploaded inside GarTexHub (internal
 										/uploads/... only).
 									</p>
 								</div>
 								<button
 									onClick={closeModal}
-									class="rounded-2xl border border-slate-200 bg-slate-50 p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+									className="rounded-2xl border border-slate-200 bg-slate-50 p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
 								>
-									<X class="h-5 w-5" />
+									<X className="h-5 w-5" />
 								</button>
 							</div>
 
-							<div class="grid gap-6 px-6 py-6 lg:grid-cols-[1.3fr_0.9fr]">
-								<div class="space-y-5">
-									<div class="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
+							<div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.3fr_0.9fr]">
+								<div className="space-y-5">
+									<div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
 										<Field label="Product name" required={true}>
 											<input
 												value={form.title}
@@ -852,7 +852,7 @@ export default function ProductManagement() {
 											/>
 										</Field>
 
-										<div class="mt-4 grid gap-4 md:grid-cols-2">
+										<div className="mt-4 grid gap-4 md:grid-cols-2">
 											<Field label="Industry" required={true}>
 												<input
 													value={form.industry}
@@ -919,10 +919,10 @@ export default function ProductManagement() {
 										</div>
 									</div>
 
-									<div class="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-										<div class="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-											<FileText class="h-4 w-4 text-sky-500 dark:text-sky-300" />
-											Description <span class="text-sky-500">*</span>
+									<div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
+										<div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+											<FileText className="h-4 w-4 text-sky-500 dark:text-sky-300" />
+											Description <span className="text-sky-500">*</span>
 										</div>
 										<textarea
 											value={form.description}
@@ -944,13 +944,13 @@ export default function ProductManagement() {
 										<button
 											type="button"
 											onClick={() => setAdvancedOpen(!advancedOpen)}
-											class="mt-3 inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700 transition hover:bg-sky-100 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-100 dark:hover:bg-sky-400/15"
+											className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700 transition hover:bg-sky-100 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-100 dark:hover:bg-sky-400/15"
 										>
-											<Sparkles class="h-4 w-4" />
+											<Sparkles className="h-4 w-4" />
 											{advancedOpen ? "Hide advanced details" : "Add advanced details"}
 										</button>
 										{advancedOpen && (
-											<div class="mt-4 grid gap-4 md:grid-cols-2">
+											<div className="mt-4 grid gap-4 md:grid-cols-2">
 												<Field label="Fabric GSM">
 													<input
 														value={form.fabric_gsm}
@@ -981,24 +981,24 @@ export default function ProductManagement() {
 										)}
 									</div>
 
-									<div class="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-										<div class="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-											<Upload class="h-4 w-4 text-sky-500 dark:text-sky-300" />
-											Product media <span class="text-sky-500">*</span>
+									<div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
+										<div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+											<Upload className="h-4 w-4 text-sky-500 dark:text-sky-300" />
+											Product media <span className="text-sky-500">*</span>
 										</div>
-										<p class="text-sm leading-6 text-slate-500 dark:text-slate-400">
+										<p className="text-sm leading-6 text-slate-500 dark:text-slate-400">
 											Upload images or video files. Pending/rejected media stays hidden from buyers.
 										</p>
 
-										<div class="mt-4 grid gap-3 md:grid-cols-2">
+										<div className="mt-4 grid gap-3 md:grid-cols-2">
 											{editing?.id ? (
 												<>
 													<div
-														class="rounded-2xl border border-dashed border-slate-300 bg-white p-4 cursor-pointer hover:border-sky-400 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-sky-400/40"
+														className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 cursor-pointer hover:border-sky-400 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-sky-400/40"
 														onClick={() => imageInputRef.current?.click()}
 													>
-														<div class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
-															<ImageIcon class="h-4 w-4 text-sky-500 dark:text-sky-300" />
+														<div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
+															<ImageIcon className="h-4 w-4 text-sky-500 dark:text-sky-300" />
 															{mediaBusy ? (
 																<ThreeDot
 																	variant="bounce"
@@ -1011,7 +1011,7 @@ export default function ProductManagement() {
 																"Click to upload images"
 															)}
 														</div>
-														<div class="mt-1 text-xs text-slate-400">PNG, JPG up to 10MB each</div>
+														<div className="mt-1 text-xs text-slate-400">PNG, JPG up to 10MB each</div>
 														<input
 															ref={imageInputRef}
 															type="file"
@@ -1019,10 +1019,10 @@ export default function ProductManagement() {
 															accept=".jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
 															onChange={(e) => handleUploadFiles(e.target.files)}
 															disabled={mediaBusy}
-															class="hidden"
+															className="hidden"
 														/>
 														{mediaBusy && (
-															<div class="mt-3">
+															<div className="mt-3">
 																<UploadProgressBar progress={mediaUploadProgress} />
 															</div>
 														)}
@@ -1032,19 +1032,19 @@ export default function ProductManagement() {
 																	axis="x"
 																	values={mediaGallery}
 																	onReorder={handleGalleryReorder}
-																	class="mt-3 flex flex-wrap gap-2"
+																	className="mt-3 flex flex-wrap gap-2"
 																>
 																	{mediaGallery.map((entry) => (
 																		<Reorder.Item
 																			key={entry.document_id || entry.url}
 																			value={entry}
 																			as="div"
-																			class="relative h-16 w-16 rounded-lg overflow-hidden border border-slate-200 cursor-grab active:cursor-grabbing dark:border-white/10"
+																			className="relative h-16 w-16 rounded-lg overflow-hidden border border-slate-200 cursor-grab active:cursor-grabbing dark:border-white/10"
 																		>
 																			<motion.img
 																				src={entry.url}
 																				alt=""
-																				class="h-full w-full object-cover pointer-events-none"
+																				className="h-full w-full object-cover pointer-events-none"
 																				layout={true}
 																				initial={{ opacity: 0, scale: 0.92 }}
 																				animate={{ opacity: 1, scale: 1 }}
@@ -1054,7 +1054,7 @@ export default function ProductManagement() {
 																					ease: [0.16, 1, 0.3, 1],
 																				}}
 																			/>
-																			<div class="absolute bottom-0 left-0 right-0 bg-black/50">
+																			<div className="absolute bottom-0 left-0 right-0 bg-black/50">
 																				{getStatusBadge(entry.status)}
 																			</div>
 																		</Reorder.Item>
@@ -1064,11 +1064,11 @@ export default function ProductManagement() {
 														)}
 													</div>
 													<div
-														class="rounded-2xl border border-dashed border-slate-300 bg-white p-4 cursor-pointer hover:border-sky-400 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-sky-400/40"
+														className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 cursor-pointer hover:border-sky-400 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-sky-400/40"
 														onClick={() => videoInputRef.current?.click()}
 													>
-														<div class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
-															<Video class="h-4 w-4 text-sky-500 dark:text-sky-300" />
+														<div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
+															<Video className="h-4 w-4 text-sky-500 dark:text-sky-300" />
 															{videoBusy ? (
 																<ThreeDot
 																	variant="bounce"
@@ -1081,7 +1081,7 @@ export default function ProductManagement() {
 																"Click to upload video"
 															)}
 														</div>
-														<div class="mt-1 text-xs text-slate-400">
+														<div className="mt-1 text-xs text-slate-400">
 															MP4, WEBM, MKV, AVI, MOV, FLV, MPEG, 3GP, WMV, OGV, M4V, AMV, ASF,
 															VOB, OGG, MNG, 3G2, MXF, ROQ, RM, QT, SVI, NSV, YUV, F4V up to 50MB
 														</div>
@@ -1091,22 +1091,22 @@ export default function ProductManagement() {
 															accept="video/*"
 															onChange={(e) => handleUploadVideo(e.target.files?.[0])}
 															disabled={videoBusy}
-															class="hidden"
+															className="hidden"
 														/>
 														{videoBusy && (
-															<div class="mt-3">
+															<div className="mt-3">
 																<UploadProgressBar progress={videoUploadProgress} />
 															</div>
 														)}
 													</div>
 												</>
 											) : (
-												<div class="rounded-2xl border border-dashed border-slate-300 bg-white p-4 dark:border-white/15 dark:bg-slate-900/60">
-													<div class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
-														<ImageIcon class="h-4 w-4 text-sky-500 dark:text-sky-300" />
+												<div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 dark:border-white/15 dark:bg-slate-900/60">
+													<div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-white">
+														<ImageIcon className="h-4 w-4 text-sky-500 dark:text-sky-300" />
 														Save product first
 													</div>
-													<div class="mt-1 text-xs text-slate-400">
+													<div className="mt-1 text-xs text-slate-400">
 														Save the product first to upload images.
 													</div>
 												</div>
@@ -1114,20 +1114,20 @@ export default function ProductManagement() {
 										</div>
 
 										{(mediaNotice || videoNotice) && (
-											<div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-50">
+											<div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-50">
 												{mediaNotice || videoNotice}
 											</div>
 										)}
 									</div>
 								</div>
 
-								<div class="space-y-5">
-									<div class="rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-50 to-blue-50 p-5 dark:border-white/10 dark:bg-gradient-to-br dark:from-sky-500/15 dark:to-blue-500/5">
-										<div class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-											<Rocket class="h-4 w-4 text-sky-500 dark:text-sky-300" />
+								<div className="space-y-5">
+									<div className="rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-50 to-blue-50 p-5 dark:border-white/10 dark:bg-gradient-to-br dark:from-sky-500/15 dark:to-blue-500/5">
+										<div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+											<Rocket className="h-4 w-4 text-sky-500 dark:text-sky-300" />
 											Publishing checklist
 										</div>
-										<div class="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
+										<div className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
 											{[
 												"Draft mode keeps this item private while you prepare the gallery.",
 												"Published items go live after media review is approved.",
@@ -1135,40 +1135,40 @@ export default function ProductManagement() {
 											].map((text) => (
 												<div
 													key={text}
-													class="flex items-start gap-3 rounded-2xl bg-white p-3 dark:bg-slate-900/50"
+													className="flex items-start gap-3 rounded-2xl bg-white p-3 dark:bg-slate-900/50"
 												>
-													<CheckCircle2 class="mt-0.5 h-4 w-4 text-emerald-500 dark:text-emerald-300" />
+													<CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500 dark:text-emerald-300" />
 													<span>{text}</span>
 												</div>
 											))}
 										</div>
 									</div>
 
-									<div class="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-										<label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 dark:border-white/10 dark:bg-slate-900/50 dark:text-slate-200">
+									<div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
+										<label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 dark:border-white/10 dark:bg-slate-900/50 dark:text-slate-200">
 											<input
 												type="checkbox"
 												checked={complianceChecked}
 												onChange={(e) => setComplianceChecked(e.target.checked)}
-												class="mt-1 h-4 w-4 rounded border-slate-300 text-sky-500 dark:border-white/20"
+												className="mt-1 h-4 w-4 rounded border-slate-300 text-sky-500 dark:border-white/20"
 											/>
 											<span>
 												I confirm this product media contains no music or prohibited instruments.
 											</span>
 										</label>
 
-										<div class="mt-5 flex flex-col gap-3 sm:flex-row">
+										<div className="mt-5 flex flex-col gap-3 sm:flex-row">
 											<button
 												onClick={() => saveProduct("draft")}
 												disabled={saving}
-												class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 disabled:opacity-60"
+												className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 disabled:opacity-60"
 											>
 												Save draft
 											</button>
 											<button
 												onClick={() => saveProduct("published")}
 												disabled={saving}
-												class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:scale-[1.01] hover:shadow-sky-500/35 disabled:opacity-60"
+												className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:scale-[1.01] hover:shadow-sky-500/35 disabled:opacity-60"
 											>
 												{saving ? (
 													<ThreeDot
@@ -1184,7 +1184,7 @@ export default function ProductManagement() {
 											</button>
 										</div>
 
-										<div class="mt-4 rounded-2xl border border-slate-100 bg-white p-4 text-xs leading-6 text-slate-500 dark:border-white/10 dark:bg-slate-900/50 dark:text-slate-400">
+										<div className="mt-4 rounded-2xl border border-slate-100 bg-white p-4 text-xs leading-6 text-slate-500 dark:border-white/10 dark:bg-slate-900/50 dark:text-slate-400">
 											Tip: keep the item as Draft while your media is pending, then publish after
 											everything is approved.
 										</div>
@@ -1196,22 +1196,22 @@ export default function ProductManagement() {
 				) : null}
 
 				{deleteConfirmId ? (
-					<div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm dark:bg-slate-950/70">
-						<div class="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40">
-							<h3 class="text-lg font-semibold text-slate-900 dark:text-white">Confirm Delete</h3>
-							<p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+					<div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm dark:bg-slate-950/70">
+						<div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl shadow-black/20 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:shadow-black/40">
+							<h3 className="text-lg font-semibold text-slate-900 dark:text-white">Confirm Delete</h3>
+							<p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
 								Are you sure you want to delete this product? This action cannot be undone.
 							</p>
-							<div class="mt-6 flex justify-end gap-3">
+							<div className="mt-6 flex justify-end gap-3">
 								<button
 									onClick={cancelDelete}
-									class="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+									className="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
 								>
 									Cancel
 								</button>
 								<button
 									onClick={confirmDelete}
-									class="rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/25 transition hover:bg-rose-700"
+									className="rounded-2xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/25 transition hover:bg-rose-700"
 								>
 									Delete
 								</button>

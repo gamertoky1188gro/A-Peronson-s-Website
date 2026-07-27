@@ -38,12 +38,12 @@ const FALLBACK_CATEGORIES = [
 
 function StepHeader({ step, title, subtitle }) {
 	return (
-		<div class="mb-6">
-			<div class="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-sky-600 dark:text-sky-300">
+		<div className="mb-6">
+			<div className="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-sky-600 dark:text-sky-300">
 				Step {step} / 3
 			</div>
-			<h1 class="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h1>
-			<p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{subtitle}</p>
+			<h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h1>
+			<p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{subtitle}</p>
 		</div>
 	);
 }
@@ -173,9 +173,9 @@ export default function OnboardingWizard() {
 	}
 
 	return (
-		<div class="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-500 ease-in-out dark:bg-[#020617] dark:text-slate-100">
-			<div class="mx-auto w-full max-w-3xl">
-				<div class="rounded-2xl bg-[#ffffff] p-8 shadow-[0_12px_40px_rgba(2,6,23,0.08)] ring-1 ring-slate-200/60 transition-colors duration-500 ease-in-out dark:bg-slate-900/50 dark:shadow-none dark:ring-slate-800">
+		<div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 transition-colors duration-500 ease-in-out dark:bg-[#020617] dark:text-slate-100">
+			<div className="mx-auto w-full max-w-3xl">
+				<div className="rounded-2xl bg-[#ffffff] p-8 shadow-[0_12px_40px_rgba(2,6,23,0.08)] ring-1 ring-slate-200/60 transition-colors duration-500 ease-in-out dark:bg-slate-900/50 dark:shadow-none dark:ring-slate-800">
 					<AnimatePresence mode="wait">
 						<motion.div
 							key={step}
@@ -206,22 +206,22 @@ export default function OnboardingWizard() {
 										title="Confirm your organization"
 										subtitle="Use the official name used in documents."
 									/>
-									<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+									<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
 										Organization name
 									</label>
 									<input
 										value={organizationName}
 										onChange={(e) => setOrganizationName(e.target.value)}
 										placeholder="Your company / buying house name"
-										class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
+										className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
 									/>
-									<div class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+									<div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
 										Account role:{" "}
-										<span class="font-semibold text-slate-700 dark:text-slate-200">
+										<span className="font-semibold text-slate-700 dark:text-slate-200">
 											{String(user?.role || "").replace("_", " ")}
 										</span>
 									</div>
-									<label class="mt-4 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+									<label className="mt-4 block text-sm font-semibold text-slate-700 dark:text-slate-200">
 										Description / Bio
 									</label>
 									<textarea
@@ -229,7 +229,7 @@ export default function OnboardingWizard() {
 										onChange={(e) => setBio(e.target.value)}
 										placeholder="Tell us about your organization..."
 										rows={3}
-										class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224] resize-none"
+										className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224] resize-none"
 									/>
 								</>
 							) : null}
@@ -241,7 +241,7 @@ export default function OnboardingWizard() {
 										title="Select categories"
 										subtitle="Pick a few categories you work with."
 									/>
-									<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+									<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
 										{availableCategories.map((cat) => {
 											const active = categories.includes(cat);
 											return (
@@ -261,7 +261,7 @@ export default function OnboardingWizard() {
 											);
 										})}
 									</div>
-									<p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+									<p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
 										You can change these later in Organization Settings.
 									</p>
 								</>
@@ -270,17 +270,17 @@ export default function OnboardingWizard() {
 					</AnimatePresence>
 
 					{error ? (
-						<div class="mt-5 rounded-xl bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">
+						<div className="mt-5 rounded-xl bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">
 							{error}
 						</div>
 					) : null}
 
-					<div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-						<div class="flex items-center gap-2">
+					<div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex items-center gap-2">
 							<BackButton
 								onClick={back}
 								disabled={step === 1 || saving}
-								class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:bg-[#0b1224] dark:text-slate-200"
+								className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:bg-[#0b1224] dark:text-slate-200"
 							>
 								Back
 							</BackButton>
@@ -289,7 +289,7 @@ export default function OnboardingWizard() {
 									type="button"
 									onClick={next}
 									disabled={saving}
-									class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
+									className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
 								>
 									Continue
 								</button>
@@ -298,7 +298,7 @@ export default function OnboardingWizard() {
 									type="button"
 									onClick={() => submit()}
 									disabled={saving}
-									class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
+									className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-60"
 								>
 									{saving ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
@@ -313,7 +313,7 @@ export default function OnboardingWizard() {
 							type="button"
 							onClick={() => submit({ skipped: true })}
 							disabled={saving}
-							class="text-sm font-semibold text-slate-500 transition hover:text-slate-700 disabled:opacity-60 dark:text-slate-400 dark:hover:text-slate-200"
+							className="text-sm font-semibold text-slate-500 transition hover:text-slate-700 disabled:opacity-60 dark:text-slate-400 dark:hover:text-slate-200"
 						>
 							Skip for now
 						</button>

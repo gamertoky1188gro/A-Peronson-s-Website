@@ -55,7 +55,7 @@ function MarkdownMessage({ text = "" }) {
 	}
 
 	return (
-		<div class="break-words text-[13px] leading-[1.45] text-inherit">
+		<div className="break-words text-[13px] leading-[1.45] text-inherit">
 			<ReactMarkdown
 				remarkPlugins={[
 					[remarkGfm, { singleTilde: false }],
@@ -79,12 +79,12 @@ function MarkdownMessage({ text = "" }) {
 								href={href}
 								target={external ? "_blank" : props.target}
 								rel={external ? "noreferrer noopener" : props.rel}
-								class={`underline underline-offset-2 ${className}`.trim()}
+								className={`underline underline-offset-2 ${className}`.trim()}
 							/>
 						);
 					},
 					p({ className = "", ...props }) {
-						return <p {...props} class={`my-1 ${className}`.trim()} />;
+						return <p {...props} className={`my-1 ${className}`.trim()} />;
 					},
 					blockquote({ className = "", ...props }) {
 						return (
@@ -140,7 +140,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<table
 								{...props}
-								class={`my-2 w-full border-collapse text-[12px] ${className}`.trim()}
+								className={`my-2 w-full border-collapse text-[12px] ${className}`.trim()}
 							/>
 						);
 					},
@@ -177,7 +177,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<img
 								{...props}
-								class={`max-w-full rounded-xl shadow-borderless dark:shadow-borderlessDark ${className}`.trim()}
+								className={`max-w-full rounded-xl shadow-borderless dark:shadow-borderlessDark ${className}`.trim()}
 								loading="lazy"
 							/>
 						);
@@ -190,7 +190,7 @@ function MarkdownMessage({ text = "" }) {
 								checked={Boolean(checked)}
 								disabled={true}
 								readOnly={true}
-								class="mr-2 align-middle accent-gtBlue"
+								className="mr-2 align-middle accent-gtBlue"
 							/>
 						);
 					},

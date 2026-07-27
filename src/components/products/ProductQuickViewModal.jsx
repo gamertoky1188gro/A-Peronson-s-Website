@@ -165,18 +165,18 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 	}
 
 	return (
-		<AnimatedModal open={open} onClose={handleClose} class="w-[92vw] max-w-2xl overflow-hidden">
-			<div class="bg-white dark:bg-slate-950 rounded-2xl">
-				<header class="flex items-center justify-between gap-3 px-5 py-4 shadow-dividerB dark:shadow-dividerBDark">
-					<div class="min-w-0">
-						<p class="text-sm font-bold text-slate-900 truncate">
+		<AnimatedModal open={open} onClose={handleClose} className="w-[92vw] max-w-2xl overflow-hidden">
+			<div className="bg-white dark:bg-slate-950 rounded-2xl">
+				<header className="flex items-center justify-between gap-3 px-5 py-4 shadow-dividerB dark:shadow-dividerBDark">
+					<div className="min-w-0">
+						<p className="text-sm font-bold text-slate-900 truncate">
 							{item?.title || item?.product?.title || "Product"}
 						</p>
 						{author ? (
-							<p class="text-[11px] text-slate-500 truncate">
+							<p className="text-[11px] text-slate-500 truncate">
 								{author.name}{" "}
 								{author.verified ? (
-									<span class="ml-1 font-bold text-sky-600 dark:text-sky-400">Verified</span>
+									<span className="ml-1 font-bold text-sky-600 dark:text-sky-400">Verified</span>
 								) : null}{" "}
 								{author.country ? `- ${author.country}` : ""}
 							</p>
@@ -185,17 +185,17 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 					<button
 						type="button"
 						onClick={handleClose}
-						class="rounded-full p-2 hover:bg-slate-100"
+						className="rounded-full p-2 hover:bg-slate-100"
 						aria-label="Close"
 					>
 						<X size={18} />
 					</button>
 				</header>
 
-				<div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
+				<div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
 						{allImages.length > 0 ? (
-							<div class="relative mb-4">
+							<div className="relative mb-4">
 								<AnimatePresence mode="wait">
 									<motion.div
 										key={currentImageIndex}
@@ -214,12 +214,12 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 										animate={{ opacity: 1, x: 0 }}
 										exit={{ opacity: 0, x: -60 }}
 										transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-										class="h-40 w-full rounded-xl overflow-hidden"
+										className="h-40 w-full rounded-xl overflow-hidden"
 									>
 										<img
 											src={currentImage}
 											alt="Product"
-											class="h-full w-full object-cover pointer-events-none"
+											className="h-full w-full object-cover pointer-events-none"
 										/>
 									</motion.div>
 								</AnimatePresence>
@@ -228,63 +228,63 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 										<button
 											type="button"
 											onClick={prevImage}
-											class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900"
+											className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900"
 										>
-											<ChevronLeft class="h-4 w-4" />
+											<ChevronLeft className="h-4 w-4" />
 										</button>
 										<button
 											type="button"
 											onClick={nextImage}
-											class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900"
+											className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900"
 										>
-											<ChevronRight class="h-4 w-4" />
+											<ChevronRight className="h-4 w-4" />
 										</button>
-										<div class="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">
+										<div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">
 											{currentImageIndex + 1} / {allImages.length}
 										</div>
 									</>
 								) : null}
 							</div>
 						) : (
-							<div class="h-40 w-full rounded-xl bg-slate-200 mb-4" />
+							<div className="h-40 w-full rounded-xl bg-slate-200 mb-4" />
 						)}
 						{allImages.length > 1 ? (
-							<div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+							<div className="flex gap-2 mb-4 overflow-x-auto pb-1">
 								{allImages.map((url, i) => (
 									<button
 										key={url}
 										type="button"
 										onClick={() => setCurrentImageIndex(i)}
-										class={`shrink-0 h-10 w-10 rounded-lg overflow-hidden border-2 transition ${i === currentImageIndex ? "border-sky-500" : "border-transparent opacity-60 hover:opacity-100"}`}
+										className={`shrink-0 h-10 w-10 rounded-lg overflow-hidden border-2 transition ${i === currentImageIndex ? "border-sky-500" : "border-transparent opacity-60 hover:opacity-100"}`}
 									>
-										<img src={url} alt="" class="h-full w-full object-cover" />
+										<img src={url} alt="" className="h-full w-full object-cover" />
 									</button>
 								))}
 							</div>
 						) : null}
-						<p class="text-xs font-bold text-slate-700">Details</p>
-						<div class="mt-3 space-y-2 text-sm text-slate-700">
-							<div class="flex items-start justify-between gap-3">
-								<span class="text-slate-500 text-xs">Category</span>
-								<span class="font-semibold text-right">
+						<p className="text-xs font-bold text-slate-700">Details</p>
+						<div className="mt-3 space-y-2 text-sm text-slate-700">
+							<div className="flex items-start justify-between gap-3">
+								<span className="text-slate-500 text-xs">Category</span>
+								<span className="font-semibold text-right">
 									{item?.category || item?.product?.category || "--"}
 								</span>
 							</div>
-							<div class="flex items-start justify-between gap-3">
-								<span class="text-slate-500 text-xs">Material</span>
-								<span class="font-semibold text-right">
+							<div className="flex items-start justify-between gap-3">
+								<span className="text-slate-500 text-xs">Material</span>
+								<span className="font-semibold text-right">
 									{item?.material || item?.product?.material || "--"}
 								</span>
 							</div>
-							<div class="flex items-start justify-between gap-3">
-								<span class="text-slate-500 text-xs">MOQ</span>
-								<span class="font-semibold text-right">
+							<div className="flex items-start justify-between gap-3">
+								<span className="text-slate-500 text-xs">MOQ</span>
+								<span className="font-semibold text-right">
 									{item?.moq || item?.product?.moq || "--"}
 								</span>
 							</div>
-							<div class="flex items-start justify-between gap-3">
-								<span class="text-slate-500 text-xs">Lead time</span>
-								<span class="font-semibold text-right">
+							<div className="flex items-start justify-between gap-3">
+								<span className="text-slate-500 text-xs">Lead time</span>
+								<span className="font-semibold text-right">
 									{item?.lead_time_days || item?.product?.lead_time_days || "--"}
 								</span>
 							</div>
@@ -295,57 +295,57 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 								href={item?.video_url || item?.product?.video_url}
 								target="_blank"
 								rel="noreferrer"
-								class="mt-4 inline-block text-xs font-semibold text-sky-600 hover:underline dark:text-sky-400"
+								className="mt-4 inline-block text-xs font-semibold text-sky-600 hover:underline dark:text-sky-400"
 							>
 								Open video link
 							</a>
 						) : null}
 					</div>
 
-					<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4">
-						<p class="text-xs font-bold text-slate-700">Description</p>
-						<p class="mt-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+					<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4">
+						<p className="text-xs font-bold text-slate-700">Description</p>
+						<p className="mt-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
 							{item?.description || item?.product?.description || "No description provided."}
 						</p>
 						{canAppeal ? (
-							<div class="mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-rose-50 px-3 py-3">
-								<p class="text-xs font-semibold text-rose-900">This product was rejected.</p>
-								<p class="mt-1 text-xs text-rose-700">
+							<div className="mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-rose-50 px-3 py-3">
+								<p className="text-xs font-semibold text-rose-900">This product was rejected.</p>
+								<p className="mt-1 text-xs text-rose-700">
 									{contentReviewReason || "This product needs changes to meet content standards."}
 								</p>
 								<button
 									type="button"
 									onClick={startAppeal}
-									class="mt-3 w-full rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white"
+									className="mt-3 w-full rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white"
 								>
 									If you think this is a mistake, report it for review
 								</button>
 							</div>
 						) : null}
-						{error ? <p class="mt-3 text-xs text-rose-700">{error}</p> : null}
-						{notice ? <p class="mt-3 text-xs text-emerald-700">{notice}</p> : null}
+						{error ? <p className="mt-3 text-xs text-rose-700">{error}</p> : null}
+						{notice ? <p className="mt-3 text-xs text-emerald-700">{notice}</p> : null}
 					</div>
 				</div>
 
 				{showAppealModal ? (
-					<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-						<div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-slate-950">
-							<h3 class="text-lg font-semibold text-slate-900 dark:text-white">Appeal rejection</h3>
-							<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+					<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+						<div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-slate-950">
+							<h3 className="text-lg font-semibold text-slate-900 dark:text-white">Appeal rejection</h3>
+							<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 								Explain why this product should be approved.
 							</p>
 							<textarea
 								value={appealReason}
 								onChange={(e) => setAppealReason(e.target.value)}
 								rows={4}
-								class="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white"
+								className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 dark:border-white/10 dark:bg-slate-900 dark:text-white"
 								placeholder="Explain why this product should be approved..."
 							/>
-							<div class="mt-4 flex justify-end gap-3">
+							<div className="mt-4 flex justify-end gap-3">
 								<button
 									type="button"
 									onClick={() => setShowAppealModal(false)}
-									class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+									className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
 								>
 									Cancel
 								</button>
@@ -353,7 +353,7 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 									type="button"
 									onClick={submitAppeal}
 									disabled={!appealReason.trim()}
-									class="rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+									className="rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									Submit appeal
 								</button>
@@ -362,16 +362,16 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 					</div>
 				) : null}
 
-				<footer class="px-5 py-4 shadow-dividerT dark:shadow-dividerTDark bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-					<div class="text-[11px] text-slate-500">
+				<footer className="px-5 py-4 shadow-dividerT dark:shadow-dividerTDark bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+					<div className="text-[11px] text-slate-500">
 						Views are private and help you revisit items quickly.
 					</div>
-					<div class="flex gap-2">
+					<div className="flex gap-2">
 						{profileLink ? (
 							<Link
 								to={profileLink}
 								onClick={handleClose}
-								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
 							>
 								View company profile
 							</Link>
@@ -379,7 +379,7 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 						<button
 							type="button"
 							onClick={contact}
-							class="rounded-full bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700"
+							className="rounded-full bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700"
 						>
 							Contact
 						</button>
