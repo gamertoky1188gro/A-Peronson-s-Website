@@ -10,7 +10,7 @@
 		"format": "biome format --write .",
 		"check": "biome check --write .",
 		"preview": "vite preview",
-		"server": "node --watch server/server.js",
+		"server": "node server/server.js",
 		"dev:full": "concurrently \"npm run server\" \"npm run dev -- --host 0.0.0.0\"",
 		"start:prod": "node server/server.js",
 		"app": "npm run build && concurrently -k -s first \"npm run server\" \"wait-on tcp:4000 dist/index.html && electron electron/main.cjs\"",
