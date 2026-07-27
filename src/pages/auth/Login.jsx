@@ -345,21 +345,18 @@ export default function Login() {
 							</button>
 						</div>
 
-						<div class="mb-10">
-							<div class="flex items-center gap-4 mb-6">
-								<div
-									class={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${theme.gradient} text-white shadow-lg shadow-sky-500/30 ring-2 ring-sky-400/20`}
-								>
-									<Sparkles class="h-8 w-8" />
-								</div>
-								<div>
-									<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">GarTexHub</h1>
-									<p class={`text-sm font-semibold uppercase tracking-[0.28em] ${theme.soft}`}>
-										Vault Access
-									</p>
-								</div>
+						<div class="mb-6 flex items-center gap-3">
+							<div
+								class={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${theme.gradient} text-white shadow-md shadow-sky-500/20`}
+							>
+								<Sparkles class="h-5 w-5" />
 							</div>
-							<div class={`h-px w-16 ${theme.glow} rounded-full`} />
+							<div>
+								<p class="text-sm font-bold tracking-tight">GarTexHub</p>
+								<p class={`text-[10px] font-semibold uppercase tracking-[0.2em] ${theme.soft}`}>
+									Vault Access
+								</p>
+							</div>
 						</div>
 
 						<div class="space-y-6">
