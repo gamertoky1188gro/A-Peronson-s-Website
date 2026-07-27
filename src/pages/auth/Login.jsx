@@ -37,7 +37,7 @@ const Icon = ({ d, className = "" }) => (
 		strokeWidth="2"
 		strokeLinecap="round"
 		strokeLinejoin="round"
-		class={className}
+		className={className}
 	>
 		<path d={d} />
 	</svg>
@@ -321,87 +321,87 @@ export default function Login() {
 	}
 
 	return (
-		<div class={`min-h-screen overflow-hidden ${theme.page}`}>
-			<div class="pointer-events-none absolute inset-0 overflow-hidden">
+		<div className={`min-h-screen overflow-hidden ${theme.page}`}>
+			<div className="pointer-events-none absolute inset-0 overflow-hidden">
 				<div
-					class={`absolute -top-24 left-[-8rem] h-72 w-72 rounded-full ${theme.glow} blur-3xl`}
+					className={`absolute -top-24 left-[-8rem] h-72 w-72 rounded-full ${theme.glow} blur-3xl`}
 				/>
-				<div class="absolute right-[-6rem] top-20 h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl" />
-				<div class="absolute bottom-[-7rem] left-1/3 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
+				<div className="absolute right-[-6rem] top-20 h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl" />
+				<div className="absolute bottom-[-7rem] left-1/3 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
 			</div>
 
-			<div class="relative mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
-				<section class="flex items-center justify-center px-5 py-8 sm:px-8 lg:px-10">
-					<div class={`relative w-full max-w-xl rounded-[2rem] border p-6 sm:p-8 ${theme.panel}`}>
-						<div class="absolute right-5 top-5 flex items-center gap-2">
+			<div className="relative mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
+				<section className="flex items-center justify-center px-5 py-8 sm:px-8 lg:px-10">
+					<div className={`relative w-full max-w-xl rounded-[2rem] border p-6 sm:p-8 ${theme.panel}`}>
+						<div className="absolute right-5 top-5 flex items-center gap-2">
 							<button
 								type="button"
 								onClick={toggleTheme}
-								class={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition ${theme.outline}`}
+								className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition ${theme.outline}`}
 								aria-label="Toggle theme"
 							>
-								{darkMode ? <SunMedium class="h-4 w-4" /> : <MoonStar class="h-4 w-4" />}
+								{darkMode ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
 								<span>{darkMode ? "Light" : "Dark"}</span>
 							</button>
 						</div>
 
-						<div class="mb-6 flex items-center gap-3">
+						<div className="mb-5 flex items-center gap-2.5">
 							<div
-								class={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${theme.gradient} text-white shadow-md shadow-sky-500/20`}
+								className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${theme.gradient} text-white shadow-sm shadow-sky-500/20`}
 							>
-								<Sparkles class="h-5 w-5" />
+								<Sparkles className="h-4 w-4" />
 							</div>
 							<div>
-								<p class="text-sm font-bold tracking-tight">GarTexHub</p>
-								<p class={`text-[10px] font-semibold uppercase tracking-[0.2em] ${theme.soft}`}>
+								<p className="text-xs font-bold tracking-tight">GarTexHub</p>
+								<p className={`text-[9px] font-semibold uppercase tracking-[0.15em] ${theme.soft}`}>
 									Vault Access
 								</p>
 							</div>
 						</div>
 
-						<div class="space-y-6">
-							<div class="max-w-lg">
-								<p class={`text-lg leading-8 sm:text-xl ${theme.muted}`}>
+						<div className="space-y-6">
+							<div className="max-w-lg">
+								<p className={`text-sm leading-6 ${theme.muted}`}>
 									Access pages based on your role{" "}
-									<span class="font-semibold text-sky-400">(Buyer, Factory, Buying House)</span>.
+									<span className="font-semibold text-sky-400">(Buyer, Factory, Buying House)</span>.
 								</p>
 							</div>
 
-							<div class="grid gap-3 sm:grid-cols-2">
+							<div className="grid gap-3 sm:grid-cols-2">
 								{roles.map((role) => (
-									<div key={role} class={`rounded-2xl border px-4 py-3 ${theme.chip}`}>
-										<div class="flex items-center gap-2 text-sm font-medium">
-											<BadgeCheck class="h-4 w-4 text-sky-400" />
+									<div key={role} className={`rounded-2xl border px-4 py-3 ${theme.chip}`}>
+										<div className="flex items-center gap-2 text-sm font-medium">
+											<BadgeCheck className="h-4 w-4 text-sky-400" />
 											{role}
 										</div>
-										<p class={`mt-1 text-xs ${theme.soft}`}>Role-based dashboard access</p>
+										<p className={`mt-1 text-xs ${theme.soft}`}>Role-based dashboard access</p>
 									</div>
 								))}
 							</div>
 
-							<div class={`rounded-[1.75rem] border p-5 sm:p-6 ${theme.card}`}>
-								<div class="flex items-start gap-4">
-									<div class="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-3 text-sky-400">
-										<ShieldCheck class="h-6 w-6" />
+							<div className={`rounded-[1.75rem] border p-5 sm:p-6 ${theme.card}`}>
+								<div className="flex items-start gap-4">
+									<div className="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-3 text-sky-400">
+										<ShieldCheck className="h-5 w-5" />
 									</div>
 									<div>
-										<h2 class="text-lg font-semibold">Secure access, built for speed</h2>
-										<p class={`mt-1 text-sm leading-6 ${theme.soft}`}>
+										<h2 className="text-lg font-semibold">Secure access, built for speed</h2>
+										<p className={`mt-1 text-sm leading-6 ${theme.soft}`}>
 											Fast sign-in, passkey support, and a clean interface designed for premium
 											workflows.
 										</p>
 									</div>
 								</div>
 
-								<div class="mt-6 grid gap-3 sm:grid-cols-3">
+								<div className="mt-6 grid gap-3 sm:grid-cols-3">
 									{[
 										["Encrypted", "Credentials protected"],
 										["Passkeys", "One-tap authentication"],
 										["Verified", "Trusted team access"],
 									].map(([title, desc]) => (
-										<div key={title} class={`rounded-2xl border px-4 py-3 ${theme.panel}`}>
-											<p class="text-sm font-semibold">{title}</p>
-											<p class={`mt-1 text-xs ${theme.soft}`}>{desc}</p>
+										<div key={title} className={`rounded-2xl border px-4 py-3 ${theme.panel}`}>
+											<p className="text-sm font-semibold">{title}</p>
+											<p className={`mt-1 text-xs ${theme.soft}`}>{desc}</p>
 										</div>
 									))}
 								</div>
@@ -410,21 +410,21 @@ export default function Login() {
 					</div>
 				</section>
 
-				<section class="flex items-center justify-center px-5 py-8 sm:px-8 lg:px-10">
-					<div class={`w-full max-w-xl rounded-[2rem] border p-6 sm:p-8 ${theme.card}`}>
-						<div class="mb-8 flex items-center justify-between gap-4">
+				<section className="flex items-center justify-center px-5 py-8 sm:px-8 lg:px-10">
+					<div className={`w-full max-w-xl rounded-[2rem] border p-6 sm:p-8 ${theme.card}`}>
+						<div className="mb-8 flex items-center justify-between gap-4">
 							<button
 								type="button"
 								onClick={handleBack}
-								class={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${theme.outline}`}
+								className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${theme.outline}`}
 							>
-								<ArrowLeft class="h-4 w-4" />
+								<ArrowLeft className="h-4 w-4" />
 								Back
 							</button>
 							<div
-								class={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium ${theme.chip}`}
+								className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium ${theme.chip}`}
 							>
-								<Fingerprint class="h-4 w-4 text-sky-400" />
+								<Fingerprint className="h-4 w-4 text-sky-400" />
 								{passkeyHint
 									? "Passkey enrolled"
 									: passkeySupported
@@ -433,81 +433,81 @@ export default function Login() {
 							</div>
 						</div>
 
-						<div class="mb-8">
-							<p class={`text-sm font-semibold uppercase tracking-[0.3em] ${theme.soft}`}>
+						<div className="mb-8">
+							<p className={`text-sm font-semibold uppercase tracking-[0.3em] ${theme.soft}`}>
 								Welcome back
 							</p>
-							<h2 class="mt-3 text-3xl font-semibold sm:text-4xl">Sign in to continue</h2>
-							<p class={`mt-3 max-w-lg text-sm leading-6 ${theme.muted}`}>
+							<h2 className="mt-2 text-2xl font-semibold sm:text-3xl">Sign in to continue</h2>
+							<p className={`mt-3 max-w-lg text-sm leading-6 ${theme.muted}`}>
 								Use your email or assigned Agent ID to access your account.
 							</p>
 						</div>
 
 						{error && (
-							<div class="mb-5 rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-3 text-sm text-rose-300">
+							<div className="mb-5 rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-3 text-sm text-rose-300">
 								{error}
 							</div>
 						)}
 
-						<form onSubmit={handleLogin} class="space-y-5">
+						<form onSubmit={handleLogin} className="space-y-5">
 							<div>
-								<label class={`mb-2 block text-sm font-medium ${theme.muted}`}>
+								<label className={`mb-2 block text-sm font-medium ${theme.muted}`}>
 									Email or Agent ID
 								</label>
-								<div class="relative">
+								<div className="relative">
 									<AtSign
-										class={`pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 ${theme.soft}`}
+										className={`pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${theme.soft}`}
 									/>
 									<input
 										value={identifier}
 										onChange={(e) => setIdentifier(e.target.value)}
-										class={`w-full rounded-2xl border px-11 py-4 text-sm outline-none transition focus:ring-4 ${theme.field}`}
+										className={`w-full rounded-2xl border px-10 py-3 text-sm outline-none transition focus:ring-4 ${theme.field}`}
 										placeholder="Enter your email or Agent ID"
 									/>
 								</div>
-								<p class={`mt-2 text-xs ${theme.soft}`}>
+								<p className={`mt-2 text-xs ${theme.soft}`}>
 									Agents: Use your assigned Agent ID to login
 								</p>
 							</div>
 
 							<div>
-								<label class={`mb-2 block text-sm font-medium ${theme.muted}`}>Password</label>
-								<div class="relative">
+								<label className={`mb-2 block text-sm font-medium ${theme.muted}`}>Password</label>
+								<div className="relative">
 									<Lock
-										class={`pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 ${theme.soft}`}
+										className={`pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${theme.soft}`}
 									/>
 									<input
 										type={showPassword ? "text" : "password"}
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
-										class={`w-full rounded-2xl border px-11 py-4 pr-24 text-sm outline-none transition focus:ring-4 ${theme.field}`}
+										className={`w-full rounded-2xl border px-10 py-3 pr-24 text-sm outline-none transition focus:ring-4 ${theme.field}`}
 										placeholder="•••••••••••"
 									/>
 									<button
 										type="button"
 										onClick={() => setShowPassword((v) => !v)}
-										class={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full border px-3 py-2 text-xs font-semibold transition ${theme.outline}`}
+										className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full border px-3 py-2 text-xs font-semibold transition ${theme.outline}`}
 									>
 										{showPassword ? (
-											<span class="inline-flex items-center gap-1">
-												<EyeOff class="h-3.5 w-3.5" /> Hide
+											<span className="inline-flex items-center gap-1">
+												<EyeOff className="h-3.5 w-3.5" /> Hide
 											</span>
 										) : (
-											<span class="inline-flex items-center gap-1">
-												<Eye class="h-3.5 w-3.5" /> Show
+											<span className="inline-flex items-center gap-1">
+												<Eye className="h-3.5 w-3.5" /> Show
 											</span>
 										)}
 									</button>
 								</div>
 							</div>
 
-							<div class="flex flex-wrap items-center justify-between gap-3">
-								<label class="inline-flex items-center gap-3 text-sm">
+							<div className="flex flex-wrap items-center justify-between gap-3">
+								<label className="inline-flex items-center gap-3 text-sm">
 									<input
 										type="checkbox"
 										checked={rememberMe}
 										onChange={(e) => setRememberMe(e.target.checked)}
-										class="h-4 w-4 rounded border-sky-400/40 text-sky-500 focus:ring-sky-400/30"
+										className="h-4 w-4 rounded border-sky-400/40 text-sky-500 focus:ring-sky-400/30"
 									/>
 									<span class={theme.muted}>Remember me</span>
 								</label>
@@ -515,18 +515,18 @@ export default function Login() {
 								<button
 									type="button"
 									onClick={() => setShowSessionExpiry(!showSessionExpiry)}
-									class="text-xs text-sky-500 hover:text-sky-600"
+									className="text-xs text-sky-500 hover:text-sky-600"
 								>
 									{showSessionExpiry ? "Hide session options" : "Session options"}
 								</button>
 							</div>
 
 							{showSessionExpiry && (
-								<div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3">
-									<p class="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+								<div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3">
+									<p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
 										Session duration
 									</p>
-									<div class="flex flex-wrap gap-2">
+									<div className="flex flex-wrap gap-2">
 										{[
 											{ value: "12h", label: "12 hours" },
 											{ value: "24h", label: "24 hours" },
@@ -538,7 +538,7 @@ export default function Login() {
 												key={opt.value}
 												type="button"
 												onClick={() => setSessionDuration(opt.value)}
-												class={`rounded-lg px-3 py-1 text-xs font-medium transition ${
+												className={`rounded-lg px-3 py-1 text-xs font-medium transition ${
 													sessionDuration === opt.value
 														? "bg-sky-500 text-white"
 														: "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
@@ -551,30 +551,30 @@ export default function Login() {
 								</div>
 							)}
 
-							<label class="inline-flex items-center gap-3 text-sm">
+							<label className="inline-flex items-center gap-3 text-sm">
 								<input
 									type="checkbox"
 									checked={rememberPasskeyUser}
 									onChange={(e) => setRememberPasskeyUser(e.target.checked)}
-									class="h-4 w-4 rounded border-sky-400/40 text-sky-500 focus:ring-sky-400/30"
+									className="h-4 w-4 rounded border-sky-400/40 text-sky-500 focus:ring-sky-400/30"
 								/>
 								<span class={theme.muted}>Remember passkey user</span>
 							</label>
 
 							{passkeyHint && (
-								<p class={`text-xs ${theme.soft}`}>
+								<p className={`text-xs ${theme.soft}`}>
 									Passkey:{" "}
-									<span class="font-semibold">{passkeyHint.passkey_name || "Passkey"}</span>
+									<span className="font-semibold">{passkeyHint.passkey_name || "Passkey"}</span>
 									{passkeyHint.user_name ? ` · ${passkeyHint.user_name}` : ""}
 									{passkeyHint.user_email ? ` (${passkeyHint.user_email})` : ""}
 								</p>
 							)}
 
-							<div class="space-y-3 pt-2">
+							<div className="space-y-3 pt-2">
 								<button
 									type="submit"
 									disabled={loading}
-									class={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-semibold shadow-lg shadow-sky-500/20 transition ${theme.button}`}
+									className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-semibold shadow-lg shadow-sky-500/20 transition ${theme.button}`}
 								>
 									{loading ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
@@ -582,18 +582,18 @@ export default function Login() {
 										"Sign in"
 									)}
 									{!loading && (
-										<ChevronRight class="h-4 w-4 transition group-hover:translate-x-0.5" />
+										<ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
 									)}
 								</button>
 
-								<div class="grid gap-3 sm:grid-cols-2">
+								<div className="grid gap-3 sm:grid-cols-2">
 									<button
 										type="button"
 										onClick={handlePasskeyLogin}
 										disabled={passkeyLoading}
-										class={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
+										className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
 									>
-										<Fingerprint class="h-4 w-4" />
+										<Fingerprint className="h-4 w-4" />
 										{passkeyLoading ? (
 											<ThreeDot
 												variant="bounce"
@@ -610,9 +610,9 @@ export default function Login() {
 										type="button"
 										onClick={handlePasskeyEnroll}
 										disabled={enrollLoading}
-										class={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
+										className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
 									>
-										<BadgeCheck class="h-4 w-4" />
+										<BadgeCheck className="h-4 w-4" />
 										{enrollLoading ? (
 											<ThreeDot
 												variant="bounce"
@@ -629,18 +629,18 @@ export default function Login() {
 							</div>
 						</form>
 
-						<div class={`mt-8 rounded-[1.5rem] border p-5 ${theme.panel}`}>
-							<div class="flex items-start gap-4">
-								<div class="rounded-2xl bg-sky-500/10 p-3 text-sky-400">
-									<UserRound class="h-5 w-5" />
+						<div className={`mt-8 rounded-[1.5rem] border p-5 ${theme.panel}`}>
+							<div className="flex items-start gap-4">
+								<div className="rounded-2xl bg-sky-500/10 p-3 text-sky-400">
+									<UserRound className="h-4 w-4" />
 								</div>
-								<div class="flex-1">
-									<p class="text-sm font-semibold">New here?</p>
-									<p class={`mt-1 text-sm ${theme.soft}`}>Create an account to get started.</p>
+								<div className="flex-1">
+									<p className="text-sm font-semibold">New here?</p>
+									<p className={`mt-1 text-sm ${theme.soft}`}>Create an account to get started.</p>
 								</div>
 								<Link
 									to="/signup"
-									class={`rounded-full border px-4 py-2 text-sm font-semibold transition ${theme.outline}`}
+									className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${theme.outline}`}
 								>
 									Create account
 								</Link>
