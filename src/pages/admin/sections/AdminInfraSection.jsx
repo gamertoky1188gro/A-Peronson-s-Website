@@ -130,13 +130,13 @@ export function AdminInfraSection({
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"rounded-[32px] border p-4 sm:p-5",
 				adminDark ? "border-slate-800/70 bg-slate-950/50" : "border-slate-200 bg-white/75",
 			)}
 		>
 			<div
-				class={cn(
+				className={cn(
 					"rounded-[28px] p-4 sm:p-5",
 					adminDark
 						? "bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_38%),linear-gradient(180deg,#07111f_0%,#020617_100%)] text-slate-100"
@@ -145,7 +145,7 @@ export function AdminInfraSection({
 			>
 				<div className="mx-auto max-w-[1700px]">
 					<header
-						class={cn(
+						className={cn(
 							"sticky top-3 z-30 mb-6 rounded-[28px] border px-4 py-4 lg:px-6",
 							adminDark
 								? "border-slate-800 bg-slate-950/75 shadow-[0_18px_70px_-34px_rgba(15,23,42,0.4)]"
@@ -160,7 +160,7 @@ export function AdminInfraSection({
 								<div>
 									<div className="flex flex-wrap items-center gap-2">
 										<h1
-											class={cn(
+											className={cn(
 												"text-xl font-semibold tracking-tight sm:text-2xl",
 												adminDark ? "text-white" : "text-slate-900",
 											)}
@@ -171,7 +171,7 @@ export function AdminInfraSection({
 											live
 										</Badge>
 									</div>
-									<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+									<p className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 										Professional operations console with auditability, safety guards, and premium
 										status surfaces.
 									</p>
@@ -185,14 +185,14 @@ export function AdminInfraSection({
 										value={infraSearch}
 										onChange={(event) => setInfraSearch(event.target.value)}
 										placeholder="Search users, logs, rules, services, APIs..."
-										class={cn(infraInputClass, "pl-11")}
+										className={cn(infraInputClass, "pl-11")}
 									/>
 								</div>
 								<div className="flex items-center gap-3">
 									<button
 										type="button"
 										onClick={toggleTheme}
-										class={cn(
+										className={cn(
 											"inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition",
 											adminDark
 												? "border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15"
@@ -275,10 +275,10 @@ export function AdminInfraSection({
 											`Disk IOPS: ${infra?.io?.disk_iops ?? "--"} · Bandwidth: ${infra?.network?.bandwidth_mbps ?? "--"} Mbps`,
 										],
 									].map(([label, value, meta]) => (
-										<div key={label} class={infraFieldPanel}>
-											<div class={adminDark ? "text-slate-400" : "text-slate-500"}>{label}</div>
+										<div key={label} className={infraFieldPanel}>
+											<div className={adminDark ? "text-slate-400" : "text-slate-500"}>{label}</div>
 											<div
-												class={cn(
+												className={cn(
 													"mt-2 text-2xl font-semibold",
 													adminDark ? "text-white" : "text-slate-900",
 												)}
@@ -286,7 +286,7 @@ export function AdminInfraSection({
 												{value}
 											</div>
 											<div
-												class={
+												className={
 													adminDark ? "mt-1 text-sm text-slate-400" : "mt-1 text-sm text-slate-500"
 												}
 											>
@@ -311,18 +311,18 @@ export function AdminInfraSection({
 										{verificationQueue.slice(0, 3).map((row) => (
 											<div
 												key={row.id || row.user_id}
-												class={cn(
+												className={cn(
 													"rounded-3xl border px-4 py-3 text-sm",
 													adminDark
 														? "border-slate-800 bg-slate-900/70 text-slate-400"
 														: "border-slate-200 bg-slate-50 text-slate-600",
 												)}
 											>
-												<div class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+												<div className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													{row.user_name || row.user_email || row.user_id}
 												</div>
 												<div
-													class={
+													className={
 														adminDark
 															? "mt-1 text-xs text-slate-400"
 															: "mt-1 text-xs text-slate-500"
@@ -335,7 +335,7 @@ export function AdminInfraSection({
 										))}
 										{verificationQueue.length > 0 ? null : (
 											<div
-												class={cn(
+												className={cn(
 													"rounded-3xl border border-dashed p-5 text-sm",
 													adminDark
 														? "border-slate-800 bg-slate-900/70 text-slate-400"
@@ -361,18 +361,18 @@ export function AdminInfraSection({
 										{disputes.slice(0, 3).map((dispute) => (
 											<div
 												key={dispute.id}
-												class={cn(
+												className={cn(
 													"rounded-3xl border px-4 py-3 text-sm",
 													adminDark
 														? "border-slate-800 bg-slate-900/70 text-slate-400"
 														: "border-slate-200 bg-slate-50 text-slate-600",
 												)}
 											>
-												<div class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+												<div className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													{dispute.title || dispute.contract_id || "Dispute"}
 												</div>
 												<div
-													class={
+													className={
 														adminDark
 															? "mt-1 text-xs text-slate-400"
 															: "mt-1 text-xs text-slate-500"
@@ -385,7 +385,7 @@ export function AdminInfraSection({
 										))}
 										{disputes.length > 0 ? null : (
 											<div
-												class={cn(
+												className={cn(
 													"rounded-3xl border border-dashed p-5 text-sm",
 													adminDark
 														? "border-slate-800 bg-slate-900/70 text-slate-400"
@@ -412,7 +412,7 @@ export function AdminInfraSection({
 									{filteredInfraAuditRows.slice(0, 5).map((entry) => (
 										<div
 											key={entry.id || entry.at}
-											class={cn(
+											className={cn(
 												"flex items-center justify-between rounded-2xl border px-4 py-3",
 												adminDark
 													? "border-slate-800 bg-slate-900/60"
@@ -421,7 +421,7 @@ export function AdminInfraSection({
 										>
 											<div className="flex items-center gap-3">
 												<div
-													class={cn(
+													className={cn(
 														"flex h-9 w-9 items-center justify-center rounded-2xl",
 														adminDark ? "bg-sky-500/10 text-sky-300" : "bg-sky-50 text-sky-600",
 													)}
@@ -430,12 +430,12 @@ export function AdminInfraSection({
 												</div>
 												<div>
 													<div
-														class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}
+														className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}
 													>
 														{entry.action || entry.path || "Admin action"}
 													</div>
 													<div
-														class={adminDark ? "text-xs text-slate-400" : "text-xs text-slate-500"}
+														className={adminDark ? "text-xs text-slate-400" : "text-xs text-slate-500"}
 													>
 														{entry.at ? new Date(entry.at).toLocaleString() : "--"} ·{" "}
 														{entry.actor || "system"}
@@ -449,7 +449,7 @@ export function AdminInfraSection({
 									))}
 									{filteredInfraAuditRows.length > 0 ? null : (
 										<div
-											class={cn(
+											className={cn(
 												"rounded-3xl border border-dashed p-5 text-sm",
 												adminDark
 													? "border-slate-800 bg-slate-900/70 text-slate-400"
@@ -474,7 +474,7 @@ export function AdminInfraSection({
 									<div className="space-y-3">
 										<div>
 											<label
-												class={cn(
+												className={cn(
 													"mb-2 block text-xs font-medium uppercase tracking-[0.18em]",
 													adminDark ? "text-slate-400" : "text-slate-500",
 												)}
@@ -493,7 +493,7 @@ export function AdminInfraSection({
 															protocol: "tcp",
 														}));
 													}}
-													class={cn(infraInputClass, "appearance-none pr-10")}
+													className={cn(infraInputClass, "appearance-none pr-10")}
 												>
 													<option value="allow:">Preset (select)</option>
 													<option value="allow:22">Allow SSH 22</option>
@@ -507,7 +507,7 @@ export function AdminInfraSection({
 										<div className="grid grid-cols-2 gap-3">
 											<div>
 												<label
-													class={cn(
+													className={cn(
 														"mb-2 block text-xs font-medium uppercase tracking-[0.18em]",
 														adminDark ? "text-slate-400" : "text-slate-500",
 													)}
@@ -523,12 +523,12 @@ export function AdminInfraSection({
 														}))
 													}
 													placeholder="22"
-													class={infraInputClass}
+													className={infraInputClass}
 												/>
 											</div>
 											<div>
 												<label
-													class={cn(
+													className={cn(
 														"mb-2 block text-xs font-medium uppercase tracking-[0.18em]",
 														adminDark ? "text-slate-400" : "text-slate-500",
 													)}
@@ -543,7 +543,7 @@ export function AdminInfraSection({
 															protocol: event.target.value,
 														}))
 													}
-													class={infraInputClass}
+													className={infraInputClass}
 												>
 													<option value="tcp">tcp</option>
 													<option value="udp">udp</option>
@@ -552,7 +552,7 @@ export function AdminInfraSection({
 										</div>
 										<div>
 											<label
-												class={cn(
+												className={cn(
 													"mb-2 block text-xs font-medium uppercase tracking-[0.18em]",
 													adminDark ? "text-slate-400" : "text-slate-500",
 												)}
@@ -568,7 +568,7 @@ export function AdminInfraSection({
 													}))
 												}
 												placeholder="Allow ingress from trusted host"
-												class={infraInputClass}
+												className={infraInputClass}
 											/>
 										</div>
 										<button
@@ -580,7 +580,7 @@ export function AdminInfraSection({
 													description: firewallForm.description,
 												})
 											}
-											class={cn(
+											className={cn(
 												"w-full rounded-2xl px-4 py-3.5 text-sm font-semibold text-white transition",
 												adminDark
 													? "bg-gradient-to-r from-sky-500 to-cyan-400 shadow-lg shadow-sky-500/25"
@@ -593,7 +593,7 @@ export function AdminInfraSection({
 											{(infraState?.firewall_rules || []).slice(0, 6).map((rule) => (
 												<div
 													key={rule.id}
-													class={cn(
+													className={cn(
 														"flex items-center justify-between rounded-2xl border px-4 py-3 text-sm",
 														adminDark
 															? "border-slate-800 bg-slate-900/60"
@@ -601,7 +601,7 @@ export function AdminInfraSection({
 													)}
 												>
 													<div
-														class={cn(
+														className={cn(
 															"text-sm font-medium",
 															adminDark ? "text-white" : "text-slate-900",
 														)}
@@ -615,7 +615,7 @@ export function AdminInfraSection({
 																rule_id: rule.id,
 															})
 														}
-														class={cn(
+														className={cn(
 															"inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold",
 															adminDark
 																? "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -628,7 +628,7 @@ export function AdminInfraSection({
 											))}
 											{(infraState?.firewall_rules || []).length === 0 ? (
 												<div
-													class={cn(
+													className={cn(
 														"rounded-2xl border border-dashed p-4 text-sm",
 														adminDark
 															? "border-slate-800 text-slate-400"
@@ -667,7 +667,7 @@ export function AdminInfraSection({
 														apply: event.target.value !== "check",
 													}))
 												}
-												class={cn(infraInputClass, "appearance-none pr-10")}
+												className={cn(infraInputClass, "appearance-none pr-10")}
 											>
 												<option value="check">Check updates (safe)</option>
 												<option value="security">Apply security updates</option>
@@ -676,9 +676,9 @@ export function AdminInfraSection({
 											<ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 										</div>
 										<div className="grid gap-3 sm:grid-cols-2">
-											<div class={infraFieldPanel}>
+											<div className={infraFieldPanel}>
 												<div
-													class={cn(
+													className={cn(
 														"flex items-center gap-2 text-sm font-medium",
 														adminDark ? "text-white" : "text-slate-900",
 													)}
@@ -686,7 +686,7 @@ export function AdminInfraSection({
 													<CheckCircle2 className="h-4 w-4 text-emerald-500" /> Safe check
 												</div>
 												<p
-													class={
+													className={
 														adminDark
 															? "mt-2 text-sm text-slate-400"
 															: "mt-2 text-sm text-slate-500"
@@ -695,9 +695,9 @@ export function AdminInfraSection({
 													Run controlled update scans without auto-installing risky packages.
 												</p>
 											</div>
-											<div class={infraFieldPanel}>
+											<div className={infraFieldPanel}>
 												<div
-													class={cn(
+													className={cn(
 														"flex items-center gap-2 text-sm font-medium",
 														adminDark ? "text-white" : "text-slate-900",
 													)}
@@ -705,7 +705,7 @@ export function AdminInfraSection({
 													<ShieldCheck className="h-4 w-4 text-sky-500" /> Admin guard
 												</div>
 												<p
-													class={
+													className={
 														adminDark
 															? "mt-2 text-sm text-slate-400"
 															: "mt-2 text-sm text-slate-500"
@@ -716,7 +716,7 @@ export function AdminInfraSection({
 											</div>
 										</div>
 										<div
-											class={cn(
+											className={cn(
 												"rounded-2xl border border-dashed p-4 text-sm",
 												adminDark
 													? "border-slate-800 text-slate-400"
@@ -768,7 +768,7 @@ export function AdminInfraSection({
 														}));
 													}
 												}}
-												class={cn(infraInputClass, "appearance-none pr-10")}
+												className={cn(infraInputClass, "appearance-none pr-10")}
 											>
 												<option value="">Preset (select)</option>
 												<option value="0 2 * * *">Daily backup at 2am</option>
@@ -785,7 +785,7 @@ export function AdminInfraSection({
 												}))
 											}
 											placeholder="Job name"
-											class={infraInputClass}
+											className={infraInputClass}
 										/>
 										<input
 											value={cronForm.schedule}
@@ -796,7 +796,7 @@ export function AdminInfraSection({
 												}))
 											}
 											placeholder="Cron schedule"
-											class={infraInputClass}
+											className={infraInputClass}
 										/>
 										<input
 											value={cronForm.command}
@@ -807,13 +807,13 @@ export function AdminInfraSection({
 												}))
 											}
 											placeholder="Command"
-											class={infraInputClass}
+											className={infraInputClass}
 										/>
 										<div className="space-y-2">
 											{(infraState?.cron_jobs || []).slice(0, 4).map((job) => (
 												<div
 													key={job.id}
-													class={cn(
+													className={cn(
 														"flex items-center justify-between rounded-2xl border px-4 py-3 text-sm",
 														adminDark
 															? "border-slate-800 bg-slate-900/60"
@@ -821,7 +821,7 @@ export function AdminInfraSection({
 													)}
 												>
 													<div
-														class={cn(
+														className={cn(
 															"text-sm font-medium",
 															adminDark ? "text-white" : "text-slate-900",
 														)}
@@ -835,7 +835,7 @@ export function AdminInfraSection({
 																job_id: job.id,
 															})
 														}
-														class={cn(
+														className={cn(
 															"inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold",
 															adminDark
 																? "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -848,7 +848,7 @@ export function AdminInfraSection({
 											))}
 											{(infraState?.cron_jobs || []).length === 0 ? (
 												<div
-													class={cn(
+													className={cn(
 														"rounded-2xl border border-dashed p-4 text-sm",
 														adminDark
 															? "border-slate-800 text-slate-400"
@@ -880,7 +880,7 @@ export function AdminInfraSection({
 										<button
 											type="button"
 											onClick={() => runInfraAction("process.scan_zombies")}
-											class={cn(
+											className={cn(
 												"w-full rounded-2xl px-4 py-3 text-sm font-semibold transition",
 												adminDark
 													? "border border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15"
@@ -890,9 +890,9 @@ export function AdminInfraSection({
 											Scan zombies
 										</button>
 										<div className="grid gap-3 sm:grid-cols-2">
-											<div class={infraFieldPanel}>
+											<div className={infraFieldPanel}>
 												<div
-													class={
+													className={
 														adminDark
 															? "text-xs uppercase tracking-[0.2em] text-slate-400"
 															: "text-xs uppercase tracking-[0.2em] text-slate-500"
@@ -901,7 +901,7 @@ export function AdminInfraSection({
 													Log integrity
 												</div>
 												<div
-													class={cn(
+													className={cn(
 														"mt-2 flex items-center gap-2 text-sm font-medium",
 														adminDark ? "text-white" : "text-slate-900",
 													)}
@@ -909,9 +909,9 @@ export function AdminInfraSection({
 													<Lock className="h-4 w-4 text-emerald-500" /> Tamper-evident
 												</div>
 											</div>
-											<div class={infraFieldPanel}>
+											<div className={infraFieldPanel}>
 												<div
-													class={
+													className={
 														adminDark
 															? "text-xs uppercase tracking-[0.2em] text-slate-400"
 															: "text-xs uppercase tracking-[0.2em] text-slate-500"
@@ -920,7 +920,7 @@ export function AdminInfraSection({
 													Zombie scan
 												</div>
 												<div
-													class={cn(
+													className={cn(
 														"mt-2 flex items-center gap-2 text-sm font-medium",
 														adminDark ? "text-white" : "text-slate-900",
 													)}
@@ -942,7 +942,7 @@ export function AdminInfraSection({
 											{(infraState?.logs || []).slice(0, 4).map((log) => (
 												<div
 													key={log.id}
-													class={cn(
+													className={cn(
 														"rounded-2xl border px-4 py-3 text-sm",
 														adminDark
 															? "border-slate-800 bg-slate-900/60 text-slate-300"
@@ -955,7 +955,7 @@ export function AdminInfraSection({
 											{(infraState?.zombie_processes || []).slice(0, 2).map((proc) => (
 												<div
 													key={proc.pid}
-													class={cn(
+													className={cn(
 														"rounded-2xl border px-4 py-3 text-sm",
 														adminDark
 															? "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -967,7 +967,7 @@ export function AdminInfraSection({
 											))}
 											{(infraState?.logs || []).length === 0 ? (
 												<div
-													class={cn(
+													className={cn(
 														"rounded-2xl border border-dashed p-4 text-sm",
 														adminDark
 															? "border-slate-800 text-slate-400"
@@ -1003,7 +1003,7 @@ export function AdminInfraSection({
 											}))
 										}
 										placeholder="Username"
-										class={infraInputClass}
+										className={infraInputClass}
 									/>
 									<button
 										type="button"
@@ -1013,7 +1013,7 @@ export function AdminInfraSection({
 												role: osUserForm.role,
 											})
 										}
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white",
 											adminDark ? "bg-gradient-to-r from-sky-500 to-blue-500" : "bg-sky-600",
 										)}
@@ -1029,7 +1029,7 @@ export function AdminInfraSection({
 											}))
 										}
 										placeholder="SSH key label"
-										class={infraInputClass}
+										className={infraInputClass}
 									/>
 									<input
 										value={sshKeyForm.fingerprint}
@@ -1040,12 +1040,12 @@ export function AdminInfraSection({
 											}))
 										}
 										placeholder="Fingerprint"
-										class={infraInputClass}
+										className={infraInputClass}
 									/>
 									<button
 										type="button"
 										onClick={() => runInfraAction("ssh.key.add", sshKeyForm)}
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm font-semibold",
 											adminDark
 												? "border-sky-400/20 bg-sky-500/10 text-sky-200"
@@ -1059,7 +1059,7 @@ export function AdminInfraSection({
 										{(infraState?.os_users || []).slice(0, 4).map((userRow) => (
 											<div
 												key={userRow.id}
-												class={cn(
+												className={cn(
 													"flex items-center justify-between rounded-2xl border px-4 py-3",
 													adminDark
 														? "border-slate-800 bg-slate-900/60"
@@ -1067,7 +1067,7 @@ export function AdminInfraSection({
 												)}
 											>
 												<div
-													class={cn(
+													className={cn(
 														"flex items-center gap-2 text-sm font-medium",
 														adminDark ? "text-white" : "text-slate-900",
 													)}
@@ -1081,7 +1081,7 @@ export function AdminInfraSection({
 															username: userRow.username,
 														})
 													}
-													class={cn(
+													className={cn(
 														"inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold",
 														adminDark
 															? "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -1095,7 +1095,7 @@ export function AdminInfraSection({
 										{(infraState?.ssh_keys || []).slice(0, 3).map((key) => (
 											<div
 												key={key.id}
-												class={cn(
+												className={cn(
 													"flex items-center justify-between rounded-2xl border px-4 py-3",
 													adminDark
 														? "border-slate-800 bg-slate-900/60"
@@ -1103,7 +1103,7 @@ export function AdminInfraSection({
 												)}
 											>
 												<div
-													class={cn(
+													className={cn(
 														"flex items-center gap-2 text-sm font-medium",
 														adminDark ? "text-white" : "text-slate-900",
 													)}
@@ -1117,7 +1117,7 @@ export function AdminInfraSection({
 															key_id: key.id,
 														})
 													}
-													class={cn(
+													className={cn(
 														"inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold",
 														adminDark
 															? "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -1131,7 +1131,7 @@ export function AdminInfraSection({
 										{(infraState?.os_users || []).length === 0 &&
 										(infraState?.ssh_keys || []).length === 0 ? (
 											<div
-												class={cn(
+												className={cn(
 													"rounded-2xl border border-dashed p-4 text-sm",
 													adminDark
 														? "border-slate-800 text-slate-400"
@@ -1180,7 +1180,7 @@ export function AdminInfraSection({
 											}))
 										}
 										placeholder="Domain"
-										class={infraInputClass}
+										className={infraInputClass}
 									/>
 									<button
 										type="button"
@@ -1189,7 +1189,7 @@ export function AdminInfraSection({
 												domain: sslForm.domain,
 											})
 										}
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white",
 											adminDark ? "bg-gradient-to-r from-sky-500 to-cyan-400" : "bg-sky-600",
 										)}
@@ -1206,7 +1206,7 @@ export function AdminInfraSection({
 												}))
 											}
 											placeholder="Retention days"
-											class={infraInputClass}
+											className={infraInputClass}
 										/>
 										<button
 											type="button"
@@ -1215,7 +1215,7 @@ export function AdminInfraSection({
 													retention_days: infraBackupForm.retention_days,
 												})
 											}
-											class={cn(
+											className={cn(
 												"rounded-2xl border px-4 py-3 text-sm font-semibold",
 												adminDark
 													? "border-sky-400/20 bg-sky-500/10 text-sky-200"
@@ -1234,7 +1234,7 @@ export function AdminInfraSection({
 											}))
 										}
 										placeholder="Timezone (e.g. UTC)"
-										class={infraInputClass}
+										className={infraInputClass}
 									/>
 									<button
 										type="button"
@@ -1243,7 +1243,7 @@ export function AdminInfraSection({
 												timezone: timeForm.timezone,
 											})
 										}
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm font-semibold",
 											adminDark
 												? "border-sky-400/20 bg-sky-500/10 text-sky-200"
@@ -1253,7 +1253,7 @@ export function AdminInfraSection({
 										Set timezone
 									</button>
 									<div
-										class={cn(
+										className={cn(
 											"rounded-2xl p-4 text-sm",
 											adminDark
 												? "border border-slate-800 bg-slate-900/60 text-slate-400"
@@ -1266,7 +1266,7 @@ export function AdminInfraSection({
 												{(infraState?.ssl_certs || []).length}
 											</span>
 											<span
-												class={adminDark ? "font-medium text-white" : "font-medium text-slate-900"}
+												className={adminDark ? "font-medium text-white" : "font-medium text-slate-900"}
 											>
 												Timezone: {infraState?.time_settings?.timezone || "unset"}
 											</span>
@@ -1291,7 +1291,7 @@ export function AdminInfraSection({
 									{filteredInfraAuditRows.slice(0, 8).map((entry) => (
 										<div
 											key={entry.id || entry.at}
-											class={cn(
+											className={cn(
 												"rounded-2xl border p-4",
 												adminDark
 													? "border-slate-800 bg-slate-900/60"
@@ -1301,12 +1301,12 @@ export function AdminInfraSection({
 											<div className="flex items-start justify-between gap-3">
 												<div>
 													<div
-														class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}
+														className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}
 													>
 														{entry.action || entry.path || "Admin action"}
 													</div>
 													<div
-														class={
+														className={
 															adminDark
 																? "mt-1 text-xs text-slate-400"
 																: "mt-1 text-xs text-slate-500"
@@ -1321,7 +1321,7 @@ export function AdminInfraSection({
 												</Badge>
 											</div>
 											<div
-												class={
+												className={
 													adminDark
 														? "mt-3 grid gap-1 text-xs text-slate-400"
 														: "mt-3 grid gap-1 text-xs text-slate-500"
@@ -1336,7 +1336,7 @@ export function AdminInfraSection({
 									))}
 									{filteredInfraAuditRows.length > 0 ? null : (
 										<div
-											class={cn(
+											className={cn(
 												"rounded-2xl border border-dashed p-4 text-sm",
 												adminDark
 													? "border-slate-800 text-slate-400"
@@ -1357,7 +1357,7 @@ export function AdminInfraSection({
 							return (
 								<div
 									key={cap.title}
-									class={cn(
+									className={cn(
 										"rounded-[26px] border p-5",
 										adminDark
 											? "border-slate-800 bg-slate-950/70 shadow-[0_18px_70px_-36px_rgba(15,23,42,0.35)]"
@@ -1366,7 +1366,7 @@ export function AdminInfraSection({
 								>
 									<div className="flex items-start justify-between gap-3">
 										<div
-											class={cn(
+											className={cn(
 												"rounded-2xl border p-3",
 												adminDark
 													? "border-sky-400/20 bg-sky-500/10 text-sky-300"
@@ -1380,7 +1380,7 @@ export function AdminInfraSection({
 										</Badge>
 									</div>
 									<div
-										class={cn(
+										className={cn(
 											"mt-4 text-base font-semibold tracking-tight",
 											adminDark ? "text-white" : "text-slate-900",
 										)}
@@ -1388,7 +1388,7 @@ export function AdminInfraSection({
 										{cap.title}
 									</div>
 									<div
-										class={cn(
+										className={cn(
 											"mt-2 text-3xl font-semibold",
 											adminDark ? "text-sky-300" : "text-sky-600",
 										)}
@@ -1396,7 +1396,7 @@ export function AdminInfraSection({
 										{cap.count}
 									</div>
 									<p
-										class={
+										className={
 											adminDark ? "mt-2 text-sm text-slate-400" : "mt-2 text-sm text-slate-500"
 										}
 									>
@@ -1408,7 +1408,7 @@ export function AdminInfraSection({
 					</div>
 
 					<footer
-						class={cn(
+						className={cn(
 							"mt-6 rounded-[28px] border px-5 py-4 text-sm",
 							adminDark
 								? "border-slate-800 bg-slate-950/70 text-slate-400 shadow-[0_18px_70px_-36px_rgba(15,23,42,0.3)]"

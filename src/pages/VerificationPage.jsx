@@ -835,7 +835,7 @@ export default function VerificationPage({ embedded = false }) {
 							className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}
 						>
 							<div className="flex items-center justify-between text-sm">
-								<span class={softText}>Status</span>
+								<span className={softText}>Status</span>
 								<span className="rounded-full bg-rose-500/10 px-3 py-1 font-semibold text-rose-400">
 									{remainingDays > 0 ? "Active" : "Inactive"}
 								</span>
@@ -902,19 +902,19 @@ export default function VerificationPage({ embedded = false }) {
 						<h3 className="font-semibold">Overview</h3>
 						<div className="mt-4 space-y-3 text-sm">
 							<div className="flex items-center justify-between">
-								<span class={softText}>First month</span>
+								<span className={softText}>First month</span>
 								<span className="font-semibold">${verificationPrice.firstMonth.toFixed(2)}</span>
 							</div>
 							<div className="flex items-center justify-between">
-								<span class={softText}>Renewals</span>
+								<span className={softText}>Renewals</span>
 								<span className="font-semibold">{verificationPrice.renewal.toFixed(2)}/month</span>
 							</div>
 							<div className="flex items-center justify-between">
-								<span class={softText}>Review status</span>
+								<span className={softText}>Review status</span>
 								<span className="font-semibold text-amber-400">{reviewStatus}</span>
 							</div>
 							<div className="flex items-center justify-between">
-								<span class={softText}>Verification</span>
+								<span className={softText}>Verification</span>
 								<span className="font-semibold text-rose-400">
 									{verified ? "Verified" : "Not verified"}
 								</span>

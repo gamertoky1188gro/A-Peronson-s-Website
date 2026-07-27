@@ -288,7 +288,7 @@ function FeatureList({ items, accent = false }) {
 			{items.map((item) => (
 				<li key={item} className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-200">
 					<span
-						class={
+						className={
 							accent
 								? "mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-sky-700 ring-1 ring-sky-500/20 dark:text-sky-200"
 								: "mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 ring-1 ring-slate-200 dark:bg-white/10 dark:text-slate-200 dark:ring-white/10"
@@ -362,7 +362,7 @@ function PlanCard({
 	const buttonSection = (
 		<Link
 			to={isLoggedIn ? "/feed" : "/signup"}
-			class={
+			className={
 				"group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-300 " +
 				(highlighted
 					? "bg-slate-900 text-white shadow-lg shadow-slate-950/15 hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
@@ -375,7 +375,7 @@ function PlanCard({
 	);
 
 	return (
-		<HoverCard class={cardClasses}>
+		<HoverCard className={cardClasses}>
 			{highlighted && (
 				<div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-sky-400/20 blur-3xl" />
 			)}
@@ -547,7 +547,7 @@ function FAQItem({ q, a }) {
 			<div className="flex items-center justify-between gap-4">
 				<span className="text-base font-semibold text-slate-900 dark:text-white">{q}</span>
 				<span
-					class={
+					className={
 						"h-5 w-5 shrink-0 text-slate-500 transition-transform dark:text-slate-300 " +
 						(open ? "rotate-180" : "")
 					}

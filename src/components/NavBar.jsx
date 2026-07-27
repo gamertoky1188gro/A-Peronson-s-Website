@@ -676,7 +676,7 @@ export default function NavBar() {
 						<div ref={searchRef} className="relative hidden items-center md:flex">
 							{searchExpanded ? (
 								<div
-									class={cn(
+									className={cn(
 										"relative flex w-[400px] max-w-[calc(100vw-2rem)] items-center rounded-full border border-white/10 bg-white/65 px-3 py-2 backdrop-blur-xl shadow-[0_20px_45px_rgba(14,165,233,0.12)] transition-[width,box-shadow] duration-300",
 										"dark:bg-slate-950/70",
 									)}
@@ -974,7 +974,7 @@ export default function NavBar() {
 																		key={item.to}
 																		to={item.to}
 																		onClick={() => setMobileOpen(false)}
-																		class={cn(
+																		className={cn(
 																			"flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
 																			location.pathname === item.to ||
 																				`${location.pathname}?${location.search}` === item.to
@@ -1013,7 +1013,7 @@ export default function NavBar() {
 													key={to}
 													to={to}
 													onClick={() => setMobileOpen(false)}
-													class={cn(
+													className={cn(
 														"flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-medium transition",
 														location.pathname === to
 															? "bg-sky-500/10 text-sky-700 dark:text-sky-300"

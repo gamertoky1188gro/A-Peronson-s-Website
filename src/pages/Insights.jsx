@@ -192,7 +192,7 @@ function renderHtmlReport(report = {}) {
 function StatCard({ icon: Icon, label, value, hint = "", subtle = false, className = "" }) {
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"group rounded-3xl border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl",
 				subtle
 					? "border-sky-200/70 bg-white/80 backdrop-blur dark:border-sky-500/20 dark:bg-slate-950/70"
@@ -251,7 +251,7 @@ function Badge({ children, tone = "default", className = "" }) {
 	};
 	return (
 		<span
-			class={cn(
+			className={cn(
 				"inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium",
 				tones[tone],
 				className,
@@ -683,7 +683,7 @@ export default function Insights() {
 														setExportLoading(false);
 													}
 												}}
-												class={cn(
+												className={cn(
 													"inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition",
 													!canExportAnalytics ||
 														scopeLevel !== "platform_admin_full_detail" ||
@@ -743,7 +743,7 @@ export default function Insights() {
 														setExportLoading(false);
 													}
 												}}
-												class={cn(
+												className={cn(
 													"inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition",
 													!canExportAnalytics ||
 														scopeLevel !== "platform_admin_full_detail" ||

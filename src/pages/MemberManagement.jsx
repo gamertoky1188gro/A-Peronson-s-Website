@@ -118,7 +118,7 @@ function ActionButton({ label, onClick, variant = "default" }) {
 		<button
 			type="button"
 			onClick={onClick}
-			class={classNames(
+			className={classNames(
 				"rounded-xl border px-3.5 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow-md",
 				styles[variant],
 			)}
@@ -474,7 +474,7 @@ export default function MemberManagement() {
 													</td>
 													<td className="px-6 py-5">
 														<span
-															class={classNames(
+															className={classNames(
 																"inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize",
 																badgeClass(m.status),
 															)}
@@ -687,7 +687,7 @@ function PermissionSelector({
 	disabled = false,
 }) {
 	return (
-		<div class={disabled ? " opacity-60" : ""}>
+		<div className={disabled ? " opacity-60" : ""}>
 			<div className="mb-3 text-base font-semibold text-slate-900 dark:text-white">Permissions</div>
 			<div className="grid grid-cols-2 gap-3">
 				{validPermissions.map((perm) => (
@@ -722,7 +722,7 @@ function PermissionSelector({
 
 function PermissionMatrixEditor({ matrix, sections, onChange, disabled = false }) {
 	return (
-		<div class={disabled ? " opacity-60" : ""}>
+		<div className={disabled ? " opacity-60" : ""}>
 			<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
 				{sections.map((section) => {
 					const current = matrix?.[section] || { view: false, edit: false };

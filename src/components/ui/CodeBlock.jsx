@@ -8,7 +8,7 @@ export default function CodeBlock({ className, children, ...props }) {
 
 	if (!language) {
 		return (
-			<code class={className} {...props}>
+			<code className={className} {...props}>
 				{children}
 			</code>
 		);

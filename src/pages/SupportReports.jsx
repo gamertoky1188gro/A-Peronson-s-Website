@@ -451,7 +451,7 @@ export default function SupportReports() {
 											className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
 										>
 											Page URL{" "}
-											<span class={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
+											<span className={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
 										</span>
 										<div className="relative">
 											<Globe className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -469,7 +469,7 @@ export default function SupportReports() {
 											className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}
 										>
 											Contact Email{" "}
-											<span class={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
+											<span className={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
 										</span>
 										<div className="relative">
 											<Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -494,7 +494,7 @@ export default function SupportReports() {
 											<div>
 												<p className="font-medium">
 													Screenshot / File{" "}
-													<span class={darkMode ? "text-slate-500" : "text-slate-400"}>
+													<span className={darkMode ? "text-slate-500" : "text-slate-400"}>
 														(optional)
 													</span>
 												</p>

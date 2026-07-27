@@ -31,7 +31,7 @@ export function StaggerContainer({
 	if (reduceMotion) {
 		const Tag = as;
 		return (
-			<Tag class={className} {...rest}>
+			<Tag className={className} {...rest}>
 				{children}
 			</Tag>
 		);
@@ -39,7 +39,7 @@ export function StaggerContainer({
 	const MotionTag = motion[as];
 	return (
 		<MotionTag
-			class={className}
+			className={className}
 			variants={containerVariants(staggerDelay, staggerChildren)}
 			initial="hidden"
 			whileInView="visible"
@@ -56,14 +56,14 @@ export function StaggerItem({ children, className = "", as = "div", ...rest }) {
 	if (reduceMotion) {
 		const Tag = as;
 		return (
-			<Tag class={className} {...rest}>
+			<Tag className={className} {...rest}>
 				{children}
 			</Tag>
 		);
 	}
 	const MotionTag = motion[as];
 	return (
-		<MotionTag class={className} variants={itemVariants} {...rest}>
+		<MotionTag className={className} variants={itemVariants} {...rest}>
 			{children}
 		</MotionTag>
 	);

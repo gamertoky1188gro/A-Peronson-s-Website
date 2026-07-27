@@ -366,9 +366,9 @@ export default function FeedManagementPage() {
 	}
 
 	return (
-		<div class={cn("min-h-screen transition-colors duration-300", pageBg)}>
+		<div className={cn("min-h-screen transition-colors duration-300", pageBg)}>
 			<div
-				class={cn(
+				className={cn(
 					"border-b backdrop-blur-xl",
 					theme === "dark" ? "border-white/10 bg-slate-950/70" : "border-slate-200 bg-white/80",
 				)}
@@ -378,7 +378,7 @@ export default function FeedManagementPage() {
 						<div className="space-y-2">
 							<div>
 								<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Feed Management</h1>
-								<p class={cn("mt-1 text-sm sm:text-base", subtleText)}>
+								<p className={cn("mt-1 text-sm sm:text-base", subtleText)}>
 									Create and manage your feed posts.
 								</p>
 							</div>
@@ -395,7 +395,7 @@ export default function FeedManagementPage() {
 							<button
 								type="button"
 								onClick={toggleTheme}
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg",
 									panelBg,
 								)}
@@ -424,8 +424,8 @@ export default function FeedManagementPage() {
 
 				<div className="grid gap-6 lg:grid-cols-5">
 					<div className="lg:col-span-3 space-y-6">
-						<section class={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
-							<div class={cn("border-b px-5 py-4", mutedBorder)}>
+						<section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+							<div className={cn("border-b px-5 py-4", mutedBorder)}>
 								<div className="flex items-center gap-3">
 									<div className="rounded-2xl bg-sky-500/15 p-2 text-sky-400">
 										<Plus className="h-5 w-5" />
@@ -434,7 +434,7 @@ export default function FeedManagementPage() {
 										<h2 className="text-lg font-semibold">
 											{editingPost ? "Edit Post" : "Post Editor"}
 										</h2>
-										<p class={cn("text-sm", subtleText)}>
+										<p className={cn("text-sm", subtleText)}>
 											{editingPost
 												? `Editing "${editingPost.title}"`
 												: "Compose, enrich, and publish your feed post."}
@@ -449,7 +449,7 @@ export default function FeedManagementPage() {
 										value={form.title}
 										onChange={(e) => updateField("title", e.target.value)}
 										placeholder="Title..."
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -461,7 +461,7 @@ export default function FeedManagementPage() {
 										value={form.category}
 										onChange={(e) => updateField("category", e.target.value)}
 										placeholder="Announcements"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -474,7 +474,7 @@ export default function FeedManagementPage() {
 										onChange={(e) => updateField("caption", e.target.value)}
 										placeholder="Short feed caption..."
 										rows={3}
-										class={cn(
+										className={cn(
 											"w-full resize-none rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -487,7 +487,7 @@ export default function FeedManagementPage() {
 										onChange={(e) => updateField("readme", e.target.value)}
 										placeholder="Write markdown here..."
 										rows={8}
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 											"min-h-[220px]",
@@ -501,7 +501,7 @@ export default function FeedManagementPage() {
 										value={form.ctaText}
 										onChange={(e) => updateField("ctaText", e.target.value)}
 										placeholder="Optional"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -513,7 +513,7 @@ export default function FeedManagementPage() {
 										value={form.ctaUrl}
 										onChange={(e) => updateField("ctaUrl", e.target.value)}
 										placeholder="https://..."
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -525,7 +525,7 @@ export default function FeedManagementPage() {
 										value={form.hashtags}
 										onChange={(e) => updateField("hashtags", e.target.value)}
 										placeholder="#launch, #update"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -537,7 +537,7 @@ export default function FeedManagementPage() {
 										value={form.mentions}
 										onChange={(e) => updateField("mentions", e.target.value)}
 										placeholder="@buyer, @factory"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -549,7 +549,7 @@ export default function FeedManagementPage() {
 										value={form.links}
 										onChange={(e) => updateField("links", e.target.value)}
 										placeholder="https://..."
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -561,7 +561,7 @@ export default function FeedManagementPage() {
 										value={form.productTags}
 										onChange={(e) => updateField("productTags", e.target.value)}
 										placeholder="cotton, denim, etc"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -573,7 +573,7 @@ export default function FeedManagementPage() {
 										value={form.location}
 										onChange={(e) => updateField("location", e.target.value)}
 										placeholder="Dhaka, Bangladesh"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
 										)}
@@ -581,13 +581,13 @@ export default function FeedManagementPage() {
 								</Field>
 							</div>
 
-							<div class={cn("border-t px-5 py-5", mutedBorder)}>
+							<div className={cn("border-t px-5 py-5", mutedBorder)}>
 								<div className="flex items-center justify-between gap-4">
 									<div>
 										<h3 className="text-sm font-semibold uppercase tracking-wide text-sky-400">
 											Media (images / videos)
 										</h3>
-										<p class={cn("mt-1 text-sm", subtleText)}>
+										<p className={cn("mt-1 text-sm", subtleText)}>
 											Add product shots, announcements, or campaign videos.
 										</p>
 									</div>
@@ -623,16 +623,16 @@ export default function FeedManagementPage() {
 								<div className="mt-5">
 									{mediaRows.length === 0 ? (
 										<div
-											class={cn(
+											className={cn(
 												"rounded-2xl border border-dashed px-5 py-8 text-center",
 												theme === "dark"
 													? "border-white/10 bg-slate-950/30"
 													: "border-slate-200 bg-slate-50/70",
 											)}
 										>
-											<Image class={cn("mx-auto h-10 w-10", subtleText)} />
+											<Image className={cn("mx-auto h-10 w-10", subtleText)} />
 											<p className="mt-3 text-sm font-medium">No media uploaded yet</p>
-											<p class={cn("mt-1 text-sm", subtleText)}>
+											<p className={cn("mt-1 text-sm", subtleText)}>
 												Choose one or more images/videos to build a richer post.
 											</p>
 										</div>
@@ -643,7 +643,7 @@ export default function FeedManagementPage() {
 												return (
 													<div
 														key={media.id}
-														class={cn(
+														className={cn(
 															"group overflow-hidden rounded-3xl border transition hover:-translate-y-1",
 															theme === "dark"
 																? "border-white/10 bg-slate-950/40"
@@ -707,7 +707,7 @@ export default function FeedManagementPage() {
 							</div>
 
 							<div
-								class={cn(
+								className={cn(
 									"flex flex-col gap-3 border-t px-5 py-5 sm:flex-row sm:items-center sm:justify-between",
 									mutedBorder,
 								)}
@@ -716,7 +716,7 @@ export default function FeedManagementPage() {
 									<button
 										type="button"
 										onClick={clearForm}
-										class={cn(
+										className={cn(
 											"inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow-lg",
 											panelBg,
 										)}
@@ -749,16 +749,16 @@ export default function FeedManagementPage() {
 					</div>
 
 					<div className="lg:col-span-2 space-y-6">
-						<section class={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
-							<div class={cn("border-b px-5 py-4", mutedBorder)}>
+						<section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+							<div className={cn("border-b px-5 py-4", mutedBorder)}>
 								<h2 className="text-lg font-semibold">Live Preview</h2>
-								<p class={cn("text-sm", subtleText)}>Rendered markdown from your README field.</p>
+								<p className={cn("text-sm", subtleText)}>Rendered markdown from your README field.</p>
 							</div>
 
 							<div className="px-5 py-5">
 								{previewHasText ? (
 									<article
-										class={cn(
+										className={cn(
 											"prose max-w-none",
 											theme === "dark"
 												? "prose-invert prose-headings:text-white prose-a:text-sky-400"
@@ -794,13 +794,13 @@ export default function FeedManagementPage() {
 												code({ inline, className, children, ...props }) {
 													if (inline) {
 														return (
-															<code class={className} {...props}>
+															<code className={className} {...props}>
 																{children}
 															</code>
 														);
 													}
 													return (
-														<CodeBlock class={className} {...props}>
+														<CodeBlock className={className} {...props}>
 															{children}
 														</CodeBlock>
 													);
@@ -812,23 +812,23 @@ export default function FeedManagementPage() {
 									</article>
 								) : (
 									<div
-										class={cn(
+										className={cn(
 											"rounded-2xl border border-dashed px-5 py-10 text-center",
 											theme === "dark"
 												? "border-white/10 bg-slate-950/30"
 												: "border-slate-200 bg-slate-50",
 										)}
 									>
-										<Sparkles class={cn("mx-auto h-10 w-10", subtleText)} />
+										<Sparkles className={cn("mx-auto h-10 w-10", subtleText)} />
 										<p className="mt-3 text-sm font-medium">No preview content yet</p>
-										<p class={cn("mt-1 text-sm", subtleText)}>
+										<p className={cn("mt-1 text-sm", subtleText)}>
 											Start writing markdown to see it rendered instantly.
 										</p>
 									</div>
 								)}
 							</div>
 
-							<div class={cn("border-t px-5 py-5", mutedBorder)}>
+							<div className={cn("border-t px-5 py-5", mutedBorder)}>
 								<div className="flex items-center justify-between gap-3">
 									<h3 className="text-sm font-semibold uppercase tracking-wide text-sky-400">
 										Content summary
@@ -875,10 +875,10 @@ export default function FeedManagementPage() {
 							</div>
 						</section>
 
-						<section class={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
-							<div class={cn("border-b px-5 py-4", mutedBorder)}>
+						<section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+							<div className={cn("border-b px-5 py-4", mutedBorder)}>
 								<h2 className="text-lg font-semibold">Your posts</h2>
-								<p class={cn("text-sm", subtleText)}>Fetched from /api/feed/posts/mine</p>
+								<p className={cn("text-sm", subtleText)}>Fetched from /api/feed/posts/mine</p>
 							</div>
 
 							<div className="p-5">
@@ -894,7 +894,7 @@ export default function FeedManagementPage() {
 									</div>
 								) : posts.length === 0 ? (
 									<div
-										class={cn(
+										className={cn(
 											"rounded-2xl border border-dashed px-5 py-10 text-center",
 											theme === "dark"
 												? "border-white/10 bg-slate-950/30"
@@ -905,7 +905,7 @@ export default function FeedManagementPage() {
 											<Image className="h-6 w-6" />
 										</div>
 										<p className="mt-3 text-sm font-medium">No posts yet</p>
-										<p class={cn("mt-1 text-sm", subtleText)}>
+										<p className={cn("mt-1 text-sm", subtleText)}>
 											Create your first post to populate this list.
 										</p>
 									</div>
@@ -914,7 +914,7 @@ export default function FeedManagementPage() {
 										{posts.map((post) => (
 											<Reorder.Item key={post.id} value={post}>
 												<article
-													class={cn(
+													className={cn(
 														"rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-xl",
 														theme === "dark"
 															? "border-white/10 bg-slate-950/40"
@@ -948,13 +948,13 @@ export default function FeedManagementPage() {
 														</div>
 													</div>
 
-													<p class={cn("mt-3 line-clamp-3 text-sm leading-6", subtleText)}>
+													<p className={cn("mt-3 line-clamp-3 text-sm leading-6", subtleText)}>
 														{post.caption || "No caption provided."}
 													</p>
 
 													<div className="mt-4 flex items-center justify-between gap-3 text-xs">
 														<div
-															class={cn(
+															className={cn(
 																"inline-flex items-center gap-2 rounded-full border px-3 py-1.5",
 																theme === "dark"
 																	? "border-white/10 bg-white/5 text-slate-300"
@@ -982,7 +982,7 @@ export default function FeedManagementPage() {
 
 function Field({ label, required, className, children }) {
 	return (
-		<div class={className}>
+		<div className={className}>
 			<label className="mb-2 block text-sm font-medium">
 				{label} {required ? <span className="text-sky-400">*</span> : null}
 			</label>

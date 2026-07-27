@@ -199,7 +199,7 @@ export function Badge({ children, tone = "default", darkMode = true }) {
 
 	return (
 		<span
-			class={cn(
+			className={cn(
 				"inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium",
 				base[tone],
 			)}
@@ -229,9 +229,9 @@ export function StatCard({ icon: Icon, title, value, meta, tone = "sky", darkMod
 		: "border-slate-200 bg-white shadow-sm";
 
 	return (
-		<div class={cn("rounded-3xl border p-5 transition hover:-translate-y-0.5", shell)}>
+		<div className={cn("rounded-3xl border p-5 transition hover:-translate-y-0.5", shell)}>
 			<div
-				class={cn(
+				className={cn(
 					"inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium",
 					toneClasses[tone],
 				)}
@@ -240,14 +240,14 @@ export function StatCard({ icon: Icon, title, value, meta, tone = "sky", darkMod
 				{title}
 			</div>
 			<div
-				class={cn(
+				className={cn(
 					"mt-4 text-2xl font-semibold tracking-tight",
 					darkMode ? "text-white" : "text-slate-900",
 				)}
 			>
 				{value}
 			</div>
-			<p class={cn("mt-1 text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>{meta}</p>
+			<p className={cn("mt-1 text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>{meta}</p>
 		</div>
 	);
 }
@@ -275,15 +275,15 @@ export function SectionCard({
 		: "border-sky-200 bg-sky-50 text-sky-600";
 
 	return (
-		<section class={cn("rounded-[28px] border p-5 transition", shell)}>
+		<section className={cn("rounded-[28px] border p-5 transition", shell)}>
 			<div className="mb-5 flex flex-wrap items-start justify-between gap-3">
 				<div className="flex items-start gap-3">
-					<div class={cn("rounded-2xl border p-3", iconShell)}>
+					<div className={cn("rounded-2xl border p-3", iconShell)}>
 						<Icon className="h-5 w-5" />
 					</div>
 					<div>
-						<h3 class={cn("text-lg font-semibold tracking-tight", titleClass)}>{title}</h3>
-						<p class={cn("mt-1 max-w-2xl text-sm", subClass)}>{subtitle}</p>
+						<h3 className={cn("text-lg font-semibold tracking-tight", titleClass)}>{title}</h3>
+						<p className={cn("mt-1 max-w-2xl text-sm", subClass)}>{subtitle}</p>
 					</div>
 				</div>
 				{actionLabel ? (
@@ -291,7 +291,7 @@ export function SectionCard({
 						type="button"
 						onClick={onAction}
 						disabled={!onAction}
-						class={cn(
+						className={cn(
 							"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60",
 							buttonClass,
 						)}
@@ -323,7 +323,7 @@ export function cmsChipClass(dark, active = false) {
 export function CmsMiniBadge({ dark, children }) {
 	return (
 		<span
-			class={[
+			className={[
 				"inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium",
 				dark
 					? "border-sky-400/20 bg-sky-400/10 text-sky-200"
@@ -338,7 +338,7 @@ export function CmsMiniBadge({ dark, children }) {
 export function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 	return (
 		<div
-			class={[
+			className={[
 				"group relative overflow-hidden rounded-3xl border p-5 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5",
 				dark
 					? "border-white/10 bg-slate-950/70 text-white shadow-[0_12px_40px_rgba(2,8,23,0.35)]"
@@ -349,7 +349,7 @@ export function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 			<div className="relative flex items-start justify-between gap-4">
 				<div>
 					<p
-						class={
+						className={
 							dark
 								? "text-xs uppercase tracking-[0.28em] text-slate-400"
 								: "text-xs uppercase tracking-[0.28em] text-slate-500"
@@ -365,7 +365,7 @@ export function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 							</span>
 						) : null}
 					</div>
-					<p class={dark ? "mt-2 text-sm text-slate-400" : "mt-2 text-sm text-slate-600"}>{meta}</p>
+					<p className={dark ? "mt-2 text-sm text-slate-400" : "mt-2 text-sm text-slate-600"}>{meta}</p>
 				</div>
 				<div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-3 text-sky-400">
 					<Icon className="h-5 w-5" />
@@ -386,7 +386,7 @@ export function CmsSectionCard({
 }) {
 	return (
 		<section
-			class={[
+			className={[
 				"overflow-hidden rounded-3xl border backdrop-blur-xl",
 				dark
 					? "border-white/10 bg-slate-950/70 shadow-[0_18px_55px_rgba(2,8,23,0.4)]"
@@ -402,7 +402,7 @@ export function CmsSectionCard({
 					</div>
 					<div>
 						<h3
-							class={
+							className={
 								dark
 									? "text-base font-semibold text-white"
 									: "text-base font-semibold text-slate-900"
@@ -410,7 +410,7 @@ export function CmsSectionCard({
 						>
 							{title}
 						</h3>
-						<p class={dark ? "text-xs text-slate-400" : "text-xs text-slate-500"}>{subtitle}</p>
+						<p className={dark ? "text-xs text-slate-400" : "text-xs text-slate-500"}>{subtitle}</p>
 					</div>
 				</div>
 				{action}

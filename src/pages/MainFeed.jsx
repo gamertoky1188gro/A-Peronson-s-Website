@@ -221,7 +221,7 @@ const Pill = memo(function Pill({ children, active = false, onClick }) {
 	return (
 		<button
 			onClick={onClick}
-			class={cx(
+			className={cx(
 				"inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
 				active
 					? "bg-sky-500 text-white shadow-lg shadow-sky-500/25"
@@ -244,7 +244,7 @@ const StatCard = memo(function StatCard({ icon, label, value, accent = "sky" }) 
 					<p className="text-xl font-semibold text-slate-900 dark:text-white">{value}</p>
 				</div>
 				<div
-					class={cx(
+					className={cx(
 						"flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
 						accent === "sky" && "bg-sky-500/15 text-sky-600 dark:text-sky-400",
 						accent === "blue" && "bg-blue-500/15 text-blue-600 dark:text-blue-400",

@@ -43,7 +43,7 @@ function Stars({ value, onChange }) {
 						type="button"
 						aria-label={`${score} star`}
 						onClick={() => onChange(score)}
-						class={[
+						className={[
 							"group inline-flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-200",
 							"focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-transparent",
 							active
@@ -257,7 +257,7 @@ export default function RatingFeedback() {
 							return (
 								<div
 									key={row.id}
-									class={[
+									className={[
 										"relative overflow-hidden rounded-3xl border p-5 shadow-[0_10px_35px_rgba(15,23,42,0.08)] transition-all",
 										"bg-white/85 backdrop-blur-xl dark:bg-slate-950/70",
 										isFocused

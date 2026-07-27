@@ -63,7 +63,7 @@ const ULTRA_CAPABILITIES_DEFAULT = [
 function UltraPill({ dark, active = false, children }) {
 	return (
 		<span
-			class={cn(
+			className={cn(
 				"inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium",
 				active
 					? dark
@@ -91,27 +91,27 @@ function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = "default" }
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				ultraMetricShell(dark),
 				"relative overflow-hidden rounded-3xl border p-5 backdrop-blur-xl",
 			)}
 		>
-			<div class={cn("absolute inset-0 bg-gradient-to-br opacity-80", toneClass)} />
+			<div className={cn("absolute inset-0 bg-gradient-to-br opacity-80", toneClass)} />
 			<div className="relative flex items-start justify-between gap-4">
 				<div>
-					<p class={cn("text-sm font-medium", dark ? "text-slate-300" : "text-slate-600")}>
+					<p className={cn("text-sm font-medium", dark ? "text-slate-300" : "text-slate-600")}>
 						{label}
 					</p>
 					<div className="mt-2 flex items-end gap-2">
 						<h3 className="text-3xl font-semibold tracking-tight">{value}</h3>
 						{sub ? (
-							<span class={cn("pb-1 text-xs", dark ? "text-slate-400" : "text-slate-500")}>
+							<span className={cn("pb-1 text-xs", dark ? "text-slate-400" : "text-slate-500")}>
 								{sub}
 							</span>
 						) : null}
 					</div>
 				</div>
-				<div class={cn("rounded-2xl p-3", dark ? "bg-slate-950/30" : "bg-slate-100")}>
+				<div className={cn("rounded-2xl p-3", dark ? "bg-slate-950/30" : "bg-slate-100")}>
 					<Icon className="h-5 w-5 text-cyan-300" />
 				</div>
 			</div>
@@ -122,7 +122,7 @@ function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = "default" }
 function UltraSectionCard({ dark, title, subtitle, children, right }) {
 	return (
 		<section
-			class={cn(
+			className={cn(
 				ultraMetricShell(dark),
 				"relative overflow-hidden rounded-[28px] border p-6 backdrop-blur-xl",
 			)}
@@ -131,7 +131,7 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 				<div>
 					<div className="flex items-center gap-2">
 						<h2
-							class={cn(
+							className={cn(
 								"text-xl font-semibold tracking-tight",
 								dark ? "text-white" : "text-slate-900",
 							)}
@@ -144,7 +144,7 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 					</div>
 					{subtitle ? (
 						<p
-							class={cn(
+							className={cn(
 								"mt-2 max-w-2xl text-sm leading-6",
 								dark ? "text-slate-400" : "text-slate-600",
 							)}
@@ -163,27 +163,27 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 function UltraToggle({ dark, on, label, hint, onToggle }) {
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"flex items-center justify-between gap-4 rounded-2xl border p-4",
 				dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 			)}
 		>
 			<div>
-				<p class={cn("font-medium", dark ? "text-white" : "text-slate-900")}>{label}</p>
+				<p className={cn("font-medium", dark ? "text-white" : "text-slate-900")}>{label}</p>
 				{hint ? (
-					<p class={cn("mt-1 text-sm", dark ? "text-slate-400" : "text-slate-500")}>{hint}</p>
+					<p className={cn("mt-1 text-sm", dark ? "text-slate-400" : "text-slate-500")}>{hint}</p>
 				) : null}
 			</div>
 			<div className="flex items-center gap-3">
 				<span
-					class={cn("text-sm", on ? "text-cyan-300" : dark ? "text-slate-400" : "text-slate-500")}
+					className={cn("text-sm", on ? "text-cyan-300" : dark ? "text-slate-400" : "text-slate-500")}
 				>
 					{on ? "On" : "Off"}
 				</span>
 				<button
 					type="button"
 					onClick={onToggle}
-					class={cn(
+					className={cn(
 						"flex h-10 w-20 items-center rounded-full border px-1 transition",
 						on
 							? "border-cyan-400/40 bg-cyan-500/20"
@@ -194,7 +194,7 @@ function UltraToggle({ dark, on, label, hint, onToggle }) {
 					aria-pressed={on}
 				>
 					<div
-						class={cn(
+						className={cn(
 							"h-8 w-8 rounded-full shadow-md transition-transform",
 							on ? "translate-x-10 bg-cyan-400" : dark ? "bg-slate-400" : "bg-slate-500",
 						)}
@@ -229,17 +229,17 @@ function UltraTinyChart({
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"rounded-[24px] border p-4",
 				dark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-white",
 			)}
 		>
 			<div className="mb-3 flex items-center justify-between">
 				<div>
-					<p class={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
+					<p className={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
 						Live Metrics
 					</p>
-					<p class={cn("text-xs", dark ? "text-slate-400" : "text-slate-500")}>
+					<p className={cn("text-xs", dark ? "text-slate-400" : "text-slate-500")}>
 						Metrics coming from live feeds.
 					</p>
 				</div>
@@ -271,15 +271,15 @@ function UltraTinyChart({
 				{safeKpis.slice(0, 3).map((row) => (
 					<div
 						key={row.label}
-						class={cn(
+						className={cn(
 							"rounded-2xl border p-3",
 							dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 						)}
 					>
-						<div class={cn("font-semibold", dark ? "text-white" : "text-slate-900")}>
+						<div className={cn("font-semibold", dark ? "text-white" : "text-slate-900")}>
 							{row.value}
 						</div>
-						<div class={dark ? "text-slate-400" : "text-slate-500"}>{row.label}</div>
+						<div className={dark ? "text-slate-400" : "text-slate-500"}>{row.label}</div>
 					</div>
 				))}
 			</div>
@@ -381,13 +381,13 @@ export function AdminSecuritySection({
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"rounded-[32px] border p-4 sm:p-5",
 				adminDark ? "border-slate-800/70 bg-slate-950/50" : "border-slate-200 bg-white/75",
 			)}
 		>
 			<div
-				class={cn(
+				className={cn(
 					"rounded-[32px] border p-5 backdrop-blur-xl",
 					adminDark
 						? "border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_22%),linear-gradient(180deg,_#020617_0%,_#07111f_55%,_#050b16_100%)] text-slate-100"
@@ -406,7 +406,7 @@ export function AdminSecuritySection({
 							<UltraPill dark={adminDark}>Live</UltraPill>
 						</div>
 						<h1
-							class={cn(
+							className={cn(
 								"mt-4 text-3xl font-semibold tracking-tight sm:text-4xl",
 								adminDark ? "text-white" : "text-slate-900",
 							)}
@@ -414,7 +414,7 @@ export function AdminSecuritySection({
 							Zero Trust, incident response, and immutable audit control in one command deck.
 						</h1>
 						<p
-							class={cn(
+							className={cn(
 								"mt-3 max-w-3xl text-sm leading-6 sm:text-base",
 								adminDark ? "text-slate-300" : "text-slate-700",
 							)}
@@ -428,7 +428,7 @@ export function AdminSecuritySection({
 						<button
 							type="button"
 							onClick={toggleTheme}
-							class={cn(
+							className={cn(
 								"inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:-translate-y-0.5",
 								adminDark
 									? "border-white/10 bg-white/10 text-white"
@@ -510,17 +510,17 @@ export function AdminSecuritySection({
 									/>
 
 									<div
-										class={cn(
+										className={cn(
 											"grid gap-4 rounded-2xl border p-4",
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 										)}
 									>
 										<div className="flex items-center justify-between">
 											<div>
-												<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+												<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													Rotate keys
 												</p>
-												<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+												<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 													Encryption keys and session secrets.
 												</p>
 											</div>
@@ -534,19 +534,19 @@ export function AdminSecuritySection({
 										</div>
 
 										<div
-											class={cn(
+											className={cn(
 												"grid gap-3 sm:grid-cols-2",
 												adminDark ? "text-slate-200" : "text-slate-800",
 											)}
 										>
 											<div
-												class={cn(
+												className={cn(
 													"rounded-xl border p-3",
 													adminDark ? "border-white/10 bg-black/10" : "border-slate-200 bg-white",
 												)}
 											>
 												<p
-													class={cn(
+													className={cn(
 														"text-xs uppercase tracking-[0.18em]",
 														adminDark ? "text-slate-400" : "text-slate-500",
 													)}
@@ -558,13 +558,13 @@ export function AdminSecuritySection({
 												</p>
 											</div>
 											<div
-												class={cn(
+												className={cn(
 													"rounded-xl border p-3",
 													adminDark ? "border-white/10 bg-black/10" : "border-slate-200 bg-white",
 												)}
 											>
 												<p
-													class={cn(
+													className={cn(
 														"text-xs uppercase tracking-[0.18em]",
 														adminDark ? "text-slate-400" : "text-slate-500",
 													)}
@@ -581,13 +581,13 @@ export function AdminSecuritySection({
 
 								<div className="grid gap-4">
 									<div
-										class={cn(
+										className={cn(
 											"rounded-2xl border p-4",
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 										)}
 									>
 										<div className="mb-3 flex items-center justify-between">
-											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+											<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												Current security state
 											</p>
 											<span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300">
@@ -604,14 +604,14 @@ export function AdminSecuritySection({
 											].map(([key, value]) => (
 												<div
 													key={key}
-													class={cn(
+													className={cn(
 														"flex items-center justify-between border-b border-dashed pb-2 last:border-0 last:pb-0",
 														adminDark ? "border-white/10" : "border-slate-200",
 													)}
 												>
-													<span class={adminDark ? "text-slate-400" : "text-slate-600"}>{key}</span>
+													<span className={adminDark ? "text-slate-400" : "text-slate-600"}>{key}</span>
 													<span
-														class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}
+														className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}
 													>
 														{value}
 													</span>
@@ -621,17 +621,17 @@ export function AdminSecuritySection({
 									</div>
 
 									<div
-										class={cn(
+										className={cn(
 											"rounded-2xl border p-4",
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 										)}
 									>
 										<div className="flex items-center justify-between">
 											<div>
-												<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+												<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													Incident Response
 												</p>
-												<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+												<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 													Incident dashboard and approvals.
 												</p>
 											</div>
@@ -655,7 +655,7 @@ export function AdminSecuritySection({
 														severity: "high",
 													})
 												}
-												class={cn(
+												className={cn(
 													"rounded-xl border px-4 py-2 text-sm font-medium",
 													adminDark
 														? "border-white/10 text-slate-200"
@@ -666,7 +666,7 @@ export function AdminSecuritySection({
 											</button>
 										</div>
 										<div
-											class={cn(
+											className={cn(
 												"mt-4 space-y-2 text-[11px]",
 												adminDark ? "text-slate-300" : "text-slate-700",
 											)}
@@ -674,7 +674,7 @@ export function AdminSecuritySection({
 											{(securityState?.incidents || []).slice(0, 3).map((incident) => (
 												<div
 													key={incident.id}
-													class={cn(
+													className={cn(
 														"rounded-xl border px-3 py-2",
 														adminDark
 															? "border-white/10 bg-slate-950/25"
@@ -687,14 +687,14 @@ export function AdminSecuritySection({
 											{(securityState?.data_exports?.pending || []).slice(0, 2).map((req) => (
 												<div
 													key={req.id}
-													class={cn("text-[11px]", adminDark ? "text-slate-400" : "text-slate-600")}
+													className={cn("text-[11px]", adminDark ? "text-slate-400" : "text-slate-600")}
 												>
 													Export {req.dataset} · {req.status}
 												</div>
 											))}
 											{securityState?.incidents?.length > 0 ||
 											(securityState?.data_exports?.pending || []).length > 0 ? null : (
-												<div class={adminDark ? "text-slate-400" : "text-slate-600"}>
+												<div className={adminDark ? "text-slate-400" : "text-slate-600"}>
 													No active incidents.
 												</div>
 											)}
@@ -746,17 +746,17 @@ export function AdminSecuritySection({
 
 							<div className="mt-4 grid gap-4 lg:grid-cols-3">
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border p-4 lg:col-span-2",
 										adminDark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-white",
 									)}
 								>
 									<div className="mb-3 flex items-center justify-between">
 										<div>
-											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+											<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												Zero-Trust & Incident Response
 											</p>
-											<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+											<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 												{ultraSecurityCapabilities.length} capabilities
 											</p>
 										</div>
@@ -766,13 +766,13 @@ export function AdminSecuritySection({
 										{ultraSecurityCapabilities.map((cap) => (
 											<div
 												key={cap}
-												class={cn(
+												className={cn(
 													"flex items-start gap-2 rounded-xl border p-3 text-sm",
 													adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 												)}
 											>
 												<CheckCircle2 className="mt-0.5 h-4 w-4 flex-none text-cyan-300" />
-												<span class={cn(adminDark ? "text-slate-200" : "text-slate-800")}>
+												<span className={cn(adminDark ? "text-slate-200" : "text-slate-800")}>
 													{cap}
 												</span>
 											</div>
@@ -781,12 +781,12 @@ export function AdminSecuritySection({
 								</div>
 
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border p-4",
 										adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 									)}
 								>
-									<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+									<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										Risk posture
 									</p>
 									<div className="mt-4 space-y-4">
@@ -809,16 +809,16 @@ export function AdminSecuritySection({
 										].map(([label, value, widthClass, gradient, valueClass]) => (
 											<div key={label}>
 												<div className="mb-2 flex items-center justify-between text-sm">
-													<span class={adminDark ? "text-slate-300" : "text-slate-700"}>
+													<span className={adminDark ? "text-slate-300" : "text-slate-700"}>
 														{label}
 													</span>
-													<span class={valueClass}>{value}</span>
+													<span className={valueClass}>{value}</span>
 												</div>
 												<div
-													class={cn("h-2 rounded-full", adminDark ? "bg-white/10" : "bg-slate-200")}
+													className={cn("h-2 rounded-full", adminDark ? "bg-white/10" : "bg-slate-200")}
 												>
 													<div
-														class={cn("h-2 rounded-full bg-gradient-to-r", widthClass, gradient)}
+														className={cn("h-2 rounded-full bg-gradient-to-r", widthClass, gradient)}
 													/>
 												</div>
 											</div>
@@ -844,7 +844,7 @@ export function AdminSecuritySection({
 								<button
 									type="button"
 									onClick={() => refreshVerificationQueue()}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200"
@@ -856,7 +856,7 @@ export function AdminSecuritySection({
 							}
 						>
 							<div
-								class={cn(
+								className={cn(
 									"rounded-2xl border p-4",
 									adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 								)}
@@ -865,27 +865,27 @@ export function AdminSecuritySection({
 									{verificationQueue.slice(0, 3).map((row) => (
 										<div
 											key={row.id || row.user_id}
-											class={cn(
+											className={cn(
 												"rounded-2xl border px-3 py-2",
 												adminDark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-white",
 											)}
 										>
 											<p
-												class={cn(
+												className={cn(
 													"text-[11px] font-semibold",
 													adminDark ? "text-white" : "text-slate-900",
 												)}
 											>
 												{row.user_name || row.user_email || row.user_id}
 											</p>
-											<p class={cn("text-[10px]", adminDark ? "text-slate-400" : "text-slate-600")}>
+											<p className={cn("text-[10px]", adminDark ? "text-slate-400" : "text-slate-600")}>
 												Doc: {row.doc_type || row.type || "business"} · Status:{" "}
 												{row.status || "pending"}
 											</p>
 										</div>
 									))}
 									{verificationQueue.length > 0 ? null : (
-										<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+										<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 											{emptyCopy("verification.pending", "No pending verifications in queue.")}
 										</p>
 									)}
@@ -901,7 +901,7 @@ export function AdminSecuritySection({
 								<button
 									type="button"
 									onClick={() => refreshDisputes()}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200"
@@ -913,7 +913,7 @@ export function AdminSecuritySection({
 							}
 						>
 							<div
-								class={cn(
+								className={cn(
 									"rounded-2xl border p-4",
 									adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 								)}
@@ -922,27 +922,27 @@ export function AdminSecuritySection({
 									{disputes.slice(0, 3).map((dispute) => (
 										<div
 											key={dispute.id}
-											class={cn(
+											className={cn(
 												"rounded-2xl border px-3 py-2",
 												adminDark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-white",
 											)}
 										>
 											<p
-												class={cn(
+												className={cn(
 													"text-[11px] font-semibold",
 													adminDark ? "text-white" : "text-slate-900",
 												)}
 											>
 												{dispute.title || dispute.contract_id || "Dispute"}
 											</p>
-											<p class={cn("text-[10px]", adminDark ? "text-slate-400" : "text-slate-600")}>
+											<p className={cn("text-[10px]", adminDark ? "text-slate-400" : "text-slate-600")}>
 												Status: {dispute.status || "open"} · Priority:{" "}
 												{dispute.priority || "normal"}
 											</p>
 										</div>
 									))}
 									{disputes.length > 0 ? null : (
-										<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+										<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 											{emptyCopy("disputes.none", "No active disputes.")}
 										</p>
 									)}
@@ -958,7 +958,7 @@ export function AdminSecuritySection({
 								<button
 									type="button"
 									onClick={() => refreshAudit()}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200"
@@ -973,18 +973,18 @@ export function AdminSecuritySection({
 								{audit.slice(0, 5).map((entry) => (
 									<div
 										key={entry.id || entry.at}
-										class={cn(
+										className={cn(
 											"rounded-2xl border p-3",
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 										)}
 									>
 										<div className="flex items-start justify-between gap-4">
 											<div>
-												<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+												<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													{entry.path || entry.action || "Admin action"}
 												</p>
 												<p
-													class={cn(
+													className={cn(
 														"mt-1 text-xs",
 														adminDark ? "text-slate-400" : "text-slate-600",
 													)}
@@ -995,7 +995,7 @@ export function AdminSecuritySection({
 											<ArrowUpRight className="h-4 w-4 text-cyan-300" />
 										</div>
 										<div
-											class={cn("mt-3 text-xs", adminDark ? "text-slate-400" : "text-slate-600")}
+											className={cn("mt-3 text-xs", adminDark ? "text-slate-400" : "text-slate-600")}
 										>
 											Actor: {entry.actor_id || entry.actor || "system"} / Status:{" "}
 											{entry.status ?? 200}
@@ -1005,7 +1005,7 @@ export function AdminSecuritySection({
 									</div>
 								))}
 								{audit.length > 0 ? null : (
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										No recent activity.
 									</p>
 								)}
@@ -1015,7 +1015,7 @@ export function AdminSecuritySection({
 				</div>
 
 				<section
-					class={cn(
+					className={cn(
 						"mt-5 rounded-[32px] border p-6 backdrop-blur-xl",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/80",
 					)}
@@ -1023,30 +1023,30 @@ export function AdminSecuritySection({
 					<div className="mb-5 flex flex-wrap items-center justify-between gap-4">
 						<div>
 							<h2
-								class={cn(
+								className={cn(
 									"text-xl font-semibold tracking-tight",
 									adminDark ? "text-white" : "text-slate-900",
 								)}
 							>
 								Admin Audit Log
 							</h2>
-							<p class={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+							<p className={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 								Immutable, tamper-evident audit trail for every admin action.
 							</p>
 						</div>
 						<div className="flex flex-wrap items-center gap-2">
 							<div
-								class={cn(
+								className={cn(
 									"flex items-center gap-2 rounded-2xl border px-3 py-2",
 									adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 								)}
 							>
-								<Search class={cn("h-4 w-4", adminDark ? "text-slate-400" : "text-slate-500")} />
+								<Search className={cn("h-4 w-4", adminDark ? "text-slate-400" : "text-slate-500")} />
 								<input
 									value={ultraAuditQuery}
 									onChange={(e) => setUltraAuditQuery(e.target.value)}
 									placeholder="Search audit..."
-									class={cn(
+									className={cn(
 										"w-44 bg-transparent text-sm outline-none",
 										adminDark
 											? "text-slate-100 placeholder:text-slate-500"
@@ -1057,7 +1057,7 @@ export function AdminSecuritySection({
 							<button
 								type="button"
 								onClick={() => refreshAudit()}
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium",
 									adminDark
 										? "border-white/10 bg-white/10 text-white"
@@ -1073,7 +1073,7 @@ export function AdminSecuritySection({
 						{filteredUltraAuditRows.slice(0, 10).map((entry) => (
 							<div
 								key={`${entry.id || entry.at}-${entry.path || entry.action}`}
-								class={cn(
+								className={cn(
 									"grid gap-2 rounded-2xl border p-4 md:grid-cols-[1.4fr_0.8fr_1fr] md:items-center",
 									adminDark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-slate-50",
 								)}
@@ -1083,31 +1083,31 @@ export function AdminSecuritySection({
 										<ShieldAlert className="h-4 w-4" />
 									</div>
 									<div>
-										<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+										<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 											{entry.path || entry.action || "--"}
 										</p>
-										<p class={cn("text-xs", adminDark ? "text-slate-400" : "text-slate-600")}>
+										<p className={cn("text-xs", adminDark ? "text-slate-400" : "text-slate-600")}>
 											Actor: {entry.actor_id || entry.actor || "system"} / Status:{" "}
 											{entry.status ?? 200}
 										</p>
 									</div>
 								</div>
-								<div class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+								<div className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 									{entry.at ? new Date(entry.at).toLocaleString() : "--"}
 								</div>
 								<div className="flex items-center justify-between gap-3">
-									<div class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<div className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										IP: {entry.ip || "--"} / Device: {entry.device_id || "--"}
 									</div>
 									<ChevronRight
-										class={cn("h-4 w-4", adminDark ? "text-slate-500" : "text-slate-400")}
+										className={cn("h-4 w-4", adminDark ? "text-slate-500" : "text-slate-400")}
 									/>
 								</div>
 							</div>
 						))}
 						{filteredUltraAuditRows.length === 0 ? (
 							<div
-								class={cn(
+								className={cn(
 									"rounded-2xl border border-dashed p-5 text-sm",
 									adminDark
 										? "border-white/10 bg-white/[0.03] text-slate-400"

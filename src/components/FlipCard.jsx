@@ -23,7 +23,7 @@ export default function FlipCard({
 	const reduceMotion = useReducedMotion();
 
 	if (reduceMotion) {
-		return <div class={className}>{front}</div>;
+		return <div className={className}>{front}</div>;
 	}
 
 	const isControlled = controlledFlip !== undefined;

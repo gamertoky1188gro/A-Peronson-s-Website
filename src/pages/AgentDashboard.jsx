@@ -46,7 +46,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
 	const isNumeric = typeof value === "number" && !Number.isNaN(value);
 	return (
 		<HoverCard
-			class={cn(
+			className={cn(
 				"rounded-2xl border p-4 shadow-sm backdrop-blur-xl transition-all",
 				accent
 					? "border-sky-500/30 bg-gradient-to-br from-sky-500/15 to-cyan-400/10"
@@ -70,7 +70,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, accent = false }) => {
 					) : null}
 				</div>
 				<div
-					class={cn(
+					className={cn(
 						"flex h-11 w-11 items-center justify-center rounded-2xl border",
 						accent
 							? "border-sky-500/25 bg-sky-500/15 text-sky-500"
@@ -289,7 +289,7 @@ export default function AgentDashboard() {
 									</p>
 								</div>
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl px-3 py-2 text-xs font-semibold",
 										isEnterprise
 											? "bg-sky-500/15 text-sky-600 dark:text-sky-300"
@@ -435,7 +435,7 @@ export default function AgentDashboard() {
 													<button
 														key={tab.key}
 														onClick={() => setActiveTab(tab.key)}
-														class={cn(
+														className={cn(
 															"rounded-xl px-4 py-2 text-sm font-medium transition",
 															activeTab === tab.key
 																? "bg-sky-500 text-white shadow-md shadow-sky-500/20"

@@ -130,7 +130,7 @@ function Pill({ children, tone = "default" }) {
 	};
 	return (
 		<span
-			class={cn(
+			className={cn(
 				"inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
 				tones[tone],
 			)}
@@ -162,7 +162,7 @@ function Step({ label, active, done, last }) {
 		<div className="flex items-start gap-3">
 			<div className="flex flex-col items-center">
 				<div
-					class={cn(
+					className={cn(
 						"grid h-9 w-9 place-items-center rounded-full border text-xs font-semibold",
 						done
 							? "border-sky-500 bg-sky-500 text-white"
@@ -175,13 +175,13 @@ function Step({ label, active, done, last }) {
 				</div>
 				{last ? null : (
 					<div
-						class={cn("mt-2 h-10 w-px", done ? "bg-sky-400/80" : "bg-slate-200 dark:bg-white/10")}
+						className={cn("mt-2 h-10 w-px", done ? "bg-sky-400/80" : "bg-slate-200 dark:bg-white/10")}
 					/>
 				)}
 			</div>
 			<div className="pb-4 pt-1">
 				<div
-					class={cn(
+					className={cn(
 						"text-sm font-medium",
 						active || done
 							? "text-slate-900 dark:text-white"
@@ -199,7 +199,7 @@ function NavItem({ icon, label, count, active, onClick }) {
 	return (
 		<button
 			onClick={onClick}
-			class={cn(
+			className={cn(
 				"flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm transition",
 				active
 					? "bg-sky-600 text-white shadow-lg shadow-sky-500/20"
@@ -208,7 +208,7 @@ function NavItem({ icon, label, count, active, onClick }) {
 		>
 			<span className="flex items-center gap-3">
 				<span
-					class={cn(
+					className={cn(
 						"grid h-8 w-8 place-items-center rounded-xl",
 						active ? "bg-white/15" : "bg-white dark:bg-white/10",
 					)}
@@ -219,7 +219,7 @@ function NavItem({ icon, label, count, active, onClick }) {
 			</span>
 			{count ? (
 				<span
-					class={cn(
+					className={cn(
 						"rounded-full px-2 py-0.5 text-xs font-semibold",
 						active ? "bg-white/15 text-white" : "bg-sky-500/10 text-sky-600 dark:text-sky-300",
 					)}
@@ -272,7 +272,7 @@ function ActionButton({ icon, title, subtitle, disabled, onClick }) {
 		<button
 			disabled={disabled}
 			onClick={onClick}
-			class={cn(
+			className={cn(
 				"rounded-2xl border p-4 text-left transition",
 				disabled
 					? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
@@ -319,7 +319,7 @@ function SummaryRow({ step, done }) {
 	return (
 		<div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
 			<span
-				class={cn(
+				className={cn(
 					"grid h-6 w-6 place-items-center rounded-full text-xs font-bold",
 					done
 						? "bg-emerald-500 text-white"
@@ -767,7 +767,7 @@ export default function ContractVaultPage({ embedded = false }) {
 			);
 		}
 		return (
-			<div class={shell}>
+			<div className={shell}>
 				<div className="flex min-h-screen items-center justify-center">
 					<p className="text-slate-500 dark:text-slate-400">No contracts found.</p>
 				</div>
@@ -846,7 +846,7 @@ export default function ContractVaultPage({ embedded = false }) {
 							<button
 								key={item}
 								onClick={() => setTab(item)}
-								class={cn(
+								className={cn(
 									"rounded-full px-3 py-2 text-sm font-medium transition",
 									tab === item
 										? "bg-sky-600 text-white shadow-lg shadow-sky-500/20"
@@ -867,7 +867,7 @@ export default function ContractVaultPage({ embedded = false }) {
 							<button
 								layout={true}
 								onClick={() => setSelectedId(c.id)}
-								class={cn(
+								className={cn(
 									"w-full rounded-3xl border p-4 text-left transition hover:-translate-y-0.5",
 									selectedId === c.id
 										? "border-sky-500/40 bg-sky-500/10 shadow-lg shadow-sky-500/10 dark:bg-sky-400/10"
@@ -904,7 +904,7 @@ export default function ContractVaultPage({ embedded = false }) {
 
 	const vaultContent = (
 		<div
-			class={cn(
+			className={cn(
 				embedded
 					? "flex flex-col xl:flex-row max-h-full gap-4 items-start"
 					: "grid max-h-full gap-4 xl:grid-cols-[280px_minmax(0,1fr)]",
@@ -937,7 +937,7 @@ export default function ContractVaultPage({ embedded = false }) {
 			<main
 				ref={mainRef}
 				data-lenis-prevent={true}
-				class={cn(
+				className={cn(
 					embedded
 						? "flex-1 min-w-0 min-h-0 overflow-y-auto scrollbar-hide max-h-full"
 						: "grid overflow-y-auto scrollbar-hide max-h-full xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]",
@@ -1427,7 +1427,7 @@ export default function ContractVaultPage({ embedded = false }) {
 	}
 
 	return (
-		<div class={shell}>
+		<div className={shell}>
 			<div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.22),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_24%),linear-gradient(180deg,#f8fbff_0%,#eef7ff_40%,#eaf3ff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_25%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.12),_transparent_22%),linear-gradient(180deg,#020617_0%,#07111f_45%,#08111b_100%)] dark:text-white">
 				<div className="mx-auto max-w-[1600px] px-4 py-4 md:px-6 lg:px-8">{vaultContent}</div>
 			</div>

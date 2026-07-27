@@ -23,7 +23,7 @@ export default function ScaleIn({
 	if (reduceMotion) {
 		const Tag = as;
 		return (
-			<Tag class={className} {...rest}>
+			<Tag className={className} {...rest}>
 				{children}
 			</Tag>
 		);
@@ -31,7 +31,7 @@ export default function ScaleIn({
 	const MotionTag = motion[as];
 	return (
 		<MotionTag
-			class={className}
+			className={className}
 			initial={{ opacity: 0, scale }}
 			whileInView={{ opacity: 1, scale: 1 }}
 			viewport={{ once: true, margin: "-40px" }}

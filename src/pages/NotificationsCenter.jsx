@@ -117,7 +117,7 @@ function Badge({ children, tone = "slate" }) {
 	};
 	return (
 		<span
-			class={cn(
+			className={cn(
 				"inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1",
 				tones[tone] || tones.slate,
 			)}
@@ -138,7 +138,7 @@ function ActionButton({ children, variant = "primary", onClick }) {
 	return (
 		<button
 			onClick={onClick}
-			class={cn(
+			className={cn(
 				"inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-200 active:scale-[0.98]",
 				styles[variant],
 			)}
@@ -404,11 +404,11 @@ export default function NotificationsCenter() {
 	}
 
 	return (
-		<div class={cn("min-h-screen transition-colors duration-500", pageBg)}>
+		<div className={cn("min-h-screen transition-colors duration-500", pageBg)}>
 			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 				<div className="absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-500/20 via-cyan-400/10 to-transparent blur-3xl" />
 
-				<div class={cn("overflow-hidden rounded-[28px] border p-5 sm:p-6 lg:p-8", cardBg)}>
+				<div className={cn("overflow-hidden rounded-[28px] border p-5 sm:p-6 lg:p-8", cardBg)}>
 					<div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
 						<div className="flex-1">
 							<div className="flex flex-wrap items-center gap-3">
@@ -417,13 +417,13 @@ export default function NotificationsCenter() {
 								</div>
 								<div>
 									<h1 className="text-3xl font-black tracking-tight sm:text-4xl">Notifications</h1>
-									<p class={cn("mt-1 text-sm sm:text-base", subtleText)}>
+									<p className={cn("mt-1 text-sm sm:text-base", subtleText)}>
 										Smart search matches, system alerts, and your viewed history.
 									</p>
 								</div>
 								<div className="flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-200">
 									<span
-										class={cn(
+										className={cn(
 											"h-2 w-2 rounded-full",
 											livePulse ? "animate-pulse bg-emerald-400" : "bg-sky-400",
 										)}
@@ -434,7 +434,7 @@ export default function NotificationsCenter() {
 
 							<div className="mt-5 flex flex-wrap items-center gap-3">
 								<label
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium",
 										softBg,
 										theme === "dark" ? "border-white/10" : "border-sky-100",
@@ -455,7 +455,7 @@ export default function NotificationsCenter() {
 								<div className="ml-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1 shadow-lg shadow-black/10">
 									<button
 										onClick={() => setTheme("dark")}
-										class={cn(
+										className={cn(
 											"rounded-xl px-4 py-2 text-sm font-semibold transition",
 											theme === "dark"
 												? "bg-sky-500 text-white"
@@ -466,7 +466,7 @@ export default function NotificationsCenter() {
 									</button>
 									<button
 										onClick={() => setTheme("light")}
-										class={cn(
+										className={cn(
 											"rounded-xl px-4 py-2 text-sm font-semibold transition",
 											theme === "light"
 												? "bg-sky-500 text-white"
@@ -488,7 +488,7 @@ export default function NotificationsCenter() {
 											type="button"
 											onClick={() => setTab(item.key)}
 											whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-											class={cn(
+											className={cn(
 												"inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200",
 												active
 													? "border-sky-400/40 bg-sky-500 text-white shadow-lg shadow-sky-500/20"
@@ -506,7 +506,7 @@ export default function NotificationsCenter() {
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"w-full max-w-sm rounded-3xl border p-5",
 								softBg,
 								theme === "dark" ? "border-white/10" : "border-sky-100",
@@ -515,7 +515,7 @@ export default function NotificationsCenter() {
 							<div className="flex items-center justify-between">
 								<div>
 									<div className="text-sm font-semibold text-sky-300">Real-time feed</div>
-									<div class={cn("mt-1 text-xs", subtleText)}>
+									<div className={cn("mt-1 text-xs", subtleText)}>
 										WebSocket updates appear instantly at the top.
 									</div>
 								</div>
@@ -534,17 +534,17 @@ export default function NotificationsCenter() {
 					<div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
 						<div className="space-y-6">
 							<ScrollReveal as="section">
-								<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+								<section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
 									<div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 										<div>
 											<h2 className="text-xl font-bold">Notifications feed</h2>
-											<p class={cn("mt-1 text-sm", subtleText)}>
+											<p className={cn("mt-1 text-sm", subtleText)}>
 												{tab === "viewed"
 													? "Showing viewed products history from Quick View."
 													: "All notification types except Viewed Products are grouped here."}
 											</p>
 										</div>
-										<div class={cn("rounded-2xl px-4 py-2 text-sm", softBg, subtleText)}>
+										<div className={cn("rounded-2xl px-4 py-2 text-sm", softBg, subtleText)}>
 											Showing {filteredItems.length} item
 											{filteredItems.length === 1 ? "" : "s"}
 										</div>
@@ -601,14 +601,14 @@ export default function NotificationsCenter() {
 							<AnimatePresence mode="wait">
 								{tab === "viewed" && (
 									<ScrollReveal as="section">
-										<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+										<section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
 											<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 												<div>
 													<div className="flex items-center gap-3">
 														<h2 className="text-xl font-bold">Viewed Products</h2>
 														<Badge tone="sky">Private to you</Badge>
 													</div>
-													<p class={cn("mt-1 text-sm", subtleText)}>
+													<p className={cn("mt-1 text-sm", subtleText)}>
 														Recorded on Quick View. This history helps you revisit products quickly.
 													</p>
 												</div>
@@ -670,11 +670,11 @@ export default function NotificationsCenter() {
 
 						<aside className="space-y-6">
 							<ScrollReveal as="section">
-								<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+								<section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
 									<div className="flex items-start justify-between gap-3">
 										<div>
 											<h3 className="text-lg font-bold">Saved Search Alerts</h3>
-											<p class={cn("mt-1 text-sm", subtleText)}>
+											<p className={cn("mt-1 text-sm", subtleText)}>
 												These power smart notifications for new matching posts.
 											</p>
 										</div>
@@ -700,7 +700,7 @@ export default function NotificationsCenter() {
 											alerts.map((alert) => (
 												<div
 													key={alert.id}
-													class={cn(
+													className={cn(
 														"flex items-center justify-between gap-4 rounded-2xl border p-4",
 														theme === "dark"
 															? "border-white/10 bg-white/5"
@@ -711,7 +711,7 @@ export default function NotificationsCenter() {
 														<div className="font-semibold text-slate-100 dark:text-slate-900">
 															{alert.query}
 														</div>
-														<div class={cn("mt-1 text-xs", subtleText)}>
+														<div className={cn("mt-1 text-xs", subtleText)}>
 															Updated{" "}
 															{new Date(alert.updated_at || alert.created_at).toLocaleDateString()}
 														</div>
@@ -731,7 +731,7 @@ export default function NotificationsCenter() {
 							</ScrollReveal>
 
 							<ScrollReveal as="section">
-								<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+								<section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
 									<h3 className="text-lg font-bold">Tips</h3>
 									<div className="mt-4 space-y-3 text-sm leading-6">
 										<TipItem
@@ -751,7 +751,7 @@ export default function NotificationsCenter() {
 							</ScrollReveal>
 
 							<ScrollReveal as="section">
-								<section class={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+								<section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
 									<h3 className="text-lg font-bold">API endpoints</h3>
 									<div className="mt-4 space-y-3 text-sm">
 										<ApiChip method="GET" path="/notifications" />
@@ -769,7 +769,7 @@ export default function NotificationsCenter() {
 			{quickViewItem && (
 				<div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center">
 					<div
-						class={cn(
+						className={cn(
 							"w-full max-w-2xl rounded-[28px] border p-5 shadow-2xl",
 							theme === "dark" ? "border-white/10 bg-[#0b1324]" : "border-sky-100 bg-white",
 						)}
@@ -777,7 +777,7 @@ export default function NotificationsCenter() {
 						<div className="flex items-start justify-between gap-4">
 							<div>
 								<h3 className="text-2xl font-black">Quick View</h3>
-								<p class={cn("mt-1 text-sm", subtleText)}>Full product details preview.</p>
+								<p className={cn("mt-1 text-sm", subtleText)}>Full product details preview.</p>
 							</div>
 							<button
 								onClick={() => setQuickViewItem(null)}
@@ -788,7 +788,7 @@ export default function NotificationsCenter() {
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"mt-5 grid gap-4 rounded-3xl border p-5 sm:grid-cols-[1.6fr_1fr]",
 								theme === "dark" ? "border-white/10 bg-white/5" : "border-sky-100 bg-sky-50/50",
 							)}
@@ -801,7 +801,7 @@ export default function NotificationsCenter() {
 								<h4 className="mt-3 text-xl font-bold">
 									{quickViewItem.product?.title || quickViewItem.title || "Product"}
 								</h4>
-								<p class={cn("mt-2 text-sm leading-6", mutedText)}>
+								<p className={cn("mt-2 text-sm leading-6", mutedText)}>
 									{quickViewItem.product?.description || quickViewItem.description || "--"}
 								</p>
 								<div className="mt-4 flex gap-3">
@@ -825,7 +825,7 @@ export default function NotificationsCenter() {
 								</div>
 							</div>
 							<div
-								class={cn(
+								className={cn(
 									"rounded-3xl border p-4",
 									theme === "dark" ? "border-white/10 bg-black/20" : "border-sky-100 bg-white",
 								)}
@@ -887,7 +887,7 @@ function TipItem({ tone, text }) {
 	};
 	return (
 		<div className="flex gap-3">
-			<span class={cn("mt-2 h-2.5 w-2.5 rounded-full shrink-0", dot[tone] || dot.sky)} />
+			<span className={cn("mt-2 h-2.5 w-2.5 rounded-full shrink-0", dot[tone] || dot.sky)} />
 			<p className="text-slate-300 dark:text-slate-700">{text}</p>
 		</div>
 	);
@@ -907,7 +907,7 @@ function ApiChip({ method, path }) {
 function EmptyState({ title, description, compact = false }) {
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"rounded-3xl border border-dashed border-white/10 bg-white/5 text-center",
 				compact ? "p-5" : "p-8",
 			)}
@@ -929,7 +929,7 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 	return (
 		<motion.div
 			layout={true}
-			class={cn(
+			className={cn(
 				"group rounded-3xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl",
 				borderClass,
 				item.read ? "" : "ring-1 ring-sky-400/20",
@@ -950,7 +950,7 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 						{item.message || item.title || "Notification"}
 					</h3>
 					<p
-						class={cn(
+						className={cn(
 							"mt-2 text-sm leading-6",
 							theme === "dark" ? "text-slate-300" : "text-slate-700",
 						)}
@@ -958,7 +958,7 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 						{item.message}
 					</p>
 					<div
-						class={cn(
+						className={cn(
 							"mt-3 flex flex-wrap items-center gap-2 text-xs",
 							theme === "dark" ? "text-slate-400" : "text-slate-600",
 						)}
@@ -1016,7 +1016,7 @@ function ViewedCard({ product, theme, onQuickView }) {
 	return (
 		<motion.div
 			layout={true}
-			class={cn(
+			className={cn(
 				"rounded-3xl border p-4",
 				theme === "dark" ? "border-white/10 bg-white/5" : "border-sky-100 bg-white/85",
 			)}
@@ -1030,7 +1030,7 @@ function ViewedCard({ product, theme, onQuickView }) {
 					<h3 className="mt-3 text-lg font-bold">
 						{product.product?.title || product.title || "Product"}
 					</h3>
-					<div class={cn("mt-1 text-sm", theme === "dark" ? "text-slate-300" : "text-slate-700")}>
+					<div className={cn("mt-1 text-sm", theme === "dark" ? "text-slate-300" : "text-slate-700")}>
 						{product.author?.name || product.company || "--"} · Viewed{" "}
 						{new Date(product.viewed_at).toLocaleDateString()}
 					</div>

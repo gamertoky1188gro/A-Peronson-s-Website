@@ -153,12 +153,12 @@ const Skeleton = ({ className = "", size }) => (
 function MotionItem({ className = "", children }) {
 	const reduceMotion = useReducedMotion();
 	if (reduceMotion) {
-		return <div class={className}>{children}</div>;
+		return <div className={className}>{children}</div>;
 	}
 
 	return (
 		<motion.div
-			class={className}
+			className={className}
 			initial={{ opacity: 0, y: 20 }}
 			whileInView={{ opacity: 1, y: 0 }}
 			viewport={{ once: true, margin: "-60px" }}
@@ -194,7 +194,7 @@ const staggerItem = {
 function VerifiedBadge({ label = "Verified" }) {
 	return (
 		<span
-			class={[
+			className={[
 				"inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold",
 				"border-emerald-500/30 bg-emerald-500/10 text-emerald-700",
 				"dark:text-emerald-300",

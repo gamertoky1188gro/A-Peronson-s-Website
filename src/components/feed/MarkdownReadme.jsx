@@ -84,13 +84,13 @@ export default function MarkdownReadme({ content = "" }) {
 					code({ inline, className, children, ...props }) {
 						if (inline) {
 							return (
-								<code class={className} {...props}>
+								<code className={className} {...props}>
 									{children}
 								</code>
 							);
 						}
 						return (
-							<CodeBlock class={className} {...props}>
+							<CodeBlock className={className} {...props}>
 								{children}
 							</CodeBlock>
 						);

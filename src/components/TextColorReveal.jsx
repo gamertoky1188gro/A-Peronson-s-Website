@@ -20,12 +20,12 @@ export default function TextColorReveal({
 
 	if (reduceMotion) {
 		const Tag = as;
-		return <Tag class={className}>{children}</Tag>;
+		return <Tag className={className}>{children}</Tag>;
 	}
 
 	const MotionTag = motion[as];
 	return (
-		<MotionTag ref={ref} class={className} style={{ color }}>
+		<MotionTag ref={ref} className={className} style={{ color }}>
 			{children}
 		</MotionTag>
 	);

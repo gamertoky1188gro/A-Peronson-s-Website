@@ -1408,7 +1408,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 										<table className="min-w-full text-[12px] text-slate-100 shadow-borderless dark:shadow-borderlessDark">
 											<tbody>
 												{(spreadsheetState.rows || []).map((row, rowIndex) => (
-													<tr key={rowIndex} class={rowIndex === 0 ? "bg-white/5" : ""}>
+													<tr key={rowIndex} className={rowIndex === 0 ? "bg-white/5" : ""}>
 														{(row || []).map((cell, cellIndex) => (
 															<td
 																key={cellIndex}

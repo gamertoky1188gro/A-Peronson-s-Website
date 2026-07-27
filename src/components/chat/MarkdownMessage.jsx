@@ -90,7 +90,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<blockquote
 								{...props}
-								class={[
+								className={[
 									"my-1 pl-3",
 									"shadow-[inset_3px_0_0_rgba(148,163,184,0.75)] dark:shadow-[inset_3px_0_0_rgba(255,255,255,0.12)]",
 									"opacity-95",
@@ -105,7 +105,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<pre
 								{...props}
-								class={[
+								className={[
 									"my-1 overflow-x-auto rounded-xl bg-[#0b1020] p-3 text-slate-100",
 									"dark:bg-black/35",
 									className,
@@ -120,7 +120,7 @@ function MarkdownMessage({ text = "" }) {
 							return (
 								<code
 									{...props}
-									class={[
+									className={[
 										"rounded bg-slate-900/5 px-1 py-0.5 font-mono text-[0.92em]",
 										"dark:bg-black/35",
 										className,
@@ -131,7 +131,7 @@ function MarkdownMessage({ text = "" }) {
 							);
 						}
 						return (
-							<CodeBlock class={className} {...props}>
+							<CodeBlock className={className} {...props}>
 								{children}
 							</CodeBlock>
 						);
@@ -148,7 +148,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<th
 								{...props}
-								class={[
+								className={[
 									"bg-slate-900/5 font-bold",
 									"shadow-[inset_0_0_0_1px_rgba(148,163,184,0.35)] dark:bg-white/5 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
 									"px-2 py-1 text-left align-top",
@@ -163,7 +163,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<td
 								{...props}
-								class={[
+								className={[
 									"shadow-[inset_0_0_0_1px_rgba(148,163,184,0.35)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
 									"px-2 py-1 align-top",
 									className,

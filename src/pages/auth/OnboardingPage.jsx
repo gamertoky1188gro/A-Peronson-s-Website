@@ -160,7 +160,7 @@ export default function OnboardingPage() {
 	}
 
 	return (
-		<div class={isDark ? "dark" : ""}>
+		<div className={isDark ? "dark" : ""}>
 			<div className="min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#07111f] dark:text-white">
 				<div className="pointer-events-none absolute inset-0 overflow-hidden">
 					<div className="absolute left-[-10rem] top-[-10rem] h-[28rem] w-[28rem] rounded-full bg-sky-400/25 blur-3xl dark:bg-sky-500/20" />

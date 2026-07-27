@@ -19,7 +19,7 @@ function cx(...classes) {
 function SectionCard({ title, subtitle, children, className = "" }) {
 	return (
 		<section
-			class={cx(
+			className={cx(
 				"rounded-3xl border border-sky-200/60 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.45)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/75",
 				className,
 			)}
@@ -53,13 +53,13 @@ function _TogglePref({ label, description, checked, onChange }) {
 			<button
 				type="button"
 				onClick={onChange}
-				class={cx(
+				className={cx(
 					"relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
 					checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-600",
 				)}
 			>
 				<span
-					class={cx(
+					className={cx(
 						"inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
 						checked ? "translate-x-6" : "translate-x-1",
 					)}
@@ -73,7 +73,7 @@ function Input(props) {
 	return (
 		<input
 			{...props}
-			class={cx(
+			className={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -85,7 +85,7 @@ function Textarea(props) {
 	return (
 		<textarea
 			{...props}
-			class={cx(
+			className={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -97,7 +97,7 @@ function Select({ children, ...props }) {
 	return (
 		<select
 			{...props}
-			class={cx(
+			className={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -119,13 +119,13 @@ function Toggle({ checked, onChange, label, hint }) {
 				{hint ? <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
 			</div>
 			<div
-				class={cx(
+				className={cx(
 					"relative h-7 w-12 rounded-full transition",
 					checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-700",
 				)}
 			>
 				<div
-					class={cx(
+					className={cx(
 						"absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform",
 						checked ? "translate-x-5" : "translate-x-0.5",
 					)}
@@ -146,7 +146,7 @@ function Badge({ children, tone = "slate" }) {
 	};
 	return (
 		<span
-			class={cx(
+			className={cx(
 				"inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
 				tones[tone] || tones.slate,
 			)}
@@ -160,7 +160,7 @@ function PrimaryButton({ children, className = "", ...props }) {
 	return (
 		<button
 			{...props}
-			class={cx(
+			className={cx(
 				"inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60",
 				className,
 			)}
@@ -174,7 +174,7 @@ function SecondaryButton({ children, className = "", ...props }) {
 	return (
 		<button
 			{...props}
-			class={cx(
+			className={cx(
 				"inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800",
 				className,
 			)}
@@ -187,7 +187,7 @@ function SecondaryButton({ children, className = "", ...props }) {
 function Icon({ children, className = "" }) {
 	return (
 		<div
-			class={cx(
+			className={cx(
 				"flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/20",
 				className,
 			)}
@@ -1418,7 +1418,7 @@ export default function OrgSettings({ embedded = false }) {
 								}
 								goSettingsTab(tabItem.id);
 							}}
-							class={cx(
+							className={cx(
 								"rounded-2xl px-4 py-3 text-sm font-semibold transition",
 								activeTab === tabItem.id
 									? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25"
@@ -1906,7 +1906,7 @@ export default function OrgSettings({ embedded = false }) {
 								<div className="mt-3 grid grid-cols-3 gap-3">
 									<button
 										onClick={() => setTheme("light")}
-										class={cx(
+										className={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
 											theme === "light"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
@@ -1918,7 +1918,7 @@ export default function OrgSettings({ embedded = false }) {
 									</button>
 									<button
 										onClick={() => setTheme("dark")}
-										class={cx(
+										className={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
 											theme === "dark"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
@@ -1933,7 +1933,7 @@ export default function OrgSettings({ embedded = false }) {
 											const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 											setTheme(prefersDark ? "dark" : "light");
 										}}
-										class={cx(
+										className={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
 											theme ===
 												(window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -2587,7 +2587,7 @@ export default function OrgSettings({ embedded = false }) {
 												</p>
 											</div>
 											<span
-												class={cx(
+												className={cx(
 													"rounded-full px-3 py-1 text-xs font-medium",
 													b.status === "active"
 														? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
@@ -2707,7 +2707,7 @@ export default function OrgSettings({ embedded = false }) {
 
 	return (
 		<div
-			class={cx(
+			className={cx(
 				bodyTheme,
 				"min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#07111f] dark:text-white",
 			)}

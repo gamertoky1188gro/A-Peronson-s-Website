@@ -87,7 +87,7 @@ export function NavDropdown({
 				onClick={isTouchDevice ? handleToggle : handleTriggerEnter}
 				onMouseEnter={isTouchDevice ? undefined : handleTriggerEnter}
 				onMouseLeave={isTouchDevice ? undefined : handleTriggerLeave}
-				class={cn(
+				className={cn(
 					"group inline-flex items-center gap-2 rounded-full px-1.5 xl:px-3 py-2 text-[0.65rem] xl:text-sm font-medium whitespace-nowrap transition",
 					show
 						? "text-sky-700 bg-sky-500/10 ring-1 ring-sky-400/25 dark:text-sky-300"
@@ -98,7 +98,7 @@ export function NavDropdown({
 					{IconComponent && <IconComponent className="h-4 w-4" />}
 					<span className="hidden lg:inline">{group.label}</span>
 				</span>
-				<ChevronDown class={cn("h-4 w-4 transition-transform", show ? "rotate-180" : "")} />
+				<ChevronDown className={cn("h-4 w-4 transition-transform", show ? "rotate-180" : "")} />
 			</button>
 
 			{show && !isTouchDevice && <div className="absolute left-0 right-0 top-full h-4 z-40" />}
@@ -107,7 +107,7 @@ export function NavDropdown({
 				ref={dropdownRef}
 				onMouseEnter={isTouchDevice ? undefined : handleDropdownEnter}
 				onMouseLeave={isTouchDevice ? undefined : handleDropdownLeave}
-				class={cn(
+				className={cn(
 					"absolute left-0 top-full z-50 mt-2 min-w-72 overflow-hidden rounded-3xl border border-white/10 bg-white/80 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:bg-slate-950/85",
 					"transition-opacity duration-150",
 					isTouchDevice
@@ -142,7 +142,7 @@ export function NavDropdown({
 								key={item.to}
 								to={item.to}
 								onClick={() => onToggle(null)}
-								class={cn(
+								className={cn(
 									"group/item flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
 									isActive
 										? "bg-sky-500/10 text-sky-700 ring-1 ring-sky-400/25 dark:text-sky-300"

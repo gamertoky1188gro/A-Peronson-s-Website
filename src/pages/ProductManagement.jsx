@@ -617,7 +617,7 @@ export default function ProductManagement() {
 	}
 
 	return (
-		<div class={isDark ? "dark" : ""}>
+		<div className={isDark ? "dark" : ""}>
 			<div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
 				<div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 dark:bg-none dark:from-transparent dark:via-transparent dark:to-transparent">
 					<div className="hidden dark:block absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_36%),radial_gradient(circle_at_top_right,_rgba(96,165,250,0.16),_transparent_28%),linear-gradient(180deg,_rgba(2,6,23,1)_0%,_rgba(3,7,18,1)_100%)]" />
@@ -846,7 +846,7 @@ export default function ProductManagement() {
 											<input
 												value={form.title}
 												onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-												class={inputCls}
+												className={inputCls}
 												placeholder="Untitled Draft"
 												required={true}
 											/>
@@ -857,7 +857,7 @@ export default function ProductManagement() {
 												<input
 													value={form.industry}
 													onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
-													class={inputCls}
+													className={inputCls}
 													placeholder="Garments, Home Textiles..."
 													required={true}
 												/>
@@ -866,7 +866,7 @@ export default function ProductManagement() {
 												<input
 													value={form.category}
 													onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-													class={inputCls}
+													className={inputCls}
 													placeholder="Shirts"
 													required={true}
 												/>
@@ -875,7 +875,7 @@ export default function ProductManagement() {
 												<input
 													value={form.material}
 													onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))}
-													class={inputCls}
+													className={inputCls}
 													placeholder="Cotton"
 													required={true}
 												/>
@@ -884,7 +884,7 @@ export default function ProductManagement() {
 												<input
 													value={form.moq}
 													onChange={(e) => setForm((f) => ({ ...f, moq: e.target.value }))}
-													class={inputCls}
+													className={inputCls}
 													placeholder="1000"
 												/>
 											</Field>
@@ -897,7 +897,7 @@ export default function ProductManagement() {
 															price_range: e.target.value,
 														}))
 													}
-													class={inputCls}
+													className={inputCls}
 													placeholder="$4.50 - $7.20"
 													required={true}
 												/>
@@ -911,7 +911,7 @@ export default function ProductManagement() {
 															lead_time_days: e.target.value,
 														}))
 													}
-													class={inputCls}
+													className={inputCls}
 													placeholder="45"
 													required={true}
 												/>
@@ -928,7 +928,7 @@ export default function ProductManagement() {
 											value={form.description}
 											onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
 											rows={5}
-											class={inputCls}
+											className={inputCls}
 											placeholder="Add your product description here..."
 											required={true}
 										/>
@@ -960,7 +960,7 @@ export default function ProductManagement() {
 																fabric_gsm: e.target.value,
 															}))
 														}
-														class={inputCls}
+														className={inputCls}
 														placeholder="180"
 													/>
 												</Field>
@@ -973,7 +973,7 @@ export default function ProductManagement() {
 																size_range: e.target.value,
 															}))
 														}
-														class={inputCls}
+														className={inputCls}
 														placeholder="S-XXL"
 													/>
 												</Field>

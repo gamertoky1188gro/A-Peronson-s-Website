@@ -156,7 +156,7 @@ function Input(props) {
 	return (
 		<input
 			{...props}
-			class={cn(
+			className={cn(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition",
 				"placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950/60",
 				props.className,
@@ -174,7 +174,7 @@ function Textarea(props) {
 	return (
 		<textarea
 			{...props}
-			class={cn(
+			className={cn(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition",
 				"placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-sky-400 dark:focus:ring-sky-950/60",
 				props.className,
@@ -204,7 +204,7 @@ function Button({ children, variant = "primary", className = "", ...props }) {
 	return (
 		<button
 			{...props}
-			class={cn(
+			className={cn(
 				"inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
 				styles[variant],
 				className,
@@ -410,7 +410,7 @@ export default function AdminGovernance() {
 	}
 
 	return (
-		<div class={cn("min-h-screen transition-colors", shellClass)}>
+		<div className={cn("min-h-screen transition-colors", shellClass)}>
 			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 				<div className="mb-6 flex flex-col gap-4 rounded-3xl border border-sky-200/70 bg-white/80 p-5 shadow-[0_20px_60px_-25px_rgba(14,116,144,0.45)] backdrop-blur dark:border-white/10 dark:bg-slate-950/40 lg:flex-row lg:items-center lg:justify-between">
 					<div className="flex items-start gap-4">
@@ -450,7 +450,7 @@ export default function AdminGovernance() {
 
 				{status ? (
 					<div
-						class={cn(
+						className={cn(
 							"mb-6 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm",
 							statusTone(status) === "success" &&
 								"border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300",

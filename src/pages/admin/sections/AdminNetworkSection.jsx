@@ -118,26 +118,26 @@ export function AdminNetworkSection({
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"relative overflow-hidden rounded-[32px] border p-4 sm:p-5",
 				adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 			)}
 		>
 			<div className="absolute inset-0 -z-10 overflow-hidden">
 				<div
-					class={cn(
+					className={cn(
 						"absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full blur-3xl",
 						adminDark ? "bg-sky-500/20" : "bg-sky-400/20",
 					)}
 				/>
 				<div
-					class={cn(
+					className={cn(
 						"absolute top-40 -left-20 h-72 w-72 rounded-full blur-3xl",
 						adminDark ? "bg-blue-500/15" : "bg-blue-300/25",
 					)}
 				/>
 				<div
-					class={cn(
+					className={cn(
 						"absolute bottom-0 right-0 h-96 w-96 rounded-full blur-3xl",
 						adminDark ? "bg-cyan-500/10" : "bg-cyan-300/20",
 					)}
@@ -146,7 +146,7 @@ export function AdminNetworkSection({
 
 			<div className="mx-auto max-w-[1600px] space-y-6">
 				<section
-					class={cn(
+					className={cn(
 						"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
@@ -158,11 +158,11 @@ export function AdminNetworkSection({
 							</div>
 							<div>
 								<h1
-									class={cn("text-2xl font-semibold", adminDark ? "text-white" : "text-slate-900")}
+									className={cn("text-2xl font-semibold", adminDark ? "text-white" : "text-slate-900")}
 								>
 									Network Control
 								</h1>
-								<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+								<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 									Enterprise monitoring, configuration, security, and audit
 								</p>
 							</div>
@@ -171,7 +171,7 @@ export function AdminNetworkSection({
 						<button
 							type="button"
 							onClick={() => toggleTheme}
-							class={cn(
+							className={cn(
 								"inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm",
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 							)}
@@ -194,7 +194,7 @@ export function AdminNetworkSection({
 								key={id}
 								type="button"
 								onClick={() => setNetworkNav(id)}
-								class={cn(
+								className={cn(
 									"flex items-center justify-between rounded-2xl px-4 py-3 text-sm transition",
 									networkNav === id
 										? "bg-sky-500 text-white"
@@ -216,7 +216,7 @@ export function AdminNetworkSection({
 						{["SLA 99.98%", "Security Green", "Latency Stable", "Infra Healthy"].map((item) => (
 							<div
 								key={item}
-								class={cn(
+								className={cn(
 									"rounded-2xl p-4 text-sm",
 									adminDark ? "bg-white/5 text-slate-200" : "bg-slate-100 text-slate-800",
 								)}
@@ -228,7 +228,7 @@ export function AdminNetworkSection({
 				</section>
 
 				<section
-					class={cn(
+					className={cn(
 						"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
@@ -239,7 +239,7 @@ export function AdminNetworkSection({
 								<span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.9)]" />
 								Network Monitoring & Management
 								<span
-									class={cn(
+									className={cn(
 										"rounded-full px-2 py-0.5",
 										adminDark ? "bg-white/10 text-slate-200" : "bg-slate-100 text-slate-700",
 									)}
@@ -248,7 +248,7 @@ export function AdminNetworkSection({
 								</span>
 							</div>
 							<h2
-								class={cn(
+								className={cn(
 									"mt-4 text-3xl font-semibold tracking-tight sm:text-4xl",
 									adminDark ? "text-white" : "text-slate-900",
 								)}
@@ -256,7 +256,7 @@ export function AdminNetworkSection({
 								Network Overview
 							</h2>
 							<p
-								class={cn(
+								className={cn(
 									"mt-3 max-w-2xl text-sm leading-7 sm:text-base",
 									adminDark ? "text-slate-300" : "text-slate-600",
 								)}
@@ -270,7 +270,7 @@ export function AdminNetworkSection({
 							<button
 								type="button"
 								onClick={toggleTheme}
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition-all",
 									adminDark
 										? "border-white/10 bg-white/5 hover:bg-white/10"
@@ -375,7 +375,7 @@ export function AdminNetworkSection({
 							return (
 								<div
 									key={card.label}
-									class={cn(
+									className={cn(
 										"group rounded-[24px] border p-5 transition-all hover:-translate-y-0.5",
 										adminDark
 											? "border-white/10 bg-slate-900/50 hover:bg-slate-900/70"
@@ -384,12 +384,12 @@ export function AdminNetworkSection({
 								>
 									<div className="flex items-start justify-between gap-4">
 										<div>
-											<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+											<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 												{card.label}
 											</p>
 											<div className="mt-2 flex items-end gap-2">
 												<h3
-													class={cn(
+													className={cn(
 														"text-3xl font-semibold tracking-tight",
 														adminDark ? "text-white" : "text-slate-900",
 													)}
@@ -398,7 +398,7 @@ export function AdminNetworkSection({
 												</h3>
 											</div>
 											<p
-												class={cn("mt-2 text-sm", adminDark ? "text-slate-300" : "text-slate-600")}
+												className={cn("mt-2 text-sm", adminDark ? "text-slate-300" : "text-slate-600")}
 											>
 												{card.sub}
 											</p>
@@ -414,7 +414,7 @@ export function AdminNetworkSection({
 
 					<div className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
 						<div
-							class={cn(
+							className={cn(
 								"rounded-[28px] border p-5",
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
@@ -423,7 +423,7 @@ export function AdminNetworkSection({
 								<div>
 									<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Device Inventory</p>
 									<h3
-										class={cn(
+										className={cn(
 											"mt-1 text-xl font-semibold",
 											adminDark ? "text-white" : "text-slate-900",
 										)}
@@ -435,7 +435,7 @@ export function AdminNetworkSection({
 									<button
 										type="button"
 										onClick={() => refreshNetworkInventory()}
-										class={cn(
+										className={cn(
 											"inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium",
 											adminDark
 												? "bg-white/5 hover:bg-white/10"
@@ -446,7 +446,7 @@ export function AdminNetworkSection({
 										Refresh
 									</button>
 									<div
-										class={cn(
+										className={cn(
 											"flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm",
 											adminDark
 												? "bg-emerald-500/10 text-emerald-300"
@@ -462,7 +462,7 @@ export function AdminNetworkSection({
 							<div className="mt-4">
 								<div className="relative">
 									<Search
-										class={cn(
+										className={cn(
 											"pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2",
 											adminDark ? "text-slate-500" : "text-slate-400",
 										)}
@@ -471,7 +471,7 @@ export function AdminNetworkSection({
 										value={networkQuery}
 										onChange={(event) => setNetworkQuery(event.target.value)}
 										placeholder="Search devices..."
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border py-3 pl-11 pr-4 text-sm outline-none transition-all",
 											adminDark
 												? "border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/60"
@@ -488,7 +488,7 @@ export function AdminNetworkSection({
 									return (
 										<div
 											key={device.id}
-											class={cn(
+											className={cn(
 												"flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between",
 												adminDark
 													? "border-white/10 bg-white/[0.03]"
@@ -497,7 +497,7 @@ export function AdminNetworkSection({
 										>
 											<div className="flex items-center gap-3">
 												<div
-													class={cn(
+													className={cn(
 														"flex h-11 w-11 items-center justify-center rounded-2xl",
 														adminDark ? "bg-sky-500/15 text-sky-400" : "bg-sky-100 text-sky-600",
 													)}
@@ -505,12 +505,12 @@ export function AdminNetworkSection({
 													<HardDrive className="h-5 w-5" />
 												</div>
 												<div>
-													<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+													<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 														{device.name || device.id}
 													</p>
 													<div className="mt-1 flex items-center gap-2 text-sm">
 														<span
-															class={cn(
+															className={cn(
 																"inline-flex items-center gap-1 rounded-full px-2.5 py-1",
 																isUp
 																	? "bg-emerald-500/10 text-emerald-400"
@@ -520,14 +520,14 @@ export function AdminNetworkSection({
 															)}
 														>
 															<span
-																class={cn(
+																className={cn(
 																	"h-1.5 w-1.5 rounded-full",
 																	isUp ? "bg-emerald-400" : "bg-rose-500",
 																)}
 															/>
 															{device.status || "unknown"}
 														</span>
-														<span class={adminDark ? "text-slate-400" : "text-slate-500"}>
+														<span className={adminDark ? "text-slate-400" : "text-slate-500"}>
 															Stable link
 														</span>
 													</div>
@@ -540,7 +540,7 @@ export function AdminNetworkSection({
 														device_id: device.id,
 													})
 												}
-												class={cn(
+												className={cn(
 													"inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition-all",
 													adminDark
 														? "border-white/10 bg-white/5 hover:bg-white/10"
@@ -555,7 +555,7 @@ export function AdminNetworkSection({
 								})}
 								{filteredNetworkDevices.length === 0 ? (
 									<div
-										class={cn(
+										className={cn(
 											"rounded-2xl border border-dashed p-4 text-sm",
 											adminDark
 												? "border-white/10 text-slate-400"
@@ -569,7 +569,7 @@ export function AdminNetworkSection({
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"rounded-[28px] border p-5",
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
@@ -577,7 +577,7 @@ export function AdminNetworkSection({
 							<div>
 								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Quick Actions</p>
 								<h3
-									class={cn(
+									className={cn(
 										"mt-1 text-xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -617,7 +617,7 @@ export function AdminNetworkSection({
 									return (
 										<div
 											key={item.label}
-											class={cn(
+											className={cn(
 												"rounded-2xl border p-4",
 												adminDark
 													? "border-white/10 bg-white/[0.03]"
@@ -629,11 +629,11 @@ export function AdminNetworkSection({
 													<Icon className="h-4 w-4" />
 												</div>
 												<div className="min-w-0 flex-1">
-													<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+													<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 														{item.label}
 													</p>
 													<p
-														class={cn(
+														className={cn(
 															"mt-1 text-sm",
 															adminDark ? "text-slate-400" : "text-slate-600",
 														)}
@@ -642,7 +642,7 @@ export function AdminNetworkSection({
 													</p>
 												</div>
 												<ArrowUpRight
-													class={cn("h-4 w-4", adminDark ? "text-slate-500" : "text-slate-400")}
+													className={cn("h-4 w-4", adminDark ? "text-slate-500" : "text-slate-400")}
 												/>
 											</div>
 										</div>
@@ -655,7 +655,7 @@ export function AdminNetworkSection({
 
 				<section className="grid gap-6 xl:grid-cols-2">
 					<div
-						class={cn(
+						className={cn(
 							"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 						)}
@@ -664,7 +664,7 @@ export function AdminNetworkSection({
 							<div>
 								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">VLAN Management</p>
 								<h3
-									class={cn(
+									className={cn(
 										"mt-1 text-2xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -699,13 +699,13 @@ export function AdminNetworkSection({
 							].map(([label, value, setter]) => (
 								<div
 									key={label}
-									class={cn(
+									className={cn(
 										"rounded-2xl border p-4",
 										adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-slate-50",
 									)}
 								>
 									<p
-										class={cn(
+										className={cn(
 											"text-xs uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -715,7 +715,7 @@ export function AdminNetworkSection({
 									<input
 										value={value}
 										onChange={(event) => setter(event.target.value)}
-										class={cn(
+										className={cn(
 											"mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/60"
@@ -737,13 +737,13 @@ export function AdminNetworkSection({
 							{(networkInventory?.vlans || []).slice(0, 6).map((vlan) => (
 								<div
 									key={vlan.id}
-									class={cn(
+									className={cn(
 										"flex items-center justify-between rounded-2xl border px-4 py-3",
 										adminDark ? "border-white/10 bg-white/[0.03]" : "border-slate-200 bg-white",
 									)}
 								>
 									<div
-										class={cn("text-sm font-medium", adminDark ? "text-white" : "text-slate-900")}
+										className={cn("text-sm font-medium", adminDark ? "text-white" : "text-slate-900")}
 									>
 										VLAN {vlan.id} · {vlan.subnet}
 									</div>
@@ -754,7 +754,7 @@ export function AdminNetworkSection({
 												vlan_id: vlan.id,
 											})
 										}
-										class={cn(
+										className={cn(
 											"rounded-xl border px-3 py-1.5 text-xs font-semibold",
 											adminDark
 												? "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -767,7 +767,7 @@ export function AdminNetworkSection({
 							))}
 							{(networkInventory?.vlans || []).length === 0 ? (
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border border-dashed p-4 text-sm",
 										adminDark
 											? "border-white/10 text-slate-400"
@@ -781,7 +781,7 @@ export function AdminNetworkSection({
 					</div>
 
 					<div
-						class={cn(
+						className={cn(
 							"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 						)}
@@ -792,7 +792,7 @@ export function AdminNetworkSection({
 									IPAM + Config Backups
 								</p>
 								<h3
-									class={cn(
+									className={cn(
 										"mt-1 text-2xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -822,13 +822,13 @@ export function AdminNetworkSection({
 							].map(([label, value, setter]) => (
 								<div
 									key={label}
-									class={cn(
+									className={cn(
 										"rounded-2xl border p-4",
 										adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-slate-50",
 									)}
 								>
 									<p
-										class={cn(
+										className={cn(
 											"text-xs uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -838,7 +838,7 @@ export function AdminNetworkSection({
 									<input
 										value={value}
 										onChange={(event) => setter(event.target.value)}
-										class={cn(
+										className={cn(
 											"mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/60"
@@ -848,20 +848,20 @@ export function AdminNetworkSection({
 								</div>
 							))}
 							<div
-								class={cn(
+								className={cn(
 									"rounded-2xl border p-4",
 									adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-slate-50",
 								)}
 							>
 								<p
-									class={cn(
+									className={cn(
 										"text-xs uppercase tracking-[0.2em]",
 										adminDark ? "text-slate-400" : "text-slate-500",
 									)}
 								>
 									Backup target
 								</p>
-								<p class={cn("mt-2 font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+								<p className={cn("mt-2 font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									Encrypted vault
 								</p>
 							</div>
@@ -870,7 +870,7 @@ export function AdminNetworkSection({
 							<button
 								type="button"
 								onClick={() => runNetworkAction("ipam.reserve", ipamForm)}
-								class={cn(
+								className={cn(
 									"rounded-2xl px-4 py-3 text-sm font-semibold",
 									adminDark
 										? "bg-white/5 hover:bg-white/10 text-white"
@@ -891,20 +891,20 @@ export function AdminNetworkSection({
 							{(networkInventory?.ipam_reservations || []).slice(0, 4).map((row) => (
 								<div
 									key={row.id}
-									class={cn(
+									className={cn(
 										"flex items-center justify-between rounded-2xl border px-4 py-3",
 										adminDark ? "border-white/10 bg-white/[0.03]" : "border-slate-200 bg-white",
 									)}
 								>
 									<div
-										class={cn("text-sm font-medium", adminDark ? "text-white" : "text-slate-900")}
+										className={cn("text-sm font-medium", adminDark ? "text-white" : "text-slate-900")}
 									>
 										{row.ip} · {row.owner || "reserved"}
 									</div>
 									<button
 										type="button"
 										onClick={() => runNetworkAction("ipam.release", { ip: row.ip })}
-										class={cn(
+										className={cn(
 											"rounded-xl border px-3 py-1.5 text-xs font-semibold",
 											adminDark
 												? "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -918,7 +918,7 @@ export function AdminNetworkSection({
 							{(networkInventory?.config_backups || []).slice(0, 3).map((row) => (
 								<div
 									key={row.id}
-									class={cn(
+									className={cn(
 										"rounded-2xl border px-4 py-3 text-sm",
 										adminDark
 											? "border-white/10 bg-white/[0.03] text-slate-300"
@@ -931,7 +931,7 @@ export function AdminNetworkSection({
 							{(networkInventory?.ipam_reservations || []).length === 0 &&
 							(networkInventory?.config_backups || []).length === 0 ? (
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border border-dashed p-4 text-sm",
 										adminDark
 											? "border-white/10 text-slate-400"
@@ -946,7 +946,7 @@ export function AdminNetworkSection({
 				</section>
 
 				<section
-					class={cn(
+					className={cn(
 						"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
@@ -955,7 +955,7 @@ export function AdminNetworkSection({
 						<div>
 							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Operational Surfaces</p>
 							<h3
-								class={cn(
+								className={cn(
 									"mt-1 text-2xl font-semibold",
 									adminDark ? "text-white" : "text-slate-900",
 								)}
@@ -966,7 +966,7 @@ export function AdminNetworkSection({
 						<button
 							type="button"
 							onClick={() => refreshNetworkInventory()}
-							class={cn(
+							className={cn(
 								"inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium",
 								adminDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200",
 							)}
@@ -977,17 +977,17 @@ export function AdminNetworkSection({
 					</div>
 					<div className="mt-5 grid gap-4 md:grid-cols-3">
 						<div
-							class={cn(
+							className={cn(
 								"rounded-[24px] border p-5",
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
 						>
 							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">IDS/IPS + Rogue AP</p>
-							<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+							<p className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 								Security monitoring feeds.
 							</p>
 							<div
-								class={cn(
+								className={cn(
 									"mt-4 space-y-2 text-sm",
 									adminDark ? "text-slate-300" : "text-slate-700",
 								)}
@@ -995,7 +995,7 @@ export function AdminNetworkSection({
 								{(networkInventory?.ids_alerts || []).slice(0, 3).map((alert) => (
 									<div
 										key={alert.id}
-										class={cn(
+										className={cn(
 											"rounded-2xl border px-4 py-3",
 											adminDark
 												? "border-white/10 bg-white/[0.03]"
@@ -1008,7 +1008,7 @@ export function AdminNetworkSection({
 								{(networkInventory?.rogue_aps || []).slice(0, 2).map((ap) => (
 									<div
 										key={ap.id}
-										class={cn(
+										className={cn(
 											"rounded-2xl border px-4 py-3",
 											adminDark
 												? "border-rose-400/20 bg-rose-500/10 text-rose-300"
@@ -1019,7 +1019,7 @@ export function AdminNetworkSection({
 									</div>
 								))}
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border px-4 py-3 text-sm",
 										adminDark
 											? "border-white/10 bg-white/[0.03] text-slate-300"
@@ -1033,7 +1033,7 @@ export function AdminNetworkSection({
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"rounded-[24px] border p-5",
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
@@ -1041,11 +1041,11 @@ export function AdminNetworkSection({
 							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">
 								NetFlow + Alert Integrations
 							</p>
-							<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+							<p className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 								Traffic analytics and alert sinks.
 							</p>
 							<div
-								class={cn(
+								className={cn(
 									"mt-4 space-y-2 text-sm",
 									adminDark ? "text-slate-300" : "text-slate-700",
 								)}
@@ -1053,7 +1053,7 @@ export function AdminNetworkSection({
 								{(networkInventory?.flow_stats || []).slice(0, 2).map((flow) => (
 									<div
 										key={flow.id}
-										class={cn(
+										className={cn(
 											"rounded-2xl border px-4 py-3",
 											adminDark
 												? "border-white/10 bg-white/[0.03]"
@@ -1066,7 +1066,7 @@ export function AdminNetworkSection({
 								{(networkInventory?.alert_integrations || []).slice(0, 2).map((integration) => (
 									<div
 										key={integration.id}
-										class={cn(
+										className={cn(
 											"rounded-2xl border px-4 py-3",
 											adminDark
 												? "border-white/10 bg-white/[0.03]"
@@ -1077,7 +1077,7 @@ export function AdminNetworkSection({
 									</div>
 								))}
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border px-4 py-3 text-sm",
 										adminDark
 											? "border-white/10 bg-white/[0.03] text-slate-300"
@@ -1088,7 +1088,7 @@ export function AdminNetworkSection({
 									{(networkInventory?.qos_policies || []).length}
 								</div>
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border px-4 py-3 text-sm",
 										adminDark
 											? "border-white/10 bg-white/[0.03] text-slate-300"
@@ -1102,7 +1102,7 @@ export function AdminNetworkSection({
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"rounded-[24px] border p-5",
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
@@ -1110,11 +1110,11 @@ export function AdminNetworkSection({
 							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">
 								Client Monitoring + Auth Servers
 							</p>
-							<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+							<p className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 								Connected clients and RADIUS/TACACS.
 							</p>
 							<div
-								class={cn(
+								className={cn(
 									"mt-4 space-y-2 text-sm",
 									adminDark ? "text-slate-300" : "text-slate-700",
 								)}
@@ -1122,7 +1122,7 @@ export function AdminNetworkSection({
 								{(networkInventory?.clients || []).slice(0, 3).map((client) => (
 									<div
 										key={client.id}
-										class={cn(
+										className={cn(
 											"rounded-2xl border px-4 py-3",
 											adminDark
 												? "border-white/10 bg-white/[0.03]"
@@ -1135,7 +1135,7 @@ export function AdminNetworkSection({
 								{(networkInventory?.auth_servers || []).slice(0, 2).map((srv) => (
 									<div
 										key={srv.id}
-										class={cn(
+										className={cn(
 											"rounded-2xl border px-4 py-3",
 											adminDark
 												? "border-white/10 bg-white/[0.03]"
@@ -1146,7 +1146,7 @@ export function AdminNetworkSection({
 									</div>
 								))}
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border px-4 py-3 text-sm",
 										adminDark
 											? "border-white/10 bg-white/[0.03] text-slate-300"
@@ -1157,7 +1157,7 @@ export function AdminNetworkSection({
 									{(networkInventory?.vpn_tunnels || []).length}
 								</div>
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border px-4 py-3 text-sm",
 										adminDark
 											? "border-white/10 bg-white/[0.03] text-slate-300"
@@ -1172,7 +1172,7 @@ export function AdminNetworkSection({
 				</section>
 
 				<section
-					class={cn(
+					className={cn(
 						"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
@@ -1181,7 +1181,7 @@ export function AdminNetworkSection({
 						<div>
 							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Network Capabilities</p>
 							<h3
-								class={cn(
+								className={cn(
 									"mt-1 text-2xl font-semibold",
 									adminDark ? "text-white" : "text-slate-900",
 								)}
@@ -1191,7 +1191,7 @@ export function AdminNetworkSection({
 						</div>
 						<div className="flex items-center gap-3">
 							<div
-								class={cn(
+								className={cn(
 									"flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium",
 									adminDark
 										? "bg-emerald-500/10 text-emerald-300"
@@ -1203,7 +1203,7 @@ export function AdminNetworkSection({
 							</div>
 							<button
 								type="button"
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium",
 									adminDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200",
 								)}
@@ -1213,7 +1213,7 @@ export function AdminNetworkSection({
 							</button>
 							<button
 								type="button"
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium",
 									adminDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200",
 								)}
@@ -1235,7 +1235,7 @@ export function AdminNetworkSection({
 								).map((section) => (
 							<div
 								key={section.title}
-								class={cn(
+								className={cn(
 									"rounded-[24px] border p-5",
 									adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 								)}
@@ -1244,7 +1244,7 @@ export function AdminNetworkSection({
 									<div>
 										<p className="text-xs uppercase tracking-[0.2em] text-sky-400">live</p>
 										<h4
-											class={cn(
+											className={cn(
 												"mt-1 text-lg font-semibold",
 												adminDark ? "text-white" : "text-slate-900",
 											)}
@@ -1253,7 +1253,7 @@ export function AdminNetworkSection({
 										</h4>
 									</div>
 									<div
-										class={cn(
+										className={cn(
 											"rounded-2xl px-3 py-1.5 text-sm font-semibold",
 											adminDark ? "bg-sky-500/10 text-sky-300" : "bg-sky-50 text-sky-700",
 										)}
@@ -1262,7 +1262,7 @@ export function AdminNetworkSection({
 									</div>
 								</div>
 								<ul
-									class={cn(
+									className={cn(
 										"mt-4 space-y-2 text-sm",
 										adminDark ? "text-slate-300" : "text-slate-600",
 									)}
@@ -1281,7 +1281,7 @@ export function AdminNetworkSection({
 
 				<section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
 					<div
-						class={cn(
+						className={cn(
 							"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 						)}
@@ -1290,7 +1290,7 @@ export function AdminNetworkSection({
 							<div>
 								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Verification Queue</p>
 								<h3
-									class={cn(
+									className={cn(
 										"mt-1 text-2xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -1301,7 +1301,7 @@ export function AdminNetworkSection({
 							<Bell className="h-6 w-6 text-sky-400" />
 						</div>
 						<div
-							class={cn(
+							className={cn(
 								"mt-5 rounded-[24px] border p-5",
 								adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 							)}
@@ -1311,18 +1311,18 @@ export function AdminNetworkSection({
 									{verificationQueue.slice(0, 4).map((row) => (
 										<div
 											key={row.id || row.user_id}
-											class={cn(
+											className={cn(
 												"rounded-2xl border px-4 py-3 text-sm",
 												adminDark
 													? "border-white/10 bg-white/[0.03]"
 													: "border-slate-200 bg-slate-50",
 											)}
 										>
-											<div class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+											<div className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												{row.user_name || row.user_email || row.user_id}
 											</div>
 											<div
-												class={cn("mt-1 text-xs", adminDark ? "text-slate-400" : "text-slate-600")}
+												className={cn("mt-1 text-xs", adminDark ? "text-slate-400" : "text-slate-600")}
 											>
 												Doc: {row.doc_type || row.type || "business"} · Status:{" "}
 												{row.status || "pending"}
@@ -1331,7 +1331,7 @@ export function AdminNetworkSection({
 									))}
 								</div>
 							) : (
-								<p class={cn("text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
+								<p className={cn("text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
 									{emptyCopy("verification.pending", "No pending verifications in queue.")}
 								</p>
 							)}
@@ -1347,13 +1347,13 @@ export function AdminNetworkSection({
 
 						<div className="mt-4 space-y-3">
 							<div
-								class={cn(
+								className={cn(
 									"rounded-2xl border p-4",
 									adminDark ? "border-white/10 bg-white/[0.03]" : "border-slate-200 bg-slate-50",
 								)}
 							>
 								<div className="flex items-center justify-between gap-3">
-									<h4 class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+									<h4 className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										Dispute Radar
 									</h4>
 									<button
@@ -1370,7 +1370,7 @@ export function AdminNetworkSection({
 										{disputes.slice(0, 3).map((dispute) => (
 											<div
 												key={dispute.id}
-												class={cn(
+												className={cn(
 													"rounded-2xl border px-4 py-3 text-sm",
 													adminDark
 														? "border-white/10 bg-slate-900/50 text-slate-300"
@@ -1383,7 +1383,7 @@ export function AdminNetworkSection({
 										))}
 									</div>
 								) : (
-									<p class={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										{emptyCopy("disputes.none", "No active disputes.")}
 									</p>
 								)}
@@ -1392,7 +1392,7 @@ export function AdminNetworkSection({
 					</div>
 
 					<div
-						class={cn(
+						className={cn(
 							"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 						)}
@@ -1401,7 +1401,7 @@ export function AdminNetworkSection({
 							<div>
 								<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Audit Pulse</p>
 								<h3
-									class={cn(
+									className={cn(
 										"mt-1 text-2xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -1412,7 +1412,7 @@ export function AdminNetworkSection({
 							<button
 								type="button"
 								onClick={() => refreshAudit()}
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium",
 									adminDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200",
 								)}
@@ -1425,27 +1425,27 @@ export function AdminNetworkSection({
 							{filteredNetworkAuditRows.slice(0, 6).map((entry) => (
 								<div
 									key={entry.id || entry.at}
-									class={cn(
+									className={cn(
 										"rounded-2xl border p-4",
 										adminDark ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white",
 									)}
 								>
 									<div className="flex items-center justify-between gap-3">
-										<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+										<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 											{entry.path || entry.action || "Admin action"}
 										</p>
 										<span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">
 											{entry.status ?? 200}
 										</span>
 									</div>
-									<p class={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										{entry.at ? new Date(entry.at).toLocaleString() : "--"} · system
 									</p>
 								</div>
 							))}
 							{filteredNetworkAuditRows.length > 0 ? null : (
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border border-dashed p-4 text-sm",
 										adminDark
 											? "border-white/10 text-slate-400"
@@ -1460,7 +1460,7 @@ export function AdminNetworkSection({
 				</section>
 
 				<section
-					class={cn(
+					className={cn(
 						"rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 					)}
@@ -1469,7 +1469,7 @@ export function AdminNetworkSection({
 						<div>
 							<p className="text-xs uppercase tracking-[0.22em] text-sky-400">Admin Audit Log</p>
 							<h3
-								class={cn(
+								className={cn(
 									"mt-1 text-2xl font-semibold",
 									adminDark ? "text-white" : "text-slate-900",
 								)}
@@ -1479,7 +1479,7 @@ export function AdminNetworkSection({
 						</div>
 						<div className="relative w-full max-w-md">
 							<Search
-								class={cn(
+								className={cn(
 									"pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2",
 									adminDark ? "text-slate-500" : "text-slate-400",
 								)}
@@ -1488,7 +1488,7 @@ export function AdminNetworkSection({
 								value={networkAuditQuery}
 								onChange={(event) => setNetworkAuditQuery(event.target.value)}
 								placeholder="Search audit..."
-								class={cn(
+								className={cn(
 									"w-full rounded-2xl border py-3 pl-11 pr-4 text-sm outline-none transition-all",
 									adminDark
 										? "border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/60"
@@ -1499,13 +1499,13 @@ export function AdminNetworkSection({
 					</div>
 
 					<div
-						class={cn(
+						className={cn(
 							"mt-5 overflow-hidden rounded-[24px] border",
 							adminDark ? "border-white/10" : "border-slate-200",
 						)}
 					>
 						<div
-							class={cn(
+							className={cn(
 								"grid grid-cols-[1.4fr_0.9fr_1.4fr_0.8fr] gap-3 border-b px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em]",
 								adminDark
 									? "border-white/10 bg-white/[0.03] text-slate-400"
@@ -1517,24 +1517,24 @@ export function AdminNetworkSection({
 							<div>Actor / Device</div>
 							<div>Status</div>
 						</div>
-						<div class={cn("divide-y", adminDark ? "divide-white/10" : "divide-slate-200")}>
+						<div className={cn("divide-y", adminDark ? "divide-white/10" : "divide-slate-200")}>
 							{filteredNetworkAuditRows.slice(0, 30).map((entry) => (
 								<div
 									key={entry.id || entry.at}
-									class={cn(
+									className={cn(
 										"grid grid-cols-[1.4fr_0.9fr_1.4fr_0.8fr] gap-3 px-4 py-4 text-sm",
 										adminDark ? "bg-slate-950/30" : "bg-white",
 									)}
 								>
-									<div class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+									<div className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										{entry.path || entry.action || "--"}
 									</div>
-									<div class={adminDark ? "text-slate-400" : "text-slate-600"}>
+									<div className={adminDark ? "text-slate-400" : "text-slate-600"}>
 										{entry.at ? new Date(entry.at).toLocaleString() : "--"}
 									</div>
-									<div class={adminDark ? "text-slate-300" : "text-slate-700"}>
+									<div className={adminDark ? "text-slate-300" : "text-slate-700"}>
 										<div className="truncate">Actor: {entry.actor_id || entry.actor || "system"}</div>
-										<div class={adminDark ? "text-slate-500" : "text-slate-500"}>
+										<div className={adminDark ? "text-slate-500" : "text-slate-500"}>
 											IP: {entry.ip || "--"} / Device: {entry.device_id || "--"}
 										</div>
 									</div>
@@ -1547,7 +1547,7 @@ export function AdminNetworkSection({
 							))}
 							{filteredNetworkAuditRows.length > 0 ? null : (
 								<div
-									class={cn("px-4 py-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}
+									className={cn("px-4 py-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}
 								>
 									No audit entries found.
 								</div>

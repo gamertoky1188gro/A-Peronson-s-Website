@@ -18,7 +18,7 @@ export default function BotLogo({
 			viewBox="0 0 64 64"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"
-			class={className}
+			className={className}
 			role="img"
 			aria-label={title || undefined}
 			aria-hidden={title ? undefined : true}

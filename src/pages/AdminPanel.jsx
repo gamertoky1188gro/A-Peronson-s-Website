@@ -302,7 +302,7 @@ function Badge({ children, tone = "default", darkMode = true }) {
 
 	return (
 		<span
-			class={cn(
+			className={cn(
 				"inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium",
 				base[tone],
 			)}
@@ -332,9 +332,9 @@ function StatCard({ icon: Icon, title, value, meta, tone = "sky", darkMode }) {
 		: "border-slate-200 bg-white shadow-sm";
 
 	return (
-		<div class={cn("rounded-3xl border p-5 transition hover:-translate-y-0.5", shell)}>
+		<div className={cn("rounded-3xl border p-5 transition hover:-translate-y-0.5", shell)}>
 			<div
-				class={cn(
+				className={cn(
 					"inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium",
 					toneClasses[tone],
 				)}
@@ -343,14 +343,14 @@ function StatCard({ icon: Icon, title, value, meta, tone = "sky", darkMode }) {
 				{title}
 			</div>
 			<div
-				class={cn(
+				className={cn(
 					"mt-4 text-2xl font-semibold tracking-tight",
 					darkMode ? "text-white" : "text-slate-900",
 				)}
 			>
 				{value}
 			</div>
-			<p class={cn("mt-1 text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>{meta}</p>
+			<p className={cn("mt-1 text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>{meta}</p>
 		</div>
 	);
 }
@@ -378,15 +378,15 @@ function SectionCard({
 		: "border-sky-200 bg-sky-50 text-sky-600";
 
 	return (
-		<section class={cn("rounded-[28px] border p-5 transition", shell)}>
+		<section className={cn("rounded-[28px] border p-5 transition", shell)}>
 			<div className="mb-5 flex flex-wrap items-start justify-between gap-3">
 				<div className="flex items-start gap-3">
-					<div class={cn("rounded-2xl border p-3", iconShell)}>
+					<div className={cn("rounded-2xl border p-3", iconShell)}>
 						<Icon className="h-5 w-5" />
 					</div>
 					<div>
-						<h3 class={cn("text-lg font-semibold tracking-tight", titleClass)}>{title}</h3>
-						<p class={cn("mt-1 max-w-2xl text-sm", subClass)}>{subtitle}</p>
+						<h3 className={cn("text-lg font-semibold tracking-tight", titleClass)}>{title}</h3>
+						<p className={cn("mt-1 max-w-2xl text-sm", subClass)}>{subtitle}</p>
 					</div>
 				</div>
 				{actionLabel ? (
@@ -394,7 +394,7 @@ function SectionCard({
 						type="button"
 						onClick={onAction}
 						disabled={!onAction}
-						class={cn(
+						className={cn(
 							"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60",
 							buttonClass,
 						)}
@@ -425,7 +425,7 @@ function cmsChipClass(dark, active = false) {
 function CmsMiniBadge({ dark, children }) {
 	return (
 		<span
-			class={[
+			className={[
 				"inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium",
 				dark
 					? "border-sky-400/20 bg-sky-400/10 text-sky-200"
@@ -440,7 +440,7 @@ function CmsMiniBadge({ dark, children }) {
 function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 	return (
 		<div
-			class={[
+			className={[
 				"group relative overflow-hidden rounded-3xl border p-5 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5",
 				dark
 					? "border-white/10 bg-slate-950/70 text-white shadow-[0_12px_40px_rgba(2,8,23,0.35)]"
@@ -451,7 +451,7 @@ function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 			<div className="relative flex items-start justify-between gap-4">
 				<div>
 					<p
-						class={
+						className={
 							dark
 								? "text-xs uppercase tracking-[0.28em] text-slate-400"
 								: "text-xs uppercase tracking-[0.28em] text-slate-500"
@@ -467,7 +467,7 @@ function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 							</span>
 						) : null}
 					</div>
-					<p class={dark ? "mt-2 text-sm text-slate-400" : "mt-2 text-sm text-slate-600"}>{meta}</p>
+					<p className={dark ? "mt-2 text-sm text-slate-400" : "mt-2 text-sm text-slate-600"}>{meta}</p>
 				</div>
 				<div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-3 text-sky-400">
 					<Icon className="h-5 w-5" />
@@ -480,7 +480,7 @@ function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 function CmsSectionCard({ dark, title, subtitle, icon: Icon, action, children, accent = "sky" }) {
 	return (
 		<section
-			class={[
+			className={[
 				"overflow-hidden rounded-3xl border backdrop-blur-xl",
 				dark
 					? "border-white/10 bg-slate-950/70 shadow-[0_18px_55px_rgba(2,8,23,0.4)]"
@@ -488,14 +488,14 @@ function CmsSectionCard({ dark, title, subtitle, icon: Icon, action, children, a
 			].join(" ")}
 		>
 			<div
-				class={[
+				className={[
 					"flex flex-wrap items-start justify-between gap-4 border-b p-5",
 					dark ? "border-white/10" : "border-slate-100",
 				].join(" ")}
 			>
 				<div className="flex items-start gap-4">
 					<div
-						class={[
+						className={[
 							"rounded-2xl p-3",
 							accent === "sky"
 								? dark
@@ -510,13 +510,13 @@ function CmsSectionCard({ dark, title, subtitle, icon: Icon, action, children, a
 					</div>
 					<div>
 						<h2
-							class={
+							className={
 								dark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900"
 							}
 						>
 							{title}
 						</h2>
-						<p class={dark ? "mt-1 text-sm text-slate-400" : "mt-1 text-sm text-slate-600"}>
+						<p className={dark ? "mt-1 text-sm text-slate-400" : "mt-1 text-sm text-slate-600"}>
 							{subtitle}
 						</p>
 					</div>
@@ -537,7 +537,7 @@ function ultraMetricShell(dark) {
 function UltraPill({ dark, active = false, children }) {
 	return (
 		<span
-			class={cn(
+			className={cn(
 				"inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium",
 				active
 					? dark
@@ -565,27 +565,27 @@ function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = "default" }
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				ultraMetricShell(dark),
 				"relative overflow-hidden rounded-3xl border p-5 backdrop-blur-xl",
 			)}
 		>
-			<div class={cn("absolute inset-0 bg-gradient-to-br opacity-80", toneClass)} />
+			<div className={cn("absolute inset-0 bg-gradient-to-br opacity-80", toneClass)} />
 			<div className="relative flex items-start justify-between gap-4">
 				<div>
-					<p class={cn("text-sm font-medium", dark ? "text-slate-300" : "text-slate-600")}>
+					<p className={cn("text-sm font-medium", dark ? "text-slate-300" : "text-slate-600")}>
 						{label}
 					</p>
 					<div className="mt-2 flex items-end gap-2">
 						<h3 className="text-3xl font-semibold tracking-tight">{value}</h3>
 						{sub ? (
-							<span class={cn("pb-1 text-xs", dark ? "text-slate-400" : "text-slate-500")}>
+							<span className={cn("pb-1 text-xs", dark ? "text-slate-400" : "text-slate-500")}>
 								{sub}
 							</span>
 						) : null}
 					</div>
 				</div>
-				<div class={cn("rounded-2xl p-3", dark ? "bg-slate-950/30" : "bg-slate-100")}>
+				<div className={cn("rounded-2xl p-3", dark ? "bg-slate-950/30" : "bg-slate-100")}>
 					<Icon className="h-5 w-5 text-cyan-300" />
 				</div>
 			</div>
@@ -596,7 +596,7 @@ function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = "default" }
 function UltraSectionCard({ dark, title, subtitle, children, right }) {
 	return (
 		<section
-			class={cn(
+			className={cn(
 				ultraMetricShell(dark),
 				"relative overflow-hidden rounded-[28px] border p-6 backdrop-blur-xl",
 			)}
@@ -605,7 +605,7 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 				<div>
 					<div className="flex items-center gap-2">
 						<h2
-							class={cn(
+							className={cn(
 								"text-xl font-semibold tracking-tight",
 								dark ? "text-white" : "text-slate-900",
 							)}
@@ -618,7 +618,7 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 					</div>
 					{subtitle ? (
 						<p
-							class={cn(
+							className={cn(
 								"mt-2 max-w-2xl text-sm leading-6",
 								dark ? "text-slate-400" : "text-slate-600",
 							)}
@@ -637,27 +637,27 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 function UltraToggle({ dark, on, label, hint, onToggle }) {
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"flex items-center justify-between gap-4 rounded-2xl border p-4",
 				dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 			)}
 		>
 			<div>
-				<p class={cn("font-medium", dark ? "text-white" : "text-slate-900")}>{label}</p>
+				<p className={cn("font-medium", dark ? "text-white" : "text-slate-900")}>{label}</p>
 				{hint ? (
-					<p class={cn("mt-1 text-sm", dark ? "text-slate-400" : "text-slate-500")}>{hint}</p>
+					<p className={cn("mt-1 text-sm", dark ? "text-slate-400" : "text-slate-500")}>{hint}</p>
 				) : null}
 			</div>
 			<div className="flex items-center gap-3">
 				<span
-					class={cn("text-sm", on ? "text-cyan-300" : dark ? "text-slate-400" : "text-slate-500")}
+					className={cn("text-sm", on ? "text-cyan-300" : dark ? "text-slate-400" : "text-slate-500")}
 				>
 					{on ? "On" : "Off"}
 				</span>
 				<button
 					type="button"
 					onClick={onToggle}
-					class={cn(
+					className={cn(
 						"flex h-10 w-20 items-center rounded-full border px-1 transition",
 						on
 							? "border-cyan-400/40 bg-cyan-500/20"
@@ -668,7 +668,7 @@ function UltraToggle({ dark, on, label, hint, onToggle }) {
 					aria-pressed={on}
 				>
 					<div
-						class={cn(
+						className={cn(
 							"h-8 w-8 rounded-full shadow-md transition-transform",
 							on ? "translate-x-10 bg-cyan-400" : dark ? "bg-slate-400" : "bg-slate-500",
 						)}
@@ -703,17 +703,17 @@ function UltraTinyChart({
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"rounded-[24px] border p-4",
 				dark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-white",
 			)}
 		>
 			<div className="mb-3 flex items-center justify-between">
 				<div>
-					<p class={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
+					<p className={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
 						Live Metrics
 					</p>
-					<p class={cn("text-xs", dark ? "text-slate-400" : "text-slate-500")}>
+					<p className={cn("text-xs", dark ? "text-slate-400" : "text-slate-500")}>
 						Metrics coming from live feeds.
 					</p>
 				</div>
@@ -745,15 +745,15 @@ function UltraTinyChart({
 				{safeKpis.slice(0, 3).map((row) => (
 					<div
 						key={row.label}
-						class={cn(
+						className={cn(
 							"rounded-2xl border p-3",
 							dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 						)}
 					>
-						<div class={cn("font-semibold", dark ? "text-white" : "text-slate-900")}>
+						<div className={cn("font-semibold", dark ? "text-white" : "text-slate-900")}>
 							{row.value}
 						</div>
-						<div class={dark ? "text-slate-400" : "text-slate-500"}>{row.label}</div>
+						<div className={dark ? "text-slate-400" : "text-slate-500"}>{row.label}</div>
 					</div>
 				))}
 			</div>

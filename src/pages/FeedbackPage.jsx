@@ -169,7 +169,7 @@ export default function FeedbackPage() {
 									<div>
 										<p className="font-medium">
 											File attachment{" "}
-											<span class={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
+											<span className={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
 										</p>
 										<p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
 											{attachment ? attachment.name : "No file chosen"}
@@ -195,7 +195,7 @@ export default function FeedbackPage() {
 						<label className="block">
 							<span className={`mb-2 block text-sm font-medium ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
 								Contact Email{" "}
-								<span class={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
+								<span className={darkMode ? "text-slate-500" : "text-slate-400"}>(optional)</span>
 							</span>
 							<input
 								type="email"

@@ -35,7 +35,7 @@ export default function HoverCard({
 
 	return (
 		<motion.div
-			class={className}
+			className={className}
 			whileHover={reduceMotion ? {} : { scale, y: lift }}
 			style={tilt && !reduceMotion ? { rotateX: springY, rotateY: springX } : {}}
 			onMouseMove={handleMove}

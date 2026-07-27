@@ -47,7 +47,7 @@ export default function CountUp({ value, decimals = 0, suffix = "", className = 
 			});
 
 	return (
-		<span ref={ref} class={className}>
+		<span ref={ref} className={className}>
 			{formatted}
 			{suffix}
 		</span>

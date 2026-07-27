@@ -130,7 +130,7 @@ function Pill({ children }) {
 function Card({ className = "", children }) {
 	return (
 		<motion.div
-			class={
+			className={
 				"rounded-3xl border border-slate-200/70 bg-white shadow-[0_20px_70px_-30px_rgba(2,132,199,0.35)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 " +
 				className
 			}
@@ -158,12 +158,12 @@ function VerifiedBadge({ label = "Verified" }) {
 function BentoMotion({ index, className = "", children }) {
 	const reduceMotion = useReducedMotion();
 	if (reduceMotion) {
-		return <div class={className}>{children}</div>;
+		return <div className={className}>{children}</div>;
 	}
 
 	return (
 		<motion.div
-			class={className}
+			className={className}
 			initial={{ opacity: 0, y: 20, scale: 0.985 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{
@@ -180,13 +180,13 @@ function BentoMotion({ index, className = "", children }) {
 function AnimatedHeroHeading({ text, className = "" }) {
 	const reduceMotion = useReducedMotion();
 	if (reduceMotion) {
-		return <span class={className}>{text}</span>;
+		return <span className={className}>{text}</span>;
 	}
 
 	const words = String(text).split(" ");
 	let globalIndex = 0;
 	return (
-		<span class={className}>
+		<span className={className}>
 			<span className="sr-only">{text}</span>
 			<span aria-hidden="true">
 				{words.map((word, wordIndex) => {
@@ -257,7 +257,7 @@ function MagneticLinkButton({ to, className = "", children }) {
 	return (
 		<Link to={to} className="inline-flex">
 			<motion.span
-				class={className}
+				className={className}
 				style={{ x: springX, y: springY }}
 				onMouseMove={handleMove}
 				onMouseLeave={handleLeave}
@@ -285,7 +285,7 @@ const SkeletonLine = ({ className = "", size = 24 }) => (
 function GlassSurface({ className = "", children }) {
 	return (
 		<div
-			class={[
+			className={[
 				"rounded-3xl bg-white/10 backdrop-blur-md text-slate-900 dark:text-white",
 				"shadow-[0_22px_60px_rgba(2,6,23,0.55)]",
 				"ring-1 ring-white/12",

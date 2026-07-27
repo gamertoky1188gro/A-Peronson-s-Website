@@ -200,7 +200,7 @@ function SectionCard({ section, index, visible }) {
 	return (
 		<article
 			id={section.id}
-			class={[
+			className={[
 				"group relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/85 p-6 shadow-[0_20px_80px_-40px_rgba(2,132,199,0.35)] backdrop-blur-xl transition-all duration-700 ease-out dark:border-slate-800/80 dark:bg-slate-950/70",
 				visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
 			].join(" ")}

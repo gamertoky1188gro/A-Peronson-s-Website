@@ -44,7 +44,7 @@ function StatusPill({ tone = "slate", children }) {
 	};
 	return (
 		<span
-			class={cls(
+			className={cls(
 				"inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
 				tones[tone],
 			)}
@@ -75,7 +75,7 @@ function ActionButton({
 		<button
 			onClick={onClick}
 			disabled={disabled}
-			class={cls(
+			className={cls(
 				"inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50",
 				styles[variant],
 				className,
@@ -89,7 +89,7 @@ function ActionButton({
 function Card({ children, className = "" }) {
 	return (
 		<div
-			class={cls(
+			className={cls(
 				"rounded-[1.5rem] border border-sky-200/60 bg-white/90 p-5 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-sky-400/10 dark:bg-slate-950/75 dark:shadow-[0_10px_40px_rgba(2,6,23,0.35)]",
 				className,
 			)}
@@ -217,7 +217,7 @@ export default function PartnerNetwork() {
 
 	return (
 		<div
-			class={cls(
+			className={cls(
 				"min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.24),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_30%),linear-gradient(to_bottom,_#f8fcff,_#edf6ff_35%,_#e2efff)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_30%),radial-gradient(circle_at_top_right,_rgba(96,165,250,0.14),_transparent_25%),linear-gradient(to_bottom,_#0b1120,_#090d18_48%,_#050816)] dark:text-slate-100",
 			)}
 		>
@@ -369,7 +369,7 @@ export default function PartnerNetwork() {
 											<button
 												key={item.key}
 												onClick={() => setTab(item.key)}
-												class={cls(
+												className={cls(
 													"rounded-2xl px-4 py-2.5 text-sm font-semibold transition-all",
 													tab === item.key
 														? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20"

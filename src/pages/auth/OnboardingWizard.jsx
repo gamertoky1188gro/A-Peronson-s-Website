@@ -249,7 +249,7 @@ export default function OnboardingWizard() {
 													type="button"
 													key={cat}
 													onClick={() => toggleCategory(cat)}
-													class={[
+													className={[
 														"rounded-xl px-3 py-2 text-xs font-semibold transition",
 														active
 															? "bg-sky-600 text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]"

@@ -21,7 +21,7 @@ export default function SlideIn({
 	if (reduceMotion) {
 		const Tag = as;
 		return (
-			<Tag class={className} {...rest}>
+			<Tag className={className} {...rest}>
 				{children}
 			</Tag>
 		);
@@ -32,7 +32,7 @@ export default function SlideIn({
 
 	return (
 		<MotionTag
-			class={className}
+			className={className}
 			initial={{ opacity: 0, x: offset.x, y: offset.y }}
 			whileInView={{ opacity: 1, x: 0, y: 0 }}
 			viewport={{ once: true, margin: "-40px" }}

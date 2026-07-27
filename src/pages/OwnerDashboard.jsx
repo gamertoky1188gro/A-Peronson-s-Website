@@ -26,7 +26,7 @@ function SparkIcon({ className = "" }) {
 			strokeWidth="1.8"
 			strokeLinecap="round"
 			strokeLinejoin="round"
-			class={className}
+			className={className}
 		>
 			<path d="M13 2l1.8 5.4L20 9l-5.2 1.6L13 16l-1.8-5.4L6 9l5.2-1.6L13 2z" />
 			<path d="M5 14l.9 2.7L9 18l-3.1 1.3L5 22l-.9-2.7L1 18l3.1-1.3L5 14z" />
@@ -43,7 +43,7 @@ function Icon({ path, className = "" }) {
 			strokeWidth="1.8"
 			strokeLinecap="round"
 			strokeLinejoin="round"
-			class={className}
+			className={className}
 		>
 			<path d={path} />
 		</svg>
@@ -107,7 +107,7 @@ const SectionCard = memo(function SectionCard({
 }) {
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/80",
 				className,
 			)}
@@ -135,7 +135,7 @@ const StatCard = memo(function StatCard({
 	const isNumeric = typeof value === "number" && !Number.isNaN(value);
 	return (
 		<HoverCard className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
-			<div class={cn("absolute inset-x-0 top-0 h-1 bg-gradient-to-r", accent)} />
+			<div className={cn("absolute inset-x-0 top-0 h-1 bg-gradient-to-r", accent)} />
 			<p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
 			<div className="mt-3 flex items-end justify-between gap-3">
 				<div>
@@ -151,7 +151,7 @@ const StatCard = memo(function StatCard({
 					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sub}</p>
 				</div>
 				<div
-					class={cn(
+					className={cn(
 						"flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg",
 						accent,
 					)}
@@ -315,14 +315,14 @@ export default function OwnerDashboard() {
 	}
 
 	return (
-		<div class={theme === "dark" ? "dark" : ""}>
+		<div className={theme === "dark" ? "dark" : ""}>
 			<div
 				style={{ height: "100vh", overflow: "hidden" }}
 				className="flex w-full bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100"
 			>
 				<aside
 					data-lenis-prevent={true}
-					class={cn(
+					className={cn(
 						"fixed inset-y-0 left-0 z-40 w-80 shrink-0 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:relative lg:z-auto lg:translate-x-0 scrollbar-invisible",
 						sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
 					)}
@@ -359,7 +359,7 @@ export default function OwnerDashboard() {
 									onClick={() => {
 										goTab(item.id);
 									}}
-									class={cn(
+									className={cn(
 										"group flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-all duration-200",
 										active === item.id
 											? "bg-gradient-to-r from-sky-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/20"
@@ -368,7 +368,7 @@ export default function OwnerDashboard() {
 								>
 									<span className="font-medium">{item.label}</span>
 									<span
-										class={cn(
+										className={cn(
 											"rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
 											active === item.id
 												? "bg-white/15 text-white"

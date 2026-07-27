@@ -21,7 +21,7 @@ export default function HorizontalScrollGallery({ children, className = "", snap
 	return (
 		<div
 			ref={containerRef}
-			class={
+			className={
 				"flex gap-4 overflow-x-auto scrollbar-hide " +
 				(snap ? "snap-x snap-mandatory " : "") +
 				className

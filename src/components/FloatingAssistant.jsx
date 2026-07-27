@@ -404,7 +404,7 @@ export default function FloatingAssistant() {
 				<button
 					type="button"
 					onClick={() => setOpen(!open)}
-					class={[
+					className={[
 						"w-14 h-14 rounded-full flex items-center justify-center text-white transition-all duration-300 active:scale-90",
 						orbMode
 							? "assistant-orb-btn hover:scale-110"

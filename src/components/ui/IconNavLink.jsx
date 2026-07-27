@@ -14,7 +14,7 @@ export function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
 			>
 				<Link
 					to={to}
-					class={cn(
+					className={cn(
 						"relative inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 transition hover:-translate-y-0.5 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-300",
 						active && "text-sky-600 dark:text-sky-300",
 					)}

@@ -454,7 +454,7 @@ export default function LeadManager({
 										key={lead.id}
 										type="button"
 										onClick={() => setSelectedId(lead.id)}
-										class={[
+										className={[
 											"w-full text-left rounded-lg bg-white shadow-borderless ring-1 ring-slate-200/60 px-3 py-2 transition dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10",
 											isActive
 												? "bg-gtBlue/10 ring-gtBlue/40 dark:bg-gtBlue/15 dark:ring-gtBlue/40"

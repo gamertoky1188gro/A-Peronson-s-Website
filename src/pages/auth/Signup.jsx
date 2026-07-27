@@ -256,7 +256,7 @@ export default function Signup() {
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				isDark ? "dark" : "",
 				"min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white",
 			)}
@@ -522,7 +522,7 @@ export default function Signup() {
 															setAccountType(item);
 															setAccountOpen(false);
 														}}
-														class={cn(
+														className={cn(
 															"flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/5",
 															accountType.value === item.value ? "bg-sky-50 dark:bg-white/5" : "",
 														)}
@@ -640,7 +640,7 @@ export default function Signup() {
 															setPosition(item);
 															setPositionOpen(false);
 														}}
-														class={cn(
+														className={cn(
 															"flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/5",
 															position === item ? "bg-sky-50 dark:bg-white/5" : "",
 														)}

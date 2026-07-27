@@ -137,26 +137,26 @@ export function AdminServerSection({
 }) {
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"relative overflow-hidden rounded-[32px] border p-4 sm:p-6",
 				adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/75",
 			)}
 		>
 			<div className="absolute inset-0 -z-10 overflow-hidden">
 				<div
-					class={cn(
+					className={cn(
 						"absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full blur-3xl",
 						adminDark ? "bg-sky-500/20" : "bg-sky-400/20",
 					)}
 				/>
 				<div
-					class={cn(
+					className={cn(
 						"absolute top-40 -left-20 h-72 w-72 rounded-full blur-3xl",
 						adminDark ? "bg-blue-500/15" : "bg-blue-300/25",
 					)}
 				/>
 				<div
-					class={cn(
+					className={cn(
 						"absolute bottom-0 right-0 h-96 w-96 rounded-full blur-3xl",
 						adminDark ? "bg-cyan-500/10" : "bg-cyan-300/20",
 					)}
@@ -165,14 +165,14 @@ export function AdminServerSection({
 
 			<div className="mx-auto max-w-7xl space-y-6">
 				<header
-					class={cn(
+					className={cn(
 						"flex flex-col gap-4 rounded-[2rem] border p-5 shadow-2xl shadow-sky-900/10 backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 					)}
 				>
 					<div className="flex items-start gap-4">
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border bg-gradient-to-br p-4 shadow-lg",
 								adminDark
 									? "border-sky-400/20 from-sky-400/20 to-blue-500/10 text-sky-200 shadow-sky-500/10"
@@ -184,7 +184,7 @@ export function AdminServerSection({
 						<div>
 							<div className="flex flex-wrap items-center gap-2">
 								<h1
-									class={cn(
+									className={cn(
 										"text-2xl font-semibold tracking-tight sm:text-3xl",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -194,7 +194,7 @@ export function AdminServerSection({
 								<Pill>Full Stack</Pill>
 								<Pill>
 									<span
-										class={cn(
+										className={cn(
 											"h-2 w-2 rounded-full",
 											adminDark
 												? "bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]"
@@ -205,7 +205,7 @@ export function AdminServerSection({
 								</Pill>
 							</div>
 							<p
-								class={cn(
+								className={cn(
 									"mt-2 max-w-3xl text-sm leading-6",
 									adminDark ? "text-slate-300" : "text-slate-600",
 								)}
@@ -220,7 +220,7 @@ export function AdminServerSection({
 						<button
 							type="button"
 							onClick={toggleTheme}
-							class={cn(
+							className={cn(
 								"inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium shadow-lg transition hover:-translate-y-0.5",
 								adminDark
 									? "border-white/10 bg-white/10 text-white shadow-sky-950/20 hover:bg-white/15"
@@ -238,7 +238,7 @@ export function AdminServerSection({
 								refreshOpenSearchStatus();
 								refreshAudit();
 							}}
-							class={cn(
+							className={cn(
 								"inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition",
 								adminDark
 									? "border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15"
@@ -334,7 +334,7 @@ export function AdminServerSection({
 										: [],
 								})
 							}
-							class={cn(
+							className={cn(
 								"inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition",
 								adminDark
 									? "border-white/10 bg-white/10 text-white hover:bg-white/15"
@@ -379,7 +379,7 @@ export function AdminServerSection({
 
 				<section className="grid gap-4 xl:grid-cols-3">
 					<div
-						class={cn(
+						className={cn(
 							"xl:col-span-2 rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 						)}
@@ -387,7 +387,7 @@ export function AdminServerSection({
 						<div className="flex items-center justify-between gap-4">
 							<div>
 								<p
-									class={cn(
+									className={cn(
 										"text-xs uppercase tracking-[0.22em]",
 										adminDark ? "text-slate-400" : "text-slate-500",
 									)}
@@ -395,7 +395,7 @@ export function AdminServerSection({
 									4 sections
 								</p>
 								<h2
-									class={cn(
+									className={cn(
 										"mt-1 text-xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -468,7 +468,7 @@ export function AdminServerSection({
 								return (
 									<div
 										key={card.title}
-										class={cn(
+										className={cn(
 											"rounded-3xl border p-5 shadow-lg shadow-sky-950/10",
 											adminDark
 												? `border-white/10 bg-gradient-to-br ${card.accent}`
@@ -478,7 +478,7 @@ export function AdminServerSection({
 										<div className="flex items-start justify-between gap-3">
 											<div className="flex items-start gap-3">
 												<div
-													class={cn(
+													className={cn(
 														"rounded-2xl border p-3 backdrop-blur-md",
 														adminDark
 															? "border-white/10 bg-slate-950/30 text-sky-100"
@@ -490,7 +490,7 @@ export function AdminServerSection({
 												<div>
 													<div className="flex items-center gap-2">
 														<h3
-															class={cn(
+															className={cn(
 																"font-semibold",
 																adminDark ? "text-white" : "text-slate-900",
 															)}
@@ -500,7 +500,7 @@ export function AdminServerSection({
 														<Pill>live</Pill>
 													</div>
 													<p
-														class={cn(
+														className={cn(
 															"mt-1 text-sm",
 															adminDark ? "text-slate-300" : "text-slate-600",
 														)}
@@ -512,7 +512,7 @@ export function AdminServerSection({
 											<button
 												type="button"
 												onClick={card.onRefresh}
-												class={cn(
+												className={cn(
 													"inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold transition",
 													adminDark
 														? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -530,7 +530,7 @@ export function AdminServerSection({
 												.map((line) => (
 													<div
 														key={line}
-														class={cn(
+														className={cn(
 															"rounded-2xl border px-4 py-3 text-sm shadow-sm",
 															adminDark
 																? "border-white/10 bg-slate-950/35 text-slate-200"
@@ -548,7 +548,7 @@ export function AdminServerSection({
 					</div>
 
 					<div
-						class={cn(
+						className={cn(
 							"rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 						)}
@@ -556,7 +556,7 @@ export function AdminServerSection({
 						<div className="flex items-center justify-between gap-3">
 							<div>
 								<p
-									class={cn(
+									className={cn(
 										"text-xs uppercase tracking-[0.22em]",
 										adminDark ? "text-slate-400" : "text-slate-500",
 									)}
@@ -564,7 +564,7 @@ export function AdminServerSection({
 									Platform Snapshot
 								</p>
 								<h2
-									class={cn(
+									className={cn(
 										"mt-1 text-xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -572,7 +572,7 @@ export function AdminServerSection({
 									System health
 								</h2>
 							</div>
-							<Shield class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
+							<Shield className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 						</div>
 
 						<div className="mt-5 space-y-3">
@@ -588,13 +588,13 @@ export function AdminServerSection({
 							].map(([label, value]) => (
 								<div
 									key={label}
-									class={cn(
+									className={cn(
 										"rounded-2xl border px-4 py-3",
 										adminDark ? "border-white/10 bg-slate-950/35" : "border-slate-200 bg-white",
 									)}
 								>
 									<div className="flex items-center justify-between gap-3">
-										<span class={cn("text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
+										<span className={cn("text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
 											{label}
 										</span>
 										<Pill>{value}</Pill>
@@ -604,20 +604,20 @@ export function AdminServerSection({
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"mt-5 rounded-3xl border p-4",
 								adminDark ? "border-sky-400/20 bg-sky-500/10" : "border-sky-200 bg-sky-50",
 							)}
 						>
 							<div className="flex items-start gap-3">
 								<TerminalSquare
-									class={cn("mt-0.5 h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")}
+									className={cn("mt-0.5 h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")}
 								/>
 								<div>
-									<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+									<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										OpenSearch control
 									</p>
-									<p class={cn("mt-1 text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
+									<p className={cn("mt-1 text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
 										Enable search only when reachable, then save settings, ensure indices, and
 										reindex.
 									</p>
@@ -631,7 +631,7 @@ export function AdminServerSection({
 										enabled: true,
 									}))
 								}
-								class={cn(
+								className={cn(
 									"mt-4 inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:translate-y-[-1px]",
 									adminDark ? "bg-sky-500 shadow-sky-500/25" : "bg-sky-600 shadow-sky-500/20",
 								)}
@@ -643,7 +643,7 @@ export function AdminServerSection({
 				</section>
 
 				<section
-					class={cn(
+					className={cn(
 						"rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 					)}
@@ -651,7 +651,7 @@ export function AdminServerSection({
 					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<p
-								class={cn(
+								className={cn(
 									"text-xs uppercase tracking-[0.22em]",
 									adminDark ? "text-slate-400" : "text-slate-500",
 								)}
@@ -659,7 +659,7 @@ export function AdminServerSection({
 								Configuration surfaces
 							</p>
 							<h2
-								class={cn(
+								className={cn(
 									"mt-1 text-xl font-semibold",
 									adminDark ? "text-white" : "text-slate-900",
 								)}
@@ -672,23 +672,23 @@ export function AdminServerSection({
 
 					<div className="mt-5 grid gap-5 lg:grid-cols-2">
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="flex items-center gap-3">
-								<Search class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
+								<Search className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
-									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 										OpenSearch
 									</h3>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										Faceted search engine + fast estimates.
 									</p>
 								</div>
 							</div>
-							<div class={cn("mt-2 text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
+							<div className={cn("mt-2 text-sm", adminDark ? "text-slate-300" : "text-slate-600")}>
 								Enabled: {openSearchConfig.enabled ? "On" : "Off"} · Configured:{" "}
 								{openSearchStatus?.configured ? "yes" : "no"} · Reachable:{" "}
 								{openSearchStatus?.reachable ? "yes" : "no"}
@@ -697,7 +697,7 @@ export function AdminServerSection({
 							<div className="mt-4 grid gap-4 md:grid-cols-2">
 								<label className="md:col-span-2">
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -715,7 +715,7 @@ export function AdminServerSection({
 										placeholder={
 											import.meta.env.VITE_OPENSEARCH_URL || "https://your-opensearch-host:443"
 										}
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -725,7 +725,7 @@ export function AdminServerSection({
 								</label>
 								<label>
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -741,7 +741,7 @@ export function AdminServerSection({
 											}))
 										}
 										placeholder="username"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -751,7 +751,7 @@ export function AdminServerSection({
 								</label>
 								<label>
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -767,7 +767,7 @@ export function AdminServerSection({
 											}))
 										}
 										placeholder="••••••••"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -777,7 +777,7 @@ export function AdminServerSection({
 								</label>
 								<label>
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -793,7 +793,7 @@ export function AdminServerSection({
 											}))
 										}
 										placeholder="app"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -803,7 +803,7 @@ export function AdminServerSection({
 								</label>
 								<label>
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -820,7 +820,7 @@ export function AdminServerSection({
 											}))
 										}
 										placeholder="3000"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -832,7 +832,7 @@ export function AdminServerSection({
 
 							<div className="mt-4 flex flex-wrap items-center gap-3">
 								<label
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 text-sm",
 										adminDark ? "text-slate-300" : "text-slate-700",
 									)}
@@ -851,7 +851,7 @@ export function AdminServerSection({
 									Enabled
 								</label>
 								<label
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 text-sm",
 										adminDark ? "text-slate-300" : "text-slate-700",
 									)}
@@ -872,7 +872,7 @@ export function AdminServerSection({
 								<button
 									type="button"
 									onClick={refreshOpenSearchStatus}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -895,7 +895,7 @@ export function AdminServerSection({
 									type="button"
 									onClick={saveOpenSearchConfig}
 									disabled={openSearchConfigBusy}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium transition disabled:opacity-60",
 										adminDark
 											? "bg-sky-500 text-white shadow-lg shadow-sky-500/20 hover:translate-y-[-1px]"
@@ -912,7 +912,7 @@ export function AdminServerSection({
 									type="button"
 									onClick={() => runOpenSearchAction("opensearch.test_connection")}
 									disabled={Boolean(openSearchActionBusy)}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -927,7 +927,7 @@ export function AdminServerSection({
 									type="button"
 									onClick={() => runOpenSearchAction("opensearch.ensure_indices")}
 									disabled={Boolean(openSearchActionBusy)}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -942,7 +942,7 @@ export function AdminServerSection({
 										runOpenSearchAction("opensearch.reindex_all", { reset: openSearchReset })
 									}
 									disabled={Boolean(openSearchActionBusy)}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -955,7 +955,7 @@ export function AdminServerSection({
 
 							<div className="mt-3 flex flex-wrap items-center gap-3">
 								<label
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 text-sm",
 										adminDark ? "text-slate-300" : "text-slate-700",
 									)}
@@ -972,7 +972,7 @@ export function AdminServerSection({
 									value={openSearchOrgId}
 									onChange={(e) => setOpenSearchOrgId(e.target.value)}
 									placeholder="Org ID (reindex org)"
-									class={cn(
+									className={cn(
 										"flex-1 rounded-2xl border px-4 py-3 text-sm outline-none",
 										adminDark
 											? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -985,7 +985,7 @@ export function AdminServerSection({
 										runOpenSearchAction("opensearch.reindex_org", { org_id: openSearchOrgId })
 									}
 									disabled={Boolean(openSearchActionBusy) || !String(openSearchOrgId || "").trim()}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -996,25 +996,25 @@ export function AdminServerSection({
 								</button>
 							</div>
 
-							<p class={cn("mt-3 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+							<p className={cn("mt-3 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 								Save settings → Ensure indices → Reindex (all or org). Search uses OpenSearch only
 								when enabled + reachable.
 							</p>
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="flex items-center gap-3">
-								<Mail class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
+								<Mail className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
-									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 										Email Notifications
 									</h3>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										SMTP or Gmail API delivery for reminders.
 									</p>
 								</div>
@@ -1023,7 +1023,7 @@ export function AdminServerSection({
 							<div className="mt-4 grid gap-4 md:grid-cols-2">
 								<label className="md:col-span-2">
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -1031,7 +1031,7 @@ export function AdminServerSection({
 										Enabled
 									</span>
 									<label
-										class={cn(
+										className={cn(
 											"inline-flex items-center gap-2 text-sm",
 											adminDark ? "text-slate-200" : "text-slate-700",
 										)}
@@ -1053,7 +1053,7 @@ export function AdminServerSection({
 
 								<label>
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -1068,7 +1068,7 @@ export function AdminServerSection({
 												provider: e.target.value,
 											}))
 										}
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white focus:border-sky-400/40"
@@ -1082,7 +1082,7 @@ export function AdminServerSection({
 
 								<label>
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -1098,7 +1098,7 @@ export function AdminServerSection({
 											}))
 										}
 										placeholder="Admin Team"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1109,7 +1109,7 @@ export function AdminServerSection({
 
 								<label>
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -1125,7 +1125,7 @@ export function AdminServerSection({
 											}))
 										}
 										placeholder="admin@example.com"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1136,7 +1136,7 @@ export function AdminServerSection({
 
 								<label className="md:col-span-2">
 									<span
-										class={cn(
+										className={cn(
 											"mb-2 block text-xs font-medium uppercase tracking-[0.2em]",
 											adminDark ? "text-slate-400" : "text-slate-500",
 										)}
@@ -1152,7 +1152,7 @@ export function AdminServerSection({
 											}))
 										}
 										placeholder="recipient@example.com"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 											adminDark
 												? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1185,7 +1185,7 @@ export function AdminServerSection({
 								<button
 									type="button"
 									onClick={sendEmailTest}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -1197,7 +1197,7 @@ export function AdminServerSection({
 							</div>
 
 							<div
-								class={cn(
+								className={cn(
 									"mt-4 rounded-2xl border p-4 text-sm",
 									adminDark
 										? "border-amber-500/20 bg-amber-500/10 text-amber-100"
@@ -1212,7 +1212,7 @@ export function AdminServerSection({
 				</section>
 
 				<section
-					class={cn(
+					className={cn(
 						"mt-6 rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 					)}
@@ -1220,7 +1220,7 @@ export function AdminServerSection({
 					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<p
-								class={cn(
+								className={cn(
 									"text-xs uppercase tracking-[0.22em]",
 									adminDark ? "text-slate-400" : "text-slate-500",
 								)}
@@ -1228,7 +1228,7 @@ export function AdminServerSection({
 								Admin UI Settings
 							</p>
 							<h2
-								class={cn(
+								className={cn(
 									"mt-1 text-xl font-semibold",
 									adminDark ? "text-white" : "text-slate-900",
 								)}
@@ -1236,7 +1236,7 @@ export function AdminServerSection({
 								Role gating + UI fallbacks + copy
 							</h2>
 							<p
-								class={cn(
+								className={cn(
 									"mt-2 max-w-3xl text-sm",
 									adminDark ? "text-slate-300" : "text-slate-600",
 								)}
@@ -1250,7 +1250,7 @@ export function AdminServerSection({
 							type="button"
 							onClick={saveAdminUiSettings}
 							disabled={adminUiSettingsBusy}
-							class={cn(
+							className={cn(
 								"inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition disabled:opacity-60",
 								adminDark
 									? "bg-sky-500 shadow-sky-500/25 hover:translate-y-[-1px]"
@@ -1274,18 +1274,18 @@ export function AdminServerSection({
 
 					<div className="mt-5 grid gap-5 lg:grid-cols-2">
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="flex items-center gap-3">
-								<ShieldCheck class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
+								<ShieldCheck className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
-									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 										Allowed roles
 									</h3>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										Comma or newline separated. Known roles: buyer, factory, buying_house, owner,
 										admin, agent.
 									</p>
@@ -1302,7 +1302,7 @@ export function AdminServerSection({
 								}}
 								placeholder="owner, admin"
 								rows={3}
-								class={cn(
+								className={cn(
 									"mt-4 w-full resize-y rounded-2xl border px-4 py-3 text-sm outline-none",
 									adminDark
 										? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1312,20 +1312,20 @@ export function AdminServerSection({
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="flex items-center gap-3">
 								<LayoutDashboard
-									class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")}
+									className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")}
 								/>
 								<div>
-									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 										Fallback inventory
 									</h3>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										JSON array of objects: id, label, icon_name (optional).
 									</p>
 								</div>
@@ -1340,36 +1340,36 @@ export function AdminServerSection({
 									}));
 								}}
 								rows={10}
-								class={cn(
+								className={cn(
 									"mt-4 w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none",
 									adminDark
 										? "border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40"
 										: "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400",
 								)}
 							/>
-							<div class={cn("mt-3 text-xs", adminDark ? "text-slate-400" : "text-slate-600")}>
+							<div className={cn("mt-3 text-xs", adminDark ? "text-slate-400" : "text-slate-600")}>
 								Icon names are resolved via a safe registry (e.g.{" "}
-								<span class={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
+								<span className={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
 									ShieldCheck
 								</span>
 								,{" "}
-								<span class={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
+								<span className={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
 									Server
 								</span>
 								,{" "}
-								<span class={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
+								<span className={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
 									Network
 								</span>
 								,{" "}
-								<span class={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
+								<span className={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
 									Database
 								</span>
 								,{" "}
-								<span class={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
+								<span className={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
 									Settings
 								</span>
 								,{" "}
-								<span class={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
+								<span className={cn("font-mono", adminDark ? "text-slate-200" : "text-slate-800")}>
 									Lock
 								</span>
 								).
@@ -1379,18 +1379,18 @@ export function AdminServerSection({
 
 					<div className="mt-5 grid gap-5 lg:grid-cols-2">
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="flex items-center gap-3">
-								<BarChart3 class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
+								<BarChart3 className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
-									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 										Chart theme
 									</h3>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										Pie palette + chart fallback labels.
 									</p>
 								</div>
@@ -1398,7 +1398,7 @@ export function AdminServerSection({
 
 							<label className="mt-4 block">
 								<div
-									class={cn(
+									className={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
 										adminDark ? "text-slate-400" : "text-slate-600",
 									)}
@@ -1416,7 +1416,7 @@ export function AdminServerSection({
 									}}
 									rows={4}
 									placeholder="#38bdf8\n#60a5fa\n#0f172a"
-									class={cn(
+									className={cn(
 										"w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1427,7 +1427,7 @@ export function AdminServerSection({
 
 							<label className="mt-4 block">
 								<div
-									class={cn(
+									className={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
 										adminDark ? "text-slate-400" : "text-slate-600",
 									)}
@@ -1444,7 +1444,7 @@ export function AdminServerSection({
 										}));
 									}}
 									placeholder="No Data"
-									class={cn(
+									className={cn(
 										"w-full rounded-2xl border px-4 py-3 text-sm outline-none",
 										adminDark
 											? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1455,18 +1455,18 @@ export function AdminServerSection({
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="flex items-center gap-3">
-								<Gauge class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
+								<Gauge className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
-									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 										CMS weekly trend fallback
 									</h3>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										Used when analytics trend data is unavailable.
 									</p>
 								</div>
@@ -1481,7 +1481,7 @@ export function AdminServerSection({
 									}));
 								}}
 								rows={10}
-								class={cn(
+								className={cn(
 									"mt-4 w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none",
 									adminDark
 										? "border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1493,18 +1493,18 @@ export function AdminServerSection({
 
 					<div className="mt-5 grid gap-5 lg:grid-cols-2">
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="flex items-center gap-3">
-								<ShieldAlert class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
+								<ShieldAlert className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
-									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 										Ultra Security demo data
 									</h3>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										Mini-chart points, KPI tiles, and capabilities list.
 									</p>
 								</div>
@@ -1512,7 +1512,7 @@ export function AdminServerSection({
 
 							<label className="mt-4 block">
 								<div
-									class={cn(
+									className={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
 										adminDark ? "text-slate-400" : "text-slate-600",
 									)}
@@ -1529,7 +1529,7 @@ export function AdminServerSection({
 										}));
 									}}
 									rows={6}
-									class={cn(
+									className={cn(
 										"w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1540,7 +1540,7 @@ export function AdminServerSection({
 
 							<label className="mt-4 block">
 								<div
-									class={cn(
+									className={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
 										adminDark ? "text-slate-400" : "text-slate-600",
 									)}
@@ -1557,7 +1557,7 @@ export function AdminServerSection({
 										}));
 									}}
 									rows={6}
-									class={cn(
+									className={cn(
 										"w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1568,7 +1568,7 @@ export function AdminServerSection({
 
 							<label className="mt-4 block">
 								<div
-									class={cn(
+									className={cn(
 										"mb-2 text-xs font-medium uppercase tracking-[0.2em]",
 										adminDark ? "text-slate-400" : "text-slate-600",
 									)}
@@ -1585,7 +1585,7 @@ export function AdminServerSection({
 										}));
 									}}
 									rows={6}
-									class={cn(
+									className={cn(
 										"w-full resize-y rounded-2xl border px-4 py-3 text-sm outline-none",
 										adminDark
 											? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1596,18 +1596,18 @@ export function AdminServerSection({
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="flex items-center gap-3">
-								<FileText class={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
+								<FileText className={cn("h-5 w-5", adminDark ? "text-sky-300" : "text-sky-600")} />
 								<div>
-									<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 										Empty-state copy
 									</h3>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										JSON object keyed by id (e.g. verification.pending).
 									</p>
 								</div>
@@ -1622,7 +1622,7 @@ export function AdminServerSection({
 									}));
 								}}
 								rows={16}
-								class={cn(
+								className={cn(
 									"mt-4 w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none",
 									adminDark
 										? "border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40"
@@ -1635,7 +1635,7 @@ export function AdminServerSection({
 
 				<section className="mt-6 grid gap-4 lg:grid-cols-2">
 					<div
-						class={cn(
+						className={cn(
 							"rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 						)}
@@ -1643,7 +1643,7 @@ export function AdminServerSection({
 						<div className="flex items-center justify-between gap-3">
 							<div>
 								<p
-									class={cn(
+									className={cn(
 										"text-xs uppercase tracking-[0.22em]",
 										adminDark ? "text-slate-400" : "text-slate-500",
 									)}
@@ -1651,7 +1651,7 @@ export function AdminServerSection({
 									Capabilities
 								</p>
 								<h2
-									class={cn(
+									className={cn(
 										"mt-1 text-xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -1703,7 +1703,7 @@ export function AdminServerSection({
 								return (
 									<div
 										key={item.title}
-										class={cn(
+										className={cn(
 											"rounded-3xl border p-4",
 											adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 										)}
@@ -1711,7 +1711,7 @@ export function AdminServerSection({
 										<div className="flex items-start justify-between gap-3">
 											<div className="flex items-start gap-3">
 												<div
-													class={cn(
+													className={cn(
 														"rounded-2xl border p-2.5",
 														adminDark
 															? "border-sky-400/20 bg-sky-500/10 text-sky-300"
@@ -1721,10 +1721,10 @@ export function AdminServerSection({
 													<Icon className="h-4 w-4" />
 												</div>
 												<div>
-													<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+													<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 														{item.title}
 													</p>
-													<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+													<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 														{item.count} capabilities
 													</p>
 												</div>
@@ -1738,7 +1738,7 @@ export function AdminServerSection({
 					</div>
 
 					<div
-						class={cn(
+						className={cn(
 							"rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 						)}
@@ -1746,7 +1746,7 @@ export function AdminServerSection({
 						<div className="flex flex-wrap items-center justify-between gap-3">
 							<div>
 								<p
-									class={cn(
+									className={cn(
 										"text-xs uppercase tracking-[0.22em]",
 										adminDark ? "text-slate-400" : "text-slate-500",
 									)}
@@ -1754,7 +1754,7 @@ export function AdminServerSection({
 									Audit trail
 								</p>
 								<h2
-									class={cn(
+									className={cn(
 										"mt-1 text-xl font-semibold",
 										adminDark ? "text-white" : "text-slate-900",
 									)}
@@ -1765,7 +1765,7 @@ export function AdminServerSection({
 							<button
 								type="button"
 								onClick={refreshAudit}
-								class={cn(
+								className={cn(
 									"rounded-2xl border px-4 py-2 text-sm font-medium transition",
 									adminDark
 										? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -1777,17 +1777,17 @@ export function AdminServerSection({
 						</div>
 
 						<div
-							class={cn(
+							className={cn(
 								"mt-4 flex items-center gap-3 rounded-2xl border px-4 py-3",
 								adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 							)}
 						>
-							<Search class={cn("h-4 w-4", adminDark ? "text-slate-400" : "text-slate-500")} />
+							<Search className={cn("h-4 w-4", adminDark ? "text-slate-400" : "text-slate-500")} />
 							<input
 								value={serverAdminAuditQuery}
 								onChange={(e) => setServerAdminAuditQuery(e.target.value)}
 								placeholder="Filter logs by route or actor"
-								class={cn(
+								className={cn(
 									"w-full bg-transparent text-sm outline-none",
 									adminDark
 										? "text-slate-100 placeholder:text-slate-500"
@@ -1800,18 +1800,18 @@ export function AdminServerSection({
 							{filteredServerAdminAuditRows.slice(0, 6).map((item) => (
 								<div
 									key={`${item.id || item.at}`}
-									class={cn(
+									className={cn(
 										"rounded-3xl border p-4",
 										adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 									)}
 								>
 									<div className="flex flex-wrap items-start justify-between gap-3">
 										<div>
-											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+											<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												{item.path || item.action || "--"}
 											</p>
 											<p
-												class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}
+												className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}
 											>
 												{item.at ? new Date(item.at).toLocaleString() : "--"} · system
 											</p>
@@ -1819,7 +1819,7 @@ export function AdminServerSection({
 										<Pill>Status: {item.status ?? 200}</Pill>
 									</div>
 									<div
-										class={cn(
+										className={cn(
 											"mt-3 grid gap-2 text-xs sm:grid-cols-3",
 											adminDark ? "text-slate-400" : "text-slate-600",
 										)}
@@ -1832,7 +1832,7 @@ export function AdminServerSection({
 							))}
 							{filteredServerAdminAuditRows.length === 0 ? (
 								<div
-									class={cn(
+									className={cn(
 										"rounded-3xl border border-dashed p-5 text-sm",
 										adminDark
 											? "border-white/10 bg-white/[0.03] text-slate-400"
@@ -1847,7 +1847,7 @@ export function AdminServerSection({
 				</section>
 
 				<section
-					class={cn(
+					className={cn(
 						"rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl",
 						adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/70",
 					)}
@@ -1855,7 +1855,7 @@ export function AdminServerSection({
 					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<p
-								class={cn(
+								className={cn(
 									"text-xs uppercase tracking-[0.22em]",
 									adminDark ? "text-slate-400" : "text-slate-500",
 								)}
@@ -1863,7 +1863,7 @@ export function AdminServerSection({
 								Design system
 							</p>
 							<h2
-								class={cn(
+								className={cn(
 									"mt-1 text-xl font-semibold",
 									adminDark ? "text-white" : "text-slate-900",
 								)}
@@ -1881,20 +1881,20 @@ export function AdminServerSection({
 						].map(([title, text]) => (
 							<div
 								key={title}
-								class={cn(
+								className={cn(
 									"rounded-3xl border p-4",
 									adminDark ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-white",
 								)}
 							>
 								<div className="flex items-center gap-2">
 									<CheckCircle2
-										class={cn("h-4 w-4", adminDark ? "text-sky-300" : "text-sky-600")}
+										className={cn("h-4 w-4", adminDark ? "text-sky-300" : "text-sky-600")}
 									/>
-									<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+									<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										{title}
 									</p>
 								</div>
-								<p class={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+								<p className={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 									{text}
 								</p>
 							</div>

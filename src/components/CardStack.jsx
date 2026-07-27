@@ -43,7 +43,7 @@ export default function CardStack({ children, className = "", stackDistance = 80
 	});
 
 	if (reduceMotion) {
-		return <div class={className}>{children}</div>;
+		return <div className={className}>{children}</div>;
 	}
 
 	const count = Array.isArray(children) ? children.length : 1;

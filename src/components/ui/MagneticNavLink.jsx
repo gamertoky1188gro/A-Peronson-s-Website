@@ -21,7 +21,7 @@ export function MagneticNavLink({ to, label, active }) {
 	return (
 		<Link
 			to={to}
-			class={className}
+			className={className}
 			onMouseMove={(e) => {
 				if (reduceMotion) {
 					return;

@@ -9,7 +9,7 @@ export default function BackButton({
 			type="button"
 			onClick={onClick}
 			disabled={disabled}
-			class={[
+			className={[
 				"inline-flex items-center gap-2 font-semibold focus:outline-none",
 				"rounded-xl px-3 py-2 transition disabled:opacity-60",
 				className,

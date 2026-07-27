@@ -309,7 +309,7 @@ export default function Privacy() {
 	);
 
 	return (
-		<div class={dark ? "dark" : ""}>
+		<div className={dark ? "dark" : ""}>
 			<div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-900 transition-colors dark:from-slate-950 dark:via-slate-950 dark:to-sky-950 dark:text-slate-100">
 				<div className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-10">
 					<header

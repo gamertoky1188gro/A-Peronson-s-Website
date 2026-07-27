@@ -13,7 +13,7 @@ export default function MasonryGrid({
 	if (reduceMotion) {
 		return (
 			<div
-				class={className}
+				className={className}
 				style={{
 					columns: columnCount,
 					columnGap: `${gap * 0.25}rem`,
@@ -30,7 +30,7 @@ export default function MasonryGrid({
 
 	return (
 		<div
-			class={className}
+			className={className}
 			style={{
 				columns: columnCount,
 				columnGap: `${gap * 0.25}rem`,

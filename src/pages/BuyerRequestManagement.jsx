@@ -872,7 +872,7 @@ export default function BuyerRequestManagement() {
 					</div>
 
 					<div className="grid gap-4 p-4 lg:grid-cols-12 lg:p-6">
-						<div class={role === "buyer" ? "lg:col-span-8 xl:col-span-8" : "lg:col-span-12"}>
+						<div className={role === "buyer" ? "lg:col-span-8 xl:col-span-8" : "lg:col-span-12"}>
 							<ScrollReveal as="section">
 								<div className={`rounded-[28px] border p-5 ${panel}`}>
 									<div className="mb-5 flex items-center justify-between gap-3">

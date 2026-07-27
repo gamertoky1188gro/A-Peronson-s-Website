@@ -509,7 +509,7 @@ export default function Login() {
 										onChange={(e) => setRememberMe(e.target.checked)}
 										className="h-4 w-4 rounded border-sky-400/40 text-sky-500 focus:ring-sky-400/30"
 									/>
-									<span class={theme.muted}>Remember me</span>
+									<span className={theme.muted}>Remember me</span>
 								</label>
 
 								<button
@@ -558,7 +558,7 @@ export default function Login() {
 									onChange={(e) => setRememberPasskeyUser(e.target.checked)}
 									className="h-4 w-4 rounded border-sky-400/40 text-sky-500 focus:ring-sky-400/30"
 								/>
-								<span class={theme.muted}>Remember passkey user</span>
+								<span className={theme.muted}>Remember passkey user</span>
 							</label>
 
 							{passkeyHint && (

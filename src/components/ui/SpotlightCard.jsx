@@ -19,7 +19,7 @@ export default function SpotlightCard({ className = "", children }) {
 
 	return (
 		<div
-			class={[
+			className={[
 				"relative overflow-hidden",
 				"before:pointer-events-none before:absolute before:inset-0",
 				"before:opacity-0 hover:before:opacity-100",

@@ -80,7 +80,7 @@ function Badge({ tone = "neutral", children, className = "" }) {
 	};
 	return (
 		<span
-			class={cx(
+			className={cx(
 				"inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1",
 				tones[tone],
 				className,
@@ -115,7 +115,7 @@ function IconButton({
 			disabled={disabled}
 			aria-label={label}
 			title={label}
-			class={cx(
+			className={cx(
 				"relative inline-flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400/60 disabled:cursor-not-allowed disabled:opacity-50",
 				toneClasses[tone],
 				active && "scale-[1.02] shadow-lg shadow-sky-500/10",
@@ -154,7 +154,7 @@ function ToastStack({ toasts, onDismiss }) {
 			{toasts.map((toast) => (
 				<div
 					key={toast.id}
-					class={cx(
+					className={cx(
 						"pointer-events-auto rounded-2xl border p-4 shadow-2xl backdrop-blur-xl transition-all",
 						toast.type === "error" && "border-rose-500/20 bg-rose-500/12 text-rose-50",
 						toast.type === "success" && "border-emerald-500/20 bg-emerald-500/12 text-emerald-50",
@@ -2009,7 +2009,7 @@ export default function CallInterface() {
 									</h1>
 									<Badge tone={conn.tone} className="gap-1.5">
 										<span
-											class={cx("h-2 w-2 rounded-full bg-current", conn.pulse && "animate-pulse")}
+											className={cx("h-2 w-2 rounded-full bg-current", conn.pulse && "animate-pulse")}
 										/>
 										{conn.label}
 									</Badge>
@@ -2058,7 +2058,7 @@ export default function CallInterface() {
 				</header>
 
 				<main className="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 gap-4 px-4 py-4 sm:px-6 lg:px-8">
-					<section class={cx("flex min-w-0 flex-1 flex-col gap-4", isChatOpen ? "lg:pr-0" : "")}>
+					<section className={cx("flex min-w-0 flex-1 flex-col gap-4", isChatOpen ? "lg:pr-0" : "")}>
 						<div className="grid gap-4 xl:grid-cols-[1.18fr_0.82fr]">
 							<div className="rounded-[2rem] border border-white/12 bg-white/40 p-4 shadow-[0_25px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:bg-slate-950/50">
 								<div className="flex flex-wrap items-center justify-between gap-3">
@@ -2136,7 +2136,7 @@ export default function CallInterface() {
 																return (
 																	<span
 																		key={i}
-																		class={cx(
+																		className={cx(
 																			"w-1.5 rounded-full bg-sky-300 transition-all",
 																			active ? "h-4" : "h-2 opacity-40",
 																		)}
@@ -2328,7 +2328,7 @@ export default function CallInterface() {
 					</section>
 
 					<aside
-						class={cx(
+						className={cx(
 							"fixed inset-y-0 right-0 z-30 w-full max-w-[420px] border-l border-white/12 bg-white/80 shadow-2xl backdrop-blur-2xl transition-transform duration-300 dark:bg-slate-950/85 lg:static lg:z-auto lg:translate-x-0 lg:rounded-[2rem] lg:border lg:border-white/12",
 							isChatOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0",
 						)}
@@ -2367,7 +2367,7 @@ export default function CallInterface() {
 										return (
 											<div
 												key={msg.id}
-												class={cx(
+												className={cx(
 													"max-w-[88%] rounded-2xl px-4 py-3 shadow-sm",
 													isOwn
 														? "ml-auto bg-gradient-to-r from-sky-500 to-blue-500 text-white"
@@ -2401,7 +2401,7 @@ export default function CallInterface() {
 												setIsEmojiOpen((prev) => !prev);
 												setIsMoreOpen(false);
 											}}
-											class={cx(
+											className={cx(
 												"flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200",
 												isEmojiOpen ? "bg-slate-100 dark:bg-white/10" : "",
 											)}

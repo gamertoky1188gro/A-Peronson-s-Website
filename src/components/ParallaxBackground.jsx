@@ -21,7 +21,7 @@ const blobs = [
 function ParallaxBlob({ blob, scrollY, scrollRange }) {
 	const y = useTransform(scrollY, [0, scrollRange], [0, -(blob.speed * 60)]);
 	const springY = useSpring(y, { stiffness: 80, damping: 20, restDelta: 0.01 });
-	return <motion.div style={{ y: springY }} class={blob.className} />;
+	return <motion.div style={{ y: springY }} className={blob.className} />;
 }
 
 export default function ParallaxBackground({ className = "", scrollRange = 800, customBlobs }) {

@@ -63,13 +63,13 @@ export function AdminCMSSection({
 }) {
 	return (
 		<div
-			class={cn(
+			className={cn(
 				"rounded-[32px] border p-4 sm:p-5",
 				adminDark ? "border-slate-800/70 bg-slate-950/50" : "border-slate-200 bg-white/75",
 			)}
 		>
 			<div
-				class={cn(
+				className={cn(
 					"rounded-[28px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6",
 					adminDark
 						? "border-white/10 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.16),_transparent_32%),linear-gradient(180deg,#020617_0%,#07111f_50%,#030712_100%)] text-white"
@@ -80,17 +80,17 @@ export function AdminCMSSection({
 					<div className="max-w-3xl">
 						<div className="mb-3 flex flex-wrap items-center gap-2">
 							<CmsMiniBadge dark={adminDark}>CMS + Content Management</CmsMiniBadge>
-							<span class={cmsChipClass(adminDark, true)}>
+							<span className={cmsChipClass(adminDark, true)}>
 								<span className="h-2 w-2 rounded-full bg-sky-400" /> live
 							</span>
-							<span class={cmsChipClass(adminDark)}>
+							<span className={cmsChipClass(adminDark)}>
 								<ShieldCheck className="h-3.5 w-3.5" /> secured
 							</span>
 						</div>
 
 						<div className="flex items-center gap-3">
 							<div
-								class={cn(
+								className={cn(
 									"rounded-2xl border p-3",
 									adminDark
 										? "border-sky-400/20 bg-sky-400/10 text-sky-300"
@@ -104,7 +104,7 @@ export function AdminCMSSection({
 									Admin Command Center
 								</h1>
 								<p
-									class={cn(
+									className={cn(
 										"mt-2 max-w-2xl text-sm sm:text-base",
 										adminDark ? "text-slate-300" : "text-slate-700",
 									)}
@@ -118,7 +118,7 @@ export function AdminCMSSection({
 
 					<div className="flex flex-wrap items-center gap-3">
 						<div
-							class={cn(
+							className={cn(
 								"flex items-center gap-2 rounded-2xl border px-3 py-2",
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200/80 bg-white/80",
 							)}
@@ -128,7 +128,7 @@ export function AdminCMSSection({
 								value={cmsAuditQuery}
 								onChange={(e) => setCmsAuditQuery(e.target.value)}
 								placeholder="Search logs..."
-								class={cn(
+								className={cn(
 									"w-44 bg-transparent text-sm outline-none",
 									adminDark
 										? "text-slate-100 placeholder:text-slate-500"
@@ -139,7 +139,7 @@ export function AdminCMSSection({
 						<button
 							type="button"
 							onClick={toggleTheme}
-							class={cn(
+							className={cn(
 								"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5",
 								adminDark
 									? "border-white/10 bg-white/5 hover:bg-white/10"
@@ -203,28 +203,28 @@ export function AdminCMSSection({
 				<button
 					type="button"
 					onClick={() => setCmsTab("cms")}
-					class={cmsChipClass(adminDark, cmsTab === "cms")}
+					className={cmsChipClass(adminDark, cmsTab === "cms")}
 				>
 					<BookOpen className="h-3.5 w-3.5" /> CMS
 				</button>
 				<button
 					type="button"
 					onClick={() => setCmsTab("frontend")}
-					class={cmsChipClass(adminDark, cmsTab === "frontend")}
+					className={cmsChipClass(adminDark, cmsTab === "frontend")}
 				>
 					<Globe2 className="h-3.5 w-3.5" /> Frontend
 				</button>
 				<button
 					type="button"
 					onClick={() => setCmsTab("deploy")}
-					class={cmsChipClass(adminDark, cmsTab === "deploy")}
+					className={cmsChipClass(adminDark, cmsTab === "deploy")}
 				>
 					<Workflow className="h-3.5 w-3.5" /> Deployment
 				</button>
 				<button
 					type="button"
 					onClick={() => setCmsTab("audit")}
-					class={cmsChipClass(adminDark, cmsTab === "audit")}
+					className={cmsChipClass(adminDark, cmsTab === "audit")}
 				>
 					<ShieldCheck className="h-3.5 w-3.5" /> Audit
 				</button>
@@ -242,7 +242,7 @@ export function AdminCMSSection({
 								<button
 									type="button"
 									onClick={() => refreshCmsState()}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -273,27 +273,27 @@ export function AdminCMSSection({
 								].map((card) => (
 									<div
 										key={card.title}
-										class={cn(
+										className={cn(
 											"rounded-2xl border p-4",
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/70",
 										)}
 									>
 										<div className="flex items-center justify-between gap-3">
-											<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+											<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 												{card.title}
 											</h3>
 											<ChevronRight
-												class={cn("h-4 w-4", adminDark ? "text-slate-400" : "text-slate-500")}
+												className={cn("h-4 w-4", adminDark ? "text-slate-400" : "text-slate-500")}
 											/>
 										</div>
-										<p class={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+										<p className={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 											{card.desc}
 										</p>
 										<div className="mt-4 flex items-center justify-between gap-3">
-											<span class={cn("text-xs", adminDark ? "text-slate-400" : "text-slate-500")}>
+											<span className={cn("text-xs", adminDark ? "text-slate-400" : "text-slate-500")}>
 												{card.meta}
 											</span>
-											<span class={cmsChipClass(adminDark)}>
+											<span className={cmsChipClass(adminDark)}>
 												<Clock3 className="h-3.5 w-3.5" /> synced
 											</span>
 										</div>
@@ -320,7 +320,7 @@ export function AdminCMSSection({
 									].map(([title, desc]) => (
 										<div
 											key={title}
-											class={cn(
+											className={cn(
 												"flex items-start gap-3 rounded-2xl border p-4",
 												adminDark
 													? "border-white/10 bg-white/5"
@@ -331,11 +331,11 @@ export function AdminCMSSection({
 												<Database className="h-4 w-4" />
 											</div>
 											<div>
-												<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+												<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 													{title}
 												</p>
 												<p
-													class={cn(
+													className={cn(
 														"mt-1 text-sm",
 														adminDark ? "text-slate-400" : "text-slate-600",
 													)}
@@ -357,7 +357,7 @@ export function AdminCMSSection({
 									<button
 										type="button"
 										onClick={() => refreshCmsState()}
-										class={cn(
+										className={cn(
 											"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium",
 											adminDark
 												? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -390,17 +390,17 @@ export function AdminCMSSection({
 									].map(([label, value]) => (
 										<div
 											key={label}
-											class={cn(
+											className={cn(
 												"flex items-center justify-between rounded-2xl border px-4 py-3",
 												adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 											)}
 										>
 											<div>
-												<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+												<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 													{label}
 												</p>
 												<p
-													class={cn(
+													className={cn(
 														"mt-0.5 font-medium",
 														adminDark ? "text-white" : "text-slate-900",
 													)}
@@ -434,18 +434,18 @@ export function AdminCMSSection({
 								].map(([title, desc]) => (
 									<div
 										key={title}
-										class={cn(
+										className={cn(
 											"rounded-2xl border p-4",
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/70",
 										)}
 									>
 										<div className="flex items-center justify-between">
-											<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+											<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 												{title}
 											</h3>
 											<TerminalSquare className="h-4 w-4 text-sky-400" />
 										</div>
-										<p class={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+										<p className={cn("mt-2 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 											{desc}
 										</p>
 										<div className="mt-4 flex items-center gap-2 text-xs text-sky-400">
@@ -467,7 +467,7 @@ export function AdminCMSSection({
 								<button
 									type="button"
 									onClick={() => refreshAudit()}
-									class={cn(
+									className={cn(
 										"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium",
 										adminDark
 											? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -482,29 +482,29 @@ export function AdminCMSSection({
 								{filteredCmsAuditRows.slice(0, 5).map((item) => (
 									<div
 										key={`${item.id || item.at || item.path}`}
-										class={cn(
+										className={cn(
 											"flex flex-col gap-3 rounded-2xl border p-4 md:flex-row md:items-center md:justify-between",
 											adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/70",
 										)}
 									>
 										<div>
-											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+											<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												{item.path || item.action || "--"}
 											</p>
 											<p
-												class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}
+												className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}
 											>
 												{item.at ? new Date(item.at).toLocaleString() : "--"} · system
 											</p>
 										</div>
-										<span class={cmsChipClass(adminDark)}>
+										<span className={cmsChipClass(adminDark)}>
 											<Activity className="h-3.5 w-3.5" /> {item.status ?? 200}
 										</span>
 									</div>
 								))}
 								{filteredCmsAuditRows.length === 0 ? (
 									<div
-										class={cn(
+										className={cn(
 											"rounded-2xl border border-dashed p-5 text-sm",
 											adminDark
 												? "border-white/10 bg-white/[0.03] text-slate-400"
@@ -528,18 +528,18 @@ export function AdminCMSSection({
 						action={<CmsMiniBadge dark={adminDark}>Realtime</CmsMiniBadge>}
 					>
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-4",
 								adminDark ? "border-white/10 bg-slate-950/80" : "border-slate-200 bg-white",
 							)}
 						>
 							<div className="mb-4 flex items-center justify-between">
 								<div>
-									<p class={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										Command health
 									</p>
 									<p
-										class={cn(
+										className={cn(
 											"mt-1 text-2xl font-semibold",
 											adminDark ? "text-white" : "text-slate-900",
 										)}
@@ -619,7 +619,7 @@ export function AdminCMSSection({
 							<button
 								type="button"
 								onClick={() => refreshVerificationQueue()}
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium",
 									adminDark
 										? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -631,23 +631,23 @@ export function AdminCMSSection({
 						}
 					>
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/70",
 							)}
 						>
 							<div className="flex items-start justify-between gap-3">
 								<div>
-									<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+									<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 										{verificationQueue.length > 0
 											? `${verificationQueue.length} items pending review.`
 											: emptyCopy("verification.pending", "No pending verifications in queue.")}
 									</p>
-									<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+									<p className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 										All onboarding documents are currently in a clean state.
 									</p>
 								</div>
-								<span class={cmsChipClass(adminDark)}>
+								<span className={cmsChipClass(adminDark)}>
 									<BadgeCheck className="h-3.5 w-3.5" />{" "}
 									{verificationQueue.length > 0 ? "pending" : "clear"}
 								</span>
@@ -664,7 +664,7 @@ export function AdminCMSSection({
 							<button
 								type="button"
 								onClick={() => refreshDisputes()}
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium",
 									adminDark
 										? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -676,17 +676,17 @@ export function AdminCMSSection({
 						}
 					>
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-5",
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/70",
 							)}
 						>
-							<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+							<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 								{disputes.length > 0
 									? `${disputes.length} open disputes.`
 									: emptyCopy("disputes.none", "No active disputes.")}
 							</p>
-							<p class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
+							<p className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}>
 								Contract review and escalation feeds are currently idle.
 							</p>
 						</div>
@@ -701,7 +701,7 @@ export function AdminCMSSection({
 							<button
 								type="button"
 								onClick={() => refreshAudit()}
-								class={cn(
+								className={cn(
 									"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium",
 									adminDark
 										? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
@@ -716,23 +716,23 @@ export function AdminCMSSection({
 							{filteredCmsAuditRows.map((log) => (
 								<div
 									key={`${log.id || log.at}-${log.path || log.action}`}
-									class={cn(
+									className={cn(
 										"rounded-2xl border p-4",
 										adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 									)}
 								>
 									<div className="flex items-start justify-between gap-4">
 										<div>
-											<p class={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
+											<p className={cn("font-medium", adminDark ? "text-white" : "text-slate-900")}>
 												{log.path || log.action || "--"}
 											</p>
 											<p
-												class={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}
+												className={cn("mt-1 text-sm", adminDark ? "text-slate-400" : "text-slate-600")}
 											>
 												{log.at ? new Date(log.at).toLocaleString() : "--"}
 											</p>
 										</div>
-										<span class={cmsChipClass(adminDark)}>
+										<span className={cmsChipClass(adminDark)}>
 											<ThreeDot
 												variant="bounce"
 												color="#6100ff"
@@ -744,7 +744,7 @@ export function AdminCMSSection({
 										</span>
 									</div>
 									<div
-										class={cn(
+										className={cn(
 											"mt-3 grid gap-2 text-xs sm:grid-cols-2",
 											adminDark ? "text-slate-400" : "text-slate-600",
 										)}
@@ -758,7 +758,7 @@ export function AdminCMSSection({
 							))}
 							{filteredCmsAuditRows.length === 0 ? (
 								<div
-									class={cn(
+									className={cn(
 										"rounded-2xl border border-dashed p-5 text-sm",
 										adminDark
 											? "border-white/10 bg-white/[0.03] text-slate-400"

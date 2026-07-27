@@ -183,7 +183,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	return (
 		<div className="space-y-6">
 			<div
-				class={cn(
+				className={cn(
 					"rounded-3xl border p-6",
 					adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 				)}
@@ -193,10 +193,10 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						<Bot className="h-6 w-6" />
 					</div>
 					<div>
-						<h2 class={cn("text-2xl font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+						<h2 className={cn("text-2xl font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 							AI Assistant Configuration
 						</h2>
-						<p class={adminDark ? "text-slate-400" : "text-slate-500"}>
+						<p className={adminDark ? "text-slate-400" : "text-slate-500"}>
 							Configure AI behavior, prompts, and response rules
 						</p>
 					</div>
@@ -219,7 +219,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 
 			{/* Tabs */}
 			<div
-				class={cn(
+				className={cn(
 					"flex gap-2 rounded-2xl border p-1",
 					adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 				)}
@@ -229,7 +229,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						key={tab.id}
 						type="button"
 						onClick={() => setActiveTab(tab.id)}
-						class={cn(
+						className={cn(
 							"flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
 							activeTab === tab.id
 								? adminDark
@@ -252,18 +252,18 @@ export function AdminAISection({ activeCategory, adminDark }) {
 				<div className="space-y-6">
 					{/* System Prompt */}
 					<div
-						class={cn(
+						className={cn(
 							"rounded-3xl border p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
 						<div className="mb-4 flex items-center gap-2">
 							<Code2 className="h-5 w-5 text-indigo-400" />
-							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+							<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								System Prompt
 							</h3>
 						</div>
-						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 							Short instruction that defines AI's role. Sent as "system" message to AI.
 						</p>
 						<textarea
@@ -271,7 +271,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							onChange={(e) => setConfig((prev) => ({ ...prev, systemPrompt: e.target.value }))}
 							rows={3}
 							placeholder="You are a helpful GarTex assistant."
-							class={cn(
+							className={cn(
 								"w-full rounded-2xl border px-4 py-3 text-sm outline-none resize-none",
 								adminDark
 									? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -282,18 +282,18 @@ export function AdminAISection({ activeCategory, adminDark }) {
 
 					{/* Agent Prompt */}
 					<div
-						class={cn(
+						className={cn(
 							"rounded-3xl border p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
 						<div className="mb-4 flex items-center gap-2">
 							<Bot className="h-5 w-5 text-indigo-400" />
-							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+							<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								Agent Prompt
 							</h3>
 						</div>
-						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 							Full prompt with role description. Appended before knowledge base and user question.
 						</p>
 						<textarea
@@ -301,7 +301,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							onChange={(e) => setConfig((prev) => ({ ...prev, agentPrompt: e.target.value }))}
 							rows={6}
 							placeholder="You are the GarTex Assistant, an expert on the GarTexHub textile marketplace platform..."
-							class={cn(
+							className={cn(
 								"w-full rounded-2xl border px-4 py-3 text-sm outline-none resize-none font-mono",
 								adminDark
 									? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -312,7 +312,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 
 					{/* Code Context Settings */}
 					<div
-						class={cn(
+						className={cn(
 							"rounded-3xl border p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
@@ -320,7 +320,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						<div className="mb-4 flex items-center justify-between">
 							<div className="flex items-center gap-2">
 								<Code2 className="h-5 w-5 text-indigo-400" />
-								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									Code Context Search
 								</h3>
 							</div>
@@ -341,13 +341,13 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								)}
 							</button>
 						</div>
-						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 							When enabled, AI will search your codebase for relevant code snippets when questions
 							contain these keywords.
 						</p>
 						<div>
 							<label
-								class={cn(
+								className={cn(
 									"mb-1.5 block text-sm font-medium",
 									adminDark ? "text-slate-300" : "text-slate-700",
 								)}
@@ -365,7 +365,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								}
 								placeholder="api, route, server, code, bug, error"
 								disabled={!config.codeContextEnabled}
-								class={cn(
+								className={cn(
 									"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
 									adminDark
 										? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -395,14 +395,14 @@ export function AdminAISection({ activeCategory, adminDark }) {
 				<div className="space-y-4">
 					{/* Rules List */}
 					<div
-						class={cn(
+						className={cn(
 							"rounded-3xl border",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
 						<div className="border-b border-slate-200/10 px-6 py-4">
 							<div className="flex items-center justify-between">
-								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									{activeTab === "global" ? "Global Rules" : "Small Talk Rules"} (
 									{currentRules.length})
 								</h3>
@@ -420,12 +420,12 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						{currentRules.length === 0 ? (
 							<div className="px-6 py-12 text-center">
 								<Bot
-									class={cn(
+									className={cn(
 										"mx-auto h-12 w-12 mb-4",
 										adminDark ? "text-slate-600" : "text-slate-300",
 									)}
 								/>
-								<p class={adminDark ? "text-slate-400" : "text-slate-500"}>
+								<p className={adminDark ? "text-slate-400" : "text-slate-500"}>
 									No rules configured yet
 								</p>
 							</div>
@@ -437,7 +437,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											<div className="min-w-0 flex-1">
 												<div className="flex items-center gap-2 flex-wrap">
 													<span
-														class={cn(
+														className={cn(
 															"text-sm font-medium",
 															adminDark ? "text-white" : "text-slate-900",
 														)}
@@ -449,7 +449,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 													{rule.keywords?.map((kw, idx) => (
 														<span
 															key={idx}
-															class={cn(
+															className={cn(
 																"rounded-full border px-2 py-0.5 text-xs",
 																adminDark
 																	? "border-indigo-500/30 bg-indigo-500/10 text-indigo-300"
@@ -461,7 +461,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 													))}
 												</div>
 												<p
-													class={cn(
+													className={cn(
 														"mt-2 text-sm",
 														adminDark ? "text-slate-300" : "text-slate-600",
 													)}
@@ -486,18 +486,18 @@ export function AdminAISection({ activeCategory, adminDark }) {
 					{/* Add Rule Form */}
 					{showAddForm && (
 						<div
-							class={cn(
+							className={cn(
 								"rounded-3xl border p-6",
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 							)}
 						>
-							<h3 class={cn("mb-4 font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+							<h3 className={cn("mb-4 font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								Add New Rule
 							</h3>
 							<div className="space-y-4">
 								<div>
 									<label
-										class={cn(
+										className={cn(
 											"mb-1.5 block text-sm font-medium",
 											adminDark ? "text-slate-300" : "text-slate-700",
 										)}
@@ -514,7 +514,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											}))
 										}
 										placeholder="e.g., custom_rule_name"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
 											adminDark
 												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -524,7 +524,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								</div>
 								<div>
 									<label
-										class={cn(
+										className={cn(
 											"mb-1.5 block text-sm font-medium",
 											adminDark ? "text-slate-300" : "text-slate-700",
 										)}
@@ -541,7 +541,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											}))
 										}
 										placeholder="e.g., setup, onboarding, profile"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
 											adminDark
 												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -551,7 +551,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								</div>
 								<div>
 									<label
-										class={cn(
+										className={cn(
 											"mb-1.5 block text-sm font-medium",
 											adminDark ? "text-slate-300" : "text-slate-700",
 										)}
@@ -568,7 +568,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 										}
 										rows={3}
 										placeholder="The response the AI should give when keywords match"
-										class={cn(
+										className={cn(
 											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none resize-none",
 											adminDark
 												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -591,7 +591,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											setShowAddForm(false);
 											setNewRule({ source: "", keywords: "", response: "" });
 										}}
-										class={cn(
+										className={cn(
 											"rounded-xl border px-4 py-2 text-sm font-medium transition-all",
 											adminDark
 												? "border-slate-700 text-slate-400 hover:text-white"

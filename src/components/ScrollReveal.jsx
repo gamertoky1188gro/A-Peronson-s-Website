@@ -15,7 +15,7 @@ export default function ScrollReveal({ children, className = "", as: Tag = "div"
 	if (reduceMotion) {
 		const StaticTag = Tag;
 		return (
-			<StaticTag class={className} {...rest}>
+			<StaticTag className={className} {...rest}>
 				{children}
 			</StaticTag>
 		);
@@ -25,7 +25,7 @@ export default function ScrollReveal({ children, className = "", as: Tag = "div"
 
 	return (
 		<MotionTag
-			class={className}
+			className={className}
 			initial={{ opacity: 0, y: 24 }}
 			whileInView={{ opacity: 1, y: 0 }}
 			viewport={{ once: true, margin: "-60px" }}
