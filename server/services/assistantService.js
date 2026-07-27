@@ -1045,6 +1045,10 @@ async function ensureOpencodeServer() {
 }
 
 export async function initOpencodeServer() {
+	if (process.env.OPENCODE_ENABLED === "false") {
+		logInfo("OPENCODE_ENABLED=false — skipping opencode server startup");
+		return null;
+	}
 	logInfo("Initializing opencode server on startup...");
 	const port = await ensureOpencodeServer();
 	if (!port) {

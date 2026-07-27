@@ -54,6 +54,8 @@ services:
         value: AVNS_5jxzXb4MdXsXWeUrVsp
       - key: AI_HARAM_ANALYTICS_ENABLED
         value: "false"
+      - key: OPENCODE_ENABLED
+        value: "true"
       - key: SERVE_DIST
         value: "true"
       - key: VITE_BASE_URL
