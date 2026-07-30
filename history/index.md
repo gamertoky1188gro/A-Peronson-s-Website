@@ -1,13 +1,13 @@
 # Project History Index
 
-> Complete chronological documentation of all 621 commits in the GarTexHub B2B Textile Marketplace repository.
+> Complete chronological documentation of all 637 commits in the GarTexHub B2B Textile Marketplace repository.
 
 ## Summary Statistics
 
 | Metric                            | Value                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Total commits documented**      | 621                                                                                                                         |
-| **Date range**                    | 2026-03-01 → 2026-07-26                                                                                                                     |
+| **Total commits documented**      | 637                                                                                                                         |
+| **Date range**                    | 2026-03-01 → 2026-07-31                                                                                                                     |
 | **Unique files ever touched**     | 2,200+                                                                                                                                      |
 | **Most frequently changed files** | `src/pages/SearchResults.jsx` (77x), `server/server.js` (76x), `src/App.jsx` (65x), `src/components/NavBar.jsx` (59x), `package.json` (58x) |
 | **Largest commits (by files)**    | 936 files (commit `bdbbbc1` "meow"), 515 files (commit `6b75ca5` "Fixed"), 299 files (commit `bb22700` "Fixed")                            |
@@ -32,6 +32,7 @@
 | **13. History & Lint**           | 0589–0594 | Jun 23–Jul 19 | History documentation framework, HTML/PDF exports, lint fixes, massive rebuild |
 | **14. Audit & Quality**          | 0595–0617 | Jul 19–25 | Post-rebuild lint fixes, security audit resolution (HIGH/LOW items), Prisma transaction wrapping, unused import cleanup, build errors, AdminPanel modularization, progress documentation |
 | **15. Features & Tooling**       | 0618–0621 | Jul 25–26 | History documentation, build-error fixes, Biome reformat (+ karpathy-coder skill), B2B relationships, feedback, join requests, verification expansion |
+| **16. Production Polish & Fixes** | 0622–0637 | Jul 26–31 | History docs, build fixes (dev dep, CORS, auth), diagnostics system, login polish, class→className migration, logger fix, opencode guard, MainFeed fix, BuyerRequestManagement restore, video call enforcement, admin finance |
 
 ## Complete Commit List
 
@@ -101,14 +102,30 @@
 | [0619](./0619_2026-07-25_13-46-16_cdb4cc4_resolve-build-errors-wrong-import-paths-missing-timeouts-export-circular-vendor-chunks.md)| 2026-07-25 13:46 | `cdb4cc4` | Resolve Build Errors — Import Paths, TIMEOUTS, Vendor Chunks     | Fixed 8 admin section imports, added TIMEOUTS export, restructured vendor chunks |
 | [0620](./0620_2026-07-26_00-45-49_54bb516_workspace-save-biome-rebuild-karpathy.md)           | 2026-07-26 00:45 | `54bb516` | Workspace Save — Biome Reformat, Rebuild, Karpathy-Coder Skill   | 690-file Biome reformat, dist/ rebuild, new karpathy-coder agent skill suite, config consolidation |
 | [0621](./0621_2026-07-26_15-42-09_65a448e_workspace-save-feedback-join-request-relationships.md)| 2026-07-26 15:42 | `65a448e` | Workspace Save — Feedback, Join Requests, B2B Relationships       | New FeedbackPage, JoinRequestPage, B2B relationship services, verification expansion, Prisma schema |
+| [0622](./0622_2026-07-26_15-47-14_bcbfea1_document-history-for-commits-0618-0621.md)                     | 2026-07-26 15:47 | `bcbfea1` | Document Commits 0618-0621 in History                            | Created history docs for 4 commits, updated index/progress, rebuilt dist/ |
+| [0623](./0623_2026-07-26_15-53-22_5e48229_move-dev-dependency-to-optional.md)                           | 2026-07-26 15:53 | `5e48229` | Move Dev Dependency to Optional to Fix Node 22 Build             | Moved `dev` package to optionalDependencies to prevent inotify build failure |
+| [0624](./0624_2026-07-26_16-00-54_7e1086a_fix-license-route-auth-middleware.md)                         | 2026-07-26 16:00 | `7e1086a` | Fix License Route Auth Middleware                                | Replaced authenticateToken with requireAuth in 5 license request routes |
+| [0625](./0625_2026-07-27_12-15-54_81e63d6_allow-cors-no-origin-requests.md)                             | 2026-07-27 12:15 | `81e63d6` | Allow CORS No-Origin Requests for Health Checks                  | Relaxed CORS to accept no-origin requests in production for curl/monitoring |
+| [0626](./0626_2026-07-27_14-13-51_be140f3_add-production-start-script.md)                               | 2026-07-27 14:13 | `be140f3` | Add Production Start Script                                      | Added start:prod script, simplified render.yaml startCommand |
+| [0627](./0627_2026-07-27_14-26-15_638ac75_add-self-diagnostics-system.md)                                | 2026-07-27 14:26 | `638ac75` | Add Self-Diagnostics System                                      | New /api/diagnostics, /api/health, /api/uptime endpoints + CLI diagnose script |
+| [0628](./0628_2026-07-27_14-36-06_7ad2445_enlarge-login-page-brand.md)                                   | 2026-07-27 14:36 | `7ad2445` | Enlarge Login Page Brand Area                                    | Redesigned login brand with larger GarTexHub logo and decorative divider |
+| [0629](./0629_2026-07-27_14-39-39_6a3e4f6_scale-down-login-brand-section.md)                             | 2026-07-27 14:39 | `6a3e4f6` | Scale Down Login Brand Section                                   | Reversed brand enlargement — smaller icon, compact layout |
+| [0630](./0630_2026-07-27_14-42-19_9b57e20_fix-react-attributes-and-shrink-login-icons.md)                | 2026-07-27 14:42 | `9b57e20` | Fix React Attributes and Shrink Login Icons                      | Fixed class→className in Login.jsx, reduced icon/spacing sizes |
+| [0631](./0631_2026-07-27_14-45-31_aef2fa4_replace-html-class-with-react-classname.md)                    | 2026-07-27 14:45 | `aef2fa4` | Replace HTML class with React className Across Codebase          | 6,921 replacements across 106 JSX files — class→className |
+| [0632](./0632_2026-07-27_14-49-39_495efd5_replace-remaining-class-with-classname.md)                     | 2026-07-27 14:49 | `495efd5` | Replace Remaining class={ with className={ Across 60 Files       | 854 replacements of dynamic class={ expressions across 60 files |
+| [0633](./0633_2026-07-27_14-51-42_0f97e2b_remove-watch-flag-from-server-script.md)                      | 2026-07-27 14:51 | `0f97e2b` | Remove Watch Flag from Server Script                             | Changed node --watch to node for server script |
+| [0634](./0634_2026-07-27_14-52-51_e5a6be7_fix-no-op-logger-stubs.md)                                      | 2026-07-27 14:52 | `e5a6be7` | Fix No-Op Logger Stubs                                           | Replaced empty logInfo/logWarn/logError stubs with real implementations |
+| [0635](./0635_2026-07-27_14-56-42_e4f7520_add-opencode-enabled-env-guard.md)                             | 2026-07-27 14:56 | `e4f7520` | Add OPENCODE_ENABLED Env Guard                                   | Added env var to skip opencode server startup when disabled |
+| [0636](./0636_2026-07-27_14-58-38_fe656b4_guard-ensure-opencode-server-in-session-init.md)               | 2026-07-27 14:58 | `fe656b4` | Guard ensureOpencodeServer in Session Init                       | Extended OPENCODE_ENABLED guard to ensureOpencodeServer bypass path |
+| [0637](./0637_2026-07-31_00-24-57_d581aa0_restore-buyer-request-management-and-enforce-video-calls.md)   | 2026-07-31 00:24 | `d581aa0` | Restore Corrupted Component, Fix Prisma Schema, Enforce Video Calls | Restored BuyerRequestManagement, MainFeed loop fix, video call enforcement, admin finance, dist rebuild |
 
-> **Note**: Due to the large number of commits (621), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
+> **Note**: Due to the large number of commits (637), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
 
 ## File Naming Convention
 
 `history/NNNN_YYYY-MM-DD_HH-MM-SS_ABBREV_HASH_descriptive-title.md`
 
-- `NNNN` = 4-digit commit sequence number (0001-0621)
+- `NNNN` = 4-digit commit sequence number (0001-0637)
 - `YYYY-MM-DD_HH-MM-SS` = commit date/time
 - `ABBREV_HASH` = first 7 characters of commit hash
 - `descriptive-title` = generated title (kebab-case)
@@ -125,6 +142,9 @@
 - **Audit remediation (0595–0617)**: Systematic security audit fix rounds (HIGH items → LOW items), Prisma transaction safety, unused import cleanup, JWT secret removal, error boundaries, form validation, database indexes, ARIA/focus trap, AdminPanel modularization, and ongoing progress documentation
 - **Biome reformat (0620)**: A massive 690-file reformat using Biome, replacing ESLint/Prettier, plus karpathy-coder skill suite and file catalogs
 - **B2B relationships (0621)**: New B2B relationship management, join requests, feedback page, company licensing, and verification expansion
+- **class→className migration (0631–0632)**: 166 files, 7,775 replacements fixing incorrect HTML `class` attributes in React JSX
+- **Production polish (0623–0636)**: 14 focused fixes — CORS, auth middleware, diagnostics, logger restoration, opencode env guard, login page polish, production start script
+- **Component restoration (0637)**: BuyerRequestManagement restored from stubs after class migration; MainFeed infinite loop fixed via liveRef pattern; video call enforcement added to messaging and contracts
 
 ## Progress Tracking
 
