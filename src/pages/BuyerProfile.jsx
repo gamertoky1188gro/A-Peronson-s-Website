@@ -848,6 +848,7 @@ export default function BuyerProfile() {
 											/>
 											<div className="grid gap-3 sm:grid-cols-2">
 												<Metric label="Country" value={user?.profile?.country || "—"} />
+												<Metric label="Industry" value={user?.profile?.industry || "—"} />
 												<Metric
 													label="Certifications"
 													value={(user?.profile?.certifications || []).join(", ") || "—"}

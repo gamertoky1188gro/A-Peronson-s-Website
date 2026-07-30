@@ -23,6 +23,14 @@ body,
 	overflow-x: hidden;
 }
 
+/* Lenis recommended CSS for nested scroll containers */
+.lenis.lenis-smooth [data-lenis-prevent] {
+	overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+	overflow: hidden;
+}
+
 @keyframes blob-spin-1 {
 	to {
 		rotate: 360deg;

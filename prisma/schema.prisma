@@ -140,6 +140,11 @@ model Requirement {
   priceOriginal              Float?
   currencyOriginal           String?
   priceNormalizedBase        Float?
+  currency                   String?
+  priceOriginalMin           Float?
+  priceOriginalMax           Float?
+  priceBaseMin               Float?
+  priceBaseMax               Float?
 
   @@index([buyer_id])
   @@index([assigned_agent_id])

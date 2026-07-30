@@ -5,16 +5,15 @@ import logging
 import io
 from pathlib import Path
 
-json_mode = any(x.lower().replace('-', '').replace('/', '') == 'json' for x in sys.argv[1:])
+json_mode = any(x.lower().replace('-', '').replace('/', '') in ('json', 'html') for x in sys.argv[1:])
 
+log_level = logging.CRITICAL if json_mode else logging.WARNING
+logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 if json_mode:
     warnings.filterwarnings('ignore')
     os.environ['PYTHONWARNINGS'] = 'ignore'
     for logger_name in ['paddle', 'ppocr', '']:
         logging.getLogger(logger_name).setLevel(logging.CRITICAL)
-    logging.disable(logging.CRITICAL)
-else:
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
@@ -104,54 +103,8 @@ def create_pipeline(config_path: str = None):
 
 
 def print_result(result: dict):
-    print("\n" + "=" * 50)
-    print(f"RESULT: {result['label']}")
-    print(f"SCORE: {result['score']}")
-    print(f"SEVERITY: {result.get('severity', 'unknown')}")
-    print(f"CONFIDENCE: {result.get('confidence', 'unknown')}")
-    print("=" * 50)
-    
-    details = result.get('details', {})
-    
-    print("\n--- SCORE BREAKDOWN ---")
-    print(f"  OCR Score: {details.get('ocr_score', 0)}")
-    print(f"  YOLO Detection Score: {details.get('detection_score', 0)}")
-    print(f"  NSFW Score: {details.get('nsfw_score', 0)}")
-    print(f"  Vision Score: {details.get('vision_score', 0)}")
-    print(f"  Weights: {details.get('weights', {})}")
-    
-    print("\n--- MODEL RESULTS ---")
-    ocr = details.get('ocr', {})
-    if ocr.get('full_text'):
-        print(f"  OCR Text: {ocr.get('full_text', '')[:100]}...")
-        print(f"  OCR Source: {ocr.get('source', 'unknown')}")
-    else:
-        print("  OCR: No text detected")
-    
-    detection = details.get('detection', {})
-    print(f"  YOLO Objects: {detection.get('total_count', 0)} detected, {detection.get('risky_count', 0)} risky")
-    for det in detection.get('detections', [])[:5]:
-        print(f"    - {det.get('label')}: {det.get('risk_level', 'none')}")
-    
-    nsfw = details.get('nsfw', {})
-    print(f"  NSFW Raw Score: {nsfw.get('nsfw_score', 0):.1f}")
-    print(f"  Safe Score: {nsfw.get('safe_score', 100):.1f}")
-    for reason in nsfw.get('reasons', []):
-        print(f"    - {reason}")
-    
-    print("\n--- DETECTED SIGNALS ---")
-    if result.get('signals'):
-        for signal in result['signals'][:15]:
-            print(f"  [{signal['risk'].upper()}] {signal['message']}")
-    else:
-        print("  No signals detected")
-    
-    if 'timing' in result:
-        print(f"\n--- TIMING ---")
-        timing = result['timing']
-        for k, v in timing.items():
-            print(f"  {k}: {v:.2f}s")
-        print(f"  TOTAL: {timing.get('total', 0):.2f}s")
+    from src.cli import display
+    display(result)
 
 
 if __name__ == '__main__':
@@ -166,6 +119,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', '-o', help='Output JSON file')
     parser.add_argument('--verbose', '-v', action='store_true')
     parser.add_argument('--json', '-j', action='store_true', help='Output as JSON')
+    parser.add_argument('--html', action='store_true', help='Output as HTML report')
     
     args = parser.parse_args()
     
@@ -173,7 +127,8 @@ if __name__ == '__main__':
         logging.getLogger().setLevel(logging.DEBUG)
     
     json_output = json_mode or args.json
-    
+    html_output = args.html
+
     pipeline = create_pipeline(args.config)
     
     if args.stdin:
@@ -186,7 +141,11 @@ if __name__ == '__main__':
     else:
         result = pipeline.analyze_file(args.image_path)
     
-    if json_output:
+    if html_output:
+        from src.html_report import generate as gen_html
+        html = gen_html(result)
+        print(html)
+    elif json_output:
         import json
         print(json.dumps(result, indent=2))
     else:

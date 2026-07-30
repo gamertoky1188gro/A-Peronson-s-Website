@@ -72,7 +72,7 @@ const publicLinks = [
 	{ to: "/pricing", label: "Pricing" },
 	{ to: "/about", label: "About" },
 	{ to: "/help", label: "Help" },
-	{ to: "/support", label: "Support" },
+	{ to: "mailto:gartexhub@gmail.com", label: "Support", external: true },
 ];
 
 // Auth navigation dropdown structure
@@ -164,7 +164,7 @@ const navigationGroups = [
 		label: "Support",
 		icon: Settings,
 		items: [
-			{ to: "/support", label: "Support" },
+			{ to: "mailto:gartexhub@gmail.com", label: "Contact Support", external: true },
 			{ to: "/feedback", label: "Feedback" },
 			{
 				to: "/onboarding",
@@ -182,9 +182,7 @@ export default function NavBar() {
 	const dark = theme === "dark";
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [openDropdown, setOpenDropdown] = useState(null);
-	const [isTouchDevice, setIsTouchDevice] = useState(false);
 	const [searchExpanded, setSearchExpanded] = useState(false);
-	const [dropdownTimeout, setDropdownTimeout] = useState(null);
 
 	const validPublicLinks = useMemo(() => publicLinks.filter((link) => isRouteValid(link.to)), []);
 
@@ -193,15 +191,11 @@ export default function NavBar() {
 			navigationGroups
 				.map((group) => ({
 					...group,
-					items: group.items.filter((item) => isRouteValid(item.to)),
+					items: group.items.filter((item) => item.external || isRouteValid(item.to)),
 				}))
 				.filter((group) => group.items.length > 0),
 		[],
 	);
-
-	useEffect(() => {
-		setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
-	}, []);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchResults, setSearchResults] = useState([]);
 	const [searchLoading, setSearchLoading] = useState(false);
@@ -237,19 +231,7 @@ export default function NavBar() {
 	const searchRef = useRef(null);
 
 	const handleSetDropdown = useCallback((label) => {
-		setOpenDropdown(label);
-	}, []);
-
-	const handleDropdownHover = useCallback(() => {
-		setDropdownTimeout(null);
-	}, []);
-
-	const handleDropdownLeave = useCallback(() => {
-		const timeout = setTimeout(() => {
-			setOpenDropdown(null);
-			setDropdownTimeout(null);
-		}, 600);
-		setDropdownTimeout(timeout);
+		setOpenDropdown((prev) => (prev === label ? null : label));
 	}, []);
 
 	useEffect(() => {
@@ -268,12 +250,19 @@ export default function NavBar() {
 	}, [searchExpanded, searchQuery]);
 
 	useEffect(() => {
-		const handleClickOutside = () => setOpenDropdown(null);
-		if (openDropdown && isTouchDevice) {
-			document.addEventListener("click", handleClickOutside);
-			return () => document.removeEventListener("click", handleClickOutside);
+		const handleClickOutside = (e) => {
+			if (openDropdown) {
+				const nav = document.querySelector("nav");
+				if (nav && !nav.contains(e.target)) {
+					setOpenDropdown(null);
+				}
+			}
+		};
+		if (openDropdown) {
+			document.addEventListener("mousedown", handleClickOutside);
+			return () => document.removeEventListener("mousedown", handleClickOutside);
 		}
-	}, [openDropdown, isTouchDevice]);
+	}, [openDropdown]);
 
 	useEffect(() => {
 		const handler = (e) => {
@@ -647,15 +636,12 @@ export default function NavBar() {
 												group={group}
 												isOpen={openDropdown === group.label}
 												onToggle={handleSetDropdown}
-												onMouseEnter={handleDropdownHover}
-												onMouseLeave={handleDropdownLeave}
 												userRole={String(user?.role || "").toLowerCase()}
 												badgeCount={unreadCount}
-												isTouchDevice={isTouchDevice}
 											/>
 										</Motion.div>
 									))
-								: validPublicLinks.map(({ to, label }, idx) => (
+								: validPublicLinks.map(({ to, label, external }, idx) => (
 										<Motion.div
 											key={to}
 											initial={{ opacity: 0, y: -8 }}
@@ -666,7 +652,16 @@ export default function NavBar() {
 												ease: easePremium,
 											}}
 										>
-											<MagneticNavLink to={to} label={label} active={location.pathname === to} />
+											{external ? (
+												<a
+													href={to}
+													className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+												>
+													{label}
+												</a>
+											) : (
+												<MagneticNavLink to={to} label={label} active={location.pathname === to} />
+											)}
 										</Motion.div>
 									))}
 						</SlideIn>
@@ -966,14 +961,17 @@ export default function NavBar() {
 																		"Agent Dashboard": Star,
 																		"Admin Panel": ShieldCheck,
 																		Governance: Settings,
-																		Support: Settings,
-																		Onboarding: Star,
-																	}[item.label] || Settings;
+																	"Contact Support": Settings,
+																	Onboarding: Star,
+																}[item.label] || Settings;
+																const LinkTag2 = item.external ? "a" : Link;
+																const linkProps2 = item.external
+																	? { href: item.to, target: "_blank", rel: "noopener noreferrer" }
+																	: { to: item.to, onClick: () => setMobileOpen(false) };
 																return (
-																	<Link
+																	<LinkTag2
 																		key={item.to}
-																		to={item.to}
-																		onClick={() => setMobileOpen(false)}
+																		{...linkProps2}
 																		className={cn(
 																			"flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition",
 																			location.pathname === item.to ||
@@ -1002,28 +1000,33 @@ export default function NavBar() {
 																				</Motion.span>
 																			)}
 																		<ChevronRight className="h-4 w-4 opacity-40" />
-																	</Link>
+																	</LinkTag2>
 																);
 															})}
 													</div>
 												</div>
 											))
-										: validPublicLinks.map(({ to, label }) => (
-												<Link
-													key={to}
-													to={to}
-													onClick={() => setMobileOpen(false)}
-													className={cn(
-														"flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-medium transition",
-														location.pathname === to
-															? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
-															: "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10",
-													)}
-												>
-													<span>{label}</span>
-													<ChevronRight className="h-4 w-4 opacity-40" />
-												</Link>
-											))}
+										: validPublicLinks.map(({ to, label, external }) => {
+												const LinkTag3 = external ? "a" : Link;
+												const linkProps3 = external
+													? { href: to, target: "_blank", rel: "noopener noreferrer" }
+													: { to, onClick: () => setMobileOpen(false) };
+												return (
+													<LinkTag3
+														key={to}
+														{...linkProps3}
+														className={cn(
+															"flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-medium transition",
+															location.pathname === to
+																? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
+																: "text-slate-600 hover:bg-slate-900/5 dark:text-slate-300 dark:hover:bg-white/10",
+														)}
+													>
+														<span>{label}</span>
+														<ChevronRight className="h-4 w-4 opacity-40" />
+													</LinkTag3>
+												);
+											})}
 								</div>
 
 								{user ? null : (

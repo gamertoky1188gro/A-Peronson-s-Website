@@ -290,20 +290,33 @@ export default function MainFeed() {
 	const [feedConfig, setFeedConfig] = useState(DEFAULT_FEED_CONFIG);
 	const [activeType, setActiveType] = useState(feedConfig.tabs[0]);
 	const [activeCategory, setActiveCategory] = useState(feedConfig.labels.categories);
+	const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
+	useEffect(() => {
+		const onResize = () => setIsLargeScreen(window.innerWidth >= 1024);
+		window.addEventListener("resize", onResize);
+		return () => window.removeEventListener("resize", onResize);
+	}, []);
+	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const [unique, setUnique] = useLocalStorageState(uniqueKey, false);
 	const [search, setSearch] = useState("");
 
 	const [items, setItems] = useState([]);
 	const [tags, setTags] = useState([]);
 	const [nextCursor, setNextCursor] = useState(0);
+	const nextCursorRef = useRef(0);
+	const setNextCursorBoth = useCallback((val) => {
+		setNextCursor(val);
+		nextCursorRef.current = val;
+	}, []);
 	const [pageLoading, setPageLoading] = useState(true);
 	const loadFlags = useRef({ user: false, config: false, feed: false });
-	const markLoaded = (key) => {
+	const markLoaded = useCallback((key) => {
 		loadFlags.current[key] = true;
 		if (loadFlags.current.user && loadFlags.current.config && loadFlags.current.feed) {
 			setPageLoading(false);
 		}
-	};
+	}, []);
 
 	const [loading, setLoading] = useState(true);
 	const [loadingMore, setLoadingMore] = useState(false);
@@ -317,6 +330,9 @@ export default function MainFeed() {
 	const [reportBusy, setReportBusy] = useState(false);
 	const [expressBusyId, setExpressBusyId] = useState("");
 	const [claimedRequestId, setClaimedRequestId] = useState("");
+
+	const liveRef = useRef({ token, activeCategory, activeType, unique, feedConfig, nextCursor: nextCursorRef.current });
+	liveRef.current = { token, activeCategory, activeType, unique, feedConfig, nextCursor: nextCursorRef.current };
 
 	const highlightKey = searchParams.get("item") || "";
 	const sentinelRef = useRef(null);
@@ -339,8 +355,10 @@ export default function MainFeed() {
 	}, [user?.role]);
 
 	const loadUser = useCallback(async () => {
+		const t = liveRef.current.token;
+		if (!t) return;
 		try {
-			const fresh = await fetchCurrentUser(token);
+			const fresh = await fetchCurrentUser(t);
 			if (fresh) {
 				setUser(fresh);
 			}
@@ -349,13 +367,12 @@ export default function MainFeed() {
 		} finally {
 			markLoaded("user");
 		}
-	}, [token, markLoaded]);
+	}, [markLoaded]);
 
 	const loadFeedPage = useCallback(
-		// eslint-disable-next-line react-hooks/preserve-manual-memoization
 		async ({ reset }) => {
 			const limit = 12;
-			const cursor = reset ? 0 : Number(nextCursor || 0);
+			const cursor = reset ? 0 : Number(nextCursorRef.current || 0);
 
 			if (reset) {
 				setLoading(true);
@@ -365,6 +382,15 @@ export default function MainFeed() {
 				setLoadingMore(true);
 				setError("");
 			}
+
+			const s = liveRef.current;
+			const token = s.token;
+			const feedConfig = s.feedConfig;
+			const activeType = s.activeType;
+			const activeCategory = s.activeCategory;
+			const unique = s.unique;
+
+			if (!token) return;
 
 			try {
 				const role = user?.role || "";
@@ -413,7 +439,7 @@ export default function MainFeed() {
 				});
 
 				const serverNext = data?.next_cursor;
-				setNextCursor(serverNext === null || serverNext === undefined ? null : serverNext);
+				setNextCursorBoth(serverNext === null || serverNext === undefined ? null : serverNext);
 
 				if (reset) {
 					normalized.slice(0, 6).forEach((item) => {
@@ -428,7 +454,7 @@ export default function MainFeed() {
 				if (reset) {
 					setItems([]);
 				}
-				setNextCursor(null);
+				setNextCursorBoth(null);
 			} finally {
 				setLoading(false);
 				setLoadingMore(false);
@@ -437,7 +463,7 @@ export default function MainFeed() {
 				}
 			}
 		},
-		[activeCategory, activeType, token, unique, user?.role, feedConfig, nextCursor, markLoaded],
+		[markLoaded],
 	);
 
 	useEffect(() => {
@@ -446,23 +472,28 @@ export default function MainFeed() {
 	}, [loadUser]);
 
 	useEffect(() => {
+		let cancelled = false;
 		const token = getToken();
 		if (!token) {
 			return markLoaded("config");
 		}
 		apiRequest("/admin/config/feed-page", { token })
-			.then((data) => setFeedConfig({ ...DEFAULT_FEED_CONFIG, ...data }))
+			.then((data) => {
+				if (!cancelled) setFeedConfig({ ...DEFAULT_FEED_CONFIG, ...data });
+			})
 			.catch(() => logger.warn("Failed to load feed config"))
-			.finally(() => markLoaded("config"));
+			.finally(() => {
+				if (!cancelled) markLoaded("config");
+			});
+		return () => { cancelled = true; };
 	}, [markLoaded]);
 
 	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setItems([]);
-		setNextCursor(0);
+		setNextCursorBoth(0);
 		loadFeedPage({ reset: true });
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [loadFeedPage]);
+	}, [loadFeedPage, activeCategory, activeType, unique, feedConfig]);
 
 	useEffect(() => {
 		const node = sentinelRef.current;
@@ -708,11 +739,124 @@ export default function MainFeed() {
 				className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"
 			/>
 			<div className="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
-				<div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6">
+				<div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6 min-h-0">
+					{/* Mobile hamburger */}
+					<div className="flex items-center justify-between lg:hidden">
+						<h1 className="text-lg font-bold text-slate-900 dark:text-white">Feed</h1>
+						<button
+							onClick={() => setSidebarOpen(true)}
+							className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-600 shadow-sm dark:bg-slate-800 dark:text-slate-300"
+							aria-label="Open sidebar"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+							</svg>
+						</button>
+					</div>
+
+					{/* Mobile drawer overlay */}
+					{sidebarOpen && (
+						<div className="fixed inset-0 z-50 lg:hidden">
+							<div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
+							<aside className="absolute left-0 top-0 h-full w-[320px] max-w-[85vw] overflow-y-auto border-r border-white/10 bg-white/95 p-4 backdrop-blur-2xl dark:bg-slate-950/95">
+								<div className="flex justify-end mb-4">
+									<button
+										onClick={() => setSidebarOpen(false)}
+										className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+										aria-label="Close sidebar"
+									>
+										✕
+									</button>
+								</div>
+								{/* ====== MOBILE SIDEBAR CONTENT ====== */}
+								{/* Header */}
+								<div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
+									<div className="flex items-center justify-between">
+										<div className="flex items-center gap-3">
+											{user?.profile?.profile_image || user?.avatar_url ? (
+												<img
+													src={user.profile?.profile_image || user.avatar_url}
+													alt={user?.name || "User"}
+													className="h-12 w-12 rounded-2xl object-cover"
+												/>
+											) : (
+												<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+													<LayoutGrid className="h-6 w-6" />
+												</div>
+											)}
+											<div>
+												<p className="text-sm/none font-medium opacity-90">
+													{user?.role
+														? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ")
+														: "User"}
+												</p>
+												<p className="text-xl font-semibold">{user?.name || "Feed Center"}</p>
+											</div>
+										</div>
+									</div>
+									<div className="mt-4 flex items-center gap-2 text-sm opacity-95">
+										<BadgeCheck className="h-4 w-4" />
+										{user?.profile?.bio || feedConfig.labels.premium_badge}
+									</div>
+									{user?.email && <div className="mt-2 text-xs opacity-75">{user.email}</div>}
+								</div>
+								{/* Quick Actions */}
+								<div className="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+									<div className="flex items-center justify-between">
+										<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{feedConfig.labels.quick_actions}</h2>
+										<span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">{feedConfig.labels.live_status}</span>
+									</div>
+									<div className="mt-4 grid gap-3">
+										{quickActions.map((a) => (
+											<Link
+												key={a.to}
+												to={a.to}
+												onClick={() => setSidebarOpen(false)}
+												className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-sky-500/10 dark:hover:text-sky-300"
+											>
+												<span className="flex items-center gap-2">
+													{a.label.includes("Post") ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+													{a.label}
+												</span>
+												<ChevronDown className="h-4 w-4" />
+											</Link>
+										))}
+									</div>
+								</div>
+								{/* Search */}
+								<div className="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+									<div className="flex items-center justify-between gap-3">
+										<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Search</h2>
+										<span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">Feed</span>
+									</div>
+									<div className="mt-4 relative">
+										<Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+										<input
+											value={search}
+											onChange={(e) => setSearch(e.target.value)}
+											placeholder={feedConfig.labels.search_placeholder}
+											className="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+										/>
+									</div>
+								</div>
+								{/* Categories */}
+								<div className="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+									<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{feedConfig.labels.categories}</h2>
+									<div className="mt-4 flex flex-wrap gap-2">
+										<Pill active={activeCategory === feedConfig.labels.categories} onClick={() => { setActiveCategory(feedConfig.labels.categories); setSidebarOpen(false); }}>{feedConfig.labels.categories}</Pill>
+										{tags.map((cat) => (
+											<Pill key={cat} active={activeCategory === cat} onClick={() => { setActiveCategory(cat); setSidebarOpen(false); }}>{cat}</Pill>
+										))}
+									</div>
+								</div>
+							</aside>
+						</div>
+					)}
+
 					{/* ====== SIDEBAR ====== */}
 					<aside
-						data-lenis-prevent={true}
-						className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto"
+						data-lenis-prevent={isLargeScreen ? true : undefined}
+						className="hidden lg:flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto scrollbar-invisible"
 					>
 						{/* Header */}
 						<div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
@@ -825,8 +969,8 @@ export default function MainFeed() {
 
 					{/* ====== MAIN CONTENT ====== */}
 					<main
-						data-lenis-prevent={true}
-						className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0"
+						data-lenis-prevent={isLargeScreen ? true : undefined}
+						className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0 scrollbar-invisible"
 					>
 						{/* Hero Section */}
 						<motion.section

@@ -12,6 +12,7 @@ import {
 import prisma from "../utils/prisma.js";
 import { getPublicDocuments } from "../utils/privacy.js";
 import { sanitizeString } from "../utils/validators.js";
+import { hasCompletedCallBetweenUsers } from "./callSessionService.js";
 import { ensureCertificationForContract } from "./certificationService.js";
 import { trackEvent } from "./eventTrackingService.js";
 import { markLeadConvertedFromContract } from "./leadService.js";
@@ -755,6 +756,18 @@ export async function updateContractSignatures(contractId, patch, actor) {
 	}
 	if (!canModifyContract(actor, existing)) {
 		return "forbidden";
+	}
+
+	if (existing.buyer_id && existing.factory_id) {
+		const callCompleted = await hasCompletedCallBetweenUsers(existing.buyer_id, existing.factory_id);
+		if (!callCompleted) {
+			const err = new Error(
+				"A completed video call between buyer and factory is required before signing a contract.",
+			);
+			err.status = 403;
+			err.code = "VIDEO_CALL_REQUIRED";
+			throw err;
+		}
 	}
 
 	const previousBuyerState = existing.buyer_signature_state;

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
 	createSupportReport,
 	createSupportTicketController,
+	getSupportCategories,
 	listMySupportTicketsController,
 	listSupportTicketMessagesController,
 	postSupportTicketMessageController,
@@ -10,6 +11,7 @@ import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
+router.get("/categories", requireAuth, getSupportCategories);
 router.post("/reports", requireAuth, createSupportReport);
 router.get("/tickets", requireAuth, listMySupportTicketsController);
 router.post("/tickets", requireAuth, createSupportTicketController);

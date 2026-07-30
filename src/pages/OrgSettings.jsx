@@ -11,6 +11,7 @@ import { logger } from "../lib/logger.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
 import { uploadFile } from "../lib/upload.js";
 import { ERRORS, isValidEmail, isValidPhone, isValidUrl } from "../lib/validation.js";
+import { COUNTRY_OPTIONS, FACTORY_SECTOR_OPTIONS } from "../../shared/config/platformTaxonomy.js";
 
 function cx(...classes) {
 	return classes.filter(Boolean).join(" ");
@@ -340,9 +341,16 @@ export default function OrgSettings({ embedded = false }) {
 	const [profileAvatarUrl, setProfileAvatarUrl] = useState(() =>
 		String(currentUser?.avatar_url || currentUser?.profile?.avatar_url || ""),
 	);
+	const [profileCountry, setProfileCountry] = useState(() =>
+		String(currentUser?.profile?.country || currentUser?.country || ""),
+	);
+	const [profileIndustry, setProfileIndustry] = useState(() =>
+		String(currentUser?.profile?.industry || ""),
+	);
 	const [profilePhone, setProfilePhone] = useState(() =>
 		String(currentUser?.phone || currentUser?.profile?.phone || ""),
 	);
+
 	const [profileEmail, setProfileEmail] = useState(() => String(currentUser?.email || ""));
 	const [profileVisibility, setProfileVisibility] = useState(() =>
 		String(currentUser?.profile?.visibility || "public"),
@@ -408,7 +416,7 @@ export default function OrgSettings({ embedded = false }) {
 	const [entitlements] = useState(() => secureEntitlements || currentUser?.entitlements || null);
 
 	// Account lock state
-	const [accountLocked, setAccountLocked] = useState(false);
+	const [accountLocked, setAccountLocked] = useState(() => currentUser?.status === "locked");
 	const [lockingAccount, setLockingAccount] = useState(false);
 
 	// Members state
@@ -440,9 +448,6 @@ export default function OrgSettings({ embedded = false }) {
 	const [brandName, setBrandName] = useState(() => String(currentUser?.profile?.brand_name || ""));
 	const [brandTagline, setBrandTagline] = useState(() =>
 		String(currentUser?.profile?.brand_tagline || ""),
-	);
-	const [brandWebsite, setBrandWebsite] = useState(() =>
-		String(currentUser?.profile?.brand_website || ""),
 	);
 	const [brandLogoUrl, setBrandLogoUrl] = useState(() =>
 		String(currentUser?.profile?.brand_logo_url || ""),
@@ -954,6 +959,8 @@ export default function OrgSettings({ embedded = false }) {
 					headline: profileHeadline,
 					bio: profileBio,
 					avatar_url: profileAvatarUrl,
+					country: profileCountry,
+					industry: profileIndustry,
 				},
 			});
 			setProfileFeedback("Profile saved.");
@@ -1037,17 +1044,12 @@ export default function OrgSettings({ embedded = false }) {
 		if (!token) {
 			return;
 		}
-		if (brandWebsite && !isValidUrl(brandWebsite)) {
-			setStatusMessage(ERRORS.url);
-			return;
-		}
 		try {
 			await apiRequest("/users/me/profile", {
 				method: "PATCH",
 				token,
 				body: {
 					brand_name: brandName,
-					brand_website: brandWebsite,
 					brand_logo_url: brandLogoUrl,
 					brand_cover_url: brandCoverUrl,
 					brand_tagline: brandTagline,
@@ -1657,6 +1659,32 @@ export default function OrgSettings({ embedded = false }) {
 									onChange={(e) => setProfileHeadline(e.target.value)}
 								/>
 							</div>
+							<div>
+								<Label>Country</Label>
+								<select
+									value={profileCountry}
+									onChange={(e) => setProfileCountry(e.target.value)}
+									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+								>
+									<option value="">Select country</option>
+									{COUNTRY_OPTIONS.map((c) => (
+										<option key={c} value={c}>{c}</option>
+									))}
+								</select>
+							</div>
+							<div>
+								<Label>Industry</Label>
+								<select
+									value={profileIndustry}
+									onChange={(e) => setProfileIndustry(e.target.value)}
+									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+								>
+									<option value="">Select industry</option>
+									{FACTORY_SECTOR_OPTIONS.map((opt) => (
+										<option key={opt.value} value={opt.value}>{opt.label}</option>
+									))}
+								</select>
+							</div>
 							<div className="sm:col-span-2">
 								<Label>Bio</Label>
 								<Textarea
@@ -1929,16 +1957,10 @@ export default function OrgSettings({ embedded = false }) {
 										Dark
 									</button>
 									<button
-										onClick={() => {
-											const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-											setTheme(prefersDark ? "dark" : "light");
-										}}
+										onClick={() => setTheme("system")}
 										className={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
-											theme ===
-												(window.matchMedia("(prefers-color-scheme: dark)").matches
-													? "dark"
-													: "light")
+											theme === "system"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
 												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
 										)}
@@ -2248,14 +2270,6 @@ export default function OrgSettings({ embedded = false }) {
 								<Input
 									value={brandName}
 									onChange={(e) => setBrandName(e.target.value)}
-									disabled={!canBranding}
-								/>
-							</div>
-							<div>
-								<Label>Website</Label>
-								<Input
-									value={brandWebsite}
-									onChange={(e) => setBrandWebsite(e.target.value)}
 									disabled={!canBranding}
 								/>
 							</div>

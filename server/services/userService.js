@@ -756,6 +756,114 @@ export async function adminForceLogout(userId) {
 	return cleanUser(updated);
 }
 
+export async function selfLockAccount(userId) {
+	const current = await prisma.user.findUnique({ where: { id: userId } });
+	if (!current) {
+		return null;
+	}
+	const updated = await prisma.user.update({
+		where: { id: userId },
+		data: {
+			status: "locked",
+			profile: {
+				...(current.profile || {}),
+				locked_at: new Date().toISOString(),
+				previous_status: current.status,
+			},
+		},
+	});
+	return cleanUser(updated);
+}
+
+export async function selfUnlockAccount(userId) {
+	const current = await prisma.user.findUnique({ where: { id: userId } });
+	if (!current) {
+		return null;
+	}
+	const prevStatus = current.profile?.previous_status || "active";
+	const updated = await prisma.user.update({
+		where: { id: userId },
+		data: {
+			status: prevStatus,
+			profile: {
+				...(current.profile || {}),
+				locked_at: null,
+				previous_status: null,
+			},
+		},
+	});
+	return cleanUser(updated);
+}
+
+export async function blockUser(actorId, targetId) {
+	if (actorId === targetId) {
+		const err = new Error("Cannot block yourself");
+		err.status = 400;
+		throw err;
+	}
+	const current = await prisma.user.findUnique({ where: { id: actorId } });
+	if (!current) {
+		return null;
+	}
+	const blocked = current.profile?.blocked_users || [];
+	if (blocked.includes(targetId)) {
+		return cleanUser(current);
+	}
+	const updated = await prisma.user.update({
+		where: { id: actorId },
+		data: {
+			profile: {
+				...(current.profile || {}),
+				blocked_users: [...blocked, targetId],
+			},
+		},
+	});
+	return cleanUser(updated);
+}
+
+export async function unblockUser(actorId, targetId) {
+	const current = await prisma.user.findUnique({ where: { id: actorId } });
+	if (!current) {
+		return null;
+	}
+	const blocked = current.profile?.blocked_users || [];
+	const updated = await prisma.user.update({
+		where: { id: actorId },
+		data: {
+			profile: {
+				...(current.profile || {}),
+				blocked_users: blocked.filter((id) => id !== targetId),
+			},
+		},
+	});
+	return cleanUser(updated);
+}
+
+export async function getBlockedUsers(userId) {
+	const user = await prisma.user.findUnique({ where: { id: userId } });
+	if (!user) {
+		return [];
+	}
+	const blockedIds = user.profile?.blocked_users || [];
+	if (blockedIds.length === 0) {
+		return [];
+	}
+	const blockedUsers = await prisma.user.findMany({
+		where: { id: { in: blockedIds } },
+		select: { id: true, name: true, email: true, role: true },
+	});
+	return blockedUsers;
+}
+
+export async function isUserBlocked(actorId, targetId) {
+	const actor = await prisma.user.findUnique({ where: { id: actorId } });
+	if (!actor) {
+		return false;
+	}
+	const blocked = actor.profile?.blocked_users || [];
+	return blocked.includes(targetId);
+}
+
 export async function adminLockMessaging(userId, lockHours = 0) {
 	const existing = await prisma.user.findUnique({ where: { id: userId } });
 	if (!existing) {

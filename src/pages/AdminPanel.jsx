@@ -21,6 +21,7 @@ import {
 	Sparkles,
 	Sun,
 	SunMedium,
+	Wallet,
 	X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -46,6 +47,7 @@ import * as Utils from "./AdminPanel.utils.js";
 import { AdminAISection } from "./admin/sections/AdminAISection.jsx";
 import { AdminCMSSection } from "./admin/sections/AdminCMSSection.jsx";
 import { AdminConfigSection } from "./admin/sections/AdminConfigSection.jsx";
+import { AdminFinanceSection } from "./admin/sections/AdminFinanceSection.jsx";
 import { AdminHomeSection } from "./admin/sections/AdminHomeSection.jsx";
 import { AdminInfraSection } from "./admin/sections/AdminInfraSection.jsx";
 import { AdminMediaReviewSection } from "./admin/sections/AdminMediaReviewSection.jsx";
@@ -2862,6 +2864,14 @@ export default function AdminPanel() {
 			accent: false,
 		});
 
+		items.push({
+			id: "finance",
+			label: "Finance",
+			icon: Wallet,
+			sub: "Revenue, subscriptions & ledger",
+			accent: false,
+		});
+
 		return items;
 	}, [inventory, uiFallbackInventory]);
 
@@ -2894,6 +2904,14 @@ export default function AdminPanel() {
 				id: "media-review",
 				label: "Media Review",
 				sub: "Approve uploads",
+				sections: [],
+			};
+		}
+		if (activeCategory === "finance") {
+			return {
+				id: "finance",
+				label: "Finance",
+				sub: "Revenue, subscriptions & ledger",
 				sections: [],
 			};
 		}
@@ -3182,6 +3200,18 @@ export default function AdminPanel() {
 												</div>
 											</div>
 
+											{activeCategory === "finance" ? (
+												<AdminFinanceSection
+													adminDark={adminDark}
+													catalog={catalog}
+													walletLedger={walletLedger}
+													users={users}
+													formatNumber={formatNumber}
+													formatCurrency={formatCurrency}
+													error={error}
+													setError={setError}
+												/>
+											) : null}
 											{activeCategory === "platform" ? (
 												<AdminPlatformSection
 													activeCategory={activeCategory}
@@ -3452,7 +3482,8 @@ export default function AdminPanel() {
 
 										{activeCategory === "ultra-security" ||
 										activeCategory === "files" ||
-										activeCategory === "media-review" ? null : (
+										activeCategory === "media-review" ||
+										activeCategory === "finance" ? null : (
 											<aside className="space-y-4">
 												{activeCategory === "config" ? (
 													<AdminConfigSection

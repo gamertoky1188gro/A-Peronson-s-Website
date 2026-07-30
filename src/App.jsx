@@ -393,11 +393,11 @@ function AppLayout() {
 				{hideChrome ? null : <ScrollProgressBar />}
 				<div className="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
 					<div
-						className="app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden"
+						className={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden${location.pathname === "/feed" ? " h-screen" : ""}`}
 						style={{ zoom: 0.8, width: "100%" }}
 					>
 						{hideChrome ? null : <NavBar />}
-						<main className="flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
+						<main className="flex flex-1 min-h-0 flex-col bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
 							<ErrorBoundary>
 								<Suspense
 									fallback={
@@ -411,6 +411,7 @@ function AppLayout() {
 										initial={{ opacity: 0, y: 8 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+										className="flex min-h-0 flex-1 flex-col"
 									>
 										<AppRoutes />
 									</motion.div>

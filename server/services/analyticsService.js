@@ -1592,3 +1592,125 @@ export async function getPremiumInsights(user) {
 		},
 	};
 }
+
+async function computeAvgFirstResponseHours(forUserId = null) {
+	const where = forUserId ? { buyer_id: forUserId } : {};
+	const requirements = await prisma.requirement.findMany({
+		where,
+		select: { id: true, buyer_id: true, created_at: true },
+	});
+	if (requirements.length === 0) return 0;
+
+	const reqIds = requirements.map((r) => r.id);
+	const matches = await prisma.match.findMany({ where: { requirement_id: { in: reqIds } } });
+	if (matches.length === 0) return 0;
+
+	const matchIdSet = new Set(matches.map((m) => String(m.id)));
+	const messages = await prisma.message.findMany({
+		where: { match_id: { in: [...matchIdSet] } },
+		orderBy: [{ timestamp: "asc" }],
+	});
+
+	const reqById = new Map(requirements.map((r) => [String(r.id), r]));
+	const messagesByMatch = {};
+	for (const m of messages) {
+		const mid = String(m.match_id || "");
+		if (!mid) continue;
+		if (!messagesByMatch[mid]) messagesByMatch[mid] = [];
+		messagesByMatch[mid].push(m);
+	}
+
+	const hours = [];
+	for (const match of matches) {
+		const mid = String(match.id || "");
+		const parts = mid.split(":");
+		if (parts.length !== 2) continue;
+		const reqId = parts[0];
+		const factoryId = parts[1];
+		const req = reqById.get(reqId);
+		if (!req?.created_at) continue;
+
+		const createdAt = new Date(req.created_at).getTime();
+		if (!Number.isFinite(createdAt)) continue;
+
+		const msgs = messagesByMatch[mid] || [];
+		const firstMsg = msgs.find((m) => {
+			const senderId = String(m.sender_id || "");
+			return senderId && senderId !== String(req.buyer_id) && senderId === factoryId;
+		});
+		if (!firstMsg?.timestamp) continue;
+
+		const firstAt = new Date(firstMsg.timestamp).getTime();
+		if (!Number.isFinite(firstAt) || firstAt < createdAt) continue;
+
+		hours.push((firstAt - createdAt) / (1000 * 60 * 60));
+	}
+
+	return hours.length > 0 ? hours.reduce((a, b) => a + b, 0) / hours.length : 0;
+}
+
+export async function getCoreMetrics(user) {
+	const role = String(user?.role || "").toLowerCase();
+	const userId = String(user?.id || "");
+
+	const isOwner = ["owner", "admin"].includes(role);
+	const isBuyingHouse = role === "buying_house";
+
+	if (isBuyingHouse) {
+		const [totalRequests, totalMatches, contracts, conversations, disputes, ratings, topProducts, avgHours] = await Promise.all([
+			prisma.requirement.count({ where: { buyer_id: userId } }),
+			prisma.requirement.count({ where: { buyer_id: userId, assigned_agent_id: { not: null } } }),
+			prisma.contract.count({ where: { OR: [{ buyer_id: userId }, { factory_id: userId }] } }),
+			prisma.conversation.count({ where: { OR: [{ buyer_id: userId }, { factory_id: userId }] } }),
+			prisma.dispute.count({ where: { OR: [{ raised_by: userId }, { against_id: userId }] } }),
+			prisma.rating.aggregate({ _avg: { score: true }, where: { OR: [{ rater_id: userId }, { target_id: userId }] } }),
+			prisma.requirement.groupBy({ by: ["category"], where: { buyer_id: userId, category: { not: null } }, _count: true, orderBy: { _count: { category: "desc" } }, take: 5 }),
+			computeAvgFirstResponseHours(userId),
+		]);
+
+		const matchRate = totalRequests > 0 ? Math.round((totalMatches / totalRequests) * 100) : 0;
+		const conversion = conversations > 0 ? Math.round((contracts / conversations) * 100) : 0;
+		const trustScore = Math.max(0, contracts + (ratings._avg.score || 0) - disputes);
+
+		return {
+			ok: true, role,
+			metrics: [
+				{ key: "buyer_request_match_rate", label: "Request Match Rate", value: matchRate, unit: "%", hint: "matched / total relevant" },
+				{ key: "lead_to_deal_conversion", label: "Lead to Deal Conversion", value: conversion, unit: "%", hint: "contracts / conversations" },
+				{ key: "factory_response_speed", label: "Response Speed", value: formatHours(avgHours), unit: "", hint: "avg first response time" },
+				{ key: "buyer_demand_trend", label: "Demand Trend", value: topProducts.map((p) => p.category).join(", ") || "--", unit: "", hint: "top requested products" },
+				{ key: "trusted_deal_score", label: "Trust Score", value: trustScore, unit: "", hint: "deals + rating - disputes" },
+			],
+		};
+	}
+
+	if (isOwner) {
+		const [totalBuyerRequests, matchedRequests, contracts, buyers, suppliers, returningBuyers, avgHours] = await Promise.all([
+			prisma.requirement.count(),
+			prisma.requirement.count({ where: { assigned_agent_id: { not: null } } }),
+			prisma.contract.count(),
+			prisma.user.count({ where: { role: "buyer" } }),
+			prisma.user.count({ where: { role: { in: ["factory", "buying_house"] } } }),
+			prisma.user.count({ where: { role: "buyer", requirements: { some: {} } } }),
+			computeAvgFirstResponseHours(null),
+		]);
+
+		const matchRate = totalBuyerRequests > 0 ? Math.round((matchedRequests / totalBuyerRequests) * 100) : 0;
+		const ratio = suppliers > 0 ? (buyers / suppliers).toFixed(1) : "--";
+		const conversion = totalBuyerRequests > 0 ? Math.round((contracts / totalBuyerRequests) * 100) : 0;
+		const repeatRate = buyers > 0 ? Math.round((returningBuyers / buyers) * 100) : 0;
+
+		return {
+			ok: true, role,
+			metrics: [
+				{ key: "buyer_supplier_match_rate", label: "Match Rate", value: matchRate, unit: "%", hint: "matched / total requests" },
+				{ key: "buyer_supplier_ratio", label: "Buyer/Supplier Ratio", value: ratio, unit: ":1", hint: "active buyers vs suppliers" },
+				{ key: "request_to_contract_conversion", label: "Request to Contract", value: conversion, unit: "%", hint: "contracts / buyer requests" },
+				{ key: "first_qualified_response_time", label: "Response Time", value: formatHours(avgHours), unit: "", hint: "avg first qualified reply" },
+				{ key: "repeat_buyer_rate", label: "Repeat Buyer Rate", value: repeatRate, unit: "%", hint: "returning / total buyers" },
+			],
+		};
+	}
+
+	return { ok: true, role, metrics: [] };
+}

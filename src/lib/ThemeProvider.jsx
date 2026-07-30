@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setTheme, syncThemeFromStorage, toggleTheme } from "../store/themeSlice.js";
+import { applyThemeToDOM, setTheme, syncThemeFromStorage, toggleTheme } from "../store/themeSlice.js";
 
 const ThemeContext = createContext(null);
 
@@ -21,6 +21,17 @@ export function ThemeProvider({ children }) {
 		window.addEventListener("storage", handleStorage);
 		return () => window.removeEventListener("storage", handleStorage);
 	}, [dispatch]);
+
+	useEffect(() => {
+		const mq = window.matchMedia("(prefers-color-scheme: dark)");
+		const handler = () => {
+			if (theme === "system") {
+				applyThemeToDOM("system");
+			}
+		};
+		mq.addEventListener("change", handler);
+		return () => mq.removeEventListener("change", handler);
+	}, [theme]);
 
 	return (
 		<ThemeContext.Provider

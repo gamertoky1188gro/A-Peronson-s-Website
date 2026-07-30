@@ -11,6 +11,8 @@ node_modules
 # package-lock.json intentionally tracked for reproducible builds
 
 *.local
+WhatsApp Chat with only project documentation/
+docs/superpowers/
 
 # Llama.cpp and AI Models (tracked with Git LFS)
 
@@ -32,6 +34,7 @@ cloudflared-windows-amd64.exe
 nul
 
 PythonAi/HaramDetection/.venv
+PythonAi/HaramDetection/.venv-cuda/
 __pycache__/
 *.pyc
 

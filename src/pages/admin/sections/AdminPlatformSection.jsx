@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import { apiRequest, getToken } from "../../../lib/auth.js";
 import { exportEmailsCsv } from "../../AdminPanel.utils.js";
+import PaymentProofReviewModal from "../../../components/admin/PaymentProofReviewModal.jsx";
 
 export function AdminPlatformSection({
 	activeCategory,
@@ -121,6 +122,7 @@ export function AdminPlatformSection({
 	const [loadingModeration, setLoadingModeration] = useState(false);
 	const [rejectionItem, setRejectionItem] = useState(null);
 	const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+	const [reviewProof, setReviewProof] = useState(null);
 
 	const setSystemReportsSafe = setSystemReports || setSystemReportsLocal;
 	const setProductAppealReportsSafe = setProductAppealReports || setProductAppealReportsLocal;
@@ -1414,13 +1416,22 @@ export function AdminPlatformSection({
 												proofs.map((proof) => (
 													<div
 														key={proof.id}
-														className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+														className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 													>
-														{proof.type} ? {proof.status} ? {proof.amount || "--"}{" "}
-														{proof.currency || ""}
-														{proof.lc_type
-															? ` ? ${String(proof.lc_type).toUpperCase()}${proof.lc_type === "usance" && proof.usance_days ? ` (${proof.usance_days}d)` : ""}`
-															: ""}
+														<span>
+															{proof.type} ? {proof.status} ? {proof.amount || "--"}{" "}
+															{proof.currency || ""}
+															{proof.lc_type
+																? ` ? ${String(proof.lc_type).toUpperCase()}${proof.lc_type === "usance" && proof.usance_days ? ` (${proof.usance_days}d)` : ""}`
+																: ""}
+														</span>
+														<button
+															type="button"
+															onClick={() => setReviewProof(proof)}
+															className="ml-2 rounded-lg bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-600 hover:bg-sky-500/20 dark:text-sky-400"
+														>
+															Review
+														</button>
 													</div>
 												))
 											) : (
@@ -1494,40 +1505,94 @@ export function AdminPlatformSection({
 					</div>
 					<div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
 						{disputes.slice(0, 12).map((dispute) => (
-							<div
+							<details
 								key={dispute.id}
 								className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
 							>
-								<div className="flex flex-wrap items-center justify-between gap-3">
+								<summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
 									<div>
 										<p className="text-sm font-semibold text-slate-900 dark:text-white">
 											{dispute.entity_id}
 										</p>
 										<p className="text-[11px] text-slate-500">{dispute.reason}</p>
 									</div>
-									<span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
-										{dispute.status}
-									</span>
+									<div className="flex items-center gap-2">
+										<span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
+											{dispute.status}
+										</span>
+										<span className="text-[10px] text-slate-400">
+											{dispute.created_at ? new Date(dispute.created_at).toLocaleDateString() : ""}
+										</span>
+									</div>
+								</summary>
+								<div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
+									<p className="text-[11px] font-semibold uppercase text-slate-500">Status History</p>
+									<div className="mt-2 space-y-2">
+										<div className="flex items-start gap-2">
+											<div className="mt-1 h-2 w-2 rounded-full bg-sky-400" />
+											<div>
+												<p className="text-[11px] font-medium text-slate-900 dark:text-white">Created</p>
+												<p className="text-[10px] text-slate-400">
+													{dispute.created_at ? new Date(dispute.created_at).toLocaleString() : "—"}
+												</p>
+												{dispute.actor_name ? (
+													<p className="text-[10px] text-slate-400">By: {dispute.actor_name}</p>
+												) : null}
+											</div>
+										</div>
+										{dispute.status === "resolved" ? (
+											<div className="flex items-start gap-2">
+												<div className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
+												<div>
+													<p className="text-[11px] font-medium text-slate-900 dark:text-white">Resolved</p>
+													<p className="text-[10px] text-slate-400">
+														{dispute.resolved_at ? new Date(dispute.resolved_at).toLocaleString() : "—"}
+													</p>
+													{dispute.resolved_by ? (
+														<p className="text-[10px] text-slate-400">By: {dispute.resolved_by}</p>
+													) : null}
+													{dispute.resolution_action ? (
+														<p className="text-[10px] text-slate-400">
+															Action: {dispute.resolution_action}
+														</p>
+													) : null}
+													{dispute.resolution_note ? (
+														<p className="mt-1 rounded-lg bg-slate-100 p-2 text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+															{dispute.resolution_note}
+														</p>
+													) : null}
+												</div>
+											</div>
+										) : null}
+									</div>
+									{dispute.status === "open" ? (
+										<div className="mt-4 space-y-2">
+											<p className="text-[11px] font-semibold uppercase text-slate-500">Resolve Dispute</p>
+											<textarea
+												id={`resolve-note-${dispute.id}`}
+												rows={2}
+												className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none placeholder:text-slate-400 focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+												placeholder="Resolution note (optional)..."
+											/>
+											<button
+												type="button"
+												onClick={async () => {
+													const note = document.getElementById(`resolve-note-${dispute.id}`)?.value || "";
+													await runInlineAdminAction("dispute.resolve", {
+														report_id: dispute.id,
+														resolution_action: "resolved",
+														resolution_note: note,
+													});
+													await refreshDisputes();
+												}}
+												className="rounded-full bg-emerald-600 px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-emerald-700"
+											>
+												Resolve
+											</button>
+										</div>
+									) : null}
 								</div>
-								<div className="mt-3 flex flex-wrap items-center gap-2">
-									<button
-										type="button"
-										onClick={async () => {
-											const resolutionAction = "resolved";
-											const resolutionNote = "";
-											await runInlineAdminAction("dispute.resolve", {
-												report_id: dispute.id,
-												resolution_action: resolutionAction,
-												resolution_note: resolutionNote,
-											});
-											await refreshDisputes();
-										}}
-										className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-									>
-										Resolve
-									</button>
-								</div>
-							</div>
+							</details>
 						))}
 						{disputes.length === 0 ? (
 							<p className="text-xs text-slate-500">No disputes found.</p>
@@ -2637,6 +2702,17 @@ export function AdminPlatformSection({
 					</div>
 				</div>
 			) : null}
+
+			<PaymentProofReviewModal
+				proof={reviewProof}
+				adminDark={adminDark}
+				onClose={() => setReviewProof(null)}
+				onReview={() => {
+					if (typeof refreshContractsVault === "function") {
+						refreshContractsVault();
+					}
+				}}
+			/>
 		</div>
 	);
 }

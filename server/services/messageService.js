@@ -14,6 +14,7 @@ import {
 } from "./friendService.js";
 import { upsertLeadFromMessage } from "./leadService.js";
 import { getOrgAiSettings } from "./orgAiService.js";
+import { hasCompletedCallByMatch } from "./callSessionService.js";
 import { assertMessagingAllowed, moderateTextOrRedactWithContext } from "./policyService.js";
 import { hasPendingRatingForCounterparty } from "./ratingsService.js";
 import { getRequirementById } from "./requirementService.js";
@@ -454,6 +455,18 @@ export async function postMessage(
 	}
 
 	await enforceConversationLock(matchId, sender);
+
+	if (!String(matchId).startsWith("friend:") && recipientId) {
+		const callCompleted = await hasCompletedCallByMatch(matchId, sender.id);
+		if (!callCompleted) {
+			const err = new Error(
+				"A completed video call is required before sending messages. Schedule a call with the supplier first.",
+			);
+			err.status = 403;
+			err.code = "VIDEO_CALL_REQUIRED";
+			throw err;
+		}
+	}
 
 	if (!String(matchId).startsWith("friend:") && recipientId) {
 		const parts = String(matchId).split(":");

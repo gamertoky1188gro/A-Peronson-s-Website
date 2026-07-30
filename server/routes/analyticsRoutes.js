@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
 	analyticsCompany,
+	analyticsCoreMetrics,
 	analyticsDashboard,
 	analyticsPlatformAdmin,
 	analyticsPlatformOverview,
@@ -20,6 +21,12 @@ router.get(
 	requireAuth,
 	allowRoles("owner", "admin", "buying_house", "factory", "buyer", "agent"),
 	analyticsSummary,
+);
+router.get(
+	"/core-metrics",
+	requireAuth,
+	allowRoles("owner", "admin", "buying_house", "factory"),
+	analyticsCoreMetrics,
 );
 router.get(
 	"/dashboard",

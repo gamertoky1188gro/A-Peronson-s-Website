@@ -27,7 +27,7 @@ import {
 	useTransform,
 } from "framer-motion";
 import { Check } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Atom, Mosaic } from "react-loading-indicators";
 import { Link, useLocation } from "react-router-dom";
 import FlipCard from "../components/FlipCard.jsx";
@@ -697,6 +697,7 @@ export default function PricingPage() {
 		: roleSections;
 
 	const reduceMotion = useReducedMotion();
+	const [isTouchDevice] = useState(() => typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0));
 	const { scrollY } = useScroll();
 	const bg1Y = useSpring(useTransform(scrollY, [0, 600], [0, -30]), {
 		stiffness: 80,
@@ -720,7 +721,7 @@ export default function PricingPage() {
 			`linear-gradient(${angle.toFixed(1)}deg, rgba(14,165,233,0.12), rgba(255,255,255,0.9), rgba(6,182,212,0.08))`,
 	);
 	useEffect(() => {
-		if (reduceMotion) {
+		if (reduceMotion || isTouchDevice) {
 			return;
 		}
 		let running = true;
@@ -728,12 +729,12 @@ export default function PricingPage() {
 			if (running) {
 				gradientAngle.set((gradientAngle.get() + 0.4) % 360);
 			}
-		}, 100);
+		}, 300);
 		return () => {
 			running = false;
 			clearInterval(id);
 		};
-	}, [reduceMotion, gradientAngle]);
+	}, [reduceMotion, gradientAngle, isTouchDevice]);
 
 	if (pricingLoading) {
 		return (
@@ -766,7 +767,7 @@ export default function PricingPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white">
+		<div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white" data-lenis-prevent>
 			<div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
 				<motion.div
 					style={{ y: reduceMotion ? 0 : bg1Y }}
@@ -870,7 +871,7 @@ export default function PricingPage() {
 										buttonLabel="Get started"
 										icon={section.key === "buyer" ? "🏢" : section.key === "factory" ? "🏭" : "👥"}
 										isLoggedIn={isLoggedIn}
-										flip={true}
+										flip={!isTouchDevice}
 									/>
 									<PlanCard
 										title={`${section.title} Premium`}
@@ -881,7 +882,7 @@ export default function PricingPage() {
 										highlighted={true}
 										icon="✨"
 										isLoggedIn={isLoggedIn}
-										flip={true}
+										flip={!isTouchDevice}
 									/>
 								</React.Fragment>
 							);

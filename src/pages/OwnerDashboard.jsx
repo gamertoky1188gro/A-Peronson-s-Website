@@ -8,11 +8,13 @@ import ScaleIn from "../components/ScaleIn.jsx";
 import ScrollReveal from "../components/ScrollReveal.jsx";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
+import ConversionFunnel from "../components/analytics/ConversionFunnel.jsx";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard.js";
 import { apiRequest, getToken, syncUserFromApi } from "../lib/auth.js";
 import { cn } from "../lib/cn.js";
 import { isRouteValid } from "../lib/routeHealthCheck.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
+import CoreMetricsCards from "../components/analytics/CoreMetricsCards.jsx";
 import ContractVaultPage from "./ContractVault.jsx";
 import OrgSettings from "./OrgSettings.jsx";
 import VerificationPage from "./VerificationPage.jsx";
@@ -174,6 +176,7 @@ const menuItems = [
 	{ id: "insights", label: "Insights & Analytics", short: "Insights" },
 	{ id: "subscription", label: "Subscription", short: "Billing" },
 	{ id: "verification", label: "Verification", short: "Verify" },
+	{ id: "profile", label: "My Profile", short: "Profile" },
 	{ id: "settings", label: "Settings", short: "Settings" },
 ];
 
@@ -212,7 +215,11 @@ export default function OwnerDashboard() {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const goTab = useCallback(
 		(id) => {
-			setSearchParams({ tab: id }, { replace: true });
+			const params = { tab: id };
+			if (id === "profile") {
+				params.settingsTab = "profile";
+			}
+			setSearchParams(params, { replace: true });
 			setSidebarOpen(false);
 		},
 		[setSearchParams],
@@ -462,6 +469,7 @@ export default function OwnerDashboard() {
 
 						{active === "home" && !loading && (
 							<div className="space-y-6">
+								<CoreMetricsCards />
 								<ScrollReveal as="section">
 									<StaggerContainer className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 										<StaggerItem>
@@ -660,6 +668,24 @@ export default function OwnerDashboard() {
 											</div>
 										</SectionCard>
 									</div>
+								</ScrollReveal>
+
+								<ScrollReveal as="section">
+									<SectionCard
+										title="Conversion Funnel"
+										subtitle="How demand flows through the platform."
+									>
+										<ConversionFunnel
+											data={{
+												requests: totals.buyer_requests ?? 0,
+												matched: dashboard?.top_metrics?.match_success_rate
+													? Math.round((totals.buyer_requests ?? 0) * (dashboard.top_metrics.match_success_rate / 100))
+													: 0,
+												conversations: totals.chats ?? 0,
+												contracts: totals.contracts ?? 0,
+											}}
+										/>
+									</SectionCard>
 								</ScrollReveal>
 							</div>
 						)}
@@ -1034,20 +1060,12 @@ export default function OwnerDashboard() {
 									title="Member Management"
 									subtitle="Team members, agents, and access control in one place."
 									action={
-										<div className="flex gap-2">
-											<button
-												onClick={() => go("/member-management")}
-												className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
-											>
-												Manage Members
-											</button>
-											<button
-												onClick={() => go("/member-management")}
-												className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-white/10 dark:bg-slate-950/40 dark:text-slate-200"
-											>
-												Go to Member Management
-											</button>
-										</div>
+										<button
+											onClick={() => go("/member-management")}
+											className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
+										>
+											Manage Members
+										</button>
 									}
 								>
 									<div className="grid gap-4 md:grid-cols-4">
@@ -1125,6 +1143,12 @@ export default function OwnerDashboard() {
 						{active === "verification" && !loading && (
 							<div className="flex-1 min-h-0 space-y-6" data-lenis-prevent={true}>
 								<VerificationPage embedded={true} />
+							</div>
+						)}
+
+						{active === "profile" && !loading && (
+							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
+								<OrgSettings embedded={true} />
 							</div>
 						)}
 

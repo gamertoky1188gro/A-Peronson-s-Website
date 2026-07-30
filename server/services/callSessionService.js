@@ -442,3 +442,32 @@ export async function markRecordingViewed(callId, userId) {
 	});
 	return { ok: true };
 }
+
+export async function hasCompletedCallByMatch(matchId, userId) {
+	if (!matchId) return false;
+	const calls = await prisma.callSession.findMany({
+		where: {
+			match_id: matchId,
+			status: CALL_STATUS.COMPLETED,
+		},
+	});
+	if (!calls.length) return false;
+	if (!userId) return true;
+	return calls.some((c) => {
+		const ids = Array.isArray(c.participant_ids) ? c.participant_ids : [];
+		return ids.includes(String(userId));
+	});
+}
+
+export async function hasCompletedCallBetweenUsers(userAId, userBId) {
+	if (!userAId || !userBId) return false;
+	const calls = await prisma.callSession.findMany({
+		where: {
+			status: CALL_STATUS.COMPLETED,
+		},
+	});
+	return calls.some((c) => {
+		const ids = Array.isArray(c.participant_ids) ? c.participant_ids : [];
+		return ids.includes(String(userAId)) && ids.includes(String(userBId));
+	});
+}

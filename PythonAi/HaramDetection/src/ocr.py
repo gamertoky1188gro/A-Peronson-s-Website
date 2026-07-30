@@ -40,7 +40,7 @@ class OCREngine:
                 )
                 logger.info("PaddleOCR initialized (oneDNN disabled)")
             except Exception as e:
-                logger.warning(f"Failed to initialize PaddleOCR: {e}")
+                logger.debug(f"PaddleOCR not available: {e}")
                 self._paddle_ocr = None
     
     def _init_easyocr(self):

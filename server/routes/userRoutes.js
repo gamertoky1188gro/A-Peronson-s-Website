@@ -2,6 +2,8 @@ import path from "node:path";
 import { Router } from "express";
 import multer from "multer";
 import {
+	adminCleanupTestAccounts,
+	adminDeleteTestAccounts,
 	adminDeleteUser,
 	adminForceLogout,
 	adminListUsers,
@@ -9,13 +11,20 @@ import {
 	adminResetPassword,
 	adminUpdateUser,
 	adminVerifyUser,
+	blockUserController,
+	checkBlocked,
 	deleteMyAccount,
+	exportMyData,
 	followUserController,
 	friendRequestController,
+	getMyBlockedUsers,
 	listEarlyVerifiedFactoriesController,
+	lockMyAccount,
 	lookupUsers,
 	me,
 	searchUsersController,
+	unblockUserController,
+	unlockMyAccount,
 	updateMyProfile,
 	uploadAvatar,
 } from "../controllers/userController.js";
@@ -81,6 +90,13 @@ router.get("/me", requireAuth, me);
 router.patch("/me/profile", requireAuth, updateMyProfile);
 router.post("/me/avatar", requireAuth, upload.single("file"), uploadAvatar);
 router.delete("/me", requireAuth, deleteMyAccount);
+router.get("/me/export", requireAuth, exportMyData);
+router.post("/me/lock", requireAuth, lockMyAccount);
+router.delete("/me/lock", requireAuth, unlockMyAccount);
+router.post("/me/block/:targetId", requireAuth, blockUserController);
+router.delete("/me/block/:targetId", requireAuth, unblockUserController);
+router.get("/me/block", requireAuth, getMyBlockedUsers);
+router.get("/me/block/:targetId", requireAuth, checkBlocked);
 router.get("/search", requireAuth, searchUsersController);
 router.get("/verified/early", requireAuth, listEarlyVerifiedFactoriesController);
 router.post("/lookup", requireAuth, lookupUsers);
@@ -93,6 +109,8 @@ router.patch("/:userId/verify", requireAuth, requireAdminSecurity, adminVerifyUs
 router.post("/:userId/reset-password", requireAuth, requireAdminSecurity, adminResetPassword);
 router.post("/:userId/force-logout", requireAuth, requireAdminSecurity, adminForceLogout);
 router.post("/:userId/lock-messaging", requireAuth, requireAdminSecurity, adminLockMessaging);
+router.post("/cleanup/search", requireAuth, requireAdminSecurity, adminCleanupTestAccounts);
+router.post("/cleanup/delete", requireAuth, requireAdminSecurity, adminDeleteTestAccounts);
 router.delete("/:userId", requireAuth, requireAdminSecurity, adminDeleteUser);
 
 export default router;

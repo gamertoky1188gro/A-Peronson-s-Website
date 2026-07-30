@@ -3,21 +3,28 @@ import { ACTIONS, authorize, buildCapabilityPayload } from "../services/authoriz
 import { ensureEntitlement, getEntitlements } from "../services/entitlementService.js";
 import { isImageFile } from "../services/imageProcessor.js";
 import { addImageToQueue } from "../services/imageQueue.js";
+import prisma from "../utils/prisma.js";
 import {
 	adminForceLogout as adminForceLogoutUser,
 	adminLockMessaging as adminLockMessagingUser,
 	adminSetPassword as adminSetPasswordUser,
 	adminUpdateUser as adminUpdateUserRecord,
+	blockUser as blockUserService,
 	deleteUser,
 	deleteUserWithPassword,
 	findUserById,
 	followUser,
+	getBlockedUsers,
+	isUserBlocked,
 	listEarlyVerifiedFactories,
 	listUsers,
 	listUsersByIds,
 	searchUsers,
+	selfLockAccount,
+	selfUnlockAccount,
 	sendFriendRequest,
 	setUserVerification,
+	unblockUser as unblockUserService,
 	updateProfile,
 } from "../services/userService.js";
 
@@ -175,6 +182,130 @@ export async function adminForceLogout(req, res) {
 	return res.json({ ok: true });
 }
 
+export async function lockMyAccount(req, res) {
+	try {
+		const user = await selfLockAccount(req.user.id);
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+		return res.json({ ok: true, status: "locked" });
+	} catch (err) {
+		return res.status(500).json({ error: err.message || "Lock failed" });
+	}
+}
+
+export async function unlockMyAccount(req, res) {
+	try {
+		const user = await selfUnlockAccount(req.user.id);
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+		return res.json({ ok: true, status: "unlocked" });
+	} catch (err) {
+		return res.status(500).json({ error: err.message || "Unlock failed" });
+	}
+}
+
+export async function blockUserController(req, res) {
+	try {
+		const targetId = req.params.targetId;
+		if (!targetId) {
+			return res.status(400).json({ error: "targetId required" });
+		}
+		const user = await blockUserService(req.user.id, targetId);
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+		return res.json({ ok: true });
+	} catch (err) {
+		return res.status(err.status || 500).json({ error: err.message || "Block failed" });
+	}
+}
+
+export async function unblockUserController(req, res) {
+	try {
+		const targetId = req.params.targetId;
+		if (!targetId) {
+			return res.status(400).json({ error: "targetId required" });
+		}
+		const user = await unblockUserService(req.user.id, targetId);
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+		return res.json({ ok: true });
+	} catch (err) {
+		return res.status(err.status || 500).json({ error: err.message || "Unblock failed" });
+	}
+}
+
+export async function getMyBlockedUsers(req, res) {
+	try {
+		const blocked = await getBlockedUsers(req.user.id);
+		return res.json({ blocked });
+	} catch (err) {
+		return res.status(500).json({ error: err.message || "Failed to get blocked users" });
+	}
+}
+
+export async function checkBlocked(req, res) {
+	try {
+		const targetId = req.params.targetId;
+		if (!targetId) {
+			return res.status(400).json({ error: "targetId required" });
+		}
+		const blocked = await isUserBlocked(req.user.id, targetId);
+		return res.json({ blocked });
+	} catch (err) {
+		return res.status(500).json({ error: err.message || "Check failed" });
+	}
+}
+
+export async function adminCleanupTestAccounts(req, res) {
+	try {
+		const pattern = String(req.body?.pattern || "").toLowerCase();
+		if (!pattern) {
+			return res.status(400).json({ error: "pattern required (e.g., 'test', 'demo')" });
+		}
+		const users = await prisma.user.findMany({
+			where: {
+				OR: [
+					{ email: { contains: pattern, mode: "insensitive" } },
+					{ name: { contains: pattern, mode: "insensitive" } },
+				],
+				status: { not: "deleted" },
+			},
+			select: { id: true, name: true, email: true, role: true, created_at: true },
+		});
+		return res.json({ users, total: users.length });
+	} catch (err) {
+		return res.status(500).json({ error: err.message || "Search failed" });
+	}
+}
+
+export async function adminDeleteTestAccounts(req, res) {
+	try {
+		const userIds = req.body?.userIds;
+		if (!Array.isArray(userIds) || userIds.length === 0) {
+			return res.status(400).json({ error: "userIds array required" });
+		}
+		if (userIds.length > 100) {
+			return res.status(400).json({ error: "Max 100 accounts at a time" });
+		}
+		let deleted = 0;
+		for (const id of userIds) {
+			try {
+				await deleteUser(id);
+				deleted++;
+			} catch {
+				// skip individual failures
+			}
+		}
+		return res.json({ ok: true, deleted });
+	} catch (err) {
+		return res.status(500).json({ error: err.message || "Delete failed" });
+	}
+}
+
 export async function adminLockMessaging(req, res) {
 	const hours = Number(req.body?.lock_hours || 0);
 	const updated = await adminLockMessagingUser(req.params.userId, hours);
@@ -222,5 +353,53 @@ export async function uploadAvatar(req, res) {
 		return res.json({ avatar_url: avatarUrl, profile_image: avatarUrl });
 	} catch (err) {
 		return res.status(err.status || 400).json({ error: err.message || "Unable to upload avatar" });
+	}
+}
+
+export async function exportMyData(req, res) {
+	try {
+		const userId = req.user.id;
+		const [user, feedPosts, messages, products, requirements, documents] = await Promise.all([
+			prisma.user.findUnique({
+				where: { id: userId },
+				select: {
+					id: true, name: true, email: true, role: true, country: true,
+					timezone: true, locale: true, plan: true, verified: true,
+					profile: true, created_at: true,
+				},
+			}),
+			prisma.feedPost.findMany({ where: { user_id: userId }, orderBy: { created_at: "desc" } }),
+			prisma.message.findMany({
+				where: { OR: [{ sender_id: userId }, { receiver_id: userId }] },
+				orderBy: { created_at: "desc" },
+				take: 500,
+			}),
+			prisma.companyProduct.findMany({ where: { user_id: userId }, orderBy: { created_at: "desc" } }),
+			prisma.buyerRequirement.findMany({ where: { user_id: userId }, orderBy: { created_at: "desc" } }),
+			prisma.document.findMany({ where: { user_id: userId }, orderBy: { created_at: "desc" } }),
+		]);
+
+		const exportData = {
+			exported_at: new Date().toISOString(),
+			user,
+			feed_posts: feedPosts,
+			messages: messages.map((m) => ({
+				id: m.id, match_id: m.match_id,
+				message: m.message, created_at: m.created_at,
+				sender_id: m.sender_id, receiver_id: m.receiver_id,
+			})),
+			products,
+			requirements,
+			documents: documents.map((d) => ({
+				id: d.id, filename: d.filename, filetype: d.filetype,
+				filesize: d.filesize, created_at: d.created_at,
+			})),
+		};
+
+		res.setHeader("Content-Type", "application/json");
+		res.setHeader("Content-Disposition", `attachment; filename="gartexhub_export_${userId}_${Date.now()}.json"`);
+		return res.json(exportData);
+	} catch (err) {
+		return res.status(500).json({ error: err.message || "Export failed" });
 	}
 }

@@ -117,17 +117,17 @@ export default function Footer() {
 					{/* Verification & Legal */}
 					<div>
 						<h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-							Verification & Legal
+							Verification
 						</h3>
 						<ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-							{isRouteValid("/verification") && (
+							{isRouteValid("/verification") && ["owner", "admin", "buying_house", "factory"].includes(user?.role) && (
 								<li>
 									<Link to="/verification" className="hover:text-gtBlue">
 										Document Verification
 									</Link>
 								</li>
 							)}
-							{isRouteValid("/contracts") && (
+							{isRouteValid("/contracts") && ["owner", "admin", "buying_house", "factory"].includes(user?.role) && (
 								<li>
 									<Link to="/contracts" className="hover:text-gtBlue">
 										Digital Contract System

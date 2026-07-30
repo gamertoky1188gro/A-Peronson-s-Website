@@ -21,7 +21,7 @@ models:
     confidence_threshold: 0.5
 
   moondream:
-    enabled: false
+    enabled: true
     model_size: 2b
     max_tokens: 100
 

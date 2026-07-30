@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { analyzeBufferWithAI, isAIAnalyticsEnabled } from "../services/aiModerationService.js";
+import { isAIAnalyticsEnabled, runImageFileAnalysis } from "../services/aiModerationService.js";
 import { addImageToQueue } from "../services/imageQueue.js";
 import { addToQueue } from "../services/videoQueue.js";
 import { logError, logInfo } from "../utils/logger.js";
@@ -65,10 +65,6 @@ function inferType(mime = "", originalName = "") {
 	return "image";
 }
 
-function isAutoApprovedLabel(label) {
-	return label === "SAFE" || label === "QUESTIONABLE";
-}
-
 async function runAIAnalysis(docId, fullPath) {
 	if (!isAIAnalyticsEnabled()) {
 		return;
@@ -77,40 +73,28 @@ async function runAIAnalysis(docId, fullPath) {
 		if (!fs.existsSync(fullPath)) {
 			return;
 		}
-		const buffer = fs.readFileSync(fullPath);
-		const filename = path.basename(fullPath);
-		const result = await analyzeBufferWithAI(buffer, filename);
+		const result = await runImageFileAnalysis(fullPath);
 
-		const label = result?.label || "UNKNOWN";
-		const score = result?.score || 0;
-		const confidence = result?.confidence || "low";
-		const signals = result?.signals || [];
-		const details = result?.details || {};
-		const timing = result?.timing || {};
-		const severity = result?.severity || null;
-		const earlyExit = result?.is_early_exit;
-		const autoApproved = isAutoApprovedLabel(label);
-
-		const newStatus = autoApproved ? "auto_approved" : "pending_review";
+		const newStatus = result.autoApproved ? "auto_approved" : "pending_review";
 
 		await prisma.document.update({
 			where: { id: docId },
 			data: {
-				ai_label: label,
-				ai_score: score,
-				ai_confidence: confidence,
-				ai_signals: signals,
-				ai_details: details,
-				ai_timing: timing,
-				ai_severity: severity,
-				ai_early_exit: earlyExit,
+				ai_label: result.label,
+				ai_score: result.score,
+				ai_confidence: result.confidence,
+				ai_signals: result.signals,
+				ai_details: result.details,
+				ai_timing: result.timing || {},
+				ai_severity: result.severity,
+				ai_early_exit: result.is_early_exit,
 				ai_analyzed_at: new Date(),
-				ai_auto_approved: autoApproved,
+				ai_auto_approved: result.autoApproved,
 				moderation_status: newStatus,
 			},
 		});
 
-		logInfo("AI Moderation document result", { docId, label, score, autoApproved });
+		logInfo("AI Moderation document result", { docId, label: result.label, score: result.score, autoApproved: result.autoApproved });
 	} catch (err) {
 		logError("AI Moderation document failed", new Error(`docId=${docId}: ${err.message}`));
 	}

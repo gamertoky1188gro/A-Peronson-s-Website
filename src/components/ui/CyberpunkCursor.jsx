@@ -8,6 +8,8 @@ export default function CyberpunkCursor() {
 	const dotRef = useRef(null);
 	const spinnerRef = useRef(null);
 
+	const [enabled, setEnabled] = useState(false);
+
 	const [theme, setTheme] = useState(() => {
 		if (typeof window === "undefined") {
 			return "dark";
@@ -29,6 +31,37 @@ export default function CyberpunkCursor() {
 	}, []);
 
 	useEffect(() => {
+		const PHRASE = enabled ? "disable cursor" : "activate cursor";
+		let buffer = "";
+		let timer = null;
+
+		const resetBuffer = () => {
+			buffer = "";
+		};
+
+		const onKeyDown = (e) => {
+			if (e.repeat) return;
+			if (e.key.length !== 1) return;
+			if (e.ctrlKey || e.metaKey || e.altKey) return;
+			clearTimeout(timer);
+			timer = setTimeout(resetBuffer, 1500);
+			buffer = (buffer + e.key.toLowerCase()).slice(-PHRASE.length);
+			if (buffer === PHRASE) {
+				clearTimeout(timer);
+				setEnabled((prev) => !prev);
+			}
+		};
+
+		document.addEventListener("keydown", onKeyDown);
+		return () => {
+			clearTimeout(timer);
+			document.removeEventListener("keydown", onKeyDown);
+		};
+	}, [enabled]);
+
+	useEffect(() => {
+		if (!enabled) return;
+
 		const body = document.body;
 		const html = document.documentElement;
 		const canvas = canvasRef.current;
@@ -337,7 +370,7 @@ export default function CyberpunkCursor() {
 				el.removeEventListener("mouseleave", onLeave);
 			});
 		};
-	}, [theme]);
+	}, [theme, enabled]);
 
 	const styles = useMemo(
 		() => `
@@ -570,13 +603,17 @@ export default function CyberpunkCursor() {
 	return (
 		<>
 			<style>{styles}</style>
-			<canvas id="cp-canvas" ref={canvasRef} />
+			{enabled && (
+				<>
+					<canvas id="cp-canvas" ref={canvasRef} />
 
-			<div ref={glowRef} className="cp-glow" />
-			<div ref={ringRef} className="cp-ring" />
-			<div ref={coreRef} className="cp-core" />
-			<div ref={spinnerRef} className="cp-spinner" />
-			<div ref={dotRef} className="cp-dot" />
+					<div ref={glowRef} className="cp-glow" />
+					<div ref={ringRef} className="cp-ring" />
+					<div ref={coreRef} className="cp-core" />
+					<div ref={spinnerRef} className="cp-spinner" />
+					<div ref={dotRef} className="cp-dot" />
+				</>
+			)}
 		</>
 	);
 }

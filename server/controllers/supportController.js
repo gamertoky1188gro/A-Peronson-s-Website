@@ -10,6 +10,22 @@ import {
 } from "../services/supportTicketService.js";
 import { sanitizeString } from "../utils/validators.js";
 
+export async function getSupportCategories(req, res) {
+	return res.json({
+		categories: [
+			"Bug Report",
+			"Feature Request",
+			"Account Problem",
+			"Payment / Verification Issue",
+			"Report a User",
+			"Content Report",
+			"General Feedback",
+			"Other",
+		],
+		priorities: ["Low", "Medium", "High", "Urgent"],
+	});
+}
+
 export async function createSupportReport(req, res) {
 	const subject = sanitizeString(String(req.body?.subject || ""), 140);
 	const description = sanitizeString(String(req.body?.description || ""), 1200);

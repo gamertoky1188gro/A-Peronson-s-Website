@@ -57,6 +57,14 @@ export function getCurrentUser() {
 		return cachedUser;
 	}
 
+	if (!cachedUser) {
+		const stored = loadUserFromStorage();
+		if (stored) {
+			cachedUser = stored;
+			cacheTime = now;
+		}
+	}
+
 	fetchAndCacheUser(token).catch(() => {});
 	return cachedUser;
 }

@@ -71,24 +71,113 @@
     - AI-assisted request creation.
     - Status tracking and management.
 */
+import NeonAtom from "../components/ui/NeonAtom.jsx";
+import WordCount from "../components/ui/WordCount.jsx";
+import ScrollReveal from "../components/ScrollReveal.jsx";
+import UploadProgressBar from "../components/ui/UploadProgressBar.jsx";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+	apiRequest,
+	getCurrentUser,
+	getToken,
+	hasEntitlement,
+} from "../lib/auth.js";
+import { useSecureUser, useEntitlements } from "../hooks/useSecureUser.js";
+import { mapExtractedToForm } from "../lib/aiPrefill.js";
+import { useTheme } from "../lib/ThemeProvider.jsx";
 import {
 	getBuyerRequestErrorStep,
 	getBuyerRequestStepErrors,
 	getBuyerRequestSubmissionErrors,
 } from "../../shared/requirementValidation.js";
-import NeonAtom from "../components/ui/NeonAtom.jsx";
-import { useEntitlements, useSecureUser } from "../hooks/useSecureUser.js";
-import { mapExtractedToForm } from "../lib/aiPrefill.js";
-import { apiRequest, getCurrentUser, getToken, hasEntitlement } from "../lib/auth.js";
+import {
+	ArrowLeft,
+	ArrowRight,
+	Bot,
+	CheckCircle2,
+	ChevronRight,
+	ClipboardList,
+	CloudUpload,
+	Edit3,
+	FileText,
+	Filter,
+	Layers3,
+	MoonStar,
+	Plus,
+	RefreshCw,
+	Sparkles,
+	SunMedium,
+	Trash2,
+	X,
+	Zap,
+} from "lucide-react";
+import { ThreeDot } from "react-loading-indicators";
 import { logger } from "../lib/logger.js";
-import { useTheme } from "../lib/ThemeProvider.jsx";
 import { uploadFile } from "../lib/upload.js";
 
 /** @type {BuyerRequestForm} */
 const EMPTY_FORM = {
 	requestType: "",
-	// ... (the rest of EMPTY_FORM definition)
+	title: "",
+	industry: "",
+	category: "",
+	genderTarget: "",
+	season: "",
+	totalQuantity: "",
+	numberOfStyles: "",
+	fabricComposition: "",
+	fabricWeightGsm: "",
+	weaveOrKnit: "",
+	sizeRange: "",
+	colorRequirement: "",
+	styleDescription: "",
+	techPackRequired: "",
+	targetFobPrice: "",
+	incoterms: "",
+	destinationPort: "",
+	exFactoryDate: "",
+	sampleRequired: "",
+	sampleType: "",
+	paymentTerms: "",
+	complianceCerts: [],
+	sustainabilityCerts: [],
+	complianceNotes: "",
+	materialType: "",
+	subCategory: "",
+	quantity: "",
+	unit: "",
+	fiberComposition: "",
+	fabricWidth: "",
+	yarnCount: "",
+	threadCount: "",
+	finishRequired: "",
+	stretchRequired: "",
+	color: "",
+	pattern: "",
+	targetPrice: "",
+	priceUnit: "",
+	deliveryPort: "",
+	leadTimeRequired: "",
+	labTestRequired: "",
+	swatchFirst: "",
+	labCertNotes: "",
+	quoteDeadline: "",
+	expiresAt: "",
+	maxSuppliers: "",
+	verifiedOnly: false,
+	preferredFactoryLocation: "",
+	factorySizePreference: "",
+	exportExperiencePreference: "",
+	confidentialityToggle: false,
+	packagingRequirement: "",
+	originLabelRequired: "",
+	hangtagBarcode: "",
+	partialShipmentAllowed: "",
+	shipmentMode: "",
+	customFields: [],
+	customDescription: "",
 };
 
 /**
@@ -96,8 +185,68 @@ const EMPTY_FORM = {
  * @param {BuyerRequestForm} form The form state.
  * @returns {Object} The API payload.
  */
-function formToPayload(_form) {
-	// ...
+function formToPayload(form) {
+	const isTextile = form.requestType === "textile";
+	const category = isTextile ? form.subCategory : form.category;
+	const priceRange = isTextile ? form.targetPrice : form.targetFobPrice;
+	const quantity = isTextile ? form.quantity : form.totalQuantity;
+
+	return {
+		request_type: form.requestType || "garments",
+		title: form.title,
+		industry: form.industry,
+		category,
+		product: isTextile ? form.materialType : form.category,
+		quantity,
+		price_range: priceRange,
+		incoterms: form.incoterms,
+		payment_terms: form.paymentTerms,
+		material: isTextile ? form.fiberComposition : form.fabricComposition,
+		fabric_gsm: form.fabricWeightGsm,
+		size_range: form.sizeRange,
+		color_pantone: form.colorRequirement,
+		custom_description: form.customDescription,
+		quote_deadline: form.quoteDeadline || null,
+		expires_at: form.expiresAt || null,
+		max_suppliers: form.maxSuppliers || null,
+		verified_only: Boolean(form.verifiedOnly),
+		custom_fields: Array.isArray(form.customFields) ? form.customFields : [],
+		gender_target: form.genderTarget,
+		season: form.season,
+		number_of_styles: form.numberOfStyles,
+		fabric_composition: form.fabricComposition,
+		weave_or_knit: form.weaveOrKnit,
+		color_requirement: form.colorRequirement,
+		style_description: form.styleDescription,
+		tech_pack_required: form.techPackRequired,
+		destination_port: form.destinationPort,
+		ex_factory_date: form.exFactoryDate,
+		sample_required: form.sampleRequired,
+		sample_type: form.sampleType,
+		compliance_certs: Array.isArray(form.complianceCerts)
+			? form.complianceCerts
+			: [],
+		sustainability_certs: Array.isArray(form.sustainabilityCerts)
+			? form.sustainabilityCerts
+			: [],
+		compliance_notes: form.complianceNotes,
+		material_type: form.materialType,
+		sub_category: form.subCategory,
+		unit: form.unit,
+		fiber_composition: form.fiberComposition,
+		fabric_width: form.fabricWidth,
+		yarn_count: form.yarnCount,
+		thread_count: form.threadCount,
+		finish_required: form.finishRequired,
+		stretch_required: form.stretchRequired,
+		color: form.color,
+		pattern: form.pattern,
+		target_price: form.targetPrice,
+		price_unit: form.priceUnit,
+		delivery_port: form.deliveryPort,
+		lead_time_required: form.leadTimeRequired,
+		lab_test_required: form.labTestRequired,
+	};
 }
 
 /**
@@ -105,8 +254,80 @@ function formToPayload(_form) {
  * @param {Object} req The requirement object from API.
  * @returns {BuyerRequestForm} The form state.
  */
-function requirementToForm(_req) {
-	// ...
+function requirementToForm(req) {
+	const specs = req?.specs && typeof req.specs === "object" ? req.specs : {};
+	return {
+		...EMPTY_FORM,
+		requestType: req.request_type || "garments",
+		title: req.title || "",
+		industry: req.industry || "",
+		category: req.category || "",
+		genderTarget: specs.gender_target || "",
+		season: specs.season || "",
+		totalQuantity: req.quantity || "",
+		numberOfStyles: specs.number_of_styles || "",
+		fabricComposition: specs.fabric_composition || req.material || "",
+		fabricWeightGsm: specs.fabric_weight_gsm || req.fabric_gsm || "",
+		weaveOrKnit: specs.weave_or_knit || "",
+		sizeRange: specs.size_range || req.size_range || "",
+		colorRequirement: specs.color_requirement || req.color_pantone || "",
+		styleDescription: specs.style_description || "",
+		techPackRequired: specs.tech_pack_required || "",
+		targetFobPrice: req.price_range || "",
+		incoterms: req.incoterms || "",
+		destinationPort: specs.destination_port || "",
+		exFactoryDate: specs.ex_factory_date || "",
+		sampleRequired: specs.sample_required || "",
+		sampleType: specs.sample_type || "",
+		paymentTerms: specs.payment_terms || req.payment_terms || "",
+		complianceCerts: Array.isArray(specs.compliance_certs)
+			? specs.compliance_certs
+			: [],
+		sustainabilityCerts: Array.isArray(specs.sustainability_certs)
+			? specs.sustainability_certs
+			: [],
+		complianceNotes: specs.compliance_notes || req.compliance_notes || "",
+		materialType: specs.material_type || "",
+		subCategory: specs.sub_category || req.category || "",
+		quantity: req.quantity || "",
+		unit: specs.unit || "",
+		fiberComposition: specs.fiber_composition || "",
+		fabricWidth: specs.fabric_width || "",
+		yarnCount: specs.yarn_count || "",
+		threadCount: specs.thread_count || "",
+		finishRequired: specs.finish_required || "",
+		stretchRequired: specs.stretch_required || "",
+		color: specs.color || "",
+		pattern: specs.pattern || "",
+		targetPrice: req.price_range || "",
+		priceUnit: specs.price_unit || "",
+		deliveryPort: specs.delivery_port || "",
+		leadTimeRequired: specs.lead_time_required || "",
+		labTestRequired: specs.lab_test_required || "",
+		swatchFirst: specs.swatch_first || "",
+		labCertNotes: specs.lab_cert_notes || "",
+		quoteDeadline: req.quote_deadline
+			? new Date(req.quote_deadline).toISOString().slice(0, 10)
+			: "",
+		expiresAt: req.expires_at
+			? new Date(req.expires_at).toISOString().slice(0, 10)
+			: "",
+		maxSuppliers: req.max_suppliers ?? "",
+		verifiedOnly: Boolean(req.verified_only),
+		preferredFactoryLocation: specs.preferred_factory_location || "",
+		factorySizePreference: specs.factory_size_preference || "",
+		exportExperiencePreference: specs.export_experience_preference || "",
+		confidentialityToggle: Boolean(specs.confidentiality_toggle),
+		packagingRequirement: specs.packaging_requirement || "",
+		originLabelRequired: specs.origin_label_required || "",
+		hangtagBarcode: specs.hangtag_barcode || "",
+		partialShipmentAllowed: specs.partial_shipment_allowed || "",
+		shipmentMode: specs.shipment_mode || "",
+		customFields: Array.isArray(specs.custom_fields)
+			? specs.custom_fields
+			: [],
+		customDescription: req.custom_description || specs.custom_description || "",
+	};
 }
 
 // ... (rest of the file as before)

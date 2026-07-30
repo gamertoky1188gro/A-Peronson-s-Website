@@ -1,6 +1,7 @@
 import {
 	getAnalyticsSummary,
 	getCompanyAnalytics,
+	getCoreMetrics,
 	getDashboardAnalytics,
 	getPlatformAnalyticsAdmin,
 	getPlatformAnalyticsSegment,
@@ -253,6 +254,15 @@ export async function analyticsViewers(req, res) {
 		}
 
 		return res.status(400).json({ error: "Unsupported entity type" });
+	} catch (error) {
+		return handleError(res, error);
+	}
+}
+
+export async function analyticsCoreMetrics(req, res) {
+	try {
+		const result = await getCoreMetrics(req.user);
+		return res.json(result);
 	} catch (error) {
 		return handleError(res, error);
 	}

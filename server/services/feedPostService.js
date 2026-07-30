@@ -8,6 +8,7 @@ import prisma from "../utils/prisma.js";
 import { limitWordCount, sanitizeString } from "../utils/validators.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { batchGetLinkPreviews } from "./linkPreviewService.js";
+import { moderateTextOrRedact } from "./policyService.js";
 
 const STATUSES = new Set(["draft", "published"]);
 const MEDIA_TYPES = new Set(["image", "video"]);
@@ -296,6 +297,17 @@ export async function createFeedPost(actor, payload = {}) {
 	const plan = await getPlanForUser(actor);
 	const maxWords = plan === "premium" ? 1500 : 600;
 	next.description_markdown = limitWordCount(next.description_markdown, maxWords);
+	try {
+		const moderated = await moderateTextOrRedact({
+			actor,
+			text: next.description_markdown,
+			entity_type: "user_feed_post",
+			entity_id: next.id,
+		});
+		next.description_markdown = moderated.text;
+	} catch {
+		// silent
+	}
 	await prisma.feedPost.create({ data: next });
 
 	const author = actor
@@ -337,6 +349,17 @@ export async function updateFeedPost(actor, postId, payload = {}) {
 		const plan = await getPlanForUser(actor);
 		const maxWords = plan === "premium" ? 1500 : 600;
 		updated.description_markdown = limitWordCount(updated.description_markdown, maxWords);
+		try {
+			const moderated = await moderateTextOrRedact({
+				actor,
+				text: updated.description_markdown,
+				entity_type: "user_feed_post",
+				entity_id: String(postId),
+			});
+			updated.description_markdown = moderated.text;
+		} catch {
+			// silent
+		}
 	}
 	await prisma.feedPost.update({
 		where: { id: String(postId) },

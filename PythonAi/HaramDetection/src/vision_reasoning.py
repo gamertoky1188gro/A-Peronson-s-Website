@@ -14,6 +14,15 @@ os.environ['PATH'] = torch_lib + os.pathsep + os.environ.get('PATH', '')
 
 logger = logging.getLogger(__name__)
 
+# Monkey-patch transformers 5.x compatibility for Moondream
+import torch
+_orig_nn_getattr = torch.nn.Module.__getattr__
+def _patched_nn_getattr(self, name):
+    if name == "all_tied_weights_keys":
+        return {}
+    return _orig_nn_getattr(self, name)
+torch.nn.Module.__getattr__ = _patched_nn_getattr
+
 
 def get_system_ram_gb() -> float:
     try:
@@ -51,7 +60,7 @@ def get_system_ram_gb() -> float:
 MOONDREAM_MODELS = {
     '0.5b': {
         'name': 'vikhyatk/moondream2',
-        'revision': '01b292d79113fac24b2f70722891da1db794a6e9',
+        'revision': 'main',
         'min_ram_gb': 4,
         'description': 'Moondream 0.5B (lightweight)'
     },
@@ -130,14 +139,19 @@ class VisionReasoningEngine:
                 self._processor = AutoTokenizer.from_pretrained(
                     model_name,
                     revision=revision,
+                    trust_remote_code=True,
                 )
+                import torch
                 self._model = AutoModelForCausalLM.from_pretrained(
                     model_name,
                     revision=revision,
-                    torch_dtype="auto",
-                    device_map="cpu"
+                    trust_remote_code=True,
+                    dtype="auto",
                 )
-                logger.info(f"Moondream {self.model_info['description']} loaded successfully")
+                self._model.post_init()
+                if torch.cuda.is_available():
+                    self._model = self._model.cuda()
+                logger.info(f"Moondream {self.model_info['description']} loaded on {self._model.device}")
             except Exception as e:
                 logger.warning(f"Failed to initialize Moondream: {e}")
                 self._model = None
@@ -164,7 +178,7 @@ class VisionReasoningEngine:
             }
         
         try:
-            description = self._model.generate_caption(img)
+            description = self._model.caption(image=img)["caption"]
             
             analysis_prompt = """Analyze this image for content moderation.
 Respond in this exact format:
@@ -175,7 +189,7 @@ REASONS: [comma separated reasons]
 Look for: nudity, alcohol, cigarettes, vaping, gambling, weapons, drugs.
 Be accurate and concise."""
             
-            analysis = self._model.query_image(img, analysis_prompt)
+            analysis = self._model.query(image=img, question=analysis_prompt)["answer"]
             
             parsed = self._parse_moondream_response(analysis)
             

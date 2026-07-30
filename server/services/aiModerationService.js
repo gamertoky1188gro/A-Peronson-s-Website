@@ -221,6 +221,40 @@ export async function analyzeImageWithAI(filePath) {
 	return runPython(buildPythonScript(filePath));
 }
 
+export function isAutoApprovedLabel(label) {
+	return label === "SAFE" || label === "QUESTIONABLE";
+}
+
+export async function runImageFileAnalysis(filePath) {
+	if (!aiAvailable) {
+		return { label: "UNKNOWN", score: 0, confidence: "low", signals: [], details: {} };
+	}
+	if (!isAIAnalyticsEnabled()) {
+		return { label: "UNKNOWN", score: 0, confidence: "low", signals: [], details: {} };
+	}
+	try {
+		if (!fs.existsSync(filePath)) {
+			return { label: "UNKNOWN", score: 0, confidence: "low", signals: [], details: {} };
+		}
+		const buffer = fs.readFileSync(filePath);
+		const result = await analyzeBufferWithAI(buffer, path.basename(filePath));
+		return {
+			label: result?.label || "UNKNOWN",
+			score: result?.score || 0,
+			confidence: result?.confidence || "low",
+			signals: result?.signals || [],
+			details: result?.details || {},
+			timing: result?.timing || {},
+			severity: result?.severity || null,
+			is_early_exit: result?.is_early_exit,
+			autoApproved: isAutoApprovedLabel(result?.label),
+		};
+	} catch (err) {
+		logError("runImageFileAnalysis failed", err);
+		return { label: "ERROR", score: 0, confidence: "low", signals: [], details: {}, error: err.message };
+	}
+}
+
 export async function analyzeBufferWithAI(buffer, filename = "image.jpg") {
 	if (!aiAvailable) {
 		throw new Error("AI moderation unavailable (HARAM_DETECTION_DIR not set)");

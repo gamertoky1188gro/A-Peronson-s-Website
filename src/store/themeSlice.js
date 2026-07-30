@@ -1,19 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-function getInitialTheme() {
-	const stored = localStorage.getItem("theme");
-	if (stored === "dark" || stored === "light") {
-		return stored;
+function resolveTheme(mode) {
+	if (mode === "system") {
+		return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 	}
-	if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-		return "dark";
-	}
-	return "light";
+	return mode === "dark" ? "dark" : "light";
 }
 
-function applyThemeToDOM(theme) {
+function getInitialTheme() {
+	const stored = localStorage.getItem("theme");
+	if (stored === "dark" || stored === "light" || stored === "system") {
+		return stored;
+	}
+	return "system";
+}
+
+function applyThemeToDOM(mode) {
+	const resolved = resolveTheme(mode);
 	const root = document.documentElement;
-	if (theme === "dark") {
+	if (resolved === "dark") {
 		root.classList.add("dark");
 	} else {
 		root.classList.remove("dark");
@@ -25,7 +30,7 @@ function applyThemeToDOM(theme) {
 		meta.setAttribute("name", "theme-color");
 		document.head.appendChild(meta);
 	}
-	meta.setAttribute("content", theme === "dark" ? "#0f172a" : "#f8fafc");
+	meta.setAttribute("content", resolved === "dark" ? "#0f172a" : "#f8fafc");
 }
 
 const initialState = {
@@ -37,7 +42,10 @@ const themeSlice = createSlice({
 	initialState,
 	reducers: {
 		setTheme(state, action) {
-			const next = action.payload === "dark" ? "dark" : "light";
+			const next = action.payload;
+			if (next !== "dark" && next !== "light" && next !== "system") {
+				return;
+			}
 			state.theme = next;
 			localStorage.setItem("theme", next);
 			applyThemeToDOM(next);
@@ -50,7 +58,7 @@ const themeSlice = createSlice({
 		},
 		syncThemeFromStorage(state) {
 			const stored = localStorage.getItem("theme");
-			if (stored === "dark" || stored === "light") {
+			if (stored === "dark" || stored === "light" || stored === "system") {
 				state.theme = stored;
 				applyThemeToDOM(stored);
 			}
@@ -59,4 +67,5 @@ const themeSlice = createSlice({
 });
 
 export const { setTheme, toggleTheme, syncThemeFromStorage } = themeSlice.actions;
+export { applyThemeToDOM };
 export default themeSlice.reducer;

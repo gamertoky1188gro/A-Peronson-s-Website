@@ -1,6 +1,9 @@
 import crypto from "node:crypto";
-import { logError } from "../utils/logger.js";
+import fs from "node:fs";
+import path from "node:path";
+import { logError, logWarn } from "../utils/logger.js";
 import { isAgent, isOwnerOrAdmin } from "../utils/permissions.js";
+import { isAIAnalyticsEnabled, runImageFileAnalysis } from "./aiModerationService.js";
 import prisma from "../utils/prisma.js";
 import { limitWordCount, sanitizeString } from "../utils/validators.js";
 import { getAdminConfig } from "./adminConfigService.js";
@@ -441,6 +444,67 @@ async function evaluateClothingModeration({ title, description, category, materi
 	};
 }
 
+function resolveMediaFilePath(imageUrl) {
+	if (!imageUrl) {
+		return null;
+	}
+	const str = String(imageUrl);
+	if (str.startsWith("/uploads/")) {
+		return path.join(process.cwd(), "server", str);
+	}
+	if (str.startsWith("uploads/")) {
+		return path.join(process.cwd(), "server", str);
+	}
+	if (str.includes("server/uploads/")) {
+		return path.join(process.cwd(), str.replace(/^.*?server\//, ""));
+	}
+	return null;
+}
+
+async function runProductImageAIAnalysis(productId, imageUrls) {
+	if (!isAIAnalyticsEnabled()) {
+		return;
+	}
+	try {
+		const flagged = [];
+		for (const url of imageUrls) {
+			const fullPath = resolveMediaFilePath(url);
+			if (!fullPath || !fs.existsSync(fullPath)) {
+				continue;
+			}
+			const result = await runImageFileAnalysis(fullPath);
+			if (!result.autoApproved) {
+				flagged.push({ url, label: result.label, score: result.score });
+			}
+		}
+		if (flagged.length === 0) {
+			return;
+		}
+		await prisma.product.update({
+			where: { id: productId },
+			data: {
+				content_review_status: "pending_review",
+				content_review_reason: `AI image moderation flagged ${flagged.length} image(s).`,
+				content_review_flags: flagged.map((f) => `ai:${String(f.label).toLowerCase()}`),
+				content_reviewed_at: new Date(),
+				content_reviewed_by: "system",
+			},
+		});
+		const product = await prisma.product.findUnique({ where: { id: productId } });
+		if (product) {
+			await createNotification(product.company_id, {
+				type: "product_content_review",
+				entity_type: "company_product",
+				entity_id: productId,
+				message: "Product images flagged by AI moderation — awaiting manual review.",
+				meta: { review_status: "pending_review", reason: "AI image analysis" },
+			});
+		}
+	} catch (err) {
+		logWarn("runProductImageAIAnalysis failed", { productId, error: err.message });
+	}
+}
+
 export async function createProduct(user, payload) {
 	const [users, allProducts] = await Promise.all([
 		prisma.user.findMany(),
@@ -573,6 +637,13 @@ export async function createProduct(user, payload) {
 
 	row.description = description;
 	await prisma.product.create({ data: row });
+
+	if (!isDraft && row.content_review_status !== "rejected") {
+		runProductImageAIAnalysis(row.id, imageUrls).catch((err) =>
+			logWarn("productService: runProductImageAIAnalysis error", err),
+		);
+	}
+
 	try {
 		await indexProduct(row, {
 			...(ownerUser || {}),

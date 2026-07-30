@@ -85,7 +85,7 @@ class ModerationPipeline:
         results['nsfw'] = nsfw_result
         results['timing']['nsfw'] = time.time() - start_time
         
-        if nsfw_result.get('nsfw_score', 0) > 0.8:
+        if nsfw_result.get('nsfw_score', 0) > 80:
             early_score, label = self._quick_judgment_nsfw(nsfw_result)
             return {
                 'score': early_score,
@@ -161,7 +161,7 @@ class ModerationPipeline:
     def _quick_judgment_nsfw(self, nsfw_result: Dict[str, Any]) -> float:
         score = nsfw_result.get('nsfw_score', 0)
         
-        if score > 0.9:
+        if score > 90:
             return 95, 'HIGH RISK'
         return 85, 'HIGH RISK'
 
