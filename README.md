@@ -10,9 +10,9 @@ $$\color{#FF6EC7}{\text{neon}}\ \color{#A78BFA}{\text{violet}}\ \color{#38BDF8}{
 
 ⚡ *Neon-bright frontend.* ***Blue-trust backend.*** Pink-laser realtime. <sub>All under one hood.</sub>
 
-[![Setup Guide](https://img.shields.io/badge/SETUP-GUIDE-FF6EC7?style=for-the-badge&logo=readme)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-installation)
-[![API Reference](https://img.shields.io/badge/API-REFERENCE-4A00E0?style=for-the-badge&logo=openapi-initiative)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-backend-api)
-[![License](https://img.shields.io/badge/LICENSE-Proprietary-FFB86C?style=for-the-badge&logo=law)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-license)
+[![Setup Guide](https://img.shields.io/badge/SETUP-GUIDE-FF6EC7?style=for-the-badge&logo=readme)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-color46e3b7textinstallation)
+[![API Reference](https://img.shields.io/badge/API-REFERENCE-4A00E0?style=for-the-badge&logo=openapi-initiative)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-color4a00e0textbackend-api)
+[![License](https://img.shields.io/badge/LICENSE-Proprietary-FFB86C?style=for-the-badge&logo=law)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-colorffb86ctextlicense)
 
 <img src="https://github-readme-stats.vercel.app/api?username=gamertoky1188gro&show_icons=true&count_private=true&hide_border=true&theme=transparent&title_color=FF6EC7&text_color=ffffff&icon_color=46E3B7" alt="GitHub stats" width="420" />
 <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=gamertoky1188gro&layout=compact&hide_border=true&theme=transparent&title_color=FF6EC7&text_color=ffffff" alt="Top languages" width="300" />
@@ -25,7 +25,7 @@ $$\color{#FF6EC7}{\text{neon}}\ \color{#A78BFA}{\text{violet}}\ \color{#38BDF8}{
 
 ─────── ⚡ ───────
 
-## 🏅 Badges
+## 🏅 $\color{#FBBF24}{\text{Badges}}$
 
 | | |
 |---|---|
@@ -41,7 +41,7 @@ $$\color{#FF6EC7}{\text{neon}}\ \color{#A78BFA}{\text{violet}}\ \color{#38BDF8}{
 
 ---
 
-## 🎯 The Pitch
+## 🎯 $\color{#FF6EC7}{\text{The Pitch}}$
 
 > [!TIP]
 > 💡 ***Post a requirement*** → get matched with verified factories → negotiate in chat → jump on a call → sign the contract → track the deal as a lead.
@@ -58,40 +58,40 @@ $$\text{Trust} \times \text{Realtime} \times \text{Governance} = \text{GarTexHub
 
 ## Table of Contents
 
-- [🏅 Badges](#-badges)
-- [🎯 The Pitch](#-the-pitch)
-- [⚡ Overview](#-overview)
-- [✨ Key Features](#-key-features)
-- [🧬 Architecture](#-architecture)
-- [🧰 Tech Stack](#-tech-stack)
-- [📁 Repository Structure](#-repository-structure)
-- [Frontend Applications](#frontend-applications)
-- [🌐 Frontend Routes](#-frontend-routes)
-- [Frontend Pages](#frontend-pages)
-- [⚙️ Backend Services](#-backend-services)
-- [🔌 Backend API](#-backend-api)
-- [🛂 Authentication and Authorization](#-authentication-and-authorization)
-- [🔐 Permission Model](#-permission-model)
-- [🛡 Security Architecture](#-security-architecture)
-- [🗄 Database Design](#-database-design)
-- [🔁 Data Flow and Request Lifecycle](#-data-flow-and-request-lifecycle)
-- [Background Jobs, Queues and Workers](#background-jobs-queues-and-workers)
-- [📡 Realtime: WebSocket and SSE](#-realtime-websocket-and-sse)
-- [📋 Environment Variables](#-environment-variables)
-- [🚀 Installation](#-installation)
-- [🏃 Running the Project](#-running-the-project)
-- [Database Setup and Migrations](#database-setup-and-migrations)
-- [☁️ Deployment](#-deployment)
-- [📈 Monitoring, Logs and Health Checks](#-monitoring-logs-and-health-checks)
-- [🧪 Testing](#-testing)
-- [🛠 Troubleshooting](#-troubleshooting)
-- [🤝 Contributing](#-contributing)
-- [🗺 Roadmap](#-roadmap)
-- [⚖️ License](#-license)
+- [🏅 Badges](#-colorfbbf24textbadges)
+- [🎯 The Pitch](#-colorff6ec7textthe-pitch)
+- [⚡ Overview](#-color38bdf8textoverview)
+- [✨ Key Features](#-colora78bfatextkey-features)
+- [🧬 Architecture](#-color46e3b7textarchitecture)
+- [🧰 Tech Stack](#-color60a5fatexttech-stack)
+- [📁 Repository Structure](#-colora78bfatextrepository-structure)
+- [Frontend Applications](#-color60a5fatextfrontend-applications)
+- [🌐 Frontend Routes](#-color46e3b7textfrontend-routes)
+- [Frontend Pages](#-color38bdf8textfrontend-pages)
+- [⚙️ Backend Services](#-colorffb86ctextbackend-services)
+- [🔌 Backend API](#-color4a00e0textbackend-api)
+- [🛂 Authentication and Authorization](#-color34d399textauthentication-and-authorization)
+- [🔐 Permission Model](#-colorfbbf24textpermission-model)
+- [🛡 Security Architecture](#-colorff6ec7textsecurity-architecture)
+- [🗄 Database Design](#-colorffb86ctextdatabase-design)
+- [🔁 Data Flow and Request Lifecycle](#-color38bdf8textdata-flow-and-request-lifecycle)
+- [Background Jobs, Queues and Workers](#-colora78bfatextbackground-jobs-queues-and-workers)
+- [📡 Realtime: WebSocket and SSE](#-colorff6ec7textrealtime-websocket-and-sse)
+- [📋 Environment Variables](#-colorfbbf24textenvironment-variables)
+- [🚀 Installation](#-color46e3b7textinstallation)
+- [🏃 Running the Project](#-color60a5fatextrunning-the-project)
+- [Database Setup and Migrations](#-colorffb86ctextdatabase-setup-and-migrations)
+- [☁️ Deployment](#-color38bdf8textdeployment)
+- [📈 Monitoring, Logs and Health Checks](#-color34d399textmonitoring-logs-and-health-checks)
+- [🧪 Testing](#-colorff6ec7texttesting)
+- [🛠 Troubleshooting](#-colorfbbf24texttroubleshooting)
+- [🤝 Contributing](#-color46e3b7textcontributing)
+- [🗺 Roadmap](#-colora78bfatextroadmap)
+- [⚖️ License](#-colorffb86ctextlicense)
 
 ---
 
-## ⚡ Overview
+## ⚡ $\color{#38BDF8}{\text{Overview}}$
 
 ### What this is
 
@@ -130,7 +130,7 @@ A **single monorepo containing one app**: a Vite SPA (`src/`) + an Express monol
 
 ---
 
-## ✨ Key Features
+## ✨ $\color{#A78BFA}{\text{Key Features}}$
 
 - **Multi-role ecosystem** — Buyer, Factory, Buying House, Owner, Admin, Agent; per-role routing, permissions, and dashboards.
 - **Social-style feed** — combined buyer-requests + company-products stream with hashtags, mentions, media, product tags, and live SSE updates.
@@ -155,7 +155,7 @@ A **single monorepo containing one app**: a Vite SPA (`src/`) + an Express monol
 
 ---
 
-## 🧬 Architecture
+## 🧬 $\color{#46E3B7}{\text{Architecture}}$
 
 ```mermaid
 flowchart LR
@@ -194,7 +194,7 @@ flowchart LR
 
 ---
 
-## 🧰 Tech Stack
+## 🧰 $\color{#60A5FA}{\text{Tech Stack}}$
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -224,7 +224,7 @@ flowchart LR
 
 ---
 
-## 📁 Repository Structure
+## 📁 $\color{#A78BFA}{\text{Repository Structure}}$
 
 ```text
 A-Peronson-s-Website/
@@ -288,7 +288,7 @@ A-Peronson-s-Website/
 
 ---
 
-## Frontend Applications
+## $\color{#60A5FA}{\text{Frontend Applications}}$
 
 There is **one SPA**, bootstrapped in `src/main.jsx`:
 
@@ -309,7 +309,7 @@ Key frontend facilities:
 
 ---
 
-## 🌐 Frontend Routes
+## 🌐 $\color{#46E3B7}{\text{Frontend Routes}}$
 
 **Role-set legend** (defined in `src/App.jsx:88-91`):
 
@@ -393,7 +393,7 @@ Key frontend facilities:
 
 ---
 
-## Frontend Pages
+## $\color{#38BDF8}{\text{Frontend Pages}}$
 
 ### TexHub landing (`/`)
 - Purpose: hero/landing experience for anonymous visitors; funnels into `/signup`, `/login`, `/pricing`.
@@ -540,7 +540,7 @@ Key frontend facilities:
 
 ---
 
-## ⚙️ Backend Services
+## ⚙️ $\color{#FFB86C}{\text{Backend Services}}$
 
 The server is an **Express 5 monolith** (`server/server.js`, port `4000`) that also hosts the WebSocket server, SSE feed, background schedulers, and the syslog listener in one process.
 
@@ -580,7 +580,7 @@ The server is an **Express 5 monolith** (`server/server.js`, port `4000`) that a
 
 ---
 
-## 🔌 Backend API
+## 🔌 $\color{#4A00E0}{\text{Backend API}}$
 
 All endpoints live under `/api`. The table below lists mount points; detailed docs follow for the most important routes.
 
@@ -878,7 +878,7 @@ All endpoints live under `/api`. The table below lists mount points; detailed do
 
 ---
 
-## 🛂 Authentication and Authorization
+## 🛂 $\color{#34D399}{\text{Authentication and Authorization}}$
 
 ### Authentication flow
 
@@ -915,7 +915,7 @@ JWT is per-device (no cookie sessions); logging in on a new device issues a new 
 
 ---
 
-## 🔐 Permission Model
+## 🔐 $\color{#FBBF24}{\text{Permission Model}}$
 
 ### Role hierarchy
 
@@ -982,7 +982,7 @@ JWT is per-device (no cookie sessions); logging in on a new device issues a new 
 
 ---
 
-## 🛡 Security Architecture
+## 🛡 $\color{#FF6EC7}{\text{Security Architecture}}$
 
 ```mermaid
 flowchart LR
@@ -1019,7 +1019,7 @@ flowchart LR
 
 ---
 
-## 🗄 Database Design
+## 🗄 $\color{#FFB86C}{\text{Database Design}}$
 
 **PostgreSQL + Prisma 6** — 92 models defined in `prisma/schema.prisma` (mapped table names via `@@map`), 18 migrations.
 
@@ -1052,7 +1052,7 @@ Legacy file-based JSON stores (`server/database/*.json`) were replaced by Postgr
 
 ---
 
-## 🔁 Data Flow and Request Lifecycle
+## 🔁 $\color{#38BDF8}{\text{Data Flow and Request Lifecycle}}$
 
 ```mermaid
 sequenceDiagram
@@ -1094,7 +1094,7 @@ sequenceDiagram
 
 ---
 
-## Background Jobs, Queues and Workers
+## $\color{#A78BFA}{\text{Background Jobs, Queues and Workers}}$
 
 | Job | Cadence | Implementation | Env knob |
 |---|---|---|---|
@@ -1117,7 +1117,7 @@ sequenceDiagram
 
 ---
 
-## 📡 Realtime: WebSocket and SSE
+## 📡 $\color{#FF6EC7}{\text{Realtime: WebSocket and SSE}}$
 
 ### WebSocket server (`/ws`)
 
@@ -1176,7 +1176,7 @@ sequenceDiagram
 <details>
 <summary>📋 <b>Environment Variables</b> — 70+ variables, click to expand</summary>
 
-## 📋 Environment Variables
+## 📋 $\color{#FBBF24}{\text{Environment Variables}}$
 
 Boot-time fail-fast validation happens in `server/server.js` (`REQUIRED_ENV_VARS = ["DATABASE_URL", "JWT_SECRET"]` — the process exits if either is missing). A complete reference lives in `.env.example` at the repo root — copy it to `.env` before first run.
 
@@ -1330,7 +1330,7 @@ Boot-time fail-fast validation happens in `server/server.js` (`REQUIRED_ENV_VARS
 
 ──── ✦ ────
 
-## 🚀 Installation
+## 🚀 $\color{#46E3B7}{\text{Installation}}$
 
 ```text
   ██████╗  █████╗  ██████╗  ████████╗███████╗██╗  ██╗██╗  ██╗██╗   ██╗██████╗
@@ -1365,7 +1365,7 @@ Verify: frontend on `http://localhost:5173`, API on `http://localhost:4000` — 
 
 ---
 
-## 🏃 Running the Project
+## 🏃 $\color{#60A5FA}{\text{Running the Project}}$
 
 | Command | What it does |
 |---|---|
@@ -1399,9 +1399,9 @@ Verify: frontend on `http://localhost:5173`, API on `http://localhost:4000` — 
 
 ---
 
-## Database Setup and Migrations
+## $\color{#FFB86C}{\text{Database Setup and Migrations}}$
 
-Prisma ORM over **PostgreSQL** — 92 models across platform, feed, marketplace, payments, analytics and admin domains (full model groups + migration list in [Database Design](#database-design)).
+Prisma ORM over **PostgreSQL** — 92 models across platform, feed, marketplace, payments, analytics and admin domains (full model groups + migration list in [Database Design](#-colorffb86ctextdatabase-design)).
 
 | Command | Use case |
 |---|---|
@@ -1419,7 +1419,7 @@ Notes:
 
 ---
 
-## ☁️ Deployment
+## ☁️ $\color{#38BDF8}{\text{Deployment}}$
 
 ### Render blueprint (`render.yaml`)
 
@@ -1451,7 +1451,7 @@ Defines a **web service** (API + frontend), a **worker service** and **scheduled
 
 ---
 
-## 📈 Monitoring, Logs and Health Checks
+## 📈 $\color{#34D399}{\text{Monitoring, Logs and Health Checks}}$
 
 | Endpoint / facility | What it reports |
 |---|---|
@@ -1469,7 +1469,7 @@ Defines a **web service** (API + frontend), a **worker service** and **scheduled
 
 ---
 
-## 🧪 Testing
+## 🧪 $\color{#FF6EC7}{\text{Testing}}$
 
 **Stack:** Jest + React Testing Library (unit/integration) and Playwright (E2E).
 
@@ -1497,7 +1497,7 @@ npm run ai:eval
 
 ---
 
-## 🛠 Troubleshooting
+## 🛠 $\color{#FBBF24}{\text{Troubleshooting}}$
 
 ### Known issues (AGENTS.md registry)
 
@@ -1528,7 +1528,7 @@ npm run ai:eval
 
 ---
 
-## 🤝 Contributing
+## 🤝 $\color{#46E3B7}{\text{Contributing}}$
 
 - **Branches:** feature/fix branches off `main`; squash-merge with a descriptive message (`feat:`, `fix:`, `docs:`, `chore:`).
 - **Lint/format:** Biome (husky `pre-commit` runs `biome check`). Do **not** add ESLint configs.
@@ -1540,7 +1540,7 @@ npm run ai:eval
 
 ---
 
-## 🗺 Roadmap
+## 🗺 $\color{#A78BFA}{\text{Roadmap}}$
 
 - Real payment processing (currently simulated plans/refunds — flows and idempotency are production-shaped)
 - Rotate/cleanse committed secrets and move them to secret stores
@@ -1563,7 +1563,7 @@ npm run ai:eval
 
 ──── ⚖️ ────
 
-## ⚖️ License
+## ⚖️ $\color{#FFB86C}{\text{License}}$
 
 Proprietary — **TBD** (placeholder until ownership decides). All rights reserved. Do not redistribute without written permission.
 
