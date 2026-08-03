@@ -135,28 +135,28 @@ A **single monorepo containing one app**: a Vite SPA (`src/`) + an Express monol
 
 ```mermaid
 flowchart LR
-    U[User / Browser / Electron] --> N[nginx / Render edge - TLS]
-    N --> V[Vite dev server - 5173<br/>or static dist via Express]
+    U[User / Browser / Electron] --> N[nginx or Render edge - TLS]
+    N --> V[Vite dev server 5173 or static dist via Express]
     N --> E[Express 5 API - port 4000]
-    V -->|"/api /uploads proxy"| E
+    V -->|api + uploads proxy| E
 
-    E --> M[Middleware chain<br/>helmet - CORS - requestLogger - rateLimit]
-    M --> R[56 route modules /api/*]
+    E --> M[Middleware: helmet, CORS, requestLogger, rateLimit]
+    M --> R[56 route modules under /api]
     R --> C[63 controllers]
     C --> S[96 services]
     S --> P[(PostgreSQL via Prisma - 92 models)]
-    S --> RED[(Redis - optional - rate limits / cache)]
+    S --> RED[(Redis - optional rate limits or cache)]
     S --> OS[(OpenSearch - products + requirements indexes)]
     S --> QD[(Qdrant - vector embeddings)]
-    S --> AI[AI providers<br/>OpenCode - OpenRouter - Ollama - Gemini - HuggingFace]
-    S --> EM[Email / SMS / e-sign / FX / geo adapters]
+    S --> AI[AI providers: OpenCode, OpenRouter, Ollama, Gemini, HuggingFace]
+    S --> EM[Email, SMS, e-sign, FX, geo adapters]
 
-    E <--> W[WebSocket server - /ws<br/>assistant - chat - calls - notifications - presence]
+    E <--> W[WebSocket server /ws - assistant, chat, calls, notifications, presence]
     E --> SSE[SSE - /api/feed/stream]
     W --> BUS[realtimeBus EventEmitter]
     SSE --> BUS
 
-    S --> WORK[Background workers<br/>lead reminders - e-sign retry - image/video queues - syslog]
+    S --> WORK[Background workers: lead reminders, e-sign retry, image or video queues, syslog]
 ```
 
 **Plain-English explanation**
