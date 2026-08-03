@@ -1,14 +1,31 @@
-# GarTexHub
+<div align="center">
 
-**A trust-first B2B textile & garments marketplace — engineered as a real-time, verified, governance-driven trading ecosystem.**
+# ⚡ <span style="color:#FF6EC7">Gar</span><span style="color:#A78BFA">Tex</span><span style="color:#38BDF8">Hub</span> <sup>β</sup>
+
+**A <span style="color:#FF6EC7">trust-first</span> B2B textile & garments marketplace** — engineered as a <span style="color:#38BDF8">real-time</span>, <span style="color:#34D399">verified</span>, <span style="color:#FBBF24">governance-driven</span> trading ecosystem.
 
 One codebase, two runtimes: a **React 19 SPA** (neon-smooth, cyberpunk-polished UX) and an **Express 5 API** (enterprise-grade backend), connected live by WebSockets and SSE. Global buyers, factories, and buying houses discover each other, match on requirements, negotiate in real time, sign contracts electronically, and manage it all through a CRM-style lead pipeline.
 
-⚡ *Neon-bright frontend. Blue-trust backend. Pink-laser realtime. All under one hood.*
+$$\color{#FF6EC7}{\text{neon}}\ \color{#A78BFA}{\text{violet}}\ \color{#38BDF8}{\text{pulse}}\ \color{#46E3B7}{\text{trust}}$$
 
----
+⚡ *Neon-bright frontend.* ***Blue-trust backend.*** Pink-laser realtime. <sub>All under one hood.</sub>
 
-## Badges
+[![Setup Guide](https://img.shields.io/badge/SETUP-GUIDE-FF6EC7?style=for-the-badge&logo=readme)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-installation)
+[![API Reference](https://img.shields.io/badge/API-REFERENCE-4A00E0?style=for-the-badge&logo=openapi-initiative)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-backend-api)
+[![License](https://img.shields.io/badge/LICENSE-Proprietary-FFB86C?style=for-the-badge&logo=law)](https://github.com/gamertoky1188gro/A-Peronson-s-Website#-license)
+
+<img src="https://github-readme-stats.vercel.app/api?username=gamertoky1188gro&show_icons=true&count_private=true&hide_border=true&theme=transparent&title_color=FF6EC7&text_color=ffffff&icon_color=46E3B7" alt="GitHub stats" width="420" />
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=gamertoky1188gro&layout=compact&hide_border=true&theme=transparent&title_color=FF6EC7&text_color=ffffff" alt="Top languages" width="300" />
+
+![Profile views](https://komarev.com/ghpvc/?username=gamertoky1188gro&label=PROFILE+VIEWS&color=FF6EC7&style=flat-square)
+
+<sub>&nbsp;&nbsp;&nbsp;scroll for the good stuff ↓</sub>
+
+</div>
+
+─────── ⚡ ───────
+
+## 🏅 Badges
 
 | | |
 |---|---|
@@ -24,36 +41,43 @@ One codebase, two runtimes: a **React 19 SPA** (neon-smooth, cyberpunk-polished 
 
 ---
 
-## The Pitch
+## 🎯 The Pitch
 
-> 💡 **Post a requirement → get matched with verified factories → negotiate in chat → jump on a call → sign the contract → track the deal as a lead.**
+> [!TIP]
+> 💡 ***Post a requirement*** → get matched with verified factories → negotiate in chat → jump on a call → sign the contract → track the deal as a lead.
 >
-> Free to start. Premium to fly. Verified to be trusted. Governed to stay clean.
+> **Free** to start. **Premium** to fly. ***Verified*** to be trusted. **Governed** to stay clean.
+
+<div align="center">
+
+$$\text{Trust} \times \text{Realtime} \times \text{Governance} = \text{GarTexHub}$$
+
+</div>
 
 ---
 
 ## Table of Contents
 
-- [Badges](#badges)
-- [The Pitch](#the-pitch)
+- [🏅 Badges](#-badges)
+- [🎯 The Pitch](#-the-pitch)
 - [⚡ Overview](#-overview)
-- [Key Features](#key-features)
+- [✨ Key Features](#-key-features)
 - [🧬 Architecture](#-architecture)
-- [Tech Stack](#tech-stack)
-- [Repository Structure](#repository-structure)
+- [🧰 Tech Stack](#-tech-stack)
+- [📁 Repository Structure](#-repository-structure)
 - [Frontend Applications](#frontend-applications)
 - [🌐 Frontend Routes](#-frontend-routes)
 - [Frontend Pages](#frontend-pages)
-- [Backend Services](#backend-services)
+- [⚙️ Backend Services](#-backend-services)
 - [🔌 Backend API](#-backend-api)
-- [Authentication and Authorization](#authentication-and-authorization)
+- [🛂 Authentication and Authorization](#-authentication-and-authorization)
 - [🔐 Permission Model](#-permission-model)
 - [🛡 Security Architecture](#-security-architecture)
-- [Database Design](#database-design)
-- [Data Flow and Request Lifecycle](#data-flow-and-request-lifecycle)
+- [🗄 Database Design](#-database-design)
+- [🔁 Data Flow and Request Lifecycle](#-data-flow-and-request-lifecycle)
 - [Background Jobs, Queues and Workers](#background-jobs-queues-and-workers)
 - [📡 Realtime: WebSocket and SSE](#-realtime-websocket-and-sse)
-- [Environment Variables](#environment-variables)
+- [📋 Environment Variables](#-environment-variables)
 - [🚀 Installation](#-installation)
 - [🏃 Running the Project](#-running-the-project)
 - [Database Setup and Migrations](#database-setup-and-migrations)
@@ -106,7 +130,7 @@ A **single monorepo containing one app**: a Vite SPA (`src/`) + an Express monol
 
 ---
 
-## Key Features
+## ✨ Key Features
 
 - **Multi-role ecosystem** — Buyer, Factory, Buying House, Owner, Admin, Agent; per-role routing, permissions, and dashboards.
 - **Social-style feed** — combined buyer-requests + company-products stream with hashtags, mentions, media, product tags, and live SSE updates.
@@ -170,7 +194,7 @@ flowchart LR
 
 ---
 
-## Tech Stack
+## 🧰 Tech Stack
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -200,7 +224,7 @@ flowchart LR
 
 ---
 
-## Repository Structure
+## 📁 Repository Structure
 
 ```text
 A-Peronson-s-Website/
@@ -516,7 +540,7 @@ Key frontend facilities:
 
 ---
 
-## Backend Services
+## ⚙️ Backend Services
 
 The server is an **Express 5 monolith** (`server/server.js`, port `4000`) that also hosts the WebSocket server, SSE feed, background schedulers, and the syslog listener in one process.
 
@@ -620,7 +644,10 @@ All endpoints live under `/api`. The table below lists mount points; detailed do
 | `/api/certifications` | `certificationRoutes.js` | certifications |
 | `/api/boosts` | `boostRoutes.js` | boosts |
 
-> 🔒 **Auth convention:** `requireAuth` (JWT Bearer) unless noted "public" or "optionalAuth"; admin routes additionally stack `requireAdminSecurity` and `adminAuditLogger()`; exports additionally stack `requireDualExportApproval`.
+> [!NOTE] 🔒 **Auth convention:** `requireAuth` (JWT Bearer) unless noted "public" or "optionalAuth"; admin routes additionally stack `requireAdminSecurity` and `adminAuditLogger()`; exports additionally stack `requireDualExportApproval`.
+
+<details>
+<summary>📖 <b>Detailed endpoint reference</b> — request/response shapes, error codes, security notes (click to expand)</summary>
 
 ### Detailed endpoint reference
 
@@ -847,9 +874,11 @@ All endpoints live under `/api`. The table below lists mount points; detailed do
 - **Presets/presence/profiles/onboarding/agent-subids:** `GET/POST /api/presets`, `GET/PATCH/DELETE /api/presets/:id`, `POST /api/presence`, `GET /api/profiles/:userId(+/requests|products|partner-network)`, `POST /api/onboarding`, `GET/POST /api/agents/subids`, `GET/DELETE /api/agents/subids/:id`.
 </details>
 
+</details>
+
 ---
 
-## Authentication and Authorization
+## 🛂 Authentication and Authorization
 
 ### Authentication flow
 
@@ -990,7 +1019,7 @@ flowchart LR
 
 ---
 
-## Database Design
+## 🗄 Database Design
 
 **PostgreSQL + Prisma 6** — 92 models defined in `prisma/schema.prisma` (mapped table names via `@@map`), 18 migrations.
 
@@ -1023,7 +1052,7 @@ Legacy file-based JSON stores (`server/database/*.json`) were replaced by Postgr
 
 ---
 
-## Data Flow and Request Lifecycle
+## 🔁 Data Flow and Request Lifecycle
 
 ```mermaid
 sequenceDiagram
@@ -1144,7 +1173,10 @@ sequenceDiagram
 
 ---
 
-## Environment Variables
+<details>
+<summary>📋 <b>Environment Variables</b> — 70+ variables, click to expand</summary>
+
+## 📋 Environment Variables
 
 Boot-time fail-fast validation happens in `server/server.js` (`REQUIRED_ENV_VARS = ["DATABASE_URL", "JWT_SECRET"]` — the process exits if either is missing). A complete reference lives in `.env.example` at the repo root — copy it to `.env` before first run.
 
@@ -1294,32 +1326,39 @@ Boot-time fail-fast validation happens in `server/server.js` (`REQUIRED_ENV_VARS
 | `VITE_ICE_SERVERS` | ICE server list for WebRTC calls |
 | `VITE_API_PROXY` | Vite dev-server proxy target |
 
----
+</details>
+
+──── ✦ ────
 
 ## 🚀 Installation
+
+```text
+  ██████╗  █████╗  ██████╗  ████████╗███████╗██╗  ██╗██╗  ██╗██╗   ██╗██████╗
+  ██╔════╝ ██╔══██╗ ██╔══██╗ ╚══██╔══╝██╔════╝██║ ██╔╝██║  ██║██║   ██║██╔══██╗
+  ██║  ███╗███████║ ██████╔╝    ██║   █████╗  █████╔╝ ██║  ██║██║   ██║██████╔╝
+  ██║   ██║██╔══██║ ██╔══██╗    ██║   ██╔══╝  ██╔═██╗ ██║  ██║██║   ██║██╔══██╗
+  ╚██████╔╝██║  ██║ ██████╔╝    ██║   ███████╗██║  ██╗╚██████╔╝╚██████╔╝██████╔╝
+   ╚═════╝ ╚═╝  ╚═╝ ╚═════╝     ╚═╝   ╚══════╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═════╝
+```
 
 Prerequisites: **Node.js 20+**, **PostgreSQL 15+** (or Docker), `npm`.
 
 ```bash
-# 1. Clone
-git clone <repo-url> && cd A-Peronson-s-Website
+# theme: "neon-dark" — palette: #FF6EC7 / #4A00E0 / #46E3B7
+┌──────────────────────────────────────────────────────────────┐
+│  gartexhub@main — bootstrap terminal                         │
+└──────────────────────────────────────────────────────────────┘
 
-# 2. Install dependencies
-npm install
+$ git clone <repo-url> && cd A-Peronson-s-Website
+$ npm install
+$ cp .env.example .env            # edit DATABASE_URL + JWT_SECRET
+$ npm run db:migrate:prod         # apply migrations (production-safe)
+$ npm run db:generate             # regenerate Prisma client
+$ docker compose up -d ollama qdrant   # optional AI/search services
+$ npm run dev:full                # API + frontend together
 
-# 3. Configure environment
-cp .env.example .env
-#   edit .env — DATABASE_URL and JWT_SECRET are required (boot-fatal)
-
-# 4. Apply migrations + generate Prisma client
-npm run db:migrate:prod
-npm run db:generate
-
-# 5. (Optional) Local AI/search services
-docker compose up -d ollama qdrant
-
-# 6. Start everything
-npm run dev:full
+✓ frontend  → http://localhost:5173
+✓ api       → http://localhost:4000/health
 ```
 
 Verify: frontend on `http://localhost:5173`, API on `http://localhost:4000` — hit `GET /health` for a `200 OK`.
@@ -1386,7 +1425,7 @@ Notes:
 
 Defines a **web service** (API + frontend), a **worker service** and **scheduled jobs** (lead reminders, join-request reminders, event-quality reporting).
 
-> ⚠️ **Security notice:** production secrets are currently **hardcoded in `render.yaml`**. Rotate all secrets (especially `JWT_SECRET`, `DATABASE_URL`, AI/embedding keys) **before** publicizing this repository, and move them to Render's secret store.
+> [!WARNING] ⚠️ **Security notice:** production secrets are currently **hardcoded in `render.yaml`**. Rotate all secrets (especially `JWT_SECRET`, `DATABASE_URL`, AI/embedding keys) **before** publicizing this repository, and move them to Render's secret store.
 
 ### Docker
 
@@ -1443,7 +1482,7 @@ Defines a **web service** (API + frontend), a **worker service** and **scheduled
 
 Key config (`jest.config.cjs`): jsdom environment, `extensionsToTreatAsEsm: .jsx`, `moduleNameMapper` `fileMock`, 20s per-test timeout, `testMatch` targeting `tests/**/*.{test,spec}.js`. Integration tests spin a full server via `tests/testServer.js`.
 
-> 💡 **Note:** `testMatch` only picks up files under `tests/`, so the 5 service tests in `server/services/__tests__/` (wallet idempotency, e-sign, AI extraction) are **not** part of `npm test` (which runs 59). Run them separately with `npx jest server/services/__tests__`.
+> [!NOTE] 💡 **Note:** `testMatch` only picks up files under `tests/`, so the 5 service tests in `server/services/__tests__/` (wallet idempotency, e-sign, AI extraction) are **not** part of `npm test` (which runs 59). Run them separately with `npx jest server/services/__tests__`.
 
 ```bash
 # single test
@@ -1514,6 +1553,18 @@ npm run ai:eval
 
 ---
 
+<div align="center">
+
+![contribution snake](https://raw.githubusercontent.com/gamertoky1188gro/A-Peronson-s-Website/output/github-snake-dark.svg?palette=github-dark)
+
+<sub>contribution snake — regenerated every 12 hours by `.github/workflows/snake.yml`</sub>
+
+</div>
+
+──── ⚖️ ────
+
 ## ⚖️ License
 
 Proprietary — **TBD** (placeholder until ownership decides). All rights reserved. Do not redistribute without written permission.
+
+<sub><sub>© 2026 GarTexHub · v<sup>0</sup>.<sub>0</sub>.<sup>0</sup> · engineered with ⚡ · *trust, verified, governed*</sub></sub>
