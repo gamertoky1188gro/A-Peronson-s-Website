@@ -1,13 +1,13 @@
 ﻿# Project History Index
 
-> Complete chronological documentation of all 639 commits in the GarTexHub B2B Textile Marketplace repository.
+> Complete chronological documentation of all 641 commits in the GarTexHub B2B Textile Marketplace repository.
 
 ## Summary Statistics
 
 | Metric                            | Value                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Total commits documented**      | 639                                                                                                                         |
-| **Date range**                    | 2026-03-01 → 2026-08-03                                                                                                                     |
+| **Total commits documented**      | 641                                                                                                                         |
+| **Date range**                    | 2026-03-01 → 2026-08-04                                                                                                                     |
 | **Unique files ever touched**     | 2,200+                                                                                                                                      |
 | **Most frequently changed files** | `src/pages/SearchResults.jsx` (77x), `server/server.js` (76x), `src/App.jsx` (65x), `src/components/NavBar.jsx` (59x), `package.json` (58x) |
 | **Largest commits (by files)**    | 936 files (commit `bdbbbc1` "meow"), 515 files (commit `6b75ca5` "Fixed"), 299 files (commit `bb22700` "Fixed")                            |
@@ -34,6 +34,7 @@
 | **15. Features & Tooling**       | 0618–0621 | Jul 25–26 | History documentation, build-error fixes, Biome reformat (+ karpathy-coder skill), B2B relationships, feedback, join requests, verification expansion |
 | **16. Production Polish & Fixes** | 0622–0637 | Jul 26–31 | History docs, build fixes (dev dep, CORS, auth), diagnostics system, login polish, class→className migration, logger fix, opencode guard, MainFeed fix, BuyerRequestManagement restore, video call enforcement, admin finance |
 | **17. History & Docs Housekeeping** | 0638–0639 | Jul 31–Aug 3 | History batch 0622–0637 published to history/, README overhaul into full system reference, .env.example expansion, package rename to gartexhub |
+| **18. README Repair & Decoration**  | 0640–0641 | Aug 3–4      | Mermaid diagram simplified for GitHub rendering, README decorated with GitHub-flavored markdown showcase (hero, MathJax, stats cards, alerts, collapsibles, terminal style, contribution snake workflow) |
 
 ## Complete Commit List
 
@@ -121,8 +122,10 @@
 | [0637](./0637_2026-07-31_00-24-57_d581aa0_restore-buyer-request-management-and-enforce-video-calls.md)   | 2026-07-31 00:24 | `d581aa0` | Restore Corrupted Component, Fix Prisma Schema, Enforce Video Calls | Restored BuyerRequestManagement, MainFeed loop fix, video call enforcement, admin finance, dist rebuild |
 | [0638](./0638_2026-07-31_00-39-11_aa5d667_document-commits-0622-through-0637.md)                       | 2026-07-31 00:39 | `aa5d667` | Document Commits 0622–0637 in History Folder                      | Published 16 history commit files + advanced index/progress trackers to 637 |
 | [0639](./0639_2026-08-03_23-06-59_d3758e8_overhaul-readme-and-expand-env-example.md)                   | 2026-08-03 23:06 | `d3758e8` | Overhaul README, Expand .env.example, Rename Package              | Full system-reference README, complete env reference, package renamed to gartexhub |
+| [0640](./0640_2026-08-03_23-40-16_a4d3150_simplify-architecture-mermaid-diagram.md)                   | 2026-08-03 23:40 | `a4d3150` | Simplify Architecture Mermaid Diagram                             | Removed quoted edge labels and <br/> tags from architecture diagram for GitHub rendering |
+| [0641](./0641_2026-08-04_00-28-16_fd7bb4f_decorate-readme-with-github-flavored-markdown.md)           | 2026-08-04 00:28 | `fd7bb4f` | Decorate README with GitHub-Flavored Markdown Showcase            | Hero w/ gradient title + stats cards, MathJax, alerts, collapsibles, terminal style, snake workflow |
 
-> **Note**: Due to the large number of commits (639), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
+> **Note**: Due to the large number of commits (641), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
 
 ## File Naming Convention
 
@@ -149,6 +152,7 @@
 - **Production polish (0623–0636)**: 14 focused fixes — CORS, auth middleware, diagnostics, logger restoration, opencode env guard, login page polish, production start script
 - **Component restoration (0637)**: BuyerRequestManagement restored from stubs after class migration; MainFeed infinite loop fixed via liveRef pattern; video call enforcement added to messaging and contracts
 - **Docs housekeeping & README overhaul (0638–0639)**: History batch 0622–0637 committed (0638), then a full-system README rewrite with verified counts, a complete `.env.example` including boot-fatal vars, and the `meow` → `gartexhub` package rename (0639)
+- **README repair & decoration (0640–0641)**: Mermaid architecture diagram simplified for GitHub rendering after a rich-display error (0640), then the README decorated with a GitHub-flavored markdown showcase — centered hero with gradient-illusion title, MathJax colored text, stats cards, views counter, badge buttons, collapsible endpoint/env-var sections, GitHub alerts, ASCII banner + terminal-style install block, neon unicode separators, and a contribution-snake workflow (0641)
 
 ## Progress Tracking
 
