@@ -1,13 +1,13 @@
-# Project History Index
+﻿# Project History Index
 
-> Complete chronological documentation of all 637 commits in the GarTexHub B2B Textile Marketplace repository.
+> Complete chronological documentation of all 639 commits in the GarTexHub B2B Textile Marketplace repository.
 
 ## Summary Statistics
 
 | Metric                            | Value                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Total commits documented**      | 637                                                                                                                         |
-| **Date range**                    | 2026-03-01 → 2026-07-31                                                                                                                     |
+| **Total commits documented**      | 639                                                                                                                         |
+| **Date range**                    | 2026-03-01 → 2026-08-03                                                                                                                     |
 | **Unique files ever touched**     | 2,200+                                                                                                                                      |
 | **Most frequently changed files** | `src/pages/SearchResults.jsx` (77x), `server/server.js` (76x), `src/App.jsx` (65x), `src/components/NavBar.jsx` (59x), `package.json` (58x) |
 | **Largest commits (by files)**    | 936 files (commit `bdbbbc1` "meow"), 515 files (commit `6b75ca5` "Fixed"), 299 files (commit `bb22700` "Fixed")                            |
@@ -33,6 +33,7 @@
 | **14. Audit & Quality**          | 0595–0617 | Jul 19–25 | Post-rebuild lint fixes, security audit resolution (HIGH/LOW items), Prisma transaction wrapping, unused import cleanup, build errors, AdminPanel modularization, progress documentation |
 | **15. Features & Tooling**       | 0618–0621 | Jul 25–26 | History documentation, build-error fixes, Biome reformat (+ karpathy-coder skill), B2B relationships, feedback, join requests, verification expansion |
 | **16. Production Polish & Fixes** | 0622–0637 | Jul 26–31 | History docs, build fixes (dev dep, CORS, auth), diagnostics system, login polish, class→className migration, logger fix, opencode guard, MainFeed fix, BuyerRequestManagement restore, video call enforcement, admin finance |
+| **17. History & Docs Housekeeping** | 0638–0639 | Jul 31–Aug 3 | History batch 0622–0637 published to history/, README overhaul into full system reference, .env.example expansion, package rename to gartexhub |
 
 ## Complete Commit List
 
@@ -118,14 +119,16 @@
 | [0635](./0635_2026-07-27_14-56-42_e4f7520_add-opencode-enabled-env-guard.md)                             | 2026-07-27 14:56 | `e4f7520` | Add OPENCODE_ENABLED Env Guard                                   | Added env var to skip opencode server startup when disabled |
 | [0636](./0636_2026-07-27_14-58-38_fe656b4_guard-ensure-opencode-server-in-session-init.md)               | 2026-07-27 14:58 | `fe656b4` | Guard ensureOpencodeServer in Session Init                       | Extended OPENCODE_ENABLED guard to ensureOpencodeServer bypass path |
 | [0637](./0637_2026-07-31_00-24-57_d581aa0_restore-buyer-request-management-and-enforce-video-calls.md)   | 2026-07-31 00:24 | `d581aa0` | Restore Corrupted Component, Fix Prisma Schema, Enforce Video Calls | Restored BuyerRequestManagement, MainFeed loop fix, video call enforcement, admin finance, dist rebuild |
+| [0638](./0638_2026-07-31_00-39-11_aa5d667_document-commits-0622-through-0637.md)                       | 2026-07-31 00:39 | `aa5d667` | Document Commits 0622–0637 in History Folder                      | Published 16 history commit files + advanced index/progress trackers to 637 |
+| [0639](./0639_2026-08-03_23-06-59_d3758e8_overhaul-readme-and-expand-env-example.md)                   | 2026-08-03 23:06 | `d3758e8` | Overhaul README, Expand .env.example, Rename Package              | Full system-reference README, complete env reference, package renamed to gartexhub |
 
-> **Note**: Due to the large number of commits (637), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
+> **Note**: Due to the large number of commits (639), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
 
 ## File Naming Convention
 
 `history/NNNN_YYYY-MM-DD_HH-MM-SS_ABBREV_HASH_descriptive-title.md`
 
-- `NNNN` = 4-digit commit sequence number (0001-0637)
+- `NNNN` = 4-digit commit sequence number (0001-0639)
 - `YYYY-MM-DD_HH-MM-SS` = commit date/time
 - `ABBREV_HASH` = first 7 characters of commit hash
 - `descriptive-title` = generated title (kebab-case)
@@ -145,6 +148,7 @@
 - **class→className migration (0631–0632)**: 166 files, 7,775 replacements fixing incorrect HTML `class` attributes in React JSX
 - **Production polish (0623–0636)**: 14 focused fixes — CORS, auth middleware, diagnostics, logger restoration, opencode env guard, login page polish, production start script
 - **Component restoration (0637)**: BuyerRequestManagement restored from stubs after class migration; MainFeed infinite loop fixed via liveRef pattern; video call enforcement added to messaging and contracts
+- **Docs housekeeping & README overhaul (0638–0639)**: History batch 0622–0637 committed (0638), then a full-system README rewrite with verified counts, a complete `.env.example` including boot-fatal vars, and the `meow` → `gartexhub` package rename (0639)
 
 ## Progress Tracking
 
