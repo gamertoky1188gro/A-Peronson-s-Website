@@ -197,6 +197,12 @@ function formatEventLogPayload(payload) {
 
 export function requestLogger({ timeoutMs = 45_000 } = {}) {
 	return (req, res, next) => {
+		// Frontend log forwarding already emits its own line in logController.
+		const isLogEndpoint = req.originalUrl?.startsWith("/api/logs");
+		if (isLogEndpoint) {
+			return next();
+		}
+
 		const requestId = crypto.randomUUID();
 		const startedAt = Date.now();
 		const authInfo = decodeAuthSubject(req.headers.authorization);
@@ -204,24 +210,25 @@ export function requestLogger({ timeoutMs = 45_000 } = {}) {
 
 		const isEventEndpoint = req.originalUrl?.startsWith("/api/events");
 
+		// Structured request context: stored in entry.meta by logger.extractMeta,
+		// which feeds the request-flow tracker + latency histogram/percentiles.
+		const requestContext = {
+			request_id: requestId,
+			method: req.method,
+			path: req.originalUrl || req.url,
+			user_id: authInfo.user_id || "",
+			role: authInfo.role || "",
+			ip: req.ip,
+		};
+
 		if (isEventEndpoint && req.method === "POST" && body?.type) {
-			logInfo("request event", formatEventLogPayload(req.body));
+			logInfo("request event", { ...body, _console: formatEventLogPayload(req.body) });
 		} else {
-			logInfo(
-				"request start",
-				formatEventLog(
-					{
-						request_id: requestId,
-						method: req.method,
-						path: req.originalUrl || req.url,
-						user_id: authInfo.user_id || "",
-						role: authInfo.role || "",
-						ip: req.ip,
-						event: "request_start",
-					},
-					true,
-				),
-			);
+			logInfo("request start", {
+				...requestContext,
+				event: "request_start",
+				_console: formatEventLog({ ...requestContext, event: "request_start" }, true),
+			});
 		}
 
 		let responseBytes = 0;
@@ -249,18 +256,20 @@ export function requestLogger({ timeoutMs = 45_000 } = {}) {
 			res.status(504).json({ error: "Request timeout" });
 			req.destroy();
 			const duration = Date.now() - startedAt;
-			logInfo(
-				"request timeout",
-				formatEventLog({
-					request_id: requestId,
-					method: req.method,
-					path: req.originalUrl || req.url,
+			logInfo("request timeout", {
+				...requestContext,
+				event: "timeout",
+				status: 504,
+				duration_ms: duration,
+				response_bytes: responseBytes,
+				_console: formatEventLog({
+					...requestContext,
 					status: 504,
 					duration_ms: duration,
 					response_bytes: responseBytes,
 					event: "timeout",
 				}),
-			);
+			});
 		}, timeoutMs);
 
 		function finalize(eventName = "request_end") {
@@ -268,18 +277,20 @@ export function requestLogger({ timeoutMs = 45_000 } = {}) {
 			const duration = Date.now() - startedAt;
 			const status = res.statusCode;
 
-			logInfo(
-				"request end",
-				formatEventLog({
-					request_id: requestId,
-					method: req.method,
-					path: req.originalUrl || req.url,
+			logInfo("request end", {
+				...requestContext,
+				event: eventName,
+				status,
+				duration_ms: duration,
+				response_bytes: responseBytes,
+				_console: formatEventLog({
+					...requestContext,
 					status,
 					duration_ms: duration,
 					response_bytes: responseBytes,
 					event: eventName,
 				}),
-			);
+			});
 		}
 
 		res.on("finish", () => finalize("request_end"));

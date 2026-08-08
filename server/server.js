@@ -1,12 +1,17 @@
 import "./utils/dotenv.js";
+import { spawn } from "node:child_process";
 import fs from "node:fs";
 import http from "node:http";
+import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import jwt from "jsonwebtoken";
 import { WebSocketServer } from "ws";
+import { logHub } from "./log/logHub.js";
+import { registerLogHttp, startLogTransport } from "./log/transport.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { REALTIME_EVENTS, realtimeBus } from "./realtime/realtimeBus.js";
@@ -25,8 +30,8 @@ import conversationRoutes from "./routes/conversationRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import crmRoutes from "./routes/crmRoutes.js";
 import dealJourneyRoutes from "./routes/dealJourneyRoutes.js";
-import diagnosticsRoutes from "./routes/diagnosticsRoutes.js";
 import devRoutes from "./routes/devRoutes.js";
+import diagnosticsRoutes from "./routes/diagnosticsRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import exportRoutes from "./routes/exportRoutes.js";
@@ -34,10 +39,11 @@ import feedRoutes from "./routes/feedRoutes.js";
 import geoRoutes from "./routes/geoRoutes.js";
 import industryRoutes from "./routes/industryRoutes.js";
 import infraRoutes from "./routes/infraRoutes.js";
-import leadRoutes from "./routes/leadRoutes.js";
 import joinRequestRoutes from "./routes/joinRequestRoutes.js";
+import leadRoutes from "./routes/leadRoutes.js";
 import licenseRequestRoutes from "./routes/licenseRequestRoutes.js";
 import linkPreviewRoutes from "./routes/linkPreviewRoutes.js";
+import logRoutes from "./routes/logRoutes.js";
 import memberRoutes from "./routes/memberRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import networkRoutes from "./routes/networkRoutes.js";
@@ -72,11 +78,11 @@ import {
 } from "./services/assistantService.js";
 import { getCallSession } from "./services/callSessionService.js";
 import { maybeGenerateBotReply } from "./services/chatbotService.js";
+import { runJoinRequestReminderSweep } from "./services/companyJoinService.js";
 import { refreshRates } from "./services/currencyService.js";
 import { startEsignWebhookRetryWorker } from "./services/esignRetryService.js";
 import { startEventQualityReporter } from "./services/eventIngestionService.js";
 import { runLeadReminderSweep } from "./services/leadReminderService.js";
-import { runJoinRequestReminderSweep } from "./services/companyJoinService.js";
 import { canAccessMatch, listMessagesByMatch, postMessage } from "./services/messageService.js";
 import { startOpenSearchHeartbeat } from "./services/openSearchService.js";
 import { enforcePartnerFreeTierLimits } from "./services/partnerNetworkService.js";
@@ -85,7 +91,7 @@ import { startSyslogServer } from "./services/syslogServer.js";
 import { revokeExpiredVerifications } from "./services/verificationService.js";
 import { recordWorkflowEvent } from "./services/workflowLifecycleService.js";
 import { closeDatabaseConnection, ensureDatabaseConnection, startDbHeartbeat } from "./utils/db.js";
-import { logError, logInfo } from "./utils/logger.js";
+import { logError, logInfo, logWarn } from "./utils/logger.js";
 import { consumePendingInvites, enqueuePendingInvites } from "./utils/pendingInvites.js";
 import prisma from "./utils/prisma.js";
 import { closeRedis, initRedis } from "./utils/redis.js";
@@ -121,6 +127,75 @@ validateRequiredEnvVars();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// ── Auto-launch the log TUI when the server comes up ──────────────────────
+// Opens the live log dashboard in a fresh terminal window once the HTTP
+// server is listening. Disable with LOG_TUI_AUTO=0 (or LOG_QUIET=1).
+// In production (NODE_ENV=production) it stays off unless LOG_TUI_AUTO=1.
+function maybeAutoLaunchLogTui() {
+	const flag = String(process.env.LOG_TUI_AUTO || "").toLowerCase();
+	const forceOff = ["0", "false", "off"].includes(flag);
+	const forceOn = ["1", "true", "on"].includes(flag);
+	if (forceOff || process.env.LOG_QUIET) {
+		return;
+	}
+	if (!forceOn && process.env.NODE_ENV === "production") {
+		return;
+	}
+	const tuiPath = path.join(__dirname, "tui", "index.js");
+	if (!fs.existsSync(tuiPath)) {
+		return;
+	}
+	const url = `ws://localhost:${PORT}/ws/logs`;
+	const env = { ...process.env, LOG_WS_URL: url };
+	const root = path.join(__dirname, "..");
+	try {
+		if (process.platform === "win32") {
+			const batPath = path.join(os.tmpdir(), "gartex-log-tui.cmd");
+			const bat = [
+				"@echo off",
+				"mode con cols=220 lines=55 >nul 2>&1",
+				`cd /d "${root}"`,
+				`set LOG_WS_URL=${url}`,
+				`node "${tuiPath}"`,
+				"",
+			].join("\r\n");
+			fs.writeFileSync(batPath, bat);
+			spawn("cmd.exe", ["/c", "start", '""', "cmd", "/k", batPath], {
+				cwd: root,
+				env,
+				detached: true,
+				stdio: "ignore",
+			}).unref();
+		} else if (process.platform === "darwin") {
+			const script = `cd ${JSON.stringify(root)} && LOG_WS_URL=${url} node ${JSON.stringify(tuiPath)}`;
+			spawn("osascript", ["-e", `tell app "Terminal" to do script ${JSON.stringify(script)}`], {
+				detached: true,
+				stdio: "ignore",
+			}).unref();
+		} else {
+			const terminals = ["x-terminal-emulator", "gnome-terminal", "konsole", "xfce4-terminal"];
+			const term = terminals.find(
+				(t) => fs.existsSync(`/usr/bin/${t}`) || fs.existsSync(`/bin/${t}`),
+			);
+			if (term) {
+				spawn(term, ["-e", "bash", "-lc", `node ${JSON.stringify(tuiPath)}`], {
+					cwd: root,
+					env,
+					detached: true,
+					stdio: "ignore",
+				}).unref();
+			} else {
+				spawn("node", [tuiPath], { cwd: root, env, detached: true, stdio: "ignore" }).unref();
+			}
+		}
+		logInfo(`Auto-launched log TUI -> ${url} (set LOG_TUI_AUTO=0 to disable)`);
+	} catch (err) {
+		logWarn("Auto-launch log TUI failed", err);
+	}
+}
+
 const FX_REFRESH_INTERVAL_MS = 60 * 60 * 1000;
 refreshRates().catch(() => null);
 setInterval(() => {
@@ -128,9 +203,12 @@ setInterval(() => {
 }, FX_REFRESH_INTERVAL_MS).unref();
 
 runJoinRequestReminderSweep().catch(() => null);
-setInterval(() => {
-	runJoinRequestReminderSweep().catch(() => null);
-}, 30 * 60 * 1000).unref();
+setInterval(
+	() => {
+		runJoinRequestReminderSweep().catch(() => null);
+	},
+	30 * 60 * 1000,
+).unref();
 
 startEventQualityReporter();
 
@@ -313,6 +391,7 @@ app.use("/api/workflow", workflowLifecycleRoutes);
 app.use("/api/infra", infraRoutes);
 app.use("/api/network", networkRoutes);
 app.use("/api/exports", exportRoutes);
+app.use("/api/logs", logRoutes);
 app.use("/api/dev", devRoutes);
 app.use(errorHandler);
 
@@ -332,7 +411,7 @@ const ALLOWED_WS_ORIGINS = (
 	.split(",")
 	.map((s) => s.trim());
 const wsServer = new WebSocketServer({
-	server,
+	noServer: true,
 	verifyClient: (info, cb) => {
 		const origin = info.origin || info.req.headers.origin || "";
 		const host = info.req.headers.host || "";
@@ -350,6 +429,25 @@ const wsServer = new WebSocketServer({
 		}
 	},
 });
+function isLogWsPath(req) {
+	try {
+		return new URL(req.url || "/", "http://localhost").pathname === "/ws/logs";
+	} catch {
+		return false;
+	}
+}
+function upgradeRouter(req, socket, head) {
+	if (isLogWsPath(req)) {
+		return;
+	}
+	wsServer.handleUpgrade(req, socket, head, (ws) => {
+		wsServer.emit("connection", ws, req);
+	});
+}
+
+export { upgradeRouter };
+
+const upgradeRouterForLogs = () => null;
 const recentGreetingByIp = new Map();
 const callRooms = new Map();
 const chatRooms = new Map();
@@ -1064,11 +1162,30 @@ async function start() {
 		.then(() => initAllUserSessions())
 		.catch((err) => logError("init_opencode_failed", err));
 
+	// Log hub + live transport (WS + HTTP).
+	startLogTransport(server);
+	server.on("upgrade", upgradeRouter);
+	registerLogHttp(app);
+
 	server.listen(PORT, () => {
 		logInfo(`Verification MVP API running on http://localhost:${PORT}`);
+		maybeAutoLaunchLogTui();
 	});
 
 	startSyslogServer();
+
+	// Feed live runtime metrics (redis/workers/the actual counts) to the log hub.
+	setInterval(() => {
+		try {
+			import("./utils/redis.js")
+				.then(({ isRedisConnected }) => {
+					logHub.setRuntimeMetrics({ redis: isRedisConnected() ? "connected" : "down" });
+				})
+				.catch(() => {});
+		} catch {
+			// ignore
+		}
+	}, 5000);
 
 	try {
 		startEsignWebhookRetryWorker();
@@ -1107,6 +1224,16 @@ async function start() {
 start().catch((error) => {
 	logError("Failed to start server", error);
 	process.exit(1);
+});
+
+process.on("uncaughtException", (err) => {
+	logError("uncaught_exception", err);
+	if (process.env.NODE_ENV === "production") {
+	}
+});
+
+process.on("unhandledRejection", (reason) => {
+	logError("unhandled_rejection", reason instanceof Error ? reason : new Error(String(reason)));
 });
 
 process.on("SIGINT", async () => {
