@@ -77,7 +77,7 @@ export class StatusBar extends blessed.box {
 		this._pulse = 0;
 		this._sampling = setInterval(() => this._sample(), 1000);
 		this._clock = setInterval(() => this.draw(), 1000);
-		this._anim = setInterval(() => this._animate(), 400);
+		this._anim = setInterval(() => this._animate(), options.animMs || 400);
 	}
 
 	setStats(stats) {

@@ -92,4 +92,13 @@ export function startEsignWebhookRetryWorker() {
 	logInfo("esign_webhook_retry_worker_started", { intervalMs });
 }
 
-export default { recordFailedWebhook, startEsignWebhookRetryWorker };
+export async function queueDepth() {
+	try {
+		const list = await readLocalJson(KEY, []);
+		return Array.isArray(list) ? list.length : 0;
+	} catch {
+		return 0;
+	}
+}
+
+export default { recordFailedWebhook, startEsignWebhookRetryWorker, queueDepth };

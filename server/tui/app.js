@@ -1,8 +1,10 @@
 import os from "node:os";
 import blessed from "blessed";
 import { CATEGORY_LEVELS } from "../log/categories.js";
+import { parserCount } from "../log/parsers.js";
 import { BottomPanels } from "./bottomPanels.js";
 import { ContextMenu } from "./contextMenu.js";
+import { pulseColor } from "./effects.js";
 import { FilterBar } from "./filterBar.js";
 import { Inspector } from "./inspector.js";
 import { LogList } from "./logList.js";
@@ -38,8 +40,9 @@ const TELEMETRY_H = 8;
 const FOOTER_H = 1;
 
 export class LogDashboardApp {
-	constructor() {
+	constructor({ cool = false } = {}) {
 		this.screen = null;
+		this.cool = cool;
 		this.client = new LogWsClient({ url: DEFAULT_WS });
 		this.selectedEntry = null;
 		this.panelSize = { sidebar: 22, inspector: 50 };
@@ -65,6 +68,10 @@ export class LogDashboardApp {
 		}));
 		screen.key(["C-q"], () => this.shutdown());
 
+		if (this.cool) {
+			setGlowIntensity(80);
+		}
+
 		this.buildLayout();
 		this.buildOverlays();
 		this.bindKeyboard();
@@ -73,7 +80,16 @@ export class LogDashboardApp {
 		this.bindClient();
 		this._restoreLayout();
 
+		if (this.cool) {
+			this._startBorderPulse();
+		}
+
 		this.screen.render();
+		this.flash(
+			this.cool
+				? "🚀 MODE MORE COOL — full neon (border pulse, max glow)"
+				: "connected to log stream",
+		);
 	}
 
 	buildLayout() {
@@ -86,8 +102,10 @@ export class LogDashboardApp {
 			left: 0,
 			right: 0,
 			height: TOPBAR_H,
+			animMs: this.cool ? 250 : 400,
 		});
 		this.topbar.onAction = (key) => this.handleTopbarAction(key);
+		this.topbar.setCool(this.cool);
 
 		this.tabBar = new HubTabs({
 			parent: screen,
@@ -131,6 +149,7 @@ export class LogDashboardApp {
 			left: this.panelSize.sidebar,
 			right: this.panelSize.inspector,
 			height: `100%-${bodyTop + OVERVIEW_H + TOOLBAR_H + TELEMETRY_H + FOOTER_H}`,
+			animMs: this.cool ? 150 : 250,
 		});
 
 		this.bottomPanels = new BottomPanels({
@@ -155,6 +174,7 @@ export class LogDashboardApp {
 			left: 0,
 			right: 0,
 			height: FOOTER_H,
+			animMs: this.cool ? 250 : 400,
 		});
 
 		// resizable splitters
@@ -569,6 +589,11 @@ export class LogDashboardApp {
 			this.client.connect();
 			this.tabBar.setServer(name, { url: info.url, online: true });
 		}
+		this.sidebar.setLiveInfo({
+			sources: this.servers.size,
+			parsers: parserCount(),
+			live: this.client.connected ? 1 : 0,
+		});
 		this.flash(`connected to ${name}`);
 		this.screen.render();
 	}
@@ -960,6 +985,7 @@ export class LogDashboardApp {
 				"",
 				"  {gray-fg}Right-click a log for the context menu. Shift+wheel scrolls horizontally.{/}",
 				"  {gray-fg}Click a timeline bar to filter that level; click a histogram bucket.{/}",
+				"  {gray-fg}Launch with --mode-more-cool (or -mmc) for max-neon mode.{/}",
 			].join("\n"),
 		});
 		help.on("click", () => {
@@ -990,6 +1016,31 @@ export class LogDashboardApp {
 			Math.min(this.panelSize.inspector, Math.floor(w * 0.4)),
 		);
 		this.layoutPanels();
+	}
+
+	// --mode-more-cool: animate all panel borders with an electric neon pulse.
+	_startBorderPulse() {
+		const panels = () =>
+			[this.sidebar, this.overview, this.logList, this.bottomPanels, this.inspector].filter(
+				Boolean,
+			);
+		let frame = 0;
+		this._borderPulse = setInterval(() => {
+			if (!this.screen) {
+				return;
+			}
+			const col = pulseColor(COLORS.selected, (frame / 9) * Math.PI * 2, 30);
+			frame += 1;
+			for (const p of panels()) {
+				if (p.destroyed) {
+					continue;
+				}
+				p.style = p.style || {};
+				p.style.border = p.style.border || {};
+				p.style.border.fg = col;
+			}
+			this.screen.render();
+		}, 180);
 	}
 
 	bindStore() {
@@ -1060,10 +1111,6 @@ export class LogDashboardApp {
 		this.sidebar.bumpUnread(category);
 		if (category === "errors" || entry.level === "error" || entry.level === "critical") {
 			this.sidebar.bumpUnread("errors");
-		}
-		// neon pulse on freshly arrived logging via the list's fresh animation set
-		if (this.logList.entries.length && !this.logList.freshAnimations.has(entry.id)) {
-			// the list registers arrival in setEntries
 		}
 	}
 
@@ -1146,6 +1193,14 @@ export class LogDashboardApp {
 			if (snap.heatmap) {
 				store.setHeatmap(snap.heatmap);
 			}
+			if (Array.isArray(snap.bookmarks)) {
+				const bm = new Set(snap.bookmarks);
+				for (const e of store.entries) {
+					if (bm.has(e.id)) {
+						e.bookmarked = true;
+					}
+				}
+			}
 			this.refreshLogList();
 		});
 		this.client.on("request_flow", (msg) => {
@@ -1154,9 +1209,30 @@ export class LogDashboardApp {
 		this.client.on("burst", (msg) => {
 			store.setBurst(msg);
 		});
-		this.client.on("hello", () => this.flash("connected to log stream"));
-		this.client.on("error", () => this.flash("log stream disconnected — retrying…"));
+		this.client.on("hello", () => {
+			this.flash("connected to log stream");
+			this._updateConnectionState(true);
+		});
+		this.client.on("connected", () => this._updateConnectionState(true));
+		this.client.on("disconnected", () => this._updateConnectionState(false));
+		this.client.on("error", () => {
+			this.flash("log stream disconnected — retrying…");
+			this._updateConnectionState(false);
+		});
 		this.client.connect();
+	}
+
+	_updateConnectionState(online) {
+		this.topbar.setOnline(online);
+		this.sidebar.setLiveInfo({
+			sources: this.servers.size,
+			parsers: parserCount(),
+			live: online ? 1 : 0,
+		});
+		if (this.activeServer && this.tabBar) {
+			this.tabBar.setServer(this.activeServer, { online });
+		}
+		this.screen.render();
 	}
 
 	start() {
@@ -1167,6 +1243,11 @@ export class LogDashboardApp {
 		this.topbar.draw();
 		this.overview.draw();
 		this.bottomPanels.draw();
+		this.sidebar.setLiveInfo({
+			sources: this.servers.size,
+			parsers: parserCount(),
+			live: this.client.connected ? 1 : 0,
+		});
 		setInterval(() => {
 			if (this.client.stats) {
 				this.updateHeaderCounts();
@@ -1190,6 +1271,9 @@ export class LogDashboardApp {
 	shutdown() {
 		clearInterval(this._burstTimer);
 		clearInterval(this._saveTimer);
+		if (this._borderPulse) {
+			clearInterval(this._borderPulse);
+		}
 		try {
 			this.client.close();
 		} catch {

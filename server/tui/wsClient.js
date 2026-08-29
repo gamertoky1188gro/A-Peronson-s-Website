@@ -106,6 +106,26 @@ export class LogWsClient extends EventEmitter {
 			this.emit("burst", msg);
 			return;
 		}
+		if (msg.type === "query_result") {
+			this.emit("query_result", msg);
+			return;
+		}
+		if (msg.type === "heatmap") {
+			this.emit("heatmap", msg);
+			return;
+		}
+		if (msg.type === "recorder") {
+			this.emit("recorder", msg);
+			return;
+		}
+		if (msg.type === "record_stop_ok") {
+			this.emit("record_stop", msg);
+			return;
+		}
+		if (msg.type === "clear_ok") {
+			this.emit("clear_ok", msg);
+			return;
+		}
 		this.emit("message", msg);
 	}
 
@@ -132,11 +152,36 @@ export class LogWsClient extends EventEmitter {
 		this.send("pin", { id });
 	}
 
+	requestFlow(requestId) {
+		this.send("request_flow", { requestId });
+	}
+
+	heatmap() {
+		this.send("heatmap");
+	}
+
+	recordStart(payload = {}) {
+		this.send("record_start", payload);
+	}
+
+	recordStop() {
+		this.send("record_stop");
+	}
+
+	clear() {
+		this.send("clear");
+	}
+
 	close() {
 		this.closed = true;
 		if (this.ws) {
+			const ws = this.ws;
+			ws.onopen = null;
+			ws.onmessage = null;
+			ws.onerror = null;
+			ws.onclose = null;
 			try {
-				this.ws.close();
+				ws.close();
 			} catch {
 				// ignore
 			}

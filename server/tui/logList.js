@@ -200,7 +200,7 @@ export class LogList extends blessed.box {
 			if (this.selectedIndex >= 0) {
 				this.screen?.render();
 			}
-		}, 250);
+		}, options.animMs || 250);
 	}
 
 	_handleClick(x, y, button) {

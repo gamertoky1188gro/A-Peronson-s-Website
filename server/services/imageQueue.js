@@ -22,6 +22,10 @@ export function addImageToQueue(item) {
 	}
 }
 
+export function queueDepth() {
+	return QUEUE.length;
+}
+
 export function startImageQueueWorker() {
 	logger.info("[Image Queue] Worker started");
 	if (QUEUE.length > 0 && !isProcessing) {

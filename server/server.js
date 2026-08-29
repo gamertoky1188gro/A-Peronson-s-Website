@@ -1172,9 +1172,9 @@ async function start() {
 		maybeAutoLaunchLogTui();
 	});
 
-	startSyslogServer();
-
-	// Feed live runtime metrics (redis/workers/the actual counts) to the log hub.
+	// Feed live runtime metrics (redis/workers/queue depths) to the log hub.
+	const startedWorkers = new Set();
+	const markWorker = (name) => startedWorkers.add(name);
 	setInterval(() => {
 		try {
 			import("./utils/redis.js")
@@ -1185,20 +1185,53 @@ async function start() {
 		} catch {
 			// ignore
 		}
+		try {
+			Promise.all([
+				import("./services/videoQueue.js"),
+				import("./services/imageQueue.js"),
+				import("./services/esignRetryService.js"),
+			])
+				.then(([vq, iq, es]) => {
+					const workQ = Number(vq.queueDepth?.() || 0) + Number(iq.queueDepth?.() || 0);
+					return es.queueDepth().then((n) =>
+						logHub.setRuntimeMetrics({
+							workers: startedWorkers.size,
+							workQ: workQ + Number(n || 0),
+						}),
+					);
+				})
+				.catch(() => {});
+		} catch {
+			// ignore
+		}
 	}, 5000);
 
 	try {
+		startSyslogServer();
+		markWorker("syslog");
+	} catch (err) {
+		logError("start_syslog_server_failed", err);
+	}
+
+	try {
 		startEsignWebhookRetryWorker();
+		markWorker("esign_retry");
 	} catch (err) {
 		logError("start_esign_retry_worker_failed", err);
 	}
 
 	import("./services/videoQueue.js")
-		.then(({ startVideoQueueWorker }) => startVideoQueueWorker())
+		.then(({ startVideoQueueWorker }) => {
+			startVideoQueueWorker();
+			markWorker("video_queue");
+		})
 		.catch((err) => logError("start_video_queue_worker_failed", err));
 
 	import("./services/imageQueue.js")
-		.then(({ startImageQueueWorker }) => startImageQueueWorker())
+		.then(({ startImageQueueWorker }) => {
+			startImageQueueWorker();
+			markWorker("image_queue");
+		})
 		.catch((err) => logError("start_image_queue_worker_failed", err));
 
 	import("./services/aiModerationService.js")

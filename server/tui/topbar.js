@@ -26,10 +26,11 @@ export class TopBar extends blessed.box {
 		this.follow = true;
 		this.glow = true;
 		this.online = true;
+		this.cool = false;
 		this._zones = [];
 		this._pulse = 0;
 		this.onAction = null;
-		this._anim = setInterval(() => this._breathe(), 400);
+		this._anim = setInterval(() => this._breathe(), options.animMs || 400);
 
 		this.on("click", (data) => {
 			const col = Math.floor(data.x - this.left);
@@ -75,6 +76,11 @@ export class TopBar extends blessed.box {
 		this.draw();
 	}
 
+	setCool(v) {
+		this.cool = !!v;
+		this.draw();
+	}
+
 	draw() {
 		const w = Math.max(20, this.width - 2);
 		const brand = "{#8B5CF6-fg}{bold}NEON//OBSERVE{/bold}{/}";
@@ -84,7 +90,8 @@ export class TopBar extends blessed.box {
 			? ` ${dot} {bold}{#34D399-fg}SERVER ONLINE{/bold}{/}`
 			: ` ${dot} {bold}{#F43F5E-fg}SERVER OFFLINE{/bold}{/}`;
 		const pillDim = tag("#65738F", " · backend/");
-		const left = `${brand}${sub}${pill}${pillDim}`;
+		const coolBadge = this.cool ? tag("#22D3EE", " ✦ COOL") : "";
+		const left = `${brand}${sub}${pill}${pillDim}${coolBadge}`;
 		const leftLen = plain(left).length;
 
 		const zones = [];

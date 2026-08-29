@@ -42,6 +42,7 @@ export class Sidebar extends blessed.box {
 		this.onSelect = null;
 		this.onClick = null;
 		this._rowMap = [];
+		this.liveInfo = { sources: 1, parsers: 0, live: 0 };
 		this._flatCategories = [
 			...CATEGORIES.filter((c) => WORKSPACE_KEYS.includes(c.key)),
 			...CATEGORIES.filter((c) => SERVICES_KEYS.includes(c.key)),
@@ -99,6 +100,19 @@ export class Sidebar extends blessed.box {
 		this.draw();
 	}
 
+	setLiveInfo({ sources, parsers, live }) {
+		if (sources !== undefined) {
+			this.liveInfo.sources = sources;
+		}
+		if (parsers !== undefined) {
+			this.liveInfo.parsers = parsers;
+		}
+		if (live !== undefined) {
+			this.liveInfo.live = live;
+		}
+		this.draw();
+	}
+
 	_cat(cat, active) {
 		const icon = categoryIcon(cat.key);
 		const label = cat.label.padEnd(10);
@@ -151,7 +165,9 @@ export class Sidebar extends blessed.box {
 		}
 
 		lines.push("{bold}{#E8EDFF-fg}  WORKSPACE · production{/bold}{/}");
-		lines.push("{gray-fg}  3 sources · 2 parsers · 1 live stream{/}");
+		lines.push(
+			`{gray-fg}  ${this.liveInfo.sources} source${this.liveInfo.sources === 1 ? "" : "s"} · ${this.liveInfo.parsers} parser${this.liveInfo.parsers === 1 ? "" : "s"} · ${this.liveInfo.live ? "1 live stream" : "offline"}{/}`,
+		);
 		lines.push("{#8B5CF6-fg}  ────────────────{/}");
 		lines.push("{gray-fg}  ⌘ help: ?{/}");
 		this._rowMap = rowMap;

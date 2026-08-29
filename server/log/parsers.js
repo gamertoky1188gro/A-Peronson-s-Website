@@ -15,6 +15,10 @@ export function unregisterParser(parser) {
 	}
 }
 
+export function parserCount() {
+	return PARSER_PLUGINS.length;
+}
+
 export function runParsers(entry) {
 	let current = entry;
 	for (const parser of PARSER_PLUGINS) {

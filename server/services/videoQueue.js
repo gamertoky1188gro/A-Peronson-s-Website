@@ -12,6 +12,10 @@ export function addToQueue(job) {
 	}
 }
 
+export function queueDepth() {
+	return QUEUE.length;
+}
+
 async function updateDoc(documentId, data) {
 	if (!documentId) {
 		return;
