@@ -1,5 +1,5 @@
 import os from "node:os";
-import { Box, Text, useInput, useStdin, useStdout, useWindowSize } from "ink";
+import { Box, Text, useStdin, useStdout, useWindowSize } from "ink";
 import TextInput from "ink-text-input";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LogWsClient } from "../wsClient.js";
@@ -9,25 +9,30 @@ const ESC_RE = `${ESC}\\[<`;
 const SGR_RE = new RegExp(ESC_RE + "\\d+(?:;\\d+)*[Mm]", "g");
 const SGR_TAIL_RE = new RegExp(ESC_RE + "\\d+$");
 const MOUSE_SEQ_RE = new RegExp("^" + ESC_RE + "(\\d+);(\\d+);(\\d+)([Mm])$");
-const SGR_SCAN_RE = new RegExp(ESC_RE + "(\\d+);(\\d+);(\\d+)([Mm])", "g");
 
 const C = {
 	bg: "#090b13",
-	panel: "#111827",
-	card: "#171e2f",
-	card2: "#131a2b",
-	border: "#2a365c",
-	border2: "#222e4c",
+	panel: "#0e1420",
+	card: "#111b2e",
+	card2: "#0d1525",
+	border: "#1e2d50",
+	borderGlow: "#3b5998",
 	blue: "#38bdf8",
 	cyan: "#22d3ee",
 	green: "#34d399",
 	amber: "#fbbf24",
 	pink: "#fb7185",
+	red: "#ef4444",
 	purple: "#c084fc",
 	violet: "#8b5cf6",
+	indigo: "#6366f1",
 	text: "#e8edff",
 	muted: "#7f8aa8",
 	muted2: "#596580",
+	neonPink: "#ff2d95",
+	neonCyan: "#00fff5",
+	neonViolet: "#bf5fff",
+	neonGreen: "#39ff14",
 };
 
 const LEVELS = ["INFO", "DEBUG", "SUCCESS", "WARN", "ERROR", "CRITICAL"];
@@ -38,7 +43,16 @@ const LEVEL_COLOR = {
 	SUCCESS: C.green,
 	WARN: C.amber,
 	ERROR: C.pink,
-	CRITICAL: C.purple,
+	CRITICAL: C.neonPink,
+};
+
+const LEVEL_ICON = {
+	INFO: "●",
+	DEBUG: "◆",
+	SUCCESS: "✔",
+	WARN: "▲",
+	ERROR: "✖",
+	CRITICAL: "🔥",
 };
 
 const SERVICES = [
@@ -80,39 +94,32 @@ const fmtTime = (ts) => {
 	return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}.${String(d.getMilliseconds()).padStart(3, "0")}`;
 };
 const shortId = (id) => (id ? String(id).slice(-6) : "—");
-const barrier = (w, color) => <Text color={color}>{"─".repeat(Math.max(0, w))}</Text>;
+
+const NEON_CHARS = "─";
+const barrier = (w, color) => <Text color={color}>{NEON_CHARS.repeat(Math.max(0, w))}</Text>;
+const neonBar = (w, c1, c2) => {
+	const half = Math.max(0, Math.floor(w / 2));
+	return (
+		<Text>
+			<Text color={c1}>{NEON_CHARS.repeat(half)}</Text>
+			<Text color={c2}>{NEON_CHARS.repeat(Math.max(0, w - half))}</Text>
+		</Text>
+	);
+};
 
 const parseMouse = (seq) => {
 	const m = MOUSE_SEQ_RE.exec(seq);
-	if (!m) {
-		return null;
-	}
+	if (!m) return null;
 	const b = +m[1];
 	const x = +m[2];
 	const y = +m[3];
-	if (b & 64) {
-		return { scroll: b & 1 ? 1 : -1 };
-	}
-	if ((b & 3) === 0 && m[4] === "M") {
-		return { x, y };
-	}
+	if (b & 64) return { scroll: b & 1 ? 1 : -1 };
+	if ((b & 3) === 0 && m[4] === "M") return { x, y };
 	return null;
 };
 
 const hitTest = (g) => {
-	const {
-		x,
-		y,
-		columns,
-		sidebarW,
-		inspW,
-		mainW,
-		mainRowH,
-		showBottom,
-		window,
-		selectedId,
-		height,
-	} = g;
+	const { x, y, columns, sidebarW, inspW, mainW, mainRowH, showBottom, window, selectedId, height } = g;
 	const mainTop = 3;
 	const logareaTop = mainTop + 6;
 	const logrowsTop = logareaTop + 3;
@@ -198,75 +205,82 @@ const hitTest = (g) => {
 };
 
 const HEAT_COLORS = [
-	"#19243d",
-	"#1f2b4d",
-	"#27345b",
-	"#35406b",
-	"#4b3f79",
-	"#5f3f88",
-	"#7c3fa0",
-	"#93409e",
-	"#b14f9e",
-	"#c35598",
-	"#e06b8b",
-	"#f4827c",
+	"#0d1525", "#131d35", "#1a2744", "#243154",
+	"#352d63", "#4b2d72", "#63308a", "#7c30a0",
+	"#96329e", "#b03e9a", "#cc4d94", "#e65d8a",
 ];
 
-const Chip = ({ label, on }) => (
+const Chip = ({ label, on, color }) => (
 	<Box
-		borderStyle="single"
-		borderColor={on ? C.cyan : "#303d60"}
+		borderStyle="round"
+		borderColor={on ? (color || C.neonCyan) : "#1a2540"}
 		paddingX={1}
-		backgroundColor={on ? "#0d2436" : "#11192c"}
+		backgroundColor={on ? "#0a1830" : "#0c1420"}
 	>
-		<Text color={on ? C.text : "#8f9bb8"} bold={on}>
-			{label}
+		<Text color={on ? (color || C.text) : "#5a6888"} bold={on}>
+			{on ? LEVEL_ICON[label] || "●" : "○"} {label}
 		</Text>
 	</Box>
 );
 
-const Divider = ({ width, color = C.border }) => <Box>{barrier(width, color)}</Box>;
+const Divider = ({ width, color = C.border, glow }) =>
+	glow ? (
+		<Box>
+			<Text color={C.neonViolet}>{NEON_CHARS.repeat(Math.floor(width / 2))}</Text>
+			<Text color={C.neonCyan}>{NEON_CHARS.repeat(Math.max(0, width - Math.floor(width / 2)))}</Text>
+		</Box>
+	) : (
+		<Box>{barrier(width, color)}</Box>
+	);
 
 const TextButton = ({ label, color, active }) => (
 	<Text
-		backgroundColor={active ? "#19213a" : "#182136"}
-		color={active ? C.text : color || "#b9c4df"}
+		backgroundColor={active ? "#1a1040" : "#0e1525"}
+		color={active ? C.neonCyan : color || "#b9c4df"}
+		bold={active}
 		paddingX={1}
 	>
-		{label}
+		{active ? "▸" : " "} {label}
 	</Text>
 );
 
 const TopBar = ({ rec, paused, following, glow, connected, serverInfo }) => (
-	<Box flexDirection="row" alignItems="center" gap={2} paddingX={1} height={1}>
-		<Box width={4} backgroundColor={C.violet} justifyContent="center" alignItems="center">
-			<Text bold={true} color={C.cyan}>
+	<Box flexDirection="row" alignItems="center" gap={1} paddingX={1} height={1}>
+		<Box width={1} backgroundColor={C.neonViolet} justifyContent="center" alignItems="center">
+			<Text bold={true} color={C.bg}>
 				N
 			</Text>
 		</Box>
 		<Text wrap="truncate-end">
-			<Text bold={true} color={C.violet}>
+			<Text bold={true} color={C.neonViolet}>
 				NEON
 			</Text>
-			<Text bold={true} color={C.cyan}>
+			<Text bold={true} color={C.neonCyan}>
 				{"//"}OBSERVE
 			</Text>
-			<Text color={C.muted}> SERVER LOG OBSERVATORY</Text>
+			<Text color={C.muted2}> ◈</Text>
 		</Text>
 		<Text
-			backgroundColor={connected ? "#12231b" : "#2a1a1a"}
+			backgroundColor={connected ? "#0a1a15" : "#1a0e0e"}
 			color={C.muted}
 			paddingX={1}
 			wrap="truncate-end"
 		>
-			<Text color={connected ? C.green : C.pink}>●</Text>{" "}
-			{connected ? "SERVER ONLINE" : "SERVER OFFLINE"} {serverInfo}
+			<Text color={connected ? C.neonGreen : C.neonPink} bold={true}>
+				{connected ? "●" : "○"}
+			</Text>{" "}
+			{connected ? "LIVE" : "OFFLINE"}
 		</Text>
+		{serverInfo && (
+			<Text color={C.muted2} wrap="truncate-end">
+				{serverInfo}
+			</Text>
+		)}
 		<Box marginLeft="auto" flexDirection="row" gap={1} alignItems="center" flexShrink={0}>
-			<TextButton label={rec ? "● REC ON" : "● REC"} active={rec} />
-			<TextButton label={paused ? "▶ Resume" : "Ⅱ Pause"} active={paused} />
-			<TextButton label="⌄ Follow" active={following} />
-			<TextButton label="◐ Glow" active={glow} />
+			<TextButton label={rec ? "● REC" : "○ REC"} active={rec} color={C.neonPink} />
+			<TextButton label={paused ? "▶ PLAY" : "‖ PAUSE"} active={paused} color={C.amber} />
+			<TextButton label={following ? "▼ FOLLOW" : "▽ FOLLOW"} active={following} color={C.green} />
+			<TextButton label="◐ GLOW" active={glow} color={C.purple} />
 		</Box>
 	</Box>
 );
@@ -274,15 +288,17 @@ const TopBar = ({ rec, paused, following, glow, connected, serverInfo }) => (
 const NavItem = ({ icon, label, badge, hot, active }) => {
 	const badgeStr = badge === undefined ? "" : String(badge);
 	return (
-		<Box paddingX={1} backgroundColor={active ? "#1b2541" : undefined}>
+		<Box paddingX={1} backgroundColor={active ? "#121d38" : undefined}>
 			<Text wrap="truncate-end">
-				{active ? <Text color={C.violet}>▍</Text> : null}
-				<Text color={active ? C.violet : "#9da9c6"}>
+				{active ? <Text color={C.neonCyan} bold={true}>▸</Text> : <Text color={C.muted2}> </Text>}
+				<Text color={active ? C.neonCyan : "#7a88aa"} bold={active}>
 					{icon} {pad(label, badge === undefined ? 12 : 9)}
 				</Text>
-				<Text color={hot ? C.pink : "#aeb9d4"} bold={true}>
-					{badgeStr}
-				</Text>
+				{badgeStr && (
+					<Text color={hot ? C.neonPink : C.violet} bold={true}>
+						{badgeStr}
+					</Text>
+				)}
 			</Text>
 		</Box>
 	);
@@ -298,8 +314,8 @@ const Sidebar = ({ width, view, counts, categoryCounts, bookmarkedCount, footerI
 		backgroundColor={C.panel}
 		padding={1}
 	>
-		<Text color={C.muted2} bold={true} wrap="truncate-end">
-			WORKSPACE
+		<Text color={C.neonViolet} bold={true} wrap="truncate-end">
+			◈ WORKSPACE
 		</Text>
 		{WORKSPACE.map((it) => (
 			<NavItem
@@ -310,8 +326,8 @@ const Sidebar = ({ width, view, counts, categoryCounts, bookmarkedCount, footerI
 				active={view === it.key}
 			/>
 		))}
-		<Text color={C.muted2} bold={true} wrap="truncate-end" marginTop={1}>
-			SERVICES
+		<Text color={C.neonViolet} bold={true} wrap="truncate-end" marginTop={1}>
+			◈ SERVICES
 		</Text>
 		{SERVICES.map((it) => (
 			<NavItem
@@ -331,22 +347,24 @@ const Sidebar = ({ width, view, counts, categoryCounts, bookmarkedCount, footerI
 			marginTop={1}
 		>
 			<Text bold={true} color={C.text} wrap="truncate-end">
-				WORKSPACE · production
+				◈ WORKSPACE · production
 			</Text>
 			<Text color={C.muted} wrap="truncate-end">
 				{footerInfo}
 			</Text>
-			<Bar width={width - 8} />
+			<NeonBar width={width - 8} />
 		</Box>
 	</Box>
 );
 
-const Bar = ({ width }) => {
-	const half = Math.max(0, Math.floor(width / 2));
+const NeonBar = ({ width }) => {
+	const third = Math.max(0, Math.floor(width / 3));
+	const rest = Math.max(0, width - third * 2);
 	return (
 		<Text>
-			<Text color={C.violet}>{"█".repeat(half)}</Text>
-			<Text color={C.cyan}>{"█".repeat(Math.max(0, width - half))}</Text>
+			<Text color={C.neonViolet}>{"█".repeat(third)}</Text>
+			<Text color={C.neonCyan}>{"█".repeat(third)}</Text>
+			<Text color={C.neonPink}>{"█".repeat(rest)}</Text>
 		</Text>
 	);
 };
@@ -363,7 +381,7 @@ const Metric = ({ label, value, color, delta, deltaColor = C.green, minW = 11 })
 		paddingX={1}
 		justifyContent="center"
 	>
-		<Text color={C.muted} bold={true} wrap="truncate-end">
+		<Text color={C.muted2} bold={true} wrap="truncate-end">
 			{label}
 		</Text>
 		<Text color={color} bold={true} wrap="truncate-end">
@@ -387,7 +405,8 @@ const pctDelta = (arr) => {
 const Overview = ({ width, stats }) => {
 	const roomy = width >= 78;
 	const delta = pctDelta(stats?.lastRates);
-	const deltaStr = delta ? `${delta.up ? "▲" : "▼"} ${Math.abs(delta.pct).toFixed(1)}%` : "live";
+	const deltaStr = delta ? `${delta.up ? "▲" : "▼"} ${Math.abs(delta.pct).toFixed(1)}%` : "—";
+	const total = (stats?.byLevel?.info ?? 0) + (stats?.byLevel?.warn ?? 0) + (stats?.byLevel?.error ?? 0) + (stats?.byLevel?.critical ?? 0);
 	return (
 		<Box width={width} flexDirection="row" gap={1} flexShrink={0}>
 			<Box
@@ -396,77 +415,39 @@ const Overview = ({ width, stats }) => {
 				minWidth={roomy ? 20 : 24}
 				flexDirection="column"
 				borderStyle="single"
-				borderColor={C.border}
+				borderColor={C.neonCyan}
 				backgroundColor={C.card}
 				paddingX={1}
 				justifyContent="center"
 			>
-				<Text color={C.cyan} bold={true} wrap="truncate-end">
-					LIVE OBSERVABILITY
+				<Text color={C.neonCyan} bold={true} wrap="truncate-end">
+					◈ LIVE OBSERVABILITY
 				</Text>
 				<Text color={C.text} bold={true} wrap="truncate-end">
 					Backend / server logs
 				</Text>
-				<Text color={C.muted} wrap="truncate-end">
-					Canonical logger · request middleware · audit · RFC 5424 syslog · workers
+				<Text color={C.muted2} wrap="truncate-end">
+					{total.toLocaleString()} total events · Canonical logger · Audit · Syslog
 				</Text>
 			</Box>
 			{roomy ? (
 				<>
-					<Metric
-						label="INFO"
-						value={(stats?.byLevel?.info ?? 0).toLocaleString()}
-						color={C.blue}
-						delta={deltaStr}
-						minW={13}
-					/>
-					<Metric
-						label="WARN"
-						value={(stats?.byLevel?.warn ?? 0).toLocaleString()}
-						color={C.amber}
-						delta="live"
-						minW={13}
-					/>
-					<Metric
-						label="ERROR"
-						value={(
-							(stats?.byLevel?.error ?? 0) + (stats?.byLevel?.critical ?? 0)
-						).toLocaleString()}
-						color={C.pink}
-						delta="live"
-						minW={13}
-					/>
-					<Metric
-						label="REQ / SEC"
-						value={String(stats?.reqRate ?? 0)}
-						color={C.text}
-						delta={`${stats?.rate ?? 0}/s total`}
-						minW={13}
-					/>
+					<Metric label="INFO" value={(stats?.byLevel?.info ?? 0).toLocaleString()} color={C.blue} delta={deltaStr} minW={13} />
+					<Metric label="WARN" value={(stats?.byLevel?.warn ?? 0).toLocaleString()} color={C.amber} delta="live" minW={13} />
+					<Metric label="ERROR" value={((stats?.byLevel?.error ?? 0) + (stats?.byLevel?.critical ?? 0)).toLocaleString()} color={C.pink} delta="live" minW={13} />
+					<Metric label="REQ/S" value={String(stats?.reqRate ?? 0)} color={C.text} delta={`${stats?.rate ?? 0}/s`} minW={13} />
 				</>
 			) : (
 				<>
-					<Metric
-						label="INFO"
-						value={(stats?.byLevel?.info ?? 0).toLocaleString()}
-						color={C.blue}
-						delta={deltaStr}
-						minW={12}
-					/>
-					<Metric
-						label="WARN"
-						value={(stats?.byLevel?.warn ?? 0).toLocaleString()}
-						color={C.amber}
-						delta="live"
-						minW={12}
-					/>
+					<Metric label="INFO" value={(stats?.byLevel?.info ?? 0).toLocaleString()} color={C.blue} delta={deltaStr} minW={12} />
+					<Metric label="WARN" value={(stats?.byLevel?.warn ?? 0).toLocaleString()} color={C.amber} delta="live" minW={12} />
 				</>
 			)}
 		</Box>
 	);
 };
 
-const Sparkline = ({ data, width, color = C.blue }) => {
+const Sparkline = ({ data, width, color = C.neonCyan }) => {
 	const vals = (data || []).slice(-width);
 	if (!vals.length) return <Text color={color}>{"▁".repeat(Math.max(0, width))}</Text>;
 	const max = Math.max(...vals);
@@ -492,10 +473,10 @@ const SparkCard = ({ data, width }) => (
 		paddingX={1}
 		justifyContent="space-between"
 	>
-		<Text color={C.text} bold={true} wrap="truncate-end">
-			LIVE TELEMETRY
+		<Text color={C.neonCyan} bold={true} wrap="truncate-end">
+			◈ LIVE TELEMETRY
 		</Text>
-		<Text color={C.muted} wrap="truncate-end">
+		<Text color={C.muted2} wrap="truncate-end">
 			· last 60 sec
 		</Text>
 		<Sparkline data={data} width={Math.max(8, width - 4)} />
@@ -517,8 +498,8 @@ const HeatCard = ({ buckets, width }) => {
 			paddingX={1}
 			justifyContent="space-between"
 		>
-			<Text color={C.text} bold={true} wrap="truncate-end">
-				TRAFFIC HEATMAP
+			<Text color={C.neonPink} bold={true} wrap="truncate-end">
+				◈ TRAFFIC HEATMAP
 			</Text>
 			<Box flexDirection="column" gap={0}>
 				<Box flexDirection="row" gap={0}>
@@ -548,26 +529,26 @@ const SessionCard = ({ width, rec, startedAt, onRecord }) => (
 		minWidth={18}
 		flexDirection="column"
 		borderStyle="single"
-		borderColor={C.border}
+		borderColor={rec ? C.neonPink : C.border}
 		backgroundColor={C.card}
 		paddingX={1}
 		justifyContent="space-between"
 	>
-		<Text color={C.text} bold={true} wrap="truncate-end">
-			SESSION RECORDER
+		<Text color={rec ? C.neonPink : C.neonViolet} bold={true} wrap="truncate-end">
+			◈ SESSION RECORDER
 		</Text>
 		<Box flexDirection="row" gap={1}>
-			<Text backgroundColor="#17233b" color={C.cyan} paddingX={1}>
-				Last 30 min
+			<Text backgroundColor="#0e1a30" color={C.cyan} paddingX={1}>
+				30 min
 			</Text>
-			<Text backgroundColor="#17233b" color={C.muted2} paddingX={1}>
-				Last hour
+			<Text backgroundColor="#0e1a30" color={C.muted2} paddingX={1}>
+				1 hour
 			</Text>
 		</Box>
 		<Box flexDirection="row" justifyContent="space-between">
-			<Text color={C.muted}>Recording state</Text>
-			<Text bold={true} color={rec ? C.pink : C.muted2}>
-				{rec ? `REC · ${startedAt}` : "IDLE"}
+			<Text color={C.muted2}>State</Text>
+			<Text bold={true} color={rec ? C.neonPink : C.muted2}>
+				{rec ? `● REC · ${startedAt}` : "○ IDLE"}
 			</Text>
 		</Box>
 	</Box>
@@ -600,18 +581,21 @@ const toView = (e) => ({
 
 const LogRow = ({ log, selected, mainWidth }) => {
 	const lvlColor = LEVEL_COLOR[log.level] || C.text;
+	const lvlIcon = LEVEL_ICON[log.level] || "●";
 	const leftW = 12 + 9 + 1;
 	const tagW = mainWidth < 60 ? 0 : Math.min(18, Math.floor(mainWidth * 0.16));
 	const msgW = Math.max(6, mainWidth - leftW - (tagW ? tagW + 2 : 0));
-	const bg = selected ? "#1e2c4d" : log.t % 2 ? "#131a2b" : "#121a2c";
+	const bg = selected ? "#111d38" : log.bookmarked ? "#14122a" : log.t % 2 ? "#0d1525" : "#0b1320";
 	return (
 		<Box flexDirection="column">
 			<Box flexDirection="row" backgroundColor={bg} paddingX={1}>
-				<Text color="#71809f">{pad(log.ts, 12)}</Text>
+				<Text color={C.muted2}>{pad(log.ts, 12)}</Text>
 				<Text color={lvlColor} bold={true}>
-					{pad(log.level, 9)}
+					{lvlIcon} {pad(log.level, 7)}
 				</Text>
-				<Text color={C.text}>{trunc(log.msg, msgW)}</Text>
+				<Text color={log.bookmarked ? C.amber : C.text}>
+					{log.bookmarked ? "★ " : ""}{trunc(log.msg, msgW)}
+				</Text>
 				{tagW > 0 && (
 					<Box marginLeft="auto">
 						<Text color={C.muted2}> {trunc(log.tags.join(" · "), tagW)}</Text>
@@ -620,9 +604,9 @@ const LogRow = ({ log, selected, mainWidth }) => {
 			</Box>
 			{selected && (
 				<Box flexDirection="row" backgroundColor={bg} paddingX={1}>
-					<Text color={C.muted}>{pad(trunc(log.src, 12), 12)}</Text>
-					<Text color={C.muted2}>
-						{trunc(log.src.slice(12) || "source", Math.max(1, mainWidth - 13))}
+					<Text color={C.neonCyan}>{pad(trunc(log.src, 12), 12)}</Text>
+					<Text color={C.muted}>
+						{log.requestId ? `req:${shortId(log.requestId)}` : trunc(log.src.slice(12) || "", Math.max(1, mainWidth - 13))}
 					</Text>
 				</Box>
 			)}
@@ -631,19 +615,8 @@ const LogRow = ({ log, selected, mainWidth }) => {
 };
 
 const LogArea = ({
-	width,
-	height,
-	filtered,
-	selectedId,
-	search,
-	searchActive,
-	enabled,
-	paused,
-	queryResult,
-	onSearchChange,
-	scrollOffset,
-	visible,
-	canInput,
+	width, height, filtered, selectedId, search, searchActive, enabled, paused,
+	queryResult, onSearchChange, scrollOffset, visible, canInput,
 }) => {
 	const start = Math.max(0, Math.min(scrollOffset, Math.max(0, filtered.length - visible)));
 	let window = filtered.slice(start, start + visible);
@@ -662,10 +635,10 @@ const LogArea = ({
 				gap={1}
 				paddingX={1}
 				alignItems="center"
-				backgroundColor="#131a2b"
+				backgroundColor="#0c1420"
 				flexShrink={0}
 			>
-				<Box flexGrow={1} backgroundColor="#0b1120" paddingX={1}>
+				<Box flexGrow={1} backgroundColor="#080e1a" paddingX={1}>
 					{searchActive && canInput ? (
 						<TextInput
 							value={search}
@@ -674,32 +647,32 @@ const LogArea = ({
 							showCursor={true}
 						/>
 					) : (
-						<Text color={search ? C.text : C.muted}>
+						<Text color={search ? C.neonCyan : C.muted2}>
 							⌕{" "}
 							{trunc(
-								search || "Search logs: error · redis · user:24 · regex:/…/ · 5m — press /",
+								search || "error · redis · user:24 · regex:/…/ · 5m — press /",
 								Math.max(10, width - 40),
 							)}
 						</Text>
 					)}
-					<Text color="#697694"> /</Text>
+					<Text color={C.muted2}> /</Text>
 				</Box>
 				<TextButton label="☷ Filter" />
 				<TextButton label="⇩ Export" />
 			</Box>
 			<Box flexDirection="row" gap={1} paddingX={1} alignItems="center" flexShrink={0}>
 				{LEVELS.map((l) => (
-					<Chip key={l} label={l} on={enabled.has(l)} />
+					<Chip key={l} label={l} on={enabled.has(l)} color={LEVEL_COLOR[l]} />
 				))}
 				<Box marginLeft="auto">
 					<Text color={C.muted2}>
-						{queryResult ? `☷ SERVER SEARCH ${filtered.length}` : paused ? "Ⅱ PAUSED" : "● LIVE"}
+						{queryResult ? `☷ SERVER SEARCH ${filtered.length}` : paused ? "‖ PAUSED" : "● LIVE"}
 					</Text>
 				</Box>
 			</Box>
 			<Box flexDirection="column" flexGrow={1} minHeight={0}>
 				{window.length === 0 && (
-					<Text color={C.muted} paddingLeft={1}>
+					<Text color={C.muted2} paddingLeft={1}>
 						No logs match the current filter.
 					</Text>
 				)}
@@ -722,7 +695,7 @@ const JsonBlock = ({ obj, indent = 0 }) => (
 				<Text key={k}>
 					{"  ".repeat(indent)}
 					<Text color={C.purple}>{k}</Text>
-					<Text color="#aeb9d4">: </Text>
+					<Text color="#4a5578">: </Text>
 					<Text color={valColor}>{trunc(String(val), 46)}</Text>
 				</Text>
 			);
@@ -731,16 +704,9 @@ const JsonBlock = ({ obj, indent = 0 }) => (
 );
 
 const FlowView = ({ flow, requestId }) => {
-	if (!requestId) {
-		return <Text color={C.muted2}>No request_id on this event — flow unavailable.</Text>;
-	}
-	if (!(flow && flow.length)) {
-		return (
-			<Text color={C.muted2}>
-				Fetching request flow for {shortId(requestId)}… (no steps recorded yet)
-			</Text>
-		);
-	}
+	if (!requestId) return <Text color={C.muted2}>No request_id — flow unavailable.</Text>;
+	if (!(flow && flow.length))
+		return <Text color={C.muted2}>Fetching flow for {shortId(requestId)}…</Text>;
 	const sorted = [...flow].sort((a, b) => (a.t ?? 0) - (b.t ?? 0));
 	const t0 = sorted[0].t ?? 0;
 	const total = Math.max(0, (sorted[sorted.length - 1].t ?? 0) - t0);
@@ -749,22 +715,24 @@ const FlowView = ({ flow, requestId }) => {
 			<Text wrap="truncate-end">
 				{sorted.map((s, i) => (
 					<Text key={s.id}>
-						<Text color={C.violet}>{i ? " › " : ""}</Text>
+						<Text color={C.neonViolet}>{i ? " › " : ""}</Text>
 						<Text color={C.text}>{trunc(s.message || s.category || "step", 22)}</Text>
 					</Text>
 				))}
-				<Text color={C.violet}> › </Text>
-				<Text bold={true} color={C.green}>
+				<Text color={C.neonViolet}> › </Text>
+				<Text bold={true} color={C.neonGreen}>
 					{total}ms
 				</Text>
 			</Text>
 			{sorted.map((s) => {
 				const dur = Number(s.meta?.duration_ms ?? s.data?.duration_ms ?? 0);
+				const barLen = Math.min(20, Math.round((dur / Math.max(total, 1)) * 20));
 				return (
 					<Text key={s.id}>
 						<Text color={C.muted2}>+{s.t - t0}ms </Text>
 						<Text color={LEVEL_COLOR[s.level?.toUpperCase()] || C.text}>●</Text>{" "}
-						<Text color={C.text}>{trunc(s.message || s.category || "?", 30)}</Text>
+						<Text color={C.text}>{trunc(s.message || s.category || "?", 24)}</Text>
+						<Text color={C.neonViolet}>{"█".repeat(barLen)}</Text>
 						<Text color={C.muted2}> {Number.isFinite(dur) ? `${Math.round(dur)}ms` : ""}</Text>
 					</Text>
 				);
@@ -776,19 +744,20 @@ const FlowView = ({ flow, requestId }) => {
 const Inspector = ({ width, log, tab, flow }) => {
 	const kv = (label, value, color) => (
 		<Box flexDirection="row" gap={1}>
-			<Text color="#687694">{pad(label + ":", 10)}</Text>
-			<Text color={color || "#d6def2"} wrap="truncate-end">
+			<Text color="#3d4f70">{pad(label + ":", 10)}</Text>
+			<Text color={color || "#b8c4dd"} wrap="truncate-end">
 				{value}
 			</Text>
 		</Box>
 	);
-	const divider = () => <Text color="#263250">{"─".repeat(Math.max(4, width - 4))}</Text>;
+	const divider = () => <Text color="#1a2540">{"─".repeat(Math.max(4, width - 4))}</Text>;
 	const tabW = Math.max(4, Math.floor((width - 2 - 3) / 4));
 	const center = (s, w) => {
 		const l = Math.max(0, Math.floor((w - s.length) / 2));
 		return " ".repeat(l) + s + " ".repeat(Math.max(0, w - s.length - l));
 	};
 	const TABS = ["Metadata", "JSON", "Stack", "Raw"];
+	const TAB_COLORS = [C.neonCyan, C.purple, C.amber, C.muted];
 	const stackLines = (log.stack || "").split("\n").filter(Boolean);
 	return (
 		<Box width={width} minWidth={width} flexDirection="column" gap={1} minHeight={0}>
@@ -797,8 +766,8 @@ const Inspector = ({ width, log, tab, flow }) => {
 					{TABS.map((t, i) => (
 						<Text
 							key={t}
-							backgroundColor={i === tab ? "#202b48" : undefined}
-							color={i === tab ? C.text : "#71809f"}
+							backgroundColor={i === tab ? "#141d35" : undefined}
+							color={i === tab ? TAB_COLORS[i] : "#4a5578"}
 							bold={i === tab}
 						>
 							{(i ? " " : "") + center(t, tabW)}
@@ -818,24 +787,24 @@ const Inspector = ({ width, log, tab, flow }) => {
 					<>
 						<Box flexDirection="row" justifyContent="space-between">
 							<Text color={LEVEL_COLOR[log.level] || C.text} bold={true}>
-								{log.level} · Event Inspector
+								{LEVEL_ICON[log.level] || "●"} {log.level} · Event Inspector
 							</Text>
-							<Text color={C.cyan}>#{shortId(log.id)}</Text>
+							<Text color={C.neonCyan}>#{shortId(log.id)}</Text>
 						</Box>
 						{divider()}
 						{kv("Timestamp", log.ts)}
-						{kv("Source", log.src, C.cyan)}
+						{kv("Source", log.src, C.neonCyan)}
 						{kv("Message", log.msg)}
 						{kv("Subsystem", log.category)}
 						{kv("Request", log.requestId ? shortId(log.requestId) : "—")}
 						{kv("Repeats", log.groupCount > 1 ? `×${log.groupCount}` : "—")}
 						{divider()}
-						<Text bold={true} color={C.text}>
+						<Text bold={true} color={C.neonViolet}>
 							Request Flow
 						</Text>
 						<FlowView flow={flow} requestId={log.requestId} />
 						{divider()}
-						<Text bold={true} color={C.text}>
+						<Text bold={true} color={C.neonPink}>
 							Payload
 						</Text>
 						<JsonBlock obj={log.meta} />
@@ -844,7 +813,7 @@ const Inspector = ({ width, log, tab, flow }) => {
 				{tab === 1 && (
 					<>
 						<Box flexDirection="row" justifyContent="space-between">
-							<Text bold={true} color={C.text}>
+							<Text bold={true} color={C.purple}>
 								Structured JSON
 							</Text>
 							<TextButton label="Copy" />
@@ -868,16 +837,16 @@ const Inspector = ({ width, log, tab, flow }) => {
 				{tab === 2 && (
 					<>
 						<Box flexDirection="row" justifyContent="space-between">
-							<Text bold={true} color={C.text}>
+							<Text bold={true} color={C.amber}>
 								Stack Trace
 							</Text>
-							<Text color={C.cyan}>{log.src}</Text>
+							<Text color={C.neonCyan}>{log.src}</Text>
 						</Box>
 						{divider()}
 						{stackLines.length ? (
 							stackLines.slice(0, 14).map((f, i) => (
-								<Text key={i} color="#9ca8c4">
-									<Text color="#3b496b">↓ </Text>
+								<Text key={i} color="#8896b4">
+									<Text color={C.neonViolet}>↓ </Text>
 									{trunc(f, width - 8)}
 								</Text>
 							))
@@ -889,21 +858,21 @@ const Inspector = ({ width, log, tab, flow }) => {
 				{tab === 3 && (
 					<>
 						<Box flexDirection="row" justifyContent="space-between">
-							<Text bold={true} color={C.text}>
+							<Text bold={true} color={C.muted}>
 								Raw Event
 							</Text>
-							<Text color={C.cyan}>console.*</Text>
+							<Text color={C.neonCyan}>console.*</Text>
 						</Box>
 						{divider()}
-						<Text color={C.muted}>
+						<Text color={C.muted2}>
 							[{log.ts}] [{log.level}] [{log.category}] {log.msg}
 						</Text>
-						<Text color={C.muted}>source={log.src}</Text>
-						<Text color={C.muted}>
+						<Text color={C.muted2}>source={log.src}</Text>
+						<Text color={C.muted2}>
 							host={log.raw?.host} pid={log.raw?.pid}
 						</Text>
-						<Text color={C.muted}>request_id={log.requestId || "—"}</Text>
-						<Text color={C.muted}>payload={JSON.stringify(log.meta)}</Text>
+						<Text color={C.muted2}>request_id={log.requestId || "—"}</Text>
+						<Text color={C.muted2}>payload={JSON.stringify(log.meta)}</Text>
 					</>
 				)}
 			</Box>
@@ -911,71 +880,81 @@ const Inspector = ({ width, log, tab, flow }) => {
 	);
 };
 
-const StatusBar = ({ width, stats, paused, cpu, ram }) => {
+const StatusBar = ({ width, stats, paused, cpu, ram, mouseOn, shiftActive }) => {
 	const primary = [
-		<Text key="live" color={paused ? C.amber : C.green} bold={true}>
+		<Text key="live" color={paused ? C.amber : C.neonGreen} bold={true}>
 			● {paused ? "PAUSED" : "LIVE"}
 		</Text>,
-		<Text key="rate" color={C.muted}>
-			logs/sec <Text color="#dce5ff">{stats?.rate ?? 0}</Text>
-		</Text>,
-		<Text key="rps" color={C.muted}>
-			req/s <Text color="#dce5ff">{stats?.reqRate ?? 0}</Text>
-		</Text>,
-		<Text key="cpu" color={C.muted}>
-			CPU <Text color="#dce5ff">{cpu}%</Text>
-		</Text>,
-		<Text key="ram" color={C.muted}>
-			RAM <Text color="#dce5ff">{ram} GB</Text>
-		</Text>,
-		<Text key="redis" color={C.muted}>
-			Redis{" "}
-			<Text color={isRedisOk(stats?.redis) ? C.green : C.pink}>
-				● {isRedisOk(stats?.redis) ? "Connected" : "Down"}
+		<Text key="mouse" color={C.muted2}>
+			<InputIcon />{" "}
+			<Text color={mouseOn && !shiftActive ? C.neonGreen : shiftActive ? C.amber : C.pink}>
+				{shiftActive ? "TEXT SEL" : mouseOn ? "NAV" : "OFF"}
 			</Text>
 		</Text>,
-		<Text key="q" color={C.muted}>
-			Queue <Text color="#dce5ff">{stats?.workQ ?? 0}</Text>
+		<Text key="rate" color={C.muted2}>
+			<BoltIcon /> <Text color={C.text}>{stats?.rate ?? 0}</Text>/s
 		</Text>,
-		<Text key="w" color={C.muted}>
-			Workers <Text color="#dce5ff">{stats?.workers ?? 0}</Text>
+		<Text key="rps" color={C.muted2}>
+			<ReqIcon /> <Text color={C.text}>{stats?.reqRate ?? 0}</Text>/s
+		</Text>,
+		<Text key="cpu" color={C.muted2}>
+			<CpuIcon /> <Text color={cpu > 80 ? C.neonPink : C.text}>{cpu}%</Text>
+		</Text>,
+		<Text key="ram" color={C.muted2}>
+			<RamIcon /> <Text color={C.text}>{ram}</Text>GB
+		</Text>,
+		<Text key="redis" color={C.muted2}>
+			DbIcon <Text color={isRedisOk(stats?.redis) ? C.neonGreen : C.neonPink}>
+				{isRedisOk(stats?.redis) ? "●" : "○"}
+			</Text>
+		</Text>,
+		<Text key="q" color={C.muted2}>
+			Q <Text color={C.text}>{stats?.workQ ?? 0}</Text>
+		</Text>,
+		<Text key="w" color={C.muted2}>
+			W <Text color={C.text}>{stats?.workers ?? 0}</Text>
 		</Text>,
 	];
 	const secondary = [
-		<Text key="lat" color={C.muted}>
-			Latency <Text color="#dce5ff">{fmtMs(stats?.avgLatency)}</Text>
+		<Text key="lat" color={C.muted2}>
+			Lat <Text color={C.text}>{fmtMs(stats?.avgLatency)}</Text>
 		</Text>,
-		<Text key="p95" color={C.muted}>
-			p95 <Text color="#dce5ff">{fmtMs(stats?.p95)}</Text>
+		<Text key="p95" color={C.muted2}>
+			p95 <Text color={C.text}>{fmtMs(stats?.p95)}</Text>
 		</Text>,
-		<Text key="drop" color={C.muted}>
-			Dropped <Text color="#dce5ff">{stats?.dropped ?? 0}</Text>
+		<Text key="drop" color={C.muted2}>
+			Drop <Text color={C.text}>{stats?.dropped ?? 0}</Text>
 		</Text>,
-		<Text key="filt" color={C.muted}>
-			Filtered <Text color="#dce5ff">{stats?.filtered ?? 0}</Text>
+		<Text key="filt" color={C.muted2}>
+			Filt <Text color={C.text}>{stats?.filtered ?? 0}</Text>
 		</Text>,
-		<Text key="rx" color={C.muted}>
-			Regex <Text color="#dce5ff">{stats?.regexHits ? stats.regexHits : "OFF"}</Text>
+		<Text key="rx" color={C.muted2}>
+			Reg <Text color={C.text}>{stats?.regexHits || "—"}</Text>
 		</Text>,
-		<Text key="up" color={C.muted}>
-			Uptime <Text color="#dce5ff">{fmtUptime(stats?.uptime)}</Text>
+		<Text key="up" color={C.muted2}>
+			Up <Text color={C.text}>{fmtUptime(stats?.uptime)}</Text>
 		</Text>,
 	];
 	return (
-		<Box flexDirection="row" gap={2} paddingX={1} alignItems="center">
+		<Box flexDirection="row" gap={1} paddingX={1} alignItems="center">
 			{primary}
 			{width >= 144 && secondary}
 			{width >= 205 && (
 				<Box marginLeft="auto">
 					<Text color={C.muted2}>
-						/ Search · Space Pause · F Follow · J/K Navigate · Enter Inspect · B Bookmark · R Record
-						· E Export · 1-6 Chips
+						/ Search · SP Pause · F Follow · J/K Nav · Enter Inspect · B Bookmark · R Record · E Export · M Mouse
 					</Text>
 				</Box>
 			)}
 		</Box>
 	);
 };
+
+const InputIcon = () => <Text color={C.neonCyan}>⊞</Text>;
+const BoltIcon = () => <Text color={C.amber}>⚡</Text>;
+const ReqIcon = () => <Text color={C.blue}>→</Text>;
+const CpuIcon = () => <Text color={C.violet}>◈</Text>;
+const RamIcon = () => <Text color={C.green}>▣</Text>;
 
 const isRedisOk = (r) => {
 	if (r === undefined || r === null || r === "") return false;
@@ -1001,15 +980,15 @@ const Toast = ({ msg }) => (
 		bottom={3}
 		width={46}
 		flexDirection="column"
-		borderStyle="single"
-		borderColor="#814d9f"
-		backgroundColor="#11192b"
+		borderStyle="double"
+		borderColor={C.neonCyan}
+		backgroundColor="#080e1a"
 		paddingX={1}
 	>
-		<Text bold={true} color={C.text}>
+		<Text bold={true} color={C.neonCyan}>
 			✦ {msg}
 		</Text>
-		<Text color={C.muted}>NEON{"//"}OBSERVE · live stream</Text>
+		<Text color={C.muted2}>NEON{"//"}OBSERVE · live stream</Text>
 	</Box>
 );
 
@@ -1025,32 +1004,33 @@ const Modal = ({ log, width, height, onClose }) => {
 			width={mw}
 			height={mh}
 			flexDirection="column"
-			borderStyle="single"
-			borderColor="#465684"
-			backgroundColor="#101728"
+			borderStyle="double"
+			borderColor={C.neonCyan}
+			backgroundColor="#080e1a"
 			padding={1}
 		>
 			<Text bold={true} color={LEVEL_COLOR[log.level] || C.text}>
-				{log.level} · {trunc(log.msg, 50)}
+				{LEVEL_ICON[log.level] || "●"} {log.level} · {trunc(log.msg, 50)}
 			</Text>
-			<Text color={C.muted}>
+			<Text color={C.muted2}>
 				{log.ts} · {log.src}
 			</Text>
-			<Text color="#263250">{"─".repeat(mw - 4)}</Text>
+			<Divider width={mw - 4} glow={true} />
 			<Box flexDirection="column">
-				<Text bold={true} color={C.text}>
+				<Text bold={true} color={C.neonPink}>
 					Payload
 				</Text>
 				<JsonBlock obj={log.meta} />
 			</Box>
 			{stackLines.length > 0 && (
 				<Box flexDirection="column">
-					<Text bold={true} color={C.text}>
+					<Text bold={true} color={C.amber}>
 						Stack Trace
 					</Text>
 					{stackLines.slice(0, 8).map((f, i) => (
-						<Text key={i} color="#9ca8c4">
-							↓ {trunc(f, mw - 6)}
+						<Text key={i} color="#8896b4">
+							<Text color={C.neonViolet}>↓ </Text>
+							{trunc(f, mw - 6)}
 						</Text>
 					))}
 				</Box>
@@ -1058,11 +1038,6 @@ const Modal = ({ log, width, height, onClose }) => {
 			<Text color={C.muted2}>ESC close · J/K navigate · B bookmark</Text>
 		</Box>
 	);
-};
-
-const InputBridge = ({ onKey }) => {
-	useInput(onKey);
-	return null;
 };
 
 const useSysInfo = () => {
@@ -1126,6 +1101,13 @@ const NeonObserveApp = ({ url, port }) => {
 	const [mouseOn, setMouseOn] = useState(() => !process.env.NO_MOUSE);
 	const mouseOnRef = useRef(mouseOn);
 	mouseOnRef.current = mouseOn;
+	const [shiftActive, setShiftActive] = useState(false);
+	const shiftHeld = useRef(false);
+	const mouseWereOnBeforeShift = useRef(false);
+	const searchActiveRef = useRef(searchActive);
+	searchActiveRef.current = searchActive;
+	const modalIdRef = useRef(modalId);
+	modalIdRef.current = modalId;
 
 	const toastTimer = useRef(null);
 	const toast = useCallback((msg) => {
@@ -1147,7 +1129,7 @@ const NeonObserveApp = ({ url, port }) => {
 		clientRef.current = client;
 		client.on("connected", () => {
 			setConnected(true);
-			toast("connected to log stream");
+			toast("◈ connected to log stream");
 		});
 		client.on("error", () => toast("log stream error — retrying…"));
 		client.on("disconnected", () => setConnected(false));
@@ -1167,8 +1149,7 @@ const NeonObserveApp = ({ url, port }) => {
 		);
 		client.on("query_result", (r) => {
 			const list = (r.entries || []).map(toView);
-			setQueryResult({ query: r.query, at: Date.now() });
-			setEntries(list);
+			setQueryResult({ query: r.query, at: Date.now(), entries: list });
 			setScrollOffset(0);
 			toast(`server search: ${list.length} results`);
 		});
@@ -1180,7 +1161,7 @@ const NeonObserveApp = ({ url, port }) => {
 				else next.delete(m.id);
 				return next;
 			});
-			toast(m.bookmarked ? "bookmarked ★" : "bookmark removed");
+			toast(m.bookmarked ? "★ bookmarked" : "bookmark removed");
 		});
 		client.on("request_flow", (m) => {
 			if (m.requestId) {
@@ -1243,6 +1224,7 @@ const NeonObserveApp = ({ url, port }) => {
 
 	const sys = useSysInfo();
 
+	const filteredRef = useRef([]);
 	const filtered = useMemo(() => {
 		let list = entries;
 		if (queryResult) {
@@ -1263,6 +1245,8 @@ const NeonObserveApp = ({ url, port }) => {
 		}
 	});
 
+	filteredRef.current = filtered;
+
 	const sidebarW = Math.min(30, Math.max(16, Math.floor(columns * 0.22)));
 	const inspW = Math.min(42, Math.max(30, Math.floor(columns * 0.27)));
 	const mainW = Math.max(10, columns - sidebarW - inspW - 4);
@@ -1270,7 +1254,7 @@ const NeonObserveApp = ({ url, port }) => {
 	const cardW = showBottom ? Math.max(18, Math.floor((mainW - 2) / 3)) : 0;
 	const mainRowH = Math.max(10, rows - 4);
 	const logHeight = Math.max(8, mainRowH - 5 - 2 - (showBottom ? 6 : 0));
-	const visible = Math.max(1, logHeight - 6);
+	const visible = Math.max(1, logHeight - 4);
 
 	const start = Math.max(0, Math.min(scrollOffset, Math.max(0, filtered.length - visible)));
 	const visibleWindow = filtered.slice(start, start + visible);
@@ -1280,16 +1264,17 @@ const NeonObserveApp = ({ url, port }) => {
 			: visibleWindow;
 
 	const move = (delta) => {
-		if (!filtered.length) return;
+		const list = filteredRef.current;
+		if (!list.length) return;
 		const idx = Math.max(
 			0,
-			filtered.findIndex((l) => l.id === selectedId),
+			list.findIndex((l) => l.id === selectedIdRef.current),
 		);
-		const next = Math.min(Math.max(0, idx + delta), filtered.length - 1);
-		const e = filtered[next];
+		const next = Math.min(Math.max(0, idx + delta), list.length - 1);
+		const e = list[next];
 		setSelectedId(e.id);
 		setScrollOffset(
-			Math.max(0, Math.min(next - Math.floor(visible / 2), Math.max(0, filtered.length - visible))),
+			Math.max(0, Math.min(next - Math.floor(visible / 2), Math.max(0, list.length - visible))),
 		);
 		if (following && next !== 0) setFollowing(false);
 		if (e.requestId) clientRef.current?.requestFlow(e.requestId);
@@ -1341,21 +1326,9 @@ const NeonObserveApp = ({ url, port }) => {
 
 	const geoRef = useRef({});
 	geoRef.current = {
-		columns,
-		rows,
-		sidebarW,
-		inspW,
-		mainW,
-		mainRowH,
-		showBottom,
-		visible,
-		window: cleanWindow,
-		selectedId,
-		scrollOffset,
-		height: logHeight,
-		filteredCount: filtered.length,
-		rec,
-		paused,
+		columns, rows, sidebarW, inspW, mainW, mainRowH, showBottom, visible,
+		window: cleanWindow, selectedId, scrollOffset, height: logHeight,
+		filteredCount: filtered.length, rec, paused,
 		footerInfo: `${new Set(entries.map((e) => e.category)).size} sources · ${clientRef.current?.connected ? "1 live stream" : "offline"}`,
 		inspectorInfo: "Event Inspector — click a tab or select a log row",
 		telemetryInfo: `LIVE TELEMETRY — ${stats?.rate ?? 0} logs/sec · ${stats?.reqRate ?? 0} req/s`,
@@ -1363,47 +1336,6 @@ const NeonObserveApp = ({ url, port }) => {
 		sessionInfo: rec ? "SESSION RECORDER — recording…" : "SESSION RECORDER — idle",
 		overviewInfo: `Overview — ${stats?.total ?? 0} total · ${stats?.byLevel?.error ?? 0} errors`,
 	};
-
-	useEffect(() => {
-		if (!(stdout && stdin && stdin.setRawMode)) return;
-		const on = () => stdout.write("\x1b[?1000h\x1b[?1002h\x1b[?1006h");
-		const off = () => stdout.write("\x1b[?1000l\x1b[?1002l\x1b[?1006l");
-		const tracking = mouseOn && !searchActive && modalId === null;
-		if (tracking) on();
-		else off();
-		let buf = "";
-		const onData = (chunk) => {
-			if (!mouseOnRef.current) return;
-			buf += chunk.toString();
-			let last = 0;
-			let m;
-			while ((m = SGR_SCAN_RE.exec(buf)) !== null) {
-				last = m.index + m[0].length;
-				const e = parseMouse(m[0]);
-				if (!e) continue;
-				const g = geoRef.current;
-				if (e.scroll) {
-					setScrollOffset((o) =>
-						Math.max(0, Math.min(o + e.scroll, Math.max(0, g.filteredCount - g.visible))),
-					);
-					continue;
-				}
-				if (e.x && e.y && e.x <= g.columns && e.y <= g.rows) {
-					const target = hitTest({ ...g, x: e.x, y: e.y });
-					if (!target) continue;
-					applyTargetRef.current(target);
-				}
-			}
-			buf = buf.slice(last);
-		};
-		stdin.on("data", onData);
-		process.on("exit", off);
-		return () => {
-			stdin.off("data", onData);
-			process.off("exit", off);
-			off();
-		};
-	}, [mouseOn, searchActive, modalId, stdin, stdout]);
 
 	const applyTarget = (t) => {
 		if (!t) return;
@@ -1416,6 +1348,7 @@ const NeonObserveApp = ({ url, port }) => {
 				toggleChip(t.level);
 				break;
 			case "search":
+				disableMouseRef.current();
 				setSearchActive(true);
 				break;
 			case "export":
@@ -1444,11 +1377,24 @@ const NeonObserveApp = ({ url, port }) => {
 	const applyTargetRef = useRef(applyTarget);
 	applyTargetRef.current = applyTarget;
 
-	const keyHandler = (input, key) => {
-		if (input.includes("\u001b") || input.startsWith("[<")) return;
+	const keyHandler = useCallback((input, key) => {
+		if (key.ctrlC) { disableMouseRef.current(); process.exit(0); }
+		if (key.shift && !shiftHeld.current) {
+			shiftHeld.current = true;
+			mouseWereOnBeforeShift.current = mouseOnRef.current;
+			setShiftActive(true);
+		} else if (!key.shift && shiftHeld.current) {
+			shiftHeld.current = false;
+			setShiftActive(false);
+			if (mouseWereOnBeforeShift.current) {
+				setMouseOn(true);
+			}
+		}
+
 		if (searchActive) {
 			if (key.escape) {
 				setSearchActive(false);
+				stdinBufRef.current = "";
 				if (queryResult) {
 					setQueryResult(null);
 					toast("back to live stream");
@@ -1456,6 +1402,7 @@ const NeonObserveApp = ({ url, port }) => {
 			} else if (key.return && search.trim()) {
 				clientRef.current?.query({ q: search.trim() });
 				setSearchActive(false);
+				stdinBufRef.current = "";
 			}
 			return;
 		}
@@ -1466,134 +1413,199 @@ const NeonObserveApp = ({ url, port }) => {
 			else if (input === "b") clientRef.current?.bookmark(selected?.id);
 			return;
 		}
-		if (input === "/") {
-			setSearchActive(true);
-			return;
-		}
-		if (key.return) {
-			if (selected) setModalId(selected.id);
-			return;
-		}
-		if (input === "j" || key.downArrow) {
-			move(1);
-			return;
-		}
-		if (input === "k" || key.upArrow) {
-			move(-1);
-			return;
-		}
-		if (key.tab) {
-			setTab((t) => (t + 1) % 4);
-			return;
-		}
-		if (input === " ") {
-			togglePause(!paused);
-			toast(paused ? "stream resumed" : "stream paused");
-			return;
-		}
-		if (input === "f") {
-			setFollowing((f) => !f);
-			return;
-		}
-		if (input === "F") {
-			setViewFilter("favorites");
-			return;
-		}
-		if (input === "r") {
-			doRecord(0);
-			return;
-		}
-		if (input === "g") {
-			setGlow((g) => !g);
-			return;
-		}
-		if (input === "b") {
-			clientRef.current?.bookmark(selected?.id);
-			return;
-		}
-		if (input === "e") {
-			setViewFilter("errors");
-			return;
-		}
-		if (input === "E") {
-			doExport();
-			return;
-		}
-		if (input === "o") {
-			setViewFilter("overview");
-			return;
-		}
-		if (input === "l") {
-			setViewFilter("live");
-			return;
-		}
-		if (input === "w") {
-			setViewFilter("warnings");
-			return;
-		}
-		if (input === "i") {
-			setViewFilter("info");
-			return;
-		}
-		if (key.shift && input === "f") {
-			setViewFilter("favorites");
-			return;
-		}
+		if (input === "/") { disableMouseRef.current(); setSearchActive(true); return; }
+		if (key.return) { if (selected) setModalId(selected.id); return; }
+		if (input === "j" || key.downArrow) { move(1); return; }
+		if (input === "k" || key.upArrow) { move(-1); return; }
+		if (key.tab) { setTab((t) => (t + 1) % 4); return; }
+		if (input === " ") { togglePause(!paused); toast(paused ? "stream resumed" : "stream paused"); return; }
+		if (input === "f") { setFollowing((f) => !f); return; }
+		if (input === "F") { setViewFilter("favorites"); return; }
+		if (input === "r") { doRecord(0); return; }
+		if (input === "g") { setGlow((g) => !g); return; }
+		if (input === "b") { clientRef.current?.bookmark(selected?.id); return; }
+		if (input === "e") { setViewFilter("errors"); return; }
+		if (input === "E") { doExport(); return; }
+		if (input === "o") { setViewFilter("overview"); return; }
+		if (input === "l") { setViewFilter("live"); return; }
+		if (input === "w") { setViewFilter("warnings"); return; }
+		if (input === "i") { setViewFilter("info"); return; }
 		const SERVICE_KEYS = {
-			a: "assistant",
-			q: "image_queue",
-			z: "redis",
-			p: "prisma",
-			y: "syslog",
-			u: "audit",
-			n: "analytics",
-			x: "workers",
-			s: "auth",
+			a: "assistant", q: "image_queue", z: "redis", p: "prisma",
+			y: "syslog", u: "audit", n: "analytics", x: "workers", s: "auth",
 		};
-		if (SERVICE_KEYS[input]) {
-			setViewFilter(SERVICE_KEYS[input]);
-			return;
-		}
+		if (SERVICE_KEYS[input]) { setViewFilter(SERVICE_KEYS[input]); return; }
 		const levelIdx = ["1", "2", "3", "4", "5", "6"].indexOf(input);
-		if (levelIdx >= 0) {
-			toggleChip(LEVELS[levelIdx]);
-			return;
-		}
+		if (levelIdx >= 0) { toggleChip(LEVELS[levelIdx]); return; }
 		if (input === "m") {
-			setMouseOn((v) => {
-				toast(v ? "mouse capture off — select text to copy" : "mouse capture on");
-				return !v;
-			});
+			setMouseOn((v) => { toast(v ? "mouse off" : "mouse on"); return !v; });
 			return;
 		}
-		if (input === "c") {
-			toast("copy: select text with mouse off (m), or Ctrl+Shift+C");
-			return;
-		}
+		if (input === "c") { toast("copy: m to disable mouse, then select text"); return; }
 		if (key.escape) {
-			if (queryResult) {
-				setQueryResult(null);
-				toast("back to live stream");
-			} else {
-				setModalId(null);
-			}
+			if (queryResult) { setQueryResult(null); toast("back to live stream"); }
+			else { setModalId(null); }
 		}
-	};
+	}, [searchActive, queryResult, search, modalId, selected, paused, following, glow, toast]);
 
-	const keyHandlerRef = useRef(keyHandler);
+	const keyHandlerRef = useRef(null);
 	keyHandlerRef.current = keyHandler;
+	const disableMouseRef = useRef(() => {});
+	const stdinBufRef = useRef("");
 
-	const counts = useMemo(() => {
-		const c = {
-			overview: stats?.total ?? 0,
-			live: entries.length,
-			errors: (stats?.byLevel?.error ?? 0) + (stats?.byLevel?.critical ?? 0),
-			warnings: stats?.byLevel?.warn ?? 0,
-			info:
-				(stats?.byLevel?.info ?? 0) + (stats?.byLevel?.debug ?? 0) + (stats?.byLevel?.success ?? 0),
+	useEffect(() => {
+		if (!searchActive && modalId === null) {
+			const t = setTimeout(() => {
+				try {
+					const pin = process.stdin;
+					if (pin?.setRawMode) { pin.setRawMode(true); pin.resume(); }
+					process.stdout.write("\x1b[?1000h\x1b[?1002h\x1b[?1006h");
+				} catch {}
+			}, 10);
+			return () => clearTimeout(t);
+		}
+	}, [searchActive, modalId]);
+
+	useEffect(() => {
+		const pin = process.stdin;
+		const pout = process.stdout;
+		if (!pin || !pin.setRawMode) return;
+
+		pin.setRawMode(true);
+		pin.resume();
+
+		const enableMouse = () => {
+			try { pout.write("\x1b[?1000h\x1b[?1002h\x1b[?1006h"); } catch {}
 		};
-		return c;
-	}, [stats, entries]);
+		const disableMouse = () => {
+			try { pout.write("\x1b[?1000l\x1b[?1002l\x1b[?1006l"); } catch {}
+		};
+		disableMouseRef.current = disableMouse;
+
+		enableMouse();
+		const reenableTimer = setInterval(() => {
+			if (!searchActiveRef.current && modalIdRef.current === null && mouseOnRef.current && !shiftHeld.current) {
+				if (pin.setRawMode) pin.setRawMode(true);
+				if (pin.isPaused?.()) pin.resume();
+				enableMouse();
+			} else {
+				disableMouse();
+			}
+		}, 400);
+
+		stdinBufRef.current = "";
+		const RAW_MOUSE_RE = new RegExp(ESC + "\\[<(\\d+);(\\d+);(\\d+)([Mm])", "g");
+
+		const parseKeySequence = (raw) => {
+			if (raw === "\x03") return { type: "key", key: "ctrlC" };
+			if (raw === "\r" || raw === "\n") return { type: "key", key: "return" };
+			if (raw === "\t") return { type: "key", key: "tab" };
+			if (raw === "\x1b") return { type: "key", key: "escape" };
+			if (raw === "\x7f" || raw === "\b") return { type: "key", key: "backspace" };
+			if (raw === " ") return { type: "key", key: "space", input: " " };
+
+			if (raw === "\x1b[A") return { type: "key", key: "upArrow" };
+			if (raw === "\x1b[B") return { type: "key", key: "downArrow" };
+			if (raw === "\x1b[C") return { type: "key", key: "rightArrow" };
+			if (raw === "\x1b[D") return { type: "key", key: "leftArrow" };
+
+			if (raw.startsWith("\x1b[1;2")) {
+				const arrow = raw.slice(5);
+				const keyMap = { A: "upArrow", B: "downArrow", C: "rightArrow", D: "leftArrow" };
+				if (keyMap[arrow]) return { type: "key", key: keyMap[arrow], shift: true };
+			}
+
+			if (raw.length === 1) {
+				const ch = raw;
+				const isShift = ch >= "A" && ch <= "Z";
+				return { type: "key", key: ch, input: ch.toLowerCase(), shift: isShift };
+			}
+
+			return null;
+		};
+
+		const handleKeyInput = (parsed) => {
+			if (keyHandlerRef.current) keyHandlerRef.current(parsed.input || "", {
+				ctrlC: parsed.key === "ctrlC",
+				escape: parsed.key === "escape",
+				return: parsed.key === "return",
+				tab: parsed.key === "tab",
+				backspace: parsed.key === "backspace",
+				space: parsed.key === "space",
+				upArrow: parsed.key === "upArrow",
+				downArrow: parsed.key === "downArrow",
+				leftArrow: parsed.key === "leftArrow",
+				rightArrow: parsed.key === "rightArrow",
+				shift: !!parsed.shift,
+			});
+		};
+
+		const onData = (chunk) => {
+			const raw = chunk.toString();
+			stdinBufRef.current += raw;
+
+			RAW_MOUSE_RE.lastIndex = 0;
+			let last = 0;
+			let m;
+			while ((m = RAW_MOUSE_RE.exec(stdinBufRef.current)) !== null) {
+				last = m.index + m[0].length;
+				if (!searchActiveRef.current && modalIdRef.current === null && mouseOnRef.current && !shiftHeld.current) {
+					const b = +m[1];
+					const x = +m[2];
+					const y = +m[3];
+					if (b & 64) {
+						const scroll = b & 1 ? 1 : -1;
+						const g = geoRef.current;
+						setScrollOffset((o) =>
+							Math.max(0, Math.min(o + scroll, Math.max(0, g.filteredCount - g.visible))),
+						);
+					} else if ((b & 3) === 0 && m[4] === "M" && x && y) {
+						const g = geoRef.current;
+						if (x <= g.columns && y <= g.rows) {
+							const target = hitTest({ ...g, x, y });
+							if (target) applyTargetRef.current(target);
+						}
+					}
+				}
+			}
+			stdinBufRef.current = stdinBufRef.current.slice(last);
+
+			if (searchActiveRef.current || modalIdRef.current !== null) {
+				stdinBufRef.current = stdinBufRef.current.replace(/\x1b\[<[^Mm]*[Mm]/g, "").replace(/\x1b\[?[A-Z]/g, "");
+				if (stdinBufRef.current === "\x1b") { stdinBufRef.current = ""; keyHandlerRef.current("", { escape: true }); return; }
+				if (stdinBufRef.current === "\r" || stdinBufRef.current === "\n") { stdinBufRef.current = ""; keyHandlerRef.current("", { return: true }); return; }
+				if (stdinBufRef.current.length > 0 && !stdinBufRef.current.startsWith("\x1b")) stdinBufRef.current = "";
+				return;
+			}
+
+			if (stdinBufRef.current.length > 0) {
+				const parsed = parseKeySequence(stdinBufRef.current);
+				if (parsed) {
+					stdinBufRef.current = "";
+					if (parsed.type === "key") handleKeyInput(parsed);
+				} else if (stdinBufRef.current.length > 6 || stdinBufRef.current.length > 0 && !stdinBufRef.current.startsWith("\x1b")) {
+					stdinBufRef.current = "";
+				}
+			}
+		};
+
+		pin.on("data", onData);
+		process.on("exit", disableMouse);
+		return () => {
+			pin.off("data", onData);
+			process.off("exit", disableMouse);
+			disableMouse();
+			clearInterval(reenableTimer);
+		};
+	}, []);
+
+	const counts = useMemo(() => ({
+		overview: stats?.total ?? 0,
+		live: entries.length,
+		errors: (stats?.byLevel?.error ?? 0) + (stats?.byLevel?.critical ?? 0),
+		warnings: stats?.byLevel?.warn ?? 0,
+		info: (stats?.byLevel?.info ?? 0) + (stats?.byLevel?.debug ?? 0) + (stats?.byLevel?.success ?? 0),
+	}), [stats, entries]);
 
 	const border = glow ? C.border : C.border2;
 	const recStartedAt = rec ? fmtTime(stats?.startedAt || Date.now()) : "";
@@ -1612,7 +1624,7 @@ const NeonObserveApp = ({ url, port }) => {
 						: ""
 				}
 			/>
-			<Divider width={columns} color={border} />
+			<Divider width={columns} color={border} glow={glow} />
 			<Box flexDirection="row" gap={1} paddingX={1} height={mainRowH} flexShrink={0}>
 				{columns >= 84 && (
 					<Sidebar
@@ -1661,8 +1673,8 @@ const NeonObserveApp = ({ url, port }) => {
 					/>
 				)}
 			</Box>
-			<Divider width={columns} color={border} />
-			<StatusBar width={columns} stats={stats} paused={paused} cpu={sys.cpu} ram={sys.ram} />
+			<Divider width={columns} color={border} glow={glow} />
+			<StatusBar width={columns} stats={stats} paused={paused} cpu={sys.cpu} ram={sys.ram} mouseOn={mouseOn} shiftActive={shiftActive} />
 			{toastMsg && <Toast msg={toastMsg} />}
 			{modalId !== null && (
 				<Modal

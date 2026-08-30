@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-import { LogDashboardApp } from "./app.js";
 
 const args = process.argv.slice(2);
-const INK_FLAGS = ["--ink", "--mode-more-cool", "-mmc", "--mmc", "-cool"];
+const BLESSED_FLAGS = ["--blessed", "--tui", "-b"];
 
-if (args.some((a) => INK_FLAGS.includes(a))) {
-	const { startInk } = await import("./ink/index.js");
-	await startInk();
-} else {
+if (args.some((a) => BLESSED_FLAGS.includes(a))) {
+	const { LogDashboardApp } = await import("./app.js");
 	const app = new LogDashboardApp({});
 	app.start();
+} else {
+	const { startInk } = await import("./ink/index.js");
+	await startInk();
 }

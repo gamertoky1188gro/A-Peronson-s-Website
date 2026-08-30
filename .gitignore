@@ -44,3 +44,4 @@ npmcache/
 .env
 
 server/tui/ink/.cache/
+server/tui/ink/app.mjs
