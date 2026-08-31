@@ -29,7 +29,7 @@ import { apiRequest, getCurrentUser, getRoleHome, saveSession } from "../../lib/
 import { useTheme } from "../../lib/ThemeProvider.jsx";
 import usePageMeta from "../../lib/usePageMeta.js";
 
-const Icon = ({ d, className = "" }) => (
+const Icon = ({ d, className: cn, class: cls }) => (
 	<svg
 		viewBox="0 0 24 24"
 		fill="none"
@@ -37,7 +37,7 @@ const Icon = ({ d, className = "" }) => (
 		strokeWidth="2"
 		strokeLinecap="round"
 		strokeLinejoin="round"
-		className={className}
+		className={cn || cls}
 	>
 		<path d={d} />
 	</svg>
