@@ -1,12 +1,20 @@
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { applyThemeToDOM, setTheme, syncThemeFromStorage, toggleTheme } from "../store/themeSlice.js";
+
+function resolveTheme(mode) {
+	if (mode === "system") {
+		return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+	}
+	return mode === "dark" ? "dark" : "light";
+}
 
 const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
 	const theme = useSelector((s) => s.theme.theme);
 	const dispatch = useDispatch();
+	const resolved = useMemo(() => resolveTheme(theme), [theme]);
 
 	useEffect(() => {
 		dispatch(syncThemeFromStorage());
@@ -36,7 +44,9 @@ export function ThemeProvider({ children }) {
 	return (
 		<ThemeContext.Provider
 			value={{
-				theme,
+				theme: resolved,
+				themeMode: theme,
+				resolvedTheme: resolved,
 				setTheme: (t) => dispatch(setTheme(t)),
 				toggleTheme: () => dispatch(toggleTheme()),
 			}}
