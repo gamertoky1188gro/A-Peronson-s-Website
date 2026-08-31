@@ -264,7 +264,7 @@ export default function OrgSettings({ embedded = false }) {
 		},
 		[embedded, setSearchParams],
 	);
-	const { theme, toggleTheme, setTheme } = useTheme();
+	const { theme, themeMode, toggleTheme, setTheme } = useTheme();
 	const [statusMessage, setStatusMessage] = useState("Ready.");
 
 	const currentUser = useMemo(() => getCurrentUser(), []);
@@ -1936,7 +1936,7 @@ export default function OrgSettings({ embedded = false }) {
 										onClick={() => setTheme("light")}
 										className={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
-											theme === "light"
+											themeMode === "light"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
 												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
 										)}
@@ -1948,7 +1948,7 @@ export default function OrgSettings({ embedded = false }) {
 										onClick={() => setTheme("dark")}
 										className={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
-											theme === "dark"
+											themeMode === "dark"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
 												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
 										)}
@@ -1960,7 +1960,7 @@ export default function OrgSettings({ embedded = false }) {
 										onClick={() => setTheme("system")}
 										className={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
-											theme === "system"
+											themeMode === "system"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
 												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
 										)}
