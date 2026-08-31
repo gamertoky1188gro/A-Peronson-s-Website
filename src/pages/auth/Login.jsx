@@ -37,7 +37,7 @@ const Icon = ({ d, className = "" }) => (
 		strokeWidth="2"
 		strokeLinecap="round"
 		strokeLinejoin="round"
-		class={className}
+		className={className}
 	>
 		<path d={d} />
 	</svg>
@@ -478,7 +478,7 @@ export default function Login() {
 									<input
 										value={identifier}
 										onChange={(e) => setIdentifier(e.target.value)}
-										class={`w-full rounded-2xl border px-10 py-3 text-sm outline-none transition focus:ring-4 ${theme.field}`}
+										class={`w-full rounded-2xl border px-10 py-2.5 text-sm outline-none transition focus:ring-4 ${theme.field}`}
 										placeholder="Enter your email or Agent ID"
 									/>
 								</div>
@@ -497,7 +497,7 @@ export default function Login() {
 										type={showPassword ? "text" : "password"}
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
-										class={`w-full rounded-2xl border px-10 py-3 pr-24 text-sm outline-none transition focus:ring-4 ${theme.field}`}
+										class={`w-full rounded-2xl border px-10 py-2.5 pr-24 text-sm outline-none transition focus:ring-4 ${theme.field}`}
 										placeholder="•••••••••••"
 									/>
 									<button
@@ -591,7 +591,7 @@ export default function Login() {
 								<button
 									type="submit"
 									disabled={loading}
-									class={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-semibold shadow-lg shadow-sky-500/20 transition ${theme.button}`}
+									class={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold shadow-lg shadow-sky-500/20 transition ${theme.button}`}
 								>
 									{loading ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
@@ -608,7 +608,7 @@ export default function Login() {
 										type="button"
 										onClick={handlePasskeyLogin}
 										disabled={passkeyLoading}
-										class={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
+										class={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
 									>
 										<Fingerprint class="h-4 w-4" />
 										{passkeyLoading ? (
@@ -627,7 +627,7 @@ export default function Login() {
 										type="button"
 										onClick={handlePasskeyEnroll}
 										disabled={enrollLoading}
-										class={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
+										class={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition ${theme.buttonAlt} disabled:opacity-60`}
 									>
 										<BadgeCheck class="h-4 w-4" />
 										{enrollLoading ? (
