@@ -24,16 +24,8 @@
 			"!pnpm-lock.yaml",
 			"!package-lock.json",
 			"!**/*.docx",
-			"!scripts/*.txt",
 			"!tests/e2e/*.cypress.*",
-			"!github_file_status.json",
-			"!github_file_status.csv",
-			"!lint.html",
-			"!test.html",
-			"!eslint.config.js",
-			"!temp.txt",
-			"!listing.txt",
-			"!commit_list.txt"
+			"!eslint.config.js"
 		]
 	},
 

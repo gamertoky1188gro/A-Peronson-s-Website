@@ -1,5 +1,0 @@
-import base64
-old = b'<a' + b'\r\n' + b'\t\t\t\t\t\t' + b'href={attachmentUrl}' + b'\r\n' + b'\t\t\t\t\t\t' + b'download={message?.attachment?.name || undefined}' + b'\r\n' + b'\t\t\t\t\t\t' + b'target=_blank' + b'\r\n' + b'\t\t\t\t\t\t' + b'rel=noreferrer' + b'\r\n' + b'\t\t\t\t\t\t' + b'class=inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200' + b'\r\n' + b'\t\t\t\t\t\t' + b'>' + b'\r\n' + b'\t\t\t\t\t\t' + b'<Download size={12} />' + b'\r\n' + b'\t\t\t\t\t\t' + b'Download' + b'\r\n' + b'\t\t\t\t\t\t' + b'</a>'
-rep = b'<button' + b'\r\n' + b'\t\t\t\t\t\t' + b'type=button' + b'\r\n' + b'\t\t\t\t\t\t' + b'onClick={() => handleDownloadWithMetadata(message)}' + b'\r\n' + b'\t\t\t\t\t\t' + b'class=inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200' + b'\r\n' + b'\t\t\t\t\t\t' + b'>' + b'\r\n' + b'\t\t\t\t\t\t' + b'<Download size={12} />' + b'\r\n' + b'\t\t\t\t\t\t' + b'Download' + b'\r\n' + b'\t\t\t\t\t\t' + b'</button>'
-print(base64.b64encode(old).decode())
-print(base64.b64encode(rep).decode())
