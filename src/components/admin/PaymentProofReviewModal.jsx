@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import { X } from "lucide-react";
 import { apiRequest, getToken } from "../../lib/auth.js";
+import { logger } from "../../lib/logger.js";
 
 export default function PaymentProofReviewModal({ proof, onClose, onReview, adminDark }) {
 	const [status, setStatus] = useState("");
@@ -37,7 +38,7 @@ export default function PaymentProofReviewModal({ proof, onClose, onReview, admi
 			onReview?.();
 			onClose();
 		} catch (err) {
-			console.error("Review failed", err);
+			logger.error("Review failed", err);
 		} finally {
 			setBusy(false);
 		}

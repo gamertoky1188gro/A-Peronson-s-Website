@@ -1245,8 +1245,8 @@ async function start() {
 							);
 							return;
 						}
-						ensureVenv().catch(console.error);
-						scanAndAnalyzeExistingFiles().catch(console.error);
+					ensureVenv().catch((err) => logError("ensureVenv_failed", err));
+					scanAndAnalyzeExistingFiles().catch((err) => logError("scanExistingFiles_failed", err));
 					}, 5000);
 				})
 				.catch((err) => logError("server: uploadsService import failed", err));

@@ -133,7 +133,7 @@ export async function uploadFeedMedia(req, res) {
 		});
 
 		if (type === "image" || type === "video") {
-			runAIAnalysis(doc.id, fullPath).catch(console.error);
+			runAIAnalysis(doc.id, fullPath).catch((err) => logError("feedUpload_aiAnalysis_failed", err));
 		}
 
 		if (type === "video") {

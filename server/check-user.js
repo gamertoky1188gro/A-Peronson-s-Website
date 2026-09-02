@@ -1,4 +1,4 @@
-import { logInfo } from "./utils/logger.js";
+import { logError, logInfo } from "./utils/logger.js";
 import prisma from "./utils/prisma.js";
 
 async function main() {
@@ -16,4 +16,4 @@ async function main() {
 	await prisma.$disconnect();
 }
 
-main().catch(console.error);
+main().catch((err) => logError("check-user failed", err));

@@ -14,6 +14,7 @@ import { ToastProvider } from "./components/ToastContainer.jsx";
 import CyberpunkCursor from "./components/ui/CyberpunkCursor.jsx";
 import NeonAtom from "./components/ui/NeonAtom.jsx";
 import { getCurrentUser, getToken, verifyAndSyncUser } from "./lib/auth.js";
+import { logger } from "./lib/logger.js";
 import { trackClientEvent } from "./lib/events.js";
 
 function LazyLoadError() {
@@ -432,7 +433,7 @@ function AppLayout() {
 	useEffect(() => {
 		const token = getToken();
 		if (token) {
-			verifyAndSyncUser(token).catch(console.error);
+			verifyAndSyncUser(token).catch((err) => logger.error("User sync failed:", err));
 		}
 	}, []);
 
