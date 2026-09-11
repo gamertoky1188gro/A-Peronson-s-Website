@@ -394,8 +394,8 @@ function AppLayout() {
 				{hideChrome ? null : <ScrollProgressBar />}
 				<div className="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
 					<div
-						className={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden${location.pathname === "/feed" ? " h-screen" : ""}`}
-						style={{ zoom: 0.8, width: "100%" }}
+						className={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
+						style={{ width: "100%" }}
 					>
 						{hideChrome ? null : <NavBar />}
 						<main className="flex flex-1 min-h-0 flex-col bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">

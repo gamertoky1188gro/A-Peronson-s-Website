@@ -353,7 +353,7 @@ export default function TexHub() {
 				professionalFeed: {
 					title: "Professional feed",
 					description:
-						"A calm, LinkedIn-style surface where posts stay readable without heavy frames.",
+						"A calm, professional surface where posts stay readable without heavy frames.",
 					lanes: [
 						{ label: "Buyer Requests", meta: "Auto-sorted" },
 						{ label: "Factory Updates", meta: "Auto-sorted" },
@@ -429,8 +429,8 @@ export default function TexHub() {
 			platformFeatures: [
 				{
 					title: "Professional feed",
-					text: "A calm, LinkedIn-style surface where posts stay readable without heavy frames.",
-					meta: "Buyer Requests • Factory Updates • Buying House Notes",
+				text: "A calm, professional surface where posts stay readable without heavy frames.",
+				meta: "Buyer Requests • Factory Updates • Buying House Notes",
 				},
 				{
 					title: "Structured buyer requests",
