@@ -142,9 +142,9 @@ function HelpSection({
 	return (
 		<section
 			id={id}
-			className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-950/70"
+			className="relative rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-950/70"
 		>
-			<div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent} opacity-100`} />
+			<div className={`pointer-events-none absolute inset-0 overflow-hidden rounded-3xl bg-gradient-to-br ${accent} opacity-100`} />
 			<div className="relative">
 				<div className="mb-5 flex items-start gap-4">
 					<div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-slate-900 text-white shadow-lg shadow-sky-500/20 dark:bg-sky-400 dark:text-slate-950">
