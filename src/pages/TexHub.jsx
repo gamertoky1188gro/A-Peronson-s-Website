@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CardStack from "../components/CardStack.jsx";
 import ScrollReveal from "../components/ScrollReveal.jsx";
 import ScrollVelocityText from "../components/ScrollVelocityText.jsx";
@@ -310,6 +310,7 @@ export default function TexHub() {
 		twitterSite: "@gartexhub",
 	});
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const token = getToken();
@@ -1086,12 +1087,18 @@ export default function TexHub() {
 											A tactile switch for diverse content modes
 										</div>
 									</div>
-									<button
-										type="button"
-										disabled={true}
-										aria-label="Toggle content mode"
-										className="relative h-8 w-16 cursor-not-allowed rounded-full bg-slate-200 p-1 opacity-50 dark:bg-slate-800"
-									>
+								<button
+									type="button"
+									onClick={() => {
+										if (isLoggedIn) {
+											setMode((m) => (m === "professional" ? "diverse" : "professional"));
+										} else {
+											navigate("/login");
+										}
+									}}
+									aria-label="Toggle content mode"
+									className="relative h-8 w-16 cursor-pointer rounded-full bg-slate-200 p-1 transition-colors dark:bg-slate-800"
+								>
 										<motion.div
 											layout={true}
 											className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow-md transition-transform dark:bg-sky-400"
