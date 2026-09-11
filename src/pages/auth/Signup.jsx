@@ -32,7 +32,6 @@ const POSITIONS = [
 	"Compliance Officer",
 	"Sourcing Manager",
 	"Supply Chain Manager",
-	"Logistics Coordinator",
 	"Industrial Engineer",
 	"Textile Technologist",
 	"Pattern Master",
@@ -40,7 +39,6 @@ const POSITIONS = [
 	"Supervisor",
 	"Executive",
 	"Procurement Officer",
-	"Designer",
 	"Sample Master",
 	"Finishing Supervisor",
 	"Store In-Charge",
@@ -378,12 +376,6 @@ export default function Signup() {
 								</p>
 							</div>
 
-							{error && (
-								<div className="mb-5 rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-3 text-sm text-rose-300">
-									{error}
-								</div>
-							)}
-
 							<form onSubmit={handleSubmit} className="space-y-5">
 								<FieldShell label="Full Name">
 									<input
@@ -654,6 +646,12 @@ export default function Signup() {
 										) : null}
 									</div>
 								</FieldShell>
+
+								{error && (
+									<div className="rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-3 text-sm text-rose-300">
+										{error}
+									</div>
+								)}
 
 								<button
 									type="submit"
