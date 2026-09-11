@@ -370,13 +370,13 @@ export async function exportMyData(req, res) {
 			}),
 			prisma.feedPost.findMany({ where: { user_id: userId }, orderBy: { created_at: "desc" } }),
 			prisma.message.findMany({
-				where: { OR: [{ sender_id: userId }, { receiver_id: userId }] },
+				where: { sender_id: userId },
 				orderBy: { created_at: "desc" },
 				take: 500,
 			}),
-			prisma.companyProduct.findMany({ where: { user_id: userId }, orderBy: { created_at: "desc" } }),
-			prisma.buyerRequirement.findMany({ where: { user_id: userId }, orderBy: { created_at: "desc" } }),
-			prisma.document.findMany({ where: { user_id: userId }, orderBy: { created_at: "desc" } }),
+			prisma.product.findMany({ where: { company_id: userId }, orderBy: { created_at: "desc" } }),
+			prisma.requirement.findMany({ where: { buyer_id: userId }, orderBy: { created_at: "desc" } }),
+			prisma.document.findMany({ where: { uploaded_by: userId }, orderBy: { created_at: "desc" } }),
 		]);
 
 		const exportData = {

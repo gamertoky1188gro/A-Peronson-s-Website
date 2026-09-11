@@ -12,8 +12,10 @@ import jwt from "jsonwebtoken";
 import { WebSocketServer } from "ws";
 import { logHub } from "./log/logHub.js";
 import { registerLogHttp, startLogTransport } from "./log/transport.js";
+import viewerRouter from "./log/viewer/router.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/requestLogger.js";
+import { requestCapture } from "./middleware/requestCapture.js";
 import { REALTIME_EVENTS, realtimeBus } from "./realtime/realtimeBus.js";
 import adminConfigRoutes from "./routes/adminConfigRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -335,6 +337,7 @@ if (serveDist && fs.existsSync(distRoot)) {
 	});
 }
 
+app.use(requestCapture());
 app.use("/api", requestLogger({ timeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 45_000) }));
 
 app.use("/api", diagnosticsRoutes);
@@ -392,6 +395,7 @@ app.use("/api/infra", infraRoutes);
 app.use("/api/network", networkRoutes);
 app.use("/api/exports", exportRoutes);
 app.use("/api/logs", logRoutes);
+app.use("/log-viewer", viewerRouter);
 app.use("/api/dev", devRoutes);
 app.use(errorHandler);
 

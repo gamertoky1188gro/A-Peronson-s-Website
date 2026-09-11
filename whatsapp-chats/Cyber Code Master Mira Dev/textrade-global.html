@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TexTrade Global — Your Gateway to Global Textile Trade. Verified garment manufacturers, quality sourcing, transparent pricing, and seamless delivery." />
+  <meta name="theme-color" content="#0D0B18" />
+  <title>TexTrade Global — Global Textile Sourcing</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            night: "#0D0B18",
+            panel: "#151226",
+            panel2: "#1E1938",
+            violet: "#7C3AED",
+            electric: "#A855F7",
+            lavender: "#C4B5FD",
+            soft: "#A8A1B9"
+          },
+          boxShadow: {
+            glow: "0 0 0 1px rgba(168,85,247,.16), 0 20px 70px rgba(124,58,237,.18)",
+            purple: "0 14px 45px rgba(124,58,237,.25)"
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0D0B18;
+      --panel: #151226;
+      --panel-2: #1E1938;
+      --purple: #7C3AED;
+      --violet: #A855F7;
+      --lavender: #C4B5FD;
+      --muted: #A8A1B9;
+      --border: rgba(196,181,253,.12);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 14% 8%, rgba(124,58,237,.17), transparent 27%),
+        radial-gradient(circle at 84% 12%, rgba(168,85,247,.12), transparent 24%),
+        radial-gradient(circle at 50% 85%, rgba(124,58,237,.08), transparent 32%),
+        var(--bg);
+      color: #fff;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: rgba(168,85,247,.38);
+      color: #fff;
+    }
+
+    body::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: #0b0913;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: linear-gradient(var(--purple), var(--violet));
+      border-radius: 999px;
+    }
+
+    .container-max {
+      width: min(1180px, calc(100% - 36px));
+      margin-inline: auto;
+    }
+
+    .glass {
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,.055),
+        rgba(255,255,255,.02)
+      );
+      border: 1px solid var(--border);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 18px 60px rgba(0,0,0,.24);
+    }
+
+    .glass-strong {
+      background: linear-gradient(
+        145deg,
+        rgba(30,25,56,.92),
+        rgba(15,12,28,.9)
+      );
+      border: 1px solid rgba(196,181,253,.14);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 24px 80px rgba(0,0,0,.32);
+    }
+
+    .gradient-text {
+      background: linear-gradient(100deg, #fff 15%, #D8B4FE 48%, #A855F7 92%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .purple-gradient {
+      background: linear-gradient(135deg, #6D28D9, #8B5CF6 48%, #C084FC);
+    }
+
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(168,85,247,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168,85,247,.055) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black 0%, black 56%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 56%, transparent 100%);
+    }
+
+    .hero-orb {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(5px);
+      pointer-events: none;
+      animation: floatOrb 8s ease-in-out infinite;
+    }
+
+    .orb-a {
+      width: 360px;
+      height: 360px;
+      left: -100px;
+      top: 70px;
+      background: radial-gradient(circle, rgba(124,58,237,.21), transparent 68%);
+    }
+
+    .orb-b {
+      width: 320px;
+      height: 320px;
+      right: -50px;
+      top: 90px;
+      background: radial-gradient(circle, rgba(168,85,247,.16), transparent 68%);
+      animation-delay: -2.5s;
+    }
+
+    .orb-c {
+      width: 440px;
+      height: 440px;
+      left: 40%;
+      top: 20%;
+      background: radial-gradient(circle, rgba(88,28,135,.12), transparent 67%);
+      animation-delay: -4s;
+    }
+
+    @keyframes floatOrb {
+      0%, 100% {
+        transform: translate3d(0,0,0) scale(1);
+      }
+      50% {
+        transform: translate3d(0,-18px,0) scale(1.06);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,.25); }
+      50% { box-shadow: 0 0 0 8px rgba(168,85,247,0); }
+    }
+
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-7px); }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(120%); }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-up {
+      animation: fadeUp .75s ease both;
+    }
+
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .2s; }
+    .delay-3 { animation-delay: .3s; }
+    .delay-4 { animation-delay: .4s; }
+    .delay-5 { animation-delay: .5s; }
+
+    .pulse-dot {
+      animation: pulseGlow 2.2s infinite;
+    }
+
+    .service-card,
+    .product-card,
+    .process-card,
+    .market-card,
+    .metric-card {
+      transition:
+        transform .35s ease,
+        border-color .35s ease,
+        background .35s ease,
+        box-shadow .35s ease;
+    }
+
+    .service-card:hover,
+    .product-card:hover,
+    .process-card:hover,
+    .market-card:hover,
+    .metric-card:hover {
+      transform: translateY(-7px);
+      border-color: rgba(168,85,247,.4);
+      box-shadow: 0 18px 65px rgba(124,58,237,.16);
+    }
+
+    .service-card:hover .icon-box,
+    .product-card:hover .product-image,
+    .market-card:hover .market-icon {
+      transform: scale(1.06);
+    }
+
+    .icon-box,
+    .product-image,
+    .market-icon {
+      transition: transform .35s ease;
+    }
+
+    .shine {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shine::after {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 -100%;
+      width: 60%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.11), transparent);
+      transform: skewX(-20deg);
+      animation: shimmer 4.6s ease-in-out infinite;
+    }
+
+    .nav-link {
+      position: relative;
+      color: #B5ADC8;
+      transition: color .25s ease;
+    }
+
+    .nav-link:hover {
+      color: #fff;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -8px;
+      width: 0;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #7C3AED, #C084FC);
+      transition: width .25s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .input {
+      width: 100%;
+      border: 1px solid rgba(196,181,253,.13);
+      background: rgba(13,11,24,.68);
+      color: #fff;
+      border-radius: 14px;
+      padding: 13px 15px;
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .input::placeholder {
+      color: #777088;
+    }
+
+    .input:focus {
+      border-color: rgba(168,85,247,.65);
+      box-shadow: 0 0 0 4px rgba(124,58,237,.12);
+      background: rgba(20,16,39,.88);
+    }
+
+    select.input option {
+      background: #151226;
+      color: #fff;
+    }
+
+    .section-line {
+      width: 72px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #7C3AED, #C084FC);
+    }
+
+    .stat-number {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mobile-menu {
+      display: none;
+    }
+
+    .mobile-menu.open {
+      display: block;
+      animation: fadeUp .25s ease both;
+    }
+
+    .back-top {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: all .25s ease;
+    }
+
+    .back-top.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 900px) {
+      .desktop-nav {
+        display: none;
+      }
+
+      .menu-btn {
+        display: inline-flex;
+      }
+
+      .hero-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-right {
+        max-width: 580px;
+        margin-inline: auto;
+      }
+    }
+
+    @media (min-width: 901px) {
+      .menu-btn {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container-max {
+        width: min(100% - 24px, 1180px);
+      }
+
+      .hero-stat {
+        text-align: left;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+
+</head>
+
+<body id="top">
+
+  <!-- Navigation -->
+
+  <header class="fixed top-0 left-0 right-0 z-50">
+    <div class="container-max pt-4">
+      <nav class="glass rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between">
+        <a href="#top" class="flex items-center gap-3 shrink-0">
+          <div class="w-10 h-10 rounded-xl purple-gradient flex items-center justify-center shadow-purple">
+            <i class="fa-solid fa-shirt text-white text-lg"></i>
+          </div>
+          <div>
+            <div class="font-extrabold tracking-tight leading-none text-white">TexTrade</div>
+            <div class="text-[10px] uppercase tracking-[.28em] text-violet-300 mt-1">Global</div>
+          </div>
+        </a>
+
+    <div class="desktop-nav flex items-center gap-7">
+      <a class="nav-link text-sm font-medium" href="#services">Services</a>
+      <a class="nav-link text-sm font-medium" href="#products">Products</a>
+      <a class="nav-link text-sm font-medium" href="#process">Process</a>
+      <a class="nav-link text-sm font-medium" href="#markets">Markets</a>
+      <a class="nav-link text-sm font-medium" href="#contact">Contact</a>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <a href="#contact"
+         class="hidden sm:inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white purple-gradient hover:brightness-110 transition">
+        Get Quote
+        <i class="fa-solid fa-arrow-right text-xs"></i>
+      </a>
+
+      <button id="menuBtn" class="menu-btn w-11 h-11 rounded-xl glass items-center justify-center text-white">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div id="mobileMenu" class="mobile-menu mt-2 glass rounded-2xl p-3">
+    <div class="grid gap-1">
+      <a href="#services" class="px-4 py-3 rounded-xl hover:bg-white/5 text-sm text-slate-200">Services</a>
+      <a href="#products" class="px-4 py-3 rounded-xl hover:bg-white/5 text-sm text-slate-200">Products</a>
+      <a href="#process" class="px-4 py-3 rounded-xl hover:bg-white/5 text-sm text-slate-200">Process</a>
+      <a href="#markets" class="px-4 py-3 rounded-xl hover:bg-white/5 text-sm text-slate-200">Markets</a>
+      <a href="#contact" class="px-4 py-3 rounded-xl hover:bg-white/5 text-sm text-slate-200">Contact</a>
+      <a href="#contact" class="mt-1 px-4 py-3 rounded-xl purple-gradient text-center font-bold text-sm">Get Quote</a>
+    </div>
+  </div>
+</div>
+
+  </header>
+
+  <!-- Hero -->
+
+  <main>
+    <section class="relative overflow-hidden pt-36 pb-12 min-h-[820px]">
+      <div class="hero-grid absolute inset-x-0 top-0 h-[700px] opacity-80 pointer-events-none"></div>
+      <div class="hero-orb orb-a"></div>
+      <div class="hero-orb orb-b"></div>
+      <div class="hero-orb orb-c"></div>
+
+  <div class="container-max relative">
+    <div class="grid lg:grid-cols-[1.1fr_.9fr] gap-14 items-center hero-layout">
+      <div class="animate-fade-up">
+        <div class="inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/[.07] px-4 py-2 text-xs sm:text-sm text-violet-200 mb-6">
+          <span class="w-2 h-2 rounded-full bg-violet-400 pulse-dot"></span>
+          Trusted by 500+ Global Importers
+        </div>
+
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black tracking-[-.045em] leading-[.98] max-w-4xl">
+          Your Gateway to
+          <span class="gradient-text"> Global Textile Trade</span>
+        </h1>
+
+        <p class="mt-6 max-w-2xl text-base sm:text-lg leading-8 text-slate-300">
+          We connect verified garment & textile manufacturers with international buyers.
+          Quality sourcing, transparent pricing, seamless delivery.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row gap-3">
+          <a href="#contact"
+             class="shine inline-flex items-center justify-center gap-2 rounded-2xl purple-gradient px-6 py-3.5 font-bold text-white shadow-purple hover:brightness-110 transition">
+            Start Sourcing
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+
+          <a href="#products"
+             class="inline-flex items-center justify-center gap-2 rounded-2xl glass px-6 py-3.5 font-bold text-slate-100 hover:bg-white/[.07] transition">
+            <i class="fa-solid fa-layer-group text-violet-300"></i>
+            View Products
+          </a>
+        </div>
+
+        <div class="mt-10 grid grid-cols-3 gap-5 max-w-2xl">
+          <div class="hero-stat">
+            <div class="text-2xl sm:text-3xl font-black text-white">15+</div>
+            <div class="text-xs sm:text-sm text-slate-400 mt-1">Years Experience</div>
+          </div>
+
+          <div class="hero-stat border-l border-white/10 pl-5">
+            <div class="text-2xl sm:text-3xl font-black text-white">50+</div>
+            <div class="text-xs sm:text-sm text-slate-400 mt-1">Countries Served</div>
+          </div>
+
+          <div class="hero-stat border-l border-white/10 pl-5">
+            <div class="text-2xl sm:text-3xl font-black text-white">$200M+</div>
+            <div class="text-xs sm:text-sm text-slate-400 mt-1">Trade Volume</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right animate-fade-up delay-2">
+        <div class="glass-strong rounded-[28px] p-5 sm:p-6 relative overflow-hidden">
+          <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-violet-600/10 blur-3xl"></div>
+
+          <div class="relative">
+            <div class="flex items-center justify-between gap-4 mb-5">
+              <div>
+                <div class="text-xs uppercase tracking-[.22em] text-violet-300/80">Real-Time Stats</div>
+                <h2 class="text-xl font-bold mt-1">Global Sourcing Activity</h2>
+              </div>
+
+              <div class="flex items-center gap-2 text-xs text-emerald-300">
+                <span class="w-2 h-2 bg-emerald-400 rounded-full pulse-dot"></span>
+                Live
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="metric-card glass rounded-2xl p-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-400">Monthly Orders</span>
+                  <i class="fa-solid fa-box text-violet-300"></i>
+                </div>
+                <div class="stat-number mt-3 text-3xl font-black">2,847</div>
+                <div class="text-xs text-emerald-300 mt-1">
+                  <i class="fa-solid fa-arrow-trend-up mr-1"></i> 12.8%
+                </div>
+              </div>
+
+              <div class="metric-card glass rounded-2xl p-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-400">Active Buyers</span>
+                  <i class="fa-solid fa-users text-violet-300"></i>
+                </div>
+                <div class="stat-number mt-3 text-3xl font-black">1,240</div>
+                <div class="text-xs text-emerald-300 mt-1">
+                  <i class="fa-solid fa-arrow-trend-up mr-1"></i> 8.6%
+                </div>
+              </div>
+
+              <div class="metric-card glass rounded-2xl p-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-400">Verified Suppliers</span>
+                  <i class="fa-solid fa-industry text-violet-300"></i>
+                </div>
+                <div class="stat-number mt-3 text-3xl font-black">85</div>
+                <div class="text-xs text-slate-400 mt-1">Across key markets</div>
+              </div>
+
+              <div class="metric-card glass rounded-2xl p-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-400">Trade Protection</span>
+                  <i class="fa-solid fa-shield-halved text-violet-300"></i>
+                </div>
+                <div class="mt-3 text-base font-black text-emerald-300">
+                  <i class="fa-solid fa-circle-check mr-1"></i> Active
+                </div>
+                <div class="text-xs text-slate-400 mt-1">Order-level monitoring</div>
+              </div>
+            </div>
+
+            <div class="mt-4 rounded-2xl border border-violet-300/15 bg-violet-400/[.06] p-4 flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl purple-gradient flex items-center justify-center">
+                  <i class="fa-solid fa-certificate"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-sm">ISO 9001 Certified</div>
+                  <div class="text-xs text-slate-400 mt-1">Quality management standard</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square text-violet-300"></i>
+            </div>
+
+            <div class="mt-5 pt-5 border-t border-white/10">
+              <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                <span>Supplier verification coverage</span>
+                <span class="text-violet-300 font-bold">94%</span>
+              </div>
+              <div class="h-2 rounded-full bg-white/5 overflow-hidden">
+                <div class="h-full rounded-full purple-gradient" style="width:94%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <div class="glass rounded-2xl p-4 flex items-center gap-3" style="animation: floatCard 5s ease-in-out infinite;">
+            <div class="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-400/15 flex items-center justify-center">
+              <i class="fa-solid fa-lock text-violet-300"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-sm">Secure Orders</div>
+              <div class="text-xs text-slate-400">Protected trade flow</div>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-4 flex items-center gap-3" style="animation: floatCard 5s ease-in-out -2.5s infinite;">
+            <div class="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-400/15 flex items-center justify-center">
+              <i class="fa-solid fa-globe text-violet-300"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-sm">Global Network</div>
+              <div class="text-xs text-slate-400">50+ sourcing markets</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-16 glass rounded-2xl p-3 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs sm:text-sm text-slate-400">
+      <span class="flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-violet-400"></i>
+        Verified Factories
+      </span>
+      <span class="hidden sm:block w-1 h-1 bg-slate-600 rounded-full"></span>
+      <span class="flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-violet-400"></i>
+        Transparent Pricing
+      </span>
+      <span class="hidden sm:block w-1 h-1 bg-slate-600 rounded-full"></span>
+      <span class="flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-violet-400"></i>
+        Global Logistics
+      </span>
+      <span class="hidden sm:block w-1 h-1 bg-slate-600 rounded-full"></span>
+      <span class="flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-violet-400"></i>
+        Compliance Ready
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section id="services" class="py-24">
+  <div class="container-max">
+    <div class="max-w-2xl animate-fade-up">
+      <div class="section-line mb-5"></div>
+      <div class="text-sm uppercase tracking-[.22em] text-violet-300 font-semibold">What We Do</div>
+      <h2 class="mt-3 text-4xl sm:text-5xl font-black tracking-tight">End-to-End Textile Sourcing Solutions</h2>
+      <p class="mt-5 text-slate-400 leading-7">
+        From the first manufacturer match to final delivery, TexTrade Global handles the complexity of international textile sourcing.
+      </p>
+    </div>
+
+    <div class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <article class="service-card glass rounded-3xl p-6">
+        <div class="icon-box w-14 h-14 rounded-2xl purple-gradient flex items-center justify-center text-xl shadow-purple">
+          <i class="fa-solid fa-industry"></i>
+        </div>
+        <div class="mt-6 flex items-center justify-between">
+          <h3 class="text-xl font-bold">Manufacturer Matching</h3>
+          <span class="text-[11px] rounded-full bg-violet-500/10 text-violet-300 px-2.5 py-1 border border-violet-300/10">Verified</span>
+        </div>
+        <p class="mt-3 text-sm text-slate-400 leading-6">
+          Connect with pre-screened factories across Bangladesh, India, Pakistan, and Vietnam.
+        </p>
+        <div class="mt-5 flex flex-wrap gap-2">
+          <span class="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-slate-300">Bangladesh</span>
+          <span class="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-slate-300">India</span>
+          <span class="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-slate-300">Pakistan</span>
+          <span class="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-slate-300">Vietnam</span>
+        </div>
+      </article>
+
+      <article class="service-card glass rounded-3xl p-6">
+        <div class="icon-box w-14 h-14 rounded-2xl purple-gradient flex items-center justify-center text-xl">
+          <i class="fa-solid fa-magnifying-glass-chart"></i>
+        </div>
+        <h3 class="mt-6 text-xl font-bold">Quality Inspection</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">
+          Independent third-party QC inspections backed by practical AQL standards and shipment checks.
+        </p>
+        <div class="mt-5 text-xs text-violet-300 flex items-center gap-2">
+          <i class="fa-solid fa-shield-check"></i>
+          Pre-shipment quality control
+        </div>
+      </article>
+
+      <article class="service-card glass rounded-3xl p-6">
+        <div class="icon-box w-14 h-14 rounded-2xl purple-gradient flex items-center justify-center text-xl">
+          <i class="fa-solid fa-ship"></i>
+        </div>
+        <h3 class="mt-6 text-xl font-bold">Supply Chain Management</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">
+          Coordinated sea and air freight, documentation, customs clearance, and delivery tracking.
+        </p>
+        <div class="mt-5 text-xs text-violet-300 flex items-center gap-2">
+          <i class="fa-solid fa-location-dot"></i>
+          End-to-end shipment visibility
+        </div>
+      </article>
+
+      <article class="service-card glass rounded-3xl p-6">
+        <div class="icon-box w-14 h-14 rounded-2xl purple-gradient flex items-center justify-center text-xl">
+          <i class="fa-solid fa-scroll"></i>
+        </div>
+        <h3 class="mt-6 text-xl font-bold">Fabric Sourcing</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">
+          Source dependable cotton, polyester, denim, and technical fabrics aligned with your specifications.
+        </p>
+        <div class="mt-5 text-xs text-violet-300 flex items-center gap-2">
+          <i class="fa-solid fa-feather"></i>
+          Fabric selection assistance
+        </div>
+      </article>
+
+      <article class="service-card glass rounded-3xl p-6">
+        <div class="icon-box w-14 h-14 rounded-2xl purple-gradient flex items-center justify-center text-xl">
+          <i class="fa-solid fa-ruler-combined"></i>
+        </div>
+        <h3 class="mt-6 text-xl font-bold">Custom Production</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">
+          OEM/ODM support from tech packs and development through sampling and bulk production.
+        </p>
+        <div class="mt-5 text-xs text-violet-300 flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          Built to your specifications
+        </div>
+      </article>
+
+      <article class="service-card glass rounded-3xl p-6">
+        <div class="icon-box w-14 h-14 rounded-2xl purple-gradient flex items-center justify-center text-xl">
+          <i class="fa-solid fa-file-shield"></i>
+        </div>
+        <h3 class="mt-6 text-xl font-bold">Compliance Support</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">
+          Support for BSCI, WRAP, SEDEX, OEKO-TEX and other buyer-driven compliance and audit requirements.
+        </p>
+        <div class="mt-5 text-xs text-violet-300 flex items-center gap-2">
+          <i class="fa-solid fa-check-double"></i>
+          Audit-ready sourcing
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Products -->
+<section id="products" class="py-24 relative">
+  <div class="container-max">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-7">
+      <div>
+        <div class="section-line mb-5"></div>
+        <div class="text-sm uppercase tracking-[.22em] text-violet-300 font-semibold">Our Product Range</div>
+        <h2 class="mt-3 text-4xl sm:text-5xl font-black tracking-tight">Premium Textile &amp; Garment Categories</h2>
+      </div>
+
+      <div class="glass rounded-2xl px-4 py-3 text-sm text-slate-300 flex items-center gap-3">
+        <i class="fa-solid fa-tags text-violet-300"></i>
+        Flexible production for B2B buyers
+      </div>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- Product 1 -->
+      <article class="product-card glass rounded-3xl overflow-hidden">
+        <div class="product-image h-44 relative bg-gradient-to-br from-violet-950/70 via-purple-900/20 to-transparent flex items-center justify-center">
+          <i class="fa-solid fa-shirt text-6xl text-violet-300/70"></i>
+          <span class="absolute top-4 left-4 text-[11px] px-2.5 py-1 rounded-full bg-violet-500/20 border border-violet-300/20 text-violet-200">Top Seller</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg">T-Shirts &amp; Tops</h3>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-xs text-slate-400">MOQ</span>
+            <span class="text-sm font-bold text-violet-300">500 pcs</span>
+          </div>
+          <div class="mt-4 h-px bg-white/10"></div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+            <span>Customizable</span>
+            <i class="fa-solid fa-arrow-right text-violet-300"></i>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 2 -->
+      <article class="product-card glass rounded-3xl overflow-hidden">
+        <div class="product-image h-44 relative bg-gradient-to-br from-indigo-950/70 via-violet-900/20 to-transparent flex items-center justify-center">
+          <i class="fa-solid fa-ruler-vertical text-6xl text-violet-300/70"></i>
+          <span class="absolute top-4 left-4 text-[11px] px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-300/15 text-cyan-200">High Demand</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg">Jeans &amp; Bottoms</h3>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-xs text-slate-400">MOQ</span>
+            <span class="text-sm font-bold text-violet-300">300 pcs</span>
+          </div>
+          <div class="mt-4 h-px bg-white/10"></div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+            <span>Denim specialists</span>
+            <i class="fa-solid fa-arrow-right text-violet-300"></i>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 3 -->
+      <article class="product-card glass rounded-3xl overflow-hidden">
+        <div class="product-image h-44 relative bg-gradient-to-br from-fuchsia-950/60 via-purple-900/20 to-transparent flex items-center justify-center">
+          <i class="fa-solid fa-person-dress text-6xl text-fuchsia-300/60"></i>
+          <span class="absolute top-4 left-4 text-[11px] px-2.5 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-300/15 text-fuchsia-200">Trending</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg">Dresses &amp; Womenswear</h3>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-xs text-slate-400">MOQ</span>
+            <span class="text-sm font-bold text-violet-300">200 pcs</span>
+          </div>
+          <div class="mt-4 h-px bg-white/10"></div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+            <span>Season-ready</span>
+            <i class="fa-solid fa-arrow-right text-violet-300"></i>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 4 -->
+      <article class="product-card glass rounded-3xl overflow-hidden">
+        <div class="product-image h-44 relative bg-gradient-to-br from-violet-950/70 via-blue-950/20 to-transparent flex items-center justify-center">
+          <i class="fa-solid fa-vest-patches text-6xl text-violet-300/70"></i>
+          <span class="absolute top-4 left-4 text-[11px] px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-300/15 text-blue-200">Bulk Orders</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg">Outerwear &amp; Jackets</h3>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-xs text-slate-400">MOQ</span>
+            <span class="text-sm font-bold text-violet-300">200 pcs</span>
+          </div>
+          <div class="mt-4 h-px bg-white/10"></div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+            <span>Technical options</span>
+            <i class="fa-solid fa-arrow-right text-violet-300"></i>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 5 -->
+      <article class="product-card glass rounded-3xl overflow-hidden">
+        <div class="product-image h-44 relative bg-gradient-to-br from-purple-950/70 via-violet-900/20 to-transparent flex items-center justify-center">
+          <i class="fa-solid fa-layer-group text-6xl text-violet-300/70"></i>
+          <span class="absolute top-4 left-4 text-[11px] px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-300/15 text-amber-200">Raw Material</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg">Fabrics &amp; Textiles</h3>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-xs text-slate-400">MOQ</span>
+            <span class="text-sm font-bold text-violet-300">1,000 yds</span>
+          </div>
+          <div class="mt-4 h-px bg-white/10"></div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+            <span>Multiple compositions</span>
+            <i class="fa-solid fa-arrow-right text-violet-300"></i>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 6 -->
+      <article class="product-card glass rounded-3xl overflow-hidden">
+        <div class="product-image h-44 relative bg-gradient-to-br from-pink-950/50 via-purple-900/20 to-transparent flex items-center justify-center">
+          <i class="fa-solid fa-child text-6xl text-violet-300/70"></i>
+          <span class="absolute top-4 left-4 text-[11px] px-2.5 py-1 rounded-full bg-pink-400/10 border border-pink-300/15 text-pink-200">Custom</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg">Kids Wear</h3>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-xs text-slate-400">MOQ</span>
+            <span class="text-sm font-bold text-violet-300">500 pcs</span>
+          </div>
+          <div class="mt-4 h-px bg-white/10"></div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+            <span>Age-specific sizing</span>
+            <i class="fa-solid fa-arrow-right text-violet-300"></i>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 7 -->
+      <article class="product-card glass rounded-3xl overflow-hidden">
+        <div class="product-image h-44 relative bg-gradient-to-br from-blue-950/60 via-violet-900/20 to-transparent flex items-center justify-center">
+          <i class="fa-solid fa-person-running text-6xl text-violet-300/70"></i>
+          <span class="absolute top-4 left-4 text-[11px] px-2.5 py-1 rounded-full bg-sky-400/10 border border-sky-300/15 text-sky-200">Sports</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg">Sportswear &amp; Activewear</h3>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-xs text-slate-400">MOQ</span>
+            <span class="text-sm font-bold text-violet-300">500 pcs</span>
+          </div>
+          <div class="mt-4 h-px bg-white/10"></div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+            <span>Performance fabrics</span>
+            <i class="fa-solid fa-arrow-right text-violet-300"></i>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 8 -->
+      <article class="product-card glass rounded-3xl overflow-hidden">
+        <div class="product-image h-44 relative bg-gradient-to-br from-violet-950/60 via-purple-900/30 to-transparent flex items-center justify-center">
+          <i class="fa-solid fa-bed text-6xl text-violet-300/70"></i>
+          <span class="absolute top-4 left-4 text-[11px] px-2.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-300/15 text-emerald-200">Home Textiles</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg">Bedding &amp; Home Textiles</h3>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-xs text-slate-400">MOQ</span>
+            <span class="text-sm font-bold text-violet-300">500 pcs</span>
+          </div>
+          <div class="mt-4 h-px bg-white/10"></div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400">
+            <span>Private label ready</span>
+            <i class="fa-solid fa-arrow-right text-violet-300"></i>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-24">
+  <div class="container-max">
+    <div class="grid lg:grid-cols-[.82fr_1.18fr] gap-14 items-center">
+      <div>
+        <div class="section-line mb-5"></div>
+        <div class="text-sm uppercase tracking-[.22em] text-violet-300 font-semibold">Why TexTrade</div>
+        <h2 class="mt-3 text-4xl sm:text-5xl font-black tracking-tight">Built for Buyers Who Need Certainty</h2>
+        <p class="mt-5 text-slate-400 leading-7">
+          Reduce sourcing friction with one partner coordinating manufacturers, quality, compliance, and logistics under one workflow.
+        </p>
+
+        <a href="#contact" class="mt-8 inline-flex items-center gap-2 text-sm font-bold text-violet-300 hover:text-white transition">
+          Talk to a sourcing specialist
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="grid gap-5">
+        <div class="glass rounded-3xl p-6 flex gap-5 items-start service-card">
+          <div class="w-14 h-14 shrink-0 rounded-2xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300">
+            <i class="fa-solid fa-bolt text-xl"></i>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-3">
+              <h3 class="text-xl font-bold">Speed to Market</h3>
+              <span class="text-xs px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-300">Fast turnaround</span>
+            </div>
+            <p class="mt-2 text-slate-400">7-day sample targets with typical 25–35 day bulk production timelines.</p>
+          </div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 flex gap-5 items-start service-card">
+          <div class="w-14 h-14 shrink-0 rounded-2xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300">
+            <i class="fa-solid fa-chart-line text-xl"></i>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-3">
+              <h3 class="text-xl font-bold">Competitive Pricing</h3>
+              <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300">15–30% savings</span>
+            </div>
+            <p class="mt-2 text-slate-400">Direct factory connections help reduce unnecessary intermediary costs and improve price transparency.</p>
+          </div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 flex gap-5 items-start service-card">
+          <div class="w-14 h-14 shrink-0 rounded-2xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300">
+            <i class="fa-solid fa-shield-heart text-xl"></i>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-3">
+              <h3 class="text-xl font-bold">100% Quality Guarantee</h3>
+              <span class="text-xs px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-300">Zero tolerance</span>
+            </div>
+            <p class="mt-2 text-slate-400">Quality-focused production oversight designed to minimize defects and avoid preventable delays.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Process -->
+<section id="process" class="py-24 relative">
+  <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-violet-500/25 to-transparent hidden lg:block"></div>
+
+  <div class="container-max relative">
+    <div class="text-center max-w-3xl mx-auto">
+      <div class="section-line mx-auto mb-5"></div>
+      <div class="text-sm uppercase tracking-[.22em] text-violet-300 font-semibold">How It Works</div>
+      <h2 class="mt-3 text-4xl sm:text-5xl font-black tracking-tight">From Inquiry to Delivery in 4 Simple Steps</h2>
+      <p class="mt-5 text-slate-400">A clear, buyer-friendly sourcing process that keeps every milestone visible.</p>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <article class="process-card glass rounded-3xl p-6 relative">
+        <div class="flex items-center justify-between">
+          <span class="text-5xl font-black text-violet-500/25">01</span>
+          <div class="w-12 h-12 rounded-xl purple-gradient flex items-center justify-center">
+            <i class="fa-solid fa-paper-plane"></i>
+          </div>
+        </div>
+        <h3 class="mt-7 text-xl font-bold">Submit Inquiry</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">Tell us your product, quantities, target market, specifications, and timeline.</p>
+      </article>
+
+      <article class="process-card glass rounded-3xl p-6 relative">
+        <div class="flex items-center justify-between">
+          <span class="text-5xl font-black text-violet-500/25">02</span>
+          <div class="w-12 h-12 rounded-xl purple-gradient flex items-center justify-center">
+            <i class="fa-solid fa-people-arrows"></i>
+          </div>
+        </div>
+        <h3 class="mt-7 text-xl font-bold">Get Matched</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">We shortlist 3–5 verified manufacturers that fit your requirements.</p>
+      </article>
+
+      <article class="process-card glass rounded-3xl p-6 relative">
+        <div class="flex items-center justify-between">
+          <span class="text-5xl font-black text-violet-500/25">03</span>
+          <div class="w-12 h-12 rounded-xl purple-gradient flex items-center justify-center">
+            <i class="fa-solid fa-box-open"></i>
+          </div>
+        </div>
+        <h3 class="mt-7 text-xl font-bold">Sample &amp; Confirm</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">Review development samples, confirm specifications, pricing, and production terms.</p>
+      </article>
+
+      <article class="process-card glass rounded-3xl p-6 relative">
+        <div class="flex items-center justify-between">
+          <span class="text-5xl font-black text-violet-500/25">04</span>
+          <div class="w-12 h-12 rounded-xl purple-gradient flex items-center justify-center">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+        </div>
+        <h3 class="mt-7 text-xl font-bold">Ship &amp; Track</h3>
+        <p class="mt-3 text-sm text-slate-400 leading-6">Manage production, inspection, shipping, customs, and final delivery tracking.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Markets -->
+<section id="markets" class="py-24">
+  <div class="container-max">
+    <div class="grid lg:grid-cols-[.85fr_1.15fr] gap-12 items-center">
+      <div>
+        <div class="section-line mb-5"></div>
+        <div class="text-sm uppercase tracking-[.22em] text-violet-300 font-semibold">Global Reach</div>
+        <h2 class="mt-3 text-4xl sm:text-5xl font-black tracking-tight">Source Globally. Deliver Confidently.</h2>
+        <p class="mt-5 text-slate-400 leading-7">
+          Our sourcing network supports international buyers across major retail, wholesale, fashion, lifestyle, and textile markets.
+        </p>
+
+        <div class="mt-8 glass rounded-3xl p-5">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl purple-gradient flex items-center justify-center">
+              <i class="fa-solid fa-earth-americas"></i>
+            </div>
+            <div>
+              <div class="text-2xl font-black">50+</div>
+              <div class="text-sm text-slate-400">Countries served</div>
+            </div>
+          </div>
+          <div class="mt-5 pt-5 border-t border-white/10 text-xs text-slate-400">
+            Major sourcing routes supported across North America, Europe, the Middle East, Asia-Pacific and beyond.
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-flag-usa"></i>
+          </div>
+          <div class="mt-3 font-semibold">USA</div>
+          <div class="text-xs text-slate-500 mt-1">North America</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-landmark"></i>
+          </div>
+          <div class="mt-3 font-semibold">UK</div>
+          <div class="text-xs text-slate-500 mt-1">Europe</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div class="mt-3 font-semibold">Germany</div>
+          <div class="text-xs text-slate-500 mt-1">Europe</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-eiffel-tower"></i>
+          </div>
+          <div class="mt-3 font-semibold">France</div>
+          <div class="text-xs text-slate-500 mt-1">Europe</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-mosque"></i>
+          </div>
+          <div class="mt-3 font-semibold">UAE</div>
+          <div class="text-xs text-slate-500 mt-1">Middle East</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-maple-leaf"></i>
+          </div>
+          <div class="mt-3 font-semibold">Canada</div>
+          <div class="text-xs text-slate-500 mt-1">North America</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-compass"></i>
+          </div>
+          <div class="mt-3 font-semibold">Australia</div>
+          <div class="text-xs text-slate-500 mt-1">APAC</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-torii-gate"></i>
+          </div>
+          <div class="mt-3 font-semibold">Japan</div>
+          <div class="text-xs text-slate-500 mt-1">Asia</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center">
+          <div class="market-icon mx-auto w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+            <i class="fa-solid fa-kaaba"></i>
+          </div>
+          <div class="mt-3 font-semibold">Saudi Arabia</div>
+          <div class="text-xs text-slate-500 mt-1">Middle East</div>
+        </div>
+
+        <div class="market-card glass rounded-2xl p-5 text-center sm:col-span-3">
+          <div class="flex items-center justify-center gap-3">
+            <div class="market-icon w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300 text-xl">
+              <i class="fa-solid fa-globe"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-bold">50+ Countries</div>
+              <div class="text-xs text-slate-500 mt-1">Expanding global trade coverage</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="py-12">
+  <div class="container-max">
+    <div class="glass-strong rounded-[30px] p-7 sm:p-10 relative overflow-hidden">
+      <div class="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-violet-500/15 blur-3xl"></div>
+      <div class="relative grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+        <div>
+          <div class="text-sm uppercase tracking-[.2em] text-violet-300 font-semibold">Stay Ahead</div>
+          <h2 class="mt-2 text-3xl sm:text-4xl font-black">Ready to Source Smarter?</h2>
+          <p class="mt-3 text-slate-400">Get sourcing insights, supplier opportunities, and textile market updates in your inbox.</p>
+        </div>
+
+        <form id="newsletterForm" class="flex flex-col sm:flex-row gap-3 lg:min-w-[460px]">
+          <input class="input flex-1" type="email" name="email" required placeholder="Enter your business email" aria-label="Email address" />
+          <button class="purple-gradient px-5 py-3 rounded-xl font-bold hover:brightness-110 transition whitespace-nowrap" type="submit">
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact" class="py-24">
+  <div class="container-max">
+    <div class="grid lg:grid-cols-[.78fr_1.22fr] gap-8">
+      <div class="glass-strong rounded-[30px] p-7 sm:p-8">
+        <div class="section-line mb-5"></div>
+        <div class="text-sm uppercase tracking-[.22em] text-violet-300 font-semibold">Start a Conversation</div>
+        <h2 class="mt-3 text-4xl font-black">Tell Us What You Want to Source</h2>
+        <p class="mt-4 text-slate-400 leading-7">
+          Share your product requirements and our sourcing team will help you build the right manufacturing pathway.
+        </p>
+
+        <div class="mt-8 space-y-4">
+          <div class="flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500 uppercase tracking-wider">Email</div>
+              <a class="mt-1 block text-sm text-slate-200 hover:text-violet-300 transition" href="mailto:info@textrade-global.com">info@textrade-global.com</a>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300">
+              <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500 uppercase tracking-wider">Phone / WhatsApp</div>
+              <a class="mt-1 block text-sm text-slate-200 hover:text-violet-300 transition" href="tel:+8801700000000">+880 1700-000000</a>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500 uppercase tracking-wider">Dhaka Office</div>
+              <div class="mt-1 text-sm text-slate-200">Dhaka, Bangladesh</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-300/15 flex items-center justify-center text-violet-300">
+              <i class="fa-regular fa-clock"></i>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500 uppercase tracking-wider">Working Hours</div>
+              <div class="mt-1 text-sm text-slate-200">Sat – Thu · 9:00 AM – 6:00 PM</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 rounded-2xl border border-violet-300/10 bg-violet-500/[.05] p-5">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-circle-check text-emerald-300"></i>
+            <div class="font-semibold text-sm">Fast response target</div>
+          </div>
+          <p class="mt-2 text-xs text-slate-400">Submit your requirements and our team can begin supplier matching with your core specifications.</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-[30px] p-7 sm:p-8">
+        <div class="flex items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-2xl font-bold">Request a Sourcing Quote</h3>
+            <p class="mt-1 text-sm text-slate-500">Complete the form and describe your project.</p>
+          </div>
+          <div class="hidden sm:flex w-11 h-11 rounded-xl purple-gradient items-center justify-center">
+            <i class="fa-solid fa-paper-plane"></i>
+          </div>
+        </div>
+
+        <form id="contactForm" class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Full Name</label>
+            <input class="input" type="text" name="fullName" required placeholder="Your full name" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Company</label>
+            <input class="input" type="text" name="company" required placeholder="Company name" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Email</label>
+            <input class="input" type="email" name="email" required placeholder="you@company.com" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Phone / WhatsApp</label>
+            <input class="input" type="tel" name="phone" placeholder="+1 / +880 ..." />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Product Interest</label>
+            <select class="input" name="productInterest" required>
+              <option value="">Select a category</option>
+              <option>T-Shirts & Tops</option>
+              <option>Jeans & Bottoms</option>
+              <option>Dresses & Womenswear</option>
+              <option>Outerwear & Jackets</option>
+              <option>Fabrics & Textiles</option>
+              <option>Kids Wear</option>
+              <option>Sportswear & Activewear</option>
+              <option>Bedding & Home Textiles</option>
+              <option>Other / Custom Production</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">MOQ Range</label>
+            <select class="input" name="moq" required>
+              <option value="">Select MOQ</option>
+              <option>200–500 pcs</option>
+              <option>500–1,000 pcs</option>
+              <option>1,000–5,000 pcs</option>
+              <option>5,000–10,000 pcs</option>
+              <option>10,000+ pcs</option>
+              <option>1,000+ yards (fabric)</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Message</label>
+            <textarea class="input min-h-[150px] resize-y" name="message" required placeholder="Tell us about your product, fabric, quantity, target market, timeline, certifications, and specifications..."></textarea>
+          </div>
+
+          <div class="sm:col-span-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
+            <div class="flex items-start gap-2 text-xs text-slate-500">
+              <i class="fa-solid fa-lock text-violet-400 mt-0.5"></i>
+              <span>Your inquiry details are used only to respond to your sourcing request.</span>
+            </div>
+
+            <button type="submit"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl purple-gradient px-6 py-3 font-bold text-white hover:brightness-110 transition">
+              Send Inquiry
+              <i class="fa-solid fa-arrow-right text-sm"></i>
+            </button>
+          </div>
+
+          <div id="contactMessage" class="sm:col-span-2 hidden"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <!-- Footer -->
+
+  <footer class="border-t border-white/10 bg-black/10">
+    <div class="container-max py-14">
+      <div class="grid lg:grid-cols-[1.5fr_1fr_1fr_1fr] gap-10">
+        <div>
+          <a href="#top" class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl purple-gradient flex items-center justify-center">
+              <i class="fa-solid fa-shirt"></i>
+            </div>
+            <div>
+              <div class="font-extrabold text-white">TexTrade Global</div>
+              <div class="text-[10px] uppercase tracking-[.26em] text-violet-300">Global Textile Sourcing</div>
+            </div>
+          </a>
+
+      <p class="mt-5 max-w-sm text-sm text-slate-400 leading-7">
+        Connecting verified textile and garment manufacturers with international buyers through quality-driven, transparent, and reliable sourcing.
+      </p>
+
+      <div class="mt-6 flex items-center gap-2">
+        <a href="#" aria-label="LinkedIn" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-slate-300 hover:text-white hover:border-violet-400/40 transition">
+          <i class="fa-brands fa-linkedin-in"></i>
+        </a>
+        <a href="#" aria-label="Facebook" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-slate-300 hover:text-white hover:border-violet-400/40 transition">
+          <i class="fa-brands fa-facebook-f"></i>
+        </a>
+        <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-slate-300 hover:text-white hover:border-violet-400/40 transition">
+          <i class="fa-brands fa-instagram"></i>
+        </a>
+        <a href="#" aria-label="YouTube" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-slate-300 hover:text-white hover:border-violet-400/40 transition">
+          <i class="fa-brands fa-youtube"></i>
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <h4 class="font-bold">Company</h4>
+      <div class="mt-4 grid gap-3 text-sm text-slate-400">
+        <a href="#services" class="hover:text-violet-300 transition">Services</a>
+        <a href="#products" class="hover:text-violet-300 transition">Products</a>
+        <a href="#process" class="hover:text-violet-300 transition">Process</a>
+        <a href="#markets" class="hover:text-violet-300 transition">Markets</a>
+      </div>
+    </div>
+
+    <div>
+      <h4 class="font-bold">Sourcing</h4>
+      <div class="mt-4 grid gap-3 text-sm text-slate-400">
+        <a href="#contact" class="hover:text-violet-300 transition">Request Quote</a>
+        <a href="#contact" class="hover:text-violet-300 transition">Manufacturer Matching</a>
+        <a href="#contact" class="hover:text-violet-300 transition">Quality Inspection</a>
+        <a href="#contact" class="hover:text-violet-300 transition">Compliance Support</a>
+      </div>
+    </div>
+
+    <div>
+      <h4 class="font-bold">Contact</h4>
+      <div class="mt-4 grid gap-3 text-sm text-slate-400">
+        <a href="mailto:info@textrade-global.com" class="hover:text-violet-300 transition">info@textrade-global.com</a>
+        <a href="tel:+8801700000000" class="hover:text-violet-300 transition">+880 1700-000000</a>
+        <span>Dhaka, Bangladesh</span>
+        <span>Sat – Thu · 9 AM – 6 PM</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+    <div>© 2026 TexTrade Global. All rights reserved.</div>
+    <div class="flex items-center gap-4">
+      <a href="#" class="hover:text-slate-300 transition">Privacy</a>
+      <a href="#" class="hover:text-slate-300 transition">Terms</a>
+      <a href="#" class="hover:text-slate-300 transition">Trade Protection</a>
+    </div>
+  </div>
+</div>
+
+  </footer>
+
+  <!-- Back to Top -->
+
+<a id="backTop" href="#top" aria-label="Back to top"
+  class="back-top fixed right-5 bottom-5 z-40 w-12 h-12 rounded-2xl purple-gradient flex items-center justify-center text-white shadow-purple"> <i class="fa-solid fa-arrow-up"></i> </a>
+
+  <script>
+    // Mobile navigation
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+
+    menuBtn?.addEventListener("click", () => {
+      mobileMenu.classList.toggle("open");
+      const icon = menuBtn.querySelector("i");
+      icon.classList.toggle("fa-bars");
+      icon.classList.toggle("fa-xmark");
+    });
+
+    mobileMenu?.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        mobileMenu.classList.remove("open");
+        const icon = menuBtn.querySelector("i");
+        icon.classList.add("fa-bars");
+        icon.classList.remove("fa-xmark");
+      });
+    });
+
+    // Back to top visibility
+    const backTop = document.getElementById("backTop");
+
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 500) {
+        backTop.classList.add("show");
+      } else {
+        backTop.classList.remove("show");
+      }
+    }, { passive: true });
+
+    // Demo form handling
+    const contactForm = document.getElementById("contactForm");
+    const contactMessage = document.getElementById("contactMessage");
+
+    contactForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      contactMessage.className = "sm:col-span-2 rounded-xl border border-emerald-400/20 bg-emerald-500/[.07] px-4 py-3 text-sm text-emerald-300";
+      contactMessage.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Thank you! Your sourcing inquiry has been prepared successfully.</span>
+        </div>
+      `;
+
+      contactForm.reset();
+    });
+
+    const newsletterForm = document.getElementById("newsletterForm");
+
+    newsletterForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const button = newsletterForm.querySelector("button");
+      const original = button.innerHTML;
+
+      button.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Subscribed';
+      button.disabled = true;
+
+      setTimeout(() => {
+        newsletterForm.reset();
+        button.innerHTML = original;
+        button.disabled = false;
+      }, 2200);
+    });
+
+    // Lightweight animated counters
+    const counters = document.querySelectorAll(".stat-number");
+
+    const animateCounter = (element, target, suffix = "", duration = 1300) => {
+      const start = performance.now();
+
+      const update = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = Math.floor(target * eased);
+
+        element.textContent = value.toLocaleString() + suffix;
+
+        if (progress < 1) requestAnimationFrame(update);
+      };
+
+      requestAnimationFrame(update);
+    };
+
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+
+        counters.forEach(counter => {
+          if (counter.dataset.animated) return;
+
+          const currentText = counter.textContent.trim();
+          const number = parseInt(currentText.replace(/[^\d]/g, ""), 10);
+          const suffix = currentText.includes("%")
+            ? "%"
+            : "";
+
+          if (!Number.isNaN(number)) {
+            counter.dataset.animated = "true";
+            animateCounter(counter, number, suffix);
+          }
+        });
+
+        obs.disconnect();
+      });
+    }, { threshold: 0.35 });
+
+    if (counters.length) {
+      observer.observe(counters[0]);
+    }
+  </script>
+
+</body>
+</html>

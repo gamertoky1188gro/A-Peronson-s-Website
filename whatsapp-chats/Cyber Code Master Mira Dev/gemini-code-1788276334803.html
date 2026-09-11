@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TexTrade Global | Your Gateway to Global Textile Trade</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        base: '#0D0B18',
+                        surface: '#151226',
+                        'surface-light': '#1E1938',
+                        'neon-purple': '#8A2BE2',
+                        'neon-pink': '#FF1493',
+                        'neon-blue': '#4169E1',
+                        'neon-cyan': '#00FFFF',
+                        'text-muted': '#BDB2D8'
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --glow-purple: rgba(138, 43, 226, 0.6);
+            --glow-pink: rgba(255, 20, 147, 0.6);
+            --glow-cyan: rgba(0, 255, 255, 0.6);
+            --glow-blue: rgba(65, 105, 225, 0.6);
+        }
+        
+        body {
+            background-color: #0D0B18;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(21, 18, 38, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-card {
+            background: rgba(30, 25, 56, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Neon Text & Borders */
+        .text-neon-cyan { text-shadow: 0 0 10px var(--glow-cyan); }
+        .text-neon-pink { text-shadow: 0 0 10px var(--glow-pink); }
+        .text-neon-purple { text-shadow: 0 0 10px var(--glow-purple); }
+        
+        .border-neon-purple {
+            border: 1px solid #8A2BE2;
+            box-shadow: 0 0 15px var(--glow-purple), inset 0 0 10px var(--glow-purple);
+        }
+
+        .border-neon-cyan {
+            border: 1px solid #00FFFF;
+            box-shadow: 0 0 10px var(--glow-cyan);
+        }
+
+        /* Button Glows */
+        .btn-neon-purple {
+            background: linear-gradient(90deg, #8A2BE2, #FF1493);
+            box-shadow: 0 0 20px var(--glow-purple);
+            transition: all 0.3s ease;
+        }
+        .btn-neon-purple:hover {
+            box-shadow: 0 0 30px var(--glow-pink);
+            transform: translateY(-2px);
+        }
+
+        .btn-neon-outline {
+            border: 1px solid #00FFFF;
+            color: #00FFFF;
+            text-shadow: 0 0 5px var(--glow-cyan);
+            box-shadow: 0 0 10px rgba(0,255,255,0.2), inset 0 0 5px rgba(0,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .btn-neon-outline:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 20px var(--glow-cyan), inset 0 0 10px var(--glow-cyan);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; box-shadow: 0 0 15px var(--glow-cyan); }
+            50% { opacity: 0.6; box-shadow: 0 0 5px var(--glow-cyan); }
+        }
+        .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .text-gradient-animated {
+            background: linear-gradient(270deg, #00FFFF, #4169E1, #8A2BE2, #FF1493);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 6s ease infinite;
+        }
+
+        /* Hover States */
+        .hover-neon-card:hover {
+            transform: translateY(-8px);
+            border-color: #00FFFF;
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2), inset 0 0 15px rgba(0, 255, 255, 0.05);
+        }
+        .hover-neon-card:hover .card-icon {
+            color: #FF1493;
+            text-shadow: 0 0 15px var(--glow-pink);
+            transform: scale(1.1);
+        }
+
+        /* Background Orbs */
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.5;
+        }
+        .orb-1 { top: -10%; left: -10%; width: 40vw; height: 40vw; background: rgba(138, 43, 226, 0.3); animation: float 10s infinite; }
+        .orb-2 { top: 20%; right: -5%; width: 30vw; height: 30vw; background: rgba(255, 20, 147, 0.2); animation: float 14s infinite reverse; }
+        .orb-3 { bottom: 10%; left: 20%; width: 35vw; height: 35vw; background: rgba(0, 255, 255, 0.2); animation: float 12s infinite; }
+        
+        /* Input focus */
+        .neon-input:focus {
+            outline: none;
+            border-color: #FF1493;
+            box-shadow: 0 0 15px var(--glow-pink);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-neon-pink selection:text-white relative">
+
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <nav class="fixed w-full z-50 glass border-b border-white/5 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer">
+                    <div class="w-10 h-10 rounded-xl border-neon-purple flex items-center justify-center bg-surface">
+                        <i class="fa-solid fa-layer-group text-neon-cyan text-xl"></i>
+                    </div>
+                    <span class="font-bold text-2xl tracking-wide text-white">Tex<span class="text-neon-purple">Trade</span> <span class="text-sm font-light text-text-muted">Global</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#services" class="text-text-muted hover:text-neon-cyan transition-colors duration-300 text-sm font-semibold uppercase tracking-wider">Services</a>
+                    <a href="#products" class="text-text-muted hover:text-neon-pink transition-colors duration-300 text-sm font-semibold uppercase tracking-wider">Products</a>
+                    <a href="#process" class="text-text-muted hover:text-neon-purple transition-colors duration-300 text-sm font-semibold uppercase tracking-wider">Process</a>
+                    <a href="#markets" class="text-text-muted hover:text-neon-blue transition-colors duration-300 text-sm font-semibold uppercase tracking-wider">Markets</a>
+                    <a href="#contact" class="btn-neon-purple text-white px-6 py-2.5 rounded-full font-bold text-sm uppercase tracking-wide">Get Quote</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button class="text-text-muted hover:text-white focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden flex items-center min-h-[90vh]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                
+                <div class="text-left space-y-8">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-neon-cyan/50 bg-neon-cyan/10">
+                        <div class="w-2 h-2 rounded-full bg-neon-cyan animate-pulse-glow"></div>
+                        <span class="text-neon-cyan text-xs font-bold uppercase tracking-widest">Trusted by 500+ Global Importers</span>
+                    </div>
+                    
+                    <h1 class="text-5xl lg:text-7xl font-black leading-tight tracking-tight">
+                        Your Gateway to <br>
+                        <span class="text-gradient-animated">Global Textile Trade</span>
+                    </h1>
+                    
+                    <p class="text-lg text-text-muted max-w-xl leading-relaxed">
+                        We connect verified garment & textile manufacturers with international buyers. Experience quality sourcing, transparent pricing, and seamless delivery powered by a modern supply chain.
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <a href="#process" class="btn-neon-purple px-8 py-4 rounded-lg font-bold text-lg flex items-center gap-2">
+                            Start Sourcing <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                        <a href="#products" class="btn-neon-outline glass px-8 py-4 rounded-lg font-bold text-lg flex items-center gap-2">
+                            View Products <i class="fa-solid fa-box-open"></i>
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-6 pt-8 border-t border-white/10 mt-8">
+                        <div>
+                            <p class="text-2xl font-black text-white">15+ <span class="text-neon-purple text-sm">Yrs</span></p>
+                            <p class="text-xs text-text-muted uppercase tracking-wider">Experience</p>
+                        </div>
+                        <div class="w-px h-10 bg-white/10"></div>
+                        <div>
+                            <p class="text-2xl font-black text-white">50+ <span class="text-neon-cyan text-sm">Ctys</span></p>
+                            <p class="text-xs text-text-muted uppercase tracking-wider">Served</p>
+                        </div>
+                        <div class="w-px h-10 bg-white/10"></div>
+                        <div>
+                            <p class="text-2xl font-black text-white">$200M+</p>
+                            <p class="text-xs text-text-muted uppercase tracking-wider">Trade Volume</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative lg:ml-auto w-full max-w-md animate-float">
+                    <div class="glass-card rounded-2xl p-8 border-neon-purple relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-purple via-neon-pink to-neon-cyan"></div>
+                        
+                        <div class="flex justify-between items-center mb-8">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-neon-pink"></i> Live Network
+                            </h3>
+                            <span class="flex items-center gap-2 text-xs font-bold text-neon-cyan bg-neon-cyan/10 px-3 py-1 rounded-full">
+                                <div class="w-2 h-2 rounded-full bg-neon-cyan animate-pulse"></div> Active
+                            </span>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                                <div>
+                                    <p class="text-sm text-text-muted mb-1">Monthly Orders</p>
+                                    <p class="text-3xl font-black text-white text-neon-cyan">2,847</p>
+                                </div>
+                                <div class="text-neon-blue bg-neon-blue/20 p-2 rounded-lg"><i class="fa-solid fa-truck-fast"></i></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                                <div>
+                                    <p class="text-sm text-text-muted mb-1">Active Buyers</p>
+                                    <p class="text-3xl font-black text-white text-neon-pink">1,240</p>
+                                </div>
+                                <div class="text-neon-pink bg-neon-pink/20 p-2 rounded-lg"><i class="fa-solid fa-users"></i></div>
+                            </div>
+
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-sm text-text-muted mb-1">Verified Suppliers</p>
+                                    <p class="text-3xl font-black text-white text-neon-purple">85</p>
+                                </div>
+                                <div class="text-neon-purple bg-neon-purple/20 p-2 rounded-lg"><i class="fa-solid fa-industry"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex gap-3">
+                            <div class="flex-1 bg-surface-light rounded-lg p-3 text-center border border-white/5">
+                                <i class="fa-solid fa-certificate text-neon-cyan mb-2 text-xl"></i>
+                                <p class="text-[10px] uppercase font-bold text-text-muted">ISO 9001 Certified</p>
+                            </div>
+                            <div class="flex-1 bg-surface-light rounded-lg p-3 text-center border border-white/5">
+                                <i class="fa-solid fa-shield-halved text-neon-purple mb-2 text-xl"></i>
+                                <p class="text-[10px] uppercase font-bold text-text-muted">Trade Protection</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="py-12 bg-surface-light/50 border-y border-white/5 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="p-6">
+                    <div class="w-16 h-16 mx-auto bg-neon-cyan/10 rounded-full flex items-center justify-center mb-4 border border-neon-cyan/30">
+                        <i class="fa-solid fa-bolt text-neon-cyan text-2xl text-neon-cyan"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2 text-white">Speed to Market</h4>
+                    <p class="text-text-muted text-sm">7-day sampling and 25-35 day bulk production turnarounds.</p>
+                </div>
+                <div class="p-6">
+                    <div class="w-16 h-16 mx-auto bg-neon-pink/10 rounded-full flex items-center justify-center mb-4 border border-neon-pink/30">
+                        <i class="fa-solid fa-tags text-neon-pink text-2xl text-neon-pink"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2 text-white">Competitive Pricing</h4>
+                    <p class="text-text-muted text-sm">Direct factory connections saving you 15-30% on average.</p>
+                </div>
+                <div class="p-6">
+                    <div class="w-16 h-16 mx-auto bg-neon-purple/10 rounded-full flex items-center justify-center mb-4 border border-neon-purple/30">
+                        <i class="fa-solid fa-check-double text-neon-purple text-2xl text-neon-purple"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2 text-white">100% Quality Guarantee</h4>
+                    <p class="text-text-muted text-sm">Zero tolerance for defects or delays with rigorous AQL standards.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-neon-cyan font-bold tracking-widest uppercase text-sm mb-3">Our Expertise</h2>
+                <h3 class="text-3xl md:text-5xl font-black text-white mb-6">End-to-End Textile <br> <span class="text-gradient-animated">Sourcing Solutions</span></h3>
+                <p class="text-text-muted">Comprehensive management from raw material acquisition to final delivery. We handle the complexity so you can focus on growth.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-card rounded-2xl p-8 hover-neon-card group cursor-pointer">
+                    <div class="w-14 h-14 rounded-xl bg-surface-light flex items-center justify-center mb-6 card-icon transition-all duration-300 border border-white/5 group-hover:border-neon-cyan/50">
+                        <i class="fa-solid fa-handshake text-2xl text-neon-cyan"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3">Manufacturer Matching</h4>
+                    <p class="text-text-muted text-sm leading-relaxed">Connecting you with vetted factories across Bangladesh, India, Pakistan, and Vietnam based on your specific requirements.</p>
+                </div>
+
+                <div class="glass-card rounded-2xl p-8 hover-neon-card group cursor-pointer">
+                    <div class="w-14 h-14 rounded-xl bg-surface-light flex items-center justify-center mb-6 card-icon transition-all duration-300 border border-white/5 group-hover:border-neon-pink/50">
+                        <i class="fa-solid fa-magnifying-glass-chart text-2xl text-neon-pink"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3">Quality Inspection</h4>
+                    <p class="text-text-muted text-sm leading-relaxed">Independent third-party QC utilizing strict AQL standards ensuring zero compromises on final product quality.</p>
+                </div>
+
+                <div class="glass-card rounded-2xl p-8 hover-neon-card group cursor-pointer">
+                    <div class="w-14 h-14 rounded-xl bg-surface-light flex items-center justify-center mb-6 card-icon transition-all duration-300 border border-white/5 group-hover:border-neon-blue/50">
+                        <i class="fa-solid fa-ship text-2xl text-neon-blue"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3">Supply Chain Management</h4>
+                    <p class="text-text-muted text-sm leading-relaxed">Optimized logistics including Sea/Air freight coordination and hassle-free customs clearance directly to your warehouse.</p>
+                </div>
+
+                <div class="glass-card rounded-2xl p-8 hover-neon-card group cursor-pointer">
+                    <div class="w-14 h-14 rounded-xl bg-surface-light flex items-center justify-center mb-6 card-icon transition-all duration-300 border border-white/5 group-hover:border-neon-purple/50">
+                        <i class="fa-solid fa-layer-group text-2xl text-neon-purple"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3">Fabric Sourcing</h4>
+                    <p class="text-text-muted text-sm leading-relaxed">Procurement of premium raw materials: organic cotton, recycled polyester, heavy denim, and advanced technical fabrics.</p>
+                </div>
+
+                <div class="glass-card rounded-2xl p-8 hover-neon-card group cursor-pointer">
+                    <div class="w-14 h-14 rounded-xl bg-surface-light flex items-center justify-center mb-6 card-icon transition-all duration-300 border border-white/5 group-hover:border-neon-cyan/50">
+                        <i class="fa-solid fa-scissors text-2xl text-neon-cyan"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3">Custom Production</h4>
+                    <p class="text-text-muted text-sm leading-relaxed">Comprehensive OEM/ODM services from digital tech pack creation to rapid prototyping and sampling.</p>
+                </div>
+
+                <div class="glass-card rounded-2xl p-8 hover-neon-card group cursor-pointer">
+                    <div class="w-14 h-14 rounded-xl bg-surface-light flex items-center justify-center mb-6 card-icon transition-all duration-300 border border-white/5 group-hover:border-neon-pink/50">
+                        <i class="fa-solid fa-file-shield text-2xl text-neon-pink"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3">Compliance Support</h4>
+                    <p class="text-text-muted text-sm leading-relaxed">Ensuring all partner facilities meet global standards including BSCI, WRAP, SEDEX, and OEKO-TEX certifications.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="products" class="py-24 bg-surface/50 border-t border-white/5 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-end mb-12 gap-6">
+                <div class="max-w-2xl">
+                    <h2 class="text-neon-pink font-bold tracking-widest uppercase text-sm mb-3">Our Catalog</h2>
+                    <h3 class="text-3xl md:text-4xl font-black text-white">Premium Textile & <br> Garment Categories</h3>
+                </div>
+                <a href="#contact" class="btn-neon-outline px-6 py-3 rounded-lg font-bold text-sm inline-flex items-center gap-2 w-max">
+                    Request Catalog <i class="fa-solid fa-download"></i>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-surface-light hover:border-neon-pink transition-all duration-300 aspect-[4/5] flex flex-col justify-end p-6 cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-neon-pink/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute top-4 right-4 bg-neon-pink/20 text-neon-pink text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-neon-pink/50">Top Seller</div>
+                    <div class="relative z-10 transform group-hover:translate-y-[-5px] transition-transform">
+                        <h4 class="text-xl font-bold text-white mb-1">T-Shirts & Tops</h4>
+                        <div class="flex items-center gap-2 text-sm text-text-muted">
+                            <i class="fa-solid fa-boxes-stacked text-neon-purple"></i> MOQ: 500 pcs
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-surface-light hover:border-neon-cyan transition-all duration-300 aspect-[4/5] flex flex-col justify-end p-6 cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-neon-cyan/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute top-4 right-4 bg-neon-cyan/20 text-neon-cyan text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-neon-cyan/50">High Demand</div>
+                    <div class="relative z-10 transform group-hover:translate-y-[-5px] transition-transform">
+                        <h4 class="text-xl font-bold text-white mb-1">Jeans & Bottoms</h4>
+                        <div class="flex items-center gap-2 text-sm text-text-muted">
+                            <i class="fa-solid fa-boxes-stacked text-neon-purple"></i> MOQ: 300 pcs
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-surface-light hover:border-neon-purple transition-all duration-300 aspect-[4/5] flex flex-col justify-end p-6 cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-neon-purple/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute top-4 right-4 bg-neon-purple/20 text-neon-purple text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-neon-purple/50">Trending</div>
+                    <div class="relative z-10 transform group-hover:translate-y-[-5px] transition-transform">
+                        <h4 class="text-xl font-bold text-white mb-1">Dresses & Womenswear</h4>
+                        <div class="flex items-center gap-2 text-sm text-text-muted">
+                            <i class="fa-solid fa-boxes-stacked text-neon-purple"></i> MOQ: 200 pcs
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-surface-light hover:border-neon-blue transition-all duration-300 aspect-[4/5] flex flex-col justify-end p-6 cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-neon-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute top-4 right-4 bg-neon-blue/20 text-neon-blue text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-neon-blue/50">Bulk Orders</div>
+                    <div class="relative z-10 transform group-hover:translate-y-[-5px] transition-transform">
+                        <h4 class="text-xl font-bold text-white mb-1">Outerwear & Jackets</h4>
+                        <div class="flex items-center gap-2 text-sm text-text-muted">
+                            <i class="fa-solid fa-boxes-stacked text-neon-purple"></i> MOQ: 200 pcs
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-surface-light hover:border-white transition-all duration-300 aspect-[4/5] flex flex-col justify-end p-6 cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute top-4 right-4 bg-white/10 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-white/30">Raw Material</div>
+                    <div class="relative z-10 transform group-hover:translate-y-[-5px] transition-transform">
+                        <h4 class="text-xl font-bold text-white mb-1">Fabrics & Textiles</h4>
+                        <div class="flex items-center gap-2 text-sm text-text-muted">
+                            <i class="fa-solid fa-boxes-stacked text-neon-purple"></i> MOQ: 1,000 yds
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-surface-light hover:border-neon-cyan transition-all duration-300 aspect-[4/5] flex flex-col justify-end p-6 cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-neon-cyan/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute top-4 right-4 bg-neon-cyan/20 text-neon-cyan text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-neon-cyan/50">Custom</div>
+                    <div class="relative z-10 transform group-hover:translate-y-[-5px] transition-transform">
+                        <h4 class="text-xl font-bold text-white mb-1">Kids Wear</h4>
+                        <div class="flex items-center gap-2 text-sm text-text-muted">
+                            <i class="fa-solid fa-boxes-stacked text-neon-purple"></i> MOQ: 500 pcs
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-surface-light hover:border-neon-pink transition-all duration-300 aspect-[4/5] flex flex-col justify-end p-6 cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-neon-pink/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute top-4 right-4 bg-neon-pink/20 text-neon-pink text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-neon-pink/50">Sports</div>
+                    <div class="relative z-10 transform group-hover:translate-y-[-5px] transition-transform">
+                        <h4 class="text-xl font-bold text-white mb-1">Sportswear</h4>
+                        <div class="flex items-center gap-2 text-sm text-text-muted">
+                            <i class="fa-solid fa-boxes-stacked text-neon-purple"></i> MOQ: 500 pcs
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-xl border border-white/10 bg-surface-light hover:border-neon-purple transition-all duration-300 aspect-[4/5] flex flex-col justify-end p-6 cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-neon-purple/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute top-4 right-4 bg-neon-purple/20 text-neon-purple text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-neon-purple/50">Home</div>
+                    <div class="relative z-10 transform group-hover:translate-y-[-5px] transition-transform">
+                        <h4 class="text-xl font-bold text-white mb-1">Bedding & Home</h4>
+                        <div class="flex items-center gap-2 text-sm text-text-muted">
+                            <i class="fa-solid fa-boxes-stacked text-neon-purple"></i> MOQ: 500 pcs
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <section id="process" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-neon-purple font-bold tracking-widest uppercase text-sm mb-3">Workflow</h2>
+                <h3 class="text-3xl md:text-5xl font-black text-white">From Inquiry to Delivery in <br> <span class="text-neon-cyan">4 Simple Steps</span></h3>
+            </div>
+
+            <div class="relative">
+                <div class="hidden lg:block absolute top-1/2 left-0 w-full h-1 bg-surface-light -translate-y-1/2 z-0">
+                    <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-cyan w-full opacity-50"></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 relative z-10">
+                    
+                    <div class="glass p-8 rounded-2xl border border-white/10 text-center hover:-translate-y-2 transition-transform duration-300">
+                        <div class="w-16 h-16 mx-auto bg-base rounded-full border-2 border-neon-purple flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(138,43,226,0.5)]">
+                            <span class="text-2xl font-black text-neon-purple">1</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">Submit Inquiry</h4>
+                        <p class="text-sm text-text-muted">Share your designs, tech packs, or raw material requirements through our secure portal.</p>
+                    </div>
+
+                    <div class="glass p-8 rounded-2xl border border-white/10 text-center hover:-translate-y-2 transition-transform duration-300 lg:mt-8">
+                        <div class="w-16 h-16 mx-auto bg-base rounded-full border-2 border-neon-pink flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(255,20,147,0.5)]">
+                            <span class="text-2xl font-black text-neon-pink">2</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">Get Matched</h4>
+                        <p class="text-sm text-text-muted">We evaluate and connect you with 3-5 verified manufacturers perfectly suited to your needs.</p>
+                    </div>
+
+                    <div class="glass p-8 rounded-2xl border border-white/10 text-center hover:-translate-y-2 transition-transform duration-300">
+                        <div class="w-16 h-16 mx-auto bg-base rounded-full border-2 border-neon-blue flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(65,105,225,0.5)]">
+                            <span class="text-2xl font-black text-neon-blue">3</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">Sample & Confirm</h4>
+                        <p class="text-sm text-text-muted">Receive physical prototypes. Once approved, we lock in pricing and initiate bulk production.</p>
+                    </div>
+
+                    <div class="glass p-8 rounded-2xl border border-white/10 text-center hover:-translate-y-2 transition-transform duration-300 lg:mt-8">
+                        <div class="w-16 h-16 mx-auto bg-base rounded-full border-2 border-neon-cyan flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(0,255,255,0.5)]">
+                            <span class="text-2xl font-black text-neon-cyan">4</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3">Ship & Track</h4>
+                        <p class="text-sm text-text-muted">Real-time QC reports and full logistical handling until the goods safely arrive at your door.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="markets" class="py-20 border-y border-white/5 bg-surface/30 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h3 class="text-2xl font-bold text-white mb-8">Serving Markets Worldwide</h3>
+            <div class="flex flex-wrap justify-center gap-4">
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-cyan hover:text-neon-cyan transition-colors cursor-default">🇺🇸 USA</span>
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-pink hover:text-neon-pink transition-colors cursor-default">🇬🇧 UK</span>
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-purple hover:text-neon-purple transition-colors cursor-default">🇩🇪 Germany</span>
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-blue hover:text-neon-blue transition-colors cursor-default">🇫🇷 France</span>
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-cyan hover:text-neon-cyan transition-colors cursor-default">🇦🇪 UAE</span>
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-pink hover:text-neon-pink transition-colors cursor-default">🇨🇦 Canada</span>
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-purple hover:text-neon-purple transition-colors cursor-default">🇦🇺 Australia</span>
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-blue hover:text-neon-blue transition-colors cursor-default">🇯🇵 Japan</span>
+                <span class="px-5 py-2 glass rounded-full border border-white/10 text-sm font-semibold hover:border-neon-cyan hover:text-neon-cyan transition-colors cursor-default">🇸🇦 Saudi Arabia</span>
+                <span class="px-5 py-2 glass-card rounded-full border border-neon-purple text-neon-purple text-sm font-bold shadow-[0_0_10px_rgba(138,43,226,0.3)]">🌍 +50 More Countries</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="bg-gradient-to-r from-surface-light to-surface rounded-2xl p-8 md:p-12 border border-neon-cyan/30 mb-16 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_0_30px_rgba(0,255,255,0.1)]">
+                <div>
+                    <h3 class="text-2xl md:text-3xl font-bold text-white mb-2">Ready to Source Smarter?</h3>
+                    <p class="text-text-muted">Join 500+ importers receiving our weekly sourcing insights and pricing trends.</p>
+                </div>
+                <form class="flex w-full md:w-auto gap-2">
+                    <input type="email" placeholder="Enter your email" class="bg-base text-white px-4 py-3 rounded-lg border border-white/10 focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan outline-none w-full md:w-72 transition-all">
+                    <button type="button" class="btn-neon-outline bg-base px-6 py-3 rounded-lg font-bold">Subscribe</button>
+                </form>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 bg-surface-light rounded-3xl p-2 border border-white/5">
+                
+                <div class="lg:col-span-2 bg-base rounded-2xl p-8 relative overflow-hidden border border-white/5">
+                    <div class="absolute bottom-0 right-0 w-64 h-64 bg-neon-purple/20 filter blur-[80px] rounded-full"></div>
+                    
+                    <h3 class="text-3xl font-bold text-white mb-6 relative z-10">Get in Touch</h3>
+                    <p class="text-text-muted mb-12 relative z-10">Let's discuss your next collection. Our sourcing experts usually respond within 2 hours.</p>
+                    
+                    <div class="space-y-8 relative z-10">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-surface rounded-xl flex items-center justify-center border border-neon-pink/30 text-neon-pink shrink-0">
+                                <i class="fa-solid fa-envelope text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm text-text-muted font-semibold uppercase tracking-wider mb-1">Email Us</h4>
+                                <a href="mailto:info@textrade-global.com" class="text-lg font-bold text-white hover:text-neon-pink transition-colors">info@textrade-global.com</a>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-surface rounded-xl flex items-center justify-center border border-neon-cyan/30 text-neon-cyan shrink-0">
+                                <i class="fa-brands fa-whatsapp text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm text-text-muted font-semibold uppercase tracking-wider mb-1">Call / WhatsApp</h4>
+                                <p class="text-lg font-bold text-white">+880 1700-000000</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-surface rounded-xl flex items-center justify-center border border-neon-blue/30 text-neon-blue shrink-0">
+                                <i class="fa-solid fa-location-dot text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm text-text-muted font-semibold uppercase tracking-wider mb-1">HQ Address</h4>
+                                <p class="text-white font-medium leading-relaxed">Level 8, Sourcing Tower<br>Banani, Dhaka - 1213<br>Bangladesh</p>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-6 border-t border-white/10">
+                            <p class="text-sm text-text-muted"><i class="fa-regular fa-clock mr-2 text-neon-purple"></i> Working Hours: Mon-Fri, 9:00 AM - 6:00 PM (GMT+6)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 p-8 lg:p-12">
+                    <form class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-text-muted">Full Name</label>
+                                <input type="text" class="neon-input w-full bg-base text-white px-4 py-3 rounded-lg border border-white/10 transition-all" placeholder="John Doe">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-text-muted">Company Name</label>
+                                <input type="text" class="neon-input w-full bg-base text-white px-4 py-3 rounded-lg border border-white/10 transition-all" placeholder="Apparel Co.">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-text-muted">Email Address</label>
+                                <input type="email" class="neon-input w-full bg-base text-white px-4 py-3 rounded-lg border border-white/10 transition-all" placeholder="john@example.com">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-text-muted">Phone / WhatsApp</label>
+                                <input type="tel" class="neon-input w-full bg-base text-white px-4 py-3 rounded-lg border border-white/10 transition-all" placeholder="+1 234 567 8900">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-text-muted">Product Interest</label>
+                                <select class="neon-input w-full bg-base text-white px-4 py-3 rounded-lg border border-white/10 transition-all appearance-none cursor-pointer">
+                                    <option value="" disabled selected>Select Category</option>
+                                    <option value="tshirts">T-Shirts & Tops</option>
+                                    <option value="bottoms">Jeans & Bottoms</option>
+                                    <option value="outerwear">Outerwear & Jackets</option>
+                                    <option value="fabrics">Raw Fabrics</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-text-muted">Estimated MOQ</label>
+                                <select class="neon-input w-full bg-base text-white px-4 py-3 rounded-lg border border-white/10 transition-all appearance-none cursor-pointer">
+                                    <option value="" disabled selected>Select Quantity Range</option>
+                                    <option value="200-500">200 - 500 pcs</option>
+                                    <option value="500-1000">500 - 1,000 pcs</option>
+                                    <option value="1000-5000">1,000 - 5,000 pcs</option>
+                                    <option value="5000+">5,000+ pcs</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-text-muted">Message / Requirements</label>
+                            <textarea rows="4" class="neon-input w-full bg-base text-white px-4 py-3 rounded-lg border border-white/10 transition-all resize-none" placeholder="Tell us about your project, target materials, timeline, etc..."></textarea>
+                        </div>
+
+                        <button type="button" class="btn-neon-purple w-full py-4 rounded-lg font-bold text-lg text-white mt-4 flex justify-center items-center gap-2">
+                            Send Inquiry <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="bg-surface-light pt-16 pb-8 border-t border-neon-purple/20 relative z-10 overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-gradient-to-r from-transparent via-neon-purple to-transparent opacity-50"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                
+                <div class="lg:col-span-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-lg border-neon-purple flex items-center justify-center bg-base">
+                            <i class="fa-solid fa-layer-group text-neon-cyan text-sm"></i>
+                        </div>
+                        <span class="font-bold text-xl tracking-wide text-white">Tex<span class="text-neon-purple">Trade</span></span>
+                    </div>
+                    <p class="text-text-muted text-sm leading-relaxed mb-6">Bridging the gap between global buyers and elite manufacturers. Transparent, efficient, and quality-driven textile sourcing.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-base border border-white/10 flex items-center justify-center text-text-muted hover:text-neon-blue hover:border-neon-blue transition-all"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-base border border-white/10 flex items-center justify-center text-text-muted hover:text-neon-blue hover:border-neon-blue transition-all"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-base border border-white/10 flex items-center justify-center text-text-muted hover:text-neon-pink hover:border-neon-pink transition-all"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-base border border-white/10 flex items-center justify-center text-text-muted hover:text-[#FF0000] hover:border-[#FF0000] transition-all"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-6 uppercase tracking-wider text-sm">Company</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-text-muted hover:text-neon-cyan transition-colors text-sm">About Us</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-cyan transition-colors text-sm">Our Team</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-cyan transition-colors text-sm">Careers</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-cyan transition-colors text-sm">Sustainability</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-cyan transition-colors text-sm">News & Press</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-6 uppercase tracking-wider text-sm">Services</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-text-muted hover:text-neon-pink transition-colors text-sm">Apparel Sourcing</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-pink transition-colors text-sm">Fabric Procurement</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-pink transition-colors text-sm">Quality Assurance (QC)</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-pink transition-colors text-sm">Logistics & Freight</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-pink transition-colors text-sm">Factory Audits</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-6 uppercase tracking-wider text-sm">Legal</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-text-muted hover:text-neon-purple transition-colors text-sm">Terms & Conditions</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-purple transition-colors text-sm">Privacy Policy</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-purple transition-colors text-sm">Cookie Policy</a></li>
+                        <li><a href="#" class="text-text-muted hover:text-neon-purple transition-colors text-sm">Compliance Policies</a></li>
+                    </ul>
+                </div>
+
+            </div>
+            
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-text-muted text-sm">&copy; 2026 TexTrade Global. All rights reserved.</p>
+                <div class="text-text-muted text-sm flex items-center gap-2">
+                    Built with <i class="fa-solid fa-heart text-neon-pink"></i> for global trade.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

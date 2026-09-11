@@ -4,6 +4,14 @@ import { sanitizeString } from "../utils/validators.js";
 
 const MAX_MESSAGE_LEN = 4000;
 
+function sanitizeLogText(value, max = MAX_MESSAGE_LEN) {
+	return String(value ?? "")
+		.trim()
+		.replace(/[\r\n]+/g, " ")
+		.replace(/\s+/g, " ")
+		.slice(0, max);
+}
+
 function sanitizeText(value, max = MAX_MESSAGE_LEN) {
 	return sanitizeString(String(value ?? ""), max);
 }
@@ -29,10 +37,10 @@ export function postLog(req, res) {
 		if (typeof item !== "object" || item === null) {
 			continue;
 		}
-		const level = sanitizeText(item.level, 10).toLowerCase();
+		const level = sanitizeLogText(item.level, 10).toLowerCase();
 		const rawMessage =
 			typeof item.message === "string" ? item.message : JSON.stringify(item.message ?? "");
-		const message = sanitizeText(rawMessage);
+		const message = sanitizeLogText(rawMessage);
 		const clientUser =
 			typeof item.user === "string"
 				? item.user
@@ -44,8 +52,8 @@ export function postLog(req, res) {
 			user: clientUser || userLabel,
 			user_id: item.user?.id || req.user?.id || null,
 			role: item.user?.role || req.user?.role || null,
-			url: sanitizeText(item.url, 300) || null,
-			ts: sanitizeText(item.ts, 40) || null,
+			url: sanitizeLogText(item.url, 300) || null,
+			ts: sanitizeLogText(item.ts, 40) || null,
 			perf: item.performance || null,
 		};
 
@@ -54,7 +62,7 @@ export function postLog(req, res) {
 			message,
 			data,
 			source: "frontend",
-			stack: sanitizeText(item.stack, 4000) || null,
+			stack: sanitizeLogText(item.stack, 4000) || null,
 			meta: {
 				path: data.url,
 				user_id: data.user_id,

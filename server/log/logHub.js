@@ -6,6 +6,7 @@ import { detectCategory } from "./categories.js";
 import { levelColorFor, levelIconFor, normalizeLevel } from "./levels.js";
 import { runParsers } from "./parsers.js";
 import { matchQuery } from "./search.js";
+import { logFileWriter } from "./logFileWriter.js";
 
 registerBuiltinParsers();
 
@@ -84,6 +85,14 @@ class LogHub extends EventEmitter {
 		this._rateAccum = 0;
 		this._reqAccum = 0;
 		this._setupRateTimer();
+		this._setupFileWriter();
+	}
+
+	_setupFileWriter() {
+		logFileWriter.init();
+		this.on("all", (entry) => {
+			logFileWriter.append(entry);
+		});
 	}
 
 	_setupRateTimer() {

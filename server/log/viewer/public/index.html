@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toky Log Viewer</title>
+<style>
+:root{--bg:#0b0712;--panel:#140d20;--panel2:#1b1029;--line:#35214a;--text:#f6ecff;--muted:#ad91bd;--pink:#ff4fb3;--purple:#8b5cf6;--cyan:#66e3ff;--red:#ff5c7a;--yellow:#ffd166;--green:#4ade80;--shadow:0 18px 50px #0008}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,sans-serif;background:radial-gradient(1200px 700px at 70% -10%,#4a126c44,transparent 65%),var(--bg);color:var(--text);overflow:hidden}
+button,select,input{font:inherit}.app{height:100%;display:grid;grid-template-rows:auto auto 1fr auto}.top{display:flex;gap:14px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);background:#120a1be8;backdrop-filter:blur(18px)}.brand{font-weight:900;letter-spacing:.4px}.brand b{background:linear-gradient(90deg,var(--purple),var(--pink));-webkit-background-clip:text;color:transparent}.sub{font-size:12px;color:var(--muted)}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line);background:var(--panel)}select,input{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 11px;outline:none}input{min-width:260px}button{border:1px solid var(--line);background:linear-gradient(135deg,#241039,#351148);color:var(--text);padding:9px 12px;border-radius:10px;cursor:pointer}button:hover{border-color:#8657a7}.primary{background:linear-gradient(135deg,#6136c7,#b51e78);border-color:#b563dd}.danger{background:#2b101e;border-color:#693040}.spacer{flex:1}.pill{font-size:12px;border:1px solid var(--line);padding:6px 9px;border-radius:999px;color:var(--muted)}
+.viewer{position:relative;overflow:auto;background:linear-gradient(180deg,#100918,#0c0811)}.rows{position:relative;width:100%}.row{position:absolute;left:0;right:0;display:grid;gap:6px;padding:7px 14px;border-bottom:1px solid #24162f;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.45;cursor:pointer}.row:hover{background:#21122e}.row-log{grid-template-columns:52px 64px 56px 90px 1fr}.row-req{grid-template-columns:52px 56px 64px 90px 1fr 70px 60px}.num{color:#6e557a;text-align:right}.level{font-weight:800;text-transform:uppercase}.source{font-size:11px;border:1px solid #3d2555;border-radius:4px;padding:1px 4px;text-align:center}.msg{color:#eee1f6}.debug{color:#9d83aa}.info{color:var(--cyan)}.warn{color:var(--yellow)}.error{color:#ff7893}.success{color:var(--green)}.timestamp{color:#8c75a0;margin-right:7px;font-size:12px}.category{display:inline-block;border:1px solid #67407e;border-radius:5px;padding:0 5px;font-size:10px;margin-right:7px;color:#cba9db}.banner{color:#ff75c4;font-weight:900}.json{color:#d7b7ff}.muted{color:var(--muted)}.data-preview{color:#9d83aa;font-size:11px;margin-left:4px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+.method{font-weight:800;font-size:11px;border-radius:4px;padding:1px 5px;text-align:center;display:inline-block;min-width:42px}.method-GET{color:var(--green);border:1px solid #166534}.method-POST{color:var(--cyan);border:1px solid #155e75}.method-PUT,.method-PATCH{color:var(--yellow);border:1px solid #854d0e}.method-DELETE{color:var(--red);border:1px solid #7f1d1d}.status{font-weight:800;font-size:11px}.status-2xx{color:var(--green)}.status-3xx{color:var(--cyan)}.status-4xx{color:var(--yellow)}.status-5xx{color:var(--red)}.duration{color:var(--muted);font-size:11px;text-align:right}.path-text{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.status{display:flex;gap:14px;align-items:center;padding:7px 14px;border-top:1px solid var(--line);background:#0f0916;color:var(--muted);font-size:12px}.progress{height:4px;background:#24152d}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink));transition:width .15s}
+.empty{display:grid;place-items:center;height:100%;text-align:center;color:var(--muted);padding:30px}.empty h2{color:var(--text);margin:0 0 8px}.notice{max-width:720px;background:#160d21;border:1px solid var(--line);padding:18px;border-radius:14px;box-shadow:var(--shadow)}
+.new-badge{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#6136c7,#b51e78);color:#fff;padding:8px 18px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);z-index:10;display:none;border:none}.new-badge:hover{opacity:.9}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}.modal-overlay.open{display:flex}.modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:800px;width:92%;max-height:85vh;overflow:auto;box-shadow:var(--shadow);padding:0}.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}.modal-header h3{margin:0;font-size:16px}.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px}.modal-close:hover{color:var(--text)}.modal-body{padding:16px 20px}.detail-section{margin-bottom:16px}.detail-section h4{margin:0 0 8px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.detail-grid{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:13px}.detail-label{color:var(--muted);text-align:right;font-weight:600;white-space:nowrap}.detail-value{color:var(--text);word-break:break-all}.detail-value pre{margin:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;max-height:300px;overflow-y:auto}
+@media(max-width:900px){.row-log{grid-template-columns:42px 56px 48px 70px 1fr}.row-req{grid-template-columns:42px 48px 56px 70px 1fr 60px 50px}.toolbar{overflow:auto;flex-wrap:nowrap}.sub{display:none}input{min-width:190px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><div class="brand">&#10022; <b>Toky Log Viewer</b></div><div class="sub">streaming &bull; read-only &bull; bounded memory</div><div class="spacer"></div><span id="memoryPill" class="pill">0 rows</span></header>
+  <section class="toolbar">
+    <select id="fileSelect"><option value="">Select a log&hellip;</option></select>
+    <button id="openBtn" class="primary">Open</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="clearBtn" class="danger">Unload</button>
+    <input id="filter" placeholder="Filter text / regex&hellip;">
+    <select id="level"><option value="">All levels</option><option>debug</option><option>info</option><option>warn</option><option>error</option><option>success</option></select>
+    <select id="sourceFilter"><option value="">All sources</option><option>server</option><option>frontend</option></select>
+    <select id="methodFilter"><option value="">All methods</option><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option></select>
+    <button id="regexBtn">Regex: off</button>
+  </section>
+  <main id="viewer" class="viewer"><div id="rows" class="rows"></div><div id="empty" class="empty"><div class="notice"><h2>1 GB logs are okay here.</h2><div>The browser never receives the entire file at once. Data is pulled in byte chunks, converted to lines, and old rows are automatically discarded from the in-memory window.</div></div></div></main>
+  <footer><div class="progress"><div id="bar" class="bar"></div></div><div class="status"><span id="status">Ready</span><span id="position">0 B</span><span id="visible">0 visible</span><span class="spacer"></span><span>Read-only viewer</span></div></div>
+</div>
+<button id="newBadge" class="new-badge">&#8593; New logs available</button>
+<div id="modalOverlay" class="modal-overlay"><div class="modal"><div class="modal-header"><h3 id="modalTitle">Log Entry</h3><button id="modalClose" class="modal-close">&times;</button></div><div class="modal-body" id="modalBody"></div></div></div>
+<script>
+const API="/log-viewer/api";
+const els={file:document.querySelector('#fileSelect'),open:document.querySelector('#openBtn'),pause:document.querySelector('#pauseBtn'),clear:document.querySelector('#clearBtn'),filter:document.querySelector('#filter'),level:document.querySelector('#level'),source:document.querySelector('#sourceFilter'),method:document.querySelector('#methodFilter'),regex:document.querySelector('#regexBtn'),viewer:document.querySelector('#viewer'),rows:document.querySelector('#rows'),empty:document.querySelector('#empty'),status:document.querySelector('#status'),position:document.querySelector('#position'),visible:document.querySelector('#visible'),bar:document.querySelector('#bar'),memory:document.querySelector('#memoryPill'),newBadge:document.querySelector('#newBadge'),modalOverlay:document.querySelector('#modalOverlay'),modalTitle:document.querySelector('#modalTitle'),modalBody:document.querySelector('#modalBody'),modalClose:document.querySelector('#modalClose')};
+const ROW_H=32,OVERSCAN=80,MAX_ROWS=15000,CHUNK=512*1024,INITIAL_SEEK=1024*1024,POLL_MS=2000;
+let state={file:null,size:0,offset:0,carry:'',rows:[],paused:false,eof:false,loading:false,filter:'',level:'',source:'',method:'',regex:false,seq:0,live:false,pollTimer:null,isRequestLog:false};
+const fmtBytes=n=>{const u=['B','KB','MB','GB'];let i=0;while(n>=1024&&i<3){n/=1024;i++}return n.toFixed(i?1:0)+' '+u[i]};
+const escapeHtml=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const unescapeHtml=s=>{const el=document.createElement('span');el.textContent=s;return el.textContent};
+function parseEntry(raw){
+  try{const o=JSON.parse(raw);
+    if(o.request){const s=o.response?.status||0;let lvl='info';if(s>=500)lvl='error';else if(s>=400)lvl='warn';else if(s>=300)lvl='info';else if(s>=200)lvl='success';return{raw,type:'request',level:lvl,method:o.request.method||'?',uri:o.request.uri||'',path:o.request.path||'',httpVersion:o.request.httpVersion||'',headers:o.request.headers||{},body:o.request.body||null,bodyBytes:o.request.bodyBytes||0,ip:o.request.ip||'',url:o.request.url||{},status:s,duration:o.response?.duration_ms||0,contentLength:o.response?.contentLength||0,time:o.ts?o.ts.replace('T',' ').replace('Z',''):''};}
+    return{raw,type:'log',level:o.level||'info',source:o.source||'',category:o.category||'',message:unescapeHtml(o.message||''),data:o.data||null,time:o.ts?o.ts.replace('T',' ').replace('Z',''):''};
+  }catch{return{raw,type:'log',level:'info',source:'',category:'',message:unescapeHtml(raw),data:null,time:extractTime(raw)};}
+}
+function formatData(data){if(!data||typeof data!=='object')return'';try{return JSON.stringify(data,null,2)}catch{return String(data)}}
+function statusClass(s){if(s>=500)return'status-5xx';if(s>=400)return'status-4xx';if(s>=300)return'status-3xx';return'status-2xx'}
+const highlight=(line)=>{let x=escapeHtml(line);x=x.replace(/(===.*?===)/g,'<span class="banner">$1</span>');x=x.replace(/(https?:\/\/[^\s"']+)/g,'<span class="json">$1</span>');return x};
+function visibleRows(){const q=state.filter.trim();let rx=null;if(q&&state.regex){try{rx=new RegExp(q,'i')}catch{rx=null}}return state.rows.map((r,i)=>({r,i})).filter(({r})=>{if(state.level&&r.level!==state.level)return false;if(r.type==='log'){if(state.source&&r.source!==state.source)return false}else if(r.type==='request'){if(state.method&&r.method!==state.method)return false}if(!q)return true;return rx?rx.test(r.raw):r.raw.toLowerCase().includes(q.toLowerCase())});}
+function renderRow(r,i,total){
+  if(r.type==='request'){
+    const d=document.createElement('div');d.className='row row-req';const rowNum=total-i;
+    d.innerHTML=`<div class="num">${rowNum}</div><div><span class="method method-${r.method}">${r.method}</span></div><div class="status ${statusClass(r.status)}">${r.status||'-'}</div><div class="timestamp">${r.time?escapeHtml(r.time):''}</div><div class="path-text" title="${escapeHtml(r.uri)}">${escapeHtml(r.path)}</div><div class="duration">${r.duration}ms</div><div class="muted">${fmtBytes(r.bodyBytes)}</div>`;
+    d.addEventListener('click',()=>showRequestDetail(r));return d;
+  }
+  const d=document.createElement('div');d.className='row row-log';const rowNum=total-i;
+  const dataPreview=r.data?escapeHtml(JSON.stringify(r.data).slice(0,80)):'';
+  d.innerHTML=`<div class="num">${rowNum}</div><div class="level ${r.level}">${r.level}</div><div class="source">${escapeHtml(r.source)}</div><div class="timestamp">${r.time?escapeHtml(r.time):''}</div><div class="msg">${r.category?'<span class="category">'+escapeHtml(r.category)+'</span>':''}${highlight(r.message)}${dataPreview?'<span class="data-preview" title="'+dataPreview+'">'+dataPreview+'</span>':''}</div>`;
+  d.addEventListener('click',()=>showLogDetail(r));return d;
+}
+function render(){const items=visibleRows();const h=ROW_H;const total=items.length;els.rows.style.height=(total*h)+'px';const top=els.viewer.scrollTop;const first=Math.max(0,Math.floor(top/h)-OVERSCAN),last=Math.min(total,Math.ceil((top+els.viewer.clientHeight)/h)+OVERSCAN);els.rows.innerHTML='';for(let j=first;j<last;j++){const {r,i}=items[j];const d=renderRow(r,i,total);d.style.top=(j*h)+'px';els.rows.appendChild(d)}els.visible.textContent=total+' visible';els.memory.textContent=state.rows.length.toLocaleString()+' rows';}
+function showLogDetail(r){els.modalTitle.textContent=r.level.toUpperCase()+' - '+r.source;let html='<div class="detail-section"><div class="detail-grid">';html+=`<div class="detail-label">Time</div><div class="detail-value">${escapeHtml(r.time||'-')}</div>`;html+=`<div class="detail-label">Level</div><div class="detail-value"><span class="${r.level}" style="font-weight:800">${r.level.toUpperCase()}</span></div>`;html+=`<div class="detail-label">Source</div><div class="detail-value">${escapeHtml(r.source||'-')}</div>`;html+=`<div class="detail-label">Category</div><div class="detail-value">${escapeHtml(r.category||'-')}</div>`;html+=`<div class="detail-label">Message</div><div class="detail-value"><pre>${escapeHtml(r.message||'')}</pre></div>`;if(r.data){html+=`<div class="detail-label">Data</div><div class="detail-value"><pre>${formatData(r.data)}</pre></div>`}html+='</div></div>';els.modalBody.innerHTML=html;els.modalOverlay.classList.add('open')}
+function showRequestDetail(r){
+  els.modalTitle.textContent=r.method+' '+r.path+' '+r.status;
+  let html='';
+  html+='<div class="detail-section"><h4>Request Line</h4><div class="detail-grid">';
+  html+=`<div class="detail-label">Method</div><div class="detail-value"><span class="method method-${r.method}">${r.method}</span></div>`;
+  html+=`<div class="detail-label">URI</div><div class="detail-value">${escapeHtml(r.uri)}</div>`;
+  html+=`<div class="detail-label">HTTP Version</div><div class="detail-value">${escapeHtml(r.httpVersion)}</div>`;
+  html+=`<div class="detail-label">Time</div><div class="detail-value">${escapeHtml(r.time)}</div>`;
+  html+=`<div class="detail-label">Client IP</div><div class="detail-value">${escapeHtml(r.ip)}</div>`;
+  html+='</div></div>';
+  html+='<div class="detail-section"><h4>URL Components</h4><div class="detail-grid">';
+  html+=`<div class="detail-label">Scheme</div><div class="detail-value">${escapeHtml(r.url.scheme||'-')}</div>`;
+  html+=`<div class="detail-label">Domain</div><div class="detail-value">${escapeHtml(r.url.domain||'-')}</div>`;
+  html+=`<div class="detail-label">Subdomain</div><div class="detail-value">${escapeHtml(r.url.subdomain||'-')}</div>`;
+  html+=`<div class="detail-label">Port</div><div class="detail-value">${escapeHtml(r.url.port||'-')}</div>`;
+  html+=`<div class="detail-label">Path</div><div class="detail-value">${escapeHtml(r.url.path||'-')}</div>`;
+  if(r.url.query&&Object.keys(r.url.query).length>0){html+=`<div class="detail-label">Query</div><div class="detail-value"><pre>${formatData(r.url.query)}</pre></div>`}
+  if(r.url.fragment){html+=`<div class="detail-label">Fragment</div><div class="detail-value">${escapeHtml(r.url.fragment)}</div>`}
+  html+='</div></div>';
+  html+='<div class="detail-section"><h4>Request Headers</h4><div class="detail-value"><pre>'+formatData(r.headers)+'</pre></div></div>';
+  if(r.body){html+='<div class="detail-section"><h4>Request Body</h4><div class="detail-value"><pre>'+formatData(r.body)+'</pre></div></div>'}
+  html+='<div class="detail-section"><h4>Response</h4><div class="detail-grid">';
+  html+=`<div class="detail-label">Status</div><div class="detail-value"><span class="${statusClass(r.status)}" style="font-weight:800">${r.status}</span></div>`;
+  html+=`<div class="detail-label">Duration</div><div class="detail-value">${r.duration}ms</div>`;
+  if(r.contentLength){html+=`<div class="detail-label">Content-Length</div><div class="detail-value">${fmtBytes(r.contentLength)}</div>`}
+  html+='</div></div>';
+  els.modalBody.innerHTML=html;els.modalOverlay.classList.add('open');
+}
+function addLinesNewestFirst(text){const pieces=(state.carry+text).split(/\r?\n/);state.carry=pieces.pop()??'';const parsed=[];for(const raw of pieces){if(raw==='')continue;parsed.push(parseEntry(raw))}parsed.reverse();state.rows.push(...parsed);if(state.rows.length>MAX_ROWS)state.rows.splice(0,state.rows.length-MAX_ROWS);render()}
+function addLinesAppend(text){const pieces=(state.carry+text).split(/\r?\n/);state.carry=pieces.pop()??'';const before=state.rows.length;for(const raw of pieces){if(raw==='')continue;state.rows.push(parseEntry(raw))}if(state.rows.length>MAX_ROWS)state.rows.splice(0,state.rows.length-MAX_ROWS);const added=state.rows.length-before;if(added>0&&!state.paused&&isNearTop()){els.newBadge.style.display='none';render()}else if(added>0){state._pendingNew=(state._pendingNew||0)+added;els.newBadge.textContent='\u2191 '+state._pendingNew+' new logs';els.newBadge.style.display='block'}else{render()}}
+function extractTime(line){const m=line.match(/^(\d{4}-\d\d-\d\d[ T]\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)?|\d\d:\d\d:\d\d(?:\.\d+)?)/);return m?.[1]||''}
+function isNearTop(){return els.viewer.scrollTop<els.viewer.clientHeight}
+async function loadChunk(){if(state.loading||state.eof||state.paused||!state.file)return;state.loading=true;try{els.status.textContent='Streaming '+state.file+'...';const res=await fetch(`${API}/logs/${encodeURIComponent(state.file)}/chunk?offset=${state.offset}&size=${CHUNK}`,{cache:'no-store'});if(!res.ok)throw new Error((await res.json()).error||res.statusText);const data=await res.json();state.offset=data.nextOffset;addLinesNewestFirst(data.text);state.eof=data.eof;els.position.textContent=fmtBytes(state.offset)+' / '+fmtBytes(state.size);els.bar.style.width=(state.size?Math.min(100,state.offset/state.size*100):0)+'%';if(state.eof){if(state.carry){addLinesNewestFirst(state.carry+'\n');state.carry=''}els.status.textContent='Live - watching for new logs';startPoll()}else{els.status.textContent='Streaming...';}}
+catch(e){els.status.textContent='Error: '+e.message}finally{state.loading=false}if(!state.eof&&!state.paused)requestAnimationFrame(keepFilled)}
+function keepFilled(){const nearTop=els.viewer.scrollTop<els.viewer.clientHeight*2;if(nearTop)loadChunk()}
+async function pollForNew(){if(state.paused||!state.file||state.loading)return;try{const meta=await fetch(`${API}/logs/${encodeURIComponent(state.file)}/meta`,{cache:'no-store'}).then(r=>r.json());if(meta.size>state.size){state.size=meta.size;const res=await fetch(`${API}/logs/${encodeURIComponent(state.file)}/chunk?offset=${state.offset}&size=${CHUNK}`,{cache:'no-store'});if(res.ok){const data=await res.json();if(data.text){state.offset=data.nextOffset;addLinesAppend(data.text)}els.position.textContent=fmtBytes(state.offset)+' / '+fmtBytes(state.size);els.bar.style.width=(state.size?Math.min(100,state.offset/state.size*100):0)+'%'}}}catch{}}
+function startPoll(){if(state.pollTimer)return;state.live=true;state.pollTimer=setInterval(pollForNew,POLL_MS)}
+function stopPoll(){if(state.pollTimer){clearInterval(state.pollTimer);state.pollTimer=null}state.live=false}
+async function openFile(name){unload(false);if(!name)return;state.file=name;state.isRequestLog=name==='requests.log';const meta=await fetch(`${API}/logs/${encodeURIComponent(name)}/meta`,{cache:'no-store'}).then(r=>r.json());state.size=meta.size;els.empty.style.display='none';const startOffset=Math.max(0,state.size-INITIAL_SEEK);state.offset=startOffset;if(startOffset>0){els.status.textContent='Seeking to latest...'}loadChunk()}
+function unload(show=true){stopPoll();state={file:null,size:0,offset:0,carry:'',rows:[],paused:false,eof:false,loading:false,filter:'',level:state.level,source:state.source,method:state.method,regex:state.regex,seq:state.seq+1,live:false,pollTimer:null,isRequestLog:false};els.rows.innerHTML='';els.rows.style.height='0px';els.empty.style.display='grid';els.bar.style.width='0%';els.position.textContent='0 B';els.status.textContent=show?'Unloaded':'Ready';els.newBadge.style.display='none';render()}
+async function loadFiles(){const data=await fetch(`${API}/logs`,{cache:'no-store'}).then(r=>r.json());els.file.innerHTML='<option value="">Select a log...</option>'+data.logs.map(x=>`<option value="${escapeHtml(x.name)}">${escapeHtml(x.name)} - ${fmtBytes(x.size)}</option>`).join('')}
+els.open.onclick=()=>openFile(els.file.value);els.clear.onclick=()=>unload(true);els.pause.onclick=()=>{state.paused=!state.paused;els.pause.textContent=state.paused?'Resume':'Pause';if(!state.paused){loadChunk()}};els.viewer.addEventListener('scroll',()=>{render();if(!state.eof)keepFilled()});els.filter.addEventListener('input',e=>{state.filter=e.target.value;render()});els.level.addEventListener('change',e=>{state.level=e.target.value;render()});els.source.addEventListener('change',e=>{state.source=e.target.value;render()});els.method.addEventListener('change',e=>{state.method=e.target.value;render()});els.regex.onclick=()=>{state.regex=!state.regex;els.regex.textContent='Regex: '+(state.regex?'on':'off');render()};els.newBadge.onclick=()=>{els.viewer.scrollTop=0;els.newBadge.style.display='none';state._pendingNew=0;render()};els.modalClose.onclick=()=>els.modalOverlay.classList.remove('open');els.modalOverlay.onclick=e=>{if(e.target===els.modalOverlay)els.modalOverlay.classList.remove('open')};
+loadFiles();
+let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>10*60*1000&&state.rows.length)unload(true)});
+</script>
+</body>
+</html>
