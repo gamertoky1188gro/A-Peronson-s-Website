@@ -636,9 +636,9 @@ export default function About() {
 							</div>
 
 							<div className="mt-6 overflow-hidden rounded-3xl border border-slate-200/80 bg-white dark:border-white/10 dark:bg-slate-950/50">
-								<div className="grid grid-cols-12 border-b border-slate-200/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-white/10 dark:text-slate-400">
-									<div className="col-span-6">Document name</div>
-									<div className="col-span-3">Status</div>
+								<div className="hidden border-b border-slate-200/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-white/10 dark:text-slate-400 sm:grid sm:grid-cols-12">
+									<div className="col-span-5">Document name</div>
+									<div className="col-span-4">Status</div>
 									<div className="col-span-3 text-right">Last updated</div>
 								</div>
 								<div className="divide-y divide-slate-200/80 dark:divide-white/10">
@@ -666,14 +666,14 @@ export default function About() {
 															duration: 0.25,
 															delay: reduceMotion ? 0 : index * 0.03,
 														}}
-														className="grid grid-cols-12 items-center px-4 py-4 text-sm"
+														className="flex flex-col gap-2 px-4 py-4 text-sm sm:grid sm:grid-cols-12 sm:items-center"
 													>
-														<div className="col-span-6 pr-3">
+														<div className="sm:col-span-5 sm:pr-3">
 															<div className="font-medium text-slate-900 dark:text-white">
 																{doc.name}
 															</div>
 														</div>
-														<div className="col-span-3">
+														<div className="sm:col-span-4">
 															<span
 																className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${style.chip}`}
 															>
@@ -682,7 +682,7 @@ export default function About() {
 																{doc.status}
 															</span>
 														</div>
-														<div className="col-span-3 text-right font-medium text-slate-600 dark:text-slate-300">
+														<div className="sm:col-span-3 sm:text-right font-medium text-slate-500 dark:text-slate-400 text-xs">
 															{doc.updatedAt}
 														</div>
 													</motion.div>
