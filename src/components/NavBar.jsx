@@ -913,7 +913,7 @@ export default function NavBar() {
 							animate={{ x: 0, opacity: 1 }}
 							exit={{ x: "-100%", opacity: 0 }}
 							transition={{ type: "spring", stiffness: 300, damping: 30 }}
-							className="mx-auto mt-16 w-[min(92vw,28rem)] overflow-hidden rounded-[2rem] border border-white/10 bg-white/85 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-2xl dark:bg-slate-950/90"
+							className="mx-auto mt-16 w-[min(92vw,28rem)] overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.22)] dark:border-white/10 dark:bg-slate-950"
 						>
 							<div className="flex items-center justify-between border-b border-slate-900/5 px-5 py-4 dark:border-white/10">
 								<div>
