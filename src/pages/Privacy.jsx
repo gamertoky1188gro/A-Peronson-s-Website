@@ -63,7 +63,6 @@ const sections = [
 		pills: [
 			"Account Management",
 			"Order Matching",
-			"AI-Assisted Replies",
 			"Secure Communications",
 			"Digital Contracts",
 			"Fraud Prevention",
@@ -99,7 +98,7 @@ const sections = [
 		title: "Call Recording & Chat Storage",
 		icon: MessagesSquare,
 		bullets: [
-			"All communications conducted within the platform may be securely stored.",
+			"All communications within the platform are stored securely for your protection. Your data will never be sold to third parties.",
 			"Call recordings are retained strictly for legal protection and dispute resolution.",
 		],
 	},
