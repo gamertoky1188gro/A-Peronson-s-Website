@@ -530,6 +530,15 @@ export default function NavBar() {
 	}, [mobileOpen]);
 
 	useEffect(() => {
+		if (mobileOpen) {
+			document.body.style.overflow = "hidden";
+		} else {
+			document.body.style.overflow = "";
+		}
+		return () => { document.body.style.overflow = ""; };
+	}, [mobileOpen]);
+
+	useEffect(() => {
 		const handleBackButton = () => {
 			if (mobileOpenRef.current) {
 				setMobileOpen(false);
@@ -896,7 +905,7 @@ export default function NavBar() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						className="fixed inset-0 z-[60] bg-slate-950/35 backdrop-blur-sm md:hidden"
+						className="fixed inset-0 z-[60] bg-white dark:bg-slate-950 md:hidden"
 					>
 						<Motion.div
 							ref={mobileMenuRef}
