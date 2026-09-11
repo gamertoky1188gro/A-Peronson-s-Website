@@ -106,6 +106,33 @@ export default function FloatingAssistant() {
 	const location = useLocation();
 	const orbMode = location.pathname === "/help";
 	const [open, setOpen] = useState(false);
+	const didPushRef = useRef(false);
+
+	useEffect(() => {
+		const handlePop = () => {
+			if (didPushRef.current) {
+				didPushRef.current = false;
+				setOpen(false);
+			}
+		};
+		window.addEventListener("popstate", handlePop);
+		return () => window.removeEventListener("popstate", handlePop);
+	}, []);
+
+	const openPanel = useCallback(() => {
+		history.pushState({ assistantOpen: true }, "");
+		didPushRef.current = true;
+		setOpen(true);
+	}, []);
+
+	const closePanel = useCallback(() => {
+		setOpen(false);
+		if (didPushRef.current) {
+			didPushRef.current = false;
+			history.back();
+		}
+	}, []);
+
 	const scrollDir = useScrollDirection();
 	const reduceMotion = useReducedMotion();
 	const buttonVisible = open || reduceMotion || scrollDir !== "down";
@@ -403,7 +430,7 @@ export default function FloatingAssistant() {
 			<motion.div className="fixed right-6 bottom-6 z-50" style={{ opacity: buttonOpacity }}>
 				<button
 					type="button"
-					onClick={() => setOpen(!open)}
+					onClick={() => (open ? closePanel() : openPanel())}
 					className={[
 						"w-14 h-14 rounded-full flex items-center justify-center text-white transition-all duration-300 active:scale-90",
 						orbMode
@@ -496,7 +523,7 @@ export default function FloatingAssistant() {
 									</svg>
 								</button>
 								<button
-									onClick={() => setOpen(false)}
+									onClick={closePanel}
 									aria-label="Close assistant"
 									title="Close assistant"
 									type="button"
