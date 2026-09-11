@@ -472,7 +472,8 @@ export default function HelpCenterPage() {
 								subtitle="Fast setup for buyers, factories, and buying houses."
 								accent="from-sky-400/18 to-cyan-400/10"
 							>
-								<div className="flex w-full gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-3">
+								<div className="-mx-6 overflow-x-auto px-6 snap-x snap-mandatory scrollbar-hide md:mx-0 md:px-0 md:snap-none">
+								<div className="flex w-max gap-4 md:w-full md:grid md:grid-cols-2 xl:grid-cols-3">
 									{[
 										{
 											n: "Step 1",
@@ -527,6 +528,7 @@ export default function HelpCenterPage() {
 											</p>
 										</div>
 									))}
+								</div>
 								</div>
 							</HelpSection>
 						</ScrollReveal>
