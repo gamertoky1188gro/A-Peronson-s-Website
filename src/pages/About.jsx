@@ -444,7 +444,7 @@ export default function About() {
 									<ChevronRight className="h-4 w-4" />
 								</MagneticButton>
 								<MagneticButton
-									to="/help"
+									to="/contracts"
 									className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/70 px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:text-sky-300"
 								>
 									Contact sales
@@ -776,7 +776,7 @@ export default function About() {
 									<ArrowUpRight className="h-4 w-4" />
 								</MagneticButton>
 								<MagneticButton
-									to="/help"
+									to="/contracts"
 									className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-5 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300"
 								>
 									Contact sales

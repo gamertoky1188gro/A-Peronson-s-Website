@@ -937,7 +937,8 @@ export default function TexHub() {
 						title="A simple flow that stays structured end-to-end."
 						text="From the first request to the final agreement, every step is organized to keep sourcing calm, clear, and fast."
 					/>
-					<div className="mt-8 flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide lg:grid lg:grid-cols-3">
+					<div className="relative mt-8">
+					<div data-lenis-prevent className="flex gap-4 overflow-x-auto snap-x snap-proximal scrollbar-hide px-1 pb-4 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0 lg:pb-0">
 						{workflowSteps.map((item, idx) => {
 							const Icon = workflowIconMap[item.icon] || ClipboardList;
 							const parallaxStyle = reduceMotion
@@ -967,6 +968,8 @@ export default function TexHub() {
 							);
 						})}
 					</div>
+					<div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent dark:from-[#020617] lg:hidden" />
+				</div>
 				</ScrollReveal>
 
 				<ScrollReveal as="section" id="platform" className="mt-20">

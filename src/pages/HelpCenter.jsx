@@ -325,8 +325,8 @@ export default function HelpCenterPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.24),transparent_34%),linear-gradient(180deg,#eff8ff_0%,#f8fbff_35%,#ffffff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_52%,#020617_100%)] dark:text-slate-100">
-			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+		<div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.24),transparent_34%),linear-gradient(180deg,#eff8ff_0%,#f8fbff_35%,#ffffff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_52%,#020617_100%)] dark:text-slate-100">
+			<div className="mx-auto max-w-7xl overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
 				<header className="mb-6 overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/70 shadow-[0_24px_120px_rgba(15,23,42,0.1)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
 					<div className="relative px-6 py-6 sm:px-8 sm:py-8">
 						<motion.div
@@ -373,8 +373,8 @@ export default function HelpCenterPage() {
 					</div>
 				</header>
 
-				<div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-					<aside className="space-y-6 lg:sticky lg:top-6 lg:h-fit">
+				<div className="grid min-w-0 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+					<aside className="min-w-0 space-y-6 lg:sticky lg:top-6 lg:h-fit">
 						<div className="rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
 							<div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
 								<ScanSearch className="h-4 w-4 text-sky-500" />
@@ -472,8 +472,8 @@ export default function HelpCenterPage() {
 								subtitle="Fast setup for buyers, factories, and buying houses."
 								accent="from-sky-400/18 to-cyan-400/10"
 							>
-								<div className="-mx-6 overflow-x-auto px-6 snap-x snap-mandatory scrollbar-hide md:mx-0 md:px-0 md:snap-none">
-								<div className="flex w-max gap-4 md:w-full md:grid md:grid-cols-2 xl:grid-cols-3">
+								<div className="overflow-x-hidden">
+								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
 									{[
 										{
 											n: "Step 1",
@@ -508,7 +508,7 @@ export default function HelpCenterPage() {
 									].map((item) => (
 										<div
 											key={item.n}
-											className="min-w-[260px] snap-start md:min-w-0 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
+											className="min-w-0 rounded-2xl border border-slate-200/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/60"
 										>
 											<div className="mb-3 flex items-center gap-3">
 												<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">

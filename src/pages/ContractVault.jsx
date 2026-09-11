@@ -346,6 +346,20 @@ export default function ContractVaultPage({ embedded = false }) {
 	const [contracts, setContracts] = useState([]);
 	const [pageLoading, setPageLoading] = useState(true);
 	const [feedback, setFeedback] = useState("");
+	const [showCreateForm, setShowCreateForm] = useState(false);
+	const [createForm, setCreateForm] = useState({
+		title: "",
+		description: "",
+		buyer_name: "",
+		factory_name: "",
+		product_details: "",
+		quantity: "",
+		unit_price: "",
+		currency: "USD",
+		delivery_date: "",
+		payment_terms: "",
+	});
+	const [createFiles, setCreateFiles] = useState([]);
 	const [paymentForm, setPaymentForm] = useState({
 		type: "bank_transfer",
 		transaction_reference: "",
@@ -447,18 +461,71 @@ export default function ContractVaultPage({ embedded = false }) {
 	};
 
 	const handleNewDraft = async () => {
+		setShowCreateForm(true);
+	};
+
+	const handleCreateContract = async () => {
+		if (!createForm.title.trim()) {
+			setFeedback("Title is required.");
+			return;
+		}
+		setSaving(true);
 		try {
 			const newContract = await apiRequest("/contracts", {
 				method: "POST",
 				token: getToken(),
-				body: { status: "draft", title: "Untitled" },
+				body: {
+					status: "draft",
+					title: createForm.title,
+					description: createForm.description,
+					buyer_name: createForm.buyer_name,
+					factory_name: createForm.factory_name,
+					product_details: createForm.product_details,
+					quantity: createForm.quantity ? Number(createForm.quantity) : undefined,
+					unit_price: createForm.unit_price ? Number(createForm.unit_price) : undefined,
+					currency: createForm.currency,
+					delivery_date: createForm.delivery_date || undefined,
+					payment_terms: createForm.payment_terms,
+				},
 			});
+
+			if (newContract?.id && createFiles.length > 0) {
+				for (const file of createFiles) {
+					try {
+						await uploadFile("/documents", {
+							file,
+							fields: { contract_id: newContract.id, type: "contract_attachment" },
+						});
+					} catch (err) {
+						logger.warn("Failed to upload attachment", err);
+					}
+				}
+			}
+
 			await loadContracts();
 			if (newContract?.id) {
 				setSelectedId(newContract.id);
 			}
+			setShowCreateForm(false);
+			setCreateForm({
+				title: "",
+				description: "",
+				buyer_name: "",
+				factory_name: "",
+				product_details: "",
+				quantity: "",
+				unit_price: "",
+				currency: "USD",
+				delivery_date: "",
+				payment_terms: "",
+			});
+			setCreateFiles([]);
+			setFeedback("Contract created successfully.");
 		} catch (err) {
-			logger.warn("Failed to create draft", err);
+			logger.warn("Failed to create contract", err);
+			setFeedback("Failed to create contract.");
+		} finally {
+			setSaving(false);
 		}
 	};
 
@@ -944,6 +1011,14 @@ export default function ContractVaultPage({ embedded = false }) {
 				)}
 			>
 				<div className="space-y-4">
+					{embedded && (
+						<button
+							onClick={handleNewDraft}
+							className="w-full rounded-2xl border border-dashed border-sky-400/40 bg-sky-500/5 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/10 dark:border-sky-400/20 dark:text-sky-300 dark:hover:bg-sky-400/10"
+						>
+							+ New Contract
+						</button>
+					)}
 					<ScrollReveal as="section">
 						<SectionCard
 							title={contract.id}
@@ -1422,14 +1497,180 @@ export default function ContractVaultPage({ embedded = false }) {
 		</div>
 	);
 
+	const createFormModal = showCreateForm && (
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+			<div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-slate-950">
+				<div className="flex items-center justify-between mb-6">
+					<div>
+						<h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Contract</h2>
+						<p className="text-sm text-slate-500 dark:text-slate-400">Fill in the details below to start a new contract</p>
+					</div>
+					<button
+						onClick={() => setShowCreateForm(false)}
+						className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+					>
+						Cancel
+					</button>
+				</div>
+
+				<div className="space-y-4">
+					<Input
+						label="Contract Title *"
+						value={createForm.title}
+						placeholder="e.g. PO #12345 - Summer Collection"
+						onChange={(e) => setCreateForm((p) => ({ ...p, title: e.target.value }))}
+					/>
+
+					<div className="grid gap-4 sm:grid-cols-2">
+						<Input
+							label="Buyer / Company Name"
+							value={createForm.buyer_name}
+							placeholder="Buyer name"
+							onChange={(e) => setCreateForm((p) => ({ ...p, buyer_name: e.target.value }))}
+						/>
+						<Input
+							label="Factory / Supplier Name"
+							value={createForm.factory_name}
+							placeholder="Factory name"
+							onChange={(e) => setCreateForm((p) => ({ ...p, factory_name: e.target.value }))}
+						/>
+					</div>
+
+					<label className="block">
+						<span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+							Description
+						</span>
+						<textarea
+							value={createForm.description}
+							placeholder="Describe the contract terms, requirements, or special instructions..."
+							rows={4}
+							onChange={(e) => setCreateForm((p) => ({ ...p, description: e.target.value }))}
+							className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
+						/>
+					</label>
+
+					<Input
+						label="Product Details"
+						value={createForm.product_details}
+						placeholder="e.g. 5000 pcs cotton t-shirts, size M-XL"
+						onChange={(e) => setCreateForm((p) => ({ ...p, product_details: e.target.value }))}
+					/>
+
+					<div className="grid gap-4 sm:grid-cols-3">
+						<Input
+							label="Quantity"
+							value={createForm.quantity}
+							placeholder="e.g. 5000"
+							onChange={(e) => setCreateForm((p) => ({ ...p, quantity: e.target.value }))}
+						/>
+						<Input
+							label="Unit Price"
+							value={createForm.unit_price}
+							placeholder="e.g. 3.50"
+							onChange={(e) => setCreateForm((p) => ({ ...p, unit_price: e.target.value }))}
+						/>
+						<label className="block">
+							<span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+								Currency
+							</span>
+							<select
+								value={createForm.currency}
+								onChange={(e) => setCreateForm((p) => ({ ...p, currency: e.target.value }))}
+								className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950 dark:text-white"
+							>
+								<option value="USD">USD</option>
+								<option value="EUR">EUR</option>
+								<option value="GBP">GBP</option>
+								<option value="BDT">BDT</option>
+							</select>
+						</label>
+					</div>
+
+					<div className="grid gap-4 sm:grid-cols-2">
+						<Input
+							label="Delivery Date"
+							value={createForm.delivery_date}
+							placeholder="e.g. 2026-12-01"
+							onChange={(e) => setCreateForm((p) => ({ ...p, delivery_date: e.target.value }))}
+						/>
+						<Input
+							label="Payment Terms"
+							value={createForm.payment_terms}
+							placeholder="e.g. 30% advance, 70% before shipment"
+							onChange={(e) => setCreateForm((p) => ({ ...p, payment_terms: e.target.value }))}
+						/>
+					</div>
+
+					<label className="block">
+						<span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+							Attachments (images, videos, documents)
+						</span>
+						<input
+							type="file"
+							multiple
+							accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"
+							onChange={(e) => {
+								const files = Array.from(e.target.files || []);
+								setCreateFiles((prev) => [...prev, ...files]);
+							}}
+							className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-sky-50 file:px-3 file:py-1 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 dark:border-white/10 dark:bg-slate-950 dark:text-white dark:file:bg-sky-400/10 dark:file:text-sky-300"
+						/>
+						{createFiles.length > 0 && (
+							<div className="mt-2 flex flex-wrap gap-2">
+								{createFiles.map((f, i) => (
+									<span
+										key={i}
+										className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 dark:bg-sky-400/10 dark:text-sky-300"
+									>
+										{f.name}
+										<button
+											onClick={() => setCreateFiles((prev) => prev.filter((_, idx) => idx !== i))}
+											className="ml-1 text-sky-400 hover:text-sky-600"
+										>
+											x
+										</button>
+									</span>
+								))}
+							</div>
+						)}
+					</label>
+
+					<div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
+						<button
+							onClick={() => setShowCreateForm(false)}
+							className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+						>
+							Cancel
+						</button>
+						<button
+							onClick={handleCreateContract}
+							disabled={saving || !createForm.title.trim()}
+							className="rounded-2xl bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							{saving ? "Creating..." : "Create Contract"}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+
 	if (embedded) {
-		return vaultContent;
+		return (
+			<>
+				{vaultContent}
+				{createFormModal}
+			</>
+		);
 	}
 
 	return (
 		<div className={shell}>
 			<div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.22),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_24%),linear-gradient(180deg,#f8fbff_0%,#eef7ff_40%,#eaf3ff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_25%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.12),_transparent_22%),linear-gradient(180deg,#020617_0%,#07111f_45%,#08111b_100%)] dark:text-white">
-				<div className="mx-auto max-w-[1600px] px-4 py-4 md:px-6 lg:px-8">{vaultContent}</div>
+				<div className="mx-auto max-w-[1600px] px-4 py-4 md:px-6 lg:px-8">
+					{vaultContent}
+					{createFormModal}
+				</div>
 			</div>
 		</div>
 	);

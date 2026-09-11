@@ -88,6 +88,7 @@ const AccessDenied = safeLazy(() => import("./pages/AccessDenied.jsx"));
 
 const AUTH_ROLES = ["buyer", "buying_house", "factory", "owner", "admin", "agent"];
 const OWNER_ROLES = ["owner", "admin", "buying_house", "factory"];
+const CONTRACT_ROLES = ["owner", "admin", "buying_house", "factory", "buyer"];
 const INSIGHTS_ROLES = ["owner", "admin", "buying_house", "factory", "buyer"];
 const MEMBER_MANAGEMENT_ROLES = ["owner", "admin", "buying_house", "factory"];
 
@@ -303,7 +304,7 @@ function AppRoutes() {
 			<Route
 				path="/contracts"
 				element={
-					<ProtectedRoute roles={OWNER_ROLES}>
+					<ProtectedRoute roles={CONTRACT_ROLES}>
 						<OwnerDashboard />
 					</ProtectedRoute>
 				}
