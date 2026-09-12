@@ -73,6 +73,8 @@ export default function usePageMeta({
 	title,
 	type = "website",
 	description,
+	canonical,
+	robots = "index,follow",
 	url,
 	image = DEFAULT_IMAGE,
 	image: imageUrl,
@@ -117,6 +119,26 @@ export default function usePageMeta({
 			}
 			el.setAttribute("content", String(description));
 		}
+
+		// Canonical
+		const canonicalUrl = canonical || window.location.href;
+		let canonicalEl = document.querySelector('link[rel="canonical"]');
+		if (!canonicalEl) {
+			canonicalEl = document.createElement("link");
+			canonicalEl.setAttribute("rel", "canonical");
+			document.head.appendChild(canonicalEl);
+		}
+		canonicalEl.setAttribute("href", canonicalUrl);
+
+		// Robots
+		let robotsEl = document.querySelector('meta[name="robots"]');
+		if (!robotsEl) {
+			robotsEl = document.createElement("meta");
+			robotsEl.setAttribute("name", "robots");
+			document.head.appendChild(robotsEl);
+		}
+		robotsEl.setAttribute("content", robots);
+
 		setMeta(`${OG_PREFIX}:url`, url || window.location.href);
 		setMeta(`${OG_PREFIX}:locale`, locale);
 		if (localeAlternate) {
@@ -303,6 +325,8 @@ export default function usePageMeta({
 		title,
 		type,
 		description,
+		canonical,
+		robots,
 		url,
 		image,
 		imageUrl,
