@@ -70,10 +70,6 @@ Disallow: /
 User-agent: Bytespider
 Disallow: /
 
-# Allow search-enhancement AI
-User-agent: Google-Extended
-Allow: /
-
 # ── Bad bots ─────────────────────────────────────────
 User-agent: AhrefsBot
 Disallow: /
