@@ -41,7 +41,7 @@ export default function CyberpunkCursor() {
 
 		const onKeyDown = (e) => {
 			if (e.repeat) return;
-			if (e.key.length !== 1) return;
+			if (!e.key || e.key.length !== 1) return;
 			if (e.ctrlKey || e.metaKey || e.altKey) return;
 			clearTimeout(timer);
 			timer = setTimeout(resetBuffer, 1500);

@@ -193,7 +193,7 @@ export default function FloatingAssistant() {
 				if (msgs && msgs.length > 0) {
 					const formatted = msgs.map((m) => ({
 						role: m.role === "user" ? "user" : "assistant",
-						text: m.text,
+						text: m.text || "",
 						isNew: false,
 					}));
 					setMessages(formatted);
