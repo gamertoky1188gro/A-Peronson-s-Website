@@ -265,6 +265,7 @@ export default function NavBar() {
 	}, [openDropdown]);
 
 	useEffect(() => {
+		if (!user) return;
 		const handler = (e) => {
 			const key = String(e.key || "").toLowerCase();
 			if (key !== "k") {
@@ -677,6 +678,7 @@ export default function NavBar() {
 					</div>
 
 					<div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
+						{user && (
 						<div ref={searchRef} className="relative hidden items-center md:flex">
 							{searchExpanded ? (
 								<div
@@ -842,6 +844,7 @@ export default function NavBar() {
 								</div>
 							) : null}
 						</div>
+						)}
 
 						<div className="ml-auto flex items-center gap-2">
 							<div className="hidden md:block">
@@ -879,6 +882,7 @@ export default function NavBar() {
 								</Link>
 							)}
 
+							{user && (
 							<button
 								type="button"
 								onClick={() => navigate("/search")}
@@ -887,6 +891,7 @@ export default function NavBar() {
 							>
 								<Search className="h-5 w-5" />
 							</button>
+							)}
 							<button
 								onClick={() => setMobileOpen((v) => !v)}
 								className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/70 text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white md:hidden"
