@@ -157,11 +157,11 @@ export function AdminHomeSection({
 								</Pill>
 								<Pill>
 									<LockKeyhole className="h-3.5 w-3.5" />
-									MFA {securityContext.mfa_required ? "Required" : "Optional"}
+									MFA {securityContext?.mfa_required ? "Required" : "Optional"}
 								</Pill>
 								<Pill>
 									<Sparkles className="h-3.5 w-3.5" />
-									Exec {securityContext.exec_enabled ? "Enabled" : "Simulated"}
+									Exec {securityContext?.exec_enabled ? "Enabled" : "Simulated"}
 								</Pill>
 							</div>
 							<div className="mt-2 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">

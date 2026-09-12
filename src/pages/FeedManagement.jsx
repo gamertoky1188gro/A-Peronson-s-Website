@@ -259,6 +259,11 @@ export default function FeedManagementPage() {
 			return;
 		}
 
+		if (!form.readme.trim()) {
+			setError("README / Longform content is required.");
+			return;
+		}
+
 		const token = getToken();
 		if (!token) {
 			setError("Please log in again. Token missing.");
@@ -298,11 +303,11 @@ export default function FeedManagementPage() {
 				body: payload,
 			});
 
-			if (!data?.post) {
+			const saved = data?.post || data;
+			if (!saved?.id) {
 				setError("Failed to save post");
 				return;
 			}
-			const saved = data.post;
 
 			if (isEditing) {
 				setPosts((prev) => prev.map((p) => (p.id === editingPost.id ? saved : p)));
@@ -482,7 +487,7 @@ export default function FeedManagementPage() {
 									/>
 								</Field>
 
-								<Field label="README / Longform" className="sm:col-span-2">
+								<Field label="README / Longform" required className="sm:col-span-2">
 									<textarea
 										value={form.readme}
 										onChange={(e) => updateField("readme", e.target.value)}

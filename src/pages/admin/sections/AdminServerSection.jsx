@@ -577,8 +577,8 @@ export function AdminServerSection({
 
 						<div className="mt-5 space-y-3">
 							{[
-								["MFA Required", securityContext.mfa_required ? "On" : "Off"],
-								["Exec Enabled", securityContext.exec_enabled ? "On" : "Simulated"],
+								["MFA Required", securityContext?.mfa_required ? "On" : "Off"],
+								["Exec Enabled", securityContext?.exec_enabled ? "On" : "Simulated"],
 								["OpenSearch", openSearchConfig.enabled ? "On" : "Off"],
 								["Email delivery", emailConfig.enabled ? "Enabled" : "Skipped if not configured"],
 								[

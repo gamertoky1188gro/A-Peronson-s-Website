@@ -246,7 +246,7 @@ export default function VerificationPage({ embedded = false }) {
 		(async () => {
 			try {
 				const data = await apiRequest("/subscriptions/me/verification-pricing", { token });
-				if (data?.first_month !== null) {
+				if (data?.first_month != null && typeof data.first_month === "number") {
 					setVerificationPrice({
 						firstMonth: data.first_month,
 						renewal: data.renewal ?? data.renewal_monthly ?? data.first_month,
@@ -527,8 +527,8 @@ export default function VerificationPage({ embedded = false }) {
 						</div>
 						<p className={`mt-1 text-sm ${softText}`}>
 							Verification is subscription-based and renews monthly. First month: $
-							{verificationPrice.firstMonth.toFixed(2)} • Renewals: $
-							{verificationPrice.renewal.toFixed(2)}/month
+							{(verificationPrice.firstMonth ?? 0).toFixed(2)} • Renewals: $
+							{(verificationPrice.renewal ?? 0).toFixed(2)}/month
 						</p>
 					</div>
 				</div>
@@ -904,11 +904,11 @@ export default function VerificationPage({ embedded = false }) {
 						<div className="mt-4 space-y-3 text-sm">
 							<div className="flex items-center justify-between">
 								<span className={softText}>First month</span>
-								<span className="font-semibold">${verificationPrice.firstMonth.toFixed(2)}</span>
+								<span className="font-semibold">${(verificationPrice.firstMonth ?? 0).toFixed(2)}</span>
 							</div>
 							<div className="flex items-center justify-between">
 								<span className={softText}>Renewals</span>
-								<span className="font-semibold">{verificationPrice.renewal.toFixed(2)}/month</span>
+								<span className="font-semibold">{(verificationPrice.renewal ?? 0).toFixed(2)}/month</span>
 							</div>
 							<div className="flex items-center justify-between">
 								<span className={softText}>Review status</span>
