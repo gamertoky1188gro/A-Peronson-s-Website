@@ -1657,29 +1657,25 @@ export async function getCoreMetrics(user) {
 	const isBuyingHouse = role === "buying_house";
 
 	if (isBuyingHouse) {
-		const [totalRequests, totalMatches, contracts, conversations, disputes, ratings, topProducts, avgHours] = await Promise.all([
+		const [totalRequests, totalMatches, contracts, ratings, topProducts, avgHours] = await Promise.all([
 			prisma.requirement.count({ where: { buyer_id: userId } }),
 			prisma.requirement.count({ where: { buyer_id: userId, assigned_agent_id: { not: null } } }),
 			prisma.contract.count({ where: { OR: [{ buyer_id: userId }, { factory_id: userId }] } }),
-			prisma.conversation.count({ where: { OR: [{ buyer_id: userId }, { factory_id: userId }] } }),
-			prisma.dispute.count({ where: { OR: [{ raised_by: userId }, { against_id: userId }] } }),
 			prisma.rating.aggregate({ _avg: { score: true }, where: { OR: [{ rater_id: userId }, { target_id: userId }] } }),
 			prisma.requirement.groupBy({ by: ["category"], where: { buyer_id: userId, category: { not: null } }, _count: true, orderBy: { _count: { category: "desc" } }, take: 5 }),
 			computeAvgFirstResponseHours(userId),
 		]);
 
 		const matchRate = totalRequests > 0 ? Math.round((totalMatches / totalRequests) * 100) : 0;
-		const conversion = conversations > 0 ? Math.round((contracts / conversations) * 100) : 0;
-		const trustScore = Math.max(0, contracts + (ratings._avg.score || 0) - disputes);
+		const trustScore = Math.max(0, contracts + (ratings._avg.score || 0));
 
 		return {
 			ok: true, role,
 			metrics: [
 				{ key: "buyer_request_match_rate", label: "Request Match Rate", value: matchRate, unit: "%", hint: "matched / total relevant" },
-				{ key: "lead_to_deal_conversion", label: "Lead to Deal Conversion", value: conversion, unit: "%", hint: "contracts / conversations" },
 				{ key: "factory_response_speed", label: "Response Speed", value: formatHours(avgHours), unit: "", hint: "avg first response time" },
 				{ key: "buyer_demand_trend", label: "Demand Trend", value: topProducts.map((p) => p.category).join(", ") || "--", unit: "", hint: "top requested products" },
-				{ key: "trusted_deal_score", label: "Trust Score", value: trustScore, unit: "", hint: "deals + rating - disputes" },
+				{ key: "trusted_deal_score", label: "Trust Score", value: trustScore, unit: "", hint: "deals + rating" },
 			],
 		};
 	}

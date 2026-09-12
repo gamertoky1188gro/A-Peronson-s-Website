@@ -123,7 +123,7 @@ export async function analyticsPlatformAdmin(req, res) {
 
 export async function analyticsPremium(req, res) {
 	try {
-		const actor = req.user?.role === "agent" ? await findUserById(req.user.id) : req.user;
+		const actor = await findUserById(req.user.id);
 		await authorize(actor, ACTIONS.ANALYTICS_VIEW_AGENT, { scope: "premium" });
 		const insights = await getPremiumInsights(actor);
 		return res.json(insights);

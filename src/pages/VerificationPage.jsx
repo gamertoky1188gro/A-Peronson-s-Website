@@ -77,8 +77,8 @@ export default function VerificationPage({ embedded = false }) {
 	const [renewing, setRenewing] = useState(false);
 	const [pageLoading, setPageLoading] = useState(true);
 	const [verificationPrice, setVerificationPrice] = useState({
-		firstMonth: 1.99,
-		renewal: 6.99,
+		firstMonth: null,
+		renewal: null,
 	});
 	const [code, setCode] = useState("");
 	const [verifyingCode, setVerifyingCode] = useState(false);
@@ -251,9 +251,11 @@ export default function VerificationPage({ embedded = false }) {
 						firstMonth: data.first_month,
 						renewal: data.renewal ?? data.renewal_monthly ?? data.first_month,
 					});
+				} else {
+					setVerificationPrice({ firstMonth: 1.99, renewal: 6.99 });
 				}
 			} catch {
-				// use defaults
+				setVerificationPrice({ firstMonth: 1.99, renewal: 6.99 });
 			}
 		})();
 	}, [token]);
@@ -529,6 +531,9 @@ export default function VerificationPage({ embedded = false }) {
 							Verification is subscription-based and renews monthly. First month: $
 							{(verificationPrice.firstMonth ?? 0).toFixed(2)} • Renewals: $
 							{(verificationPrice.renewal ?? 0).toFixed(2)}/month
+							{verificationPrice.firstMonth === null && (
+								<span className="ml-1 text-amber-500">(pricing unavailable)</span>
+							)}
 						</p>
 					</div>
 				</div>
@@ -904,11 +909,19 @@ export default function VerificationPage({ embedded = false }) {
 						<div className="mt-4 space-y-3 text-sm">
 							<div className="flex items-center justify-between">
 								<span className={softText}>First month</span>
-								<span className="font-semibold">${(verificationPrice.firstMonth ?? 0).toFixed(2)}</span>
+								<span className="font-semibold">
+									{verificationPrice.firstMonth !== null
+										? `$${verificationPrice.firstMonth.toFixed(2)}`
+										: <span className="text-amber-500 text-xs">Pricing unavailable</span>}
+								</span>
 							</div>
 							<div className="flex items-center justify-between">
 								<span className={softText}>Renewals</span>
-								<span className="font-semibold">{(verificationPrice.renewal ?? 0).toFixed(2)}/month</span>
+								<span className="font-semibold">
+									{verificationPrice.renewal !== null
+										? `${verificationPrice.renewal.toFixed(2)}/month`
+										: <span className="text-amber-500 text-xs">Pricing unavailable</span>}
+								</span>
 							</div>
 							<div className="flex items-center justify-between">
 								<span className={softText}>Review status</span>
