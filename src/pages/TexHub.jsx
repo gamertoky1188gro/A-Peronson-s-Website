@@ -580,7 +580,6 @@ export default function TexHub() {
 	const heroHeadline = home?.hero?.headline || initialHome.hero.headline;
 	const heroSubheadline = home?.hero?.subheadline || initialHome.hero.subheadline;
 	const heroShortDescription = home?.hero?.short_description || initialHome.hero.short_description;
-	const heroPresentation = home?.hero?.presentation_rule || initialHome.hero.presentation_rule;
 	const heroValueProps = Array.isArray(home?.hero?.value_props)
 		? home.hero.value_props
 		: initialHome.hero.value_props;
@@ -794,11 +793,7 @@ export default function TexHub() {
 							<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
 								{heroShortDescription}
 							</p>
-							{heroPresentation ? (
-								<p className="mt-2 max-w-2xl text-xs italic text-slate-500 dark:text-slate-400">
-									{heroPresentation}
-								</p>
-							) : null}
+
 						</motion.div>
 
 						<motion.div variants={staggerChildVariants} className="mt-8 flex flex-wrap gap-3">

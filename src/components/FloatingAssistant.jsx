@@ -427,7 +427,7 @@ export default function FloatingAssistant() {
 
 	return (
 		<>
-			<motion.div className="fixed right-6 bottom-6 z-50" style={{ opacity: buttonOpacity }}>
+			<motion.div className="fixed right-4 bottom-20 z-50 sm:right-6 sm:bottom-6" style={{ opacity: buttonOpacity }}>
 				<button
 					type="button"
 					onClick={() => (open ? closePanel() : openPanel())}

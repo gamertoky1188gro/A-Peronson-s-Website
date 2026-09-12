@@ -424,7 +424,7 @@ export default function About() {
 							</div>
 
 							<h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
-								About GarTexHub - Show notifications
+								About GarTexHub
 							</h1>
 
 							<p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
