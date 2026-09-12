@@ -780,10 +780,11 @@ export default function TexHub() {
 							<Pill>Textiles</Pill>
 						</motion.div>
 
-						<motion.h1
-							variants={staggerChildVariants}
-							className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl"
-						>
+					<motion.h1
+						variants={staggerChildVariants}
+						fetchPriority="high"
+						className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-6xl"
+					>
 							<AnimatedHeroHeading text={heroHeadline} />
 						</motion.h1>
 						<motion.div variants={staggerChildVariants}>

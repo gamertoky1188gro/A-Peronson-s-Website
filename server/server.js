@@ -397,9 +397,13 @@ app.use("/api/exports", exportRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/log-viewer", viewerRouter);
 app.use("/api/dev", devRoutes);
-app.use(errorHandler);
+	app.get("/health", (_req, res) => {
+		res.status(200).json({ status: "ok", uptime: process.uptime(), timestamp: Date.now() });
+	});
 
-if (serveDist && fs.existsSync(distRoot)) {
+	app.use(errorHandler);
+
+	if (serveDist && fs.existsSync(distRoot)) {
 	app.get(/.*/, (req, res) => {
 		if (req.path.match(/\.\w+$/)) {
 			return res.status(404).end();
