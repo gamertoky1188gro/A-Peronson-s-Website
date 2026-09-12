@@ -39,6 +39,7 @@ import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { useSecureUser } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
 import usePageMeta from "../lib/usePageMeta.js";
+import StructuredData from "../components/ui/StructuredData.jsx";
 
 function planKeyForUserRole(role) {
 	const normalized = String(role || "").toLowerCase();
@@ -768,6 +769,20 @@ export default function PricingPage() {
 
 	return (
 		<div className="min-h-screen bg-[#f5f9ff] text-slate-900 dark:bg-[#07111f] dark:text-white" data-lenis-prevent>
+			<StructuredData
+				data={{
+					"@context": "https://schema.org",
+					"@type": "FAQPage",
+					mainEntity: faqs.map((item) => ({
+						"@type": "Question",
+						name: item.q,
+						acceptedAnswer: {
+							"@type": "Answer",
+							text: item.a,
+						},
+					})),
+				}}
+			/>
 			<div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
 				<motion.div
 					style={{ y: reduceMotion ? 0 : bg1Y }}

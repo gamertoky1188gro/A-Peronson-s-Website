@@ -958,6 +958,7 @@ export default function SearchResults() {
 		description:
 			"Search GarTexHub for textile products, buyer requests, companies, and suppliers across the global textile marketplace.",
 		url: "/search",
+		robots: "noindex,nofollow",
 	});
 
 	const [, setSearchParams] = useSearchParams();

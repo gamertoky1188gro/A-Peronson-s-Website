@@ -112,7 +112,7 @@ export default function ProfilePage() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
 
-	usePageMeta({ title: "Profile — GarTexHub", url: `/profile/${id}` });
+	usePageMeta({ title: "Profile — GarTexHub", url: `/profile/${id}`, robots: "noindex,nofollow" });
 
 	useEffect(() => {
 		let cancelled = false;

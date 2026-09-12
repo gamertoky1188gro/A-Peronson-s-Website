@@ -85,6 +85,7 @@ const ProfilePage = safeLazy(() => import("./pages/ProfilePage.jsx"));
 const AdminPanel = safeLazy(() => import("./pages/AdminPanel.jsx"));
 const AdminGovernance = safeLazy(() => import("./pages/AdminGovernance.jsx"));
 const AccessDenied = safeLazy(() => import("./pages/AccessDenied.jsx"));
+const NotFound = safeLazy(() => import("./pages/NotFound.jsx"));
 
 const AUTH_ROLES = ["buyer", "buying_house", "factory", "owner", "admin", "agent"];
 const OWNER_ROLES = ["owner", "admin", "buying_house", "factory"];
@@ -367,7 +368,7 @@ function AppRoutes() {
 					</ProtectedRoute>
 				}
 			/>
-			<Route path="*" element={<Navigate to="/" replace={true} />} />
+			<Route path="*" element={<NotFound />} />
 		</Routes>
 	);
 }

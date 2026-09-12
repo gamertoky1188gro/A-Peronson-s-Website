@@ -71,6 +71,7 @@ import { useSecureUser } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
 import usePageMeta from "../lib/usePageMeta.js";
+import StructuredData from "../components/ui/StructuredData.jsx";
 
 const quickLinks = [
 	{ id: "quick-start", label: "Quick Start Guide", icon: Sparkles },
@@ -320,12 +321,28 @@ export default function HelpCenterPage() {
 		return () => observerRef.current.disconnect();
 	}, [sectionIds]);
 
+	const faqItems = (faqs.length > 0 ? faqs : faqSeed).map((item) => ({
+		"@type": "Question",
+		name: item.q || item.question || "",
+		acceptedAnswer: {
+			"@type": "Answer",
+			text: item.a || item.answer || "",
+		},
+	}));
+
 	if (pageLoading) {
 		return <NeonAtom fill={true} />;
 	}
 
 	return (
 		<div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.24),transparent_34%),linear-gradient(180deg,#eff8ff_0%,#f8fbff_35%,#ffffff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_30%),linear-gradient(180deg,#020617_0%,#07111f_52%,#020617_100%)] dark:text-slate-100">
+			<StructuredData
+				data={{
+					"@context": "https://schema.org",
+					"@type": "FAQPage",
+					mainEntity: faqItems,
+				}}
+			/>
 			<div className="mx-auto max-w-7xl overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
 				<header className="mb-6 overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/70 shadow-[0_24px_120px_rgba(15,23,42,0.1)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
 					<div className="relative px-6 py-6 sm:px-8 sm:py-8">

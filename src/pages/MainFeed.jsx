@@ -277,6 +277,7 @@ export default function MainFeed() {
 		description:
 			"Stay updated with the latest textile and garment industry posts, product launches, and market insights on GarTexHub.",
 		url: "/feed",
+		robots: "noindex,nofollow",
 	});
 
 	const navigate = useNavigate();
