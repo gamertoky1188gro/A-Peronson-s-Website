@@ -13,6 +13,7 @@ import remarkSmartypants from "remark-smartypants";
 import remarkSupersub from "remark-supersub";
 import remarkContainerDirective from "../../lib/remarkContainerDirective.js";
 import CodeBlock from "../ui/CodeBlock.jsx";
+import LazyImage from "../ui/LazyImage.jsx";
 
 const EXTRA_ALLOWED_TAGS = ["sub", "sup", "ins", "details", "summary", "kbd", "mark", "input"];
 
@@ -175,10 +176,11 @@ function MarkdownMessage({ text = "" }) {
 					},
 					img({ className = "", ...props }) {
 						return (
-							<img
+							<LazyImage
 								{...props}
+								width={600}
+								height={400}
 								className={`max-w-full rounded-xl shadow-borderless dark:shadow-borderlessDark ${className}`.trim()}
-								loading="lazy"
 							/>
 						);
 					},

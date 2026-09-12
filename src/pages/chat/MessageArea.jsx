@@ -11,6 +11,7 @@ import {
 	getInitials,
 	lockStatusLabel,
 } from "./chatUtils.js";
+import LazyImage from "../../components/ui/LazyImage.jsx";
 
 export default function MessageArea({
 	activeThread,
@@ -69,10 +70,13 @@ export default function MessageArea({
 						<div className="flex items-center gap-3">
 							<div className="relative">
 								{activeAvatar ? (
-									<img
+									<LazyImage
 										src={activeAvatar}
 										alt={activeThreadDisplayName}
+										width={40}
+										height={40}
 										className="h-10 w-10 rounded-full object-cover shadow-sm"
+										eager={true}
 									/>
 								) : (
 									<div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">

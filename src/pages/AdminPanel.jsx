@@ -56,6 +56,7 @@ import { AdminPlatformSection } from "./admin/sections/AdminPlatformSection.jsx"
 import { AdminSecuritySection } from "./admin/sections/AdminSecuritySection.jsx";
 import { AdminServerSection } from "./admin/sections/AdminServerSection.jsx";
 import { FileExplorerSection } from "./admin/sections/FileExplorerSection.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 
 const {
 	KNOWN_ROLES,
@@ -3562,9 +3563,11 @@ export default function AdminPanel() {
 									{aiModalDoc.type === "video" ? (
 										<video src={aiModalDoc.public_url} controls={true} className="w-full max-h-64" />
 									) : (
-										<img
+										<LazyImage
 											src={aiModalDoc.public_url}
 											alt="Preview"
+											width={600}
+											height={400}
 											className="w-full max-h-64 object-contain"
 										/>
 									)}

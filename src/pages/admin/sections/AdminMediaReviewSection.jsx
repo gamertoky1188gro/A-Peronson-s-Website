@@ -1,6 +1,7 @@
 import { ExternalLink, Film, Image } from "lucide-react";
 import { Mosaic } from "react-loading-indicators";
 import { apiRequest, getToken } from "../../../lib/auth.js";
+import LazyImage from "../../../components/ui/LazyImage.jsx";
 
 export function AdminMediaReviewSection({
 	adminDark,
@@ -53,9 +54,11 @@ export function AdminMediaReviewSection({
 											</div>
 										</div>
 									) : (
-										<img
+										<LazyImage
 											src={doc.public_url}
 											alt={doc.title || "Media"}
+											width={300}
+											height={300}
 											className="w-full aspect-square object-cover rounded-xl"
 											onError={(e) => {
 												e.target.style.display = "none";

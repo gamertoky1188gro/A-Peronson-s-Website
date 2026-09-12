@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Flag, MessageSquareText, Share2, X } from "luci
 import { useEffect, useMemo, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import { apiRequest, getToken } from "../../lib/auth.js";
+import LazyImage from "../ui/LazyImage.jsx";
 import PostPreview from "../ui/PostPreview.jsx";
 
 function formatDateTime(value) {
@@ -193,9 +194,11 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 			<div key={comment.id}>
 				<div className="flex gap-2.5">
 					{comment.actor_avatar ? (
-						<img
+						<LazyImage
 							src={comment.actor_avatar}
-							alt=""
+							alt={comment.actor_name || "User avatar"}
+							width={32}
+							height={32}
 							className="mt-0.5 h-8 w-8 shrink-0 rounded-full object-cover"
 						/>
 					) : (

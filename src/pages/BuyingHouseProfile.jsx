@@ -53,6 +53,7 @@ import { ThreeDot } from "react-loading-indicators";
 import { useNavigate, useParams } from "react-router-dom";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel.jsx";
 import VerificationPanel from "../components/profile/VerificationPanel.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { usePremiumCheck } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
@@ -138,7 +139,7 @@ function AvatarFallback({ name, imageUrl }) {
 		<div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
 			<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
 				{imageUrl ? (
-					<img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
+            <LazyImage src={imageUrl} alt={name || "Profile avatar"} width={40} height={40} loading="eager" className="h-full w-full object-cover" />
 				) : (
 					initials(name)
 				)}
@@ -330,7 +331,7 @@ function Lightbox({ open, image, onClose }) {
 				>
 					<X size={18} />
 				</button>
-				<img src={image} alt="Product preview" className="max-h-[92vh] w-full object-contain" />
+				<LazyImage src={image} alt="Product preview" width={1200} height={800} loading="lazy" className="max-h-[92vh] w-full object-contain" />
 			</div>
 		</div>
 	);

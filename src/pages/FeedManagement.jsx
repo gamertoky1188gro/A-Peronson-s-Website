@@ -31,6 +31,7 @@ import WordCount from "../components/ui/WordCount.jsx";
 import { apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth.js";
 import remarkContainerDirective from "../lib/remarkContainerDirective.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 
 const initialForm = {
 	title: "",
@@ -676,9 +677,11 @@ export default function FeedManagementPage() {
 																	}}
 																	className="h-full w-full"
 																>
-																	<img
+																	<LazyImage
 																		src={media.url}
 																		alt={media.name}
+																		width={300}
+																		height={300}
 																		className="h-full w-full object-cover"
 																	/>
 																</motion.div>
@@ -781,11 +784,12 @@ export default function FeedManagementPage() {
 											components={{
 												img({ src, alt, title, ...props }) {
 													return (
-														<img
+														<LazyImage
 															src={src}
-															alt={alt || ""}
+															alt={alt || "Markdown image"}
+															width={600}
+															height={400}
 															title={title}
-															loading="lazy"
 															className="max-w-full rounded-xl"
 															{...props}
 														/>

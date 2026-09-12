@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import ProfileImageUpload from "../components/ui/ProfileImageUpload.jsx";
 import UploadProgressBar from "../components/ui/UploadProgressBar.jsx";
 import { useEntitlements } from "../hooks/useSecureUser.js";
@@ -2309,9 +2310,11 @@ export default function OrgSettings({ embedded = false }) {
 								</div>
 								{brandLogoUrl && (
 									<div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 w-20 h-20">
-										<img
+										<LazyImage
 											src={brandLogoUrl}
 											alt="Logo preview"
+											width={80}
+											height={80}
 											className="w-full h-full object-contain"
 										/>
 									</div>
@@ -2353,9 +2356,11 @@ export default function OrgSettings({ embedded = false }) {
 								</div>
 								{brandCoverUrl && (
 									<div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-										<img
+										<LazyImage
 											src={brandCoverUrl}
 											alt="Banner preview"
+											width={1200}
+											height={400}
 											className="h-32 w-full object-cover"
 										/>
 									</div>

@@ -2,6 +2,7 @@ import { Search } from "lucide-react";
 import { Mosaic } from "react-loading-indicators";
 import { List } from "react-window";
 import { avatarUrl, formatDisplayName, formatTime, getInitials } from "./chatUtils.js";
+import LazyImage from "../../components/ui/LazyImage.jsx";
 
 export default function ThreadList({
 	query,
@@ -88,12 +89,14 @@ export default function ThreadList({
 									>
 										<div className="flex items-center gap-3">
 											<div className="relative flex-shrink-0">
-												{thread.avatar ? (
-													<img
-														src={avatarUrl(thread.avatar)}
-														alt={threadName}
-														className="h-11 w-11 rounded-full object-cover shadow-sm"
-													/>
+											{thread.avatar ? (
+												<LazyImage
+													src={avatarUrl(thread.avatar)}
+													alt={threadName}
+													width={44}
+													height={44}
+													className="h-11 w-11 rounded-full object-cover shadow-sm"
+												/>
 												) : (
 													<div
 														className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? "bg-gtBlue text-white" : "bg-slate-100 text-slate-500"}`}

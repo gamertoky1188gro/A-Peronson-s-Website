@@ -18,6 +18,7 @@ import ConfirmDialog from "../../../components/ConfirmDialog.jsx";
 import { useToast } from "../../../components/ToastContainer.jsx";
 import { apiRequest, getToken } from "../../../lib/auth.js";
 import { logger } from "../../../lib/logger.js";
+import LazyImage from "../../../components/ui/LazyImage.jsx";
 
 const FOLDER_CONFIG = [
 	{ id: "all", label: "All Files", icon: FolderOpen },
@@ -49,9 +50,11 @@ export function FileThumbnailImage({ file, onContextMenu }) {
 			onContextMenu={onContextMenu}
 		>
 			{!imgError && (
-				<img
+				<LazyImage
 					src={file.path}
 					alt={file.filename}
+					width={300}
+					height={300}
 					className="h-full w-full object-cover transition-transform group-hover:scale-105"
 					onError={() => setImgError(true)}
 				/>

@@ -21,6 +21,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import FeedItemCard from "../components/feed/FeedItemCard.jsx";
 import PostDetailModal from "../components/feed/PostDetailModal.jsx";
 import ReportModal from "../components/feed/ReportModal.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import useLocalStorageState from "../hooks/useLocalStorageState.js";
 import { apiRequest, fetchCurrentUser, getCurrentUser, getToken } from "../lib/auth.js";

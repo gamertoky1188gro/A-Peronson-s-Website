@@ -2,6 +2,7 @@ import { CheckCircle2, Mail, MessageSquareText, Shield, UserRound } from "lucide
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import { apiRequest, getToken } from "../lib/auth.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
 
@@ -118,10 +119,13 @@ export default function JoinRequestPage() {
 								</p>
 							</div>
 							{meta.company_logo ? (
-								<img
+								<LazyImage
 									src={meta.company_logo}
 									alt={companyName}
+									width={80}
+									height={80}
 									className="h-20 w-20 rounded-2xl bg-white object-cover shadow-xl"
+									eager={true}
 								/>
 							) : null}
 						</div>

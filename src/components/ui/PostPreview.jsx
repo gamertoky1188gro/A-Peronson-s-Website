@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import LazyImage from "./LazyImage.jsx";
 import MarkdownReadme from "../feed/MarkdownReadme.jsx";
 import LinkPreviewCard from "./LinkPreviewCard.jsx";
 
@@ -190,11 +191,12 @@ export default function PostPreview({ item }) {
 										preload="metadata"
 									/>
 								) : (
-									<img
+									<LazyImage
 										className="h-40 w-full object-cover"
 										src={entry.url}
-										alt={entry.alt || ""}
-										loading="lazy"
+										alt={entry.alt || "Gallery image"}
+										width={600}
+										height={400}
 									/>
 								)}
 							</div>

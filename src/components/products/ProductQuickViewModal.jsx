@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth.js";
 import { recordLeadSource } from "../../lib/leadSource.js";
 import AnimatedModal from "../AnimatedModal.jsx";
+import LazyImage from "../ui/LazyImage.jsx";
 
 function roleToProfileRoute(role, id) {
 	if (!id) {
@@ -216,9 +217,11 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 										transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
 										className="h-40 w-full rounded-xl overflow-hidden"
 									>
-										<img
+										<LazyImage
 											src={currentImage}
-											alt="Product"
+											alt="Product image"
+											width={300}
+											height={300}
 											className="h-full w-full object-cover pointer-events-none"
 										/>
 									</motion.div>
@@ -257,7 +260,7 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 										onClick={() => setCurrentImageIndex(i)}
 										className={`shrink-0 h-10 w-10 rounded-lg overflow-hidden border-2 transition ${i === currentImageIndex ? "border-sky-500" : "border-transparent opacity-60 hover:opacity-100"}`}
 									>
-										<img src={url} alt="" className="h-full w-full object-cover" />
+										<LazyImage src={url} alt={`Product thumbnail ${i + 1}`} width={40} height={40} className="h-full w-full object-cover" />
 									</button>
 								))}
 							</div>

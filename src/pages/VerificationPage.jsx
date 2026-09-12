@@ -47,6 +47,7 @@ import {
 	getBuyerRegionFromCountry,
 } from "../../shared/config/platformTaxonomy.js";
 import ScrollReveal from "../components/ScrollReveal.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import UploadProgressBar from "../components/ui/UploadProgressBar.jsx";
 import WordleInput from "../components/WordleInput.jsx";

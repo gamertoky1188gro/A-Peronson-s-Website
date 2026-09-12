@@ -14,6 +14,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { logger } from "../../lib/logger.js";
+import LazyImage from "../ui/LazyImage.jsx";
 import PostPreview from "../ui/PostPreview.jsx";
 
 function requestStatusBadgeClass(status = "") {
@@ -125,9 +126,11 @@ export default function FeedItemCard({
 						{profileLink ? (
 							<Link to={profileLink} className="shrink-0">
 								{item.author?.avatar_url ? (
-									<img
+									<LazyImage
 										src={item.author.avatar_url}
-										alt=""
+										alt={item.author.name || "Author avatar"}
+										width={40}
+										height={40}
 										className="h-10 w-10 rounded-full object-cover"
 									/>
 								) : (

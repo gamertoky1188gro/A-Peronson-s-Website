@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { apiRequest, getToken } from "../lib/auth.js";
 import { logger } from "../lib/logger.js";
@@ -73,7 +74,7 @@ function AvatarFallback({ name, imageUrl }) {
 		<div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
 			<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
 				{imageUrl ? (
-					<img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
+            <LazyImage src={imageUrl} alt={name || "Profile avatar"} width={40} height={40} loading="eager" className="h-full w-full object-cover" />
 				) : (
 					initials(name)
 				)}

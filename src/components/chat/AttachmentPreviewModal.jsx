@@ -3,6 +3,7 @@ import { Download, File, X } from "lucide-react";
 import Prism from "prismjs";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Atom } from "react-loading-indicators";
+import LazyImage from "../ui/LazyImage.jsx";
 import MarkdownMessage from "./MarkdownMessage.jsx";
 
 // Prism theme CSS is intentionally inlined (per repo styling policy: no external CSS imports).
@@ -1265,12 +1266,13 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 				<div data-lenis-prevent={true} className="max-h-[75vh] overflow-auto p-4">
 					{kind === "image" ? (
 						<div className="flex justify-center">
-							<img
-								src={file.url}
-								alt={file.name || "Preview"}
-								className="max-h-[70vh] w-auto max-w-full rounded-xl object-contain"
-								loading="lazy"
-							/>
+						<LazyImage
+							src={file.url}
+							alt={file.name || "Preview"}
+							width={800}
+							height={600}
+							className="max-h-[70vh] w-auto max-w-full rounded-xl object-contain"
+						/>
 						</div>
 					) : null}
 

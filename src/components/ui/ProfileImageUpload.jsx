@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import { getToken } from "../../lib/auth.js";
 import { uploadFile } from "../../lib/upload.js";
+import LazyImage from "./LazyImage.jsx";
 import UploadProgressBar from "./UploadProgressBar.jsx";
 
 export default function ProfileImageUpload({ value = "", onChange, label = "Profile image" }) {
@@ -111,9 +112,11 @@ export default function ProfileImageUpload({ value = "", onChange, label = "Prof
 
 			{value && (
 				<div className="flex items-center gap-3">
-					<img
+					<LazyImage
 						src={value}
-						alt="Preview"
+						alt="Profile preview"
+						width={64}
+						height={64}
 						className="h-16 w-16 rounded-xl object-cover ring-1 ring-slate-200/60 dark:ring-slate-800"
 						onError={(e) => {
 							e.target.style.display = "none";

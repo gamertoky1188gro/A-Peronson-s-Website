@@ -3,6 +3,7 @@ import { ThreeDot } from "react-loading-indicators";
 import { X } from "lucide-react";
 import { apiRequest, getToken } from "../../lib/auth.js";
 import { logger } from "../../lib/logger.js";
+import LazyImage from "../ui/LazyImage.jsx";
 
 export default function PaymentProofReviewModal({ proof, onClose, onReview, adminDark }) {
 	const [status, setStatus] = useState("");
@@ -76,11 +77,13 @@ export default function PaymentProofReviewModal({ proof, onClose, onReview, admi
 					<div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
 						<p className={`${labelClass} px-3 pt-2`}>Document</p>
 						{proof.document_url.match(/\.(png|jpg|jpeg|gif|webp)/i) ? (
-							<img
-								src={proof.document_url}
-								alt="Proof"
-								className="max-h-48 w-full object-contain"
-							/>
+						<LazyImage
+							src={proof.document_url}
+							alt="Payment proof document"
+							width={400}
+							height={192}
+							className="max-h-48 w-full object-contain"
+						/>
 						) : (
 							<a
 								href={proof.document_url}

@@ -13,6 +13,7 @@ import remarkSmartypants from "remark-smartypants";
 import remarkSupersub from "remark-supersub";
 import remarkContainerDirective from "../../lib/remarkContainerDirective.js";
 import CodeBlock from "../ui/CodeBlock.jsx";
+import LazyImage from "../ui/LazyImage.jsx";
 
 export default function MarkdownReadme({ content = "" }) {
 	const safe = String(content || "");
@@ -71,11 +72,12 @@ export default function MarkdownReadme({ content = "" }) {
 				components={{
 					img({ src, alt, title, ...props }) {
 						return (
-							<img
+							<LazyImage
 								src={src}
-								alt={alt || ""}
+								alt={alt || "Markdown image"}
+								width={600}
+								height={400}
 								title={title}
-								loading="lazy"
 								className="max-w-full rounded-xl"
 								{...props}
 							/>

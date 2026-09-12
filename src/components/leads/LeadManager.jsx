@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Mosaic } from "react-loading-indicators";
 import { useNavigate } from "react-router-dom";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth.js";
+import LazyImage from "../ui/LazyImage.jsx";
 
 const STATUS_OPTIONS = [
 	{ key: "new", label: "New" },
@@ -474,9 +475,11 @@ export default function LeadManager({
 														}}
 														className="h-8 w-8 shrink-0"
 													>
-														<img
+														<LazyImage
 															src={avatarUrl}
 															alt={label}
+															width={32}
+															height={32}
 															className="h-8 w-8 rounded-full object-cover"
 														/>
 													</motion.div>
@@ -533,9 +536,11 @@ export default function LeadManager({
 													}}
 													className="h-10 w-10 shrink-0"
 												>
-													<img
+													<LazyImage
 														src={selectedCounterparty.profile.profile_image}
 														alt={selectedCounterparty?.name}
+														width={40}
+														height={40}
 														className="h-10 w-10 rounded-full object-cover"
 													/>
 												</motion.div>

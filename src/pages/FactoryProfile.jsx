@@ -66,6 +66,7 @@ import HorizontalScrollGallery from "../components/HorizontalScrollGallery.jsx";
 import HoverCard from "../components/HoverCard.jsx";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel.jsx";
 import VerificationPanel from "../components/profile/VerificationPanel.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { usePremiumCheck } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
@@ -159,7 +160,7 @@ function AvatarFallback({ name, imageUrl }) {
 		<div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
 			<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
 				{imageUrl ? (
-					<img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
+            <LazyImage src={imageUrl} alt={name || "Profile avatar"} width={40} height={40} loading="eager" className="h-full w-full object-cover" />
 				) : (
 					initials(name)
 				)}
@@ -857,11 +858,14 @@ export default function FactoryProfile() {
 															<div className="flex items-center gap-3">
 																<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
 																	{brandProfile.brand_logo_url ? (
-																		<img
-																			src={brandProfile.brand_logo_url}
-																			alt="Brand logo"
-																			className="h-full w-full object-cover"
-																		/>
+                <LazyImage
+                  src={brandProfile.brand_logo_url}
+                  alt={brandProfile.brand_name || "Brand logo"}
+                  width={80}
+                  height={80}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
 																	) : (
 																		<Building2 className="h-5 w-5 text-sky-500" />
 																	)}
@@ -955,11 +959,14 @@ export default function FactoryProfile() {
 																>
 																	<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
 																		{company.logo ? (
-																			<img
-																				src={company.logo}
-																				alt={company.name || "Company"}
-																				className="h-full w-full object-cover"
-																			/>
+                    <LazyImage
+                      src={company.logo}
+                      alt={company.name || "Company logo"}
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
 																		) : (
 																			<Building2 className="h-5 w-5 text-sky-500" />
 																		)}
@@ -1018,11 +1025,14 @@ export default function FactoryProfile() {
 																				}}
 																				className="group relative block h-48 w-full overflow-hidden bg-slate-200"
 																			>
-																				<img
-																					src={product.cover_image_public_url}
-																					alt={product.title}
-																					className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-																				/>
+                          <LazyImage
+                            src={product.cover_image_public_url}
+                            alt={product.title}
+                            width={300}
+                            height={300}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
 																				<div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent" />
 																				<div className="absolute left-3 top-3 flex gap-2">
 																					<Pill

@@ -76,6 +76,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
 import { Link, useSearchParams } from "react-router-dom";
 import MasonryGrid from "../components/MasonryGrid.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import UploadProgressBar from "../components/ui/UploadProgressBar.jsx";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";

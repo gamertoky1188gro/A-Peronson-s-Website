@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
 import { getInitials, isVideoMessage, toAbsoluteAssetUrl, truncateId } from "./chatUtils.js";
+import LazyImage from "../../components/ui/LazyImage.jsx";
 
 export default function RightPanel({
 	activeThread,
@@ -49,10 +50,13 @@ export default function RightPanel({
 					<div className="mb-8 text-center">
 						<div className="mx-auto mb-4 h-24 w-24 rounded-full shadow-md">
 							{activeAvatar ? (
-								<img
+								<LazyImage
 									src={activeAvatar}
 									alt={activeThreadDisplayName}
+									width={96}
+									height={96}
 									className="h-full w-full rounded-full object-cover"
+									eager={true}
 								/>
 							) : (
 								<div className="flex h-full w-full items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-400">
@@ -282,9 +286,11 @@ export default function RightPanel({
 																		</div>
 																	</>
 																) : (
-																	<img
+																	<LazyImage
 																		src={url}
-																		alt=""
+																		alt="Shared media"
+																		width={80}
+																		height={80}
 																		className="h-full w-full object-cover transition-transform hover:scale-110"
 																	/>
 																)}

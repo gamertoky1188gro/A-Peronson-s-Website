@@ -48,6 +48,7 @@ const WS_BASE = (() => {
 import { isRouteValid } from "../lib/routeHealthCheck.js";
 import { ROUTES } from "../lib/routes.js";
 import MessageArea from "./chat/MessageArea.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 
 const CHAT_NAV_ITEMS = [
 	{ to: ROUTES.FEED, label: "Feed", icon: Home },
@@ -1046,9 +1047,11 @@ export default function ChatInterface() {
 						className="block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left transition-opacity hover:opacity-95"
 						title="View image"
 					>
-						<img
+						<LazyImage
 							src={attachmentUrl}
 							alt={message?.attachment?.name || "Shared image"}
+							width={600}
+							height={400}
 							className="max-h-64 w-full object-cover"
 						/>
 					</button>
@@ -1517,10 +1520,13 @@ export default function ChatInterface() {
 					<div className="w-full max-w-sm rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[#14122b] p-6 text-white shadow-2xl">
 						<div className="flex items-center gap-4">
 							{callPromptThread.avatar ? (
-								<img
+								<LazyImage
 									src={avatarUrl(callPromptThread.avatar)}
 									alt={callPromptThread.name}
+									width={64}
+									height={64}
 									className="h-16 w-16 rounded-full object-cover"
+									eager={true}
 								/>
 							) : (
 								<div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2744] text-lg font-bold">

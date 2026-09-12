@@ -1,6 +1,7 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { Atom } from "react-loading-indicators";
 import { logger } from "../../lib/logger.js";
+import LazyImage from "../ui/LazyImage.jsx";
 
 const TEXT_EXTS = new Set([
 	"txt",
@@ -384,11 +385,12 @@ function FileAttachmentCard({
 				>
 					<div className="flex h-28 w-full items-center justify-center overflow-hidden">
 						{pdfPreview.thumbUrl ? (
-							<img
+							<LazyImage
 								src={pdfPreview.thumbUrl}
 								alt={`${name} preview`}
+								width={720}
+								height={280}
 								className="h-full w-full object-contain"
-								loading="lazy"
 							/>
 						) : (
 							<div className="px-3 text-[11px] font-semibold opacity-70">

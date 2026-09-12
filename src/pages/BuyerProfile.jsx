@@ -53,6 +53,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import JourneyTimeline from "../components/JourneyTimeline.jsx";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel.jsx";
 import VerificationPanel from "../components/profile/VerificationPanel.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { usePremiumCheck } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
@@ -172,7 +173,7 @@ function AvatarFallback({ name, imageUrl }) {
 		<div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
 			<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
 				{imageUrl ? (
-					<img src={imageUrl} alt={name || "Profile avatar"} className="h-full w-full object-cover" />
+            <LazyImage src={imageUrl} alt={name || "Profile avatar"} width={40} height={40} loading="eager" className="h-full w-full object-cover" />
 				) : (
 					initials(name)
 				)}
@@ -969,11 +970,14 @@ export default function BuyerProfile() {
 													>
 														<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
 															{company.logo ? (
-																<img
-																	src={company.logo}
-																	alt={company.name || "Company"}
-																	className="h-full w-full object-cover"
-																/>
+                      <LazyImage
+                        src={item.logo}
+                        alt={item.name}
+                        width={80}
+                        height={80}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
 															) : (
 																<Building2 className="h-5 w-5 text-sky-500" />
 															)}
