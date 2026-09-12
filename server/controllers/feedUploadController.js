@@ -5,6 +5,7 @@ import { isAIAnalyticsEnabled, runImageFileAnalysis } from "../services/aiModera
 import { addImageToQueue } from "../services/imageQueue.js";
 import { addToQueue } from "../services/videoQueue.js";
 import { logError, logInfo } from "../utils/logger.js";
+import { sanitizeSvgFile } from "../utils/svgSanitizer.js";
 import prisma from "../utils/prisma.js";
 
 function generateId() {
@@ -113,6 +114,8 @@ export async function uploadFeedMedia(req, res) {
 
 	const url = `/uploads/feed/${filename}`;
 	const fullPath = path.join(process.cwd(), "server", "uploads", "feed", filename);
+
+	await sanitizeSvgFile(fullPath).catch(() => null);
 
 	try {
 		const doc = await prisma.document.create({

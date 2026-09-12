@@ -243,6 +243,7 @@ export default function FloatingAssistant() {
 
 	const streamingIdsRef = useRef(new Set());
 	const reconnectTimerRef = useRef(null);
+	const reconnectAttemptsRef = useRef(0);
 	const wsUrlRef = useRef(getWsUrl());
 
 	function cancelReconnect() {
@@ -250,6 +251,7 @@ export default function FloatingAssistant() {
 			clearTimeout(reconnectTimerRef.current);
 			reconnectTimerRef.current = null;
 		}
+		reconnectAttemptsRef.current = 0;
 	}
 
 	const connectWs = useCallback(function connectWs() {
@@ -261,6 +263,7 @@ export default function FloatingAssistant() {
 
 		socket.onopen = () => {
 			setWsConnected(true);
+			reconnectAttemptsRef.current = 0;
 			try {
 				const token = typeof getToken === "function" ? getToken() : null;
 				if (token) {
@@ -347,9 +350,11 @@ export default function FloatingAssistant() {
 			if (reconnectTimerRef.current) {
 				clearTimeout(reconnectTimerRef.current);
 			}
+			reconnectAttemptsRef.current += 1;
+			const delay = Math.min(1000 * 2 ** reconnectAttemptsRef.current, 120_000);
 			reconnectTimerRef.current = setTimeout(() => {
 				connectWs();
-			}, 30_000);
+			}, delay);
 		};
 		socket.onerror = () => {
 			socket.close();

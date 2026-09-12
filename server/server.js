@@ -1011,6 +1011,22 @@ wsServer.on("connection", (socket, req) => {
 			return;
 		}
 
+		if (!socket.userId) {
+			sendReply({
+				type: "reply",
+				question: null,
+				matched_answer: "Authentication required. Please identify first.",
+				source: "ws:auth",
+				metadata: {
+					matched_source: "ws:auth",
+					matched_type: "error",
+					confidence: 0,
+					fallback_reason: "unauthenticated_ask",
+				},
+			});
+			return;
+		}
+
 		const question = String(payload?.question || "");
 		const messageNow = Date.now();
 		if (question && question === lastQuestion && messageNow - lastQuestionAt < 1500) {

@@ -3,6 +3,7 @@ import { ACTIONS, authorize, buildCapabilityPayload } from "../services/authoriz
 import { ensureEntitlement, getEntitlements } from "../services/entitlementService.js";
 import { isImageFile } from "../services/imageProcessor.js";
 import { addImageToQueue } from "../services/imageQueue.js";
+import { sanitizeSvgFile } from "../utils/svgSanitizer.js";
 import prisma from "../utils/prisma.js";
 import {
 	adminForceLogout as adminForceLogoutUser,
@@ -337,6 +338,10 @@ export async function uploadAvatar(req, res) {
 			return res.status(400).json({ error: "No file uploaded" });
 		}
 		const avatarUrl = `/uploads/profile/${req.file.filename}`;
+		const fullPath = req.file.path ? path.resolve(req.file.path) : null;
+		if (fullPath) {
+			await sanitizeSvgFile(fullPath).catch(() => null);
+		}
 		const user = await updateProfile(req.user.id, {
 			profile_image: avatarUrl,
 			avatar_url: avatarUrl,
@@ -345,7 +350,6 @@ export async function uploadAvatar(req, res) {
 			return res.status(404).json({ error: "User not found" });
 		}
 
-		const fullPath = req.file.path ? path.resolve(req.file.path) : null;
 		if (fullPath && isImageFile(req.file.mimetype, req.file.originalname)) {
 			addImageToQueue({ filePath: fullPath, documentId: null });
 		}

@@ -137,6 +137,7 @@ export default function ChatInterface() {
 	const wsRef = useRef(null);
 	const fileInputRef = useRef(null);
 	const reconnectTimerRef = useRef(null);
+	const reconnectAttemptsRef = useRef(0);
 	const activeThreadMatchIdRef = useRef("");
 	const pendingMatchIdRef = useRef("");
 	const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
@@ -645,10 +646,11 @@ export default function ChatInterface() {
 			const ws = new WebSocket(WS_BASE);
 			wsRef.current = ws;
 
-			ws.onopen = () => {
-				if (!isActive) {
-					return;
-				}
+		ws.onopen = () => {
+			if (!isActive) {
+				return;
+			}
+			reconnectAttemptsRef.current = 0;
 				ws.send(
 					JSON.stringify({
 						type: "identify",
@@ -742,15 +744,17 @@ export default function ChatInterface() {
 
 			ws.onerror = () => {};
 
-			ws.onclose = () => {
-				if (!isActive) {
-					return;
-				}
-				if (reconnectTimerRef.current) {
-					window.clearTimeout(reconnectTimerRef.current);
-				}
-				reconnectTimerRef.current = window.setTimeout(connect, 30_000);
-			};
+		ws.onclose = () => {
+			if (!isActive) {
+				return;
+			}
+			if (reconnectTimerRef.current) {
+				window.clearTimeout(reconnectTimerRef.current);
+			}
+			reconnectAttemptsRef.current += 1;
+			const delay = Math.min(1000 * 2 ** reconnectAttemptsRef.current, 120_000);
+			reconnectTimerRef.current = window.setTimeout(connect, delay);
+		};
 		};
 
 		connect();

@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { maybeGenerateBotReply } from "../services/chatbotService.js";
+import { sanitizeSvgFile } from "../utils/svgSanitizer.js";
 import {
 	adjustSenderReputation,
 	getCommunicationPolicyConfig,
@@ -140,6 +141,8 @@ export async function uploadMessageAttachment(req, res) {
 		? normalized.replace(uploadBase.replace(/\\/g, "/"), "")
 		: normalized.replace(String(process.cwd()).replace(/\\/g, "/"), "");
 	const publicUrl = `/uploads${relative.startsWith("/") ? relative : `/${relative}`}`;
+
+	await sanitizeSvgFile(file.path).catch(() => null);
 
 	const mime = String(file.mimetype || "");
 	const messageType = mime.startsWith("image/")

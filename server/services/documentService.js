@@ -12,6 +12,7 @@ import {
 import prisma from "../utils/prisma.js";
 import { getPublicDocuments } from "../utils/privacy.js";
 import { sanitizeString } from "../utils/validators.js";
+import { sanitizeSvgBuffer } from "../utils/svgSanitizer.js";
 import { hasCompletedCallBetweenUsers } from "./callSessionService.js";
 import { ensureCertificationForContract } from "./certificationService.js";
 import { trackEvent } from "./eventTrackingService.js";
@@ -447,7 +448,12 @@ export async function saveDocumentMetadata(ownerId, entityType, entityId, type, 
 	const moderation = getMediaModerationResult(file);
 	const safeName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
 	const targetPath = path.join(process.cwd(), "server", "uploads", safeName);
-	await fs.writeFile(targetPath, file.buffer);
+	let fileBuffer = file.buffer;
+	if (file.mimetype === "image/svg+xml" || path.extname(file.originalname).toLowerCase() === ".svg") {
+		const { content } = sanitizeSvgBuffer(file.buffer);
+		fileBuffer = content;
+	}
+	await fs.writeFile(targetPath, fileBuffer);
 
 	const doc = {
 		id: crypto.randomUUID(),

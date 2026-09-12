@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import multer from "multer";
+import path from "node:path";
 import {
 	approveDocumentCtrl,
 	createContractDraft,
@@ -17,9 +18,33 @@ import {
 } from "../controllers/documentController.js";
 import { requireAuth } from "../middleware/auth.js";
 
+const ALLOWED_DOC_MIMES = new Set([
+	"image/jpeg",
+	"image/png",
+	"image/webp",
+	"image/gif",
+	"image/svg+xml",
+	"application/pdf",
+	"application/msword",
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+	"application/vnd.ms-excel",
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	"text/plain",
+	"text/csv",
+]);
+
 const upload = multer({
 	storage: multer.memoryStorage(),
 	limits: { fileSize: 250 * 1024 * 1024 },
+	fileFilter: (_req, file, cb) => {
+		const ext = path.extname(file.originalname || "").toLowerCase();
+		const mime = String(file.mimetype || "").toLowerCase();
+		if (ALLOWED_DOC_MIMES.has(mime) || mime.startsWith("image/") || mime.startsWith("video/")) {
+			cb(null, true);
+		} else {
+			cb(new Error("Unsupported file format"));
+		}
+	},
 });
 const router = Router();
 
