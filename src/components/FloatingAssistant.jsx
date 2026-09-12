@@ -81,7 +81,7 @@ function TypewriterText({ text, speed = 20, onComplete }) {
 	const [index, setIndex] = useState(0);
 
 	useEffect(() => {
-		if (index < text.length) {
+		if (text && index < text.length) {
 			const timeout = setTimeout(() => {
 				setDisplayedText((prev) => prev + text[index]);
 				setIndex((prev) => prev + 1);
@@ -168,7 +168,7 @@ export default function FloatingAssistant() {
 				if (msgs && msgs.length > 0) {
 					const formatted = msgs.map((m) => ({
 						role: m.role === "user" ? "user" : "assistant",
-						text: m.text,
+						text: m.text || "",
 						isNew: false,
 					}));
 					setMessages(formatted);
