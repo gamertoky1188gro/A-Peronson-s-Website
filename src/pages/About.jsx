@@ -37,7 +37,6 @@ import {
 	Check,
 	ChevronRight,
 	CircleAlert,
-	ExternalLink,
 	FileText,
 	Globe2,
 	MessagesSquare,
@@ -443,13 +442,6 @@ export default function About() {
 									View verification standards
 									<ChevronRight className="h-4 w-4" />
 								</MagneticButton>
-								<MagneticButton
-									to="/contracts"
-									className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/70 px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:text-sky-300"
-								>
-									Contact sales
-									<ExternalLink className="h-4 w-4" />
-								</MagneticButton>
 							</div>
 
 							<p className="mt-5 max-w-3xl text-base italic leading-7 text-slate-500 dark:text-slate-400">
@@ -762,9 +754,9 @@ export default function About() {
 						<div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
 							<div>
 								<SectionHeading
-									eyebrow="Contact & legal"
-									title="Official communication channels for partnership and support"
-									description="For partnership inquiries, support, or compliance-related questions, please contact us through the official communication channels listed on the platform."
+									eyebrow="Trust & verification"
+									title="Our verification standards are publicly available"
+									description="Learn how we verify factories, buying houses, and buyers on the platform. Transparency is core to how GarTexHub works."
 								/>
 							</div>
 							<div className="flex flex-wrap gap-3 lg:justify-end">
@@ -773,13 +765,6 @@ export default function About() {
 									className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
 								>
 									View verification standards
-									<ArrowUpRight className="h-4 w-4" />
-								</MagneticButton>
-								<MagneticButton
-									to="/contracts"
-									className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-500/10 px-5 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-500/15 dark:text-sky-300"
-								>
-									Contact sales
 									<ArrowUpRight className="h-4 w-4" />
 								</MagneticButton>
 							</div>
