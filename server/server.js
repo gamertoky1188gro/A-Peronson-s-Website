@@ -72,6 +72,7 @@ import uploadsRoutes from "./routes/uploadsRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
+import seoRoutes from "./routes/seoRoutes.js";
 import workflowLifecycleRoutes from "./routes/workflowLifecycleRoutes.js";
 import {
 	initAllUserSessions,
@@ -394,9 +395,10 @@ app.use("/api/workflow", workflowLifecycleRoutes);
 app.use("/api/infra", infraRoutes);
 app.use("/api/network", networkRoutes);
 app.use("/api/exports", exportRoutes);
-app.use("/api/logs", logRoutes);
-app.use("/log-viewer", viewerRouter);
-app.use("/api/dev", devRoutes);
+	app.use("/api/logs", logRoutes);
+	app.use("/log-viewer", viewerRouter);
+	app.use("/api/dev", devRoutes);
+	app.use(seoRoutes);
 	app.get("/health", (_req, res) => {
 		res.status(200).json({ status: "ok", uptime: process.uptime(), timestamp: Date.now() });
 	});
