@@ -183,8 +183,8 @@ flowchart LR
     V -->|api + uploads proxy| E
 
     E --> M[Middleware: helmet, CORS, requestLogger, rateLimit]
-    M --> R[56 route modules under /api]
-    R --> C[63 controllers]
+    M --> R[58 route modules under /api]
+    R --> C[64 controllers]
     C --> S[96 services]
     S --> P[(PostgreSQL via Prisma - 92 models)]
     S --> RED[(Redis - optional rate limits or cache)]
@@ -224,7 +224,7 @@ flowchart LR
 | Animation | **framer-motion 12**, **lenis 1** | Page transitions, micro-interactions, smooth scrolling |
 | Charts/maps | **recharts**, **leaflet** | Analytics dashboards, geo views |
 | Backend framework | **Express 5** | REST API monolith (port 4000) |
-| ORM / database | **Prisma 6** + **PostgreSQL** | 92 models, 18 migrations |
+| ORM / database | **Prisma 6** + **PostgreSQL** | 92 models, 19 migrations |
 | Cache / rate limits | **Redis 4** (`node-redis`) | Optional rate-limit/cache store, in-memory fallback |
 | Realtime | **ws 8** (WebSocket) + SSE (native) | Assistant, chat, calls, notifications, feed stream |
 | Search | **OpenSearch 2** (`@opensearch-project/opensearch`) | Product & requirement indexes, suggestions, spelling |
@@ -249,7 +249,7 @@ A-Peronson-s-Website/
 ├── src/                      # React SPA (frontend)
 │   ├── App.jsx               # Route table + app layout + role gates
 │   ├── main.jsx              # Entry: Redux Provider + ThemeProvider
-│   ├── pages/                # 63 page components (39 root + auth/ chat/ admin/ sections/ shared)
+│   ├── pages/                # 58 page components (39 root + auth/ chat/ admin/ sections/ shared)
 │   ├── components/           # UI kit + feature components (feed, chat, admin, ...)
 │   ├── hooks/                # 8 custom hooks (useSecureUser, useAnalyticsDashboard, ...)
 │   ├── lib/                  # auth, api, realtime, events, routing, constants
@@ -258,8 +258,8 @@ A-Peronson-s-Website/
 │   └── tailwind.css          # Tailwind v4 entry + custom utilities
 ├── server/                   # Express 5 backend
 │   ├── server.js             # Entry: app, CORS/helmet, WS hub, startup schedulers
-│   ├── routes/               # 56 route modules
-│   ├── controllers/          # 63 controllers
+│   ├── routes/               # 58 route modules
+│   ├── controllers/          # 64 controllers
 │   ├── services/             # 96 services (incl. providers/ + __tests__/)
 │   ├── middleware/           # auth, roles, entitlements, admin security, rate limit
 │   ├── workers/              # standalone workers (lead reminders, join-request reminders)
@@ -273,7 +273,7 @@ A-Peronson-s-Website/
 │   └── config/               # platformTaxonomy.js, geo.js (client + server shared)
 ├── prisma/
 │   ├── schema.prisma         # 92 models
-│   └── migrations/           # 18 migrations
+│   └── migrations/           # 19 migrations
 ├── tests/                    # unit (48) + integration (11) + e2e (2) + mocks
 ├── docs/                     # 260 generated documentation files
 ├── scripts/                  # dev/CI helpers (reindex, smoke, run.sh, ollama pull)
@@ -322,7 +322,7 @@ Key frontend facilities:
 - **API client** — `src/lib/auth.js` `apiRequest()`: fetch wrapper with Bearer JWT, JSON/FormData handling, 401 auto-logout, error objects with `.status/.details`.
 - **User cache** — `getCurrentUser()` (60s TTL, primed from `localStorage`), `verifyAndSyncUser()` re-fetches from `/users/me` on load ("never trust localStorage for security").
 - **Realtime clients** — `notificationsRealtime.js` (WS heartbeat + reconnect), `feedRealtime.js` (SSE), inline WS logic in `ChatInterface.jsx` and `CallInterface.jsx`.
-- **Route health** — `src/lib/routeHealthCheck.js` `ROUTE_MANIFEST` (35 exact paths + dynamic regex patterns) keeps nav links honest; nav groups hide when empty.
+- **Route health** — `src/lib/routeHealthCheck.js` `ROUTE_MANIFEST` (34 exact paths + dynamic regex patterns) keeps nav links honest; nav groups hide when empty.
 - **Styling** — Tailwind v4 with dark-mode class strategy; custom `src/tailwind.css` provides `scrollbar-invisible`, lenis CSS, and cyber-neon shadows; `data-lenis-prevent` marks independent scroll panels.
 
 ---
@@ -566,15 +566,15 @@ The server is an **Express 5 monolith** (`server/server.js`, port `4000`) that a
 
 | Module | Contents | Count |
 |---|---|---|
-| `routes/` | 56 route modules mounted under `/api` (see API section) | 56 |
-| `controllers/` | Request handlers per domain (thin, delegate to services) | 63 |
+| `routes/` | 58 route modules mounted under `/api` (see API section) | 58 |
+| `controllers/` | Request handlers per domain (thin, delegate to services) | 64 |
 | `services/` | Business logic — the bulk of the platform | 96 |
 | `middleware/` | `auth.js`, `permissions.js` (in utils), `rateLimiter.js`, `entitlements.js`, `adminSecurity.js`, `adminStepUp.js`, `adminDualConfirm.js`, `adminAudit.js`, `validateSearchFilters.js`, `errorHandler.js`, `requestLogger.js` | 10 |
 | `workers/` | Standalone processes: `leadRemindersWorker.js`, `joinRequestReminderWorker.js` | 2 |
 | `realtime/` | `realtimeBus.js` — in-process EventEmitter for notifications + feed fan-out | 1 |
 | `config/` | `searchAccessConfig.js` (filter tiers + daily limits) | + |
 | `database/` | `admin_audit.json` — the only remaining on-disk JSON store (everything else lives in PostgreSQL, with `localStore.js` emulating JSON via the `AppState` table) | 1 |
-| `utils/` | `db.js`, `prisma.js`, `redis.js`, `logger.js`, `permissions.js`, `validators.js`, `auditStore.js`, `pendingInvites.js`, `localStore.js`, `hallucinationDetector.js`, `sessionStore.js`, `crmFallbackStore.js`, `privacy.js`, `metrics.js`, `dotenv.js` | 15 |
+| `utils/` | `db.js`, `prisma.js`, `redis.js`, `logger.js`, `permissions.js`, `validators.js`, `auditStore.js`, `pendingInvites.js`, `localStore.js`, `hallucinationDetector.js`, `sessionStore.js`, `crmFallbackStore.js`, `privacy.js`, `metrics.js`, `dotenv.js`, `svgSanitizer.js` | 16 |
 
 ### Service-layer highlights
 
@@ -1039,7 +1039,7 @@ flowchart LR
 
 ## 🗄 $\color{#FFB86C}{\text{Database Design}}$
 
-**PostgreSQL + Prisma 6** — 92 models defined in `prisma/schema.prisma` (mapped table names via `@@map`), 18 migrations.
+**PostgreSQL + Prisma 6** — 92 models defined in `prisma/schema.prisma` (mapped table names via `@@map`), 19 migrations.
 
 ### Model groups (key fields)
 
@@ -1062,7 +1062,7 @@ Legacy file-based JSON stores (`server/database/*.json`) were replaced by Postgr
 
 ### Migrations (18, in order)
 
-`20260326140335_init_postgres` → `20260327151037_add_lc_fields` → `20260405100000_crm_normalized_models` → `20260405120000_add_fx_rates_and_normalized_prices` → `20260405153000_crm_relations_event_log` → `20260405170000_add_org_operations_models` → `20260405183000_add_communication_policy_engine` → `20260405203000_add_governance_modules` → `20260406120000_add_workflow_lifecycle` → `20260406153000_add_enterprise_ops_engine` → `20260406170000_add_communication_policy_tables_v2` → `20260418120000_add_feed_posts` → `20260502143127_add_notification_preferences` → `20260508054227_add_product_review_fields` → `20260508111240_add_policy_updated_at` → `20260606000000_add_link_previews` → `20260614000000_add_feed_indexes` → `add_ai_severity_early_exit`
+`20260326140335_init_postgres` → `20260327151037_add_lc_fields` → `20260405100000_crm_normalized_models` → `20260405120000_add_fx_rates_and_normalized_prices` → `20260405153000_crm_relations_event_log` → `20260405170000_add_org_operations_models` → `20260405183000_add_communication_policy_engine` → `20260405203000_add_governance_modules` → `20260406120000_add_workflow_lifecycle` → `20260406153000_add_enterprise_ops_engine` → `20260406170000_add_communication_policy_tables_v2` → `20260418120000_add_feed_posts` → `20260502143127_add_notification_preferences` → `20260508054227_add_product_review_fields` → `20260508111240_add_policy_updated_at` → `20260606000000_add_link_previews` → `20260614000000_add_feed_indexes` → `20260615000000_add_requirement_price_fields` → `add_ai_severity_early_exit`
 
 - **No seeds** — sample data is created by `scripts/ci/reindex-opensearch.mjs` (CI path).
 - **Indexes** — hot paths indexed (user_id/status/created_at on feed posts, org_owner+status+updated_at on leads, composite match indexes, FX base/quote unique, policy effective windows…).
