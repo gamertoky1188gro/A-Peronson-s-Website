@@ -328,6 +328,9 @@ if (serveDist && fs.existsSync(distRoot)) {
 		const filePath = path.join(distRoot, req.path);
 		try {
 			const content = await fs.promises.readFile(filePath);
+			// Strip helmet CSP from static file responses — Google sitemap
+			// fetcher rejects XML with frame-src 'none' in CSP headers.
+			res.removeHeader("content-security-policy");
 			res.writeHead(200, {
 				"Content-Type": contentType,
 				"Content-Length": Buffer.byteLength(content),
