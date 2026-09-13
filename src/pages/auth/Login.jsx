@@ -83,6 +83,7 @@ export default function Login() {
 		title: "Login — GarTexHub",
 		type: "website",
 		description: "Sign in to your GarTexHub account to manage sourcing, products, and connections.",
+		canonical: "https://gartexhub.onrender.com/login",
 		siteName: "GarTexHub",
 		locale: "en_US",
 	});

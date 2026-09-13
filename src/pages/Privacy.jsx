@@ -291,6 +291,7 @@ export default function Privacy() {
 		title: "Privacy Policy — GarTexHub",
 		description:
 			"Understand how GarTexHub collects, uses, and protects your personal data and privacy.",
+		canonical: "https://gartexhub.onrender.com/privacy",
 		url: "/privacy",
 	});
 

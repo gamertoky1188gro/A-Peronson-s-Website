@@ -567,6 +567,7 @@ export default function PricingPage() {
 		type: "website",
 		description:
 			"Choose the right plan for your garment and textile sourcing needs. Free and premium tiers for buyers, factories, and buying houses.",
+		canonical: "https://gartexhub.onrender.com/pricing",
 		siteName: "GarTexHub",
 		locale: "en_US",
 	});

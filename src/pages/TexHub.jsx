@@ -305,6 +305,7 @@ export default function TexHub() {
 		type: "website",
 		description:
 			"A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, and connect with verified partners.",
+		canonical: "https://gartexhub.onrender.com/",
 		siteName: "GarTexHub",
 		locale: "en_US",
 		twitterSite: "@gartexhub",

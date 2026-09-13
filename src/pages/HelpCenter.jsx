@@ -183,6 +183,7 @@ export default function HelpCenterPage() {
 		title: "Help Center — GarTexHub",
 		type: "website",
 		description: "Get help with GarTexHub. Browse FAQs, documentation, and submit support tickets.",
+		canonical: "https://gartexhub.onrender.com/help",
 		siteName: "GarTexHub",
 		locale: "en_US",
 	});

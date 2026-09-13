@@ -288,6 +288,7 @@ export default function About() {
 		title: "About — GarTexHub",
 		description:
 			"Learn about GarTexHub — the global textile and garment marketplace connecting verified factories, buying houses, and suppliers worldwide.",
+		canonical: "https://gartexhub.onrender.com/about",
 		url: "/about",
 	});
 

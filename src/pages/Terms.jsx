@@ -279,6 +279,7 @@ export default function Terms() {
 		title: "Terms of Service — GarTexHub",
 		description:
 			"Review the terms and conditions governing the use of GarTexHub's textile and garment marketplace platform.",
+		canonical: "https://gartexhub.onrender.com/terms",
 		url: "/terms",
 	});
 
