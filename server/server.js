@@ -314,6 +314,8 @@ const MIME_TYPES = {
 	".woff2": "font/woff2",
 	".json": "application/json",
 	".map": "application/json",
+	".xml": "application/xml",
+	".txt": "text/plain; charset=utf-8",
 };
 
 if (serveDist && fs.existsSync(distRoot)) {
