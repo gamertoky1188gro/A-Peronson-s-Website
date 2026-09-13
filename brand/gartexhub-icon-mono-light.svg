@@ -1,18 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <!-- Monochrome light (for print / stamps / single-color) -->
-  <rect width="200" height="200" rx="44" fill="#F1F5F9"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Monochrome light — for print, stamps, single-color -->
+  <rect width="512" height="512" rx="96" fill="#F1F5F9"/>
 
-  <path d="M 135 65 A 50 50 0 1 0 135 135 M 135 100 L 92 100"
-        stroke="#0F172A" stroke-width="14" fill="none"
-        stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(256,256)">
+    <rect x="-160" y="-160" width="320" height="320" rx="64" fill="none" stroke="#0F172A" stroke-width="3" opacity="0.08"/>
 
-  <line x1="55" y1="70" x2="120" y2="130"
-        stroke="#0F172A" stroke-width="3" opacity="0.20"/>
-  <line x1="55" y1="130" x2="110" y2="70"
-        stroke="#0F172A" stroke-width="3" opacity="0.20"/>
+    <!-- G outer arc -->
+    <path d="M 60,-95 C 20,-95 -60,-75 -85,-30 C -110,15 -110,65 -85,110 C -60,155 -20,175 20,175 C 55,175 85,160 100,135" fill="none" stroke="#0F172A" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 100,135 L 100,45" fill="none" stroke="#0F172A" stroke-width="28" stroke-linecap="round"/>
+    <path d="M -60,155 C -20,175 30,175 60,160" fill="none" stroke="#0F172A" stroke-width="8" stroke-linecap="round" opacity="0.25"/>
 
-  <circle cx="55"  cy="70"  r="5.5" fill="#0F172A" opacity="0.35"/>
-  <circle cx="120" cy="130" r="5.5" fill="#0F172A" opacity="0.35"/>
-  <circle cx="55"  cy="130" r="5.5" fill="#0F172A" opacity="0.35"/>
-  <circle cx="110" cy="70"  r="5.5" fill="#0F172A" opacity="0.35"/>
+    <!-- Textile weave -->
+    <line x1="-65" y1="-50" x2="65" y2="-50" stroke="#0F172A" stroke-width="2" opacity="0.1" stroke-dasharray="8,6"/>
+    <line x1="-80" y1="-10" x2="80" y2="-10" stroke="#0F172A" stroke-width="2" opacity="0.1" stroke-dasharray="8,6"/>
+    <line x1="-85" y1="30" x2="85" y2="30" stroke="#0F172A" stroke-width="2" opacity="0.1" stroke-dasharray="8,6"/>
+    <line x1="-75" y1="70" x2="75" y2="70" stroke="#0F172A" stroke-width="2" opacity="0.1" stroke-dasharray="8,6"/>
+    <line x1="-50" y1="-80" x2="-50" y2="140" stroke="#0F172A" stroke-width="2" opacity="0.08" stroke-dasharray="8,6"/>
+    <line x1="-10" y1="-90" x2="-10" y2="160" stroke="#0F172A" stroke-width="2" opacity="0.08" stroke-dasharray="8,6"/>
+    <line x1="30" y1="-90" x2="30" y2="160" stroke="#0F172A" stroke-width="2" opacity="0.08" stroke-dasharray="8,6"/>
+
+    <!-- Weave intersections -->
+    <circle cx="-50" cy="-50" r="3" fill="#0F172A" opacity="0.15"/>
+    <circle cx="-10" cy="-10" r="3" fill="#0F172A" opacity="0.15"/>
+    <circle cx="30" cy="-10" r="3" fill="#0F172A" opacity="0.15"/>
+    <circle cx="-50" cy="30" r="3" fill="#0F172A" opacity="0.15"/>
+    <circle cx="-10" cy="30" r="3" fill="#0F172A" opacity="0.15"/>
+    <circle cx="30" cy="30" r="3" fill="#0F172A" opacity="0.15"/>
+
+    <!-- Network orbit -->
+    <circle cx="0" cy="0" r="145" fill="none" stroke="#0F172A" stroke-width="1" opacity="0.08"/>
+
+    <!-- Network nodes -->
+    <circle cx="105" cy="-105" r="7" fill="#0F172A" opacity="0.55"/>
+    <circle cx="105" cy="-105" r="12" fill="none" stroke="#0F172A" stroke-width="1" opacity="0.15"/>
+    <circle cx="140" cy="10" r="5.5" fill="#0F172A" opacity="0.5"/>
+    <circle cx="140" cy="10" r="9" fill="none" stroke="#0F172A" stroke-width="1" opacity="0.12"/>
+    <circle cx="105" cy="105" r="6" fill="#0F172A" opacity="0.45"/>
+    <circle cx="105" cy="105" r="10" fill="none" stroke="#0F172A" stroke-width="1" opacity="0.12"/>
+    <circle cx="-105" cy="105" r="5" fill="#0F172A" opacity="0.35"/>
+    <circle cx="-105" cy="-105" r="5.5" fill="#0F172A" opacity="0.3"/>
+
+    <!-- Connection lines -->
+    <line x1="105" y1="-105" x2="50" y2="-50" stroke="#0F172A" stroke-width="1" opacity="0.1"/>
+    <line x1="140" y1="10" x2="70" y2="10" stroke="#0F172A" stroke-width="1" opacity="0.08"/>
+    <line x1="105" y1="105" x2="50" y2="70" stroke="#0F172A" stroke-width="1" opacity="0.08"/>
+    <line x1="-105" y1="105" x2="-50" y2="70" stroke="#0F172A" stroke-width="1" opacity="0.06"/>
+    <line x1="-105" y1="-105" x2="-50" y2="-50" stroke="#0F172A" stroke-width="1" opacity="0.06"/>
+
+    <!-- Supply chain paths -->
+    <path d="M 105,-105 Q 130,-30 140,10" fill="none" stroke="#0F172A" stroke-width="0.8" opacity="0.1"/>
+    <path d="M 140,10 Q 130,60 105,105" fill="none" stroke="#0F172A" stroke-width="0.8" opacity="0.08"/>
+    <path d="M 105,105 Q 0,120 -105,105" fill="none" stroke="#0F172A" stroke-width="0.8" opacity="0.06"/>
+  </g>
 </svg>
