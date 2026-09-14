@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       id="gfont-preload"
     />
-    <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2" crossorigin />
+
     <script>"use strict";
       document.getElementById("gfont-preload").rel = "stylesheet";
     </script>
@@ -35,7 +35,7 @@
     <link rel="prefetch" href="/signup" as="document" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; frame-src 'self' blob: data: https://view.officeapps.live.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http://localhost:4000 http://127.0.0.1:4000 https://api.dicebear.com; connect-src 'self' http://localhost:4000 http://127.0.0.1:4000 ws://localhost:4000 ws://127.0.0.1:4000 ws://localhost:5173 ws://127.0.0.1:5173 https://accounts.google.com wss://*.cloudshell.dev https://ssh.cloud.google.com ws: wss:; prefetch-src 'self' https://gartexhub.onrender.com;"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; frame-src 'self' blob: data: https://view.officeapps.live.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https: http://localhost:4000 http://127.0.0.1:4000 https://api.dicebear.com; connect-src 'self' http://localhost:4000 http://127.0.0.1:4000 ws://localhost:4000 ws://127.0.0.1:4000 ws://localhost:5173 ws://127.0.0.1:5173 https://accounts.google.com wss://*.cloudshell.dev https://ssh.cloud.google.com ws: wss:;"
     />
     <script>"use strict";
       (() => {
@@ -57,13 +57,50 @@
         width: 100%;
       }
     </style>
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://gartexhub.onrender.com/" />
     <title>GarTexHub</title>
-    <script type="module" crossorigin src="./assets/index-CUgZviP5.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/vendor-react-Dl9aTSaq.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-motion-Kxj3pI33.js">
+
+    <!-- Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "GarTexHub",
+      "url": "https://gartexhub.onrender.com",
+      "description": "B2B textile and garment sourcing platform connecting buyers, factories, and buying houses.",
+      "sameAs": [],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "support@gartexhub.onrender.com"
+      }
+    }
+    </script>
+
+    <!-- WebSite + SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "GarTexHub",
+      "url": "https://gartexhub.onrender.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://gartexhub.onrender.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="module" crossorigin src="./assets/index-DQnZcVB6.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/vendor-react-D4X5vBOi.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-motion-Ch3LmjCH.js">
     <link rel="modulepreload" crossorigin href="./assets/vendor-redux-DqgUu7N2.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-icons-DT971SXJ.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-upHWGTff.css">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-icons-ByulZ7At.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-BruzQOoZ.css">
   </head>
   <body>
     <div id="root">
