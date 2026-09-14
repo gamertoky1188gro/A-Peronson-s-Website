@@ -4,18 +4,19 @@ import { motion } from "framer-motion";
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
-import FloatingAssistant from "./components/FloatingAssistant.jsx";
 import Footer from "./components/Footer.jsx";
-import LenisProvider from "./components/LenisProvider.jsx";
 import NavBar from "./components/NavBar.jsx";
 import ScrollProgressBar from "./components/ScrollProgressBar.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { ToastProvider } from "./components/ToastContainer.jsx";
-import CyberpunkCursor from "./components/ui/CyberpunkCursor.jsx";
 import NeonAtom from "./components/ui/NeonAtom.jsx";
 import { getCurrentUser, getToken, verifyAndSyncUser } from "./lib/auth.js";
 import { logger } from "./lib/logger.js";
 import { trackClientEvent } from "./lib/events.js";
+
+const FloatingAssistant = lazy(() => import("./components/FloatingAssistant.jsx"));
+const CyberpunkCursor = lazy(() => import("./components/ui/CyberpunkCursor.jsx"));
+const LenisProvider = lazy(() => import("./components/LenisProvider.jsx"));
 
 function LazyLoadError() {
 	return (
@@ -422,7 +423,11 @@ function AppLayout() {
 							</ErrorBoundary>
 						</main>
 						{!hideChrome && location.pathname !== "/feed" ? <Footer /> : null}
-						{hideChrome ? null : <FloatingAssistant />}
+						{hideChrome ? null : (
+							<Suspense fallback={null}>
+								<FloatingAssistant />
+							</Suspense>
+						)}
 					</div>
 				</div>
 			</>
@@ -538,13 +543,19 @@ function AppLayout() {
 		};
 	}, []);
 
-	return hideChrome ? content : <LenisProvider>{content}</LenisProvider>;
+	return (
+		<Suspense fallback={content}>
+			{hideChrome ? content : <LenisProvider>{content}</LenisProvider>}
+		</Suspense>
+	);
 }
 
 function App() {
 	return (
 		<BrowserRouter>
-			<CyberpunkCursor />
+			<Suspense fallback={null}>
+				<CyberpunkCursor />
+			</Suspense>
 			<ToastProvider>
 				<ErrorBoundary>
 					<AppLayout />

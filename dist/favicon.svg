@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="grad-primary" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="50%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Micro icon: simplified for 16–32 px.
+       No weave lines, no nodes, no orbit ring.
+       Just the core G silhouette in a rounded container. -->
+  <rect width="512" height="512" rx="96" fill="#020617"/>
+
+  <g transform="translate(256,256)">
+    <!-- Outer container -->
+    <rect x="-140" y="-140" width="280" height="280" rx="56" fill="none" stroke="url(#grad-primary)" stroke-width="4" opacity="0.12"/>
+
+    <!-- G outer arc — thicker for micro readability -->
+    <path d="M 55,-85 C 20,-85 -55,-68 -78,-28 C -100,12 -100,58 -78,98 C -55,138 -18,155 18,155 C 48,155 75,142 88,120" fill="none" stroke="url(#grad-primary)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- G crossbar -->
+    <path d="M 88,120 L 88,40" fill="none" stroke="url(#grad-primary)" stroke-width="34" stroke-linecap="round"/>
+  </g>
+</svg>

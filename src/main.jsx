@@ -2,7 +2,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import "./tailwind.css";
-import "lenis/dist/lenis.css";
 import App from "./App.jsx";
 import { TIMEOUTS } from "./lib/constants.js";
 import { logEnvStatus } from "./lib/envCheck.js";
