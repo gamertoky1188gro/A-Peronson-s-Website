@@ -2,8 +2,9 @@ import { Monitor, Moon, Sun } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import NeonAtom from "../components/ui/NeonAtom.jsx";
+import { COUNTRY_OPTIONS, FACTORY_SECTOR_OPTIONS } from "../../shared/config/platformTaxonomy.js";
 import LazyImage from "../components/ui/LazyImage.jsx";
+import NeonAtom from "../components/ui/NeonAtom.jsx";
 import ProfileImageUpload from "../components/ui/ProfileImageUpload.jsx";
 import UploadProgressBar from "../components/ui/UploadProgressBar.jsx";
 import { useEntitlements } from "../hooks/useSecureUser.js";
@@ -12,7 +13,6 @@ import { logger } from "../lib/logger.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
 import { uploadFile } from "../lib/upload.js";
 import { ERRORS, isValidEmail, isValidPhone, isValidUrl } from "../lib/validation.js";
-import { COUNTRY_OPTIONS, FACTORY_SECTOR_OPTIONS } from "../../shared/config/platformTaxonomy.js";
 
 function cx(...classes) {
 	return classes.filter(Boolean).join(" ");
@@ -21,15 +21,15 @@ function cx(...classes) {
 function SectionCard({ title, subtitle, children, className = "" }) {
 	return (
 		<section
-			className={cx(
+			class={cx(
 				"rounded-3xl border border-sky-200/60 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.45)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/75",
 				className,
 			)}
 		>
-			<div className="mb-4">
-				<h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+			<div class="mb-4">
+				<h3 class="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
 				{subtitle ? (
-					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+					<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
 				) : null}
 			</div>
 			{children}
@@ -39,7 +39,7 @@ function SectionCard({ title, subtitle, children, className = "" }) {
 
 function Label({ children }) {
 	return (
-		<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+		<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 			{children}
 		</label>
 	);
@@ -47,21 +47,21 @@ function Label({ children }) {
 
 function _TogglePref({ label, description, checked, onChange }) {
 	return (
-		<div className="flex items-center justify-between py-3">
+		<div class="flex items-center justify-between py-3">
 			<div>
-				<div className="font-medium text-slate-900 dark:text-white">{label}</div>
-				{description && <div className="text-sm text-slate-500">{description}</div>}
+				<div class="font-medium text-slate-900 dark:text-white">{label}</div>
+				{description && <div class="text-sm text-slate-500">{description}</div>}
 			</div>
 			<button
 				type="button"
 				onClick={onChange}
-				className={cx(
+				class={cx(
 					"relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
 					checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-600",
 				)}
 			>
 				<span
-					className={cx(
+					class={cx(
 						"inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
 						checked ? "translate-x-6" : "translate-x-1",
 					)}
@@ -75,7 +75,7 @@ function Input(props) {
 	return (
 		<input
 			{...props}
-			className={cx(
+			class={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -87,7 +87,7 @@ function Textarea(props) {
 	return (
 		<textarea
 			{...props}
-			className={cx(
+			class={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -99,7 +99,7 @@ function Select({ children, ...props }) {
 	return (
 		<select
 			{...props}
-			className={cx(
+			class={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -114,20 +114,20 @@ function Toggle({ checked, onChange, label, hint }) {
 		<button
 			type="button"
 			onClick={() => onChange(!checked)}
-			className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-sky-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
+			class="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-sky-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
 		>
 			<div>
-				<div className="text-sm font-medium text-slate-900 dark:text-white">{label}</div>
-				{hint ? <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
+				<div class="text-sm font-medium text-slate-900 dark:text-white">{label}</div>
+				{hint ? <div class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
 			</div>
 			<div
-				className={cx(
+				class={cx(
 					"relative h-7 w-12 rounded-full transition",
 					checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-700",
 				)}
 			>
 				<div
-					className={cx(
+					class={cx(
 						"absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform",
 						checked ? "translate-x-5" : "translate-x-0.5",
 					)}
@@ -148,7 +148,7 @@ function Badge({ children, tone = "slate" }) {
 	};
 	return (
 		<span
-			className={cx(
+			class={cx(
 				"inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
 				tones[tone] || tones.slate,
 			)}
@@ -162,7 +162,7 @@ function PrimaryButton({ children, className = "", ...props }) {
 	return (
 		<button
 			{...props}
-			className={cx(
+			class={cx(
 				"inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60",
 				className,
 			)}
@@ -176,7 +176,7 @@ function SecondaryButton({ children, className = "", ...props }) {
 	return (
 		<button
 			{...props}
-			className={cx(
+			class={cx(
 				"inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800",
 				className,
 			)}
@@ -189,7 +189,7 @@ function SecondaryButton({ children, className = "", ...props }) {
 function Icon({ children, className = "" }) {
 	return (
 		<div
-			className={cx(
+			class={cx(
 				"flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/20",
 				className,
 			)}
@@ -341,6 +341,9 @@ export default function OrgSettings({ embedded = false }) {
 	const [profileBio, setProfileBio] = useState(() => String(currentUser?.profile?.bio || ""));
 	const [profileAvatarUrl, setProfileAvatarUrl] = useState(() =>
 		String(currentUser?.avatar_url || currentUser?.profile?.avatar_url || ""),
+	);
+	const [profileCoverUrl, setProfileCoverUrl] = useState(() =>
+		String(currentUser?.profile?.cover_image_url || ""),
 	);
 	const [profileCountry, setProfileCountry] = useState(() =>
 		String(currentUser?.profile?.country || currentUser?.country || ""),
@@ -960,6 +963,7 @@ export default function OrgSettings({ embedded = false }) {
 					headline: profileHeadline,
 					bio: profileBio,
 					avatar_url: profileAvatarUrl,
+					cover_image_url: profileCoverUrl,
 					country: profileCountry,
 					industry: profileIndustry,
 				},
@@ -1410,8 +1414,8 @@ export default function OrgSettings({ embedded = false }) {
 	const settingsContent = (
 		<>
 			{/* Tab Navigation */}
-			<div className="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
-				<div className="flex min-w-max gap-2">
+			<div class="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+				<div class="flex min-w-max gap-2">
 					{accessibleTabs.map((tabItem) => (
 						<button
 							key={tabItem.id}
@@ -1421,7 +1425,7 @@ export default function OrgSettings({ embedded = false }) {
 								}
 								goSettingsTab(tabItem.id);
 							}}
-							className={cx(
+							class={cx(
 								"rounded-2xl px-4 py-3 text-sm font-semibold transition",
 								activeTab === tabItem.id
 									? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25"
@@ -1435,22 +1439,22 @@ export default function OrgSettings({ embedded = false }) {
 			</div>
 
 			{/* Status Bar */}
-			<div className="mb-6 rounded-3xl border border-sky-200/60 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
-				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+			<div class="mb-6 rounded-3xl border border-sky-200/60 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+				<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 					<div>
-						<p className="text-sm font-medium text-slate-500 dark:text-slate-400">Status</p>
-						<p className="text-sm text-slate-900 dark:text-white">{statusMessage}</p>
+						<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Status</p>
+						<p class="text-sm text-slate-900 dark:text-white">{statusMessage}</p>
 					</div>
-					<div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
-						<div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-							<div className="text-xs text-slate-500 dark:text-slate-400">Wallet</div>
-							<div className="font-semibold text-slate-900 dark:text-white">
+					<div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+						<div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+							<div class="text-xs text-slate-500 dark:text-slate-400">Wallet</div>
+							<div class="font-semibold text-slate-900 dark:text-white">
 								${walletBalance.toFixed(2)}
 							</div>
 						</div>
-						<div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-							<div className="text-xs text-slate-500 dark:text-slate-400">Restricted</div>
-							<div className="font-semibold text-slate-900 dark:text-white">
+						<div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+							<div class="text-xs text-slate-500 dark:text-slate-400">Restricted</div>
+							<div class="font-semibold text-slate-900 dark:text-white">
 								${walletRestricted.toFixed(2)}
 							</div>
 						</div>
@@ -1460,12 +1464,12 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* Tab Content Sections */}
 			{activeTab === "general" && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard
 						title="Automation & Chatbot"
 						subtitle="Control buyer conversations, handoff rules, and saved alerts."
 					>
-						<div className="space-y-4">
+						<div class="space-y-4">
 							<Toggle
 								checked={chatbotEnabled}
 								onChange={setChatbotEnabled}
@@ -1492,7 +1496,7 @@ export default function OrgSettings({ embedded = false }) {
 						title="AI Auto-Reply Customization"
 						subtitle="Build the tone and structure of your first response."
 					>
-						<div className="grid gap-4 sm:grid-cols-2">
+						<div class="grid gap-4 sm:grid-cols-2">
 							<div>
 								<Label>Greeting</Label>
 								<Input
@@ -1507,7 +1511,7 @@ export default function OrgSettings({ embedded = false }) {
 									onChange={(e) => setAutoReplySignature(e.target.value)}
 								/>
 							</div>
-							<div className="sm:col-span-2">
+							<div class="sm:col-span-2">
 								<Label>Fallback response</Label>
 								<Input
 									value={autoReplyFallback}
@@ -1523,7 +1527,7 @@ export default function OrgSettings({ embedded = false }) {
 									<option>Friendly</option>
 								</Select>
 							</div>
-							<div className="sm:col-span-2">
+							<div class="sm:col-span-2">
 								<Label>Qualification prompt</Label>
 								<Textarea
 									rows={4}
@@ -1532,7 +1536,7 @@ export default function OrgSettings({ embedded = false }) {
 								/>
 							</div>
 						</div>
-						<div className="mt-4 flex flex-wrap gap-3">
+						<div class="mt-4 flex flex-wrap gap-3">
 							<PrimaryButton onClick={saveChatbotSettings} disabled={!canAutoReply}>
 								Save auto-reply settings
 							</PrimaryButton>
@@ -1544,7 +1548,7 @@ export default function OrgSettings({ embedded = false }) {
 						title="Communication Policy"
 						subtitle="Throttle and prioritize messages with configurable rules."
 					>
-						<div className="grid gap-4 sm:grid-cols-2">
+						<div class="grid gap-4 sm:grid-cols-2">
 							<div>
 								<Label>Message cap per window</Label>
 								<Input
@@ -1587,7 +1591,7 @@ export default function OrgSettings({ embedded = false }) {
 						title="Supplier Profile"
 						subtitle="Show your operations and capabilities clearly."
 					>
-						<div className="grid gap-4 sm:grid-cols-2">
+						<div class="grid gap-4 sm:grid-cols-2">
 							<div>
 								<Label>Main processes</Label>
 								<Input value={mainProcesses} onChange={(e) => setMainProcesses(e.target.value)} />
@@ -1623,7 +1627,7 @@ export default function OrgSettings({ embedded = false }) {
 									}}
 								/>
 							</div>
-							<div className="flex items-end">
+							<div class="flex items-end">
 								<Toggle
 									checked={handlesMultipleFactories}
 									onChange={setHandlesMultipleFactories}
@@ -1631,7 +1635,7 @@ export default function OrgSettings({ embedded = false }) {
 								/>
 							</div>
 						</div>
-						<div className="mt-4">
+						<div class="mt-4">
 							<PrimaryButton onClick={saveGeneralSettings}>Save settings</PrimaryButton>
 						</div>
 					</SectionCard>
@@ -1640,12 +1644,12 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== PROFILE TAB ==================== */}
 			{activeTab === "profile" && hasRoleAccess(currentUserRole, "observer") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard
 						title="Profile Section"
 						subtitle="Manage how your profile looks to buyers and partners."
 					>
-						<div className="grid gap-4 sm:grid-cols-2">
+						<div class="grid gap-4 sm:grid-cols-2">
 							<div>
 								<Label>Display Name</Label>
 								<Input
@@ -1665,11 +1669,13 @@ export default function OrgSettings({ embedded = false }) {
 								<select
 									value={profileCountry}
 									onChange={(e) => setProfileCountry(e.target.value)}
-									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+									class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
 								>
 									<option value="">Select country</option>
 									{COUNTRY_OPTIONS.map((c) => (
-										<option key={c} value={c}>{c}</option>
+										<option key={c} value={c}>
+											{c}
+										</option>
 									))}
 								</select>
 							</div>
@@ -1678,15 +1684,17 @@ export default function OrgSettings({ embedded = false }) {
 								<select
 									value={profileIndustry}
 									onChange={(e) => setProfileIndustry(e.target.value)}
-									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+									class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
 								>
 									<option value="">Select industry</option>
 									{FACTORY_SECTOR_OPTIONS.map((opt) => (
-										<option key={opt.value} value={opt.value}>{opt.label}</option>
+										<option key={opt.value} value={opt.value}>
+											{opt.label}
+										</option>
 									))}
 								</select>
 							</div>
-							<div className="sm:col-span-2">
+							<div class="sm:col-span-2">
 								<Label>Bio</Label>
 								<Textarea
 									rows={4}
@@ -1694,7 +1702,7 @@ export default function OrgSettings({ embedded = false }) {
 									onChange={(e) => setProfileBio(e.target.value)}
 								/>
 							</div>
-							<div className="sm:col-span-2">
+							<div class="sm:col-span-2">
 								<Label>Profile Image</Label>
 								<ProfileImageUpload
 									value={profileAvatarUrl}
@@ -1702,8 +1710,19 @@ export default function OrgSettings({ embedded = false }) {
 									label="Profile Image"
 								/>
 							</div>
+							<div class="sm:col-span-2">
+								<Label>Cover Image</Label>
+								<p class="mb-2 text-xs text-slate-500 dark:text-slate-400">
+									Banner displayed at the top of your profile
+								</p>
+								<ProfileImageUpload
+									value={profileCoverUrl}
+									onChange={setProfileCoverUrl}
+									label="Cover Image"
+								/>
+							</div>
 						</div>
-						<div className="mt-4 flex gap-3">
+						<div class="mt-4 flex gap-3">
 							<PrimaryButton onClick={saveProfileSettings} disabled={loadingProfile}>
 								{loadingProfile ? (
 									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
@@ -1718,17 +1737,17 @@ export default function OrgSettings({ embedded = false }) {
 						title="Contact & Privacy"
 						subtitle="Edit contact details, visibility, and notification preferences."
 					>
-						<div className="space-y-4">
+						<div class="space-y-4">
 							<div>
 								<Label>Email</Label>
-								<Input value={profileEmail} readOnly={true} className="cursor-not-allowed opacity-90" />
+								<Input value={profileEmail} readOnly={true} class="cursor-not-allowed opacity-90" />
 							</div>
 							<div>
 								<Label>Phone</Label>
 								<Input value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} />
 							</div>
 							<PrimaryButton onClick={saveContactSettings}>Save Contact</PrimaryButton>
-							<div className="grid gap-3 sm:grid-cols-3">
+							<div class="grid gap-3 sm:grid-cols-3">
 								<Toggle
 									checked={notifEmail}
 									onChange={(v) => {
@@ -1775,8 +1794,8 @@ export default function OrgSettings({ embedded = false }) {
 						title="Password & Security"
 						subtitle="Change password and keep account access protected."
 					>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<div className="sm:col-span-2">
+						<div class="grid gap-4 sm:grid-cols-2">
+							<div class="sm:col-span-2">
 								<Badge tone={totpEnabled ? "green" : "red"}>
 									2FA {totpEnabled ? "Enabled" : "Disabled"}
 								</Badge>
@@ -1797,7 +1816,7 @@ export default function OrgSettings({ embedded = false }) {
 									onChange={(e) => setNewPassword(e.target.value)}
 								/>
 							</div>
-							<div className="sm:col-span-2">
+							<div class="sm:col-span-2">
 								<Label>Confirm new password</Label>
 								<Input
 									type="password"
@@ -1806,14 +1825,14 @@ export default function OrgSettings({ embedded = false }) {
 								/>
 							</div>
 						</div>
-						<div className="mt-4 flex flex-wrap gap-3">
+						<div class="mt-4 flex flex-wrap gap-3">
 							<PrimaryButton onClick={changePassword} disabled={changingPassword}>
 								{changingPassword ? "Changing..." : "Change Password"}
 							</PrimaryButton>
 						</div>
 						{passwordFeedback && (
 							<p
-								className={`mt-2 text-sm ${passwordFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+								class={`mt-2 text-sm ${passwordFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
 							>
 								{passwordFeedback}
 							</p>
@@ -1824,21 +1843,21 @@ export default function OrgSettings({ embedded = false }) {
 						title="Data & Account Control"
 						subtitle="Export data, review sessions, and remove the account securely."
 					>
-						<div className="space-y-4">
-							<div className="rounded-2xl border border-amber-200/60 bg-amber-50/50 p-4 dark:border-amber-800/40 dark:bg-amber-950/20">
-								<div className="flex items-center justify-between">
+						<div class="space-y-4">
+							<div class="rounded-2xl border border-amber-200/60 bg-amber-50/50 p-4 dark:border-amber-800/40 dark:bg-amber-950/20">
+								<div class="flex items-center justify-between">
 									<div>
-										<div className="text-sm font-medium text-amber-800 dark:text-amber-200">
+										<div class="text-sm font-medium text-amber-800 dark:text-amber-200">
 											Account Lock
 										</div>
-										<div className="text-xs text-amber-700 dark:text-amber-300">
+										<div class="text-xs text-amber-700 dark:text-amber-300">
 											Temporarily freeze your account and hide listings
 										</div>
 									</div>
 									<button
 										onClick={toggleAccountLock}
 										disabled={lockingAccount}
-										className="rounded-full border border-amber-200 bg-white px-4 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
+										class="rounded-full border border-amber-200 bg-white px-4 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
 									>
 										{lockingAccount ? "Processing..." : accountLocked ? "Unlock" : "Lock Now"}
 									</button>
@@ -1847,7 +1866,7 @@ export default function OrgSettings({ embedded = false }) {
 							<SecondaryButton onClick={exportUserData} disabled={exportingData}>
 								{exportingData ? "Preparing..." : "Download My Data"}
 							</SecondaryButton>
-							{exportFeedback && <p className="text-sm text-slate-500">{exportFeedback}</p>}
+							{exportFeedback && <p class="text-sm text-slate-500">{exportFeedback}</p>}
 							<div>
 								<Label>Type your name to confirm</Label>
 								<Input
@@ -1862,18 +1881,18 @@ export default function OrgSettings({ embedded = false }) {
 							>
 								{deletingProfile ? "Deleting..." : "Delete My Account"}
 							</PrimaryButton>
-							{deleteProfileFeedback && <p className="text-sm text-red-600">{deleteProfileFeedback}</p>}
+							{deleteProfileFeedback && <p class="text-sm text-red-600">{deleteProfileFeedback}</p>}
 							<div>
-								<div className="mb-3 flex items-center justify-between">
+								<div class="mb-3 flex items-center justify-between">
 									<div>
-										<div className="font-semibold text-slate-900 dark:text-white">Active Sessions</div>
-										<div className="text-sm text-slate-500 dark:text-slate-400">
+										<div class="font-semibold text-slate-900 dark:text-white">Active Sessions</div>
+										<div class="text-sm text-slate-500 dark:text-slate-400">
 											Reload, inspect, and revoke sessions.
 										</div>
 									</div>
 									<SecondaryButton onClick={loadSessions}>Refresh</SecondaryButton>
 								</div>
-								<div className="space-y-3">
+								<div class="space-y-3">
 									{loadingSessions ? (
 										<Mosaic
 											color="#3b00ff"
@@ -1883,22 +1902,22 @@ export default function OrgSettings({ embedded = false }) {
 											textColor=""
 										/>
 									) : sessions.length === 0 ? (
-										<p className="text-sm text-slate-500">No active sessions.</p>
+										<p class="text-sm text-slate-500">No active sessions.</p>
 									) : (
 										sessions.map((session) => (
 											<div
 												key={session.id || session.token}
-												className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+												class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
 											>
-												<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+												<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 													<div>
-														<div className="flex flex-wrap items-center gap-2">
-															<div className="font-medium text-slate-900 dark:text-white">
+														<div class="flex flex-wrap items-center gap-2">
+															<div class="font-medium text-slate-900 dark:text-white">
 																{session.device || session.browser || "Unknown"}
 															</div>
 															{session.current && <Badge tone="green">Current</Badge>}
 														</div>
-														<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+														<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
 															{session.ip} · {session.location || "Unknown"} ·{" "}
 															{session.last_active || "recently"}
 														</div>
@@ -1924,49 +1943,49 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== THEME TAB ==================== */}
 			{activeTab === "theme" && hasRoleAccess(currentUserRole, "viewer") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard title="Appearance" subtitle="Customize how GarTexHub looks for you.">
-						<div className="space-y-4">
+						<div class="space-y-4">
 							<div>
 								<Label>Theme Mode</Label>
-								<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+								<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
 									Choose your preferred color scheme.
 								</p>
-								<div className="mt-3 grid grid-cols-3 gap-3">
+								<div class="mt-3 grid grid-cols-3 gap-3">
 									<button
 										onClick={() => setTheme("light")}
-										className={cx(
+										class={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
 											themeMode === "light"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
 												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
 										)}
 									>
-										<Sun className="h-6 w-6" />
+										<Sun class="h-6 w-6" />
 										Light
 									</button>
 									<button
 										onClick={() => setTheme("dark")}
-										className={cx(
+										class={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
 											themeMode === "dark"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
 												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
 										)}
 									>
-										<Moon className="h-6 w-6" />
+										<Moon class="h-6 w-6" />
 										Dark
 									</button>
 									<button
 										onClick={() => setTheme("system")}
-										className={cx(
+										class={cx(
 											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
 											themeMode === "system"
 												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
 												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
 										)}
 									>
-										<Monitor className="h-6 w-6" />
+										<Monitor class="h-6 w-6" />
 										System
 									</button>
 								</div>
@@ -1978,31 +1997,31 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== PRIVACY TAB ==================== */}
 			{activeTab === "privacy" && hasRoleAccess(currentUserRole, "observer") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard
 						title="Profile Visibility"
 						subtitle="Control who can see your profile and information."
 					>
-						<div className="space-y-4">
+						<div class="space-y-4">
 							<div>
 								<Label>Profile Visibility</Label>
-								<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+								<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
 									Controls who can view your company profile and product listings.
 								</p>
 							</div>
-							<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
-								<div className="flex items-center justify-between">
+							<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+								<div class="flex items-center justify-between">
 									<div>
-										<div className="text-sm font-medium text-slate-900 dark:text-white">
+										<div class="text-sm font-medium text-slate-900 dark:text-white">
 											Search Engine Indexing
 										</div>
-										<div className="text-xs text-slate-500 dark:text-slate-400">
+										<div class="text-xs text-slate-500 dark:text-slate-400">
 											Allow search engines to index your public profile
 										</div>
 									</div>
 									<input
 										type="checkbox"
-										className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+										class="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
 										checked={searchIndexing}
 										onChange={(e) => {
 											setSearchIndexing(e.target.checked);
@@ -2015,28 +2034,28 @@ export default function OrgSettings({ embedded = false }) {
 					</SectionCard>
 
 					<SectionCard title="Data & Sharing" subtitle="Manage how your data is used and shared.">
-						<div className="space-y-4">
-							<div className="rounded-2xl border border-slate-200 bg-amber-50 p-4 dark:border-slate-700 dark:bg-amber-500/10">
-								<p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+						<div class="space-y-4">
+							<div class="rounded-2xl border border-slate-200 bg-amber-50 p-4 dark:border-slate-700 dark:bg-amber-500/10">
+								<p class="text-sm font-medium text-amber-800 dark:text-amber-200">
 									Contact info is private
 								</p>
-								<p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+								<p class="mt-1 text-xs text-amber-700 dark:text-amber-300">
 									Email and phone number are never shown on your public profile. All communication
 									happens through the platform chat system to ensure security and traceability.
 								</p>
 							</div>
-							<div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+							<div class="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
 								<div>
-									<div className="text-sm font-medium text-slate-900 dark:text-white">
+									<div class="text-sm font-medium text-slate-900 dark:text-white">
 										Activity status
 									</div>
-									<div className="text-xs text-slate-500 dark:text-slate-400">
+									<div class="text-xs text-slate-500 dark:text-slate-400">
 										Show when you are online or recently active
 									</div>
 								</div>
 								<input
 									type="checkbox"
-									className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+									class="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
 									checked={showActivityStatus}
 									onChange={(e) => {
 										setShowActivityStatus(e.target.checked);
@@ -2051,12 +2070,12 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== VERIFICATION TAB ==================== */}
 			{activeTab === "verification" && hasRoleAccess(currentUserRole, "factory") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard
 						title="Verification Status"
 						subtitle="Track status and renew before expiration."
 					>
-						<div className="flex flex-wrap items-center gap-3">
+						<div class="flex flex-wrap items-center gap-3">
 							<Badge tone={verificationTone}>
 								{verificationStatus === "verified_active"
 									? "Verified Active"
@@ -2066,21 +2085,21 @@ export default function OrgSettings({ embedded = false }) {
 							</Badge>
 							<Badge tone="sky">{remainingDays} days remaining</Badge>
 						</div>
-						<div className="mt-4 grid gap-4 sm:grid-cols-2">
-							<div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-								<div className="text-xs text-slate-500 dark:text-slate-400">Wallet balance</div>
-								<div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+						<div class="mt-4 grid gap-4 sm:grid-cols-2">
+							<div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+								<div class="text-xs text-slate-500 dark:text-slate-400">Wallet balance</div>
+								<div class="mt-1 text-2xl font-black text-slate-900 dark:text-white">
 									${walletBalance.toFixed(2)}
 								</div>
 							</div>
-							<div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-								<div className="text-xs text-slate-500 dark:text-slate-400">Restricted balance</div>
-								<div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+							<div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+								<div class="text-xs text-slate-500 dark:text-slate-400">Restricted balance</div>
+								<div class="mt-1 text-2xl font-black text-slate-900 dark:text-white">
 									${walletRestricted.toFixed(2)}
 								</div>
 							</div>
 						</div>
-						<div className="mt-4 flex flex-wrap gap-3">
+						<div class="mt-4 flex flex-wrap gap-3">
 							<SecondaryButton onClick={() => navigate("/verification")}>
 								Open Verification Center
 							</SecondaryButton>
@@ -2094,19 +2113,19 @@ export default function OrgSettings({ embedded = false }) {
 						title="Missing Documents"
 						subtitle="Upload these items to complete verification."
 					>
-						<div className="space-y-3">
+						<div class="space-y-3">
 							{verification?.missing_required?.length > 0 ? (
 								verification.missing_required.slice(0, 6).map((doc) => (
 									<div
 										key={doc}
-										className="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
+										class="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
 									>
 										<span>{doc}</span>
-										<span className="text-xs font-semibold">Required</span>
+										<span class="text-xs font-semibold">Required</span>
 									</div>
 								))
 							) : (
-								<div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
+								<div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
 									All verification documents have been uploaded.
 								</div>
 							)}
@@ -2117,17 +2136,17 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== SECURITY TAB ==================== */}
 			{activeTab === "security" && hasRoleAccess(currentUserRole, "factory") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard title="Passkeys" subtitle="Register WebAuthn passkeys for safer sign-ins.">
-						<div className="space-y-3">
+						<div class="space-y-3">
 							{passkeys.map((p) => (
 								<div
 									key={p.id}
-									className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+									class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
 								>
 									<div>
-										<div className="font-medium text-slate-900 dark:text-white">{p.name}</div>
-										<div className="text-sm text-slate-500 dark:text-slate-400">
+										<div class="font-medium text-slate-900 dark:text-white">{p.name}</div>
+										<div class="text-sm text-slate-500 dark:text-slate-400">
 											Created {p.created_at || p.createdAt}
 										</div>
 									</div>
@@ -2142,7 +2161,7 @@ export default function OrgSettings({ embedded = false }) {
 								</div>
 							))}
 						</div>
-						<div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+						<div class="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
 							<Input
 								value={passkeyName}
 								onChange={(e) => setPasskeyName(e.target.value)}
@@ -2150,14 +2169,14 @@ export default function OrgSettings({ embedded = false }) {
 							/>
 							<PrimaryButton onClick={addPasskey}>Add Passkey</PrimaryButton>
 						</div>
-						{passkeyError && <p className="mt-2 text-sm text-red-600">{passkeyError}</p>}
+						{passkeyError && <p class="mt-2 text-sm text-red-600">{passkeyError}</p>}
 					</SectionCard>
 
 					<SectionCard
 						title="Active Sessions"
 						subtitle="See live sessions and revoke access quickly."
 					>
-						<div className="space-y-3">
+						<div class="space-y-3">
 							{loadingSessions ? (
 								<Mosaic
 									color="#3b00ff"
@@ -2167,22 +2186,22 @@ export default function OrgSettings({ embedded = false }) {
 									textColor=""
 								/>
 							) : sessions.length === 0 ? (
-								<p className="text-sm text-slate-500">No sessions.</p>
+								<p class="text-sm text-slate-500">No sessions.</p>
 							) : (
 								sessions.map((session) => (
 									<div
 										key={session.id || session.token}
-										className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+										class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
 									>
-										<div className="flex items-start justify-between gap-4">
+										<div class="flex items-start justify-between gap-4">
 											<div>
-												<div className="flex items-center gap-2">
-													<div className="font-medium text-slate-900 dark:text-white">
+												<div class="flex items-center gap-2">
+													<div class="font-medium text-slate-900 dark:text-white">
 														{session.device || session.browser || "Unknown"}
 													</div>
 													{session.current && <Badge tone="green">Current</Badge>}
 												</div>
-												<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+												<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
 													{session.ip} · {session.location || "Unknown"} ·{" "}
 													{session.last_active || "recently"}
 												</div>
@@ -2200,9 +2219,9 @@ export default function OrgSettings({ embedded = false }) {
 					</SectionCard>
 
 					<SectionCard title="Account Lock" subtitle="Temporarily restrict access to your account.">
-						<div className="space-y-4">
-							<div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-								<div className="flex items-start gap-3">
+						<div class="space-y-4">
+							<div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+								<div class="flex items-start gap-3">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										width="20"
@@ -2213,28 +2232,28 @@ export default function OrgSettings({ embedded = false }) {
 										strokeWidth="2"
 										strokeLinecap="round"
 										strokeLinejoin="round"
-										className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+										class="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
 									>
 										<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
 										<path d="M7 11V7a5 5 0 0 1 10 0v4" />
 									</svg>
 									<div>
-										<div className="text-sm font-medium text-amber-800 dark:text-amber-200">
+										<div class="text-sm font-medium text-amber-800 dark:text-amber-200">
 											Lock your account
 										</div>
-										<div className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+										<div class="mt-1 text-xs text-amber-700 dark:text-amber-300">
 											This will temporarily freeze your account, hide your listings, and prevent new
 											messages. You can unlock at any time.
 										</div>
 									</div>
 								</div>
 							</div>
-							<div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+							<div class="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
 								<div>
-									<div className="text-sm font-medium text-slate-900 dark:text-white">
+									<div class="text-sm font-medium text-slate-900 dark:text-white">
 										Account status
 									</div>
-									<div className="text-xs text-slate-500 dark:text-slate-400">
+									<div class="text-xs text-slate-500 dark:text-slate-400">
 										Currently{" "}
 										{accountLocked
 											? "locked — features limited"
@@ -2244,7 +2263,7 @@ export default function OrgSettings({ embedded = false }) {
 								<button
 									onClick={toggleAccountLock}
 									disabled={lockingAccount}
-									className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
+									class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
 								>
 									{lockingAccount
 										? "Processing..."
@@ -2260,12 +2279,12 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== BRANDING TAB ==================== */}
 			{activeTab === "branding" && hasRoleAccess(currentUserRole, "factory") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard
 						title="Brand Identity"
 						subtitle="Set your brand name, logo, website, and tone."
 					>
-						<div className="grid gap-4 sm:grid-cols-2">
+						<div class="grid gap-4 sm:grid-cols-2">
 							<div>
 								<Label>Brand name</Label>
 								<Input
@@ -2274,7 +2293,7 @@ export default function OrgSettings({ embedded = false }) {
 									disabled={!canBranding}
 								/>
 							</div>
-							<div className="sm:col-span-2">
+							<div class="sm:col-span-2">
 								<Label>Logo Image</Label>
 								<input
 									ref={logoInputRef}
@@ -2282,14 +2301,14 @@ export default function OrgSettings({ embedded = false }) {
 									accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
 									onChange={handleLogoUpload}
 									disabled={!canBranding || logoUploading}
-									className="hidden"
+									class="hidden"
 								/>
-								<div className="flex items-center gap-4">
+								<div class="flex items-center gap-4">
 									<button
 										type="button"
 										onClick={() => logoInputRef.current?.click()}
 										disabled={!canBranding || logoUploading}
-										className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+										class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
 									>
 										{logoUploading ? (
 											<ThreeDot
@@ -2304,23 +2323,23 @@ export default function OrgSettings({ embedded = false }) {
 										)}
 									</button>
 									{logoUploading && (
-										<UploadProgressBar progress={logoUploadProgress} className="w-40" />
+										<UploadProgressBar progress={logoUploadProgress} class="w-40" />
 									)}
-									{brandLogoUrl && <span className="text-sm text-slate-500">Logo set</span>}
+									{brandLogoUrl && <span class="text-sm text-slate-500">Logo set</span>}
 								</div>
 								{brandLogoUrl && (
-									<div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 w-20 h-20">
+									<div class="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 w-20 h-20">
 										<LazyImage
 											src={brandLogoUrl}
 											alt="Logo preview"
 											width={80}
 											height={80}
-											className="w-full h-full object-contain"
+											class="w-full h-full object-contain"
 										/>
 									</div>
 								)}
 							</div>
-							<div className="sm:col-span-2">
+							<div class="sm:col-span-2">
 								<Label>Banner / Cover Image</Label>
 								<input
 									ref={bannerInputRef}
@@ -2328,14 +2347,14 @@ export default function OrgSettings({ embedded = false }) {
 									accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
 									onChange={handleBannerUpload}
 									disabled={!canBranding || bannerUploading}
-									className="hidden"
+									class="hidden"
 								/>
-								<div className="flex items-center gap-4">
+								<div class="flex items-center gap-4">
 									<button
 										type="button"
 										onClick={() => bannerInputRef.current?.click()}
 										disabled={!canBranding || bannerUploading}
-										className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+										class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
 									>
 										{bannerUploading ? (
 											<ThreeDot
@@ -2350,18 +2369,18 @@ export default function OrgSettings({ embedded = false }) {
 										)}
 									</button>
 									{bannerUploading && (
-										<UploadProgressBar progress={bannerUploadProgress} className="w-40" />
+										<UploadProgressBar progress={bannerUploadProgress} class="w-40" />
 									)}
-									{brandCoverUrl && <span className="text-sm text-slate-500">Banner set</span>}
+									{brandCoverUrl && <span class="text-sm text-slate-500">Banner set</span>}
 								</div>
 								{brandCoverUrl && (
-									<div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+									<div class="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
 										<LazyImage
 											src={brandCoverUrl}
 											alt="Banner preview"
 											width={1200}
 											height={400}
-											className="h-32 w-full object-cover"
+											class="h-32 w-full object-cover"
 										/>
 									</div>
 								)}
@@ -2387,21 +2406,21 @@ export default function OrgSettings({ embedded = false }) {
 								/>
 							</div>
 						</div>
-						<div className="mt-4 flex gap-3">
+						<div class="mt-4 flex gap-3">
 							<PrimaryButton onClick={saveBrandingSettings} disabled={!canBranding}>
 								Save Branding
 							</PrimaryButton>
 						</div>
 					</SectionCard>
 					<SectionCard title="Brand Preview" subtitle="A preview of your brand identity.">
-						<div className="rounded-[2rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
-							<div className="flex items-center gap-4">
-								<div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/20 text-2xl font-black backdrop-blur">
+						<div class="rounded-[2rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
+							<div class="flex items-center gap-4">
+								<div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/20 text-2xl font-black backdrop-blur">
 									{brandName.slice(0, 1).toUpperCase()}
 								</div>
 								<div>
-									<div className="text-2xl font-black">{brandName}</div>
-									<div className="text-sm text-white/85">{brandTagline}</div>
+									<div class="text-2xl font-black">{brandName}</div>
+									<div class="text-sm text-white/85">{brandTagline}</div>
 								</div>
 							</div>
 						</div>
@@ -2411,33 +2430,33 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== SUBSCRIPTION TAB ==================== */}
 			{activeTab === "subscription" && hasRoleAccess(currentUserRole, "factory") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard title="Current Plan" subtitle="Track plan level and billing status.">
-						<div className="rounded-[1.75rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
-							<div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
+						<div class="rounded-[1.75rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
+							<div class="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
 								Plan
 							</div>
-							<div className="mt-2 text-3xl font-black">
+							<div class="mt-2 text-3xl font-black">
 								{subscriptionPlan === "free"
 									? "Free"
 									: subscriptionPlan === "premium"
 										? "Premium"
 										: "Enterprise"}
 							</div>
-							<div className="mt-2 text-white/85">
+							<div class="mt-2 text-white/85">
 								{subscriptionPlan === "free" ? "Limited features" : `$${planPrice} / month`}
 							</div>
-							<div className="mt-5 flex flex-wrap gap-3">
+							<div class="mt-5 flex flex-wrap gap-3">
 								{subscriptionPlan === "free" && (
 									<SecondaryButton
-										className="border-white/20 bg-white/15 text-white hover:bg-white/25"
+										class="border-white/20 bg-white/15 text-white hover:bg-white/25"
 										onClick={() => navigate("/pricing")}
 									>
 										Upgrade
 									</SecondaryButton>
 								)}
 								<SecondaryButton
-									className="border-white/20 bg-white/15 text-white hover:bg-white/25"
+									class="border-white/20 bg-white/15 text-white hover:bg-white/25"
 									onClick={() => navigate("/pricing")}
 								>
 									View plans
@@ -2446,17 +2465,17 @@ export default function OrgSettings({ embedded = false }) {
 						</div>
 					</SectionCard>
 					<SectionCard title="Wallet" subtitle="Funds available for boosts and billing.">
-						<div className="grid gap-4 sm:grid-cols-2">
-							<div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-								<div className="text-xs text-slate-500">Balance</div>
-								<div className="mt-1 text-2xl font-black">${walletBalance.toFixed(2)}</div>
+						<div class="grid gap-4 sm:grid-cols-2">
+							<div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+								<div class="text-xs text-slate-500">Balance</div>
+								<div class="mt-1 text-2xl font-black">${walletBalance.toFixed(2)}</div>
 							</div>
-							<div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-								<div className="text-xs text-slate-500">Restricted</div>
-								<div className="mt-1 text-2xl font-black">${walletRestricted.toFixed(2)}</div>
+							<div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+								<div class="text-xs text-slate-500">Restricted</div>
+								<div class="mt-1 text-2xl font-black">${walletRestricted.toFixed(2)}</div>
 							</div>
 						</div>
-						<div className="mt-4">
+						<div class="mt-4">
 							<PrimaryButton onClick={addFunds} disabled={addingFunds}>
 								{addingFunds ? "Processing..." : "Add funds"}
 							</PrimaryButton>
@@ -2467,24 +2486,24 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== MEMBERS TAB ==================== */}
 			{activeTab === "members" && hasRoleAccess(currentUserRole, "factory") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard title="Team Members" subtitle="Manage your team.">
-						<div className="space-y-3">
+						<div class="space-y-3">
 							{members.length === 0 ? (
-								<p className="text-sm text-slate-500">No team members yet.</p>
+								<p class="text-sm text-slate-500">No team members yet.</p>
 							) : (
 								members.map((member) => (
 									<div
 										key={member.id}
-										className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+										class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
 									>
 										<div>
-											<div className="font-medium text-slate-900 dark:text-white">
+											<div class="font-medium text-slate-900 dark:text-white">
 												{member.name || member.email}
 											</div>
-											<div className="text-sm text-slate-500 dark:text-slate-400">{member.email}</div>
+											<div class="text-sm text-slate-500 dark:text-slate-400">{member.email}</div>
 										</div>
-										<div className="flex items-center gap-3">
+										<div class="flex items-center gap-3">
 											<Badge tone="sky">{member.role}</Badge>
 											<SecondaryButton onClick={() => removeMember(member.id)}>
 												Remove
@@ -2496,7 +2515,7 @@ export default function OrgSettings({ embedded = false }) {
 						</div>
 					</SectionCard>
 					<SectionCard title="Invite Members" subtitle="Add teammates by email and role.">
-						<div className="grid gap-4">
+						<div class="grid gap-4">
 							<div>
 								<Label>Email</Label>
 								<Input
@@ -2523,7 +2542,7 @@ export default function OrgSettings({ embedded = false }) {
 							</PrimaryButton>
 							{memberFeedback && (
 								<p
-									className={`text-sm ${memberFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+									class={`text-sm ${memberFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
 								>
 									{memberFeedback}
 								</p>
@@ -2535,10 +2554,10 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== BOOSTS TAB ==================== */}
 			{activeTab === "boosts" && hasRoleAccess(currentUserRole, "manager") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard title="Boost Management" subtitle="Create and manage visibility boosts.">
-						<div className="space-y-4">
-							<div className="grid gap-3">
+						<div class="space-y-4">
+							<div class="grid gap-3">
 								<div>
 									<Label>Scope</Label>
 									<Select value={boostScope} onChange={(e) => setBoostScope(e.target.value)}>
@@ -2578,35 +2597,35 @@ export default function OrgSettings({ embedded = false }) {
 							</PrimaryButton>
 							{boostFeedback && (
 								<p
-									className={`text-sm ${boostFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+									class={`text-sm ${boostFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
 								>
 									{boostFeedback}
 								</p>
 							)}
 							{loadingBoosts ? (
-								<div className="flex justify-center py-4">
+								<div class="flex justify-center py-4">
 									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 								</div>
 							) : boosts.length > 0 ? (
-								<div className="space-y-2">
-									<p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+								<div class="space-y-2">
+									<p class="text-sm font-medium text-slate-700 dark:text-slate-300">
 										Existing Boosts
 									</p>
 									{boosts.map((b) => (
 										<div
 											key={b.id}
-											className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900"
+											class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900"
 										>
-											<div className="space-y-1">
-												<p className="font-medium text-slate-900 dark:text-white">
+											<div class="space-y-1">
+												<p class="font-medium text-slate-900 dark:text-white">
 													{b.scope} — {b.duration_days || b.duration}d
 												</p>
-												<p className="text-slate-500">
+												<p class="text-slate-500">
 													×{b.multiplier} · ${b.price_usd || b.price}
 												</p>
 											</div>
 											<span
-												className={cx(
+												class={cx(
 													"rounded-full px-3 py-1 text-xs font-medium",
 													b.status === "active"
 														? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
@@ -2629,16 +2648,16 @@ export default function OrgSettings({ embedded = false }) {
 
 			{/* ==================== ASSISTANT KNOWLEDGE TAB ==================== */}
 			{activeTab === "assistant_knowledge" && hasRoleAccess(currentUserRole, "manager") && (
-				<div className="grid gap-6 lg:grid-cols-2">
+				<div class="grid gap-6 lg:grid-cols-2">
 					<SectionCard title="Assistant Knowledge" subtitle="Manage FAQ entries used by the bot.">
-						<div className="space-y-3">
+						<div class="space-y-3">
 							{entries.length === 0 ? (
-								<p className="text-sm text-slate-500">No FAQ entries yet.</p>
+								<p class="text-sm text-slate-500">No FAQ entries yet.</p>
 							) : (
 								entries.map((entry) => (
 									<div
 										key={entry.id}
-										className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+										class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
 									>
 										{entry.question}
 									</div>
@@ -2659,10 +2678,10 @@ export default function OrgSettings({ embedded = false }) {
 							}
 							placeholder="Example: What is your MOQ?"
 						/>
-						<div className="mt-4">
+						<div class="mt-4">
 							{faqFeedback && (
 								<p
-									className={`text-sm ${faqFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+									class={`text-sm ${faqFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
 								>
 									{faqFeedback}
 								</p>
@@ -2709,7 +2728,7 @@ export default function OrgSettings({ embedded = false }) {
 			)}
 
 			{!isOrgManager && (
-				<div className="rounded-xl bg-red-50 p-4 text-red-600">
+				<div class="rounded-xl bg-red-50 p-4 text-red-600">
 					You do not have permission to view organization settings.
 				</div>
 			)}
@@ -2718,7 +2737,7 @@ export default function OrgSettings({ embedded = false }) {
 
 	if (embedded) {
 		return (
-			<div data-lenis-prevent={true} className="space-y-6">
+			<div data-lenis-prevent={true} class="space-y-6">
 				{settingsContent}
 			</div>
 		);
@@ -2726,38 +2745,38 @@ export default function OrgSettings({ embedded = false }) {
 
 	return (
 		<div
-			className={cx(
+			class={cx(
 				bodyTheme,
 				"min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#07111f] dark:text-white",
 			)}
 		>
-			<div className="absolute inset-0 -z-10 overflow-hidden">
-				<div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-sky-400/25 blur-3xl" />
-				<div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
-				<div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
+			<div class="absolute inset-0 -z-10 overflow-hidden">
+				<div class="absolute -left-24 top-0 h-72 w-72 rounded-full bg-sky-400/25 blur-3xl" />
+				<div class="absolute right-0 top-20 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
+				<div class="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
 			</div>
 
-			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+			<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 				{/* Header */}
-				<div className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-[0_24px_80px_-35px_rgba(2,132,199,0.6)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 lg:flex-row lg:items-center lg:justify-between">
-					<div className="flex items-center gap-4">
+				<div class="mb-6 flex flex-col gap-4 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-[0_24px_80px_-35px_rgba(2,132,199,0.6)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 lg:flex-row lg:items-center lg:justify-between">
+					<div class="flex items-center gap-4">
 						<Icon>
-							<span className="text-lg font-black">O</span>
+							<span class="text-lg font-black">O</span>
 						</Icon>
 						<div>
-							<div className="flex flex-wrap items-center gap-2">
-								<h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+							<div class="flex flex-wrap items-center gap-2">
+								<h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
 									Owner Console
 								</h1>
 								<Badge tone="sky">Premium Dashboard</Badge>
 							</div>
-							<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+							<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
 								Modern control center for automation, verification, branding, security, and team
 								growth.
 							</p>
 						</div>
 					</div>
-					<div className="flex flex-wrap items-center gap-3">
+					<div class="flex flex-wrap items-center gap-3">
 						<Badge tone={verificationTone}>
 							{verificationStatus === "verified_active"
 								? "Verified"
@@ -2836,7 +2855,7 @@ function NotificationPreferencesTab() {
 	}
 
 	return (
-		<div className="grid gap-6 lg:grid-cols-2">
+		<div class="grid gap-6 lg:grid-cols-2">
 			<SectionCard title="Notification Channels" subtitle="Choose how you receive notifications.">
 				<_TogglePref
 					label="Email Notifications"
@@ -2886,7 +2905,7 @@ function NotificationPreferencesTab() {
 			</SectionCard>
 
 			{feedback && (
-				<div className="col-span-full rounded-lg p-3 text-sm bg-sky-50 text-sky-700 border border-sky-200">
+				<div class="col-span-full rounded-lg p-3 text-sm bg-sky-50 text-sky-700 border border-sky-200">
 					{feedback}
 				</div>
 			)}
