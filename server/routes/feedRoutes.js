@@ -13,6 +13,7 @@ import {
 import { feedStream } from "../controllers/feedStreamController.js";
 import { uploadFeedMedia } from "../controllers/feedUploadController.js";
 import { requireAuth } from "../middleware/auth.js";
+import { getShareablePost } from "../services/feedService.js";
 
 const router = Router();
 
@@ -146,6 +147,15 @@ const upload = multer({
 });
 
 router.get("/stream", feedStream);
+router.get("/share/:entityType/:entityId", async (req, res) => {
+	try {
+		const post = await getShareablePost(req.params.entityType, req.params.entityId);
+		if (!post) return res.status(404).json({ error: "Post not found or unavailable" });
+		return res.json(post);
+	} catch (err) {
+		return res.status(500).json({ error: "Failed to load shared post" });
+	}
+});
 router.get("/posts/mine", requireAuth, getMyFeedPosts);
 router.get("/search", requireAuth, searchFeedPostsController);
 router.post("/posts/upload", requireAuth, upload.single("file"), uploadFeedMedia);

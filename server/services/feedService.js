@@ -721,3 +721,62 @@ export async function getCombinedFeed({
 		items: pageItems,
 	};
 }
+
+export async function getShareablePost(entityType, entityId) {
+	const typeMap = {
+		buyer_request: "buyer_request",
+		company_product: "company_product",
+		product: "company_product",
+		feed_post: "user_feed_post",
+		post: "user_feed_post",
+	};
+	const feedType = typeMap[entityType];
+	if (!feedType) return null;
+
+	let raw = null;
+	let authorId = "";
+
+	if (feedType === "buyer_request") {
+		raw = await prisma.requirement.findUnique({ where: { id: entityId } });
+		if (raw && raw.status !== "active") raw = null;
+		authorId = raw?.buyer_id || "";
+	} else if (feedType === "company_product") {
+		raw = await prisma.product.findUnique({ where: { id: entityId } });
+		if (raw && raw.status !== "active") raw = null;
+		authorId = raw?.company_id || "";
+	} else if (feedType === "user_feed_post") {
+		raw = await prisma.feedPost.findUnique({ where: { id: entityId } });
+		if (raw && raw.status !== "published") raw = null;
+		authorId = raw?.user_id || "";
+	}
+
+	if (!raw) return null;
+
+	const author = authorId
+		? await prisma.user.findUnique({
+				where: { id: authorId },
+				include: { profile: true },
+			})
+		: null;
+
+	return {
+		...raw,
+		feed_type: feedType,
+		entityType: feedType,
+		author: {
+			id: authorId,
+			name: author?.name || raw.company_name || raw.organization_name || raw.name || "Unknown",
+			verified: Boolean(author?.verified),
+			role: String(author?.role || ""),
+			avatar_url:
+				author?.profile?.profile_image ||
+				author?.profile?.avatar_url ||
+				author?.profile?.avatar ||
+				author?.avatar_url ||
+				"",
+			accountType: String(author?.role || "")
+				.replace(/_/g, " ")
+				.replace(/\b\w/g, (c) => c.toUpperCase()),
+		},
+	};
+}

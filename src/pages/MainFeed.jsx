@@ -576,7 +576,7 @@ export default function MainFeed() {
 	async function handleShare(item) {
 		setNotice({ type: "", message: "" });
 		try {
-			const url = `${window.location.origin}/feed?item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`;
+			const url = `${window.location.origin}/share/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}`;
 			await copyToClipboard(url);
 			await apiRequest(
 				`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share`,

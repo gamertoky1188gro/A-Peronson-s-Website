@@ -53,6 +53,7 @@ const Login = safeLazy(() => import("./pages/auth/Login.jsx"));
 const Signup = safeLazy(() => import("./pages/auth/Signup.jsx"));
 const SignupUltra = safeLazy(() => import("./pages/auth/SignupUltra.jsx"));
 const OnboardingPage = safeLazy(() => import("./pages/auth/OnboardingPage.jsx"));
+const SharedPost = safeLazy(() => import("./pages/SharedPost.jsx"));
 const MainFeed = safeLazy(() => import("./pages/MainFeed.jsx"));
 const FeedManagement = safeLazy(() => import("./pages/FeedManagement.jsx"));
 const SearchResults = safeLazy(() => import("./pages/SearchResults.jsx"));
@@ -172,6 +173,7 @@ function AppRoutes() {
 			<Route path="/help" element={<HelpCenter />} />
 			<Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
 			<Route path="/signup" element={<ErrorBoundary><Signup /></ErrorBoundary>} />
+			<Route path="/share/:entityType/:entityId" element={<ErrorBoundary><SharedPost /></ErrorBoundary>} />
 			<Route path="/:time/meow/:date/SignupUltra" element={<SignupUltra />} />
 			<Route
 				path="/onboarding"
