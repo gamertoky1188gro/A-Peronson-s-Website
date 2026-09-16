@@ -38,11 +38,8 @@ const initialForm = {
 	category: "",
 	caption: "",
 	readme: "",
-	ctaText: "",
-	ctaUrl: "",
 	hashtags: "",
 	mentions: "",
-	links: "",
 	productTags: "",
 	location: "",
 };
@@ -165,17 +162,15 @@ export default function FeedManagementPage() {
 		loadUser();
 	}, []);
 
-	const previewCtaVisible = form.ctaText.trim().length > 0;
 	const previewHasText = form.readme.trim().length > 0;
 
 	const previewMeta = useMemo(
 		() => ({
 			hashtags: splitCommaList(form.hashtags),
 			mentions: splitCommaList(form.mentions),
-			links: splitCommaList(form.links),
 			productTags: splitCommaList(form.productTags),
 		}),
-		[form.hashtags, form.mentions, form.links, form.productTags],
+		[form.hashtags, form.mentions, form.productTags],
 	);
 
 	const wordLimit = useMemo(() => {
@@ -231,11 +226,8 @@ export default function FeedManagementPage() {
 			category: post.category || "",
 			caption: post.caption || "",
 			readme: post.description_markdown || post.readme || "",
-			ctaText: post.cta_text || post.ctaText || "",
-			ctaUrl: post.cta_url || post.ctaUrl || "",
 			hashtags: Array.isArray(post.hashtags) ? post.hashtags.join(", ") : post.hashtags || "",
 			mentions: Array.isArray(post.mentions) ? post.mentions.join(", ") : post.mentions || "",
-			links: Array.isArray(post.links) ? post.links.join(", ") : post.links || "",
 			productTags: Array.isArray(post.product_tags)
 				? post.product_tags.join(", ")
 				: post.product_tags || post.productTags || "",
@@ -278,11 +270,8 @@ export default function FeedManagementPage() {
 			category: form.category,
 			caption: form.caption,
 			description_markdown: form.readme,
-			cta_text: form.ctaText,
-			cta_url: form.ctaUrl,
 			hashtags: splitCommaList(form.hashtags),
 			mentions: splitCommaList(form.mentions),
-			links: splitCommaList(form.links),
 			product_tags: splitCommaList(form.productTags),
 			location_tag: form.location,
 			media: mediaRows.map((item) => ({
@@ -502,30 +491,6 @@ export default function FeedManagementPage() {
 									<WordCount text={form.readme} limit={wordLimit} />
 								</Field>
 
-								<Field label="CTA Text">
-									<input
-										value={form.ctaText}
-										onChange={(e) => updateField("ctaText", e.target.value)}
-										placeholder="Optional"
-										className={cn(
-											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
-											inputBase,
-										)}
-									/>
-								</Field>
-
-								<Field label="CTA URL">
-									<input
-										value={form.ctaUrl}
-										onChange={(e) => updateField("ctaUrl", e.target.value)}
-										placeholder="https://..."
-										className={cn(
-											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
-											inputBase,
-										)}
-									/>
-								</Field>
-
 								<Field label="Hashtags">
 									<input
 										value={form.hashtags}
@@ -543,18 +508,6 @@ export default function FeedManagementPage() {
 										value={form.mentions}
 										onChange={(e) => updateField("mentions", e.target.value)}
 										placeholder="@buyer, @factory"
-										className={cn(
-											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
-											inputBase,
-										)}
-									/>
-								</Field>
-
-								<Field label="Links">
-									<input
-										value={form.links}
-										onChange={(e) => updateField("links", e.target.value)}
-										placeholder="https://..."
 										className={cn(
 											"w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
 											inputBase,
@@ -848,14 +801,6 @@ export default function FeedManagementPage() {
 								</div>
 								<div className="mt-4 grid gap-3 text-sm">
 									<InfoRow
-										label="CTA"
-										value={
-											previewCtaVisible
-												? `${form.ctaText}${form.ctaUrl ? ` → ${form.ctaUrl}` : ""}`
-												: "None"
-										}
-									/>
-									<InfoRow
 										label="Hashtags"
 										value={
 											previewMeta.hashtags.length > 0 ? previewMeta.hashtags.join(", ") : "None"
@@ -866,10 +811,6 @@ export default function FeedManagementPage() {
 										value={
 											previewMeta.mentions.length > 0 ? previewMeta.mentions.join(", ") : "None"
 										}
-									/>
-									<InfoRow
-										label="Links"
-										value={previewMeta.links.length > 0 ? previewMeta.links.join(", ") : "None"}
 									/>
 									<InfoRow
 										label="Product tags"

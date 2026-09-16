@@ -1,7 +1,5 @@
-import { ExternalLink } from "lucide-react";
 import LazyImage from "./LazyImage.jsx";
 import MarkdownReadme from "../feed/MarkdownReadme.jsx";
-import LinkPreviewCard from "./LinkPreviewCard.jsx";
 
 function wordCount(text) {
 	if (!text) {
@@ -65,27 +63,6 @@ export default function PostPreview({ item }) {
 				</div>
 			) : null}
 
-			{/* CTA */}
-			{item.ctaText && item.ctaUrl ? (
-				<div>
-					<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-						CTA
-					</span>
-					<div className="mt-1 space-y-1">
-						<p className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.ctaText}</p>
-						<a
-							href={item.ctaUrl}
-							target="_blank"
-							rel="noreferrer"
-							className="inline-flex items-center gap-1 text-xs text-gtBlue hover:underline break-all"
-						>
-							{item.ctaUrl}
-							<ExternalLink size={12} />
-						</a>
-					</div>
-				</div>
-			) : null}
-
 			{/* Hashtags */}
 			{Array.isArray(item.tags) && item.tags.length > 0 ? (
 				<div>
@@ -119,24 +96,6 @@ export default function PostPreview({ item }) {
 							>
 								@{mention}
 							</span>
-						))}
-					</div>
-				</div>
-			) : null}
-
-			{/* External Links */}
-			{Array.isArray(item.links) && item.links.length > 0 ? (
-				<div>
-					<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-						Links
-					</span>
-					<div className="mt-2 grid gap-3">
-						{item.links.slice(0, 4).map((url, i) => (
-							<LinkPreviewCard
-								key={`link-${i}`}
-								url={url}
-								preview={item.link_previews?.[i] || null}
-							/>
 						))}
 					</div>
 				</div>
