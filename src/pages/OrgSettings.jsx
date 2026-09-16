@@ -422,6 +422,11 @@ export default function OrgSettings({ embedded = false }) {
 	// Account lock state
 	const [accountLocked, setAccountLocked] = useState(() => currentUser?.status === "locked");
 	const [lockingAccount, setLockingAccount] = useState(false);
+	const [lockModalOpen, setLockModalOpen] = useState(false);
+	const [lockStep, setLockStep] = useState(1);
+	const [lockPassword, setLockPassword] = useState("");
+	const [lockConfirmText, setLockConfirmText] = useState("");
+	const [lockError, setLockError] = useState("");
 
 	// Members state
 	const [entries, setEntries] = useState([]);
@@ -1109,28 +1114,40 @@ export default function OrgSettings({ embedded = false }) {
 	};
 
 	// Toggle account lock
-	const toggleAccountLock = async () => {
+	const toggleAccountLock = async (password) => {
 		const token = getToken();
 		if (!token) {
 			return;
 		}
 		setLockingAccount(true);
+		setLockError("");
 		try {
 			if (accountLocked) {
 				await apiRequest("/users/me/lock", { method: "DELETE", token });
 				try { localStorage.removeItem("ght_account_locked"); } catch {}
 				setAccountLocked(false);
+				setLockModalOpen(false);
+				resetLockModal();
 				save("Account unlocked.");
 			} else {
-				await apiRequest("/users/me/lock", { method: "POST", token });
+				await apiRequest("/users/me/lock", { method: "POST", token, body: { password } });
 				setAccountLocked(true);
+				setLockModalOpen(false);
+				resetLockModal();
 				save("Account locked.");
 			}
 		} catch (err) {
-			save(err.message || "Failed to toggle account lock");
+			setLockError(err.message || "Failed to toggle account lock");
 		} finally {
 			setLockingAccount(false);
 		}
+	};
+
+	const resetLockModal = () => {
+		setLockStep(1);
+		setLockPassword("");
+		setLockConfirmText("");
+		setLockError("");
 	};
 
 	// Add funds
@@ -1856,7 +1873,14 @@ export default function OrgSettings({ embedded = false }) {
 										</div>
 									</div>
 									<button
-										onClick={toggleAccountLock}
+										onClick={() => {
+											if (accountLocked) {
+												toggleAccountLock();
+											} else {
+												resetLockModal();
+												setLockModalOpen(true);
+											}
+										}}
 										disabled={lockingAccount}
 										class="rounded-full border border-amber-200 bg-white px-4 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
 									>
@@ -2262,7 +2286,14 @@ export default function OrgSettings({ embedded = false }) {
 									</div>
 								</div>
 								<button
-									onClick={toggleAccountLock}
+									onClick={() => {
+										if (accountLocked) {
+											toggleAccountLock();
+										} else {
+											resetLockModal();
+											setLockModalOpen(true);
+										}
+									}}
 									disabled={lockingAccount}
 									class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
 								>
@@ -2855,7 +2886,114 @@ function NotificationPreferencesTab() {
 		return <NeonAtom fill={true} size={64} />;
 	}
 
+	const LockModal = () => {
+		if (!lockModalOpen) return null;
+		return (
+			<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+				<div className="w-full max-w-md rounded-3xl border border-white/20 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+					{/* Step 1: Warning */}
+					{lockStep === 1 && (
+						<div className="space-y-4">
+							<div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/15">
+								<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 dark:text-amber-400">
+									<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+									<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+								</svg>
+							</div>
+							<h3 className="text-center text-lg font-bold text-slate-900 dark:text-white">Lock Your Account?</h3>
+							<p className="text-center text-sm text-slate-600 dark:text-slate-300">
+								This will temporarily freeze your account, hide your listings, and prevent new messages.
+							</p>
+							<div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+								You can unlock your account at any time by entering your password.
+							</div>
+							<div className="flex gap-3">
+								<button onClick={() => setLockModalOpen(false)} className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+									Cancel
+								</button>
+								<button onClick={() => setLockStep(2)} className="flex-1 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-amber-500/25 transition hover:bg-amber-600">
+									Continue
+								</button>
+							</div>
+						</div>
+					)}
+
+					{/* Step 2: Password */}
+					{lockStep === 2 && (
+						<div className="space-y-4">
+							<div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-500/15">
+								<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600 dark:text-red-400">
+									<rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+									<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+								</svg>
+							</div>
+							<h3 className="text-center text-lg font-bold text-slate-900 dark:text-white">Enter Your Password</h3>
+							<p className="text-center text-sm text-slate-600 dark:text-slate-300">
+								Confirm your identity to lock your account.
+							</p>
+							<input
+								type="password"
+								value={lockPassword}
+								onChange={(e) => setLockPassword(e.target.value)}
+								placeholder="Enter your password"
+								autoFocus
+								className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-red-400 focus:ring-4 focus:ring-red-400/10 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+								onKeyDown={(e) => { if (e.key === "Enter" && lockPassword.trim()) setLockStep(3); }}
+							/>
+							{lockError && <p className="text-center text-xs text-red-600 dark:text-red-400">{lockError}</p>}
+							<div className="flex gap-3">
+								<button onClick={() => { setLockStep(1); setLockPassword(""); setLockError(""); }} className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+									Back
+								</button>
+								<button onClick={() => { if (lockPassword.trim()) setLockStep(3); }} disabled={!lockPassword.trim()} className="flex-1 rounded-2xl bg-red-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-red-500/25 transition hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed">
+									Verify
+								</button>
+							</div>
+						</div>
+					)}
+
+					{/* Step 3: Type confirmation */}
+					{lockStep === 3 && (
+						<div className="space-y-4">
+							<div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-500/15">
+								<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600 dark:text-red-400">
+									<circle cx="12" cy="12" r="10" />
+									<line x1="12" x2="12" y1="8" y2="12" />
+									<line x1="12" x2="12.01" y1="16" y2="16" />
+								</svg>
+							</div>
+							<h3 className="text-center text-lg font-bold text-slate-900 dark:text-white">Final Confirmation</h3>
+							<p className="text-center text-sm text-slate-600 dark:text-slate-300">
+								Type <span className="font-bold text-red-600 dark:text-red-400">LOCK</span> to confirm locking your account.
+							</p>
+							<input
+								type="text"
+								value={lockConfirmText}
+								onChange={(e) => setLockConfirmText(e.target.value)}
+								placeholder='Type "LOCK"'
+								autoFocus
+								className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-mono uppercase outline-none transition focus:border-red-400 focus:ring-4 focus:ring-red-400/10 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+								onKeyDown={(e) => { if (e.key === "Enter" && lockConfirmText.toUpperCase() === "LOCK") toggleAccountLock(lockPassword); }}
+							/>
+							{lockError && <p className="text-center text-xs text-red-600 dark:text-red-400">{lockError}</p>}
+							<div className="flex gap-3">
+								<button onClick={() => { setLockStep(2); setLockConfirmText(""); setLockError(""); }} className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+									Back
+								</button>
+								<button onClick={() => { if (lockConfirmText.toUpperCase() === "LOCK") toggleAccountLock(lockPassword); }} disabled={lockConfirmText.toUpperCase() !== "LOCK" || lockingAccount} className="flex-1 rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-red-500/25 transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+									{lockingAccount ? "Locking..." : "Lock Account"}
+								</button>
+							</div>
+						</div>
+					)}
+				</div>
+			</div>
+		);
+	};
+
 	return (
+		<>
+		<LockModal />
 		<div class="grid gap-6 lg:grid-cols-2">
 			<SectionCard title="Notification Channels" subtitle="Choose how you receive notifications.">
 				<_TogglePref
@@ -2911,5 +3049,6 @@ function NotificationPreferencesTab() {
 				</div>
 			)}
 		</div>
+		</>
 	);
 }

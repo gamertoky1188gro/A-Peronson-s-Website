@@ -185,8 +185,21 @@ export async function adminForceLogout(req, res) {
 
 export async function lockMyAccount(req, res) {
 	try {
-		const user = await selfLockAccount(req.user.id);
+		const { password } = req.body || {};
+		if (!password) {
+			return res.status(400).json({ error: "Password is required to lock your account" });
+		}
+		const bcrypt = await import("bcrypt");
+		const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+		const valid = await bcrypt.default.compare(password, user.password_hash || "");
+		if (!valid) {
+			return res.status(401).json({ error: "Incorrect password" });
+		}
+		const locked = await selfLockAccount(req.user.id);
+		if (!locked) {
 			return res.status(404).json({ error: "User not found" });
 		}
 		return res.json({ ok: true, status: "locked" });
