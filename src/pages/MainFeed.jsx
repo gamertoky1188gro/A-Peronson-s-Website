@@ -32,10 +32,10 @@ import usePageMeta from "../lib/usePageMeta.js";
 
 const Motion = motion;
 
-const TABS = ["All", "Buyer Requests", "Company Products", "Posts", "Unique OFF"];
+const TABS = ["All", "Buyer Requests", "Company Products", "Posts"];
 
 const DEFAULT_FEED_CONFIG = {
-	tabs: ["All", "Buyer Requests", "Company Products", "Posts", "Unique OFF"],
+	tabs: ["All", "Buyer Requests", "Company Products", "Posts"],
 	labels: {
 		feed_center: "Feed Center",
 		premium_badge: "Premium moderation dashboard",
@@ -416,8 +416,6 @@ export default function MainFeed() {
 					feedType = "products";
 				} else if (activeType === "Posts") {
 					feedType = "posts";
-				} else if (activeType === "Unique OFF") {
-					feedType = "all";
 				}
 
 				const categoryParam =
@@ -984,6 +982,17 @@ export default function MainFeed() {
 											{tab}
 										</Pill>
 									))}
+									<button
+										type="button"
+										onClick={() => setUnique((v) => !v)}
+										className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all sm:px-4 sm:py-2 sm:text-sm ${
+											unique
+												? "bg-emerald-500 text-white shadow-md shadow-emerald-500/25"
+												: "border border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30"
+										}`}
+									>
+										{unique ? "Unique ON" : "Unique OFF"}
+									</button>
 								</div>
 								<div className="flex flex-wrap items-center gap-3">
 									<Link
