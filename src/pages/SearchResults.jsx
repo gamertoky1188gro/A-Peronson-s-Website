@@ -329,7 +329,7 @@ function SearchModal({ open, searchInputRef, query, onQueryChange, onClose, exec
 
 function ResultTabs({ estimatedCounts, activeTab, onTabChange }) {
 	return (
-		<div className="inline-flex rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-1 shadow-sm">
+		<div className="inline-flex gap-1 overflow-x-auto scrollbar-invisible rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-1 shadow-sm">
 			{[
 				{ key: "all", label: `All (${estimatedCounts.total})` },
 				{
@@ -343,7 +343,7 @@ function ResultTabs({ estimatedCounts, activeTab, onTabChange }) {
 				<button
 					key={tab.key}
 					onClick={() => onTabChange(tab.key)}
-					className={`rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === tab.key ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"}`}
+					className={`whitespace-nowrap rounded-xl px-3 py-2 text-xs font-medium transition sm:px-4 sm:text-sm ${activeTab === tab.key ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"}`}
 				>
 					{tab.label}
 				</button>
@@ -2226,28 +2226,28 @@ export default function SearchResults() {
 										<div className="mt-4 flex flex-wrap gap-2">
 											<button
 												onClick={() => setFiltersOpen((v) => !v)}
-												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-xs font-medium hover:border-sky-300 dark:hover:border-sky-700 sm:px-4 sm:py-2.5 sm:text-sm"
 											>
-												<SlidersHorizontal className="h-4 w-4" /> Filters{" "}
+												<SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Filters{" "}
 												{filtersOpen ? (
-													<ChevronUp className="h-4 w-4" />
+													<ChevronUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 												) : (
-													<ChevronDown className="h-4 w-4" />
+													<ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 												)}
 											</button>
 											<button
 												onClick={saveSearch}
 												disabled={isSearchAlreadySaved}
-												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
+												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-xs font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm"
 											>
-												<Save className="h-4 w-4" />{" "}
-												{isSearchAlreadySaved ? "Already saved" : "Save search"}
+												<Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />{" "}
+												{isSearchAlreadySaved ? "Saved" : "Save"}
 											</button>
 											<button
 												onClick={shareSearch}
-												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-xs font-medium hover:border-sky-300 dark:hover:border-sky-700 sm:px-4 sm:py-2.5 sm:text-sm"
 											>
-												<Share2 className="h-4 w-4" /> Share
+												<Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Share
 											</button>
 											<Link
 												to="/notifications"
@@ -2294,7 +2294,7 @@ export default function SearchResults() {
 								</div>
 							</div>
 
-							<div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
+							<div className="mt-5 grid gap-3 sm:gap-4 sm:grid-cols-[1fr_auto_auto]">
 								<motion.div
 									className="relative"
 									animate={{ width: searchFocused ? "104%" : "100%" }}
@@ -2327,7 +2327,7 @@ export default function SearchResults() {
 													? "Search by company name..."
 													: "Search requests, factories, products..."
 										}
-										className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-36 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
+										className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-4 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 sm:pr-36"
 									/>
 									{suggestionsOpen && suggestions.length > 0 && (
 										<div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
@@ -2392,7 +2392,7 @@ export default function SearchResults() {
 									</div>
 								</motion.div>
 								<div className="flex items-center gap-2">
-									<label className="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700">
+									<label className="cursor-pointer rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-2 py-3 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700 sm:px-3 sm:py-4">
 										{imagePreview ? (
 											<div className="relative">
 												<img
@@ -2424,19 +2424,19 @@ export default function SearchResults() {
 									{searchImageUploadProgress > 0 && (
 										<UploadProgressBar progress={searchImageUploadProgress} className="w-16" />
 									)}
-									<button
+																		<button
 										onClick={() => setBatchOpen(true)}
-										className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-4 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700"
+										className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-2 py-3 text-sm text-slate-500 hover:border-sky-300 dark:hover:border-sky-700 sm:px-3 sm:py-4"
 										title="Batch search"
 									>
-										<FileSpreadsheet className="h-5 w-5" />
+										<FileSpreadsheet className="h-4 w-4 sm:h-5 sm:w-5" />
 									</button>
 									<button
 										onClick={executeSearch}
 										disabled={loading}
-										className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+										className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70 sm:px-6 sm:py-4 sm:text-base"
 									>
-										<Search className="h-5 w-5" />{" "}
+										<Search className="h-4 w-4 sm:h-5 sm:w-5" /> {" "}
 										{loading ? (
 											<ThreeDot
 												variant="bounce"
@@ -2452,13 +2452,13 @@ export default function SearchResults() {
 								</div>
 							</div>
 
-							<div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+							<div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
 								<ResultTabs
 									estimatedCounts={estimatedCounts}
 									activeTab={activeTab}
 									onTabChange={setActiveTab}
 								/>
-								<div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+								<div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
 									<Badge tone="blue">
 										{loading ? (
 											<ThreeDot
@@ -2493,7 +2493,7 @@ export default function SearchResults() {
 											<button
 												key={cat.key}
 												onClick={() => toggleCategory(cat.key)}
-												className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${pillClass(active)}`}
+												className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition sm:px-4 sm:py-2 sm:text-sm ${pillClass(active)}`}
 											>
 												{cat.label}
 											</button>
@@ -2502,23 +2502,23 @@ export default function SearchResults() {
 								})}
 							</div>
 
-							<div className="mt-5 flex flex-wrap items-center gap-2">
+							<div className="mt-4 flex flex-wrap items-center gap-2">
 								{activeFilterChips.length > 0 ? (
 									activeFilterChips.map((chip) => (
 										<button
 											key={chip.label}
 											onClick={chip.onRemove}
-											className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
+											className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm"
 										>
-											{chip.label} <X className="h-3.5 w-3.5" />
+											{chip.label} <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
 										</button>
 									))
 								) : (
-									<span className="text-sm text-slate-500 dark:text-slate-400">No filters active.</span>
+									<span className="text-xs text-slate-500 dark:text-slate-400 sm:text-sm">No filters active.</span>
 								)}
 								<button
 									onClick={clearAll}
-									className="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+									className="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 text-xs font-medium hover:border-sky-300 dark:hover:border-sky-700 sm:px-4 sm:py-2 sm:text-sm"
 								>
 									Clear all
 								</button>
