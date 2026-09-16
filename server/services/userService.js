@@ -389,6 +389,7 @@ export async function registerUser(payload) {
 		policy_strikes: 0,
 		messaging_restricted_until: null,
 		profile: {
+			organization_name: sanitizeString(payload.company_name || "", 120),
 			position: sanitizeString(payload.profile?.position || "", 80),
 			country: sanitizeString(payload.profile?.country || "", 120),
 			certifications: Array.isArray(payload.profile?.certifications)

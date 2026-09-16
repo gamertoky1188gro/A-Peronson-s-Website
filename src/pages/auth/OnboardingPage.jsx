@@ -44,7 +44,7 @@ export default function OnboardingPage() {
 
 	const [profileImage, setProfileImage] = useState(() => user?.profile?.profile_image || "");
 	const [organizationName, setOrganizationName] = useState(
-		() => user?.profile?.organization_name || user?.company_name || "",
+		() => user?.profile?.organization_name || user?.company_name || user?.name || "",
 	);
 	const [bio, setBio] = useState(() => user?.profile?.bio || "");
 	const [categories, setCategories] = useState(() => {
