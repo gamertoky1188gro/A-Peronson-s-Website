@@ -10,7 +10,6 @@ import {
 	Bell,
 	BriefcaseBusiness,
 	ChevronDown,
-	Filter,
 	LayoutGrid,
 	Plus,
 	Search,
@@ -34,18 +33,6 @@ import usePageMeta from "../lib/usePageMeta.js";
 const Motion = motion;
 
 const TABS = ["All", "Buyer Requests", "Company Products", "Posts", "Unique OFF"];
-
-const FEED_CATEGORIES = [
-	"All categories",
-	"T-Shirt",
-	"Polo",
-	"Denim",
-	"Hoodie",
-	"Sportswear",
-	"Knitwear",
-	"Woven",
-	"Outerwear",
-];
 
 const DEFAULT_FEED_CONFIG = {
 	tabs: ["All", "Buyer Requests", "Company Products", "Posts", "Unique OFF"],
@@ -336,8 +323,6 @@ export default function MainFeed() {
 	const [loadingMore, setLoadingMore] = useState(false);
 	const [error, setError] = useState("");
 	const [notice, setNotice] = useState({ type: "", message: "" });
-	const [filtersOpen, setFiltersOpen] = useState(false);
-	const filtersPanelRef = useRef(null);
 
 	const [commentsItem, setCommentsItem] = useState(null);
 	const [reportItem, setReportItem] = useState(null);
@@ -368,17 +353,6 @@ export default function MainFeed() {
 		const role = user?.role || "";
 		return role === "buying_house" || role === "admin";
 	}, [user?.role]);
-
-	useEffect(() => {
-		if (!filtersOpen) return;
-		function handleClickOutside(e) {
-			if (filtersPanelRef.current && !filtersPanelRef.current.contains(e.target)) {
-				setFiltersOpen(false);
-			}
-		}
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, [filtersOpen]);
 
 	const loadUser = useCallback(async () => {
 		const t = liveRef.current.token;
@@ -865,16 +839,6 @@ export default function MainFeed() {
 										/>
 									</div>
 								</div>
-								{/* Categories */}
-								<div className="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-									<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{feedConfig.labels.categories}</h2>
-									<div className="mt-4 flex flex-wrap gap-2">
-										<Pill active={activeCategory === feedConfig.labels.categories} onClick={() => { setActiveCategory(feedConfig.labels.categories); setSidebarOpen(false); }}>{feedConfig.labels.categories}</Pill>
-										{tags.map((cat) => (
-											<Pill key={cat} active={activeCategory === cat} onClick={() => { setActiveCategory(cat); setSidebarOpen(false); }}>{cat}</Pill>
-										))}
-									</div>
-								</div>
 							</aside>
 						</div>
 					)}
@@ -967,30 +931,6 @@ export default function MainFeed() {
 								/>
 							</div>
 						</div>
-
-						{/* Categories */}
-						<div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-							<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-								{feedConfig.labels.categories}
-							</h2>
-							<div className="mt-4 flex flex-wrap gap-2">
-								<Pill
-									active={activeCategory === feedConfig.labels.categories}
-									onClick={() => setActiveCategory(feedConfig.labels.categories)}
-								>
-									{feedConfig.labels.categories}
-								</Pill>
-								{tags.map((cat) => (
-									<Pill
-										key={cat}
-										active={activeCategory === cat}
-										onClick={() => setActiveCategory(cat)}
-									>
-										{cat}
-									</Pill>
-								))}
-							</div>
-						</div>
 					</aside>
 
 					{/* ====== MAIN CONTENT ====== */}
@@ -1027,7 +967,7 @@ export default function MainFeed() {
 							</div>
 						</motion.section>
 
-						{/* Tabs & Filters */}
+						{/* Tabs */}
 						<section className="rounded-[32px] border border-white/70 bg-white/75 p-3 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-4 md:p-5">
 							<div className="flex flex-col gap-3 sm:gap-4 xl:flex-row xl:items-center xl:justify-between">
 								<div className="flex flex-wrap gap-2">
@@ -1038,13 +978,6 @@ export default function MainFeed() {
 									))}
 								</div>
 								<div className="flex flex-wrap items-center gap-3">
-									<button
-										onClick={() => setFiltersOpen((v) => !v)}
-										className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
-									>
-										<Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-										Filters
-									</button>
 									<Link
 										to="/feed/manage"
 										className="inline-flex items-center gap-1.5 rounded-full bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
@@ -1055,42 +988,6 @@ export default function MainFeed() {
 								</div>
 							</div>
 						</section>
-
-						{/* Filter Panel */}
-						{filtersOpen && (
-							<section
-								ref={filtersPanelRef}
-								className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5"
-							>
-								<div className="flex items-center justify-between mb-4">
-									<h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-										Filter by Category
-									</h3>
-									<button
-										onClick={() => setFiltersOpen(false)}
-										className="text-xs text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400"
-									>
-										Close
-									</button>
-								</div>
-								<div className="flex flex-wrap gap-2">
-									{FEED_CATEGORIES.map((cat) => (
-										<button
-											key={cat}
-											type="button"
-											onClick={() => setActiveCategory(cat)}
-											className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-												activeCategory === cat
-													? "bg-sky-500 text-white shadow-md shadow-sky-500/25"
-													: "border border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30"
-											}`}
-										>
-											{cat}
-										</button>
-									))}
-								</div>
-							</section>
-						)}
 
 						{/* Notice */}
 						{notice?.message && (
