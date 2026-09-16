@@ -60,6 +60,22 @@ export async function requireAuth(req, res, next) {
 				return res.status(401).json({ error: "Session expired" });
 			}
 		}
+		if (user.status === "locked") {
+			const allowedWhileLocked = [
+				{ method: "DELETE", path: "/api/users/me/lock" },
+				{ method: "POST", path: "/api/auth/logout" },
+			];
+			const isAllowed = allowedWhileLocked.some(
+				(r) => r.method === req.method && req.path.startsWith(r.path),
+			);
+			if (!isAllowed) {
+				return res.status(403).json({
+					error: "Account locked",
+					code: "ACCOUNT_LOCKED",
+					message: "Your account is currently locked. Unlock it to regain access.",
+				});
+			}
+		}
 		return next();
 	} catch {
 		return res.status(401).json({ error: "Invalid token" });

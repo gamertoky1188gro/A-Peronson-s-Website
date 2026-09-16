@@ -1118,6 +1118,7 @@ export default function OrgSettings({ embedded = false }) {
 		try {
 			if (accountLocked) {
 				await apiRequest("/users/me/lock", { method: "DELETE", token });
+				try { localStorage.removeItem("ght_account_locked"); } catch {}
 				setAccountLocked(false);
 				save("Account unlocked.");
 			} else {

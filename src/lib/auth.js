@@ -259,6 +259,11 @@ export async function apiRequest(
 		if (res.status === 401) {
 			clearSession();
 		}
+		if (res.status === 403 && data?.code === "ACCOUNT_LOCKED") {
+			try {
+				localStorage.setItem("ght_account_locked", "1");
+			} catch {}
+		}
 		const error = new Error(data.error || "Request failed");
 		error.status = res.status;
 		error.details = data;

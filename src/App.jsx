@@ -10,7 +10,7 @@ import ScrollProgressBar from "./components/ScrollProgressBar.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { ToastProvider } from "./components/ToastContainer.jsx";
 import NeonAtom from "./components/ui/NeonAtom.jsx";
-import { getCurrentUser, getToken, verifyAndSyncUser } from "./lib/auth.js";
+import { clearSession, getCurrentUser, getToken, verifyAndSyncUser } from "./lib/auth.js";
 import { logger } from "./lib/logger.js";
 import { trackClientEvent } from "./lib/events.js";
 
@@ -109,6 +109,47 @@ function ProtectedRoute({ children, roles }) {
 	if (!user) {
 		// User is loading - show spinner while auth is being verified
 		return <NeonAtom fill={true} size={80} />;
+	}
+
+	// Account locked screen
+	const isLocked = user?.status === "locked";
+	const isUnlockPage = location.pathname === "/settings" || location.pathname === "/profile";
+	if (isLocked && !isUnlockPage) {
+		return (
+			<div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#0b1220] px-4">
+				<div className="max-w-md w-full rounded-3xl border border-white/70 bg-white/80 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80">
+					<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+						<svg className="h-8 w-8 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+							<path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+						</svg>
+					</div>
+					<h2 className="text-xl font-bold text-slate-900 dark:text-white">Account Locked</h2>
+					<p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+						Your account has been temporarily locked. Some features are limited.
+					</p>
+					<button
+						type="button"
+						onClick={() => {
+							try { localStorage.removeItem("ght_account_locked"); } catch {}
+							window.location.href = "/settings";
+						}}
+						className="mt-6 rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/25 transition hover:bg-amber-600"
+					>
+						Unlock Account
+					</button>
+					<button
+						type="button"
+						onClick={() => {
+							clearSession();
+							window.location.href = "/login";
+						}}
+						className="mt-3 block w-full text-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+					>
+						Log out instead
+					</button>
+				</div>
+			</div>
+		);
 	}
 
 	const userRole = user?.role;
