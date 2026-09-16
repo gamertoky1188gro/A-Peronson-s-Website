@@ -235,7 +235,7 @@ const Pill = memo(function Pill({ children, active = false, onClick }) {
 		<button
 			onClick={onClick}
 			className={cx(
-				"inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
+				"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm",
 				active
 					? "bg-sky-500 text-white shadow-lg shadow-sky-500/25"
 					: "bg-white/70 text-slate-600 hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800",
@@ -248,13 +248,13 @@ const Pill = memo(function Pill({ children, active = false, onClick }) {
 
 const StatCard = memo(function StatCard({ icon, label, value, accent = "sky" }) {
 	return (
-		<div className="rounded-3xl border border-white/60 bg-white/80 p-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
+		<div className="rounded-3xl border border-white/60 bg-white/80 p-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70 sm:p-3">
 			<div className="flex items-center justify-between gap-2">
 				<div className="flex-1">
 					<p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
 						{label}
 					</p>
-					<p className="text-xl font-semibold text-slate-900 dark:text-white">{value}</p>
+					<p className="text-lg font-semibold text-slate-900 dark:text-white sm:text-xl">{value}</p>
 				</div>
 				<div
 					className={cx(
@@ -765,10 +765,10 @@ export default function MainFeed() {
 				className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"
 			/>
 			<div className="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
-				<div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-6 px-4 py-4 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6 min-h-0">
+				<div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-4 px-4 py-4 sm:gap-6 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6 min-h-0">
 					{/* Mobile hamburger */}
 					<div className="flex items-center justify-between lg:hidden">
-						<h1 className="text-lg font-bold text-slate-900 dark:text-white">Feed</h1>
+						<h1 className="text-base font-bold text-slate-900 dark:text-white sm:text-lg">Feed</h1>
 						<button
 							onClick={() => setSidebarOpen(true)}
 							className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-600 shadow-sm dark:bg-slate-800 dark:text-slate-300"
@@ -816,7 +816,7 @@ export default function MainFeed() {
 														? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ")
 														: "User"}
 												</p>
-												<p className="text-xl font-semibold">{user?.name || "Feed Center"}</p>
+												<p className="text-lg font-semibold sm:text-xl">{user?.name || "Feed Center"}</p>
 											</div>
 										</div>
 									</div>
@@ -996,14 +996,14 @@ export default function MainFeed() {
 					{/* ====== MAIN CONTENT ====== */}
 					<main
 						data-lenis-prevent={isLargeScreen ? true : undefined}
-						className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0 scrollbar-invisible"
+						className="min-w-0 flex-1 space-y-4 overflow-y-auto pb-4 sm:space-y-6 lg:pb-0 scrollbar-invisible"
 					>
 						{/* Hero Section */}
 						<motion.section
-							className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6"
+							className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5 md:p-6"
 							style={{ scale: reduceMotion ? 1 : heroScale }}
 						>
-							<div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+							<div className="flex flex-col gap-3 sm:gap-5 xl:flex-row xl:items-end xl:justify-between">
 								<div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:w-[540px]">
 									<StatCard
 										icon={<BriefcaseBusiness className="h-3 w-3" />}
@@ -1028,8 +1028,8 @@ export default function MainFeed() {
 						</motion.section>
 
 						{/* Tabs & Filters */}
-						<section className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5">
-							<div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+						<section className="rounded-[32px] border border-white/70 bg-white/75 p-3 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-4 md:p-5">
+							<div className="flex flex-col gap-3 sm:gap-4 xl:flex-row xl:items-center xl:justify-between">
 								<div className="flex flex-wrap gap-2">
 									{feedConfig.tabs.map((tab) => (
 										<Pill key={tab} active={activeType === tab} onClick={() => setActiveType(tab)}>
@@ -1040,16 +1040,16 @@ export default function MainFeed() {
 								<div className="flex flex-wrap items-center gap-3">
 									<button
 										onClick={() => setFiltersOpen((v) => !v)}
-										className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300"
+										className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
 									>
-										<Filter className="h-4 w-4" />
+										<Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 										Filters
 									</button>
 									<Link
 										to="/feed/manage"
-										className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600"
+										className="inline-flex items-center gap-1.5 rounded-full bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
 									>
-										<Plus className="h-4 w-4" />
+										<Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 										Create post
 									</Link>
 								</div>
@@ -1060,7 +1060,7 @@ export default function MainFeed() {
 						{filtersOpen && (
 							<section
 								ref={filtersPanelRef}
-								className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70"
+								className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5"
 							>
 								<div className="flex items-center justify-between mb-4">
 									<h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -1142,7 +1142,7 @@ export default function MainFeed() {
 							) : null}
 
 							{!(loading || error) && filtered.length === 0 && (
-								<div className="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-400">
+								<div className="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-6 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-400 sm:p-10">
 									{feedConfig.messages.no_results}
 								</div>
 							)}

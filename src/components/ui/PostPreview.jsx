@@ -21,7 +21,7 @@ export default function PostPreview({ item }) {
 				<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
 					Title *
 				</span>
-				<h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
+				<h3 className="mt-1 text-base font-semibold text-slate-900 dark:text-slate-100 sm:text-lg">
 					{item.title || "Untitled"}
 				</h3>
 			</div>
