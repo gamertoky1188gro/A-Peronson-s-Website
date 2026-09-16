@@ -4,6 +4,7 @@ import { ThreeDot } from "react-loading-indicators";
 import { apiRequest, getToken } from "../../lib/auth.js";
 import LazyImage from "../ui/LazyImage.jsx";
 import PostPreview from "../ui/PostPreview.jsx";
+import ReportModal from "./ReportModal.jsx";
 
 function formatDateTime(value) {
 	if (!value) {
@@ -27,6 +28,7 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 	const [submitting, setSubmitting] = useState(false);
 	const [activeTab, setActiveTab] = useState("post");
 	const [showReport, setShowReport] = useState(false);
+	const [reportBusy, setReportBusy] = useState(false);
 
 	useEffect(() => {
 		if (open) {
@@ -40,6 +42,22 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 	}, [open]);
 
 	const token = useMemo(() => getToken(), []);
+
+	async function handleReportSubmit(reason) {
+		if (!item?.entityType || !item?.id) return;
+		setReportBusy(true);
+		try {
+			await apiRequest(
+				`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/report`,
+				{ method: "POST", token, body: { reason } },
+			);
+			setShowReport(false);
+		} catch {
+			// silent
+		} finally {
+			setReportBusy(false);
+		}
+	}
 
 	useEffect(() => {
 		if (!(open && item?.id && item?.entityType)) {
@@ -459,6 +477,12 @@ export default function PostDetailModal({ open, onClose, item, onShare }) {
 					) : null}
 				</div>
 			</div>
+			<ReportModal
+				open={showReport}
+				item={item}
+				onClose={() => setShowReport(false)}
+				onSubmit={handleReportSubmit}
+			/>
 		</div>
 	);
 }
