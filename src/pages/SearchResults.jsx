@@ -992,10 +992,17 @@ export default function SearchResults() {
 			}
 		};
 	}, [query]);
-	const [filtersOpen, setFiltersOpen] = useState(true);
+	const [filtersOpen, setFiltersOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [activeTab, setActiveTab] = useState("all");
 	const [viewMode, setViewMode] = useState("all");
+	useEffect(() => {
+		if (filtersOpen && filterPanelRef.current) {
+			setTimeout(() => {
+				filterPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+			}, 100);
+		}
+	}, [filtersOpen]);
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		if (viewMode === "requests") {
@@ -1146,6 +1153,7 @@ export default function SearchResults() {
 	}, []);
 
 	const suggestionDebounce = useRef(null);
+	const filterPanelRef = useRef(null);
 	useEffect(() => {
 		if (suggestionDebounce.current) {
 			clearTimeout(suggestionDebounce.current);
@@ -2226,7 +2234,11 @@ export default function SearchResults() {
 										<div className="mt-4 flex flex-wrap gap-2">
 											<button
 												onClick={() => setFiltersOpen((v) => !v)}
-												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-xs font-medium hover:border-sky-300 dark:hover:border-sky-700 sm:px-4 sm:py-2.5 sm:text-sm"
+												className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-medium transition sm:px-4 sm:py-2.5 sm:text-sm ${
+													filtersOpen
+														? "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300"
+														: "border-slate-200 bg-white/70 text-slate-600 hover:border-sky-300 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-sky-700"
+												}`}
 											>
 												<SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Filters{" "}
 												{filtersOpen ? (
@@ -2545,7 +2557,7 @@ export default function SearchResults() {
 						)}
 
 						{filtersOpen && (
-							<section className="grid gap-5 xl:grid-cols-3">
+							<section ref={filterPanelRef} className="grid gap-5 xl:grid-cols-3">
 								<SectionCard title="Product Filters" icon={ClipboardList}>
 									<div className="space-y-5">
 										<div>
