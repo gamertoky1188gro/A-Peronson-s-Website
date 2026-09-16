@@ -112,6 +112,14 @@ function buildFeedLeadLabel(item) {
 	return author ? `${author} update` : "Feed post";
 }
 
+function profileUrl(user) {
+	if (!user?.id) return "/feed";
+	const role = String(user.role || "").toLowerCase();
+	if (role === "buyer") return `/buyer/${encodeURIComponent(user.id)}`;
+	if (role === "buying_house") return `/buying-house/${encodeURIComponent(user.id)}`;
+	return `/factory/${encodeURIComponent(user.id)}`;
+}
+
 function normalizeFeedItem(raw) {
 	const entityType =
 		raw.feed_type === "buyer_request"
@@ -768,38 +776,38 @@ export default function MainFeed() {
 										✕
 									</button>
 								</div>
-								{/* ====== MOBILE SIDEBAR CONTENT ====== */}
-								{/* Header */}
-								<div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
-									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-3">
-											{user?.profile?.profile_image || user?.avatar_url ? (
-												<img
-													src={user.profile?.profile_image || user.avatar_url}
-													alt={user?.name || "User"}
-													className="h-12 w-12 rounded-2xl object-cover"
-												/>
-											) : (
-												<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-													<LayoutGrid className="h-6 w-6" />
-												</div>
-											)}
-											<div>
-												<p className="text-sm/none font-medium opacity-90">
-													{user?.role
-														? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ")
-														: "User"}
-												</p>
-												<p className="text-lg font-semibold sm:text-xl">{user?.name || "Feed Center"}</p>
+							{/* ====== MOBILE SIDEBAR CONTENT ====== */}
+							{/* Header */}
+							<Link to={profileUrl(user)} onClick={() => setSidebarOpen(false)} className="block rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20 transition hover:shadow-2xl hover:shadow-sky-500/30">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-3">
+										{user?.profile?.profile_image || user?.avatar_url ? (
+											<img
+												src={user.profile?.profile_image || user.avatar_url}
+												alt={user?.name || "User"}
+												className="h-12 w-12 rounded-2xl object-cover"
+											/>
+										) : (
+											<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+												<LayoutGrid className="h-6 w-6" />
 											</div>
+										)}
+										<div>
+											<p className="text-sm/none font-medium opacity-90">
+												{user?.role
+													? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ")
+													: "User"}
+											</p>
+											<p className="text-lg font-semibold sm:text-xl">{user?.name || "Feed Center"}</p>
 										</div>
 									</div>
-									<div className="mt-4 flex items-center gap-2 text-sm opacity-95">
-										<BadgeCheck className="h-4 w-4" />
-										{user?.profile?.bio || feedConfig.labels.premium_badge}
-									</div>
-									{user?.email && <div className="mt-2 text-xs opacity-75">{user.email}</div>}
 								</div>
+								<div className="mt-4 flex items-center gap-2 text-sm opacity-95">
+									<BadgeCheck className="h-4 w-4" />
+									{user?.profile?.bio || feedConfig.labels.premium_badge}
+								</div>
+								{user?.email && <div className="mt-2 text-xs opacity-75">{user.email}</div>}
+							</Link>
 								{/* Quick Actions */}
 								<div className="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
 									<div className="flex items-center justify-between">
@@ -849,7 +857,7 @@ export default function MainFeed() {
 						className="hidden lg:flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto scrollbar-invisible"
 					>
 						{/* Header */}
-						<div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
+						<Link to={profileUrl(user)} className="block rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20 transition hover:shadow-2xl hover:shadow-sky-500/30">
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-3">
 									{user?.profile?.profile_image || user?.avatar_url ? (
@@ -878,7 +886,7 @@ export default function MainFeed() {
 								{user?.profile?.bio || feedConfig.labels.premium_badge}
 							</div>
 							{user?.email && <div className="mt-2 text-xs opacity-75">{user.email}</div>}
-						</div>
+						</Link>
 
 						{/* Quick Actions */}
 						<div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
