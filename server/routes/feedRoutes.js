@@ -149,14 +149,10 @@ const upload = multer({
 router.get("/stream", feedStream);
 router.get("/share/:entityType/:entityId", async (req, res) => {
 	try {
-		const { entityType, entityId } = req.params;
-		console.log(`[share] entityType=${entityType} entityId=${entityId}`);
-		const post = await getShareablePost(entityType, entityId);
-		console.log(`[share] result:`, post ? `found (id=${post.id}, status=${post.status})` : "NULL");
+		const post = await getShareablePost(req.params.entityType, req.params.entityId);
 		if (!post) return res.status(404).json({ error: "Post not found or unavailable" });
 		return res.json(post);
 	} catch (err) {
-		console.error(`[share] ERROR:`, err.message, err.stack);
 		return res.status(500).json({ error: "Failed to load shared post" });
 	}
 });
