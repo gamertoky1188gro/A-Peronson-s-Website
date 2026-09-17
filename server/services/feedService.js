@@ -729,6 +729,7 @@ export async function getShareablePost(entityType, entityId) {
 		product: "company_product",
 		feed_post: "user_feed_post",
 		post: "user_feed_post",
+		user_feed_post: "user_feed_post",
 	};
 	const feedType = typeMap[entityType];
 	if (!feedType) { console.log(`[share] unknown entityType: ${entityType}`); return null; }
