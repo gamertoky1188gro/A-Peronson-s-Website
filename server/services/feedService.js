@@ -731,26 +731,29 @@ export async function getShareablePost(entityType, entityId) {
 		post: "user_feed_post",
 	};
 	const feedType = typeMap[entityType];
-	if (!feedType) return null;
+	if (!feedType) { console.log(`[share] unknown entityType: ${entityType}`); return null; }
 
 	let raw = null;
 	let authorId = "";
 
 	if (feedType === "buyer_request") {
 		raw = await prisma.requirement.findUnique({ where: { id: entityId } });
+		console.log(`[share] requirement query result:`, raw ? `found status=${raw.status}` : "null");
 		if (raw && !["active", "open"].includes(raw.status)) raw = null;
 		authorId = raw?.buyer_id || "";
 	} else if (feedType === "company_product") {
 		raw = await prisma.product.findUnique({ where: { id: entityId } });
+		console.log(`[share] product query result:`, raw ? `found status=${raw.status}` : "null");
 		if (raw && !["active", "open", "published"].includes(raw.status)) raw = null;
 		authorId = raw?.company_id || "";
 	} else if (feedType === "user_feed_post") {
 		raw = await prisma.feedPost.findUnique({ where: { id: entityId } });
+		console.log(`[share] feedPost query result:`, raw ? `found status=${raw.status}` : "null");
 		if (raw && raw.status !== "published") raw = null;
 		authorId = raw?.user_id || "";
 	}
 
-	if (!raw) return null;
+	if (!raw) { console.log(`[share] returning null — no matching record or filtered out`); return null; }
 
 	const author = authorId
 		? await prisma.user.findUnique({
