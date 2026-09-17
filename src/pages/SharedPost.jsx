@@ -1,5 +1,5 @@
 /*
-  Public shared post page — accessible without login.
+  Shared post page — public CTA for guests, full interactive view for logged-in users.
   Route: /share/:entityType/:entityId
 */
 
@@ -7,12 +7,15 @@ import {
 	BadgeCheck,
 	Building2,
 	Calendar,
-	Eye,
+	ChevronDown,
+	ChevronUp,
+	Flag,
 	Globe,
 	Hash,
 	Loader2,
 	Lock,
 	MapPin,
+	MessageSquareText,
 	Package,
 	Share2,
 	ShieldCheck,
@@ -20,16 +23,18 @@ import {
 	Users,
 	Workflow,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import LazyImage from "../components/ui/LazyImage.jsx";
+import { apiRequest, getToken, getCurrentUser } from "../lib/auth.js";
 
 const TYPE_LABELS = {
-	buyer_request: { label: "Buyer Request", icon: "💼", color: "from-blue-500 to-indigo-600" },
-	company_product: { label: "Company Product", icon: "🏭", color: "from-emerald-500 to-teal-600" },
-	product: { label: "Company Product", icon: "🏭", color: "from-emerald-500 to-teal-600" },
-	feed_post: { label: "Feed Post", icon: "📝", color: "from-sky-500 to-cyan-600" },
-	post: { label: "Feed Post", icon: "📝", color: "from-sky-500 to-cyan-600" },
+	buyer_request: { label: "Buyer Request", icon: "\uD83D\uDCBC", color: "from-blue-500 to-indigo-600" },
+	company_product: { label: "Company Product", icon: "\uD83C\uDFED", color: "from-emerald-500 to-teal-600" },
+	product: { label: "Company Product", icon: "\uD83C\uDFED", color: "from-emerald-500 to-teal-600" },
+	feed_post: { label: "Feed Post", icon: "\uD83D\uDCDD", color: "from-sky-500 to-cyan-600" },
+	post: { label: "Feed Post", icon: "\uD83D\uDCDD", color: "from-sky-500 to-cyan-600" },
+	user_feed_post: { label: "Feed Post", icon: "\uD83D\uDCDD", color: "from-sky-500 to-cyan-600" },
 };
 
 function InfoRow({ icon: Icon, label, value }) {
@@ -44,7 +49,6 @@ function InfoRow({ icon: Icon, label, value }) {
 }
 
 function BuyerRequestCard({ post }) {
-	const specs = post.specs || {};
 	return (
 		<div className="space-y-4">
 			<h1 className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
@@ -191,12 +195,47 @@ function formatDate(dateStr) {
 	}
 }
 
+function formatDateTime(value) {
+	if (!value) return "";
+	const d = new Date(value);
+	if (Number.isNaN(d.getTime())) return "";
+	return d.toLocaleString();
+}
+
+function getInitials(name) {
+	return (name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function avatarColorClass(name) {
+	const colors = [
+		"from-rose-500 to-pink-600",
+		"from-violet-500 to-purple-600",
+		"from-sky-500 to-blue-600",
+		"from-emerald-500 to-teal-600",
+		"from-amber-500 to-orange-600",
+	];
+	const hash = (name || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+	return colors[hash % colors.length];
+}
+
 export default function SharedPost() {
 	const { entityType, entityId } = useParams();
 	const [post, setPost] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [copied, setCopied] = useState(false);
+
+	const token = useMemo(() => getToken(), []);
+	const currentUser = useMemo(() => getCurrentUser(), []);
+	const isLoggedIn = Boolean(token);
+
+	const [comments, setComments] = useState([]);
+	const [commentsLoading, setCommentsLoading] = useState(false);
+	const [commentInput, setCommentInput] = useState("");
+	const [submitting, setSubmitting] = useState(false);
+	const [replyingTo, setReplyingTo] = useState("");
+	const [replyInput, setReplyInput] = useState("");
+	const [expandedThreads, setExpandedThreads] = useState({});
 
 	useEffect(() => {
 		let cancelled = false;
@@ -219,6 +258,139 @@ export default function SharedPost() {
 		})();
 		return () => { cancelled = true; };
 	}, [entityType, entityId]);
+
+	useEffect(() => {
+		if (!isLoggedIn || !post?.id || !post?.entityType) return;
+		let alive = true;
+		setCommentsLoading(true);
+		apiRequest(`/social/${encodeURIComponent(post.entityType)}/${encodeURIComponent(post.id)}`, { token })
+			.then((data) => { if (alive) setComments(Array.isArray(data?.comments) ? data.comments : []); })
+			.catch(() => { if (alive) setComments([]); })
+			.finally(() => { if (alive) setCommentsLoading(false); });
+		return () => { alive = false; };
+	}, [isLoggedIn, post?.id, post?.entityType, token]);
+
+	const commentTree = useMemo(() => {
+		const byId = new Map();
+		const roots = [];
+		const sorted = [...comments].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+		sorted.forEach((c) => byId.set(c.id, { comment: c, children: [] }));
+		sorted.forEach((c) => {
+			const node = byId.get(c.id);
+			if (c.parent_id && byId.has(c.parent_id)) {
+				byId.get(c.parent_id).children.push(node);
+			} else {
+				roots.push(node);
+			}
+		});
+		return roots;
+	}, [comments]);
+
+	const commentCount = comments.length;
+
+	async function submitComment() {
+		const text = commentInput.trim();
+		if (!text || submitting || !post?.id || !post?.entityType) return;
+		setSubmitting(true);
+		try {
+			const created = await apiRequest(
+				`/social/${encodeURIComponent(post.entityType)}/${encodeURIComponent(post.id)}/comment`,
+				{ method: "POST", token, body: { text } },
+			);
+			setComments((prev) => [created, ...prev]);
+			setCommentInput("");
+		} catch { /* silent */ } finally {
+			setSubmitting(false);
+		}
+	}
+
+	async function submitReply(parentId) {
+		const text = replyInput.trim();
+		if (!text || submitting || !post?.id || !post?.entityType || !parentId) return;
+		setSubmitting(true);
+		try {
+			const created = await apiRequest(
+				`/social/${encodeURIComponent(post.entityType)}/${encodeURIComponent(post.id)}/comment`,
+				{ method: "POST", token, body: { text, parent_id: parentId } },
+			);
+			setComments((prev) => [created, ...prev]);
+			setReplyingTo("");
+			setReplyInput("");
+		} catch { /* silent */ } finally {
+			setSubmitting(false);
+		}
+	}
+
+	function toggleThread(commentId) {
+		setExpandedThreads((prev) => ({ ...prev, [commentId]: prev[commentId] === false ? true : false }));
+	}
+
+	function renderCommentNode(node, depth = 0) {
+		const { comment, children } = node;
+		const expanded = expandedThreads[comment.id] !== false;
+		return (
+			<div key={comment.id} className={depth > 0 ? "ml-6 sm:ml-10" : ""}>
+				<div className="flex gap-3 py-3">
+					{comment.actor_avatar ? (
+						<img src={comment.actor_avatar} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+					) : (
+						<div className={`mt-0.5 h-8 w-8 shrink-0 rounded-full bg-gradient-to-br ${avatarColorClass(comment.actor_name)} flex items-center justify-center text-xs font-bold text-white`}>
+							{getInitials(comment.actor_name)}
+						</div>
+					)}
+					<div className="min-w-0 flex-1">
+						<div className="flex items-center gap-2">
+							<span className="text-sm font-semibold text-slate-900 dark:text-white">{comment.actor_name || "User"}</span>
+							{comment.actor_verified && <BadgeCheck size={14} className="text-sky-500" />}
+						</div>
+						<p className="mt-0.5 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{comment.text}</p>
+						<div className="mt-1 flex items-center gap-3 text-[11px] text-slate-400">
+							<span>{formatDateTime(comment.created_at)}</span>
+							{isLoggedIn && (
+								<button onClick={() => setReplyingTo(replyingTo === comment.id ? "" : comment.id)} className="font-medium hover:text-sky-500 transition">
+									Reply
+								</button>
+							)}
+						</div>
+						{replyingTo === comment.id && (
+							<div className="mt-2 flex gap-2">
+								<input
+									value={replyInput}
+									onChange={(e) => setReplyInput(e.target.value)}
+									onKeyDown={(e) => e.key === "Enter" && submitReply(comment.id)}
+									placeholder="Write a reply..."
+									className="flex-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800"
+									autoFocus
+								/>
+								<button
+									onClick={() => submitReply(comment.id)}
+									disabled={!replyInput.trim() || submitting}
+									className="rounded-full bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-600 disabled:opacity-50"
+								>
+									Post
+								</button>
+							</div>
+						)}
+					</div>
+				</div>
+				{children.length > 0 && (
+					<>
+						{children.length > 2 && depth === 0 ? (
+							<>
+								{(expanded ? children : children.slice(0, 2)).map((child) => renderCommentNode(child, depth + 1))}
+								<button onClick={() => toggleThread(comment.id)} className="ml-8 mb-2 flex items-center gap-1 text-xs font-medium text-sky-500 hover:text-sky-600">
+									{expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+									{expanded ? "Show less" : `View ${children.length - 2} more ${children.length - 2 === 1 ? "reply" : "replies"}`}
+								</button>
+							</>
+						) : (
+							children.map((child) => renderCommentNode(child, depth + 1))
+						)}
+					</>
+				)}
+			</div>
+		);
+	}
 
 	async function handleCopyLink() {
 		try {
@@ -265,7 +437,6 @@ export default function SharedPost() {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-sky-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-			{/* Header */}
 			<header className="sticky top-0 z-50 border-b border-white/60 bg-white/80 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80">
 				<div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3 sm:px-6">
 					<Link to="/" className="flex items-center gap-2">
@@ -274,20 +445,25 @@ export default function SharedPost() {
 						</div>
 						<span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">GarTexHub</span>
 					</Link>
-					<button
-						onClick={handleCopyLink}
-						className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-sky-300 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-sky-500/30"
-					>
-						<Share2 className="h-3.5 w-3.5" />
-						{copied ? "Copied!" : "Share"}
-					</button>
+					<div className="flex items-center gap-2">
+						{isLoggedIn && commentCount > 0 && (
+							<span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+								{commentCount} {commentCount === 1 ? "comment" : "comments"}
+							</span>
+						)}
+						<button
+							onClick={handleCopyLink}
+							className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-sky-300 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-sky-500/30"
+						>
+							<Share2 className="h-3.5 w-3.5" />
+							{copied ? "Copied!" : "Share"}
+						</button>
+					</div>
 				</div>
 			</header>
 
-			{/* Post Card */}
 			<main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
 				<article className="overflow-hidden rounded-[32px] border border-white/70 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-					{/* Type Banner */}
 					<div className={`bg-gradient-to-r ${typeInfo.color} px-6 py-4 sm:px-8`}>
 						<div className="flex items-center gap-2 text-sm font-semibold text-white/90">
 							<span>{typeInfo.icon}</span>
@@ -295,7 +471,6 @@ export default function SharedPost() {
 						</div>
 					</div>
 
-					{/* Author Bar */}
 					<div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4 sm:px-8 dark:border-slate-800">
 						{post.author?.avatar_url ? (
 							<img
@@ -334,7 +509,6 @@ export default function SharedPost() {
 						</div>
 					</div>
 
-					{/* Content */}
 					<div className="px-6 py-5 sm:px-8 sm:py-6">
 						{entityType === "buyer_request" || entityType === "buyer_requests" ? (
 							<BuyerRequestCard post={post} />
@@ -345,32 +519,94 @@ export default function SharedPost() {
 						)}
 					</div>
 
-					{/* CTA Footer */}
-					<div className="border-t border-slate-100 bg-slate-50/50 px-6 py-5 sm:px-8 dark:border-slate-800 dark:bg-slate-800/30">
-						<div className="text-center">
-							<p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-								Interested in this {typeInfo.label.toLowerCase()}?
-							</p>
-							<p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-								Join GarTexHub to connect with suppliers and buyers in the garment industry.
-							</p>
-							<div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
-								<Link
-									to="/signup"
-									className="inline-flex items-center justify-center gap-2 rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600"
-								>
-									<Users className="h-4 w-4" />
-									Join GarTexHub — It&apos;s Free
-								</Link>
-								<Link
-									to="/login"
-									className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-								>
-									Already have an account? Log in
-								</Link>
+					{isLoggedIn ? (
+						<>
+							<div className="border-t border-slate-100 px-6 py-3 sm:px-8 dark:border-slate-800">
+								<div className="flex items-center gap-1 text-xs">
+									<button
+										onClick={() => {
+											const el = document.getElementById("shared-comment-input");
+											if (el) el.focus();
+										}}
+										className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+									>
+										<MessageSquareText size={16} /> Comment
+									</button>
+									<button
+										onClick={handleCopyLink}
+										className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+									>
+										<Share2 size={16} /> Share
+									</button>
+									<button
+										className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer"
+									>
+										<Flag size={16} /> Report
+									</button>
+								</div>
+							</div>
+
+							<div className="border-t border-slate-100 px-6 py-4 sm:px-8 dark:border-slate-800">
+								{commentsLoading ? (
+									<div className="flex justify-center py-4">
+										<Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+									</div>
+								) : (
+									<>
+										{commentTree.length === 0 && (
+											<p className="py-3 text-center text-sm text-slate-400 dark:text-slate-500">
+												No comments yet. Be the first to comment.
+											</p>
+										)}
+										{commentTree.map((node) => renderCommentNode(node, 0))}
+									</>
+								)}
+								<div className="mt-3 flex gap-2">
+									<input
+										id="shared-comment-input"
+										value={commentInput}
+										onChange={(e) => setCommentInput(e.target.value)}
+										onKeyDown={(e) => e.key === "Enter" && submitComment()}
+										placeholder="Write a comment..."
+										className="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+									/>
+									<button
+										onClick={submitComment}
+										disabled={!commentInput.trim() || submitting}
+										className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-sky-600 disabled:opacity-50"
+									>
+										Post
+									</button>
+								</div>
+							</div>
+						</>
+					) : (
+						<div className="border-t border-slate-100 bg-slate-50/50 px-6 py-5 sm:px-8 dark:border-slate-800 dark:bg-slate-800/30">
+							<div className="text-center">
+								<p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+									Interested in this {typeInfo.label.toLowerCase()}?
+								</p>
+								<p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+									Join GarTexHub to connect with suppliers and buyers in the garment industry.
+								</p>
+								<div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
+									<Link
+										to="/signup"
+										className="inline-flex items-center justify-center gap-2 rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600"
+									>
+										<Users className="h-4 w-4" />
+										Join GarTexHub — It&apos;s Free
+									</Link>
+									<Link
+										to="/login"
+										className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+									>
+										Already have an account? Log in
+									</Link>
+								</div>
 							</div>
 						</div>
-					</div>
+					)}
 				</article>
 			</main>
 		</div>
