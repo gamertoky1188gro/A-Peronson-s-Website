@@ -1669,7 +1669,7 @@ export default function OrgSettings({ embedded = false }) {
 					>
 						<div class="grid gap-4 sm:grid-cols-2">
 							<div>
-								<Label>Display Name</Label>
+								<Label>Organization Name</Label>
 								<Input
 									value={profileDisplayName}
 									onChange={(e) => setProfileDisplayName(e.target.value)}
