@@ -23,7 +23,6 @@ import {
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import LazyImage from "../components/ui/LazyImage.jsx";
-import { apiRequest } from "../lib/auth.js";
 
 const TYPE_LABELS = {
 	buyer_request: { label: "Buyer Request", icon: "💼", color: "from-blue-500 to-indigo-600" },
@@ -205,7 +204,12 @@ export default function SharedPost() {
 			setLoading(true);
 			setError("");
 			try {
-				const data = await apiRequest(`/feed/share/${entityType}/${entityId}`);
+				const res = await fetch(`/api/feed/share/${encodeURIComponent(entityType)}/${encodeURIComponent(entityId)}`);
+				if (!res.ok) {
+					const err = await res.json().catch(() => ({}));
+					throw new Error(err.error || `HTTP ${res.status}`);
+				}
+				const data = await res.json();
 				if (!cancelled) setPost(data);
 			} catch (err) {
 				if (!cancelled) setError(err.message || "Failed to load post");

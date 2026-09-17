@@ -738,11 +738,11 @@ export async function getShareablePost(entityType, entityId) {
 
 	if (feedType === "buyer_request") {
 		raw = await prisma.requirement.findUnique({ where: { id: entityId } });
-		if (raw && raw.status !== "active") raw = null;
+		if (raw && !["active", "open"].includes(raw.status)) raw = null;
 		authorId = raw?.buyer_id || "";
 	} else if (feedType === "company_product") {
 		raw = await prisma.product.findUnique({ where: { id: entityId } });
-		if (raw && raw.status !== "active") raw = null;
+		if (raw && !["active", "open", "published"].includes(raw.status)) raw = null;
 		authorId = raw?.company_id || "";
 	} else if (feedType === "user_feed_post") {
 		raw = await prisma.feedPost.findUnique({ where: { id: entityId } });
