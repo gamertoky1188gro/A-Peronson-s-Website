@@ -759,9 +759,11 @@ export async function getShareablePost(entityType, entityId) {
 	const author = authorId
 		? await prisma.user.findUnique({
 				where: { id: authorId },
-				include: { profile: true },
 			})
 		: null;
+
+	const authorProfile = author?.profile || {};
+	const profile = typeof authorProfile === "string" ? (() => { try { return JSON.parse(authorProfile); } catch { return {}; } })() : authorProfile;
 
 	return {
 		...raw,
@@ -773,9 +775,9 @@ export async function getShareablePost(entityType, entityId) {
 			verified: Boolean(author?.verified),
 			role: String(author?.role || ""),
 			avatar_url:
-				author?.profile?.profile_image ||
-				author?.profile?.avatar_url ||
-				author?.profile?.avatar ||
+				profile?.profile_image ||
+				profile?.avatar_url ||
+				profile?.avatar ||
 				author?.avatar_url ||
 				"",
 			accountType: String(author?.role || "")
