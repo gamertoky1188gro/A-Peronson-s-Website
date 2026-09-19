@@ -48,7 +48,7 @@ export default defineConfig({
 			},
 		},
 		reportCompressedSize: false,
-		sourcemap: process.env.NODE_ENV !== "production",
+		sourcemap: true,
 	},
 	plugins: [tailwindcss(), react()],
 	server: {
