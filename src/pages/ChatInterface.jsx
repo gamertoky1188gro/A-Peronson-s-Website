@@ -379,6 +379,10 @@ export default function ChatInterface() {
 		() => [...filteredPriorityInbox, ...filteredRequests],
 		[filteredPriorityInbox, filteredRequests],
 	);
+	const totalUnread = useMemo(
+		() => allVisibleThreads.reduce((sum, t) => sum + Number(t.unread || 0), 0),
+		[allVisibleThreads],
+	);
 	const activeThread = useMemo(
 		() => allVisibleThreads.find((thread) => thread.id === activeThreadId),
 		[allVisibleThreads, activeThreadId],
@@ -1474,7 +1478,7 @@ export default function ChatInterface() {
 	const todayLabel = dateDividerLabel(activeMessages.at(-1)?.timestamp);
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	return (
@@ -1578,6 +1582,7 @@ export default function ChatInterface() {
 					navigate={navigate}
 					ROUTES={ROUTES}
 					CHAT_NAV_ITEMS={CHAT_NAV_ITEMS}
+					totalUnread={totalUnread}
 				/>
 
 				<ThreadList
@@ -1659,6 +1664,7 @@ export default function ChatInterface() {
 					requestAiSummary={requestAiSummary}
 					requestNegotiationHelper={requestNegotiationHelper}
 					openAttachmentPreview={openAttachmentPreview}
+					userRole={userRole}
 				/>
 			</div>
 

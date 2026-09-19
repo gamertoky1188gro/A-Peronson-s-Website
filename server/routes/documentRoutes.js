@@ -8,7 +8,9 @@ import {
 	createContractSignSession,
 	getContractAudit,
 	getContracts,
+	getDocumentViewStats,
 	getDocuments,
+	logDocumentView,
 	patchContractArtifact,
 	patchContractSignatures,
 	registerDocumentUrl,
@@ -64,6 +66,8 @@ router.get("/contracts/:contractId/audit", requireAuth, getContractAudit);
 router.patch("/contracts/:contractId/signatures", requireAuth, patchContractSignatures);
 router.patch("/contracts/:contractId/artifact", requireAuth, patchContractArtifact);
 router.get("/", requireAuth, getDocuments);
+router.post("/:documentId/view", requireAuth, logDocumentView);
+router.get("/:documentId/views", requireAuth, getDocumentViewStats);
 router.patch("/:documentId/approve", requireAuth, approveDocumentCtrl);
 router.patch("/:documentId/reject", requireAuth, rejectDocumentCtrl);
 router.delete("/:documentId", requireAuth, removeDocument);

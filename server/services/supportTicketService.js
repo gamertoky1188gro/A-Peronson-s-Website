@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 import { getAdminConfig } from "./adminConfigService.js";
+import { sendEmail } from "./emailService.js";
+import { createNotification } from "./notificationService.js";
 
 function publicUser(user) {
 	if (!user) {
@@ -82,6 +84,52 @@ export async function createSupportTicket({
 
 		return [t, msg];
 	});
+
+	try {
+		const admins = await prisma.user.findMany({
+			where: { role: { in: ["owner", "admin"] } },
+		});
+
+		const ticketSummary = [
+			`New support ticket: ${ticket.subject}`,
+			`Category: ${ticket.category}`,
+			`Priority: ${ticket.priority}`,
+			`Status: ${ticket.status}`,
+			`User: ${actor?.name || actor?.email || "Unknown"}`,
+			description ? `\nDescription:\n${description}` : "",
+		].filter(Boolean).join("\n");
+
+		await Promise.all(
+			admins.map((admin) =>
+				createNotification(admin.id, {
+					type: "support_ticket_created",
+					entity_type: "support_ticket",
+					entity_id: ticketId,
+					message: `New support ticket: ${ticket.subject}`,
+					meta: {
+						ticket_id: ticketId,
+						subject: ticket.subject,
+						category: ticket.category,
+						priority: ticket.priority,
+						user_id: actor?.id || "",
+						user_name: actor?.name || "",
+					},
+				}).catch(() => {}),
+			),
+		);
+
+		const adminEmails = admins.map((a) => a.email).filter(Boolean);
+		if (adminEmails.length > 0) {
+			await sendEmail({
+				to: adminEmails.join(","),
+				subject: `[GarTexHub Support] New ticket: ${ticket.subject}`,
+				text: ticketSummary,
+				source: "support_ticket_create",
+			}).catch(() => {});
+		}
+	} catch {
+		// Non-blocking: ticket was created successfully, notification failure is secondary
+	}
 
 	return { ticket, initial_message: initialMessage };
 }

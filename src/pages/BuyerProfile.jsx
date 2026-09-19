@@ -2,7 +2,7 @@
  * @typedef {import('../lib/types').User} User
  */
 
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
 	BadgeCheck,
 	BriefcaseBusiness,
@@ -11,6 +11,7 @@ import {
 	CalendarDays,
 	CheckCircle2,
 	ChevronLeft,
+	CircleDashed,
 	ClipboardList,
 	Edit3,
 	Eye,
@@ -278,18 +279,20 @@ export default function BuyerProfile() {
 	});
 	const [reviewDeleteId, setReviewDeleteId] = useState(null);
 	const [feedback, setFeedback] = useState(null);
+	const [editingCapacity, setEditingCapacity] = useState(false);
+	const [capacityValue, setCapacityValue] = useState("");
 	const isBoosted = Boolean(profileBoost);
 	const isPremium =
 		isPremiumFromApi ||
 		String(user?.subscription_status || "").toLowerCase() === "premium" ||
 		profile?.effective_plan === "premium";
 	const isSelfOrAdmin = viewerPerms.is_self || viewerPerms.is_admin;
-	const brandProfile = isSelfOrAdmin ? profile?.profile_private || user?.profile || {} : {};
+	const hasRelationship = relationship.friend_status === "friends";
+	const brandProfile = isSelfOrAdmin || hasRelationship ? profile?.profile_private || user?.profile || {} : {};
 	const hasBrandKit = Boolean(
 		brandProfile.brand_name ||
 			brandProfile.brand_logo_url ||
-			brandProfile.brand_tagline ||
-			brandProfile.brand_website,
+			brandProfile.brand_tagline,
 	);
 	const hasAccountManager = Boolean(
 		brandProfile.account_manager_name ||
@@ -595,8 +598,38 @@ export default function BuyerProfile() {
 		}
 	}
 
+	async function saveCapacity() {
+		setFeedback(null);
+		try {
+			const tokenValue = getToken();
+			const res = await apiRequest(`/profiles/${encodeURIComponent(id)}`, {
+				method: "PATCH",
+				token: tokenValue,
+				body: { purchasing_capacity: capacityValue },
+			});
+			setProfile((prev) =>
+				prev
+					? {
+							...prev,
+							user: {
+								...prev.user,
+								profile: {
+									...(prev.user?.profile || {}),
+									purchasing_capacity: capacityValue,
+								},
+							},
+						}
+					: prev,
+			);
+			setEditingCapacity(false);
+			setFeedback("Purchasing capacity updated.");
+		} catch (err) {
+			setFeedback(err.message || "Failed to update capacity.");
+		}
+	}
+
 	if (loading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 	if (error) {
 		return (
@@ -690,12 +723,17 @@ export default function BuyerProfile() {
 													<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
 														{displayName}
 													</h1>
-													<Pill tone="info">{roleLabel}</Pill>
-													{country === "—" ? null : (
-														<Pill tone="info">
-															<MapPin className="h-3.5 w-3.5" /> {country}
-														</Pill>
-													)}
+												<Pill tone="info">{roleLabel}</Pill>
+												{country === "—" ? null : (
+													<Pill tone="info">
+														<MapPin className="h-3.5 w-3.5" /> {country}
+													</Pill>
+												)}
+												{industry ? (
+													<Pill tone="info">
+														<Building2 className="h-3.5 w-3.5" /> {industry}
+													</Pill>
+												) : null}
 												</div>
 												<p className="mt-1 text-sm text-slate-200/90">{organization}</p>
 												<div className="mt-3 flex flex-wrap gap-2">
@@ -859,6 +897,25 @@ export default function BuyerProfile() {
 													value={user?.profile?.active_since || new Date().getFullYear()}
 												/>
 												<Metric label="Role" value={roleLabel} />
+												<div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+													<div>
+														<div className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Purchasing Capacity</div>
+														<div className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+															{user?.profile?.purchasing_capacity || "—"}
+														</div>
+													</div>
+													{isSelfOrAdmin && (
+														<button
+															onClick={() => {
+																setEditingCapacity(true);
+																setCapacityValue(user?.profile?.purchasing_capacity || "");
+															}}
+															className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-sky-600 dark:hover:bg-slate-800 dark:hover:text-sky-400"
+														>
+															<Edit3 className="h-3.5 w-3.5" />
+														</button>
+													)}
+												</div>
 											</div>
 										</SoftCard>
 
@@ -927,12 +984,7 @@ export default function BuyerProfile() {
 															{brandProfile.brand_tagline}
 														</div>
 													) : null}
-													{brandProfile.brand_website ? (
-														<div className="text-xs text-slate-500 dark:text-slate-400">
-															{brandProfile.brand_website}
-														</div>
-													) : null}
-												</div>
+											</div>
 											</div>
 										</SoftCard>
 									) : null}
@@ -963,16 +1015,16 @@ export default function BuyerProfile() {
 										/>
 										{(user?.profile?.companies_worked_with || []).length > 0 ? (
 											<div className="grid gap-3 md:grid-cols-2">
-												{(user.profile.companies_worked_with || []).map((company, idx) => (
-													<div
-														key={idx}
-														className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
-													>
-														<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
-															{company.logo ? (
+											{(user.profile.companies_worked_with || []).map((company, idx) => (
+												<div
+													key={idx}
+													className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40"
+												>
+													<div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500/15 to-indigo-500/15 ring-1 ring-sky-500/10">
+														{company.logo ? (
                       <LazyImage
-                        src={item.logo}
-                        alt={item.name}
+                        src={company.logo}
+                        alt={company.name}
                         width={80}
                         height={80}
                         loading="lazy"
@@ -1203,6 +1255,30 @@ export default function BuyerProfile() {
 												helper="Aggregate reliability"
 											/>
 										</div>
+										{ratingSummary?.aggregate?.category_averages && (() => {
+											const cats = ratingSummary.aggregate.category_averages;
+											const filled = [
+												{ label: "Sample Accuracy", val: cats.sample_accuracy },
+												{ label: "Communication", val: cats.communication_speed },
+												{ label: "Quality Control", val: cats.quality_control },
+												{ label: "Delivery", val: cats.delivery_timeliness },
+												{ label: "After-Sales", val: cats.after_sales_support },
+											].filter((c) => c.val != null);
+											if (filled.length === 0) return null;
+											return (
+												<div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+													{filled.map((c) => (
+														<div key={c.label} className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/40">
+															<span className="text-xs font-medium text-slate-600 dark:text-slate-300">{c.label}</span>
+															<span className="flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-300">
+																<Star className="h-3 w-3" />
+																{Number(c.val).toFixed(1)}
+															</span>
+														</div>
+													))}
+												</div>
+											);
+										})()}
 									</SoftCard>
 
 									<div className="rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100">
@@ -1242,6 +1318,22 @@ export default function BuyerProfile() {
 																	<p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
 																		{review.comment || "No comment provided."}
 																	</p>
+																	{[review.sample_accuracy, review.communication_speed, review.quality_control, review.delivery_timeliness, review.after_sales_support].some((v) => v != null) && (
+																		<div className="mt-2 flex flex-wrap gap-2">
+																			{[
+																				{ key: "sample_accuracy", label: "Sample Accuracy", val: review.sample_accuracy },
+																				{ key: "communication_speed", label: "Communication", val: review.communication_speed },
+																				{ key: "quality_control", label: "Quality Control", val: review.quality_control },
+																				{ key: "delivery_timeliness", label: "Delivery", val: review.delivery_timeliness },
+																				{ key: "after_sales_support", label: "After-Sales", val: review.after_sales_support },
+																			].filter((c) => c.val != null).map((c) => (
+																				<span key={c.key} className="inline-flex items-center gap-1 rounded-full border border-sky-500/15 bg-sky-500/5 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-300">
+																					<Star className="h-3 w-3 text-sky-400" />
+																					{c.label}: {Number(c.val)}/5
+																				</span>
+																			))}
+																		</div>
+																	)}
 																	<div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
 																		{review.created_at
 																			? new Date(review.created_at).toLocaleDateString()
@@ -1470,6 +1562,47 @@ export default function BuyerProfile() {
 					</div>
 				</div>
 			) : null}
+
+			{editingCapacity && (
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+					onClick={() => setEditingCapacity(false)}
+					onKeyDown={(e) => e.key === "Escape" && setEditingCapacity(false)}
+					tabIndex={-1}
+				>
+					<div
+						className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Purchasing Capacity</h3>
+						<p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+							Update the purchasing capacity for this buyer account.
+						</p>
+						<input
+							type="text"
+							value={capacityValue}
+							onChange={(e) => setCapacityValue(e.target.value)}
+							placeholder="e.g. 5000 yards/month"
+							className="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
+							autoFocus
+						/>
+						<div className="mt-6 flex items-center justify-end gap-3">
+							<button
+								onClick={() => setEditingCapacity(false)}
+								className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+							>
+								Cancel
+							</button>
+							<button
+								onClick={saveCapacity}
+								className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
+							>
+								Save
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

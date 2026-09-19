@@ -376,9 +376,40 @@ async function resolveActor(req) {
 	return actor || req.user;
 }
 
+async function enforceDailyProductLimit(user) {
+	if (!user) {
+		return;
+	}
+	const plan = await getUserPlan(user.id);
+	if (plan === "premium") {
+		return;
+	}
+	const ownerId = String(user.org_owner_id || user.id || "");
+	if (!ownerId) {
+		return;
+	}
+	const todayStart = new Date();
+	todayStart.setHours(0, 0, 0, 0);
+	const todayCount = await prisma.product.count({
+		where: {
+			company_id: ownerId,
+			created_at: { gte: todayStart },
+		},
+	});
+	const DAILY_LIMIT = 2;
+	if (todayCount >= DAILY_LIMIT) {
+		const err = new Error(
+			`Free plan allows up to ${DAILY_LIMIT} product uploads per day. Upgrade to Premium for unlimited uploads.`,
+		);
+		err.status = 403;
+		throw err;
+	}
+}
+
 export async function postProduct(req, res) {
 	try {
 		const actor = await resolveActor(req);
+		await enforceDailyProductLimit(actor);
 		const row = await createProduct(actor, req.body);
 		return res.status(201).json(row);
 	} catch (error) {

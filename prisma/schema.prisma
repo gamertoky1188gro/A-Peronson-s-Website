@@ -642,6 +642,18 @@ model Document {
   @@map("documents")
 }
 
+model DocumentView {
+  id           String   @id
+  document_id  String
+  viewer_id    String?
+  viewer_ip    String?
+  viewed_at    DateTime @default(now())
+  metadata     Json?
+
+  @@index([document_id, viewed_at])
+  @@map("document_views")
+}
+
 model Lead {
   id                  String           @id
   org_owner_id        String
@@ -1163,6 +1175,11 @@ model Rating {
   interaction_type  String?
   score             Int?
   comment           String?
+  sample_accuracy   Int?
+  communication_speed Int?
+  quality_control   Int?
+  delivery_timeliness Int?
+  after_sales_support Int?
   reliability_flags Json?
   auto_generated    Boolean  @default(false)
   created_at        DateTime @default(now())
@@ -1607,4 +1624,47 @@ model LinkPreview {
   updated_at  DateTime @updatedAt
 
   @@map("link_previews")
+}
+
+model EmailLog {
+  id         String   @id @default(cuid())
+  to         String
+  subject    String
+  body       String?
+  html       String?
+  status     String   @default("queued")
+  source     String?
+  error      String?
+  created_at DateTime @default(now())
+
+  @@index([status, created_at])
+  @@index([to])
+  @@map("email_logs")
+}
+
+model Order {
+  id                String    @id @default(cuid())
+  buyer_id          String
+  factory_id        String
+  order_type        String    @default("MAIN")
+  status            String    @default("draft")
+  product_title     String?
+  quantity           String?
+  unit_price         Float?
+  currency           String?   @default("USD")
+  total_amount       Float?
+  description        String?
+  specs              Json?
+  sample_request_id  String?
+  parent_order_id    String?
+  delivery_date      DateTime?
+  shipping_terms     String?
+  payment_terms      String?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime?
+
+  @@index([buyer_id, created_at])
+  @@index([factory_id, created_at])
+  @@index([order_type, status])
+  @@map("orders")
 }

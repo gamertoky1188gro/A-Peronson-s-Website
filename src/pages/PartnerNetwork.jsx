@@ -212,7 +212,7 @@ export default function PartnerNetwork() {
 	];
 
 	if (loading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	return (

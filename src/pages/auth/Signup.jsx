@@ -43,16 +43,17 @@ const POSITIONS = [
 	"Finishing Supervisor",
 	"Store In-Charge",
 	"Administrator",
+	"Other",
 ];
 
 import { cn } from "../../lib/cn.js";
 
 function FieldShell({ label, children, hint }) {
 	return (
-		<div class="space-y-2">
-			<div class="flex items-end justify-between gap-3">
-				<label class="text-sm font-medium text-slate-700 dark:text-slate-200">{label}</label>
-				{hint ? <span class="text-xs text-sky-600 dark:text-sky-300">{hint}</span> : null}
+		<div className="space-y-2">
+			<div className="flex items-end justify-between gap-3">
+				<label className="text-sm font-medium text-slate-700 dark:text-slate-200">{label}</label>
+				{hint ? <span className="text-xs text-sky-600 dark:text-sky-300">{hint}</span> : null}
 			</div>
 			{children}
 		</div>
@@ -61,7 +62,7 @@ function FieldShell({ label, children, hint }) {
 
 function EyeIcon({ open }) {
 	return open ? (
-		<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
+		<svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
 			<path
 				d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
 				stroke="currentColor"
@@ -70,7 +71,7 @@ function EyeIcon({ open }) {
 			<circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
 		</svg>
 	) : (
-		<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
+		<svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
 			<path d="M3 3l18 18" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
 			<path
 				d="M10.6 10.6a2 2 0 0 0 2.8 2.8"
@@ -96,7 +97,7 @@ function EyeIcon({ open }) {
 
 function ChevronDown() {
 	return (
-		<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
+		<svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
 			<path
 				d="m6 9 6 6 6-6"
 				stroke="currentColor"
@@ -110,7 +111,7 @@ function ChevronDown() {
 
 function CheckIcon() {
 	return (
-		<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" aria-hidden="true">
+		<svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
 			<path
 				d="m5 12 4 4L19 6"
 				stroke="currentColor"
@@ -152,6 +153,7 @@ export default function Signup() {
 	const [factorySector, setFactorySector] = useState("");
 	const [position, setPosition] = useState("");
 	const [positionOpen, setPositionOpen] = useState(false);
+	const [customPosition, setCustomPosition] = useState("");
 
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -227,6 +229,9 @@ export default function Signup() {
 		if (!position) {
 			errors.position = "Please select your position";
 		}
+		if (position === "Other" && !customPosition.trim()) {
+			errors.position = "Please enter your position";
+		}
 		if (!organizationName.trim()) {
 			errors.organizationName = "Organization name is required";
 		}
@@ -247,17 +252,19 @@ export default function Signup() {
 			return;
 		}
 		try {
+			const effectivePosition = position === "Other" && customPosition.trim() ? customPosition.trim() : position;
 			const payload = {
 				name: fullName,
 				email,
 				password,
 				role: accountType.value,
 				company_name: organizationName,
-				profile: { country, position, factory_sector: factorySector },
+				profile: { country, position: effectivePosition, factory_sector: factorySector },
 			};
 			const data = await apiRequest("/auth/register", {
 				method: "POST",
 				body: payload,
+				signal: AbortSignal.timeout(30000),
 			});
 			saveSession(data.user, data.token);
 			navigate("/onboarding", { replace: true });
@@ -269,36 +276,36 @@ export default function Signup() {
 	};
 
 	if (loading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	return (
 		<div
-			class={cn(
+			className={cn(
 				isDark ? "dark" : "",
-				"min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white",
+				"min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white",
 			)}
 		>
-			<div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.30),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.24),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.30),transparent)] dark:bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.20),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.18),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.04),transparent)]" />
+			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.30),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.24),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.30),transparent)] dark:bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.20),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.18),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.04),transparent)]" />
 
-			<div class="relative mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-2">
-				<aside class="relative flex items-center px-6 py-10 sm:px-10 lg:px-12">
+			<div className="relative mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-2">
+				<aside className="relative flex items-center px-6 py-10 sm:px-10 lg:px-12">
 					<motion.div
 						initial={{ opacity: 0, y: 18 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.6, ease: "easeOut" }}
-						class="w-full"
+						className="w-full"
 					>
-						<div class="mb-6 flex items-center justify-between">
-							<div class="inline-flex items-center gap-3 rounded-full border border-sky-200/70 bg-white/70 px-4 py-2 shadow-sm backdrop-blur dark:border-sky-400/20 dark:bg-white/5">
-								<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-cyan-300 text-sm font-black text-white shadow-lg shadow-sky-500/30">
+						<div className="mb-6 flex items-center justify-between">
+							<div className="inline-flex items-center gap-3 rounded-full border border-sky-200/70 bg-white/70 px-4 py-2 shadow-sm backdrop-blur dark:border-sky-400/20 dark:bg-white/5">
+								<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-cyan-300 text-sm font-black text-white shadow-lg shadow-sky-500/30">
 									G
 								</div>
 								<div>
-									<div class="text-sm font-semibold tracking-[0.18em] text-slate-900 dark:text-white">
+									<div className="text-sm font-semibold tracking-[0.18em] text-slate-900 dark:text-white">
 										GARTEXHUB
 									</div>
-									<div class="text-xs text-slate-500 dark:text-slate-300">
+									<div className="text-xs text-slate-500 dark:text-slate-300">
 										Garments & Textile sourcing
 									</div>
 								</div>
@@ -307,18 +314,18 @@ export default function Signup() {
 							<button
 								type="button"
 								onClick={toggleTheme}
-								class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-100"
+								className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-100"
 							>
 								{isDark ? "Light mode" : "Dark mode"}
 							</button>
 						</div>
 
-						<div class="max-w-xl">
+						<div className="max-w-xl">
 							<motion.p
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.1, duration: 0.5 }}
-								class="mb-4 inline-flex rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-200"
+								className="mb-4 inline-flex rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-200"
 							>
 								Create your account
 							</motion.p>
@@ -327,7 +334,7 @@ export default function Signup() {
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.16, duration: 0.5 }}
-								class="text-4xl font-black leading-tight tracking-tight sm:text-5xl"
+								className="text-4xl font-black leading-tight tracking-tight sm:text-5xl"
 							>
 								A clean, professional start for Garments and Textile sourcing teams.
 							</motion.h1>
@@ -336,13 +343,13 @@ export default function Signup() {
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.22, duration: 0.5 }}
-								class="mt-5 max-w-lg text-base leading-7 text-slate-600 dark:text-slate-300"
+								className="mt-5 max-w-lg text-base leading-7 text-slate-600 dark:text-slate-300"
 							>
 								Join a modern sourcing network built for factories and buying houses with a premium,
 								polished onboarding experience.
 							</motion.p>
 
-							<div class="mt-8 grid gap-4 sm:grid-cols-2">
+							<div className="mt-8 grid gap-4 sm:grid-cols-2">
 								{[
 									["Secure onboarding", "Clear account selection and identity flow."],
 									["Fast setup", "Search countries and complete details quickly."],
@@ -351,13 +358,13 @@ export default function Signup() {
 								].map(([title, desc]) => (
 									<div
 										key={title}
-										class="rounded-3xl border border-white/50 bg-white/70 p-5 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-white/5"
+										className="rounded-3xl border border-white/50 bg-white/70 p-5 shadow-[0_10px_40px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-white/5"
 									>
-										<div class="mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-lg shadow-sky-500/20">
+										<div className="mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-lg shadow-sky-500/20">
 											<CheckIcon />
 										</div>
-										<div class="text-sm font-semibold">{title}</div>
-										<div class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<div className="text-sm font-semibold">{title}</div>
+										<div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
 											{desc}
 										</div>
 									</div>
@@ -367,42 +374,42 @@ export default function Signup() {
 					</motion.div>
 				</aside>
 
-				<main class="relative flex items-center justify-center px-6 py-10 sm:px-10 lg:px-12">
+				<main className="relative flex items-center justify-center px-6 py-10 sm:px-10 lg:px-12">
 					<motion.div
 						initial={{ opacity: 0, y: 24, scale: 0.98 }}
 						animate={{ opacity: 1, y: 0, scale: 1 }}
 						transition={{ duration: 0.7, ease: "easeOut" }}
-						class="w-full max-w-xl"
+						className="w-full max-w-xl"
 					>
-						<div class="rounded-[2rem] border border-white/70 bg-white/75 p-5 shadow-[0_30px_120px_rgba(2,8,23,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0b1627]/80 sm:p-8">
-							<div class="mb-6 flex items-center justify-between">
+						<div className="rounded-[2rem] border border-white/70 bg-white/75 p-5 shadow-[0_30px_120px_rgba(2,8,23,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0b1627]/80 sm:p-8">
+							<div className="mb-6 flex items-center justify-between">
 								<button
 									type="button"
 									onClick={handleBack}
-									class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:text-sky-200"
+									className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:text-sky-200"
 								>
-									<span class="text-base">←</span>
+									<span className="text-base">←</span>
 									Back
 								</button>
-								<div class="rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-white shadow-lg shadow-sky-500/30">
+								<div className="rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-white shadow-lg shadow-sky-500/30">
 									GarTexHub
 								</div>
 							</div>
 
-							<div class="mb-8">
-								<h2 class="text-3xl font-black tracking-tight">Create your account</h2>
-								<p class="mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
+							<div className="mb-8">
+								<h2 className="text-3xl font-black tracking-tight">Create your account</h2>
+								<p className="mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
 									A clean, professional start for Garments and Textile sourcing teams.
 								</p>
 							</div>
 
-							<form onSubmit={handleSubmit} class="space-y-5">
+							<form onSubmit={handleSubmit} className="space-y-5">
 								<FieldShell label="Full Name">
 									<input
 										value={fullName}
 										onChange={(e) => setFullName(e.target.value)}
 										placeholder="Enter your full name"
-										class={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
+										className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
 											fieldErrors.fullName
 												? "border-rose-400 ring-2 ring-rose-500/20 dark:border-rose-500"
 												: "border-slate-200 dark:border-white/10"
@@ -410,7 +417,7 @@ export default function Signup() {
 										required={true}
 									/>
 									{fieldErrors.fullName ? (
-										<p class="text-xs font-medium text-rose-500">{fieldErrors.fullName}</p>
+										<p className="text-xs font-medium text-rose-500">{fieldErrors.fullName}</p>
 									) : null}
 								</FieldShell>
 
@@ -420,7 +427,7 @@ export default function Signup() {
 										onChange={(e) => setEmail(e.target.value)}
 										type="email"
 										placeholder="Enter your email"
-										class={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
+										className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
 											fieldErrors.email
 												? "border-rose-400 ring-2 ring-rose-500/20 dark:border-rose-500"
 												: "border-slate-200 dark:border-white/10"
@@ -428,14 +435,14 @@ export default function Signup() {
 										required={true}
 									/>
 									{fieldErrors.email ? (
-										<p class="text-xs font-medium text-rose-500">{fieldErrors.email}</p>
+										<p className="text-xs font-medium text-rose-500">{fieldErrors.email}</p>
 									) : null}
 								</FieldShell>
 
-								<div class="grid gap-5 sm:grid-cols-2">
+								<div className="grid gap-5 sm:grid-cols-2">
 									<FieldShell label="Password">
-										<div class="space-y-3">
-											<div class="relative">
+										<div className="space-y-3">
+											<div className="relative">
 												<input
 													value={password}
 													onChange={(e) => setPassword(e.target.value)}
@@ -443,7 +450,7 @@ export default function Signup() {
 													placeholder="•••••••••••"
 													minLength={8}
 													maxLength={32}
-													class={`w-full rounded-2xl border bg-white px-4 py-3 pr-20 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
+													className={`w-full rounded-2xl border bg-white px-4 py-3 pr-20 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
 														fieldErrors.password
 															? "border-rose-400 ring-2 ring-rose-500/20 dark:border-rose-500"
 															: "border-slate-200 dark:border-white/10"
@@ -453,9 +460,9 @@ export default function Signup() {
 												<button
 													type="button"
 													onClick={() => setShowPassword((v) => !v)}
-													class="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 dark:text-sky-200 dark:hover:bg-white/10"
+													className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 dark:text-sky-200 dark:hover:bg-white/10"
 												>
-													<span class="inline-flex items-center gap-1">
+													<span className="inline-flex items-center gap-1">
 														<EyeIcon open={showPassword} />
 														{showPassword ? "Hide" : "Show"}
 													</span>
@@ -488,8 +495,8 @@ export default function Signup() {
 									</FieldShell>
 
 									<FieldShell label="Confirm Password">
-										<div class="space-y-2">
-											<div class="relative">
+										<div className="space-y-2">
+											<div className="relative">
 												<input
 													value={confirmPassword}
 													onChange={(e) => setConfirmPassword(e.target.value)}
@@ -497,7 +504,7 @@ export default function Signup() {
 													placeholder="•••••••••••"
 													minLength={8}
 													maxLength={32}
-													class={`w-full rounded-2xl border bg-white px-4 py-3 pr-20 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
+													className={`w-full rounded-2xl border bg-white px-4 py-3 pr-20 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
 														fieldErrors.confirmPassword
 															? "border-rose-400 ring-2 ring-rose-500/20 dark:border-rose-500"
 															: "border-slate-200 dark:border-white/10"
@@ -507,16 +514,16 @@ export default function Signup() {
 												<button
 													type="button"
 													onClick={() => setShowConfirmPassword((v) => !v)}
-													class="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 dark:text-sky-200 dark:hover:bg-white/10"
+													className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 dark:text-sky-200 dark:hover:bg-white/10"
 												>
-													<span class="inline-flex items-center gap-1">
+													<span className="inline-flex items-center gap-1">
 														<EyeIcon open={showConfirmPassword} />
 														{showConfirmPassword ? "Hide" : "Show"}
 													</span>
 												</button>
 											</div>
 											{fieldErrors.confirmPassword ? (
-												<p class="text-xs font-medium text-rose-500">
+												<p className="text-xs font-medium text-rose-500">
 													{fieldErrors.confirmPassword}
 												</p>
 											) : null}
@@ -534,27 +541,27 @@ export default function Signup() {
 												: "Buyer"
 									}
 								>
-									<div class="relative" ref={accountDropdownRef}>
+									<div className="relative" ref={accountDropdownRef}>
 										<button
 											type="button"
 											onClick={() => setAccountOpen((v) => !v)}
-											class="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm transition hover:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5"
+											className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm transition hover:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5"
 										>
-											<span class="flex items-center gap-3">
-												<span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-xs font-bold text-white">
+											<span className="flex items-center gap-3">
+												<span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-xs font-bold text-white">
 													{accountType.value.slice(0, 1).toUpperCase()}
 												</span>
-												<span class="font-medium text-slate-800 dark:text-slate-100">
+												<span className="font-medium text-slate-800 dark:text-slate-100">
 													{accountType.label}
 												</span>
 											</span>
-											<span class="text-slate-500 dark:text-slate-300">
+											<span className="text-slate-500 dark:text-slate-300">
 												<ChevronDown />
 											</span>
 										</button>
 
 										{accountOpen ? (
-											<div class="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]">
+											<div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-600 dark:bg-slate-800">
 												{PUBLIC_ACCOUNT_TYPES.map((item) => (
 													<button
 														key={item.value}
@@ -563,15 +570,15 @@ export default function Signup() {
 															setAccountType(item);
 															setAccountOpen(false);
 														}}
-														class={cn(
+														className={cn(
 															"flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/5",
 															accountType.value === item.value ? "bg-sky-50 dark:bg-white/5" : "",
 														)}
 													>
-														<span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white dark:bg-white dark:text-slate-900">
+														<span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white dark:bg-white dark:text-slate-900">
 															{item.value.slice(0, 1).toUpperCase()}
 														</span>
-														<span class="font-medium text-slate-800 dark:text-slate-100">
+														<span className="font-medium text-slate-800 dark:text-slate-100">
 															{item.label}
 														</span>
 													</button>
@@ -586,7 +593,7 @@ export default function Signup() {
 										<select
 											value={factorySector}
 											onChange={(e) => setFactorySector(e.target.value)}
-											class={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
+											className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
 												fieldErrors.factorySector
 													? "border-rose-400 ring-2 ring-rose-500/20 dark:border-rose-500"
 													: "border-slate-200 dark:border-white/10"
@@ -601,13 +608,13 @@ export default function Signup() {
 											))}
 										</select>
 										{fieldErrors.factorySector ? (
-											<p class="text-xs font-medium text-rose-500">{fieldErrors.factorySector}</p>
+											<p className="text-xs font-medium text-rose-500">{fieldErrors.factorySector}</p>
 										) : null}
 									</FieldShell>
 								) : null}
 
 								<FieldShell label="Country">
-									<div class="relative" ref={countryDropdownRef}>
+									<div className="relative" ref={countryDropdownRef}>
 										<input
 											value={countryOpen ? countryQuery : country}
 											onChange={(e) => {
@@ -617,42 +624,43 @@ export default function Signup() {
 											}}
 											onFocus={() => setCountryOpen(true)}
 											placeholder="Type to search countries"
-											class={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
+											className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
 												fieldErrors.country
 													? "border-rose-400 ring-2 ring-rose-500/20 dark:border-rose-500"
 													: "border-slate-200 dark:border-white/10"
 											}`}
 											required={true}
 										/>
-										{countryOpen ? (
+										{countryOpen && (
 											<div
-												data-lenis-prevent={true}
-												class="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]"
+												className="absolute z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 dark:border-slate-600 dark:bg-slate-800"
+												style={{ WebkitOverflowScrolling: "touch" }}
 											>
 												{filteredCountries.length > 0 ? (
 													filteredCountries.map((item) => (
 														<button
 															key={item}
 															type="button"
-															onClick={() => {
+															onMouseDown={(e) => {
+																e.preventDefault();
 																setCountry(item);
 																setCountryQuery(item);
 																setCountryOpen(false);
 															}}
-															class="block w-full px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/5"
+															className="block w-full px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/5"
 														>
 															{item}
 														</button>
 													))
 												) : (
-													<div class="px-4 py-6 text-sm text-slate-500 dark:text-slate-300">
+													<div className="px-4 py-6 text-sm text-slate-500 dark:text-slate-300">
 														No matching country found.
 													</div>
 												)}
 											</div>
-										) : null}
+										)}
 										{fieldErrors.country ? (
-											<p class="text-xs font-medium text-rose-500">{fieldErrors.country}</p>
+											<p className="text-xs font-medium text-rose-500">{fieldErrors.country}</p>
 										) : null}
 									</div>
 								</FieldShell>
@@ -662,7 +670,7 @@ export default function Signup() {
 										value={organizationName}
 										onChange={(e) => setOrganizationName(e.target.value)}
 										placeholder="Enter your organization name"
-										class={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
+										className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 dark:placeholder:text-slate-500 ${
 											fieldErrors.organizationName
 												? "border-rose-400 ring-2 ring-rose-500/20 dark:border-rose-500"
 												: "border-slate-200 dark:border-white/10"
@@ -670,25 +678,25 @@ export default function Signup() {
 										required={true}
 									/>
 									{fieldErrors.organizationName ? (
-										<p class="text-xs font-medium text-rose-500">{fieldErrors.organizationName}</p>
+										<p className="text-xs font-medium text-rose-500">{fieldErrors.organizationName}</p>
 									) : null}
 								</FieldShell>
 
 								<FieldShell label="Your Position">
-									<div class="relative" ref={positionDropdownRef}>
+									<div className="relative" ref={positionDropdownRef}>
 										<button
 											type="button"
 											onClick={() => setPositionOpen((v) => !v)}
-											class={`flex w-full items-center justify-between rounded-2xl border bg-white px-4 py-3 text-left text-sm transition hover:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 ${
+											className={`flex w-full items-center justify-between rounded-2xl border bg-white px-4 py-3 text-left text-sm transition hover:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-500/10 dark:bg-white/5 ${
 												fieldErrors.position
 													? "border-rose-400 ring-2 ring-rose-500/20 dark:border-rose-500"
 													: "border-slate-200 dark:border-white/10"
 											}`}
 										>
-											<span class="font-medium text-slate-800 dark:text-slate-100">
-												{position || "Select your position"}
+											<span className="font-medium text-slate-800 dark:text-slate-100">
+												{position === "Other" && customPosition ? customPosition : position || "Select your position"}
 											</span>
-											<span class="text-slate-500 dark:text-slate-300">
+											<span className="text-slate-500 dark:text-slate-300">
 												<ChevronDown />
 											</span>
 										</button>
@@ -696,7 +704,7 @@ export default function Signup() {
 										{positionOpen ? (
 											<div
 												data-lenis-prevent={true}
-												class="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#0d1829]"
+												className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-600 dark:bg-slate-800"
 											>
 												{POSITIONS.map((item) => (
 													<button
@@ -706,12 +714,12 @@ export default function Signup() {
 															setPosition(item);
 															setPositionOpen(false);
 														}}
-														class={cn(
+														className={cn(
 															"flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/5",
 															position === item ? "bg-sky-50 dark:bg-white/5" : "",
 														)}
 													>
-														<span class="font-medium text-slate-800 dark:text-slate-100">
+														<span className="font-medium text-slate-800 dark:text-slate-100">
 															{item}
 														</span>
 													</button>
@@ -719,13 +727,25 @@ export default function Signup() {
 											</div>
 										) : null}
 										{fieldErrors.position ? (
-											<p class="text-xs font-medium text-rose-500">{fieldErrors.position}</p>
+											<p className="text-xs font-medium text-rose-500">{fieldErrors.position}</p>
 										) : null}
 									</div>
+									{position === "Other" ? (
+										<input
+											value={customPosition}
+											onChange={(e) => {
+												setCustomPosition(e.target.value);
+												setPosition("Other");
+											}}
+											placeholder="Enter your position"
+											className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-slate-500"
+											required={true}
+										/>
+									) : null}
 								</FieldShell>
 
 								{error && (
-									<div class="rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-3 text-sm text-rose-300">
+									<div className="rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-3 text-sm text-rose-300">
 										{error}
 									</div>
 								)}
@@ -733,9 +753,9 @@ export default function Signup() {
 								<button
 									type="submit"
 									disabled={loading}
-									class="group relative mt-2 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-400 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_40px_rgba(14,165,233,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_60px_rgba(14,165,233,0.45)] disabled:opacity-60"
+									className="group relative mt-2 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-400 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_40px_rgba(14,165,233,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_60px_rgba(14,165,233,0.45)] disabled:opacity-60"
 								>
-									<span class="relative z-10">
+									<span className="relative z-10">
 										{loading ? (
 											<ThreeDot
 												variant="bounce"
@@ -748,14 +768,14 @@ export default function Signup() {
 											"Create account"
 										)}
 									</span>
-									<span class="absolute inset-0 translate-x-[-120%] bg-white/20 transition-transform duration-700 group-hover:translate-x-[120%]" />
+									<span className="absolute inset-0 translate-x-[-120%] bg-white/20 transition-transform duration-700 group-hover:translate-x-[120%]" />
 								</button>
 
-								<div class="pt-2 text-center text-sm text-slate-600 dark:text-slate-300">
+								<div className="pt-2 text-center text-sm text-slate-600 dark:text-slate-300">
 									Already have an account?{" "}
 									<Link
 										to="/login"
-										class="font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200"
+										className="font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200"
 									>
 										Login
 									</Link>

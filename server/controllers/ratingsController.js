@@ -40,6 +40,7 @@ export async function submitRating(req, res) {
 		interactionType: req.body?.interaction_type,
 		score: req.body?.score,
 		comment: req.body?.comment,
+		categories: req.body?.categories || {},
 		reliabilityFlags: req.body?.reliability_flags || {},
 	});
 	return res.status(201).json(row);

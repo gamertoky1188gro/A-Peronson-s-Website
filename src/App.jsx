@@ -1,7 +1,7 @@
 /* global process */
 
 import { motion } from "framer-motion";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Footer from "./components/Footer.jsx";
@@ -88,6 +88,8 @@ const AdminPanel = safeLazy(() => import("./pages/AdminPanel.jsx"));
 const AdminGovernance = safeLazy(() => import("./pages/AdminGovernance.jsx"));
 const AccessDenied = safeLazy(() => import("./pages/AccessDenied.jsx"));
 const NotFound = safeLazy(() => import("./pages/NotFound.jsx"));
+const BusinessRelationship = safeLazy(() => import("./pages/BusinessRelationship.jsx"));
+const OrderManagement = safeLazy(() => import("./pages/OrderManagement.jsx"));
 
 const AUTH_ROLES = ["buyer", "buying_house", "factory", "owner", "admin", "agent"];
 const OWNER_ROLES = ["owner", "admin", "buying_house", "factory"];
@@ -98,17 +100,36 @@ const MEMBER_MANAGEMENT_ROLES = ["owner", "admin", "buying_house", "factory"];
 function ProtectedRoute({ children, roles }) {
 	const location = useLocation();
 	const token = getToken();
+	const [user, setUser] = useState(() => getCurrentUser());
 
 	// Simple check - if no token, redirect to login
 	if (!token) {
 		return <Navigate to="/login" replace={true} state={{ from: location.pathname }} />;
 	}
 
-	// Get user - might be from cache or need to wait for sync
-	const user = getCurrentUser();
+	// Background sync: if user is null on mount, poll until cached or redirect after timeout
+	useEffect(() => {
+		if (user) return;
+		let attempts = 0;
+		const maxAttempts = 30; // 30 * 500ms = 15 seconds max
+		const interval = setInterval(() => {
+			attempts++;
+			const cached = getCurrentUser();
+			if (cached) {
+				setUser(cached);
+				clearInterval(interval);
+			} else if (attempts >= maxAttempts) {
+				clearInterval(interval);
+				// Redirect to login if user can't be loaded
+				localStorage.removeItem("ght_token");
+				localStorage.removeItem("user");
+				window.location.href = "/login";
+			}
+		}, 500);
+		return () => clearInterval(interval);
+	}, [user]);
 
 	if (!user) {
-		// User is loading - show spinner while auth is being verified
 		return <NeonAtom fill={true} size={80} />;
 	}
 
@@ -394,8 +415,31 @@ function AppRoutes() {
 					</ProtectedRoute>
 				}
 			/>
+			<Route
+				path="/relationships/:id"
+				element={
+					<ProtectedRoute roles={AUTH_ROLES}>
+						<BusinessRelationship />
+					</ProtectedRoute>
+				}
+			/>
+			<Route
+				path="/orders"
+				element={
+					<ProtectedRoute roles={AUTH_ROLES}>
+						<OrderManagement />
+					</ProtectedRoute>
+				}
+			/>
 
-			<Route path="/tasks" element={<TaskTracker />} />
+			<Route
+				path="/tasks"
+				element={
+					<ProtectedRoute roles={AUTH_ROLES}>
+						<TaskTracker />
+					</ProtectedRoute>
+				}
+			/>
 			<Route
 				path="/feedback"
 				element={

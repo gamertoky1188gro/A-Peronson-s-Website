@@ -65,16 +65,31 @@ async function queueEmail(entry) {
 	await prisma.emailOutbox.create({ data: entry });
 }
 
-export async function sendEmail({ to, subject, text, html }) {
+async function logEmailToDb({ to, subject, text, html, status, source, error }) {
+	try {
+		await prisma.emailLog.create({
+			data: {
+				to: Array.isArray(to) ? to.join(", ") : String(to || ""),
+				subject: sanitizeString(String(subject || ""), 200),
+				body: sanitizeString(String(text || ""), 5000),
+				html: html ? String(html) : null,
+				status: status || "logged",
+				source: source || "email_service",
+				error: error || null,
+			},
+		});
+	} catch (dbError) {
+		logError("email_log_db_failed", dbError);
+	}
+}
+
+export async function sendEmail({ to, subject, text, html, source }) {
 	const recipients = normalizeRecipients(to);
 	if (recipients.length === 0) {
 		return { ok: false, status: "no_recipients" };
 	}
 
 	const emailConfig = await getEmailConfig();
-	if (!emailConfig.enabled) {
-		return { ok: false, status: "disabled" };
-	}
 
 	const payload = {
 		id: crypto.randomUUID(),
@@ -87,17 +102,28 @@ export async function sendEmail({ to, subject, text, html }) {
 		error: "",
 	};
 
+	if (!emailConfig.enabled) {
+		await logEmailToDb({ to: recipients, subject: payload.subject, text: payload.text, html: payload.html, status: "logged_disabled", source });
+		logInfo("email_logged_disabled", { to: recipients, subject: payload.subject });
+		return { ok: true, status: "logged_disabled" };
+	}
+
 	const provider = String(emailConfig.provider || "smtp").toLowerCase();
 	if (provider === "smtp") {
 		if (!isSmtpConfigured()) {
-			return { ok: false, status: "smtp_not_configured" };
+			await logEmailToDb({ to: recipients, subject: payload.subject, text: payload.text, html: payload.html, status: "logged_no_smtp", source });
+			logInfo("email_logged_no_smtp", { to: recipients, subject: payload.subject });
+			return { ok: true, status: "logged_no_smtp" };
 		}
 	} else if (provider === "gmail_api") {
 		if (!isGmailConfigured()) {
-			return { ok: false, status: "gmail_not_configured" };
+			await logEmailToDb({ to: recipients, subject: payload.subject, text: payload.text, html: payload.html, status: "logged_no_gmail", source });
+			logInfo("email_logged_no_gmail", { to: recipients, subject: payload.subject });
+			return { ok: true, status: "logged_no_gmail" };
 		}
 	} else {
-		return { ok: false, status: "unsupported_provider" };
+		await logEmailToDb({ to: recipients, subject: payload.subject, text: payload.text, html: payload.html, status: "logged_unsupported", source });
+		return { ok: true, status: "logged_unsupported" };
 	}
 
 	try {
@@ -166,11 +192,13 @@ export async function sendEmail({ to, subject, text, html }) {
 		}
 
 		await queueEmail({ ...payload, status: "sent" });
+		await logEmailToDb({ to: recipients, subject: payload.subject, text: payload.text, html: payload.html, status: "sent", source });
 		logInfo("email_sent", { to: recipients });
 		return { ok: true, status: "sent" };
 	} catch (error) {
 		const message = error?.message || "smtp_error";
 		await queueEmail({ ...payload, status: "failed", error: message });
+		await logEmailToDb({ to: recipients, subject: payload.subject, text: payload.text, html: payload.html, status: "failed", source, error: message });
 		logError("email_send_failed", error);
 		return { ok: false, status: "failed", error: message };
 	}

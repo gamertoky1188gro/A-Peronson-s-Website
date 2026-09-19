@@ -142,7 +142,7 @@ export default function PostPreview({ item }) {
 								key={`media-${i}`}
 								className="overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900 ring-1 ring-slate-200/70 dark:ring-white/10"
 							>
-								{entry.type === "video" ? (
+								{String(entry.type || "").startsWith("video") ? (
 									<video
 										className="h-40 w-full object-cover"
 										src={entry.url}

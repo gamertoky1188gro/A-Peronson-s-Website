@@ -36,8 +36,11 @@ export default function RightPanel({
 	requestAiSummary,
 	requestNegotiationHelper,
 	openAttachmentPreview,
+	userRole,
 }) {
 	const activeThreadInitials = getInitials(activeThreadDisplayName);
+
+	const isAdmin = ["owner", "admin"].includes(userRole);
 
 	return (
 		<aside
@@ -162,11 +165,13 @@ export default function RightPanel({
 
 					<div className="mb-8 grid grid-cols-4 gap-3">
 						{[
-							{ icon: Flag, title: "Report" },
-							{ icon: Lock, title: "Block" },
-							{ icon: Info, title: "Info" },
-							{ icon: VolumeX, title: "Mute" },
-						].map((action, i) => (
+							{ icon: Flag, title: "Report", roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"] },
+							{ icon: Lock, title: "Block", roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"] },
+							{ icon: Info, title: "Info", roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"] },
+							{ icon: VolumeX, title: "Mute", roles: ["owner", "admin"] },
+						]
+							.filter((action) => action.roles.includes(userRole))
+							.map((action, i) => (
 							<button
 								key={i}
 								className="flex flex-col items-center gap-1.5 transition-opacity hover:opacity-70"

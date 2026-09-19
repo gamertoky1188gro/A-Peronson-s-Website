@@ -3,6 +3,7 @@ import {
 	createOrgMember,
 	deactivateOrRemoveOrgMember,
 	getOrgMember,
+	getMemberMetrics,
 	listOrgMembers,
 	patchMemberPermissions,
 	postMemberPasswordReset,
@@ -17,6 +18,12 @@ router.get(
 	requireAuth,
 	allowRoles("owner", "admin", "buying_house", "factory"),
 	listOrgMembers,
+);
+router.get(
+	"/metrics",
+	requireAuth,
+	allowRoles("owner", "admin", "buying_house", "factory"),
+	getMemberMetrics,
 );
 router.get(
 	"/:memberId",

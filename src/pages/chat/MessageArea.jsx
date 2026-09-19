@@ -9,6 +9,7 @@ import {
 	formatPresence,
 	formatTime,
 	getInitials,
+	getTimezoneAbbr,
 	lockStatusLabel,
 } from "./chatUtils.js";
 import LazyImage from "../../components/ui/LazyImage.jsx";
@@ -58,6 +59,7 @@ export default function MessageArea({
 }) {
 	const activeThreadInitials = getInitials(activeThreadDisplayName);
 	const todayLabel = dateDividerLabel(activeMessages.at(-1)?.timestamp);
+	const timezoneAbbr = getTimezoneAbbr();
 
 	return (
 		<main
@@ -214,10 +216,10 @@ export default function MessageArea({
 												</div>
 											) : null}
 											{renderMessageBody(message, isOwn)}
-											<div
-												className={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60${isOwn ? "text-white" : "text-slate-400"}`}
-											>
-												<span>{formatTime(message.timestamp)}</span>
+<div
+											className={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60${isOwn ? "text-white" : "text-slate-400"}`}
+										>
+											<span>{formatTime(message.timestamp)}{timezoneAbbr ? ` ${timezoneAbbr}` : ""}</span>
 												{message.policy_status && message.policy_status !== "delivered" ? (
 													<span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600">
 														{message.policy_status === "needs_review" ? "Needs review" : "Queued"}

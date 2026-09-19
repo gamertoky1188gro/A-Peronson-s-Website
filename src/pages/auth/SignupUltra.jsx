@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import NeonAtom from "../../components/ui/NeonAtom.jsx";
-import { apiRequest, getRoleHome, saveSession } from "../../lib/auth.js";
+import { apiRequest, getCurrentUser, getRoleHome, saveSession } from "../../lib/auth.js";
 import usePageMeta from "../../lib/usePageMeta.js";
 import {
 	COUNTRY_OPTIONS,
@@ -35,6 +35,7 @@ const POSITIONS = [
 	"Finishing Supervisor",
 	"Store In-Charge",
 	"Administrator",
+	"Other",
 ];
 
 export default function SignupUltra() {
@@ -87,12 +88,18 @@ export default function SignupUltra() {
 		country: "",
 		organization: "",
 		position: "",
+		customPosition: "",
 		factorySector: "",
 	});
 	const [passwordVisible, setPasswordVisible] = useState(false);
 	const [confirmVisible, setConfirmVisible] = useState(false);
 
 	if (!isAuthorized) {
+		return <Navigate to="/" replace={true} />;
+	}
+
+	const currentUser = getCurrentUser();
+	if (currentUser && currentUser.role !== "admin" && currentUser.role !== "owner") {
 		return <Navigate to="/" replace={true} />;
 	}
 
@@ -113,6 +120,11 @@ export default function SignupUltra() {
 			setError("Please select your position.");
 			return;
 		}
+		if (form.position === "Other" && !form.customPosition.trim()) {
+			setLoading(false);
+			setError("Please enter your position.");
+			return;
+		}
 		if (!form.organization.trim()) {
 			setLoading(false);
 			setError("Please enter your organization name.");
@@ -129,6 +141,7 @@ export default function SignupUltra() {
 			return;
 		}
 		try {
+			const effectivePosition = form.position === "Other" && form.customPosition.trim() ? form.customPosition.trim() : form.position;
 			const payload = {
 				name: form.name,
 				email: form.email,
@@ -137,7 +150,7 @@ export default function SignupUltra() {
 				company_name: form.organization,
 				profile: {
 					country: form.country,
-					position: form.position,
+					position: effectivePosition,
 					factory_sector: form.factorySector,
 				},
 			};
@@ -145,6 +158,7 @@ export default function SignupUltra() {
 			const data = await apiRequest("/auth/register", {
 				method: "POST",
 				body: payload,
+				signal: AbortSignal.timeout(30000),
 			});
 			saveSession(data.user, data.token);
 			navigate(getRoleHome(data.user.role), { replace: true });
@@ -156,7 +170,7 @@ export default function SignupUltra() {
 	};
 
 	if (loading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	return (
@@ -312,6 +326,15 @@ export default function SignupUltra() {
 									</option>
 								))}
 							</select>
+							{form.position === "Other" ? (
+								<input
+									className="mt-2 w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+									value={form.customPosition}
+									onChange={(e) => onChange("customPosition", e.target.value)}
+									placeholder="Enter your position"
+									required={true}
+								/>
+							) : null}
 						</div>
 
 						{form.role === "factory" ? (

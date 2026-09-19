@@ -3,6 +3,7 @@ import {
 	getNotificationPreferences,
 	listMySearchAlerts,
 	listNotifications,
+	markAllNotificationsRead,
 	markNotificationRead,
 	saveSearchAlert,
 	updateNotificationPreferences,
@@ -56,6 +57,11 @@ export async function readNotification(req, res) {
 		return res.status(404).json({ error: "Notification not found" });
 	}
 	return res.json(row);
+}
+
+export async function readAllNotifications(req, res) {
+	await markAllNotificationsRead(req.user.id);
+	return res.json({ ok: true });
 }
 
 export async function deleteSearchAlert(req, res) {

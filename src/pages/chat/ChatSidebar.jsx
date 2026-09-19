@@ -10,6 +10,7 @@ export default function ChatSidebar({
 	navigate,
 	ROUTES,
 	CHAT_NAV_ITEMS,
+	totalUnread,
 }) {
 	return (
 		<aside
@@ -29,6 +30,7 @@ export default function ChatSidebar({
 				{CHAT_NAV_ITEMS.map((item) => {
 					const Icon = item.icon;
 					const isActive = location.pathname === item.to;
+					const showBadge = item.label === "Chat" && totalUnread > 0;
 					return (
 						<Link
 							key={item.to}
@@ -45,6 +47,11 @@ export default function ChatSidebar({
 							title={item.label}
 						>
 							<Icon size={18} strokeWidth={1.5} />
+							{showBadge ? (
+								<span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+									{totalUnread > 99 ? "99+" : totalUnread}
+								</span>
+							) : null}
 						</Link>
 					);
 				})}

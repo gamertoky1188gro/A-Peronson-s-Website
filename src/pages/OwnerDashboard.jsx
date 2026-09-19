@@ -18,6 +18,7 @@ import CoreMetricsCards from "../components/analytics/CoreMetricsCards.jsx";
 import ContractVaultPage from "./ContractVault.jsx";
 import OrgSettings from "./OrgSettings.jsx";
 import VerificationPage from "./VerificationPage.jsx";
+import MemberManagement from "./MemberManagement.jsx";
 
 function SparkIcon({ className = "" }) {
 	return (
@@ -318,8 +319,7 @@ export default function OwnerDashboard() {
 	const chartDocsData = dashboard?.series?.documents?.map((item) => item.count) || [];
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
-	}
+		return <NeonAtom fill={true} timeout={10000} />;	}
 
 	return (
 		<div className={theme === "dark" ? "dark" : ""}>
@@ -675,16 +675,22 @@ export default function OwnerDashboard() {
 										title="Conversion Funnel"
 										subtitle="How demand flows through the platform."
 									>
-										<ConversionFunnel
-											data={{
-												requests: totals.buyer_requests ?? 0,
-												matched: dashboard?.top_metrics?.match_success_rate
-													? Math.round((totals.buyer_requests ?? 0) * (dashboard.top_metrics.match_success_rate / 100))
-													: 0,
-												conversations: totals.chats ?? 0,
-												contracts: totals.contracts ?? 0,
-											}}
-										/>
+										{loading ? (
+											<div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-400 dark:border-slate-700 dark:bg-slate-950/40">
+												Loading funnel data...
+											</div>
+										) : (
+											<ConversionFunnel
+												data={{
+													requests: totals.buyer_requests ?? 0,
+													matched: dashboard?.top_metrics?.match_success_rate
+														? Math.round((totals.buyer_requests ?? 0) * (dashboard.top_metrics.match_success_rate / 100))
+														: 0,
+													conversations: totals.chats ?? 0,
+													contracts: totals.contracts ?? 0,
+												}}
+											/>
+										)}
 									</SectionCard>
 								</ScrollReveal>
 							</div>
@@ -1059,16 +1065,8 @@ export default function OwnerDashboard() {
 								<SectionCard
 									title="Member Management"
 									subtitle="Team members, agents, and access control in one place."
-									action={
-										<button
-											onClick={() => go("/member-management")}
-											className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white"
-										>
-											Manage Members
-										</button>
-									}
 								>
-									<div className="grid gap-4 md:grid-cols-4">
+									<div className="grid gap-4 md:grid-cols-4 mb-6">
 										{["Owners", "Managers", "Agents", "Observers"].map((role, idx) => (
 											<div key={role} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
 												<div className="text-sm text-slate-500 dark:text-slate-400">{role}</div>
@@ -1085,6 +1083,7 @@ export default function OwnerDashboard() {
 											</div>
 										))}
 									</div>
+									<MemberManagement />
 								</SectionCard>
 							</div>
 						)}

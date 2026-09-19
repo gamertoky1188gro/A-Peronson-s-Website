@@ -16,12 +16,16 @@ export default function LenisProvider({ children }) {
 				touchMultiplier: 1.5,
 				wheelMultiplier: 1,
 				autoRaf: true,
-				prevent: (node) => {
-					if (node.hasAttribute?.("data-lenis-prevent")) {
+			prevent: (node) => {
+				let el = node;
+				while (el && el instanceof HTMLElement) {
+					if (el.hasAttribute("data-lenis-prevent")) {
 						return true;
 					}
-					return false;
-				},
+					el = el.parentElement;
+				}
+				return false;
+			},
 			}}
 		>
 			{children}

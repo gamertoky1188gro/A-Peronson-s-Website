@@ -186,6 +186,7 @@ export default function NotificationsCenter() {
 	const [quickViewItem, setQuickViewItem] = useState(null);
 	const [pageLoading, setPageLoading] = useState(true);
 	const [loadingAlerts, setLoadingAlerts] = useState(true);
+	const [viewedItems, setViewedItems] = useState(new Set());
 	const navigate = useNavigate();
 
 	const loadNotifications = useCallback(async () => {
@@ -329,6 +330,18 @@ export default function NotificationsCenter() {
 			token,
 		});
 		setItems((prev) => prev.map((n) => (String(n?.id) === String(id) ? { ...n, read: true } : n)));
+		setViewedItems((prev) => new Set([...prev, id]));
+	}
+
+	async function markAllRead() {
+		if (!token) return;
+		await apiRequest("/notifications/read-all", { method: "PATCH", token });
+		setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+		setViewedItems((prev) => {
+			const next = new Set(prev);
+			items.forEach((n) => next.add(n.id));
+			return next;
+		});
 	}
 
 	async function respondPartnerRequest(requestId, action, notificationId) {
@@ -400,7 +413,7 @@ export default function NotificationsCenter() {
 	const mutedText = theme === "dark" ? "text-slate-300" : "text-slate-700";
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	return (
@@ -548,6 +561,14 @@ export default function NotificationsCenter() {
 											Showing {filteredItems.length} item
 											{filteredItems.length === 1 ? "" : "s"}
 										</div>
+										{items.some((n) => !n.read) && (
+											<button
+												onClick={markAllRead}
+												className="rounded-2xl px-4 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-white/5"
+											>
+												Mark all as read
+											</button>
+										)}
 									</div>
 
 									<StaggerContainer className="space-y-3">
@@ -570,11 +591,12 @@ export default function NotificationsCenter() {
 											<AnimatePresence mode="popLayout">
 												{filteredItems.map((item) => (
 													<StaggerItem key={item.id}>
-														<NotificationCard
-															item={item}
-															theme={theme}
-															user={user}
-															onMarkRead={() => markRead(item.id)}
+											<NotificationCard
+														item={item}
+														theme={theme}
+														user={user}
+														viewedItems={viewedItems}
+														onMarkRead={() => markRead(item.id)}
 															onAccept={() =>
 																respondPartnerRequest(
 																	item?.meta?.request_id || item.entity_id,
@@ -921,10 +943,11 @@ function EmptyState({ title, description, compact = false }) {
 	);
 }
 
-function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject }) {
+function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject, viewedItems }) {
 	const tone = getRelativeTone(item.type);
 	const borderClass =
 		theme === "dark" ? "border-white/10 bg-white/5" : "border-sky-100 bg-white/80";
+	const isViewed = viewedItems?.has?.(item.id) || item.read;
 
 	return (
 		<motion.div
@@ -982,9 +1005,15 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 					{item.type === "rating_feedback_request" ? (
 						<Link
 							to={`/ratings/feedback?profile_key=${encodeURIComponent(item?.entity_id || item?.meta?.profile_key || "")}`}
-							className="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
+							onClick={() => onMarkRead()}
+							className={cn(
+								"rounded-full px-3 py-2 text-xs font-semibold text-center transition-all duration-200",
+								isViewed
+									? "bg-slate-500/10 text-slate-400 hover:bg-slate-500/15 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10"
+									: "bg-sky-600 text-white hover:bg-sky-700 shadow-lg shadow-sky-500/20",
+							)}
 						>
-							Rate now
+							{isViewed ? "Rated" : "Rate now"}
 						</Link>
 					) : item.entity_type ? (
 						<Link
@@ -996,9 +1025,15 @@ function NotificationCard({ item, theme, user, onMarkRead, onAccept, onReject })
 										)
 									: feedLinkForEntity(item.entity_type, item.entity_id)
 							}
-							className="rounded-full bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 text-center"
+							onClick={() => onMarkRead()}
+							className={cn(
+								"rounded-full px-3 py-2 text-xs font-semibold text-center transition-all duration-200",
+								isViewed
+									? "bg-slate-500/10 text-slate-400 hover:bg-slate-500/15 dark:bg-white/5 dark:text-slate-500 dark:hover:bg-white/10"
+									: "bg-sky-600 text-white hover:bg-sky-700 shadow-lg shadow-sky-500/20",
+							)}
 						>
-							View
+							{isViewed ? "Viewed" : "View"}
 						</Link>
 					) : null}
 					{!item.read && (

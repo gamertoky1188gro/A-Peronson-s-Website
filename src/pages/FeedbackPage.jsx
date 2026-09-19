@@ -6,7 +6,15 @@ import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
 import { uploadFile } from "../lib/upload.js";
 
-const FEEDBACK_CATEGORIES = ["Bug Report", "Feature Request", "General Feedback"];
+const FEEDBACK_CATEGORIES = [
+	"Bug Report",
+	"Feature Request",
+	"Account Problem",
+	"Payment / Verification Issue",
+	"Report a User",
+	"Content Report",
+	"General Feedback",
+];
 
 export default function FeedbackPage() {
 	const token = getToken();
@@ -211,7 +219,7 @@ export default function FeedbackPage() {
 							disabled={loading}
 							className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-500 px-5 py-4 text-sm font-semibold text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
 						>
-							{loading ? <NeonAtom fill={true} size="small" /> : null}
+							{loading ? <NeonAtom fill={true} size={24} /> : null}
 							{loading ? "Submitting..." : "Submit Feedback"}
 						</button>
 					</form>

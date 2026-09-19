@@ -201,7 +201,7 @@ async function assertFreePlanMemberLimit({
 
 export async function listMembers(orgOwnerId) {
 	const agents = await prisma.user.findMany({
-		where: { role: "agent", org_owner_id: orgOwnerId },
+		where: { role: "agent", org_owner_id: orgOwnerId, status: { not: "removed" } },
 		orderBy: { created_at: "desc" },
 	});
 	return agents.map(cleanAgent);
@@ -347,8 +347,11 @@ export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = "dea
 	}
 
 	if (mode === "remove") {
-		const deleted = await prisma.user.delete({ where: { id: memberId } });
-		return { removed: cleanAgent(deleted), mode: "remove" };
+		const removed = await prisma.user.update({
+			where: { id: memberId },
+			data: { status: "removed", updated_at: new Date() },
+		});
+		return { member: cleanAgent(removed), mode: "remove" };
 	}
 
 	const updated = await prisma.user.update({
@@ -372,4 +375,30 @@ export async function getMemberConstraints(orgOwnerRecord = null) {
 		permission_conflicts: PERMISSION_CONFLICTS,
 		permission_matrix_sections: MATRIX_SECTIONS,
 	};
+}
+
+export async function getMemberPermissionMetrics(orgOwnerId) {
+	const agents = await prisma.user.findMany({
+		where: { role: "agent", org_owner_id: orgOwnerId, status: { not: "removed" } },
+		select: { permissions: true, permission_matrix: true, status: true },
+	});
+
+	const totalMembers = agents.length;
+	const activeMembers = agents.filter((a) => a.status === "active").length;
+
+	const permissionCounts = {};
+	for (const perm of VALID_PERMISSIONS) {
+		permissionCounts[perm] = agents.filter(
+			(a) => Array.isArray(a.permissions) && a.permissions.includes(perm),
+		).length;
+	}
+
+	const matrixCoverage = {};
+	for (const section of MATRIX_SECTIONS) {
+		const withView = agents.filter((a) => a.permission_matrix?.[section]?.view).length;
+		const withEdit = agents.filter((a) => a.permission_matrix?.[section]?.edit).length;
+		matrixCoverage[section] = { view: withView, edit: withEdit };
+	}
+
+	return { totalMembers, activeMembers, permissionCounts, matrixCoverage };
 }

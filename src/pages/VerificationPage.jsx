@@ -25,6 +25,7 @@
 
 import {
 	Check,
+	Camera,
 	Clock,
 	CreditCard,
 	HelpCircle,
@@ -90,6 +91,10 @@ export default function VerificationPage({ embedded = false }) {
 	const [joinPosition, setJoinPosition] = useState("");
 	const [joinMessage, setJoinMessage] = useState("");
 	const [disputingDuplicate, setDisputingDuplicate] = useState(false);
+	const [docVisibility, setDocVisibility] = useState({});
+	const [factoryVisitFiles, setFactoryVisitFiles] = useState([]);
+	const [factoryVisitBusy, setFactoryVisitBusy] = useState(false);
+	const [factoryVisitProgress, setFactoryVisitProgress] = useState(0);
 
 	const fileInputRef = useRef(null);
 	const pendingDocRef = useRef("");
@@ -132,6 +137,7 @@ export default function VerificationPage({ embedded = false }) {
 	}, [buyerRegion, role]);
 
 	const documents = verification?.documents || {};
+	const documentVisibility = verification?.document_visibility || docVisibility;
 	const optionalLicenses = Array.isArray(documents.optional_licenses)
 		? documents.optional_licenses.filter(Boolean)
 		: [];
@@ -324,6 +330,72 @@ export default function VerificationPage({ embedded = false }) {
 		await requestUpload(documentKey, file);
 	}
 
+	async function onFactoryVisitFileSelected(event) {
+		const files = Array.from(event.target.files || []);
+		event.target.value = "";
+		if (files.length === 0 || !token) {
+			return;
+		}
+		setFactoryVisitBusy(true);
+		setFactoryVisitProgress(0);
+		setFeedback("");
+		setError("");
+		try {
+			const uploaded = [];
+			for (let i = 0; i < files.length; i++) {
+				const file = files[i];
+				setUploadProgress(Math.round((i / files.length) * 100));
+				const uploadData = await uploadFile("/documents", {
+					file,
+					token,
+					fields: {
+						type: "factory_visit",
+						entity_type: "verification",
+					},
+					onProgress: (p) => {
+						const base = Math.round((i / files.length) * 100);
+						const chunk = Math.round(p / files.length);
+						setUploadProgress(Math.min(100, base + chunk));
+					},
+				});
+				uploaded.push({
+					file_name: file.name,
+					file_type: file.type,
+					url: uploadData?.url || "",
+					uploaded_at: new Date().toISOString(),
+				});
+			}
+
+			const existingFiles = Array.isArray(
+				verification?.documents?.factory_visit_files,
+			)
+				? verification.documents.factory_visit_files
+				: [];
+			const updatedDocs = {
+				...(verification?.documents || {}),
+				factory_visit_files: [...existingFiles, ...uploaded],
+				factory_visit: "uploaded",
+			};
+
+			const updated = await apiRequest("/verification/me", {
+				method: "POST",
+				token,
+				body: { documents: updatedDocs },
+			});
+			setVerification(updated);
+			setFactoryVisitFiles((prev) => [...prev, ...uploaded]);
+			setFeedback(
+				`${files.length} factory visit file${files.length > 1 ? "s" : ""} uploaded successfully.`,
+			);
+		} catch (err) {
+			setError(err.message || "Factory visit upload failed");
+		} finally {
+			setFactoryVisitBusy(false);
+			setFactoryVisitProgress(0);
+			setUploadProgress(0);
+		}
+	}
+
 	async function addOptionalLicense() {
 		const nextValue = optionalLicenseInput.trim();
 		if (!(nextValue && token)) {
@@ -453,27 +525,32 @@ export default function VerificationPage({ embedded = false }) {
 		}
 	}
 
-	async function handleRenewVerification() {
+	function handleRenewVerification() {
+		setFeedback("");
+		setError("");
+		setFeedback("Payment processing is coming soon. Stay tuned!");
+	}
+
+	async function updateDocumentVisibility(documentKey, visibility) {
 		if (!token) {
 			return;
 		}
-		setError("");
 		setFeedback("");
-		setRenewing(true);
+		setError("");
 		try {
-			const res = await apiRequest("/verification/renew", {
+			const updatedVisibility = {
+				...(verification?.document_visibility || {}),
+				[documentKey]: visibility,
+			};
+			const updated = await apiRequest("/verification/me", {
 				method: "POST",
 				token,
+				body: { document_visibility: updatedVisibility },
 			});
-			if (res?.verification) {
-				setVerification(res.verification);
-			}
-			const price = Number(res?.price_usd || 0);
-			setFeedback(`Verification subscription updated. Charged $${price.toFixed(2)}.`);
+			setVerification(updated);
+			setFeedback(`${VERIFICATION_FIELD_LABELS[documentKey] || documentKey} visibility updated to ${visibility}.`);
 		} catch (err) {
-			setError(err.message || "Verification payment failed");
-		} finally {
-			setRenewing(false);
+			setError(err.message || "Could not update document visibility");
 		}
 	}
 
@@ -506,7 +583,7 @@ export default function VerificationPage({ embedded = false }) {
 	}));
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	const content = (
@@ -690,6 +767,20 @@ export default function VerificationPage({ embedded = false }) {
 												<p className={`mt-1 text-sm leading-6 ${softText}`}>{item.desc}</p>
 											</div>
 										</div>
+										{item.done && (
+											<div className="mt-3">
+												<label className={`text-xs font-medium ${mutedText}`}>Visibility</label>
+												<select
+													value={documentVisibility[requiredDocs[idx]] || "private"}
+													onChange={(e) => updateDocumentVisibility(requiredDocs[idx], e.target.value)}
+													className={`mt-1 w-full rounded-xl border px-3 py-2 text-xs outline-none transition ${fieldBg}`}
+												>
+													<option value="private">Private</option>
+													<option value="buyer_visible">Buyers Only</option>
+													<option value="public">Public</option>
+												</select>
+											</div>
+										)}
 										<button
 											onClick={() => openPicker(requiredDocs[idx])}
 											disabled={
@@ -772,6 +863,83 @@ export default function VerificationPage({ embedded = false }) {
 							)}
 						</div>
 					</div>
+
+					{role === "buyer" && (
+						<div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
+							<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+								<div>
+									<h3 className="text-xl font-semibold">Factory Visit Documentation</h3>
+									<p className={`mt-1 text-sm ${softText}`}>
+										Upload photos or videos from your factory visits. This strengthens your buyer credibility.
+									</p>
+								</div>
+								<div className={`flex items-center gap-2 text-sm ${softText}`}>
+									<Camera className="h-4 w-4 text-sky-400" />
+									JPG, PNG, MP4, MOV
+								</div>
+							</div>
+
+							<div className="mt-5">
+								<label
+									className={`flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-6 transition-all ${
+										factoryVisitBusy
+											? "pointer-events-none opacity-50"
+											: "border-sky-400/40 bg-sky-500/5 hover:border-sky-400/70 hover:bg-sky-500/10"
+									}`}
+								>
+									<input
+										type="file"
+										accept="image/*,video/*"
+										multiple
+										className="hidden"
+										disabled={factoryVisitBusy}
+										onChange={onFactoryVisitFileSelected}
+									/>
+									<Upload className="h-5 w-5 text-sky-400" />
+									<span className={`text-sm font-medium ${softText}`}>
+										{factoryVisitBusy ? "Uploading..." : "Click to upload photos or videos"}
+									</span>
+								</label>
+								{factoryVisitBusy && (
+									<UploadProgressBar progress={factoryVisitProgress} className="mt-3" />
+								)}
+							</div>
+
+							{(() => {
+								const existingFiles = Array.isArray(verification?.documents?.factory_visit_files)
+									? verification.documents.factory_visit_files
+									: [];
+								const allFiles = [...existingFiles, ...factoryVisitFiles.filter(
+									(f) => !existingFiles.some((e) => e.file_name === f.file_name),
+								)];
+								if (allFiles.length === 0) return null;
+								return (
+									<div className="mt-5 grid gap-3 sm:grid-cols-2">
+										{allFiles.map((file, idx) => (
+											<div
+												key={`${file.file_name}-${idx}`}
+												className={`flex items-center gap-3 rounded-2xl border p-3 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"}`}
+											>
+												<div className={`grid h-10 w-10 place-items-center rounded-xl ${file.file_type?.startsWith("video") ? "bg-purple-500/15 text-purple-400" : "bg-sky-500/15 text-sky-400"}`}>
+													{file.file_type?.startsWith("video") ? (
+														<span className="text-lg">🎬</span>
+													) : (
+														<Camera className="h-5 w-5" />
+													)}
+												</div>
+												<div className="min-w-0 flex-1">
+													<p className="truncate text-sm font-medium">{file.file_name}</p>
+													<p className={`text-xs ${mutedText}`}>
+														{file.uploaded_at ? new Date(file.uploaded_at).toLocaleDateString() : ""}
+													</p>
+												</div>
+											</div>
+										))}
+									</div>
+								);
+							})()}
+						</div>
+					)}
 
 					<div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
 						<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -859,14 +1027,14 @@ export default function VerificationPage({ embedded = false }) {
 						</div>
 
 						<div className="mt-4 grid gap-3">
-							<button
-								onClick={handleRenewVerification}
-								disabled={renewing}
-								className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
-							>
-								<RefreshCw className="h-4 w-4" />
-								{renewing ? "Processing..." : "Pay / Renew Verification"}
-							</button>
+						<button
+							onClick={handleRenewVerification}
+							className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary} opacity-80 cursor-default`}
+						>
+							<CreditCard className="h-4 w-4" />
+							Pay / Renew Verification
+							<span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">Coming Soon</span>
+						</button>
 							<button
 								onClick={loadStatus}
 								className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost}`}

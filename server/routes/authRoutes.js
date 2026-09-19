@@ -9,6 +9,7 @@ import {
 	passkeyRegistrationOptions,
 	passkeyRegistrationVerify,
 	passkeyRemove,
+	refreshToken,
 	register,
 } from "../controllers/authController.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -18,6 +19,7 @@ const router = Router();
 
 router.post("/register", authLimiter, register);
 router.post("/login", authLimiter, login);
+router.post("/refresh", requireAuth, refreshToken);
 router.post("/passkey/login/options", passkeyLimiter, passkeyLoginOptions);
 router.post("/passkey/login/verify", passkeyLimiter, passkeyLoginVerify);
 router.post("/passkey/registration/options", requireAuth, passkeyRegistrationOptions);

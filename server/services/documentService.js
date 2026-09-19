@@ -994,3 +994,40 @@ export async function updateContractArtifact(contractId, patch, actor) {
 		payment_proof_ok: paymentProofOk,
 	};
 }
+
+export async function recordDocumentView(documentId, viewerId, viewerIp) {
+	try {
+		await prisma.documentView.create({
+			data: {
+				document_id: documentId,
+				viewer_id: viewerId || null,
+				viewer_ip: viewerIp || null,
+			},
+		});
+	} catch (err) {
+		logError("recordDocumentView failed", err);
+	}
+}
+
+export async function getDocumentViewCount(documentId) {
+	try {
+		const count = await prisma.documentView.count({
+			where: { document_id: documentId },
+		});
+		return count;
+	} catch {
+		return 0;
+	}
+}
+
+export async function getDocumentViews(documentId, limit = 50) {
+	try {
+		return await prisma.documentView.findMany({
+			where: { document_id: documentId },
+			orderBy: { viewed_at: "desc" },
+			take: limit,
+		});
+	} catch {
+		return [];
+	}
+}

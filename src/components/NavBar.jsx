@@ -83,7 +83,7 @@ const navigationGroups = [
 		items: [
 			{ to: "/org-settings?tab=profile", label: "My Profile" },
 			{ to: "/feed", label: "Feed" },
-			{ to: "/feed/manage", label: "Manage Listings" },
+			{ to: "/feed/manage", label: "Post Editor" },
 			{ to: "/search", label: "Search" },
 			{ to: "/verification", label: "Verification" },
 			{
@@ -191,10 +191,15 @@ export default function NavBar() {
 			navigationGroups
 				.map((group) => ({
 					...group,
-					items: group.items.filter((item) => item.external || isRouteValid(item.to)),
+					items: group.items.filter(
+						(item) =>
+							item.external ||
+							(isRouteValid(item.to) &&
+								(!item.roles || item.roles.includes(String(user?.role || "").toLowerCase()))),
+					),
 				}))
 				.filter((group) => group.items.length > 0),
-		[],
+		[user?.role],
 	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchResults, setSearchResults] = useState([]);
@@ -312,6 +317,12 @@ export default function NavBar() {
 		}
 		refreshUnreadCount();
 	}, [refreshUnreadCount]);
+
+	useEffect(() => {
+		if (location.pathname === "/notifications") {
+			refreshUnreadCount();
+		}
+	}, [location.pathname, refreshUnreadCount]);
 
 	useEffect(() => {
 		if (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "test") {
@@ -948,11 +959,6 @@ export default function NavBar() {
 													</div>
 													<div className="space-y-1">
 														{group.items
-															.filter(
-																(item) =>
-																	!item.roles ||
-																	item.roles.includes(String(user?.role || "").toLowerCase()),
-															)
 															.map((item) => {
 																const ItemIcon =
 																	{

@@ -29,6 +29,81 @@ const FACTORY_SECTOR_OPTIONS = [
 	{ label: "Textile", value: "textile" },
 ];
 
+const garmentCategories = [
+	"T-Shirt", "Polo", "Denim", "Hoodie", "Sportswear", "Knitwear",
+	"Woven", "Outerwear", "Activewear", "Casual Wear", "Formal Wear",
+	"Uniforms", "Workwear", "Sleepwear", "Undergarments", "Swimwear",
+	"Childrenswear", "Accessories", "Footwear", "Bottoms", "Tops",
+	"Dresses", "Suits", "Jackets", "Jeans",
+];
+
+const textileCategories = [
+	"Cotton", "Polyester", "Nylon", "Silk", "Wool", "Linen",
+	"Rayon", "Spandex", "Denim", "Velvet", "Satin", "Chiffon",
+	"Jersey", "Fleece", "Tweed", "Canvas", "Twill", "Crepe",
+	"Georgette", "Organza", "Chambray", "Flannel", "Jute",
+];
+
+const INDUSTRY_CATEGORIES = [
+	{
+		label: "Garments",
+		items: [
+			"T-Shirt", "Polo", "Denim", "Hoodie", "Sportswear", "Knitwear",
+			"Woven", "Outerwear", "Activewear", "Casual Wear", "Formal Wear",
+			"Uniforms", "Workwear", "Sleepwear", "Undergarments", "Swimwear",
+			"Childrenswear", "Jeans",
+		],
+	},
+	{
+		label: "Textile & Fabrics",
+		items: [
+			"Cotton", "Polyester", "Nylon", "Silk", "Wool", "Linen",
+			"Rayon", "Spandex", "Velvet", "Satin", "Chiffon",
+		],
+	},
+	{
+		label: "Fabric Weaves & Finishes",
+		items: [
+			"Jersey", "Fleece", "Tweed", "Canvas", "Twill", "Crepe",
+			"Georgette", "Organza", "Chambray", "Flannel", "Jute",
+		],
+	},
+	{
+		label: "Accessories & Trims",
+		items: [
+			"Buttons", "Zippers", "Labels & Tags", "Ribbons & Bows",
+			"Elastic & Waistbands", "Laces & Cords",
+		],
+	},
+	{
+		label: "Footwear & Leather",
+		items: [
+			"Footwear", "Leather Goods", "Bags & Luggage", "Belts & Suspenders",
+		],
+	},
+	{
+		label: "Home Textiles & Furnishing",
+		items: [
+			"Bed Linen", "Curtains & Drapes", "Carpets & Rugs",
+			"Towels & Towelling", "Table Linen",
+		],
+	},
+	{
+		label: "Industrial & Technical Textiles",
+		items: [
+			"Nonwoven Fabrics", "Geotextiles", "Medical Textiles",
+			"Automotive Textiles", "Protective Wear",
+		],
+	},
+	{
+		label: "Dyeing, Printing & Finishing",
+		items: [
+			"Fabric Dyeing", "Screen Printing", "Digital Printing",
+			"Embroidery", "Wash & Finish",
+		],
+	},
+];
+
 const FACTORY_SECTOR_SET = new Set(FACTORY_SECTOR_OPTIONS.map((option) => option.value));
 
 const VERIFICATION_FIELD_LABELS = {
@@ -142,9 +217,12 @@ export {
 	ELEVATED_ACCOUNT_TYPES,
 	EU_COUNTRIES,
 	FACTORY_SECTOR_OPTIONS,
+	INDUSTRY_CATEGORIES,
 	LEGAL_ID_FIELDS,
 	STRONG_EVIDENCE_FIELDS,
 	isEuCountry,
 	PUBLIC_ACCOUNT_TYPES,
 	VERIFICATION_FIELD_LABELS,
+	garmentCategories,
+	textileCategories,
 };

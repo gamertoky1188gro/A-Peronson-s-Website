@@ -21,15 +21,15 @@ function cx(...classes) {
 function SectionCard({ title, subtitle, children, className = "" }) {
 	return (
 		<section
-			class={cx(
+			className={cx(
 				"rounded-3xl border border-sky-200/60 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.45)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/75",
 				className,
 			)}
 		>
-			<div class="mb-4">
-				<h3 class="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+			<div className="mb-4">
+				<h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
 				{subtitle ? (
-					<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
 				) : null}
 			</div>
 			{children}
@@ -39,7 +39,7 @@ function SectionCard({ title, subtitle, children, className = "" }) {
 
 function Label({ children }) {
 	return (
-		<label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+		<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
 			{children}
 		</label>
 	);
@@ -47,21 +47,21 @@ function Label({ children }) {
 
 function _TogglePref({ label, description, checked, onChange }) {
 	return (
-		<div class="flex items-center justify-between py-3">
+		<div className="flex items-center justify-between py-3">
 			<div>
-				<div class="font-medium text-slate-900 dark:text-white">{label}</div>
-				{description && <div class="text-sm text-slate-500">{description}</div>}
+				<div className="font-medium text-slate-900 dark:text-white">{label}</div>
+				{description && <div className="text-sm text-slate-500">{description}</div>}
 			</div>
 			<button
 				type="button"
 				onClick={onChange}
-				class={cx(
+				className={cx(
 					"relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
 					checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-600",
 				)}
 			>
 				<span
-					class={cx(
+					className={cx(
 						"inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
 						checked ? "translate-x-6" : "translate-x-1",
 					)}
@@ -75,7 +75,7 @@ function Input(props) {
 	return (
 		<input
 			{...props}
-			class={cx(
+			className={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -87,7 +87,7 @@ function Textarea(props) {
 	return (
 		<textarea
 			{...props}
-			class={cx(
+			className={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -99,7 +99,7 @@ function Select({ children, ...props }) {
 	return (
 		<select
 			{...props}
-			class={cx(
+			className={cx(
 				"w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
 				props.className,
 			)}
@@ -114,20 +114,20 @@ function Toggle({ checked, onChange, label, hint }) {
 		<button
 			type="button"
 			onClick={() => onChange(!checked)}
-			class="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-sky-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
+			className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-sky-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
 		>
 			<div>
-				<div class="text-sm font-medium text-slate-900 dark:text-white">{label}</div>
-				{hint ? <div class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
+				<div className="text-sm font-medium text-slate-900 dark:text-white">{label}</div>
+				{hint ? <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
 			</div>
 			<div
-				class={cx(
+				className={cx(
 					"relative h-7 w-12 rounded-full transition",
 					checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-700",
 				)}
 			>
 				<div
-					class={cx(
+					className={cx(
 						"absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform",
 						checked ? "translate-x-5" : "translate-x-0.5",
 					)}
@@ -148,7 +148,7 @@ function Badge({ children, tone = "slate" }) {
 	};
 	return (
 		<span
-			class={cx(
+			className={cx(
 				"inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
 				tones[tone] || tones.slate,
 			)}
@@ -162,7 +162,7 @@ function PrimaryButton({ children, className = "", ...props }) {
 	return (
 		<button
 			{...props}
-			class={cx(
+			className={cx(
 				"inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60",
 				className,
 			)}
@@ -176,7 +176,7 @@ function SecondaryButton({ children, className = "", ...props }) {
 	return (
 		<button
 			{...props}
-			class={cx(
+			className={cx(
 				"inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800",
 				className,
 			)}
@@ -189,7 +189,7 @@ function SecondaryButton({ children, className = "", ...props }) {
 function Icon({ children, className = "" }) {
 	return (
 		<div
-			class={cx(
+			className={cx(
 				"flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/20",
 				className,
 			)}
@@ -366,6 +366,12 @@ export default function OrgSettings({ embedded = false }) {
 	);
 	const [showActivityStatus, setShowActivityStatus] = useState(() =>
 		Boolean(currentUser?.profile?.show_activity ?? true),
+	);
+	const [hideEmail, setHideEmail] = useState(() =>
+		Boolean(currentUser?.profile?.hide_email ?? false),
+	);
+	const [hidePhone, setHidePhone] = useState(() =>
+		Boolean(currentUser?.profile?.hide_phone ?? false),
 	);
 
 	// Password & Security state
@@ -823,7 +829,7 @@ export default function OrgSettings({ embedded = false }) {
 			return;
 		}
 		try {
-			await apiRequest(`/org/members/${encodeURIComponent(memberId)}`, {
+			await apiRequest(`/org/members/${encodeURIComponent(memberId)}?remove=true`, {
 				method: "DELETE",
 				token,
 			});
@@ -831,6 +837,27 @@ export default function OrgSettings({ embedded = false }) {
 			save("Member removed from organization.");
 		} catch {
 			/* ignore */
+		}
+	};
+
+	// Reactivate member
+	const reactivateMember = async (memberId) => {
+		const token = getToken();
+		if (!(token && memberId)) {
+			return;
+		}
+		try {
+			await apiRequest(`/org/members/${encodeURIComponent(memberId)}`, {
+				method: "PUT",
+				token,
+				body: { status: "active" },
+			});
+			setMembers((m) =>
+				m.map((x) => (x.id === memberId ? { ...x, status: "active" } : x)),
+			);
+			save("Member reactivated.");
+		} catch (err) {
+			setStatusMessage(`Reactivation failed: ${err.message || "Unknown error"}`);
 		}
 	};
 
@@ -1103,6 +1130,18 @@ export default function OrgSettings({ embedded = false }) {
 			if (data?.export_url) {
 				window.open(data.export_url, "_blank");
 				setExportFeedback("Download started.");
+			} else if (data) {
+				const json = JSON.stringify(data, null, 2);
+				const blob = new Blob([json], { type: "application/json" });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = `gartexhub-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+				setExportFeedback("Export downloaded.");
 			} else {
 				setExportFeedback("No export available yet.");
 			}
@@ -1246,7 +1285,7 @@ export default function OrgSettings({ embedded = false }) {
 	// Add passkey
 	const addPasskey = async () => {
 		if (!passkeyName.trim()) {
-			setPasskeyError("Enter a passkey name");
+			setPasskeyError("Enter a name for this security key");
 			return;
 		}
 		const token = getToken();
@@ -1260,7 +1299,7 @@ export default function OrgSettings({ embedded = false }) {
 				token,
 			});
 			if (!optionsRes?.options?.challenge) {
-				throw new Error("Passkey setup failed");
+				throw new Error("Security key setup failed");
 			}
 
 			// Convert server options to WebAuthn format
@@ -1305,7 +1344,7 @@ export default function OrgSettings({ embedded = false }) {
 			try {
 				credential = await navigator.credentials.create(options);
 			} catch (webauthnErr) {
-				throw new Error(webauthnErr.message || "Passkey registration cancelled or not supported");
+				throw new Error(webauthnErr.message || "Security key registration cancelled or not supported");
 			}
 
 			if (!credential) {
@@ -1340,15 +1379,15 @@ export default function OrgSettings({ embedded = false }) {
 			});
 
 			if (!verifyRes?.passkeys) {
-				throw new Error("Failed to save passkey");
+				throw new Error("Failed to save security key");
 			}
 
 			// Reload passkeys from server
 			await loadPasskeys();
 			setPasskeyName("");
-			save("Passkey registered successfully.");
+			save("Security key registered successfully.");
 		} catch (err) {
-			setPasskeyError(err.message || "Failed to add passkey");
+			setPasskeyError(err.message || "Failed to add security key");
 		}
 	};
 
@@ -1415,6 +1454,18 @@ export default function OrgSettings({ embedded = false }) {
 		loadMembers,
 	]);
 
+	// Safety timeout — force-dismiss loading spinner after 10s so the page is never stuck
+	useEffect(() => {
+		if (!pageLoading) {
+			return;
+		}
+		const timer = setTimeout(() => {
+			setPageLoading(false);
+			setStatusMessage("Loading timed out. Some data may not be available.");
+		}, 10_000);
+		return () => clearTimeout(timer);
+	}, [pageLoading]);
+
 	const onThemeToggle = toggleTheme;
 	const verificationTone =
 		verificationStatus === "verified_active"
@@ -1425,1467 +1476,7 @@ export default function OrgSettings({ embedded = false }) {
 
 	const bodyTheme = theme === "dark" ? "dark" : "";
 
-	if (pageLoading && !embedded) {
-		return <NeonAtom fill={true} text="Loading..." />;
-	}
-
-	const settingsContent = (
-		<>
-			{/* Tab Navigation */}
-			<div class="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
-				<div class="flex min-w-max gap-2">
-					{accessibleTabs.map((tabItem) => (
-						<button
-							key={tabItem.id}
-							onClick={() => {
-								if (tabItem.id === "members") {
-									loadMembers();
-								}
-								goSettingsTab(tabItem.id);
-							}}
-							class={cx(
-								"rounded-2xl px-4 py-3 text-sm font-semibold transition",
-								activeTab === tabItem.id
-									? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25"
-									: "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-900",
-							)}
-						>
-							{tabItem.label}
-						</button>
-					))}
-				</div>
-			</div>
-
-			{/* Status Bar */}
-			<div class="mb-6 rounded-3xl border border-sky-200/60 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
-				<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-					<div>
-						<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Status</p>
-						<p class="text-sm text-slate-900 dark:text-white">{statusMessage}</p>
-					</div>
-					<div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
-						<div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-							<div class="text-xs text-slate-500 dark:text-slate-400">Wallet</div>
-							<div class="font-semibold text-slate-900 dark:text-white">
-								${walletBalance.toFixed(2)}
-							</div>
-						</div>
-						<div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-							<div class="text-xs text-slate-500 dark:text-slate-400">Restricted</div>
-							<div class="font-semibold text-slate-900 dark:text-white">
-								${walletRestricted.toFixed(2)}
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			{/* Tab Content Sections */}
-			{activeTab === "general" && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard
-						title="Automation & Chatbot"
-						subtitle="Control buyer conversations, handoff rules, and saved alerts."
-					>
-						<div class="space-y-4">
-							<Toggle
-								checked={chatbotEnabled}
-								onChange={setChatbotEnabled}
-								label="Enable AI Chatbot"
-								hint="Answers MOQ, lead time, certifications, then hands off when needed."
-							/>
-							<Toggle
-								checked={autoSaveSearchAlerts}
-								onChange={setAutoSaveSearchAlerts}
-								label="Auto-save search alerts"
-								hint="Automatically creates alerts for matching searches."
-							/>
-							<div>
-								<Label>Handoff mode</Label>
-								<Select value={handoffMode} onChange={(e) => setHandoffMode(e.target.value)}>
-									<option value="notify_agent">Notify agent / owner</option>
-									<option value="notify_owner">Notify owner only</option>
-								</Select>
-							</div>
-						</div>
-					</SectionCard>
-
-					<SectionCard
-						title="AI Auto-Reply Customization"
-						subtitle="Build the tone and structure of your first response."
-					>
-						<div class="grid gap-4 sm:grid-cols-2">
-							<div>
-								<Label>Greeting</Label>
-								<Input
-									value={autoReplyGreeting}
-									onChange={(e) => setAutoReplyGreeting(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Signature</Label>
-								<Input
-									value={autoReplySignature}
-									onChange={(e) => setAutoReplySignature(e.target.value)}
-								/>
-							</div>
-							<div class="sm:col-span-2">
-								<Label>Fallback response</Label>
-								<Input
-									value={autoReplyFallback}
-									onChange={(e) => setAutoReplyFallback(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Tone</Label>
-								<Select value={autoReplyTone} onChange={(e) => setAutoReplyTone(e.target.value)}>
-									<option>Professional</option>
-									<option>Warm</option>
-									<option>Direct</option>
-									<option>Friendly</option>
-								</Select>
-							</div>
-							<div class="sm:col-span-2">
-								<Label>Qualification prompt</Label>
-								<Textarea
-									rows={4}
-									value={autoReplyQualification}
-									onChange={(e) => setAutoReplyQualification(e.target.value)}
-								/>
-							</div>
-						</div>
-						<div class="mt-4 flex flex-wrap gap-3">
-							<PrimaryButton onClick={saveChatbotSettings} disabled={!canAutoReply}>
-								Save auto-reply settings
-							</PrimaryButton>
-							<SecondaryButton onClick={saveGeneralSettings}>Save settings</SecondaryButton>
-						</div>
-					</SectionCard>
-
-					<SectionCard
-						title="Communication Policy"
-						subtitle="Throttle and prioritize messages with configurable rules."
-					>
-						<div class="grid gap-4 sm:grid-cols-2">
-							<div>
-								<Label>Message cap per window</Label>
-								<Input
-									type="number"
-									value={policyMessageCaps}
-									onChange={(e) => setPolicyMessageCaps(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Window (minutes)</Label>
-								<Input
-									type="number"
-									value={policyWindowMinutes}
-									onChange={(e) => setPolicyWindowMinutes(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Cooldown (seconds)</Label>
-								<Input
-									type="number"
-									value={policyCooldownSeconds}
-									onChange={(e) => setPolicyCooldownSeconds(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Strictness mode</Label>
-								<Select
-									value={policyStrictnessMode}
-									onChange={(e) => setPolicyStrictnessMode(e.target.value)}
-								>
-									<option>Relaxed</option>
-									<option>Balanced</option>
-									<option>Strict</option>
-								</Select>
-							</div>
-						</div>
-					</SectionCard>
-
-					<SectionCard
-						title="Supplier Profile"
-						subtitle="Show your operations and capabilities clearly."
-					>
-						<div class="grid gap-4 sm:grid-cols-2">
-							<div>
-								<Label>Main processes</Label>
-								<Input value={mainProcesses} onChange={(e) => setMainProcesses(e.target.value)} />
-							</div>
-							<div>
-								<Label>Years in business</Label>
-								<Input
-									type="number"
-									value={yearsInBusiness}
-									onChange={(e) => setYearsInBusiness(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Team seats</Label>
-								<Input
-									type="number"
-									value={teamSeats}
-									onChange={(e) => setTeamSeats(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Export ports</Label>
-								<Input value={exportPorts} onChange={(e) => setExportPorts(e.target.value)} />
-							</div>
-							<div>
-								<Label>Location lat/lng</Label>
-								<Input
-									value={locationLat && locationLng ? `${locationLat}, ${locationLng}` : ""}
-									onChange={(e) => {
-										const v = e.target.value.split(",");
-										setLocationLat(v[0] || "");
-										setLocationLng(v[1] || "");
-									}}
-								/>
-							</div>
-							<div class="flex items-end">
-								<Toggle
-									checked={handlesMultipleFactories}
-									onChange={setHandlesMultipleFactories}
-									label="Handles multiple factories"
-								/>
-							</div>
-						</div>
-						<div class="mt-4">
-							<PrimaryButton onClick={saveGeneralSettings}>Save settings</PrimaryButton>
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== PROFILE TAB ==================== */}
-			{activeTab === "profile" && hasRoleAccess(currentUserRole, "observer") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard
-						title="Profile Section"
-						subtitle="Manage how your profile looks to buyers and partners."
-					>
-						<div class="grid gap-4 sm:grid-cols-2">
-							<div>
-								<Label>Organization Name</Label>
-								<Input
-									value={profileDisplayName}
-									onChange={(e) => setProfileDisplayName(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Headline</Label>
-								<Input
-									value={profileHeadline}
-									onChange={(e) => setProfileHeadline(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>Country</Label>
-								<select
-									value={profileCountry}
-									onChange={(e) => setProfileCountry(e.target.value)}
-									class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-								>
-									<option value="">Select country</option>
-									{COUNTRY_OPTIONS.map((c) => (
-										<option key={c} value={c}>
-											{c}
-										</option>
-									))}
-								</select>
-							</div>
-							<div>
-								<Label>Industry</Label>
-								<select
-									value={profileIndustry}
-									onChange={(e) => setProfileIndustry(e.target.value)}
-									class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-								>
-									<option value="">Select industry</option>
-									{FACTORY_SECTOR_OPTIONS.map((opt) => (
-										<option key={opt.value} value={opt.value}>
-											{opt.label}
-										</option>
-									))}
-								</select>
-							</div>
-							<div class="sm:col-span-2">
-								<Label>Bio</Label>
-								<Textarea
-									rows={4}
-									value={profileBio}
-									onChange={(e) => setProfileBio(e.target.value)}
-								/>
-							</div>
-							<div class="sm:col-span-2">
-								<Label>Profile Image</Label>
-								<ProfileImageUpload
-									value={profileAvatarUrl}
-									onChange={setProfileAvatarUrl}
-									label="Profile Image"
-								/>
-							</div>
-							<div class="sm:col-span-2">
-								<Label>Cover Image</Label>
-								<p class="mb-2 text-xs text-slate-500 dark:text-slate-400">
-									Banner displayed at the top of your profile
-								</p>
-								<ProfileImageUpload
-									value={profileCoverUrl}
-									onChange={setProfileCoverUrl}
-									label="Cover Image"
-								/>
-							</div>
-						</div>
-						<div class="mt-4 flex gap-3">
-							<PrimaryButton onClick={saveProfileSettings} disabled={loadingProfile}>
-								{loadingProfile ? (
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-								) : (
-									"Save Profile"
-								)}
-							</PrimaryButton>
-						</div>
-					</SectionCard>
-
-					<SectionCard
-						title="Contact & Privacy"
-						subtitle="Edit contact details, visibility, and notification preferences."
-					>
-						<div class="space-y-4">
-							<div>
-								<Label>Email</Label>
-								<Input value={profileEmail} readOnly={true} class="cursor-not-allowed opacity-90" />
-							</div>
-							<div>
-								<Label>Phone</Label>
-								<Input value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} />
-							</div>
-							<PrimaryButton onClick={saveContactSettings}>Save Contact</PrimaryButton>
-							<div class="grid gap-3 sm:grid-cols-3">
-								<Toggle
-									checked={notifEmail}
-									onChange={(v) => {
-										setNotifEmail(v);
-										saveNotificationPref("email", v);
-									}}
-									label="Email Notifications"
-								/>
-								<Toggle
-									checked={notifPush}
-									onChange={(v) => {
-										setNotifPush(v);
-										saveNotificationPref("push", v);
-									}}
-									label="Push Notifications"
-								/>
-								<Toggle
-									checked={notifInApp}
-									onChange={(v) => {
-										setNotifInApp(v);
-										saveNotificationPref("in_app", v);
-									}}
-									label="In-App Notifications"
-								/>
-							</div>
-							<div>
-								<Label>Profile Visibility</Label>
-								<Select
-									value={profileVisibility}
-									onChange={(e) => {
-										setProfileVisibility(e.target.value);
-										saveVisibility(e.target.value);
-									}}
-								>
-									<option>Public</option>
-									<option>Network</option>
-									<option>Private</option>
-								</Select>
-							</div>
-						</div>
-					</SectionCard>
-
-					<SectionCard
-						title="Password & Security"
-						subtitle="Change password and keep account access protected."
-					>
-						<div class="grid gap-4 sm:grid-cols-2">
-							<div class="sm:col-span-2">
-								<Badge tone={totpEnabled ? "green" : "red"}>
-									2FA {totpEnabled ? "Enabled" : "Disabled"}
-								</Badge>
-							</div>
-							<div>
-								<Label>Current password</Label>
-								<Input
-									type="password"
-									value={currentPassword}
-									onChange={(e) => setCurrentPassword(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>New password</Label>
-								<Input
-									type="password"
-									value={newPassword}
-									onChange={(e) => setNewPassword(e.target.value)}
-								/>
-							</div>
-							<div class="sm:col-span-2">
-								<Label>Confirm new password</Label>
-								<Input
-									type="password"
-									value={confirmPassword}
-									onChange={(e) => setConfirmPassword(e.target.value)}
-								/>
-							</div>
-						</div>
-						<div class="mt-4 flex flex-wrap gap-3">
-							<PrimaryButton onClick={changePassword} disabled={changingPassword}>
-								{changingPassword ? "Changing..." : "Change Password"}
-							</PrimaryButton>
-						</div>
-						{passwordFeedback && (
-							<p
-								class={`mt-2 text-sm ${passwordFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
-							>
-								{passwordFeedback}
-							</p>
-						)}
-					</SectionCard>
-
-					<SectionCard
-						title="Data & Account Control"
-						subtitle="Export data, review sessions, and remove the account securely."
-					>
-						<div class="space-y-4">
-							<div class="rounded-2xl border border-amber-200/60 bg-amber-50/50 p-4 dark:border-amber-800/40 dark:bg-amber-950/20">
-								<div class="flex items-center justify-between">
-									<div>
-										<div class="text-sm font-medium text-amber-800 dark:text-amber-200">
-											Account Lock
-										</div>
-										<div class="text-xs text-amber-700 dark:text-amber-300">
-											Temporarily freeze your account and hide listings
-										</div>
-									</div>
-									<button
-										onClick={() => {
-											if (accountLocked) {
-												toggleAccountLock();
-											} else {
-												resetLockModal();
-												setLockModalOpen(true);
-											}
-										}}
-										disabled={lockingAccount}
-										class="rounded-full border border-amber-200 bg-white px-4 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
-									>
-										{lockingAccount ? "Processing..." : accountLocked ? "Unlock" : "Lock Now"}
-									</button>
-								</div>
-							</div>
-							<SecondaryButton onClick={exportUserData} disabled={exportingData}>
-								{exportingData ? "Preparing..." : "Download My Data"}
-							</SecondaryButton>
-							{exportFeedback && <p class="text-sm text-slate-500">{exportFeedback}</p>}
-							<div>
-								<Label>Type your name to confirm</Label>
-								<Input
-									value={deleteConfirmText}
-									onChange={(e) => setDeleteConfirmText(e.target.value)}
-									placeholder={profileDisplayName}
-								/>
-							</div>
-							<PrimaryButton
-								onClick={deleteAccount}
-								disabled={deletingProfile || deleteConfirmText !== profileDisplayName}
-							>
-								{deletingProfile ? "Deleting..." : "Delete My Account"}
-							</PrimaryButton>
-							{deleteProfileFeedback && <p class="text-sm text-red-600">{deleteProfileFeedback}</p>}
-							<div>
-								<div class="mb-3 flex items-center justify-between">
-									<div>
-										<div class="font-semibold text-slate-900 dark:text-white">Active Sessions</div>
-										<div class="text-sm text-slate-500 dark:text-slate-400">
-											Reload, inspect, and revoke sessions.
-										</div>
-									</div>
-									<SecondaryButton onClick={loadSessions}>Refresh</SecondaryButton>
-								</div>
-								<div class="space-y-3">
-									{loadingSessions ? (
-										<Mosaic
-											color="#3b00ff"
-											size="large"
-											style={{ fontSize: "40px" }}
-											text=""
-											textColor=""
-										/>
-									) : sessions.length === 0 ? (
-										<p class="text-sm text-slate-500">No active sessions.</p>
-									) : (
-										sessions.map((session) => (
-											<div
-												key={session.id || session.token}
-												class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
-											>
-												<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-													<div>
-														<div class="flex flex-wrap items-center gap-2">
-															<div class="font-medium text-slate-900 dark:text-white">
-																{session.device || session.browser || "Unknown"}
-															</div>
-															{session.current && <Badge tone="green">Current</Badge>}
-														</div>
-														<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-															{session.ip} · {session.location || "Unknown"} ·{" "}
-															{session.last_active || "recently"}
-														</div>
-													</div>
-													{!session.current && (
-														<SecondaryButton
-															onClick={() => revokeSession(session.id || session.token)}
-															disabled={revokingSession === (session.id || session.token)}
-														>
-															Revoke
-														</SecondaryButton>
-													)}
-												</div>
-											</div>
-										))
-									)}
-								</div>
-							</div>
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== THEME TAB ==================== */}
-			{activeTab === "theme" && hasRoleAccess(currentUserRole, "viewer") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard title="Appearance" subtitle="Customize how GarTexHub looks for you.">
-						<div class="space-y-4">
-							<div>
-								<Label>Theme Mode</Label>
-								<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-									Choose your preferred color scheme.
-								</p>
-								<div class="mt-3 grid grid-cols-3 gap-3">
-									<button
-										onClick={() => setTheme("light")}
-										class={cx(
-											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
-											themeMode === "light"
-												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
-												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
-										)}
-									>
-										<Sun class="h-6 w-6" />
-										Light
-									</button>
-									<button
-										onClick={() => setTheme("dark")}
-										class={cx(
-											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
-											themeMode === "dark"
-												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
-												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
-										)}
-									>
-										<Moon class="h-6 w-6" />
-										Dark
-									</button>
-									<button
-										onClick={() => setTheme("system")}
-										class={cx(
-											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
-											themeMode === "system"
-												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
-												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
-										)}
-									>
-										<Monitor class="h-6 w-6" />
-										System
-									</button>
-								</div>
-							</div>
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== PRIVACY TAB ==================== */}
-			{activeTab === "privacy" && hasRoleAccess(currentUserRole, "observer") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard
-						title="Profile Visibility"
-						subtitle="Control who can see your profile and information."
-					>
-						<div class="space-y-4">
-							<div>
-								<Label>Profile Visibility</Label>
-								<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-									Controls who can view your company profile and product listings.
-								</p>
-							</div>
-							<div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
-								<div class="flex items-center justify-between">
-									<div>
-										<div class="text-sm font-medium text-slate-900 dark:text-white">
-											Search Engine Indexing
-										</div>
-										<div class="text-xs text-slate-500 dark:text-slate-400">
-											Allow search engines to index your public profile
-										</div>
-									</div>
-									<input
-										type="checkbox"
-										class="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-										checked={searchIndexing}
-										onChange={(e) => {
-											setSearchIndexing(e.target.checked);
-											savePrivacySettings("search_indexing", e.target.checked);
-										}}
-									/>
-								</div>
-							</div>
-						</div>
-					</SectionCard>
-
-					<SectionCard title="Data & Sharing" subtitle="Manage how your data is used and shared.">
-						<div class="space-y-4">
-							<div class="rounded-2xl border border-slate-200 bg-amber-50 p-4 dark:border-slate-700 dark:bg-amber-500/10">
-								<p class="text-sm font-medium text-amber-800 dark:text-amber-200">
-									Contact info is private
-								</p>
-								<p class="mt-1 text-xs text-amber-700 dark:text-amber-300">
-									Email and phone number are never shown on your public profile. All communication
-									happens through the platform chat system to ensure security and traceability.
-								</p>
-							</div>
-							<div class="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
-								<div>
-									<div class="text-sm font-medium text-slate-900 dark:text-white">
-										Activity status
-									</div>
-									<div class="text-xs text-slate-500 dark:text-slate-400">
-										Show when you are online or recently active
-									</div>
-								</div>
-								<input
-									type="checkbox"
-									class="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-									checked={showActivityStatus}
-									onChange={(e) => {
-										setShowActivityStatus(e.target.checked);
-										savePrivacySettings("show_activity", e.target.checked);
-									}}
-								/>
-							</div>
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== VERIFICATION TAB ==================== */}
-			{activeTab === "verification" && hasRoleAccess(currentUserRole, "factory") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard
-						title="Verification Status"
-						subtitle="Track status and renew before expiration."
-					>
-						<div class="flex flex-wrap items-center gap-3">
-							<Badge tone={verificationTone}>
-								{verificationStatus === "verified_active"
-									? "Verified Active"
-									: verificationStatus === "expiring_soon"
-										? "Expiring Soon"
-										: "Expired"}
-							</Badge>
-							<Badge tone="sky">{remainingDays} days remaining</Badge>
-						</div>
-						<div class="mt-4 grid gap-4 sm:grid-cols-2">
-							<div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-								<div class="text-xs text-slate-500 dark:text-slate-400">Wallet balance</div>
-								<div class="mt-1 text-2xl font-black text-slate-900 dark:text-white">
-									${walletBalance.toFixed(2)}
-								</div>
-							</div>
-							<div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-								<div class="text-xs text-slate-500 dark:text-slate-400">Restricted balance</div>
-								<div class="mt-1 text-2xl font-black text-slate-900 dark:text-white">
-									${walletRestricted.toFixed(2)}
-								</div>
-							</div>
-						</div>
-						<div class="mt-4 flex flex-wrap gap-3">
-							<SecondaryButton onClick={() => navigate("/verification")}>
-								Open Verification Center
-							</SecondaryButton>
-							<PrimaryButton onClick={renewVerification} disabled={renewingVerification}>
-								{renewingVerification ? "Processing..." : "Renew verification"}
-							</PrimaryButton>
-						</div>
-					</SectionCard>
-
-					<SectionCard
-						title="Missing Documents"
-						subtitle="Upload these items to complete verification."
-					>
-						<div class="space-y-3">
-							{verification?.missing_required?.length > 0 ? (
-								verification.missing_required.slice(0, 6).map((doc) => (
-									<div
-										key={doc}
-										class="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
-									>
-										<span>{doc}</span>
-										<span class="text-xs font-semibold">Required</span>
-									</div>
-								))
-							) : (
-								<div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
-									All verification documents have been uploaded.
-								</div>
-							)}
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== SECURITY TAB ==================== */}
-			{activeTab === "security" && hasRoleAccess(currentUserRole, "factory") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard title="Passkeys" subtitle="Register WebAuthn passkeys for safer sign-ins.">
-						<div class="space-y-3">
-							{passkeys.map((p) => (
-								<div
-									key={p.id}
-									class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
-								>
-									<div>
-										<div class="font-medium text-slate-900 dark:text-white">{p.name}</div>
-										<div class="text-sm text-slate-500 dark:text-slate-400">
-											Created {p.created_at || p.createdAt}
-										</div>
-									</div>
-									<SecondaryButton
-										onClick={() => {
-											setPasskeys((x) => x.filter((i) => i.id !== p.id));
-											save(`Passkey ${p.name} deleted.`);
-										}}
-									>
-										Delete
-									</SecondaryButton>
-								</div>
-							))}
-						</div>
-						<div class="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-							<Input
-								value={passkeyName}
-								onChange={(e) => setPasskeyName(e.target.value)}
-								placeholder="Passkey name"
-							/>
-							<PrimaryButton onClick={addPasskey}>Add Passkey</PrimaryButton>
-						</div>
-						{passkeyError && <p class="mt-2 text-sm text-red-600">{passkeyError}</p>}
-					</SectionCard>
-
-					<SectionCard
-						title="Active Sessions"
-						subtitle="See live sessions and revoke access quickly."
-					>
-						<div class="space-y-3">
-							{loadingSessions ? (
-								<Mosaic
-									color="#3b00ff"
-									size="large"
-									style={{ fontSize: "40px" }}
-									text=""
-									textColor=""
-								/>
-							) : sessions.length === 0 ? (
-								<p class="text-sm text-slate-500">No sessions.</p>
-							) : (
-								sessions.map((session) => (
-									<div
-										key={session.id || session.token}
-										class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
-									>
-										<div class="flex items-start justify-between gap-4">
-											<div>
-												<div class="flex items-center gap-2">
-													<div class="font-medium text-slate-900 dark:text-white">
-														{session.device || session.browser || "Unknown"}
-													</div>
-													{session.current && <Badge tone="green">Current</Badge>}
-												</div>
-												<div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-													{session.ip} · {session.location || "Unknown"} ·{" "}
-													{session.last_active || "recently"}
-												</div>
-											</div>
-											{!session.current && (
-												<SecondaryButton onClick={() => revokeSession(session.id || session.token)}>
-													Revoke
-												</SecondaryButton>
-											)}
-										</div>
-									</div>
-								))
-							)}
-						</div>
-					</SectionCard>
-
-					<SectionCard title="Account Lock" subtitle="Temporarily restrict access to your account.">
-						<div class="space-y-4">
-							<div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-								<div class="flex items-start gap-3">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="20"
-										height="20"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										class="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
-									>
-										<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-										<path d="M7 11V7a5 5 0 0 1 10 0v4" />
-									</svg>
-									<div>
-										<div class="text-sm font-medium text-amber-800 dark:text-amber-200">
-											Lock your account
-										</div>
-										<div class="mt-1 text-xs text-amber-700 dark:text-amber-300">
-											This will temporarily freeze your account, hide your listings, and prevent new
-											messages. You can unlock at any time.
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
-								<div>
-									<div class="text-sm font-medium text-slate-900 dark:text-white">
-										Account status
-									</div>
-									<div class="text-xs text-slate-500 dark:text-slate-400">
-										Currently{" "}
-										{accountLocked
-											? "locked — features limited"
-											: "active — all features available"}
-									</div>
-								</div>
-								<button
-									onClick={() => {
-										if (accountLocked) {
-											toggleAccountLock();
-										} else {
-											resetLockModal();
-											setLockModalOpen(true);
-										}
-									}}
-									disabled={lockingAccount}
-									class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
-								>
-									{lockingAccount
-										? "Processing..."
-										: accountLocked
-											? "Unlock Account"
-											: "Lock Account"}
-								</button>
-							</div>
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== BRANDING TAB ==================== */}
-			{activeTab === "branding" && hasRoleAccess(currentUserRole, "factory") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard
-						title="Brand Identity"
-						subtitle="Set your brand name, logo, website, and tone."
-					>
-						<div class="grid gap-4 sm:grid-cols-2">
-							<div>
-								<Label>Brand name</Label>
-								<Input
-									value={brandName}
-									onChange={(e) => setBrandName(e.target.value)}
-									disabled={!canBranding}
-								/>
-							</div>
-							<div class="sm:col-span-2">
-								<Label>Logo Image</Label>
-								<input
-									ref={logoInputRef}
-									type="file"
-									accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
-									onChange={handleLogoUpload}
-									disabled={!canBranding || logoUploading}
-									class="hidden"
-								/>
-								<div class="flex items-center gap-4">
-									<button
-										type="button"
-										onClick={() => logoInputRef.current?.click()}
-										disabled={!canBranding || logoUploading}
-										class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-									>
-										{logoUploading ? (
-											<ThreeDot
-												variant="bounce"
-												color="#6100ff"
-												size="small"
-												text=""
-												textColor=""
-											/>
-										) : (
-											"Choose Image"
-										)}
-									</button>
-									{logoUploading && (
-										<UploadProgressBar progress={logoUploadProgress} class="w-40" />
-									)}
-									{brandLogoUrl && <span class="text-sm text-slate-500">Logo set</span>}
-								</div>
-								{brandLogoUrl && (
-									<div class="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 w-20 h-20">
-										<LazyImage
-											src={brandLogoUrl}
-											alt="Logo preview"
-											width={80}
-											height={80}
-											class="w-full h-full object-contain"
-										/>
-									</div>
-								)}
-							</div>
-							<div class="sm:col-span-2">
-								<Label>Banner / Cover Image</Label>
-								<input
-									ref={bannerInputRef}
-									type="file"
-									accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
-									onChange={handleBannerUpload}
-									disabled={!canBranding || bannerUploading}
-									class="hidden"
-								/>
-								<div class="flex items-center gap-4">
-									<button
-										type="button"
-										onClick={() => bannerInputRef.current?.click()}
-										disabled={!canBranding || bannerUploading}
-										class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-									>
-										{bannerUploading ? (
-											<ThreeDot
-												variant="bounce"
-												color="#6100ff"
-												size="small"
-												text=""
-												textColor=""
-											/>
-										) : (
-											"Choose Image"
-										)}
-									</button>
-									{bannerUploading && (
-										<UploadProgressBar progress={bannerUploadProgress} class="w-40" />
-									)}
-									{brandCoverUrl && <span class="text-sm text-slate-500">Banner set</span>}
-								</div>
-								{brandCoverUrl && (
-									<div class="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-										<LazyImage
-											src={brandCoverUrl}
-											alt="Banner preview"
-											width={1200}
-											height={400}
-											class="h-32 w-full object-cover"
-										/>
-									</div>
-								)}
-							</div>
-							<div>
-								<Label>Accent style</Label>
-								<Select
-									value={brandAccent}
-									onChange={(e) => setBrandAccent(e.target.value)}
-									disabled={!canBranding}
-								>
-									<option>Sky Blue</option>
-									<option>Ocean</option>
-									<option>Classic Navy</option>
-								</Select>
-							</div>
-							<div>
-								<Label>Tagline</Label>
-								<Input
-									value={brandTagline}
-									onChange={(e) => setBrandTagline(e.target.value)}
-									disabled={!canBranding}
-								/>
-							</div>
-						</div>
-						<div class="mt-4 flex gap-3">
-							<PrimaryButton onClick={saveBrandingSettings} disabled={!canBranding}>
-								Save Branding
-							</PrimaryButton>
-						</div>
-					</SectionCard>
-					<SectionCard title="Brand Preview" subtitle="A preview of your brand identity.">
-						<div class="rounded-[2rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
-							<div class="flex items-center gap-4">
-								<div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/20 text-2xl font-black backdrop-blur">
-									{brandName.slice(0, 1).toUpperCase()}
-								</div>
-								<div>
-									<div class="text-2xl font-black">{brandName}</div>
-									<div class="text-sm text-white/85">{brandTagline}</div>
-								</div>
-							</div>
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== SUBSCRIPTION TAB ==================== */}
-			{activeTab === "subscription" && hasRoleAccess(currentUserRole, "factory") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard title="Current Plan" subtitle="Track plan level and billing status.">
-						<div class="rounded-[1.75rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
-							<div class="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
-								Plan
-							</div>
-							<div class="mt-2 text-3xl font-black">
-								{subscriptionPlan === "free"
-									? "Free"
-									: subscriptionPlan === "premium"
-										? "Premium"
-										: "Enterprise"}
-							</div>
-							<div class="mt-2 text-white/85">
-								{subscriptionPlan === "free" ? "Limited features" : `$${planPrice} / month`}
-							</div>
-							<div class="mt-5 flex flex-wrap gap-3">
-								{subscriptionPlan === "free" && (
-									<SecondaryButton
-										class="border-white/20 bg-white/15 text-white hover:bg-white/25"
-										onClick={() => navigate("/pricing")}
-									>
-										Upgrade
-									</SecondaryButton>
-								)}
-								<SecondaryButton
-									class="border-white/20 bg-white/15 text-white hover:bg-white/25"
-									onClick={() => navigate("/pricing")}
-								>
-									View plans
-								</SecondaryButton>
-							</div>
-						</div>
-					</SectionCard>
-					<SectionCard title="Wallet" subtitle="Funds available for boosts and billing.">
-						<div class="grid gap-4 sm:grid-cols-2">
-							<div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-								<div class="text-xs text-slate-500">Balance</div>
-								<div class="mt-1 text-2xl font-black">${walletBalance.toFixed(2)}</div>
-							</div>
-							<div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-								<div class="text-xs text-slate-500">Restricted</div>
-								<div class="mt-1 text-2xl font-black">${walletRestricted.toFixed(2)}</div>
-							</div>
-						</div>
-						<div class="mt-4">
-							<PrimaryButton onClick={addFunds} disabled={addingFunds}>
-								{addingFunds ? "Processing..." : "Add funds"}
-							</PrimaryButton>
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== MEMBERS TAB ==================== */}
-			{activeTab === "members" && hasRoleAccess(currentUserRole, "factory") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard title="Team Members" subtitle="Manage your team.">
-						<div class="space-y-3">
-							{members.length === 0 ? (
-								<p class="text-sm text-slate-500">No team members yet.</p>
-							) : (
-								members.map((member) => (
-									<div
-										key={member.id}
-										class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
-									>
-										<div>
-											<div class="font-medium text-slate-900 dark:text-white">
-												{member.name || member.email}
-											</div>
-											<div class="text-sm text-slate-500 dark:text-slate-400">{member.email}</div>
-										</div>
-										<div class="flex items-center gap-3">
-											<Badge tone="sky">{member.role}</Badge>
-											<SecondaryButton onClick={() => removeMember(member.id)}>
-												Remove
-											</SecondaryButton>
-										</div>
-									</div>
-								))
-							)}
-						</div>
-					</SectionCard>
-					<SectionCard title="Invite Members" subtitle="Add teammates by email and role.">
-						<div class="grid gap-4">
-							<div>
-								<Label>Email</Label>
-								<Input
-									value={memberInviteEmail}
-									onChange={(e) => setMemberInviteEmail(e.target.value)}
-									placeholder="team@company.com"
-								/>
-							</div>
-							<div>
-								<Label>Role</Label>
-								<Select
-									value={memberInviteRole}
-									onChange={(e) => setMemberInviteRole(e.target.value)}
-								>
-									<option>Owner</option>
-									<option>Admin</option>
-									<option>Manager</option>
-									<option>Editor</option>
-									<option>Viewer</option>
-								</Select>
-							</div>
-							<PrimaryButton onClick={inviteMember} disabled={invitingMember}>
-								{invitingMember ? "Inviting..." : "Add member"}
-							</PrimaryButton>
-							{memberFeedback && (
-								<p
-									class={`text-sm ${memberFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
-								>
-									{memberFeedback}
-								</p>
-							)}
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== BOOSTS TAB ==================== */}
-			{activeTab === "boosts" && hasRoleAccess(currentUserRole, "manager") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard title="Boost Management" subtitle="Create and manage visibility boosts.">
-						<div class="space-y-4">
-							<div class="grid gap-3">
-								<div>
-									<Label>Scope</Label>
-									<Select value={boostScope} onChange={(e) => setBoostScope(e.target.value)}>
-										<option value="feed">Feed</option>
-										<option value="search">Search</option>
-									</Select>
-								</div>
-								<div>
-									<Label>Duration</Label>
-									<Select value={boostDuration} onChange={(e) => setBoostDuration(e.target.value)}>
-										<option value="7">7 days</option>
-										<option value="14">14 days</option>
-										<option value="30">30 days</option>
-									</Select>
-								</div>
-								<div>
-									<Label>Multiplier</Label>
-									<Input
-										type="number"
-										step="0.1"
-										value={boostMultiplier}
-										onChange={(e) => setBoostMultiplier(e.target.value)}
-									/>
-								</div>
-								<div>
-									<Label>Price ($)</Label>
-									<Input
-										type="number"
-										step="0.01"
-										value={boostPrice}
-										onChange={(e) => setBoostPrice(e.target.value)}
-									/>
-								</div>
-							</div>
-							<PrimaryButton onClick={createBoost} disabled={creatingBoost}>
-								{creatingBoost ? "Creating..." : "Create Boost"}
-							</PrimaryButton>
-							{boostFeedback && (
-								<p
-									class={`text-sm ${boostFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
-								>
-									{boostFeedback}
-								</p>
-							)}
-							{loadingBoosts ? (
-								<div class="flex justify-center py-4">
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
-								</div>
-							) : boosts.length > 0 ? (
-								<div class="space-y-2">
-									<p class="text-sm font-medium text-slate-700 dark:text-slate-300">
-										Existing Boosts
-									</p>
-									{boosts.map((b) => (
-										<div
-											key={b.id}
-											class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900"
-										>
-											<div class="space-y-1">
-												<p class="font-medium text-slate-900 dark:text-white">
-													{b.scope} — {b.duration_days || b.duration}d
-												</p>
-												<p class="text-slate-500">
-													×{b.multiplier} · ${b.price_usd || b.price}
-												</p>
-											</div>
-											<span
-												class={cx(
-													"rounded-full px-3 py-1 text-xs font-medium",
-													b.status === "active"
-														? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-														: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-												)}
-											>
-												{b.status || "pending"}
-											</span>
-										</div>
-									))}
-								</div>
-							) : null}
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{/* ==================== NOTIFICATIONS TAB ==================== */}
-			{activeTab === "notifications" && <NotificationPreferencesTab />}
-
-			{/* ==================== ASSISTANT KNOWLEDGE TAB ==================== */}
-			{activeTab === "assistant_knowledge" && hasRoleAccess(currentUserRole, "manager") && (
-				<div class="grid gap-6 lg:grid-cols-2">
-					<SectionCard title="Assistant Knowledge" subtitle="Manage FAQ entries used by the bot.">
-						<div class="space-y-3">
-							{entries.length === 0 ? (
-								<p class="text-sm text-slate-500">No FAQ entries yet.</p>
-							) : (
-								entries.map((entry) => (
-									<div
-										key={entry.id}
-										class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
-									>
-										{entry.question}
-									</div>
-								))
-							)}
-						</div>
-					</SectionCard>
-					<SectionCard title="Add FAQ" subtitle="Expand the assistant with new answers.">
-						<Label>Question</Label>
-						<Textarea
-							rows={4}
-							value={knowledgeForm.question}
-							onChange={(e) =>
-								setKnowledgeForm((f) => ({
-									...f,
-									question: e.target.value,
-								}))
-							}
-							placeholder="Example: What is your MOQ?"
-						/>
-						<div class="mt-4">
-							{faqFeedback && (
-								<p
-									class={`text-sm ${faqFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
-								>
-									{faqFeedback}
-								</p>
-							)}
-							<PrimaryButton
-								onClick={async () => {
-									if (!knowledgeForm.question.trim()) {
-										return;
-									}
-									const token = getToken();
-									if (!token) {
-										return;
-									}
-									try {
-										const data = await apiRequest("/org/knowledge", {
-											method: "POST",
-											token,
-											body: {
-												type: knowledgeForm.type,
-												question: knowledgeForm.question,
-												answer: knowledgeForm.answer,
-												keywords: knowledgeForm.keywords.split(",").map((k) => k.trim()),
-											},
-										});
-										setEntries((prev) => [data?.entry || data, ...prev]);
-										setKnowledgeForm({
-											type: "faq",
-											question: "",
-											answer: "",
-											keywords: "",
-										});
-										setFaqFeedback("FAQ added successfully.");
-										save("FAQ added.");
-									} catch (err) {
-										setFaqFeedback(err.message || "Failed to add FAQ entry");
-									}
-								}}
-							>
-								Add FAQ
-							</PrimaryButton>
-						</div>
-					</SectionCard>
-				</div>
-			)}
-
-			{!isOrgManager && (
-				<div class="rounded-xl bg-red-50 p-4 text-red-600">
-					You do not have permission to view organization settings.
-				</div>
-			)}
-		</>
-	);
-
-	if (embedded) {
-		return (
-			<div data-lenis-prevent={true} class="space-y-6">
-				{settingsContent}
-			</div>
-		);
-	}
-
-	return (
-		<div
-			class={cx(
-				bodyTheme,
-				"min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#07111f] dark:text-white",
-			)}
-		>
-			<div class="absolute inset-0 -z-10 overflow-hidden">
-				<div class="absolute -left-24 top-0 h-72 w-72 rounded-full bg-sky-400/25 blur-3xl" />
-				<div class="absolute right-0 top-20 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
-				<div class="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
-			</div>
-
-			<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				{/* Header */}
-				<div class="mb-6 flex flex-col gap-4 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-[0_24px_80px_-35px_rgba(2,132,199,0.6)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 lg:flex-row lg:items-center lg:justify-between">
-					<div class="flex items-center gap-4">
-						<Icon>
-							<span class="text-lg font-black">O</span>
-						</Icon>
-						<div>
-							<div class="flex flex-wrap items-center gap-2">
-								<h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-									Owner Console
-								</h1>
-								<Badge tone="sky">Premium Dashboard</Badge>
-							</div>
-							<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-								Modern control center for automation, verification, branding, security, and team
-								growth.
-							</p>
-						</div>
-					</div>
-					<div class="flex flex-wrap items-center gap-3">
-						<Badge tone={verificationTone}>
-							{verificationStatus === "verified_active"
-								? "Verified"
-								: verificationStatus === "expiring_soon"
-									? "Expiring Soon"
-									: "Expired"}
-						</Badge>
-						<Badge tone="violet">{remainingDays} days left</Badge>
-						<SecondaryButton onClick={onThemeToggle}>
-							{theme === "dark" ? "Light mode" : "Dark mode"}
-						</SecondaryButton>
-					</div>
-				</div>
-
-				{settingsContent}
-			</div>
-		</div>
-	);
-}
-
-function NotificationPreferencesTab() {
-	const token = getToken();
-	const [prefs, setPrefs] = useState({
-		email_enabled: true,
-		push_enabled: true,
-		message_notifs: true,
-		requirement_notifs: true,
-		contract_notifs: true,
-		smart_match_notifs: true,
-		monthly_summary: true,
-	});
-	const [loading, setLoading] = useState(() => Boolean(token));
-	const [saving, setSaving] = useState(false);
-	const [feedback, setFeedback] = useState("");
-
-	useEffect(() => {
-		if (!token) {
-			return;
-		}
-		apiRequest("/notifications/preferences", { token })
-			.then((data) => {
-				if (data) {
-					setPrefs(data);
-				}
-			})
-			.catch(() => logger.warn("Failed to load notification preferences"))
-			.finally(() => setLoading(false));
-	}, [token]);
-
-	const handleToggle = async (key) => {
-		if (!token) {
-			return;
-		}
-		const newPrefs = { ...prefs, [key]: !prefs[key] };
-		setPrefs(newPrefs);
-		setSaving(true);
-		setFeedback("");
-
-		try {
-			await apiRequest("/notifications/preferences", {
-				method: "PUT",
-				token,
-				body: newPrefs,
-			});
-			setFeedback("Preferences saved!");
-		} catch {
-			setFeedback("Failed to save. Please try again.");
-			setPrefs(prefs);
-		} finally {
-			setSaving(false);
-		}
-	};
-
-	if (loading) {
-		return <NeonAtom fill={true} size={64} />;
-	}
-
+	// Lock modal — defined here so it has access to OrgSettings state
 	const LockModal = () => {
 		if (!lockModalOpen) return null;
 		return (
@@ -2991,10 +1582,1543 @@ function NotificationPreferencesTab() {
 		);
 	};
 
-	return (
+	if (pageLoading && !embedded) {
+		return <NeonAtom fill={true} text="Loading..." timeout={10000} />;
+	}
+
+	const settingsContent = (
 		<>
-		<LockModal />
-		<div class="grid gap-6 lg:grid-cols-2">
+			<LockModal />
+			{/* Tab Navigation */}
+			<div className="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+				<div className="flex min-w-max gap-2">
+					{accessibleTabs.map((tabItem) => (
+						<button
+							key={tabItem.id}
+							onClick={() => {
+								if (tabItem.id === "members") {
+									loadMembers();
+								}
+								goSettingsTab(tabItem.id);
+							}}
+							className={cx(
+								"rounded-2xl px-4 py-3 text-sm font-semibold transition",
+								activeTab === tabItem.id
+									? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25"
+									: "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-900",
+							)}
+						>
+							{tabItem.label}
+						</button>
+					))}
+				</div>
+			</div>
+
+			{/* Status Bar */}
+			<div className="mb-6 rounded-3xl border border-sky-200/60 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<p className="text-sm font-medium text-slate-500 dark:text-slate-400">Status</p>
+						<p className="text-sm text-slate-900 dark:text-white">{statusMessage}</p>
+					</div>
+					<div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+						<div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+							<div className="text-xs text-slate-500 dark:text-slate-400">Wallet</div>
+							<div className="font-semibold text-slate-900 dark:text-white">
+								${walletBalance.toFixed(2)}
+							</div>
+						</div>
+						<div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+							<div className="text-xs text-slate-500 dark:text-slate-400">Restricted</div>
+							<div className="font-semibold text-slate-900 dark:text-white">
+								${walletRestricted.toFixed(2)}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Tab Content Sections */}
+			{activeTab === "general" && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard
+						title="Automation & Chatbot"
+						subtitle="Control buyer conversations, handoff rules, and saved alerts."
+					>
+						<div className="space-y-4">
+							<Toggle
+								checked={chatbotEnabled}
+								onChange={setChatbotEnabled}
+								label="Enable AI Chatbot"
+								hint="Answers MOQ, lead time, certifications, then hands off when needed."
+							/>
+							<Toggle
+								checked={autoSaveSearchAlerts}
+								onChange={setAutoSaveSearchAlerts}
+								label="Auto-save search alerts"
+								hint="Automatically creates alerts for matching searches."
+							/>
+							<div>
+								<Label>Handoff mode</Label>
+								<Select value={handoffMode} onChange={(e) => setHandoffMode(e.target.value)}>
+									<option value="notify_agent">Notify agent / owner</option>
+									<option value="notify_owner">Notify owner only</option>
+								</Select>
+							</div>
+						</div>
+						<div className="mt-4">
+							<PrimaryButton onClick={saveGeneralSettings}>Save settings</PrimaryButton>
+						</div>
+					</SectionCard>
+
+					<SectionCard
+						title="AI Auto-Reply Customization"
+						subtitle="Build the tone and structure of your first response."
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div>
+								<Label>Greeting</Label>
+								<Input
+									value={autoReplyGreeting}
+									onChange={(e) => setAutoReplyGreeting(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Signature</Label>
+								<Input
+									value={autoReplySignature}
+									onChange={(e) => setAutoReplySignature(e.target.value)}
+								/>
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Fallback response</Label>
+								<Input
+									value={autoReplyFallback}
+									onChange={(e) => setAutoReplyFallback(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Tone</Label>
+								<Select value={autoReplyTone} onChange={(e) => setAutoReplyTone(e.target.value)}>
+									<option>Professional</option>
+									<option>Warm</option>
+									<option>Direct</option>
+									<option>Friendly</option>
+								</Select>
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Qualification prompt</Label>
+								<Textarea
+									rows={4}
+									value={autoReplyQualification}
+									onChange={(e) => setAutoReplyQualification(e.target.value)}
+								/>
+							</div>
+						</div>
+						<div className="mt-4 flex flex-wrap gap-3">
+							<PrimaryButton onClick={saveChatbotSettings} disabled={!canAutoReply}>
+								Save auto-reply settings
+							</PrimaryButton>
+							<SecondaryButton onClick={saveGeneralSettings}>Save settings</SecondaryButton>
+						</div>
+					</SectionCard>
+
+					<SectionCard
+						title="Communication Policy"
+						subtitle="Throttle and prioritize messages with configurable rules."
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div>
+								<Label>Message cap per window</Label>
+								<Input
+									type="number"
+									value={policyMessageCaps}
+									onChange={(e) => setPolicyMessageCaps(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Window (minutes)</Label>
+								<Input
+									type="number"
+									value={policyWindowMinutes}
+									onChange={(e) => setPolicyWindowMinutes(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Cooldown (seconds)</Label>
+								<Input
+									type="number"
+									value={policyCooldownSeconds}
+									onChange={(e) => setPolicyCooldownSeconds(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Strictness mode</Label>
+								<Select
+									value={policyStrictnessMode}
+									onChange={(e) => setPolicyStrictnessMode(e.target.value)}
+								>
+									<option>Relaxed</option>
+									<option>Balanced</option>
+									<option>Strict</option>
+								</Select>
+							</div>
+						</div>
+						<div className="mt-4">
+							<PrimaryButton onClick={saveGeneralSettings}>Save settings</PrimaryButton>
+						</div>
+					</SectionCard>
+
+					<SectionCard
+						title="Supplier Profile"
+						subtitle="Show your operations and capabilities clearly."
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div>
+								<Label>Main processes</Label>
+								<Input value={mainProcesses} onChange={(e) => setMainProcesses(e.target.value)} />
+							</div>
+							<div>
+								<Label>Years in business</Label>
+								<Input
+									type="number"
+									value={yearsInBusiness}
+									onChange={(e) => setYearsInBusiness(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Team seats</Label>
+								<Input
+									type="number"
+									value={teamSeats}
+									onChange={(e) => setTeamSeats(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Export ports</Label>
+								<Input value={exportPorts} onChange={(e) => setExportPorts(e.target.value)} />
+							</div>
+							<div>
+								<Label>Location lat/lng</Label>
+								<Input
+									value={locationLat && locationLng ? `${locationLat}, ${locationLng}` : ""}
+									onChange={(e) => {
+										const v = e.target.value.split(",");
+										setLocationLat(v[0] || "");
+										setLocationLng(v[1] || "");
+									}}
+								/>
+							</div>
+							<div className="flex items-end">
+								<Toggle
+									checked={handlesMultipleFactories}
+									onChange={setHandlesMultipleFactories}
+									label="Handles multiple factories"
+								/>
+							</div>
+						</div>
+						<div className="mt-4">
+							<PrimaryButton onClick={saveGeneralSettings}>Save settings</PrimaryButton>
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== PROFILE TAB ==================== */}
+			{activeTab === "profile" && hasRoleAccess(currentUserRole, "observer") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard
+						title="Profile Section"
+						subtitle="Manage how your profile looks to buyers and partners."
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div>
+								<Label>Organization Name</Label>
+								<Input
+									value={profileDisplayName}
+									onChange={(e) => setProfileDisplayName(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Headline</Label>
+								<Input
+									value={profileHeadline}
+									onChange={(e) => setProfileHeadline(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>Country</Label>
+								<select
+									value={profileCountry}
+									onChange={(e) => setProfileCountry(e.target.value)}
+									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+								>
+									<option value="">Select country</option>
+									{COUNTRY_OPTIONS.map((c) => (
+										<option key={c} value={c}>
+											{c}
+										</option>
+									))}
+								</select>
+							</div>
+							<div>
+								<Label>Industry</Label>
+								<select
+									value={profileIndustry}
+									onChange={(e) => setProfileIndustry(e.target.value)}
+									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+								>
+									<option value="">Select industry</option>
+									{FACTORY_SECTOR_OPTIONS.map((opt) => (
+										<option key={opt.value} value={opt.value}>
+											{opt.label}
+										</option>
+									))}
+								</select>
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Bio</Label>
+								<Textarea
+									rows={4}
+									value={profileBio}
+									onChange={(e) => setProfileBio(e.target.value)}
+								/>
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Profile Image</Label>
+								<ProfileImageUpload
+									value={profileAvatarUrl}
+									onChange={setProfileAvatarUrl}
+									label="Profile Image"
+								/>
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Cover Image</Label>
+								<p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
+									Banner displayed at the top of your profile
+								</p>
+								<ProfileImageUpload
+									value={profileCoverUrl}
+									onChange={setProfileCoverUrl}
+									label="Cover Image"
+								/>
+							</div>
+						</div>
+						<div className="mt-4 flex gap-3">
+							<PrimaryButton onClick={saveProfileSettings} disabled={loadingProfile}>
+								{loadingProfile ? (
+									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+								) : (
+									"Save Profile"
+								)}
+							</PrimaryButton>
+						</div>
+					</SectionCard>
+
+					<SectionCard
+						title="Contact & Privacy"
+						subtitle="Edit contact details, visibility, and notification preferences."
+					>
+						<div className="space-y-4">
+							<div>
+								<Label>Email</Label>
+								<Input value={profileEmail} readOnly={true} className="cursor-not-allowed opacity-90" />
+							</div>
+							<div>
+								<Label>Phone</Label>
+								<Input value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} />
+							</div>
+							<PrimaryButton onClick={saveContactSettings}>Save Contact</PrimaryButton>
+							<div className="grid gap-3 sm:grid-cols-3">
+								<Toggle
+									checked={notifEmail}
+									onChange={(v) => {
+										setNotifEmail(v);
+										saveNotificationPref("email", v);
+									}}
+									label="Email Notifications"
+								/>
+								<Toggle
+									checked={notifPush}
+									onChange={(v) => {
+										setNotifPush(v);
+										saveNotificationPref("push", v);
+									}}
+									label="Push Notifications"
+								/>
+								<Toggle
+									checked={notifInApp}
+									onChange={(v) => {
+										setNotifInApp(v);
+										saveNotificationPref("in_app", v);
+									}}
+									label="In-App Notifications"
+								/>
+							</div>
+							<div>
+								<Label>Profile Visibility</Label>
+								<Select
+									value={profileVisibility}
+									onChange={(e) => {
+										setProfileVisibility(e.target.value);
+										saveVisibility(e.target.value);
+									}}
+								>
+									<option>Public</option>
+									<option>Network</option>
+									<option>Private</option>
+								</Select>
+							</div>
+						</div>
+					</SectionCard>
+
+					<SectionCard
+						title="Password & Security"
+						subtitle="Change password and keep account access protected."
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div className="sm:col-span-2">
+								<Badge tone={totpEnabled ? "green" : "red"}>
+									2FA {totpEnabled ? "Enabled" : "Disabled"}
+								</Badge>
+							</div>
+							<div>
+								<Label>Current password</Label>
+								<Input
+									type="password"
+									value={currentPassword}
+									onChange={(e) => setCurrentPassword(e.target.value)}
+								/>
+							</div>
+							<div>
+								<Label>New password</Label>
+								<Input
+									type="password"
+									value={newPassword}
+									onChange={(e) => setNewPassword(e.target.value)}
+								/>
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Confirm new password</Label>
+								<Input
+									type="password"
+									value={confirmPassword}
+									onChange={(e) => setConfirmPassword(e.target.value)}
+								/>
+							</div>
+						</div>
+						<div className="mt-4 flex flex-wrap gap-3">
+							<PrimaryButton onClick={changePassword} disabled={changingPassword}>
+								{changingPassword ? "Changing..." : "Change Password"}
+							</PrimaryButton>
+						</div>
+						{passwordFeedback && (
+							<p
+								className={`mt-2 text-sm ${passwordFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+							>
+								{passwordFeedback}
+							</p>
+						)}
+					</SectionCard>
+
+					<SectionCard
+						title="Data & Account Control"
+						subtitle="Export data, review sessions, and remove the account securely."
+					>
+						<div className="space-y-4">
+							<div className="rounded-2xl border border-amber-200/60 bg-amber-50/50 p-4 dark:border-amber-800/40 dark:bg-amber-950/20">
+								<div className="flex items-center justify-between">
+									<div>
+										<div className="text-sm font-medium text-amber-800 dark:text-amber-200">
+											Account Lock
+										</div>
+										<div className="text-xs text-amber-700 dark:text-amber-300">
+											Temporarily freeze your account and hide listings
+										</div>
+									</div>
+									<button
+										onClick={() => {
+											if (accountLocked) {
+												toggleAccountLock();
+											} else {
+												resetLockModal();
+												setLockModalOpen(true);
+											}
+										}}
+										disabled={lockingAccount}
+										className="rounded-full border border-amber-200 bg-white px-4 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
+									>
+										{lockingAccount ? "Processing..." : accountLocked ? "Unlock" : "Lock Now"}
+									</button>
+								</div>
+							</div>
+							<SecondaryButton onClick={exportUserData} disabled={exportingData}>
+								{exportingData ? "Preparing..." : "Download My Data"}
+							</SecondaryButton>
+							{exportFeedback && <p className="text-sm text-slate-500">{exportFeedback}</p>}
+							<div>
+								<Label>Type your name to confirm</Label>
+								<Input
+									value={deleteConfirmText}
+									onChange={(e) => setDeleteConfirmText(e.target.value)}
+									placeholder={profileDisplayName}
+								/>
+							</div>
+							<PrimaryButton
+								onClick={deleteAccount}
+								disabled={deletingProfile || deleteConfirmText !== profileDisplayName}
+							>
+								{deletingProfile ? "Deleting..." : "Delete My Account"}
+							</PrimaryButton>
+							{deleteProfileFeedback && <p className="text-sm text-red-600">{deleteProfileFeedback}</p>}
+							<div>
+								<div className="mb-3 flex items-center justify-between">
+									<div>
+										<div className="font-semibold text-slate-900 dark:text-white">Active Sessions</div>
+										<div className="text-sm text-slate-500 dark:text-slate-400">
+											Reload, inspect, and revoke sessions.
+										</div>
+									</div>
+									<SecondaryButton onClick={loadSessions}>Refresh</SecondaryButton>
+								</div>
+								<div className="space-y-3">
+									{loadingSessions ? (
+										<Mosaic
+											color="#3b00ff"
+											size="large"
+											style={{ fontSize: "40px" }}
+											text=""
+											textColor=""
+										/>
+									) : sessions.length === 0 ? (
+										<p className="text-sm text-slate-500">No active sessions.</p>
+									) : (
+										sessions.map((session) => (
+											<div
+												key={session.id || session.token}
+												className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+											>
+												<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+													<div>
+														<div className="flex flex-wrap items-center gap-2">
+															<div className="font-medium text-slate-900 dark:text-white">
+																{session.device || session.browser || "Unknown"}
+															</div>
+															{session.current && <Badge tone="green">Current</Badge>}
+														</div>
+														<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+															{session.ip} · {session.location || "Unknown"} ·{" "}
+															{session.last_active || "recently"}
+														</div>
+													</div>
+													{!session.current && (
+														<SecondaryButton
+															onClick={() => revokeSession(session.id || session.token)}
+															disabled={revokingSession === (session.id || session.token)}
+														>
+															Revoke
+														</SecondaryButton>
+													)}
+												</div>
+											</div>
+										))
+									)}
+								</div>
+							</div>
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== THEME TAB ==================== */}
+			{activeTab === "theme" && hasRoleAccess(currentUserRole, "viewer") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard title="Appearance" subtitle="Customize how GarTexHub looks for you.">
+						<div className="space-y-4">
+							<div>
+								<Label>Theme Mode</Label>
+								<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+									Choose your preferred color scheme.
+								</p>
+								<div className="mt-3 grid grid-cols-3 gap-3">
+									<button
+										onClick={() => setTheme("light")}
+										className={cx(
+											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
+											themeMode === "light"
+												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
+												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
+										)}
+									>
+										<Sun className="h-6 w-6" />
+										Light
+									</button>
+									<button
+										onClick={() => setTheme("dark")}
+										className={cx(
+											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
+											themeMode === "dark"
+												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
+												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
+										)}
+									>
+										<Moon className="h-6 w-6" />
+										Dark
+									</button>
+									<button
+										onClick={() => setTheme("system")}
+										className={cx(
+											"flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-medium transition",
+											themeMode === "system"
+												? "border-sky-500 bg-sky-50 text-sky-700 dark:border-sky-400 dark:bg-sky-950/50 dark:text-sky-300"
+												: "border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500",
+										)}
+									>
+										<Monitor className="h-6 w-6" />
+										System
+									</button>
+								</div>
+							</div>
+							<div className="flex items-center gap-3 pt-2">
+								<PrimaryButton
+									onClick={() => {
+										setTheme(themeMode);
+										save("Theme preference saved.");
+									}}
+								>
+									Save Theme
+								</PrimaryButton>
+								<span className="text-sm text-slate-500 dark:text-slate-400">
+									Current: <strong className="capitalize">{themeMode}</strong> mode
+								</span>
+							</div>
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== PRIVACY TAB ==================== */}
+			{activeTab === "privacy" && hasRoleAccess(currentUserRole, "observer") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard
+						title="Profile Visibility"
+						subtitle="Control who can see your profile and information."
+					>
+						<div className="space-y-4">
+							<div>
+								<Label>Profile Visibility</Label>
+								<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+									Controls who can view your company profile and product listings.
+								</p>
+							</div>
+							<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+								<div className="flex items-center justify-between">
+									<div>
+										<div className="text-sm font-medium text-slate-900 dark:text-white">
+											Search Engine Indexing
+										</div>
+										<div className="text-xs text-slate-500 dark:text-slate-400">
+											Allow search engines to index your public profile
+										</div>
+									</div>
+									<input
+										type="checkbox"
+										className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+										checked={searchIndexing}
+										onChange={(e) => {
+											setSearchIndexing(e.target.checked);
+											savePrivacySettings("search_indexing", e.target.checked);
+										}}
+									/>
+								</div>
+							</div>
+						</div>
+					</SectionCard>
+
+					<SectionCard title="Contact Privacy" subtitle="Control what contact details appear on your public profile.">
+						<div className="space-y-4">
+							<div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+								<div>
+									<div className="text-sm font-medium text-slate-900 dark:text-white">
+										Hide Email
+									</div>
+									<div className="text-xs text-slate-500 dark:text-slate-400">
+										Don't show your email on your public profile
+									</div>
+								</div>
+								<input
+									type="checkbox"
+									className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+									checked={hideEmail}
+									onChange={(e) => {
+										setHideEmail(e.target.checked);
+										savePrivacySettings("hide_email", e.target.checked);
+									}}
+								/>
+							</div>
+							<div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+								<div>
+									<div className="text-sm font-medium text-slate-900 dark:text-white">
+										Hide Phone
+									</div>
+									<div className="text-xs text-slate-500 dark:text-slate-400">
+										Don't show your phone number on your public profile
+									</div>
+								</div>
+								<input
+									type="checkbox"
+									className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+									checked={hidePhone}
+									onChange={(e) => {
+										setHidePhone(e.target.checked);
+										savePrivacySettings("hide_phone", e.target.checked);
+									}}
+								/>
+							</div>
+							<div className="rounded-2xl border border-slate-200 bg-amber-50 p-4 dark:border-slate-700 dark:bg-amber-500/10">
+								<p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+									Contact info is private by default
+								</p>
+								<p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+									All communication happens through the platform chat system to ensure security and traceability.
+								</p>
+							</div>
+						</div>
+					</SectionCard>
+
+					<SectionCard title="Data & Sharing" subtitle="Manage how your data is used and shared.">
+						<div className="space-y-4">
+							<div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+								<div>
+									<div className="text-sm font-medium text-slate-900 dark:text-white">
+										Activity status
+									</div>
+									<div className="text-xs text-slate-500 dark:text-slate-400">
+										Show when you are online or recently active
+									</div>
+								</div>
+								<input
+									type="checkbox"
+									className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+									checked={showActivityStatus}
+									onChange={(e) => {
+										setShowActivityStatus(e.target.checked);
+										savePrivacySettings("show_activity", e.target.checked);
+									}}
+								/>
+							</div>
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== VERIFICATION TAB ==================== */}
+			{activeTab === "verification" && hasRoleAccess(currentUserRole, "factory") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard
+						title="Verification Status"
+						subtitle="Track status and renew before expiration."
+					>
+						<div className="flex flex-wrap items-center gap-3">
+							<Badge tone={verificationTone}>
+								{verificationStatus === "verified_active"
+									? "Verified Active"
+									: verificationStatus === "expiring_soon"
+										? "Expiring Soon"
+										: "Expired"}
+							</Badge>
+							<Badge tone="sky">{remainingDays} days remaining</Badge>
+						</div>
+						<div className="mt-4 grid gap-4 sm:grid-cols-2">
+							<div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+								<div className="text-xs text-slate-500 dark:text-slate-400">Wallet balance</div>
+								<div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+									${walletBalance.toFixed(2)}
+								</div>
+							</div>
+							<div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+								<div className="text-xs text-slate-500 dark:text-slate-400">Restricted balance</div>
+								<div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+									${walletRestricted.toFixed(2)}
+								</div>
+							</div>
+						</div>
+						<div className="mt-4 flex flex-wrap gap-3">
+							<SecondaryButton onClick={() => navigate("/verification")}>
+								Open Verification Center
+							</SecondaryButton>
+							<PrimaryButton onClick={renewVerification} disabled={renewingVerification}>
+								{renewingVerification ? "Processing..." : "Renew verification"}
+							</PrimaryButton>
+						</div>
+					</SectionCard>
+
+					<SectionCard
+						title="Missing Documents"
+						subtitle="Upload these items to complete verification."
+					>
+						<div className="space-y-3">
+							{verification?.missing_required?.length > 0 ? (
+								verification.missing_required.slice(0, 6).map((doc) => (
+									<div
+										key={doc}
+										className="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
+									>
+										<span>{doc}</span>
+										<span className="text-xs font-semibold">Required</span>
+									</div>
+								))
+							) : (
+								<div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
+									All verification documents have been uploaded.
+								</div>
+							)}
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== SECURITY TAB ==================== */}
+			{activeTab === "security" && hasRoleAccess(currentUserRole, "factory") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+				<SectionCard title="Security Keys (WebAuthn)" subtitle="Register hardware security keys or biometric authenticators for passwordless sign-in.">
+					<p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
+						Security keys use your device's built-in authenticator (fingerprint, face recognition, or a physical USB key) to verify your identity instead of a password. They are phishing-resistant and more secure than SMS codes.
+					</p>
+					<div className="space-y-3">
+						{passkeys.map((p) => (
+							<div
+								key={p.id}
+								className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+							>
+								<div>
+									<div className="font-medium text-slate-900 dark:text-white">{p.name}</div>
+									<div className="text-sm text-slate-500 dark:text-slate-400">
+										Created {p.created_at || p.createdAt}
+									</div>
+								</div>
+								<SecondaryButton
+									onClick={() => {
+										setPasskeys((x) => x.filter((i) => i.id !== p.id));
+										save(`Security key "${p.name}" removed.`);
+									}}
+								>
+									Remove
+								</SecondaryButton>
+							</div>
+						))}
+					</div>
+					<div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+						<Input
+							value={passkeyName}
+							onChange={(e) => setPasskeyName(e.target.value)}
+							placeholder="Name this security key (e.g. YubiKey, Touch ID)"
+						/>
+						<PrimaryButton onClick={addPasskey}>Add Security Key</PrimaryButton>
+					</div>
+					{passkeyError && <p className="mt-2 text-sm text-red-600">{passkeyError}</p>}
+				</SectionCard>
+
+					<SectionCard
+						title="Active Sessions"
+						subtitle="See live sessions and revoke access quickly."
+					>
+						<div className="space-y-3">
+							{loadingSessions ? (
+								<Mosaic
+									color="#3b00ff"
+									size="large"
+									style={{ fontSize: "40px" }}
+									text=""
+									textColor=""
+								/>
+							) : sessions.length === 0 ? (
+								<p className="text-sm text-slate-500">No sessions.</p>
+							) : (
+								sessions.map((session) => (
+									<div
+										key={session.id || session.token}
+										className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+									>
+										<div className="flex items-start justify-between gap-4">
+											<div>
+												<div className="flex items-center gap-2">
+													<div className="font-medium text-slate-900 dark:text-white">
+														{session.device || session.browser || "Unknown"}
+													</div>
+													{session.current && <Badge tone="green">Current</Badge>}
+												</div>
+												<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+													{session.ip} · {session.location || "Unknown"} ·{" "}
+													{session.last_active || "recently"}
+												</div>
+											</div>
+											{!session.current && (
+												<SecondaryButton onClick={() => revokeSession(session.id || session.token)}>
+													Revoke
+												</SecondaryButton>
+											)}
+										</div>
+									</div>
+								))
+							)}
+						</div>
+					</SectionCard>
+
+					<SectionCard title="Account Lock" subtitle="Temporarily restrict access to your account.">
+						<div className="space-y-4">
+							<div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+								<div className="flex items-start gap-3">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="20"
+										height="20"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="2"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+									>
+										<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+										<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+									</svg>
+									<div>
+										<div className="text-sm font-medium text-amber-800 dark:text-amber-200">
+											Lock your account
+										</div>
+										<div className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+											This will temporarily freeze your account, hide your listings, and prevent new
+											messages. You can unlock at any time.
+										</div>
+									</div>
+								</div>
+							</div>
+							<div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+								<div>
+									<div className="text-sm font-medium text-slate-900 dark:text-white">
+										Account status
+									</div>
+									<div className="text-xs text-slate-500 dark:text-slate-400">
+										Currently{" "}
+										{accountLocked
+											? "locked — features limited"
+											: "active — all features available"}
+									</div>
+								</div>
+								<button
+									onClick={() => {
+										if (accountLocked) {
+											toggleAccountLock();
+										} else {
+											resetLockModal();
+											setLockModalOpen(true);
+										}
+									}}
+									disabled={lockingAccount}
+									className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60"
+								>
+									{lockingAccount
+										? "Processing..."
+										: accountLocked
+											? "Unlock Account"
+											: "Lock Account"}
+								</button>
+							</div>
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== BRANDING TAB ==================== */}
+			{activeTab === "branding" && hasRoleAccess(currentUserRole, "factory") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard
+						title="Brand Identity"
+						subtitle="Set your brand name, logo, website, and tone."
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div>
+								<Label>Brand name</Label>
+								<Input
+									value={brandName}
+									onChange={(e) => setBrandName(e.target.value)}
+									disabled={!canBranding}
+								/>
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Logo Image</Label>
+								<input
+									ref={logoInputRef}
+									type="file"
+									accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
+									onChange={handleLogoUpload}
+									disabled={!canBranding || logoUploading}
+									className="hidden"
+								/>
+								<div className="flex items-center gap-4">
+									<button
+										type="button"
+										onClick={() => logoInputRef.current?.click()}
+										disabled={!canBranding || logoUploading}
+										className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+									>
+										{logoUploading ? (
+											<ThreeDot
+												variant="bounce"
+												color="#6100ff"
+												size="small"
+												text=""
+												textColor=""
+											/>
+										) : (
+											"Choose Image"
+										)}
+									</button>
+									{logoUploading && (
+										<UploadProgressBar progress={logoUploadProgress} className="w-40" />
+									)}
+									{brandLogoUrl && <span className="text-sm text-slate-500">Logo set</span>}
+								</div>
+								{brandLogoUrl && (
+									<div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 w-20 h-20">
+										<LazyImage
+											src={brandLogoUrl}
+											alt="Logo preview"
+											width={80}
+											height={80}
+											className="w-full h-full object-contain"
+										/>
+									</div>
+								)}
+							</div>
+							<div className="sm:col-span-2">
+								<Label>Banner / Cover Image</Label>
+								<input
+									ref={bannerInputRef}
+									type="file"
+									accept="image/jpeg,image/png,image/webp,image/avif,image/gif,image/apng,image/bmp,image/x-ms-bmp,image/tiff,image/heic,image/heif,image/svg+xml,image/x-tga,image/vnd.adobe.photoshop,image/x-photoshop,image/x-xcf,image/x-coreldraw,image/x-adobe-dng,image/x-canon-cr2,image/x-canon-cr3,image/x-nikon-nef,image/x-sony-arw,image/x-sony-sr2,image/x-olympus-orf,image/x-fuji-raf,image/x-eps,application/postscript,application/pdf,application/dicom,application/x-coreldraw,.jpg,.jpeg,.png,.webp,.avif,.gif,.apng,.bmp,.tiff,.tif,.heic,.heif,.dcm,.tga,.svg,.eps,.pdf,.dng,.cr2,.cr3,.nef,.arw,.sr2,.orf,.raf,.psd,.ai,.xcf,.cdr"
+									onChange={handleBannerUpload}
+									disabled={!canBranding || bannerUploading}
+									className="hidden"
+								/>
+								<div className="flex items-center gap-4">
+									<button
+										type="button"
+										onClick={() => bannerInputRef.current?.click()}
+										disabled={!canBranding || bannerUploading}
+										className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+									>
+										{bannerUploading ? (
+											<ThreeDot
+												variant="bounce"
+												color="#6100ff"
+												size="small"
+												text=""
+												textColor=""
+											/>
+										) : (
+											"Choose Image"
+										)}
+									</button>
+									{bannerUploading && (
+										<UploadProgressBar progress={bannerUploadProgress} className="w-40" />
+									)}
+									{brandCoverUrl && <span className="text-sm text-slate-500">Banner set</span>}
+								</div>
+								{brandCoverUrl && (
+									<div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+										<LazyImage
+											src={brandCoverUrl}
+											alt="Banner preview"
+											width={1200}
+											height={400}
+											className="h-32 w-full object-cover"
+										/>
+									</div>
+								)}
+							</div>
+							<div>
+								<Label>Accent style</Label>
+								<Select
+									value={brandAccent}
+									onChange={(e) => setBrandAccent(e.target.value)}
+									disabled={!canBranding}
+								>
+									<option>Sky Blue</option>
+									<option>Ocean</option>
+									<option>Classic Navy</option>
+								</Select>
+							</div>
+							<div>
+								<Label>Tagline</Label>
+								<Input
+									value={brandTagline}
+									onChange={(e) => setBrandTagline(e.target.value)}
+									disabled={!canBranding}
+								/>
+							</div>
+						</div>
+						<div className="mt-4 flex gap-3">
+							<PrimaryButton onClick={saveBrandingSettings} disabled={!canBranding}>
+								Save Branding
+							</PrimaryButton>
+						</div>
+					</SectionCard>
+					<SectionCard title="Brand Preview" subtitle="A preview of your brand identity.">
+						<div className="rounded-[2rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
+							<div className="flex items-center gap-4">
+								<div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/20 text-2xl font-black backdrop-blur">
+									{brandName.slice(0, 1).toUpperCase()}
+								</div>
+								<div>
+									<div className="text-2xl font-black">{brandName}</div>
+									<div className="text-sm text-white/85">{brandTagline}</div>
+								</div>
+							</div>
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== SUBSCRIPTION TAB ==================== */}
+			{activeTab === "subscription" && hasRoleAccess(currentUserRole, "factory") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard title="Current Plan" subtitle="Track plan level and billing status.">
+						<div className="rounded-[1.75rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
+							<div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
+								Plan
+							</div>
+							<div className="mt-2 text-3xl font-black">
+								{subscriptionPlan === "free"
+									? "Free"
+									: subscriptionPlan === "premium"
+										? "Premium"
+										: "Enterprise"}
+							</div>
+							<div className="mt-2 text-white/85">
+								{subscriptionPlan === "free" ? "Limited features" : `$${planPrice} / month`}
+							</div>
+							<div className="mt-5 flex flex-wrap gap-3">
+								{subscriptionPlan === "free" && (
+									<SecondaryButton
+										className="border-white/20 bg-white/15 text-white hover:bg-white/25"
+										onClick={() => navigate("/pricing")}
+									>
+										Upgrade
+									</SecondaryButton>
+								)}
+								<SecondaryButton
+									className="border-white/20 bg-white/15 text-white hover:bg-white/25"
+									onClick={() => navigate("/pricing")}
+								>
+									View plans
+								</SecondaryButton>
+							</div>
+						</div>
+					</SectionCard>
+					<SectionCard title="Wallet" subtitle="Funds available for boosts and billing.">
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+								<div className="text-xs text-slate-500">Balance</div>
+								<div className="mt-1 text-2xl font-black">${walletBalance.toFixed(2)}</div>
+							</div>
+							<div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
+								<div className="text-xs text-slate-500">Restricted</div>
+								<div className="mt-1 text-2xl font-black">${walletRestricted.toFixed(2)}</div>
+							</div>
+						</div>
+						<div className="mt-4">
+							<PrimaryButton onClick={addFunds} disabled={addingFunds}>
+								{addingFunds ? "Processing..." : "Add funds"}
+							</PrimaryButton>
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== MEMBERS TAB ==================== */}
+			{activeTab === "members" && hasRoleAccess(currentUserRole, "factory") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard title="Team Members" subtitle="Manage your team.">
+						<div className="space-y-3">
+							{members.length === 0 ? (
+								<p className="text-sm text-slate-500">No team members yet.</p>
+							) : (
+								members.map((member) => (
+									<div
+										key={member.id}
+										className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+									>
+										<div>
+											<div className="font-medium text-slate-900 dark:text-white">
+												{member.name || member.email}
+											</div>
+											<div className="text-sm text-slate-500 dark:text-slate-400">{member.email}</div>
+										</div>
+										<div className="flex items-center gap-3">
+											<Badge tone="sky">{member.role}</Badge>
+											<Badge tone={member.status === "active" ? "green" : "yellow"}>
+												{member.status || "active"}
+											</Badge>
+											{member.status === "active" ? (
+												<SecondaryButton onClick={() => removeMember(member.id)}>
+													Remove
+												</SecondaryButton>
+											) : (
+												<SecondaryButton onClick={() => reactivateMember(member.id)}>
+													Reactivate
+												</SecondaryButton>
+											)}
+										</div>
+									</div>
+								))
+							)}
+						</div>
+					</SectionCard>
+					<SectionCard title="Invite Members" subtitle="Add teammates by email and role.">
+						<div className="grid gap-4">
+							<div>
+								<Label>Email</Label>
+								<Input
+									value={memberInviteEmail}
+									onChange={(e) => setMemberInviteEmail(e.target.value)}
+									placeholder="team@company.com"
+								/>
+							</div>
+							<div>
+								<Label>Role</Label>
+								<Select
+									value={memberInviteRole}
+									onChange={(e) => setMemberInviteRole(e.target.value)}
+								>
+									<option>Owner</option>
+									<option>Admin</option>
+									<option>Manager</option>
+									<option>Editor</option>
+									<option>Viewer</option>
+								</Select>
+							</div>
+							<PrimaryButton onClick={inviteMember} disabled={invitingMember}>
+								{invitingMember ? "Inviting..." : "Add member"}
+							</PrimaryButton>
+							{memberFeedback && (
+								<p
+									className={`text-sm ${memberFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+								>
+									{memberFeedback}
+								</p>
+							)}
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== BOOSTS TAB ==================== */}
+			{activeTab === "boosts" && hasRoleAccess(currentUserRole, "manager") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard title="Boost Management" subtitle="Create and manage visibility boosts.">
+						<div className="space-y-4">
+							<div className="grid gap-3">
+								<div>
+									<Label>Scope</Label>
+									<Select value={boostScope} onChange={(e) => setBoostScope(e.target.value)}>
+										<option value="feed">Feed</option>
+										<option value="search">Search</option>
+									</Select>
+								</div>
+								<div>
+									<Label>Duration</Label>
+									<Select value={boostDuration} onChange={(e) => setBoostDuration(e.target.value)}>
+										<option value="7">7 days</option>
+										<option value="14">14 days</option>
+										<option value="30">30 days</option>
+									</Select>
+								</div>
+								<div>
+									<Label>Multiplier</Label>
+									<Input
+										type="number"
+										step="0.1"
+										value={boostMultiplier}
+										onChange={(e) => setBoostMultiplier(e.target.value)}
+									/>
+								</div>
+								<div>
+									<Label>Price ($)</Label>
+									<Input
+										type="number"
+										step="0.01"
+										value={boostPrice}
+										onChange={(e) => setBoostPrice(e.target.value)}
+									/>
+								</div>
+							</div>
+							<PrimaryButton onClick={createBoost} disabled={creatingBoost}>
+								{creatingBoost ? "Creating..." : "Create Boost"}
+							</PrimaryButton>
+							{boostFeedback && (
+								<p
+									className={`text-sm ${boostFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+								>
+									{boostFeedback}
+								</p>
+							)}
+							{loadingBoosts ? (
+								<div className="flex justify-center py-4">
+									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+								</div>
+							) : boosts.length > 0 ? (
+								<div className="space-y-2">
+									<p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+										Existing Boosts
+									</p>
+									{boosts.map((b) => (
+										<div
+											key={b.id}
+											className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900"
+										>
+											<div className="space-y-1">
+												<p className="font-medium text-slate-900 dark:text-white">
+													{b.scope} — {b.duration_days || b.duration}d
+												</p>
+												<p className="text-slate-500">
+													×{b.multiplier} · ${b.price_usd || b.price}
+												</p>
+											</div>
+											<span
+												className={cx(
+													"rounded-full px-3 py-1 text-xs font-medium",
+													b.status === "active"
+														? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+														: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+												)}
+											>
+												{b.status || "pending"}
+											</span>
+										</div>
+									))}
+								</div>
+							) : null}
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{/* ==================== NOTIFICATIONS TAB ==================== */}
+			{activeTab === "notifications" && <NotificationPreferencesTab />}
+
+			{/* ==================== ASSISTANT KNOWLEDGE TAB ==================== */}
+			{activeTab === "assistant_knowledge" && hasRoleAccess(currentUserRole, "manager") && (
+				<div className="grid gap-6 lg:grid-cols-2">
+					<SectionCard title="Assistant Knowledge" subtitle="Manage FAQ entries used by the bot.">
+						<div className="space-y-3">
+							{entries.length === 0 ? (
+								<p className="text-sm text-slate-500">No FAQ entries yet.</p>
+							) : (
+								entries.map((entry) => (
+									<div
+										key={entry.id}
+										className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+									>
+										{entry.question}
+									</div>
+								))
+							)}
+						</div>
+					</SectionCard>
+					<SectionCard title="Add FAQ" subtitle="Expand the assistant with new answers.">
+						<Label>Question</Label>
+						<Textarea
+							rows={4}
+							value={knowledgeForm.question}
+							onChange={(e) =>
+								setKnowledgeForm((f) => ({
+									...f,
+									question: e.target.value,
+								}))
+							}
+							placeholder="Example: What is your MOQ?"
+						/>
+						<div className="mt-4">
+							{faqFeedback && (
+								<p
+									className={`text-sm ${faqFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+								>
+									{faqFeedback}
+								</p>
+							)}
+							<PrimaryButton
+								onClick={async () => {
+									if (!knowledgeForm.question.trim()) {
+										return;
+									}
+									const token = getToken();
+									if (!token) {
+										return;
+									}
+									try {
+										const data = await apiRequest("/org/knowledge", {
+											method: "POST",
+											token,
+											body: {
+												type: knowledgeForm.type,
+												question: knowledgeForm.question,
+												answer: knowledgeForm.answer,
+												keywords: knowledgeForm.keywords.split(",").map((k) => k.trim()),
+											},
+										});
+										setEntries((prev) => [data?.entry || data, ...prev]);
+										setKnowledgeForm({
+											type: "faq",
+											question: "",
+											answer: "",
+											keywords: "",
+										});
+										setFaqFeedback("FAQ added successfully.");
+										save("FAQ added.");
+									} catch (err) {
+										setFaqFeedback(err.message || "Failed to add FAQ entry");
+									}
+								}}
+							>
+								Add FAQ
+							</PrimaryButton>
+						</div>
+					</SectionCard>
+				</div>
+			)}
+
+			{!isOrgManager && (
+				<div className="rounded-xl bg-red-50 p-4 text-red-600">
+					You do not have permission to view organization settings.
+				</div>
+			)}
+		</>
+	);
+
+	if (embedded) {
+		return (
+			<div data-lenis-prevent={true} className="space-y-6">
+				{settingsContent}
+			</div>
+		);
+	}
+
+	return (
+		<div
+			className={cx(
+				bodyTheme,
+				"min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#07111f] dark:text-white",
+			)}
+		>
+			<div className="absolute inset-0 -z-10 overflow-hidden">
+				<div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-sky-400/25 blur-3xl" />
+				<div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
+				<div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
+			</div>
+
+			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+				{/* Header */}
+				<div className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-[0_24px_80px_-35px_rgba(2,132,199,0.6)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 lg:flex-row lg:items-center lg:justify-between">
+					<div className="flex items-center gap-4">
+						<Icon>
+							<span className="text-lg font-black">O</span>
+						</Icon>
+						<div>
+							<div className="flex flex-wrap items-center gap-2">
+								<h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+									Owner Console
+								</h1>
+								<Badge tone="sky">Premium Dashboard</Badge>
+							</div>
+							<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+								Modern control center for automation, verification, branding, security, and team
+								growth.
+							</p>
+						</div>
+					</div>
+					<div className="flex flex-wrap items-center gap-3">
+						<Badge tone={verificationTone}>
+							{verificationStatus === "verified_active"
+								? "Verified"
+								: verificationStatus === "expiring_soon"
+									? "Expiring Soon"
+									: "Expired"}
+						</Badge>
+						<Badge tone="violet">{remainingDays} days left</Badge>
+						<SecondaryButton onClick={onThemeToggle}>
+							{theme === "dark" ? "Light mode" : "Dark mode"}
+						</SecondaryButton>
+					</div>
+				</div>
+
+				{settingsContent}
+			</div>
+		</div>
+	);
+}
+
+function NotificationPreferencesTab() {
+	const token = getToken();
+	const [prefs, setPrefs] = useState({
+		email_enabled: true,
+		push_enabled: true,
+		message_notifs: true,
+		requirement_notifs: true,
+		contract_notifs: true,
+		smart_match_notifs: true,
+		monthly_summary: true,
+	});
+	const [loading, setLoading] = useState(() => Boolean(token));
+	const [saving, setSaving] = useState(false);
+	const [feedback, setFeedback] = useState("");
+
+	useEffect(() => {
+		if (!token) {
+			return;
+		}
+		apiRequest("/notifications/preferences", { token })
+			.then((data) => {
+				if (data) {
+					setPrefs(data);
+				}
+			})
+			.catch(() => logger.warn("Failed to load notification preferences"))
+			.finally(() => setLoading(false));
+	}, [token]);
+
+	const handleToggle = async (key) => {
+		if (!token) {
+			return;
+		}
+		const newPrefs = { ...prefs, [key]: !prefs[key] };
+		setPrefs(newPrefs);
+		setSaving(true);
+		setFeedback("");
+
+		try {
+			await apiRequest("/notifications/preferences", {
+				method: "PUT",
+				token,
+				body: newPrefs,
+			});
+			setFeedback("Preferences saved!");
+		} catch {
+			setFeedback("Failed to save. Please try again.");
+			setPrefs(prefs);
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	if (loading) {
+		return <NeonAtom fill={true} size={64} text="Loading notifications..." timeout={10000} />;
+	}
+
+	return (
+		<div className="grid gap-6 lg:grid-cols-2">
 			<SectionCard title="Notification Channels" subtitle="Choose how you receive notifications.">
 				<_TogglePref
 					label="Email Notifications"
@@ -3044,11 +3168,10 @@ function NotificationPreferencesTab() {
 			</SectionCard>
 
 			{feedback && (
-				<div class="col-span-full rounded-lg p-3 text-sm bg-sky-50 text-sky-700 border border-sky-200">
+				<div className="col-span-full rounded-lg p-3 text-sm bg-sky-50 text-sky-700 border border-sky-200">
 					{feedback}
 				</div>
 			)}
 		</div>
-		</>
 	);
 }

@@ -332,7 +332,7 @@ export default function HelpCenterPage() {
 	}));
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	return (
@@ -957,10 +957,13 @@ export default function HelpCenterPage() {
 											</div>
 										</div>
 										<div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-											<button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-sky-400 dark:text-slate-950 dark:hover:bg-sky-300">
+											<a
+												href="/support"
+												className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-sky-400 dark:text-slate-950 dark:hover:bg-sky-300"
+											>
 												<LifeBuoy className="h-4 w-4" />
 												Open support ticket
-											</button>
+											</a>
 											<button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-sky-500/30">
 												<MessagesSquare className="h-4 w-4" />
 												Live chat

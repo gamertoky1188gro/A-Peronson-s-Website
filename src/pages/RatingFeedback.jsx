@@ -22,6 +22,15 @@ import { logger } from "../lib/logger.js";
 const STAR_OPTIONS = [1, 2, 3, 4, 5];
 const MAX_COMMENT_LEN = 500;
 
+const CATEGORY_LABELS = {
+	sample_accuracy: "Sample Accuracy",
+	communication_speed: "Communication Speed",
+	quality_control: "Quality Control",
+	delivery_timeliness: "Delivery Timeliness",
+	after_sales_support: "After-Sales Support",
+};
+const CATEGORY_KEYS = Object.keys(CATEGORY_LABELS);
+
 function buildSignals(row) {
 	const parts = [];
 	parts.push(row?.signals?.contract_signed ? "Contract signed" : "No contract");
@@ -103,19 +112,26 @@ export default function RatingFeedback() {
 				setError("");
 				const rows = Array.isArray(data?.items) ? data.items : [];
 				setItems(rows);
-				setDrafts((prev) => {
-					const next = { ...prev };
-					rows.forEach((row) => {
-						if (!next[row.id]) {
-							const initialScore = Number(row?.suggested_score || 0);
-							next[row.id] = {
-								score: initialScore >= 1 ? Math.round(initialScore) : 4,
-								comment: "",
-							};
-						}
-					});
-					return next;
+			setDrafts((prev) => {
+				const next = { ...prev };
+				rows.forEach((row) => {
+					if (!next[row.id]) {
+						const initialScore = Number(row?.suggested_score || 0);
+						next[row.id] = {
+							score: initialScore >= 1 ? Math.round(initialScore) : 4,
+							comment: "",
+							categories: {
+								sample_accuracy: 0,
+								communication_speed: 0,
+								quality_control: 0,
+								delivery_timeliness: 0,
+								after_sales_support: 0,
+							},
+						};
+					}
 				});
+				return next;
+			});
 
 				const ids = rows
 					.map((row) => String(row.profile_key || "").replace(/^user:/, ""))
@@ -170,6 +186,7 @@ export default function RatingFeedback() {
 					score: draft.score,
 					comment: draft.comment,
 					interaction_type: row.interaction_type || "deal",
+					categories: draft.categories,
 				},
 			});
 			setItems((prev) => prev.filter((item) => item.id !== row.id));
@@ -182,7 +199,7 @@ export default function RatingFeedback() {
 	}
 
 	if (loading || !lookupDone) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	if (error) {
@@ -370,6 +387,32 @@ export default function RatingFeedback() {
 														value={draft.score}
 														onChange={(score) => updateDraft(row.id, { score })}
 													/>
+												</div>
+
+												<div>
+													<label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+														Category Ratings (optional)
+													</label>
+													<div className="space-y-2">
+														{CATEGORY_KEYS.map((key) => (
+															<div key={key} className="flex items-center justify-between gap-3">
+																<span className="text-xs text-slate-600 dark:text-slate-400 min-w-[140px]">
+																	{CATEGORY_LABELS[key]}
+																</span>
+																<Stars
+																	value={draft.categories?.[key] || 0}
+																	onChange={(val) =>
+																		updateDraft(row.id, {
+																			categories: {
+																				...(draft.categories || {}),
+																				[key]: val,
+																			},
+																		})
+																	}
+																/>
+															</div>
+														))}
+													</div>
 												</div>
 
 												<div>

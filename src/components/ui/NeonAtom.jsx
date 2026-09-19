@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
 NeonAtom.propTypes = {
@@ -5,9 +6,34 @@ NeonAtom.propTypes = {
 	className: PropTypes.string,
 	text: PropTypes.string,
 	fill: PropTypes.bool,
+	timeout: PropTypes.number,
 };
 
-export default function NeonAtom({ size = 180, className = "", text = "", fill = false }) {
+export default function NeonAtom({ size = 180, className = "", text = "", fill = false, timeout = 0 }) {
+	const [timedOut, setTimedOut] = useState(false);
+
+	useEffect(() => {
+		if (timeout <= 0) {
+			return;
+		}
+		const id = setTimeout(() => setTimedOut(true), timeout);
+		return () => clearTimeout(id);
+	}, [timeout]);
+
+	if (timedOut) {
+		return (
+			<div
+				className={`flex flex-col items-center justify-center gap-3 overflow-hidden ${
+					fill
+						? "min-h-screen w-full bg-[#050212] bg-[radial-gradient(circle_at_center,#150833_0%,#050212_60%)]"
+						: ""
+				} ${className}`}
+			>
+				<p className="text-sm text-red-400">Loading timed out. Please refresh the page.</p>
+			</div>
+		);
+	}
+
 	const s = fill ? 200 : size;
 	const orbitSize = s * 0.89;
 	const coreSize = s * 0.2;

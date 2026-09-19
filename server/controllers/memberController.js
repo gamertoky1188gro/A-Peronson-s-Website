@@ -5,6 +5,7 @@ import {
 	deactivateOrRemoveMember,
 	getMember,
 	getMemberConstraints,
+	getMemberPermissionMetrics,
 	listMembers,
 	resetMemberPassword,
 	updateMember,
@@ -187,6 +188,18 @@ export async function deactivateOrRemoveOrgMember(req, res) {
 			return res.status(404).json({ error: "Member not found" });
 		}
 		return res.json(result);
+	} catch (error) {
+		return handleError(res, error);
+	}
+}
+
+export async function getMemberMetrics(req, res) {
+	if (!canManageMembers(req.user)) {
+		return deny(res);
+	}
+	try {
+		const metrics = await getMemberPermissionMetrics(orgOwnerIdFromUser(req.user));
+		return res.json(metrics);
 	} catch (error) {
 		return handleError(res, error);
 	}

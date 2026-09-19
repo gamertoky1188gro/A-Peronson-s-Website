@@ -288,6 +288,25 @@ export function formatTime(iso) {
 	return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }).toLowerCase();
 }
 
+export function getTimezoneLabel() {
+	try {
+		const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+		return tz ? tz.split("/").pop().replace(/_/g, " ") : "";
+	} catch {
+		return "";
+	}
+}
+
+export function getTimezoneAbbr() {
+	try {
+		const parts = new Intl.DateTimeFormat("en-US", { timeZoneName: "short" }).formatToParts(new Date());
+		const tzPart = parts.find((p) => p.type === "timeZoneName");
+		return tzPart?.value || "";
+	} catch {
+		return "";
+	}
+}
+
 export function extractFirstUrl(text = "") {
 	const match = String(text).match(/https*:\/\/[^\s]+/i);
 	return match ? match[0] : "";

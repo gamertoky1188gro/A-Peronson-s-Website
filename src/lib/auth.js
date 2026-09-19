@@ -12,6 +12,10 @@ let cachedUser = null;
 let cacheTime = 0;
 const CACHE_TTL_MS = 60_000;
 
+// BUG-033: Token refresh state
+let refreshPromise = null;
+const REFRESH_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes before expiry
+
 function loadUserFromStorage() {
 	try {
 		const raw = localStorage.getItem(USER_KEY);
@@ -19,6 +23,69 @@ function loadUserFromStorage() {
 	} catch {
 		return null;
 	}
+}
+
+// BUG-033: Decode JWT payload to check expiry without calling the server
+function decodeTokenPayload(token) {
+	try {
+		const base64 = token.split(".")[1];
+		const padded = base64.replace(/-/g, "+").replace(/_/g, "/");
+		return JSON.parse(atob(padded));
+	} catch {
+		return null;
+	}
+}
+
+// BUG-033: Check if the current token is within 5 minutes of expiry
+function isTokenExpiringSoon(token) {
+	if (!token) return false;
+	const payload = decodeTokenPayload(token);
+	if (!payload || !payload.exp) return false;
+	const expiryMs = payload.exp * 1000;
+	return Date.now() >= expiryMs - REFRESH_THRESHOLD_MS;
+}
+
+// BUG-033: Silently refresh the JWT token from the backend
+async function refreshAuthToken() {
+	const token = getToken();
+	if (!token) return null;
+
+	// Deduplicate concurrent refresh calls
+	if (refreshPromise) return refreshPromise;
+
+	refreshPromise = (async () => {
+		try {
+			const res = await fetch(`${API_BASE}/auth/refresh`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+			});
+			if (!res.ok) return null;
+			const data = await res.json();
+			if (data?.token) {
+				// Persist the new token
+				if (localStorage.getItem(TOKEN_KEY)) {
+					localStorage.setItem(TOKEN_KEY, data.token);
+				} else {
+					sessionStorage.setItem(TOKEN_KEY, data.token);
+				}
+				if (data.user) {
+					cachedUser = data.user;
+					cacheTime = Date.now();
+				}
+				return data.token;
+			}
+			return null;
+		} catch (err) {
+			logger.warn("[auth] token refresh failed", err);
+			return null;
+		} finally {
+			refreshPromise = null;
+		}
+	})();
+	return refreshPromise;
 }
 
 async function fetchAndCacheUser(token) {
@@ -208,6 +275,15 @@ export async function apiRequest(
 	const debugRequests = import.meta.env.DEV;
 	const startedAt = debugRequests ? performance.now() : 0;
 
+	// BUG-033: Auto-refresh token before it expires (silently)
+	let activeToken = token || getToken();
+	if (activeToken && isTokenExpiringSoon(activeToken) && path !== "/auth/refresh") {
+		const refreshed = await refreshAuthToken();
+		if (refreshed) {
+			activeToken = refreshed;
+		}
+	}
+
 	const isFormData = body instanceof FormData;
 	let res;
 	try {
@@ -217,7 +293,7 @@ export async function apiRequest(
 			signal,
 			headers: {
 				...(isFormData ? {} : { "Content-Type": "application/json" }),
-				...(token ? { Authorization: `Bearer ${token}` } : {}),
+				...(activeToken ? { Authorization: `Bearer ${activeToken}` } : {}),
 				...headers,
 			},
 			body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
@@ -256,7 +332,31 @@ export async function apiRequest(
 		}
 	}
 	if (!res.ok) {
-		if (res.status === 401) {
+		// BUG-033: On 401, try refreshing the token once before clearing the session
+		if (res.status === 401 && path !== "/auth/refresh") {
+			const refreshed = await refreshAuthToken();
+			if (refreshed) {
+				// Retry the request with the new token
+				try {
+					const retryRes = await fetch(`${API_BASE}${path}`, {
+						method,
+						cache: "no-store",
+						signal,
+						headers: {
+							...(isFormData ? {} : { "Content-Type": "application/json" }),
+							Authorization: `Bearer ${refreshed}`,
+							...headers,
+						},
+						body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+					});
+					if (retryRes.ok) {
+						const retryData = await retryRes.json().catch(() => ({}));
+						return retryData;
+					}
+				} catch {
+					// Fall through to original error handling
+				}
+			}
 			clearSession();
 		}
 		if (res.status === 403 && data?.code === "ACCOUNT_LOCKED") {

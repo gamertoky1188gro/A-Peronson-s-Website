@@ -2938,8 +2938,7 @@ export default function AdminPanel() {
 		: "rounded-2xl border border-slate-200 bg-slate-50 p-4";
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
-	}
+		return <NeonAtom fill={true} timeout={10000} />;	}
 
 	if (!isAllowedAdminViewer) {
 		const roles = adminPanelAllowedRoles.join(", ");

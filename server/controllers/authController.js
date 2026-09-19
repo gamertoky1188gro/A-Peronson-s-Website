@@ -15,7 +15,9 @@ import {
 	registerUser,
 	verifyPassword,
 } from "../services/userService.js";
-import { assertCouponRedeemable } from "../services/walletService.js";
+import { upsertSubscription } from "../services/subscriptionService.js";
+import { assertCouponRedeemable, creditWallet } from "../services/walletService.js";
+import { getAdminConfig } from "../services/adminConfigService.js";
 import { isValidFactorySector } from "../../shared/config/platformTaxonomy.js";
 import { requireFields, validateEmail, validatePublicRole } from "../utils/validators.js";
 
@@ -64,6 +66,46 @@ export async function register(req, res) {
 
 	const existing = await findUserByEmail(req.body.email);
 	if (existing) {
+		// BUG-038: Recovery path for orphaned users from incomplete registration.
+		// If the user row exists but subscription setup didn't complete (cold-start timeout),
+		// complete the missing setup and return success instead of 409.
+		try {
+			const prisma = (await import("../utils/prisma.js")).default;
+			const hasSubscription = await prisma.subscription.findFirst({
+				where: { user_id: existing.id },
+			});
+			if (!hasSubscription) {
+				await upsertSubscription(existing.id, existing.subscription_status || "free", true, {
+					actor_id: existing.id,
+					source: "recovery",
+					note: "orphan_recovery",
+				});
+				try {
+					const config = await getAdminConfig();
+					if (config?.feature_flags?.auto_credit !== false) {
+						await creditWallet({
+							userId: existing.id,
+							amountUsd: 5,
+							reason: "auto_credit",
+							ref: `auto-credit-recovery:${existing.id}`,
+							restricted: true,
+							metadata: { source: "signup_recovery" },
+						});
+					}
+				} catch {
+					// non-blocking: auto-credit is best-effort
+				}
+				const token = signToken(existing);
+				const entitlements = await getEntitlements(existing);
+				return res.status(200).json({
+					user: { ...sanitizeUser(existing), entitlements },
+					token,
+					recovered: true,
+				});
+			}
+		} catch {
+			// If recovery infrastructure fails, fall through to 409
+		}
 		return res.status(409).json({ error: "Email already used" });
 	}
 
@@ -132,6 +174,23 @@ export async function logout(_req, res) {
 		ok: true,
 		message: "Logout handled on client by dropping JWT",
 	});
+}
+
+// BUG-033: Token refresh endpoint - issues a new JWT if the current one is about to expire.
+export async function refreshToken(req, res) {
+	const user = await findUserById(req.user.id);
+	if (!user) {
+		return res.status(401).json({ error: "User not found" });
+	}
+	if (String(user.status || "").toLowerCase() === "deleted") {
+		return res.status(403).json({ error: "Account deleted" });
+	}
+	if (user.status === "locked") {
+		return res.status(403).json({ error: "Account locked", code: "ACCOUNT_LOCKED" });
+	}
+	const token = signToken(user);
+	const entitlements = await getEntitlements(user);
+	return res.json({ user: { ...sanitizeUser(user), entitlements }, token });
 }
 
 export async function passkeyRegistrationOptions(req, res) {

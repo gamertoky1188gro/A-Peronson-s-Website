@@ -4,9 +4,12 @@ import {
 	approveDocument,
 	createDraftContract,
 	deleteDocument,
+	getDocumentViewCount,
+	getDocumentViews,
 	listContractAudit,
 	listContracts,
 	listDocuments,
+	recordDocumentView,
 	registerExternalDocument,
 	rejectDocument,
 	saveDocumentMetadata,
@@ -366,6 +369,36 @@ export async function createContractSignCallback(req, res) {
 		} catch {
 			void 0;
 		}
+		return handleControllerError(res, error);
+	}
+}
+
+export async function logDocumentView(req, res) {
+	try {
+		const documentId = req.params.documentId;
+		if (!documentId) {
+			return res.status(400).json({ error: "documentId required" });
+		}
+		await recordDocumentView(documentId, req.user?.id, req.ip);
+		const count = await getDocumentViewCount(documentId);
+		return res.json({ ok: true, view_count: count });
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+}
+
+export async function getDocumentViewStats(req, res) {
+	try {
+		const documentId = req.params.documentId;
+		if (!documentId) {
+			return res.status(400).json({ error: "documentId required" });
+		}
+		const [count, views] = await Promise.all([
+			getDocumentViewCount(documentId),
+			getDocumentViews(documentId, 20),
+		]);
+		return res.json({ view_count: count, recent_views: views });
+	} catch (error) {
 		return handleControllerError(res, error);
 	}
 }

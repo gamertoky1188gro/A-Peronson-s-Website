@@ -238,23 +238,36 @@ export async function getDashboardAnalytics(user) {
 	ensureAnalyticsDashboardAccess(user);
 	const days90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
-	const [events, requirements, messages, matches, documents, users, products, ratings] =
-		await Promise.all([
-			prisma.analyticsEvent.findMany({
-				where: { created_at: { gte: days90 } },
-				take: 2000,
-			}),
-			prisma.requirement.findMany({
-				where: { created_at: { gte: days90 } },
-				take: 500,
-			}),
-			prisma.message.findMany({ take: 1000 }),
-			prisma.match.findMany({ take: 500 }),
-			prisma.document.findMany({ take: 500 }),
-			prisma.user.findMany({ take: 500 }),
-			prisma.product.findMany({ take: 500 }),
-			prisma.rating.findMany({ take: 500 }),
-		]);
+	let events = [];
+	let requirements = [];
+	let messages = [];
+	let matches = [];
+	let documents = [];
+	let users = [];
+	let products = [];
+	let ratings = [];
+
+	try {
+		[events, requirements, messages, matches, documents, users, products, ratings] =
+			await Promise.all([
+				prisma.analyticsEvent.findMany({
+					where: { created_at: { gte: days90 } },
+					take: 2000,
+				}),
+				prisma.requirement.findMany({
+					where: { created_at: { gte: days90 } },
+					take: 500,
+				}),
+				prisma.message.findMany({ take: 1000 }),
+				prisma.match.findMany({ take: 500 }),
+				prisma.document.findMany({ take: 500 }),
+				prisma.user.findMany({ take: 500 }),
+				prisma.product.findMany({ take: 500 }),
+				prisma.rating.findMany({ take: 500 }),
+			]);
+	} catch {
+		// Partial failure is acceptable — return whatever data loaded
+	}
 
 	const scopedEvents = scopeAnalyticsRecords(user, events, ["actor_id", "entity_id"]);
 	const scopedRequirements = scopeAnalyticsRecords(user, requirements, [
@@ -491,19 +504,24 @@ export async function getDashboardAnalytics(user) {
 	const leadDealConversion = percent(contractDocs.length, uniqueActiveChats || 0);
 
 	const avgRating = (() => {
-		const rows = Array.isArray(ratings) ? ratings : [];
-		const scoped = scopeAnalyticsRecords(user, rows, [
-			"target_profile_key",
-			"author_id",
-			"target_user_id",
-		]);
-		const values = scoped
-			.map((r) => Number(r.rating || r.stars || 0))
-			.filter((n) => Number.isFinite(n) && n > 0);
-		if (values.length === 0) {
+		try {
+			const rows = Array.isArray(ratings) ? ratings : [];
+			const scoped = scopeAnalyticsRecords(user, rows, [
+				"target_profile_key",
+				"author_id",
+				"from_user_id",
+				"target_user_id",
+			]);
+			const values = scoped
+				.map((r) => Number(r.rating || r.stars || 0))
+				.filter((n) => Number.isFinite(n) && n > 0);
+			if (values.length === 0) {
+				return 0;
+			}
+			return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
+		} catch {
 			return 0;
 		}
-		return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
 	})();
 
 	const trustedDealScore = Math.max(0, Math.round(contractDocs.length * 10 + avgRating * 5));
@@ -647,26 +665,39 @@ export async function getCompanyAnalytics(user) {
 	const plan = await getPlanForUser(user);
 	const days90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
-	const [events, products, productViews, messages, documents, users, leads, requirements] =
-		await Promise.all([
-			prisma.analyticsEvent.findMany({
-				where: { created_at: { gte: days90 } },
-				take: 2000,
-			}),
-			prisma.product.findMany({ take: 500 }),
-			prisma.productView.findMany({
-				where: { created_at: { gte: days90 } },
-				take: 1000,
-			}),
-			prisma.message.findMany({ take: 1000 }),
-			prisma.document.findMany({ take: 500 }),
-			prisma.user.findMany({ take: 500 }),
-			prisma.lead.findMany({ take: 500 }),
-			prisma.requirement.findMany({
-				where: { created_at: { gte: days90 } },
-				take: 500,
-			}),
-		]);
+	let events = [];
+	let products = [];
+	let productViews = [];
+	let messages = [];
+	let documents = [];
+	let users = [];
+	let leads = [];
+	let requirements = [];
+
+	try {
+		[events, products, productViews, messages, documents, users, leads, requirements] =
+			await Promise.all([
+				prisma.analyticsEvent.findMany({
+					where: { created_at: { gte: days90 } },
+					take: 2000,
+				}),
+				prisma.product.findMany({ take: 500 }),
+				prisma.productView.findMany({
+					where: { created_at: { gte: days90 } },
+					take: 1000,
+				}),
+				prisma.message.findMany({ take: 1000 }),
+				prisma.document.findMany({ take: 500 }),
+				prisma.user.findMany({ take: 500 }),
+				prisma.lead.findMany({ take: 500 }),
+				prisma.requirement.findMany({
+					where: { created_at: { gte: days90 } },
+					take: 500,
+				}),
+			]);
+	} catch {
+		// Partial failure is acceptable — return whatever data loaded
+	}
 
 	const actorRole = String(user?.role || "").toLowerCase();
 	const orgOwnerId =
@@ -1345,23 +1376,37 @@ export async function getPremiumInsights(user) {
 	const days90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
 	const role = String(user?.role || "").toLowerCase();
-	const [requirements, matches, messages, documents, users, leads, products, productViews] =
-		await Promise.all([
-			prisma.requirement.findMany({
-				where: { created_at: { gte: days90 } },
-				take: 1000,
-			}),
-			prisma.match.findMany({ take: 500 }),
-			prisma.message.findMany({ take: 1000 }),
-			prisma.document.findMany({ take: 500 }),
-			prisma.user.findMany({ take: 500 }),
-			prisma.lead.findMany({ take: 500 }),
-			prisma.product.findMany({ take: 500 }),
-			prisma.productView.findMany({
-				where: { created_at: { gte: days90 } },
-				take: 1000,
-			}),
-		]);
+
+	let requirements = [];
+	let matches = [];
+	let messages = [];
+	let documents = [];
+	let users = [];
+	let leads = [];
+	let products = [];
+	let productViews = [];
+
+	try {
+		[requirements, matches, messages, documents, users, leads, products, productViews] =
+			await Promise.all([
+				prisma.requirement.findMany({
+					where: { created_at: { gte: days90 } },
+					take: 1000,
+				}),
+				prisma.match.findMany({ take: 500 }),
+				prisma.message.findMany({ take: 1000 }),
+				prisma.document.findMany({ take: 500 }),
+				prisma.user.findMany({ take: 500 }),
+				prisma.lead.findMany({ take: 500 }),
+				prisma.product.findMany({ take: 500 }),
+				prisma.productView.findMany({
+					where: { created_at: { gte: days90 } },
+					take: 1000,
+				}),
+			]);
+	} catch {
+		// Partial failure is acceptable — return whatever data loaded
+	}
 
 	const docs = Array.isArray(documents) ? documents : [];
 	const contracts = docs.filter(

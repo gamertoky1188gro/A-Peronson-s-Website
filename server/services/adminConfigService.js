@@ -27,7 +27,7 @@ const DEFAULT_CONFIG = {
 	},
 	pricing: {
 		free_usd: 0,
-		premium_usd: 299,
+		premium_usd: 29,
 	},
 	policies: {
 		tos: "Standard platform terms apply.",

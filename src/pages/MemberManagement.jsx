@@ -25,8 +25,11 @@ const DEFAULT_CREATE_FORM = {
 	name: "",
 	username: "",
 	member_id: "",
+	email: "",
 	role: "",
 	password: "",
+	position: "",
+	message: "",
 	permissions: [],
 	permission_matrix: {},
 };
@@ -150,6 +153,9 @@ export default function MemberManagement() {
 	const [showCreate, setShowCreate] = useState(false);
 	const [createForm, setCreateForm] = useState(DEFAULT_CREATE_FORM);
 	const [activePermissionMember, setActivePermissionMember] = useState(null);
+	const [permissionMetrics, setPermissionMetrics] = useState(null);
+	const [removeConfirm, setRemoveConfirm] = useState({ open: false, memberId: null, memberName: "" });
+	const [removePassword, setRemovePassword] = useState("");
 
 	const token = getToken();
 	const editFormRef = useRef(null);
@@ -178,8 +184,18 @@ export default function MemberManagement() {
 		}
 	}
 
+	async function loadMetrics() {
+		try {
+			const data = await apiRequest(`${MEMBER_API_BASE}/metrics`, { token });
+			setPermissionMetrics(data);
+		} catch {
+			// Metrics are non-critical; ignore errors
+		}
+	}
+
 	useEffect(() => {
 		loadMembers();
+		loadMetrics();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -223,6 +239,16 @@ export default function MemberManagement() {
 		setError("");
 		setSuccess("");
 
+		if (!createForm.password || createForm.password.length < 6) {
+			setError("Password is required and must be at least 6 characters.");
+			return;
+		}
+
+		if (createForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) {
+			setError("Please enter a valid email address.");
+			return;
+		}
+
 		if (canTeamAccess) {
 			const conflict = getConflictMessage(createForm.permissions);
 			if (conflict) {
@@ -248,7 +274,10 @@ export default function MemberManagement() {
 			const temp = created?.temporary_password
 				? ` Temporary password: ${created.temporary_password}`
 				: "";
-			setSuccess(`Member created.${temp}`);
+			const inviteMsg = createForm.email
+				? ` Invitation sent to ${createForm.email}.`
+				: "";
+			setSuccess(`Member created.${inviteMsg}${temp}`);
 			setCreateForm({
 				...DEFAULT_CREATE_FORM,
 				permission_matrix: createBlankMatrix(constraints.permission_matrix_sections),
@@ -289,6 +318,52 @@ export default function MemberManagement() {
 		}
 	}
 
+	function openRemoveConfirm(member) {
+		setRemovePassword("");
+		setRemoveConfirm({ open: true, memberId: member.id, memberName: member.name });
+	}
+
+	async function confirmRemoveMember() {
+		if (!removePassword.trim()) {
+			setError("Password is required to remove a member.");
+			return;
+		}
+		const member = members.find((m) => m.id === removeConfirm.memberId);
+		if (!member) {
+			setRemoveConfirm({ open: false, memberId: null, memberName: "" });
+			return;
+		}
+		try {
+			await apiRequest(`${MEMBER_API_BASE}/${removeConfirm.memberId}?remove=true`, {
+				method: "DELETE",
+				token,
+				body: { password: removePassword },
+			});
+			setSuccess(`Member "${removeConfirm.memberName}" removed.`);
+			setRemoveConfirm({ open: false, memberId: null, memberName: "" });
+			setRemovePassword("");
+			await loadMembers();
+		} catch (err) {
+			setError(err.message);
+		}
+	}
+
+	async function handleReactivate(memberId) {
+		setError("");
+		setSuccess("");
+		try {
+			await apiRequest(`${MEMBER_API_BASE}/${memberId}`, {
+				method: "PUT",
+				token,
+				body: { status: "active" },
+			});
+			setSuccess("Member reactivated.");
+			await loadMembers();
+		} catch (err) {
+			setError(err.message);
+		}
+	}
+
 	async function handleUpdateMember(memberId, payload) {
 		if (canTeamAccess) {
 			const conflict = getConflictMessage(payload.permissions);
@@ -308,6 +383,9 @@ export default function MemberManagement() {
 							([key]) => !["permissions", "permission_matrix"].includes(key),
 						),
 					);
+			if (!nextPayload.password) {
+				delete nextPayload.password;
+			}
 			await apiRequest(`${MEMBER_API_BASE}/${memberId}`, {
 				method: "PUT",
 				token,
@@ -322,7 +400,7 @@ export default function MemberManagement() {
 	}
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	if (forbidden || !canManageMembers) {
@@ -394,6 +472,27 @@ export default function MemberManagement() {
 							value={`${filtered.length} shown / ${members.length} total`}
 						/>
 					</div>
+
+					{permissionMetrics && (
+						<div className="mt-4 rounded-2xl border border-slate-200 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5">
+							<h3 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
+								Permission Distribution
+							</h3>
+							<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+								{Object.entries(permissionMetrics.permissionCounts || {}).map(([perm, count]) => (
+									<div
+										key={perm}
+										className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs dark:bg-white/5"
+									>
+										<span className="text-slate-600 dark:text-slate-300">{perm}</span>
+										<span className="font-mono font-bold text-sky-600 dark:text-sky-400">
+											{count}/{permissionMetrics.activeMembers}
+										</span>
+									</div>
+								))}
+							</div>
+						</div>
+					)}
 
 					{canTeamAccess ? null : (
 						<div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
@@ -488,16 +587,26 @@ export default function MemberManagement() {
 																label="Reset"
 																onClick={() => handleResetPassword(m.id)}
 															/>
-															<ActionButton
-																label="Deactivate"
-																onClick={() => handleDeactivateOrRemove(m.id, false)}
-																variant="warning"
-															/>
-															<ActionButton
-																label="Remove"
-																onClick={() => handleDeactivateOrRemove(m.id, true)}
-																variant="danger"
-															/>
+															{m.status === "active" ? (
+																<>
+																	<ActionButton
+																		label="Deactivate"
+																		onClick={() => handleDeactivateOrRemove(m.id, false)}
+																		variant="warning"
+																	/>
+																	<ActionButton
+																		label="Remove"
+																		onClick={() => openRemoveConfirm(m)}
+																		variant="danger"
+																	/>
+																</>
+															) : m.status === "inactive" || m.status === "removed" ? (
+																<ActionButton
+																	label="Reactivate"
+																	onClick={() => handleReactivate(m.id)}
+																	variant="default"
+																/>
+															) : null}
 														</div>
 													</td>
 												</tr>
@@ -538,7 +647,7 @@ export default function MemberManagement() {
 								onClick={handleCreateMember}
 								className="rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2.5 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:brightness-110"
 							>
-								Create
+								{createForm.email ? "Create & Send Invite" : "Create Member"}
 							</button>
 						</div>
 					}
@@ -569,6 +678,18 @@ export default function MemberManagement() {
 							</label>
 							<label className="space-y-2">
 								<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+									Email address (for external invites)
+								</span>
+								<input
+									type="email"
+									value={createForm.email}
+									onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+									placeholder="agent@example.com"
+								/>
+							</label>
+							<label className="space-y-2">
+								<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
 									Member ID (auto-generated)
 								</span>
 								<div className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-mono text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
@@ -577,19 +698,55 @@ export default function MemberManagement() {
 							</label>
 							<label className="space-y-2">
 								<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-									Initial password (optional)
+									Initial password
 								</span>
 								<input
 									value={createForm.password}
 									onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
 									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-									placeholder="Leave empty to auto-generate"
+									placeholder="Enter a password"
+									required
 								/>
 							</label>
 						</div>
 
 						<div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-							<p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+							<div className="grid gap-4 md:grid-cols-2">
+								<label className="space-y-2">
+									<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+										Position
+									</span>
+									<select
+										value={createForm.position}
+										onChange={(e) => setCreateForm({ ...createForm, position: e.target.value })}
+										className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+									>
+										<option value="">Select position</option>
+										<option value="agent">Agent</option>
+										<option value="merchandiser">Merchandiser</option>
+										<option value="sample_manager">Sample Manager</option>
+										<option value="quality_control">Quality Control</option>
+										<option value="production_manager">Production Manager</option>
+										<option value="procurement">Procurement</option>
+										<option value="compliance">Compliance</option>
+										<option value="logistics">Logistics</option>
+										<option value="other">Other</option>
+									</select>
+								</label>
+								<label className="space-y-2">
+									<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+										Optional message
+									</span>
+									<textarea
+										value={createForm.message}
+										onChange={(e) => setCreateForm({ ...createForm, message: e.target.value })}
+										className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white resize-none"
+										placeholder="Welcome message for the new member"
+										rows={3}
+									/>
+								</label>
+							</div>
+							<p className="mt-4 text-sm font-medium text-slate-700 dark:text-slate-200">
 								Role: {constraints.default_role || "agent"} (fixed)
 							</p>
 							{canTeamAccess ? null : (
@@ -670,6 +827,62 @@ export default function MemberManagement() {
 						canTeamAccess={canTeamAccess}
 					/>
 				</Modal>
+			)}
+
+			{removeConfirm.open && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+					<div className="w-full max-w-md rounded-3xl border border-white/10 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950">
+						<div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+							<h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+								Confirm Member Removal
+							</h3>
+						</div>
+						<div className="px-6 py-5">
+							<p className="text-sm text-slate-600 dark:text-slate-300">
+								Are you sure you want to permanently remove{" "}
+								<strong className="text-rose-600 dark:text-rose-400">
+									{removeConfirm.memberName}
+								</strong>
+								? This action cannot be undone.
+							</p>
+							<label className="mt-4 block space-y-2">
+								<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+									Enter your password to confirm
+								</span>
+								<input
+									type="password"
+									value={removePassword}
+									onChange={(e) => setRemovePassword(e.target.value)}
+									placeholder="Enter your password"
+									className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+									onKeyDown={(e) => {
+										if (e.key === "Enter") confirmRemoveMember();
+									}}
+									autoFocus
+								/>
+							</label>
+						</div>
+						<div className="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+							<button
+								type="button"
+								onClick={() => {
+									setRemoveConfirm({ open: false, memberId: null, memberName: "" });
+									setRemovePassword("");
+								}}
+								className="rounded-2xl border border-slate-200 px-5 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900"
+							>
+								Cancel
+							</button>
+							<button
+								type="button"
+								onClick={confirmRemoveMember}
+								className="rounded-2xl bg-rose-500 px-5 py-2.5 font-semibold text-white shadow-lg shadow-rose-500/25 transition hover:bg-rose-600"
+							>
+								Remove Member
+							</button>
+						</div>
+					</div>
+				</div>
 			)}
 		</div>
 	);
@@ -789,8 +1002,9 @@ const MemberEditor = function MemberEditor({
 		name: member.name || "",
 		username: member.username || "",
 		member_id: member.member_id || member.account_id || "",
-		role: "agent",
+		role: member.role || "agent",
 		status: member.status || "active",
+		password: "",
 		permissions: member.permissions || [],
 		permission_matrix:
 			member.permission_matrix || createBlankMatrix(constraints.permission_matrix_sections),
@@ -852,16 +1066,33 @@ const MemberEditor = function MemberEditor({
 			</div>
 
 			<div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-				<p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-					Role: {constraints.default_role || "agent"} (fixed)
-				</p>
-				{canTeamAccess ? null : (
-					<div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
-						Team/agent access management requires the{" "}
-						<strong>{String(constraints.plan || "current").toUpperCase()}</strong> plan. Upgrade to
-						edit permissions and access controls.
-					</div>
-				)}
+				<div className="grid gap-4 md:grid-cols-2">
+					<label className="space-y-2">
+						<span className="text-sm font-medium text-slate-700 dark:text-slate-200">Role</span>
+						<select
+							value={form.role}
+							onChange={(e) => setForm({ ...form, role: e.target.value })}
+							className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+						>
+							<option value="agent">Agent</option>
+							<option value="viewer">Viewer</option>
+							<option value="editor">Editor</option>
+							<option value="manager">Manager</option>
+						</select>
+					</label>
+					<label className="space-y-2">
+						<span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+							New password (leave blank to keep current)
+						</span>
+						<input
+							type="password"
+							value={form.password}
+							onChange={(e) => setForm({ ...form, password: e.target.value })}
+							className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+							placeholder="Enter new password (optional)"
+						/>
+					</label>
+				</div>
 			</div>
 
 			<div>

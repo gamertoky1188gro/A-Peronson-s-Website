@@ -434,7 +434,7 @@ export default function Insights() {
 		.filter(Boolean);
 
 	if (loading) {
-		return <NeonAtom fill={true} size={64} text="Loading analytics..." />;
+		return <NeonAtom fill={true} size={64} text="Loading analytics..." timeout={10000} />;
 	}
 
 	if (forbidden) {

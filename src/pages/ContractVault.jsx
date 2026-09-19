@@ -343,6 +343,7 @@ export default function ContractVaultPage({ embedded = false }) {
 	const [selectedId, setSelectedId] = useState(null);
 	const [tab, setTab] = useState("All");
 	const [saving, setSaving] = useState(false);
+	const [paymentTypeLoading, setPaymentTypeLoading] = useState(false);
 	const [contracts, setContracts] = useState([]);
 	const [pageLoading, setPageLoading] = useState(true);
 	const [feedback, setFeedback] = useState("");
@@ -549,6 +550,12 @@ export default function ContractVaultPage({ embedded = false }) {
 			cancelled = true;
 		};
 	}, [selectedId]);
+
+	useEffect(() => {
+		if (!paymentTypeLoading) return;
+		const timer = setTimeout(() => setPaymentTypeLoading(false), 1200);
+		return () => clearTimeout(timer);
+	}, [paymentTypeLoading]);
 
 	const refreshPaymentProofs = async () => {
 		if (!contract?.id) {
@@ -825,7 +832,7 @@ export default function ContractVaultPage({ embedded = false }) {
 				</div>
 			);
 		}
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 	if (!contract) {
 		if (embedded) {
@@ -1193,19 +1200,33 @@ export default function ContractVaultPage({ embedded = false }) {
 										<label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
 											Proof type
 										</label>
-										<select
-											value={paymentForm.type}
-											onChange={(e) =>
-												setPaymentForm((p) => ({
-													...p,
-													type: e.target.value,
-												}))
-											}
-											className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
-										>
-											<option value="bank_transfer">Bank transfer</option>
-											<option value="lc">Letter of credit (LC)</option>
-										</select>
+									<select
+										value={paymentForm.type}
+										onChange={(e) => {
+											setPaymentForm((p) => ({
+												...p,
+												type: e.target.value,
+											}));
+											setPaymentTypeLoading(true);
+										}}
+										className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
+									>
+										<option value="bank_transfer">Bank transfer</option>
+										<option value="lc">Letter of credit (LC)</option>
+									</select>
+									{paymentTypeLoading ? (
+										<div className="flex items-center justify-center gap-1 py-2">
+											{["🌸", "🌼", "🌺", "🌷", "🌸"].map((emoji, i) => (
+												<span
+													key={i}
+													className="inline-block animate-bounce text-lg"
+													style={{ animationDelay: `${i * 100}ms` }}
+												>
+													{emoji}
+												</span>
+											))}
+										</div>
+									) : null}
 										<Input
 											label="Transaction reference"
 											value={paymentForm.transaction_reference}
@@ -1289,30 +1310,41 @@ export default function ContractVaultPage({ embedded = false }) {
 									>
 										Submit proof
 									</button>
-									{paymentProofs.length > 0 ? (
-										<div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-white/10 dark:bg-slate-950">
-											{paymentProofs.map((proof, idx) => (
-												<div
-													key={proof.id || idx}
-													className="flex items-center justify-between py-1 text-slate-700 dark:text-slate-300"
-												>
-													<span>
+								{paymentProofs.length > 0 ? (
+									<div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-white/10 dark:bg-slate-950">
+										{paymentProofs.map((proof, idx) => (
+											<div
+												key={proof.id || idx}
+												className="flex items-center justify-between gap-3 py-2 text-slate-700 dark:text-slate-300"
+											>
+												<div className="min-w-0">
+													<span className="font-medium">
 														{proof.type || proof.transaction_reference || `Proof ${idx + 1}`}
 													</span>
-													<Pill
-														tone={
-															proof.status === "accepted"
-																? "green"
-																: proof.status === "rejected"
-																	? "red"
-																	: "amber"
-														}
-													>
-														{proof.status || "pending"}
-													</Pill>
+													{proof.created_at || proof.submitted_at ? (
+														<div className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+															{new Date(proof.created_at || proof.submitted_at).toLocaleDateString("en-US", {
+																year: "numeric",
+																month: "short",
+																day: "numeric",
+															})}
+														</div>
+													) : null}
 												</div>
-											))}
-										</div>
+												<Pill
+													tone={
+														proof.status === "accepted"
+															? "green"
+															: proof.status === "rejected"
+																? "red"
+																: "amber"
+													}
+												>
+													{proof.status || "pending"}
+												</Pill>
+											</div>
+										))}
+									</div>
 									) : (
 										<div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 dark:border-white/10 dark:bg-slate-950 dark:text-slate-400">
 											No proofs submitted yet.

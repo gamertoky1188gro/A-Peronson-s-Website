@@ -92,6 +92,7 @@ import {
 	getBuyerRequestStepErrors,
 	getBuyerRequestSubmissionErrors,
 } from "../../shared/requirementValidation.js";
+import { garmentCategories, textileCategories } from "../../shared/config/platformTaxonomy.js";
 import {
 	ArrowLeft,
 	ArrowRight,
@@ -1029,7 +1030,7 @@ export default function BuyerRequestManagement() {
 			: "Lead queue for buyer requests. Use Assign to route a request to a specific agent.";
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	return (
@@ -1273,7 +1274,7 @@ export default function BuyerRequestManagement() {
 																	required={true}
 																	error={fieldErrors.subCategory || fieldErrors.sub_category}
 																>
-																	<Input
+																	<select
 																		value={form.subCategory}
 																		onChange={(e) =>
 																			setForm({
@@ -1281,8 +1282,13 @@ export default function BuyerRequestManagement() {
 																				subCategory: e.target.value,
 																			})
 																		}
-																		placeholder="Jersey"
-																	/>
+																		className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
+																	>
+																		<option value="">Select sub-category</option>
+																		{textileCategories.map((cat) => (
+																			<option key={cat} value={cat}>{cat}</option>
+																		))}
+																	</select>
 																</Field>
 																<Field
 																	label="Quantity"
@@ -1319,7 +1325,7 @@ export default function BuyerRequestManagement() {
 																	required={true}
 																	error={fieldErrors.category}
 																>
-																	<Input
+																	<select
 																		value={form.category}
 																		onChange={(e) =>
 																			setForm({
@@ -1327,8 +1333,13 @@ export default function BuyerRequestManagement() {
 																				category: e.target.value,
 																			})
 																		}
-																		placeholder="Outerwear"
-																	/>
+																		className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
+																	>
+																		<option value="">Select category</option>
+																		{garmentCategories.map((cat) => (
+																			<option key={cat} value={cat}>{cat}</option>
+																		))}
+																	</select>
 																</Field>
 																<Field
 																	label="Gender target"

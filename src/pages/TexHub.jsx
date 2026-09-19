@@ -597,9 +597,9 @@ export default function TexHub() {
 	const timeline = home?.timeline || initialHome.timeline;
 	const buyerStats = home?.bento?.enterpriseAnalytics?.stats ||
 		initialHome.bento.enterpriseAnalytics.stats || [
-			{ label: "Active leads", value: "120" },
-			{ label: "Verified matches", value: "60" },
-			{ label: "Avg. response", value: "1h 30m" },
+			{ label: "Active leads", value: "—" },
+			{ label: "Verified matches", value: "—" },
+			{ label: "Avg. response", value: "—" },
 		];
 	const trustPoints = home?.hero?.trust_points || initialHome.hero.trust_points;
 
@@ -677,7 +677,7 @@ export default function TexHub() {
 	}, [sectionIds]);
 
 	if (loading) {
-		return <NeonAtom fill={true} size={64} text="Loading..." />;
+		return <NeonAtom fill={true} size={64} text="Loading..." timeout={10000} />;
 	}
 
 	return (
@@ -1150,17 +1150,13 @@ export default function TexHub() {
 								spreadsheet.
 							</p>
 							<div className="mt-6 grid gap-3 sm:grid-cols-3">
-								{[
-									["Active leads", "120"],
-									["Verified matches", "60"],
-									["Avg. response", "1h 30m"],
-								].map(([label, value]) => (
+								{buyerStats.map((stat) => (
 									<div
-										key={label}
+										key={stat.label}
 										className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
 									>
-										<div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
-										<div className="mt-2 text-2xl font-semibold">{value}</div>
+										<div className="text-xs text-slate-500 dark:text-slate-400">{stat.label}</div>
+										<div className="mt-2 text-2xl font-semibold">{stat.value}</div>
 									</div>
 								))}
 							</div>

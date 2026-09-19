@@ -26,8 +26,8 @@ import {
 	useSpring,
 	useTransform,
 } from "framer-motion";
-import { Check } from "lucide-react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Check, Tag, X } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Atom, Mosaic } from "react-loading-indicators";
 import { Link, useLocation } from "react-router-dom";
 import FlipCard from "../components/FlipCard.jsx";
@@ -304,6 +304,109 @@ function FeatureList({ items, accent = false }) {
 	);
 }
 
+function CouponInput() {
+	const [code, setCode] = useState("");
+	const [status, setStatus] = useState(null);
+	const [loading, setLoading] = useState(false);
+
+	const validate = useCallback(async () => {
+		const trimmed = code.trim().toUpperCase();
+		if (!trimmed) {
+			return;
+		}
+		setLoading(true);
+		setStatus(null);
+		try {
+			const token = getToken();
+			const res = await apiRequest("/wallet/validate-coupon", {
+				method: "POST",
+				token,
+				body: { code: trimmed },
+			});
+			if (res?.valid) {
+				setStatus({ ok: true, msg: `Code "${res.code}" is valid — $${Number(res.amount_usd || 0).toFixed(2)} credit${res.verification_free_months ? ` + ${res.verification_free_months} free months` : ""}.` });
+			} else {
+				setStatus({ ok: false, msg: res?.error || "Invalid coupon code" });
+			}
+		} catch (err) {
+			setStatus({ ok: false, msg: err.message || "Failed to validate coupon" });
+		} finally {
+			setLoading(false);
+		}
+	}, [code]);
+
+	const apply = useCallback(async () => {
+		const trimmed = code.trim().toUpperCase();
+		if (!trimmed) {
+			return;
+		}
+		setLoading(true);
+		setStatus(null);
+		try {
+			const token = getToken();
+			const res = await apiRequest("/wallet/redeem", {
+				method: "POST",
+				token,
+				body: { code: trimmed },
+			});
+			setStatus({ ok: true, msg: `Coupon applied! $${Number(res?.wallet?.restricted_balance_usd || 0).toFixed(2)} credit added to your account.` });
+			setCode("");
+		} catch (err) {
+			setStatus({ ok: false, msg: err.message || "Failed to apply coupon" });
+		} finally {
+			setLoading(false);
+		}
+	}, [code]);
+
+	return (
+		<ScrollReveal as="section" className="mt-20">
+			<div className="mx-auto max-w-lg rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
+				<div className="flex items-center gap-3 mb-4">
+					<div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-2">
+						<Tag className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+					</div>
+					<div>
+						<h3 className="text-sm font-semibold text-slate-900 dark:text-white">Have a promo code?</h3>
+						<p className="text-xs text-slate-500 dark:text-slate-400">Enter an early adopter or campaign coupon.</p>
+					</div>
+				</div>
+				<div className="flex gap-2">
+					<input
+						type="text"
+						value={code}
+						onChange={(e) => { setCode(e.target.value); setStatus(null); }}
+						onKeyDown={(e) => { if (e.key === "Enter") validate(); }}
+						placeholder="Enter coupon code"
+						className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500"
+					/>
+					<button
+						onClick={validate}
+						disabled={!code.trim() || loading}
+						className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-700 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-sky-400"
+					>
+						{loading ? "Checking..." : "Validate"}
+					</button>
+					{status?.ok && (
+						<button
+							onClick={apply}
+							disabled={loading}
+							className="rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:opacity-40"
+						>
+							Apply
+						</button>
+					)}
+				</div>
+				{status && (
+					<div className={`mt-3 flex items-center gap-2 text-xs ${status.ok ? "text-emerald-600 dark:text-emerald-300" : "text-red-500 dark:text-red-400"}`}>
+						{status.ok ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
+						{status.msg}
+					</div>
+				)}
+			</div>
+		</ScrollReveal>
+	);
+}
+
 function PlanCard({
 	title,
 	role,
@@ -351,6 +454,11 @@ function PlanCard({
 				</div>
 				<div className="pb-2 text-sm text-slate-500 dark:text-slate-400">per month</div>
 			</div>
+			{price !== "$0" && (
+				<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+					or $300/year (save 14%)
+				</div>
+			)}
 		</>
 	);
 
@@ -587,15 +695,18 @@ export default function PricingPage() {
 		if (typeof window !== "undefined" && location?.hash) {
 			const id = String(location.hash || "").replace(/^#/, "");
 			if (id) {
-				setTimeout(() => {
+				const timer = setTimeout(() => {
 					const el = document.getElementById(id);
 					if (el) {
 						el.scrollIntoView({ behavior: "smooth", block: "start" });
 					}
 				}, 80);
+				return () => clearTimeout(timer);
 			}
 		}
+	}, [location.hash]);
 
+	useEffect(() => {
 		let alive = true;
 		const controller = new AbortController();
 
@@ -628,7 +739,7 @@ export default function PricingPage() {
 			alive = false;
 			controller.abort();
 		};
-	}, [location.hash]);
+	}, []);
 
 	const plansByRole = useMemo(
 		() => ({
@@ -889,17 +1000,17 @@ export default function PricingPage() {
 										isLoggedIn={isLoggedIn}
 										flip={!isTouchDevice}
 									/>
-									<PlanCard
-										title={`${section.title} Premium`}
-										price="$199"
-										description="Built for buying houses & enterprise teams."
-										features={rolePlan.Premium}
-										buttonLabel="Choose premium"
-										highlighted={true}
-										icon="✨"
-										isLoggedIn={isLoggedIn}
-										flip={!isTouchDevice}
-									/>
+								<PlanCard
+									title={`${section.title} Premium`}
+									price="$29"
+									description="Built for buying houses & enterprise teams."
+									features={rolePlan.Premium}
+									buttonLabel="Choose premium"
+									highlighted={true}
+									icon="✨"
+									isLoggedIn={isLoggedIn}
+									flip={!isTouchDevice}
+								/>
 								</React.Fragment>
 							);
 						})}
@@ -1000,6 +1111,10 @@ export default function PricingPage() {
 						))}
 					</div>
 				</ScrollReveal>
+
+				{isLoggedIn ? (
+					<CouponInput />
+				) : null}
 
 				<ScrollReveal
 					as="section"

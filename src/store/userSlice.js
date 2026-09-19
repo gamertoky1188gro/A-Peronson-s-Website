@@ -7,8 +7,20 @@ export const fetchUser = createAsyncThunk("user/fetchUser", async (_, { rejectWi
 		return rejectWithValue("No token");
 	}
 	try {
-		return await getUserFromApi(token);
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 15000);
+		try {
+			const result = await getUserFromApi(token);
+			clearTimeout(timeout);
+			return result;
+		} catch (err) {
+			clearTimeout(timeout);
+			throw err;
+		}
 	} catch (err) {
+		if (err?.name === "AbortError") {
+			return rejectWithValue("Request timed out");
+		}
 		return rejectWithValue(err.message);
 	}
 });

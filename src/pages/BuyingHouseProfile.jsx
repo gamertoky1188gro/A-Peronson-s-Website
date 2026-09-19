@@ -395,12 +395,12 @@ export default function BuyingHouseProfile() {
 		String(user?.subscription_status || "").toLowerCase() === "premium" ||
 		profile?.effective_plan === "premium";
 	const isSelfOrAdmin = viewerPerms.is_self || viewerPerms.is_admin;
-	const brandProfile = isSelfOrAdmin ? profile?.profile_private || user?.profile || {} : {};
+	const hasRelationship = relationship.friend_status === "friends";
+	const brandProfile = isSelfOrAdmin || hasRelationship ? profile?.profile_private || user?.profile || {} : {};
 	const hasBrandKit = Boolean(
 		brandProfile.brand_name ||
 			brandProfile.brand_logo_url ||
-			brandProfile.brand_tagline ||
-			brandProfile.brand_website,
+			brandProfile.brand_tagline,
 	);
 	const hasAccountManager = Boolean(
 		brandProfile.account_manager_name ||
@@ -806,7 +806,7 @@ export default function BuyingHouseProfile() {
 	}, [products, searchProducts]);
 
 	if (loading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 	if (error) {
 		return (
@@ -917,12 +917,17 @@ export default function BuyingHouseProfile() {
 											<span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
 												<User2 size={13} /> {roleLabel}
 											</span>
+										<span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
+											<MapPin size={13} /> {country}
+										</span>
+										{industry ? (
 											<span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
-												<MapPin size={13} /> {country}
+												<Globe2 size={13} /> {industry}
 											</span>
-											<span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
-												<Star size={13} /> {avg ? `${avg.toFixed(1)} / 5` : "No rating"}
-											</span>
+										) : null}
+										<span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
+											<Star size={13} /> {avg ? `${avg.toFixed(1)} / 5` : "No rating"}
+										</span>
 										</div>
 									</div>
 								</div>
@@ -1371,6 +1376,30 @@ export default function BuyingHouseProfile() {
 												helper="Aggregate reliability"
 											/>
 										</div>
+										{ratingSummary?.aggregate?.category_averages && (() => {
+											const cats = ratingSummary.aggregate.category_averages;
+											const filled = [
+												{ label: "Sample Accuracy", val: cats.sample_accuracy },
+												{ label: "Communication", val: cats.communication_speed },
+												{ label: "Quality Control", val: cats.quality_control },
+												{ label: "Delivery", val: cats.delivery_timeliness },
+												{ label: "After-Sales", val: cats.after_sales_support },
+											].filter((c) => c.val != null);
+											if (filled.length === 0) return null;
+											return (
+												<div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+													{filled.map((c) => (
+														<div key={c.label} className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/40">
+															<span className="text-xs font-medium text-slate-600 dark:text-slate-300">{c.label}</span>
+															<span className="flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-300">
+																<Star className="h-3 w-3" />
+																{Number(c.val).toFixed(1)}
+															</span>
+														</div>
+													))}
+												</div>
+											);
+										})()}
 										<div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
 											<strong>Review policy:</strong> Reviews can only be edited or deleted by the
 											person who wrote them. Profile owners cannot delete reviews to maintain
@@ -1386,7 +1415,7 @@ export default function BuyingHouseProfile() {
 										{(ratingSummary?.recent_reviews || []).length > 0 ? (
 											<div className="space-y-3">
 												{(ratingSummary.recent_reviews || []).map((review) => {
-													const isAuthor = String(review.from_user_id) === String(user?.id);
+													const 	isAuthor = currentUser?.id && String(review.from_user_id) === String(currentUser.id);
 													return (
 														<div
 															key={review.id}
@@ -1406,6 +1435,22 @@ export default function BuyingHouseProfile() {
 																	<p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
 																		{review.comment || "No comment provided."}
 																	</p>
+																	{[review.sample_accuracy, review.communication_speed, review.quality_control, review.delivery_timeliness, review.after_sales_support].some((v) => v != null) && (
+																		<div className="mt-2 flex flex-wrap gap-2">
+																			{[
+																				{ key: "sample_accuracy", label: "Sample Accuracy", val: review.sample_accuracy },
+																				{ key: "communication_speed", label: "Communication", val: review.communication_speed },
+																				{ key: "quality_control", label: "Quality Control", val: review.quality_control },
+																				{ key: "delivery_timeliness", label: "Delivery", val: review.delivery_timeliness },
+																				{ key: "after_sales_support", label: "After-Sales", val: review.after_sales_support },
+																			].filter((c) => c.val != null).map((c) => (
+																				<span key={c.key} className="inline-flex items-center gap-1 rounded-full border border-sky-500/15 bg-sky-500/5 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-300">
+																					<Star className="h-3 w-3 text-sky-400" />
+																					{c.label}: {Number(c.val)}/5
+																				</span>
+																			))}
+																		</div>
+																	)}
 																	<div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
 																		{review.created_at
 																			? new Date(review.created_at).toLocaleDateString()

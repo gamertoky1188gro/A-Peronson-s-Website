@@ -145,7 +145,7 @@ export async function getProfileOverview(viewerId, profileUserId) {
 	}
 
 	let extendedProfile = null;
-	if (viewerId === profileUserId || isAdmin) {
+	if (viewerId === profileUserId || isAdmin || relationship.friend_status === "friends") {
 		extendedProfile = extendProfileForOwner({}, user);
 	}
 

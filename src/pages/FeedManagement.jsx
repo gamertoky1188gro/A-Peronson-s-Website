@@ -117,6 +117,7 @@ export default function FeedManagementPage() {
 	const [error, setError] = useState("");
 	const [editingPost, setEditingPost] = useState(null);
 	const [pageLoading, setPageLoading] = useState(true);
+	const [confirmDelete, setConfirmDelete] = useState(null);
 
 	useEffect(() => {
 		let postsDone = false;
@@ -357,7 +358,7 @@ export default function FeedManagementPage() {
 			: "bg-white text-slate-900 placeholder:text-slate-400 border-slate-200 focus:border-sky-500";
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 
 	return (
@@ -372,7 +373,7 @@ export default function FeedManagementPage() {
 					<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 						<div className="space-y-2">
 							<div>
-								<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Feed Management</h1>
+								<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Post Editor</h1>
 								<p className={cn("mt-1 text-sm sm:text-base", subtleText)}>
 									Create and manage your feed posts.
 								</p>
@@ -579,24 +580,29 @@ export default function FeedManagementPage() {
 									</button>
 								</div>
 
-								<div className="mt-5">
-									{mediaRows.length === 0 ? (
-										<div
-											className={cn(
-												"rounded-2xl border border-dashed px-5 py-8 text-center",
-												theme === "dark"
-													? "border-white/10 bg-slate-950/30"
-													: "border-slate-200 bg-slate-50/70",
-											)}
-										>
-											<Image className={cn("mx-auto h-10 w-10", subtleText)} />
-											<p className="mt-3 text-sm font-medium">No media uploaded yet</p>
-											<p className={cn("mt-1 text-sm", subtleText)}>
-												Choose one or more images/videos to build a richer post.
-											</p>
-										</div>
-									) : (
-										<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+							<div className="mt-5">
+								{mediaRows.length === 0 ? (
+									<button
+										type="button"
+										onClick={openPicker}
+										disabled={uploading}
+										className={cn(
+											"w-full rounded-2xl border-2 border-dashed px-5 py-10 text-center transition hover:border-sky-400 hover:bg-sky-50/30 cursor-pointer",
+											theme === "dark"
+												? "border-white/15 bg-slate-950/30 hover:bg-sky-500/5"
+												: "border-slate-300 bg-slate-50/70 hover:bg-sky-50/50",
+										)}
+									>
+										<Upload className={cn("mx-auto h-10 w-10", theme === "dark" ? "text-sky-400" : "text-sky-500")} />
+										<p className="mt-3 text-sm font-semibold">
+											Drop images &amp; videos here or click to browse
+										</p>
+										<p className={cn("mt-1 text-xs", subtleText)}>
+											JPG, PNG, GIF, WebP, MP4, WebM — up to 50 MB each
+										</p>
+									</button>
+								) : (
+									<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 											{mediaRows.map((media) => {
 												const isVideo = media.type.startsWith("video");
 												return (
@@ -887,14 +893,14 @@ export default function FeedManagementPage() {
 																<Pencil className="h-4 w-4" />
 																Edit
 															</button>
-															<button
-																type="button"
-																onClick={() => deletePost(post.id)}
-																className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/15"
-															>
-																<Trash2 className="h-4 w-4" />
-																Delete
-															</button>
+														<button
+															type="button"
+															onClick={() => setConfirmDelete(post)}
+															className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/25 hover:text-red-200"
+														>
+															<Trash2 className="h-4 w-4" />
+															Delete
+														</button>
 														</div>
 													</div>
 
@@ -926,6 +932,48 @@ export default function FeedManagementPage() {
 					</div>
 				</div>
 			</div>
+
+			{confirmDelete && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+					<div className={cn("w-full max-w-md rounded-3xl border p-6 shadow-2xl", panelBg)}>
+						<div className="flex items-center gap-3 mb-4">
+							<div className="grid h-10 w-10 place-items-center rounded-2xl bg-red-500/15 text-red-400">
+								<Trash2 className="h-5 w-5" />
+							</div>
+							<div>
+								<h3 className="text-lg font-semibold">Delete Post</h3>
+								<p className={cn("text-sm", subtleText)}>This action cannot be undone.</p>
+							</div>
+						</div>
+						<p className={cn("text-sm mb-5", subtleText)}>
+							Are you sure you want to delete <span className="font-semibold text-slate-900 dark:text-white">"{confirmDelete.title}"</span>?
+						</p>
+						<div className="flex gap-3 justify-end">
+							<button
+								type="button"
+								onClick={() => setConfirmDelete(null)}
+								className={cn(
+									"inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition",
+									panelBg,
+								)}
+							>
+								Cancel
+							</button>
+							<button
+								type="button"
+								onClick={() => {
+									deletePost(confirmDelete.id);
+									setConfirmDelete(null);
+								}}
+								className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600"
+							>
+								<Trash2 className="h-4 w-4" />
+								Delete
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

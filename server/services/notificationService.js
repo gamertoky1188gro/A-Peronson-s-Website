@@ -179,6 +179,14 @@ export async function markNotificationRead(userId, id) {
 	return updated;
 }
 
+export async function markAllNotificationsRead(userId) {
+	await prisma.notification.updateMany({
+		where: { user_id: userId, read: false },
+		data: { read: true },
+	});
+	return { ok: true };
+}
+
 function monthKey(date = new Date()) {
 	const month = String(date.getMonth() + 1).padStart(2, "0");
 	return `${date.getFullYear()}-${month}`;

@@ -198,7 +198,7 @@ function SectionTitle({ icon: Icon, title, subtitle, action }) {
 	);
 }
 
-function StatCard({ icon: Icon, label, value, caption }) {
+function StatCard({ icon: Icon, label, value, caption, action }) {
 	return (
 		<div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50">
 			<div className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
@@ -211,6 +211,7 @@ function StatCard({ icon: Icon, label, value, caption }) {
 			{caption ? (
 				<div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{caption}</div>
 			) : null}
+			{action}
 		</div>
 	);
 }
@@ -227,6 +228,8 @@ export default function FactoryProfile() {
 	const [profile, setProfile] = useState(null);
 	const [ratingSummary, setRatingSummary] = useState(null);
 	const [certification, setCertification] = useState(null);
+	const [editingCapacity, setEditingCapacity] = useState(false);
+	const [capacityValue, setCapacityValue] = useState("");
 
 	const [activeTab, setActiveTab] = useState("overview");
 	const [products, setProducts] = useState([]);
@@ -260,12 +263,12 @@ export default function FactoryProfile() {
 		String(user?.subscription_status || "").toLowerCase() === "premium" ||
 		profile?.effective_plan === "premium";
 	const isSelfOrAdmin = viewerPerms.is_self || viewerPerms.is_admin;
-	const brandProfile = isSelfOrAdmin ? profile?.profile_private || user?.profile || {} : {};
+	const hasRelationship = relationship.friend_status === "friends";
+	const brandProfile = isSelfOrAdmin || hasRelationship ? profile?.profile_private || user?.profile || {} : {};
 	const hasBrandKit = Boolean(
 		brandProfile.brand_name ||
 			brandProfile.brand_logo_url ||
-			brandProfile.brand_tagline ||
-			brandProfile.brand_website,
+			brandProfile.brand_tagline,
 	);
 	const hasAccountManager = Boolean(
 		brandProfile.account_manager_name ||
@@ -571,6 +574,34 @@ export default function FactoryProfile() {
 		}
 	}
 
+	async function saveCapacity() {
+		if (!id || !token) {
+			return;
+		}
+		setFeedback(null);
+		try {
+			await apiRequest(`/profiles/${encodeURIComponent(id)}`, {
+				method: "PUT",
+				token,
+				body: { monthly_capacity: capacityValue },
+			});
+			setProfile((prev) => ({
+				...prev,
+				user: {
+					...prev.user,
+					profile: {
+						...prev.user.profile,
+						monthly_capacity: capacityValue,
+					},
+				},
+			}));
+			setEditingCapacity(false);
+			setFeedback("Production capacity updated.");
+		} catch (err) {
+			setFeedback(err.message || "Failed to update capacity.");
+		}
+	}
+
 	const visibleVideos = useMemo(() => {
 		if (viewerPerms.is_self || viewerPerms.is_admin) {
 			return products.filter((p) => p.video_url);
@@ -588,7 +619,7 @@ export default function FactoryProfile() {
 	const isBoosted = Boolean(profileBoost);
 
 	if (loading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 	if (error) {
 		return (
@@ -746,6 +777,19 @@ export default function FactoryProfile() {
 									label="Monthly"
 									value={user?.profile?.monthly_capacity || "--"}
 									caption="Capacity"
+									action={
+										isSelfOrAdmin ? (
+											<button
+												onClick={() => {
+													setEditingCapacity(true);
+													setCapacityValue(user?.profile?.monthly_capacity || "");
+												}}
+												className="mt-2 text-xs text-sky-500 hover:text-sky-600"
+											>
+												Edit
+											</button>
+										) : null
+									}
 								/>
 								<StatCard
 									icon={ClipboardList}
@@ -877,11 +921,6 @@ export default function FactoryProfile() {
 																	{brandProfile.brand_tagline ? (
 																		<div className="text-xs text-slate-500 dark:text-slate-400">
 																			{brandProfile.brand_tagline}
-																		</div>
-																	) : null}
-																	{brandProfile.brand_website ? (
-																		<div className="text-xs text-slate-500 dark:text-slate-400">
-																			{brandProfile.brand_website}
 																		</div>
 																	) : null}
 																</div>
@@ -1274,6 +1313,30 @@ export default function FactoryProfile() {
 															helper="Aggregate reliability"
 														/>
 													</div>
+													{ratingSummary?.aggregate?.category_averages && (() => {
+														const cats = ratingSummary.aggregate.category_averages;
+														const filled = [
+															{ label: "Sample Accuracy", val: cats.sample_accuracy },
+															{ label: "Communication", val: cats.communication_speed },
+															{ label: "Quality Control", val: cats.quality_control },
+															{ label: "Delivery", val: cats.delivery_timeliness },
+															{ label: "After-Sales", val: cats.after_sales_support },
+														].filter((c) => c.val != null);
+														if (filled.length === 0) return null;
+														return (
+															<div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+																{filled.map((c) => (
+																	<div key={c.label} className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/40">
+																		<span className="text-xs font-medium text-slate-600 dark:text-slate-300">{c.label}</span>
+																		<span className="flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-300">
+																			<Star className="h-3 w-3" />
+																			{Number(c.val).toFixed(1)}
+																		</span>
+																	</div>
+																))}
+															</div>
+														);
+													})()}
 												</SoftCard>
 
 												<div className="rounded-3xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-7 text-amber-950 dark:text-amber-100">
@@ -1313,6 +1376,22 @@ export default function FactoryProfile() {
 																				<p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
 																					{review.comment || "No comment provided."}
 																				</p>
+																				{[review.sample_accuracy, review.communication_speed, review.quality_control, review.delivery_timeliness, review.after_sales_support].some((v) => v != null) && (
+																					<div className="mt-2 flex flex-wrap gap-2">
+																						{[
+																							{ key: "sample_accuracy", label: "Sample Accuracy", val: review.sample_accuracy },
+																							{ key: "communication_speed", label: "Communication", val: review.communication_speed },
+																							{ key: "quality_control", label: "Quality Control", val: review.quality_control },
+																							{ key: "delivery_timeliness", label: "Delivery", val: review.delivery_timeliness },
+																							{ key: "after_sales_support", label: "After-Sales", val: review.after_sales_support },
+																						].filter((c) => c.val != null).map((c) => (
+																							<span key={c.key} className="inline-flex items-center gap-1 rounded-full border border-sky-500/15 bg-sky-500/5 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-300">
+																								<Star className="h-3 w-3 text-sky-400" />
+																								{c.label}: {Number(c.val)}/5
+																							</span>
+																						))}
+																					</div>
+																				)}
 																				<div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
 																					{review.created_at
 																						? new Date(review.created_at).toLocaleDateString()
@@ -1368,6 +1447,40 @@ export default function FactoryProfile() {
 					</main>
 				</div>
 			</div>
+
+			{editingCapacity && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+					<div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
+						<h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit Production Capacity</h3>
+						<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+							Update the monthly production capacity for this factory.
+						</p>
+						<input
+							value={capacityValue}
+							onChange={(e) => setCapacityValue(e.target.value)}
+							placeholder="e.g. 10,000 pieces/month"
+							className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+							autoFocus
+						/>
+						<div className="mt-5 flex justify-end gap-3">
+							<button
+								type="button"
+								onClick={() => setEditingCapacity(false)}
+								className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900"
+							>
+								Cancel
+							</button>
+							<button
+								type="button"
+								onClick={saveCapacity}
+								className="rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500"
+							>
+								Save
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 
 			{showGallery && products.length > 0 ? (
 				<motion.div

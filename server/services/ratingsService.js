@@ -384,6 +384,7 @@ export async function createRating({
 	score,
 	comment = "",
 	reliabilityFlags = {},
+	categories = {},
 }) {
 	const normalizedProfile = normalizeProfileKey(profileKey);
 	const normalizedFrom = sanitizeString(fromUserId, 120);
@@ -396,6 +397,11 @@ export async function createRating({
 		err.status = 400;
 		throw err;
 	}
+
+	const clampCategory = (v) => {
+		const n = Number(v);
+		return Number.isFinite(n) ? Math.min(5, Math.max(1, Math.round(n))) : null;
+	};
 
 	const pendingRequest = await prisma.ratingFeedbackRequest.findFirst({
 		where: {
@@ -424,12 +430,17 @@ export async function createRating({
 				interaction_type: normalizedInteractionType,
 				score: numericScore,
 				comment: normalizedComment,
+				sample_accuracy: clampCategory(categories.sample_accuracy),
+				communication_speed: clampCategory(categories.communication_speed),
+				quality_control: clampCategory(categories.quality_control),
+				delivery_timeliness: clampCategory(categories.delivery_timeliness),
+				after_sales_support: clampCategory(categories.after_sales_support),
 				reliability_flags: {
 					verified_counterparty: Boolean(reliabilityFlags.verified_counterparty),
 					qualified_milestone_pair: Boolean(reliabilityFlags.qualified_milestone_pair),
-					auto_generated: Boolean(reliabilityFlags.auto_generated),
+					auto_generated: false,
 				},
-				auto_generated: Boolean(reliabilityFlags.auto_generated),
+				auto_generated: false,
 				created_at: new Date(),
 			},
 		});
@@ -441,6 +452,10 @@ export async function createRating({
 }
 
 async function autoGenerateRatingsForOverdueRequests() {
+	// Auto-rating abolished: ratings are manual-only.
+	// Overdue feedback requests are now marked as expired instead of receiving
+	// synthetic 5-star ratings.  This keeps the feedback-request lifecycle
+	// clean and prevents inflated averages.
 	const pending = await prisma.ratingFeedbackRequest.findMany({
 		where: { status: "pending" },
 	});
@@ -461,12 +476,6 @@ async function autoGenerateRatingsForOverdueRequests() {
 		return;
 	}
 
-	const [calls, documents, messages] = await Promise.all([
-		prisma.callSession.findMany(),
-		prisma.document.findMany(),
-		prisma.message.findMany(),
-	]);
-
 	for (const row of overdue) {
 		const profileKey = normalizeProfileKey(row.profile_key);
 		const counterpartyId = sanitizeString(row.counterparty_id, 120);
@@ -481,75 +490,28 @@ async function autoGenerateRatingsForOverdueRequests() {
 			},
 		});
 
-		if (alreadyRated) {
-			await prisma.$transaction(async (tx) => {
-				await tx.ratingFeedbackRequest.update({
-					where: { id: row.id },
-					data: {
-						status: "fulfilled",
-						fulfilled_at: row.fulfilled_at || new Date(),
-					},
-				});
-			});
-			continue;
-		}
-
-		const targetUserId = parseUserIdFromProfileKey(profileKey);
-		const contractSigned = hasSignedContract(documents, targetUserId, counterpartyId);
-		const recordedCall = hasRecordedCall(calls, targetUserId, counterpartyId);
-		const avgResponseHours = averageResponseHours(messages, targetUserId, counterpartyId);
-		const suggestion = buildSuggestedScore({
-			contractSigned,
-			recordedCall,
-			avgResponseHours,
-		});
-
-		const score =
-			suggestion.reasons.length > 0
-				? Number.isFinite(Number(suggestion.score))
-					? suggestion.score
-					: 5
-				: 5;
-		const comment = "Auto-rating (no user feedback).";
-
 		await prisma.$transaction(async (tx) => {
-			await tx.rating.create({
-				data: {
-					id: crypto.randomUUID(),
-					profile_key: profileKey,
-					from_user_id: counterpartyId,
-					interaction_type: sanitizeString(row.interaction_type || "deal", 40),
-					score: Math.min(5, Math.max(1, Math.round(score))),
-					comment,
-					reliability_flags: {
-						verified_counterparty: false,
-						qualified_milestone_pair: false,
-						auto_generated: true,
-					},
-					auto_generated: true,
-					created_at: new Date(),
-				},
-			});
-
 			await tx.ratingFeedbackRequest.update({
 				where: { id: row.id },
 				data: {
-					status: "fulfilled",
-					fulfilled_at: new Date(),
+					status: alreadyRated ? "fulfilled" : "expired",
+					fulfilled_at: alreadyRated ? (row.fulfilled_at || new Date()) : new Date(),
 				},
 			});
 
-			await tx.ratingFeedbackEvent.create({
-				data: {
-					id: crypto.randomUUID(),
-					profile_key: profileKey,
-					counterparty_id: counterpartyId,
-					interaction_type: sanitizeString(row.interaction_type || "deal", 40),
-					event: "auto_rating",
-					milestone: "no_user_feedback",
-					created_at: new Date(),
-				},
-			});
+			if (!alreadyRated) {
+				await tx.ratingFeedbackEvent.create({
+					data: {
+						id: crypto.randomUUID(),
+						profile_key: profileKey,
+						counterparty_id: counterpartyId,
+						interaction_type: sanitizeString(row.interaction_type || "deal", 40),
+						event: "request_expired",
+						milestone: "no_user_feedback",
+						created_at: new Date(),
+					},
+				});
+			}
 		});
 	}
 }
@@ -576,6 +538,22 @@ export async function getProfileRatingsSummary(profileKey) {
 			? recent.reduce((sum, row) => sum + safeNumber(row.score, 0), 0) / recent.length
 			: 0;
 
+	const categoryKeys = [
+		"sample_accuracy",
+		"communication_speed",
+		"quality_control",
+		"delivery_timeliness",
+		"after_sales_support",
+	];
+	const categoryAverages = {};
+	for (const key of categoryKeys) {
+		const scored = ratings.filter((r) => Number.isFinite(Number(r[key])));
+		categoryAverages[key] =
+			scored.length > 0
+				? Number((scored.reduce((sum, r) => sum + Number(r[key]), 0) / scored.length).toFixed(2))
+				: null;
+	}
+
 	return {
 		profile_key: normalizedProfile,
 		aggregate: {
@@ -584,6 +562,7 @@ export async function getProfileRatingsSummary(profileKey) {
 			total_count: totalCount,
 			reliability: computeReliability(ratings),
 			confidence_metadata: computeConfidenceMetadata(ratings, average),
+			category_averages: categoryAverages,
 		},
 		breakdown: computeBreakdown(ratings),
 		recent_reviews: recent.slice(0, 5).map((row) => ({
@@ -594,6 +573,11 @@ export async function getProfileRatingsSummary(profileKey) {
 			interaction_type: row.interaction_type,
 			auto_generated: Boolean(row.auto_generated),
 			created_at: row.created_at,
+			sample_accuracy: row.sample_accuracy,
+			communication_speed: row.communication_speed,
+			quality_control: row.quality_control,
+			delivery_timeliness: row.delivery_timeliness,
+			after_sales_support: row.after_sales_support,
 		})),
 		feedback_requests: pendingRequestCount,
 	};

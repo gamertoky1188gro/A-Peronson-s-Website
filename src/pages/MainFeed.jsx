@@ -735,7 +735,7 @@ export default function MainFeed() {
 	);
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} size={80} text="Loading feed..." />;
+		return <NeonAtom fill={true} size={80} text="Loading feed..." timeout={10000} />;
 	}
 
 	return (

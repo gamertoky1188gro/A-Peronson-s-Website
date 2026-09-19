@@ -7,6 +7,7 @@ import {
 	Globe2,
 	Mail,
 	MapPin,
+	Phone,
 	SearchX,
 	Shield,
 	ShieldCheck,
@@ -16,7 +17,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
-import { apiRequest, getToken } from "../lib/auth.js";
+import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
 import { logger } from "../lib/logger.js";
 import usePageMeta from "../lib/usePageMeta.js";
 
@@ -146,7 +147,7 @@ export default function ProfilePage() {
 	}, [id]);
 
 	if (loading) {
-		return <NeonAtom fill={true} />;
+		return <NeonAtom fill={true} timeout={10000} />;
 	}
 	if (error || !target) {
 		return <ProfileNotFound />;
@@ -175,6 +176,12 @@ export default function ProfilePage() {
 	const headline = profile.headline || "";
 	const bio = profile.bio || "";
 	const email = target.email || "";
+	const currentUser = getCurrentUser();
+	const isOwner = currentUser && String(currentUser.id) === String(target.id);
+	const isAdmin = ["owner", "admin"].includes(currentUser?.role);
+	const showEmail = isOwner || isAdmin || !profile?.hide_email;
+	const showPhone = isOwner || isAdmin || !profile?.hide_phone;
+	const phone = target.phone || profile?.phone || "";
 	const joinedYear = target.created_at ? new Date(target.created_at).getFullYear() : "—";
 
 	const badges = [
@@ -244,14 +251,24 @@ export default function ProfilePage() {
 												</div>
 											</div>
 										</div>
-										<div className="flex flex-wrap items-center gap-2 pb-1">
+								{showEmail && email ? (
+									<div className="flex flex-wrap items-center gap-2 pb-1">
+										<button
+											onClick={() => (window.location.href = `mailto:${email}`)}
+											className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
+										>
+											<Mail className="h-4 w-4" /> Contact
+										</button>
+										{showPhone && phone ? (
 											<button
-												onClick={() => (window.location.href = `mailto:${email}`)}
-												className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
+												onClick={() => (window.location.href = `tel:${phone}`)}
+												className="inline-flex items-center gap-2 rounded-full border border-sky-300 bg-white/80 px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-50 dark:border-sky-700 dark:bg-slate-950/70 dark:text-sky-300 dark:hover:bg-sky-950"
 											>
-												<Mail className="h-4 w-4" /> Contact
+												<Phone className="h-4 w-4" /> Call
 											</button>
-										</div>
+										) : null}
+									</div>
+								) : null}
 									</div>
 								</div>
 							</div>
@@ -325,13 +342,24 @@ export default function ProfilePage() {
 											</div>
 										</div>
 									) : null}
-									{email ? (
+									{showEmail && email ? (
 										<div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/70">
 											<Mail className="h-4 w-4 shrink-0 text-sky-500" />
 											<div>
 												<div className="text-xs text-slate-500 dark:text-slate-400">Email</div>
 												<div className="text-sm font-medium text-slate-900 dark:text-white">
 													{email}
+												</div>
+											</div>
+										</div>
+									) : null}
+									{showPhone && phone ? (
+										<div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/70">
+											<Phone className="h-4 w-4 shrink-0 text-sky-500" />
+											<div>
+												<div className="text-xs text-slate-500 dark:text-slate-400">Phone</div>
+												<div className="text-sm font-medium text-slate-900 dark:text-white">
+													{phone}
 												</div>
 											</div>
 										</div>
