@@ -48,7 +48,7 @@ export default defineConfig({
 			},
 		},
 		reportCompressedSize: false,
-		sourcemap: true,
+		sourcemap: "hidden",
 	},
 	plugins: [tailwindcss(), react()],
 	server: {
