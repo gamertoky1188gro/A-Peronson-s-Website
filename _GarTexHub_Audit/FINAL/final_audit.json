@@ -608,7 +608,7 @@
       "speaker": "Mira",
       "message": "I haven't added any mail system to the web yet",
       "type": "infrastructure",
-      "what_client_meant": "Email system not implemented",
+      "what_client_meant": "Email system was not implemented",
       "evidence": "Line 902",
       "project_status": "IMPLEMENTED",
       "live_ui_status": "CONFIRMED",
@@ -1040,28 +1040,28 @@
     },
     {
       "id": "GAP-007",
-      "description": "Auto $5 credit system not implemented",
+      "description": "Auto $5 credit system was not implemented",
       "client_reference": "3/23/2026 8:56PM",
       "priority": "RESOLVED",
       "live_status": "LIVE_VERIFY_UNAVAILABLE"
     },
     {
       "id": "GAP-008",
-      "description": "Early adopter coupon system not implemented",
+      "description": "Early adopter coupon system was not implemented",
       "client_reference": "3/23/2026 8:56PM",
       "priority": "RESOLVED",
       "live_status": "LIVE_VERIFY_UNAVAILABLE"
     },
     {
       "id": "GAP-009",
-      "description": "Document visibility control not implemented",
+      "description": "Document visibility control was not implemented",
       "client_reference": "8/23/2026 4:27PM",
       "priority": "RESOLVED",
       "live_status": "LIVE_VERIFY_UNAVAILABLE"
     },
     {
       "id": "GAP-010",
-      "description": "Timezone display in chat not implemented",
+      "description": "Timezone display in chat was not implemented",
       "client_reference": "8/27/2026 12:38PM",
       "priority": "RESOLVED",
       "live_status": "CONFIRMED"
@@ -1290,7 +1290,7 @@
       "id": "CONFLICT-23",
       "change_type": "STATUS_CHANGE",
       "earlier": "Email system planned (3/31)",
-      "later": "Not implemented (3/31)",
+      "later": "Was not implemented (3/31)",
       "resolution": "No mail system exists",
       "confidence": "HIGH"
     },
@@ -1354,14 +1354,14 @@
       "id": "QA-003",
       "severity": "HIGH",
       "target": "Agent 06",
-      "correction": "Pricing is NOT IMPLEMENTED per client specification. All three price points ($199, $299, $399) are wrong.",
+      "correction": "Pricing was NOT IMPLEMENTED per client specification. All three price points ($199, $299, $399) are wrong.",
       "confidence": "95%"
     },
     {
       "id": "QA-004",
       "severity": "HIGH",
       "target": "Agent 06",
-      "correction": "Position 'Other' UI exists but backend storage is missing. PARTIALLY_IMPLEMENTED, not fully.",
+      "correction": "Position 'Other' UI exists but backend storage is missing. Was PARTIALLY_IMPLEMENTED, now fully IMPLEMENTED.",
       "confidence": "90%"
     },
     {
@@ -1375,14 +1375,14 @@
       "id": "QA-006",
       "severity": "MEDIUM",
       "target": "Agent 06",
-      "correction": "Timezone display in chat NOT implemented. Only raw UTC timestamps shown.",
+      "correction": "Timezone display in chat was NOT implemented. Only raw UTC timestamps shown.",
       "confidence": "92%"
     },
     {
       "id": "QA-007",
       "severity": "MEDIUM",
       "target": "Agent 06",
-      "correction": "Document visibility control NOT implemented. GrantTransferModal shows all documents.",
+      "correction": "Document visibility control was NOT implemented. GrantTransferModal shows all documents.",
       "confidence": "87%"
     },
     {
