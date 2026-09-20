@@ -1,0 +1,97 @@
+﻿{
+  "project": "GarTexHub / TexHub",
+  "client": "Shakibul hasan Shaun",
+  "developer": "Cyber Code Master Mira Dev",
+  "engagement_period": "Feb 15 - Sep 3, 2026 (7 months)",
+  "chat_files": [
+    "whatsapp-chats/Cyber Code Master Mira Dev/WhatsApp Chat with Cyber Code Master Mira Dev.txt"
+  ],
+  "chat_total_lines": 10624,
+  "chat_date_range": "2/15/26 to 9/3/26",
+  "language": "Mixed English/Banglish/Bangla",
+  "pdf_documents": 12,
+  "voice_messages": [
+    "PTT-20260729-WA0003.opus through PTT-20260729-WA0009.opus (7 messages)",
+    "PTT-20260903-WA0013.opus"
+  ],
+  "image_evidence": [
+    "IMG-20260414-WA0001.jpg - Chatbot overlay blocking site MSG-044",
+    "IMG-20260414-WA0002.jpg - Chatbot on desktop MSG-044",
+    "IMG-20260414-WA0003.jpg - Chatbot on desktop MSG-044",
+    "IMG-20260415-WA0003.jpg - Admin panel screenshot MSG-044",
+    "IMG-20260417-WA0002.jpg - Git repository MSG-045",
+    "IMG-20260727-WA0000.jpg - Account creation issue MSG-047",
+    "IMG-20260903-WA0005.jpg - Developer phone issue MSG-047",
+    "IMG-20260903-WA0014.jpg - Developer laptop screenshot MSG-047"
+  ],
+  "developer_html_files": [
+    "textrade-global.html",
+    "gemini-code-1788273638239.html",
+    "gemini-code-1788276334803.html",
+    "textrade-global (1).html"
+  ],
+  "project_files_verified": {
+    "package.json": {"read": true, "name": "gartexhub"},
+    "src/App.jsx": {"read": true, "lines": 1761, "features": ["lazy routes","auth","protected routes"]},
+    "server/services/": {
+      "total_files": 95,
+      "key_services_verified": [
+        "conversationLockService.js (251 lines)",
+        "paymentProofService.js (327 lines)",
+        "verificationService.js (1086 lines)",
+        "ratingsService.js (692 lines)",
+        "subscriptionService.js (148 lines)",
+        "walletService.js",
+        "boostService.js",
+        "chatbotService.js",
+        "aiConversationService.js",
+        "adminActionService.js",
+        "analyticsService.js",
+        "eventTrackingService.js",
+        "partnerNetworkService.js",
+        "memberService.js",
+        "searchAccessService.js",
+        "notificationService.js",
+        "socialService.js",
+        "feedService.js",
+        "productService.js",
+        "requirementService.js",
+        "trustRiskScoringService.js",
+        "policyService.js",
+        "policyRegistryService.js",
+        "reportService.js",
+        "refundService.js",
+        "securityService.js",
+        "eSignService.js",
+        "documentService.js",
+        "callSessionService.js",
+        "videoQueue.js",
+        "videoProcessor.js",
+        "assistantService.js",
+        "enforcementService.js",
+        "moderationController.js"
+      ]
+    }
+  },
+  "key_dates": {
+    "first_message": "2/15/26",
+    "last_message": "9/3/26",
+    "deployment_screenshots": "4/14/26",
+    "client_blocked_developer": "7/29/26",
+    "client_unblocked": "8/3/26",
+    "developer_phone_broke": "9/3/26"
+  },
+  "critical_events": [
+    "4/14/26 - Deployed site shows only chatbot overlay",
+    "4/17/26 - Client finds no functional code in Git",
+    "7/29/26 - Client blocks developer",
+    "8/29/26 - Client threatens to use AI to rebuild",
+    "9/3/26 - Developer phone breaks, all messages lost"
+  ],
+  "output_files": [
+    "client_forensic_analysis/merged/merged_findings.jsonl",
+    "client_forensic_analysis/merged/verification_matrix.jsonl",
+    "client_forensic_analysis/merged/evidence_manifest.json",
+    "client_forensic_analysis/FINAL_REPORT.md"
+  ]
+}

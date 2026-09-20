@@ -1,0 +1,16 @@
+{
+  "Shakibul hasan Shaun": {
+    "id": "SENDER-001",
+    "name": "Shakibul hasan Shaun",
+    "displayName": "Shakibul hasan Shaun",
+    "role": "client",
+    "messageCount": 1023
+  },
+  "Cyber Code Master Mira Dev": {
+    "id": "SENDER-002",
+    "name": "Cyber Code Master Mira Dev",
+    "displayName": "Cyber Code Master Mira Dev",
+    "role": "developer",
+    "messageCount": 401
+  }
+}

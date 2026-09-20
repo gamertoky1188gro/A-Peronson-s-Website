@@ -423,6 +423,7 @@ export default function OrgSettings({ embedded = false }) {
 	const [verification, setVerification] = useState(null);
 	const [renewingVerification, setRenewingVerification] = useState(false);
 	const [billingFeedback, setBillingFeedback] = useState("");
+	const [cancellingSubscription, setCancellingSubscription] = useState(false);
 	const [entitlements] = useState(() => secureEntitlements || currentUser?.entitlements || null);
 
 	// Account lock state
@@ -1260,6 +1261,30 @@ export default function OrgSettings({ embedded = false }) {
 			setDeleteProfileFeedback(err.message || "Delete failed");
 		} finally {
 			setDeletingProfile(false);
+		}
+	};
+
+	// Cancel subscription (downgrade to free)
+	const cancelSubscription = async () => {
+		const token = getToken();
+		if (!token) {
+			return;
+		}
+		setCancellingSubscription(true);
+		setBillingFeedback("");
+		try {
+			await apiRequest("/subscriptions/me", {
+				method: "POST",
+				token,
+				body: { plan: "free", auto_renew: false },
+			});
+			setSubscriptionPlan("free");
+			setRemainingDays(0);
+			setBillingFeedback("Subscription cancelled. You are now on the Free plan.");
+		} catch (err) {
+			setBillingFeedback(err.message || "Failed to cancel subscription");
+		} finally {
+			setCancellingSubscription(false);
 		}
 	};
 
@@ -2700,6 +2725,11 @@ export default function OrgSettings({ embedded = false }) {
 							<div className="mt-2 text-white/85">
 								{subscriptionPlan === "free" ? "Limited features" : `$${planPrice} / month`}
 							</div>
+							{subscriptionPlan !== "free" && remainingDays > 0 && (
+								<div className="mt-2 text-sm text-white/70">
+									{remainingDays} day{remainingDays === 1 ? "" : "s"} remaining
+								</div>
+							)}
 							<div className="mt-5 flex flex-wrap gap-3">
 								{subscriptionPlan === "free" && (
 									<SecondaryButton
@@ -2709,6 +2739,15 @@ export default function OrgSettings({ embedded = false }) {
 										Upgrade
 									</SecondaryButton>
 								)}
+								{subscriptionPlan !== "free" && (
+									<SecondaryButton
+										className="border-red-300/30 bg-red-500/20 text-red-100 hover:bg-red-500/30"
+										onClick={cancelSubscription}
+										disabled={cancellingSubscription}
+									>
+										{cancellingSubscription ? "Cancelling..." : "Cancel Subscription"}
+									</SecondaryButton>
+								)}
 								<SecondaryButton
 									className="border-white/20 bg-white/15 text-white hover:bg-white/25"
 									onClick={() => navigate("/pricing")}
@@ -2716,6 +2755,9 @@ export default function OrgSettings({ embedded = false }) {
 									View plans
 								</SecondaryButton>
 							</div>
+							{billingFeedback && (
+								<p className="mt-3 text-sm text-white/90">{billingFeedback}</p>
+							)}
 						</div>
 					</SectionCard>
 					<SectionCard title="Wallet" subtitle="Funds available for boosts and billing.">
