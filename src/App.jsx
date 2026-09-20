@@ -88,7 +88,7 @@ const AdminPanel = safeLazy(() => import("./pages/AdminPanel.jsx"));
 const AdminGovernance = safeLazy(() => import("./pages/AdminGovernance.jsx"));
 const AccessDenied = safeLazy(() => import("./pages/AccessDenied.jsx"));
 const NotFound = safeLazy(() => import("./pages/NotFound.jsx"));
-const BusinessRelationship = safeLazy(() => import("./pages/BusinessRelationship.jsx"));
+
 const OrderManagement = safeLazy(() => import("./pages/OrderManagement.jsx"));
 
 const AUTH_ROLES = ["buyer", "buying_house", "factory", "owner", "admin", "agent"];
@@ -415,14 +415,7 @@ function AppRoutes() {
 					</ProtectedRoute>
 				}
 			/>
-			<Route
-				path="/relationships/:id"
-				element={
-					<ProtectedRoute roles={AUTH_ROLES}>
-						<BusinessRelationship />
-					</ProtectedRoute>
-				}
-			/>
+	
 			<Route
 				path="/orders"
 				element={

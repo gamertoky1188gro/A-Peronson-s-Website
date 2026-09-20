@@ -43,7 +43,7 @@ import industryRoutes from "./routes/industryRoutes.js";
 import infraRoutes from "./routes/infraRoutes.js";
 import joinRequestRoutes from "./routes/joinRequestRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
-import licenseRequestRoutes from "./routes/licenseRequestRoutes.js";
+
 import linkPreviewRoutes from "./routes/linkPreviewRoutes.js";
 import logRoutes from "./routes/logRoutes.js";
 import memberRoutes from "./routes/memberRoutes.js";
@@ -60,7 +60,7 @@ import productRoutes from "./routes/productRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import qdrantRoutes from "./routes/qdrantRoutes.js";
 import ratingsRoutes from "./routes/ratingsRoutes.js";
-import relationshipRoutes from "./routes/relationshipRoutes.js";
+
 import reportRoutes from "./routes/reportRoutes.js";
 import requirementRoutes from "./routes/requirementRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
@@ -366,11 +366,11 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/leads", leadRoutes);
-app.use("/api/relationships", relationshipRoutes);
+
 app.use("/api/system", systemRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/join-requests", joinRequestRoutes);
-app.use("/api/license-requests", licenseRequestRoutes);
+
 app.use("/api/social", socialRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/qdrant", qdrantRoutes);

@@ -12,6 +12,7 @@ import {
 	Star,
 	Users,
 	Vote,
+	MessageCircle,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "../../lib/cn.js";
@@ -58,7 +59,7 @@ export function NavDropdown({
 			{isOpen && (
 				<div
 					className={cn(
-						"absolute left-0 top-full z-50 mt-2 min-w-72 overflow-hidden rounded-3xl border border-white/10 bg-white/80 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:bg-slate-950/85",
+						"absolute left-0 top-full z-50 mt-2 min-w-72 overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.18)] backdrop-blur-2xl dark:bg-slate-950/98",
 						"block animate-in fade-in",
 					)}
 				>
@@ -118,6 +119,7 @@ export function NavDropdown({
 											{item.label === "Governance" && <Settings className="h-4 w-4" />}
 											{item.label === "Contact Support" && <Settings className="h-4 w-4" />}
 											{item.label === "Onboarding" && <Star className="h-4 w-4" />}
+											{item.label === "Feedback" && <MessageCircle className="h-4 w-4" />}
 										</span>
 										<span>{item.label}</span>
 									</span>
