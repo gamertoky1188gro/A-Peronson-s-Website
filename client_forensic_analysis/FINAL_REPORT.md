@@ -226,16 +226,27 @@ This report covers a 7-month engagement (Feb 15 - Sep 3, 2026) between client **
 The codebase is substantial with ~95 server services and ~40+ React pages. Core B2B marketplace infrastructure is present: authentication (WebAuthn), role-based access, verification with role/region requirements, conversation locking, payment proofs, wallet, subscription, ratings, admin panel, notification system, feed, search, and floating assistant.
 
 ### What Was NOT Delivered
-- Reel/video upload system
-- Content moderation algorithm
-- Screen recording walkthrough
-- LC Sight/Usance type selector
-- Recommendation/ranking algorithms
+- Reel/video upload system (large feature)
+- Content moderation algorithm (large feature)
+- Recommendation/ranking algorithm for feed (large feature)
+- Screen recording/walkthrough video (manual deliverable)
 
 ### False Bugs Closed (No Code Changes Needed)
 - **BUG-013**: Account deletion already existed in OrgSettings (line 1243-1264)
 - **BUG-032**: Logo upload already existed in OrgSettings Appearance section (line 2550-2594)
 - **BUG-033**: Banner upload already existed in OrgSettings Appearance section (line 2596-2639)
+- **BUG-010**: Comprehensive README already existed (1680 lines)
+
+### Remaining Items (Require Process/Infrastructure Changes)
+| ID | Issue | Action Needed |
+|----|-------|---------------|
+| BUG-001 | Render free-tier cold start (15s load) | Upgrade Render plan |
+| BUG-023 | Screen recording never delivered | Record and deliver |
+| BUG-024 | Communication gaps | Process improvement |
+| BUG-025 | Developer forgot requirements | Use issue tracker |
+| BUG-029 | Coupon vs Auto $5 credit confusion | Final decision needed |
+| BUG-030 | Buyer request form keeps changing | Final decision needed |
+| BUG-034 | Verification pricing flips | Final decision needed |
 
 ### Fixes Applied (Sep 20, 2026)
 After the forensic analysis, the following code-level issues were fixed:
@@ -250,12 +261,28 @@ After the forensic analysis, the following code-level issues were fixed:
 - Dark mode: `dark:bg-slate-950/85` → `dark:bg-slate-950/98`
 - Feedback icon: Added `MessageCircle` icon to NavDropdown icon mapping
 
-**Deployment Verified:**
-- Render deploy `dep-danns6p7lnhs73eblpo0` — status: LIVE
-- Homepage loads correctly — no chatbot overlay blocking
-- Feed page loads with posts, sidebar, navigation
-- Zero console errors across all tested pages
-- All nav dropdowns functional
+**Subscription Management:**
+- Added cancel/downgrade subscription button in OrgSettings billing tab
+- Shows remaining days for active subscriptions
+- Calls `POST /subscriptions/me` with `{ plan: "free", auto_renew: false }`
+
+**Payment Proof — LC Type Field:**
+- Added LC Type selector (Sight/Usance) to ContractVault payment proof form
+- Added Usance Days input when LC Type is "usance"
+- Fields already existed in Prisma schema but were not wired to the form
+
+**Product Video Embed:**
+- Created `VideoEmbed` component that detects YouTube/Vimeo/direct video URLs
+- FactoryProfile and ProductQuickViewModal now embed videos inline
+- Falls back to external link for unrecognized URLs
+
+**Chatbot Enhancement:**
+- Expanded FAQ suggestions from 4 to 8 (added products, payments, matching, LC)
+- Enhanced welcome message with categorized help topics
+- Updated session-clear message
+
+**Documentation:**
+- Comprehensive README already existed (1680 lines) — closed as false bug
 
 ### Communication Quality
 Poor. Developer was unresponsive for extended periods, claimed completion prematurely, did not track prior decisions, and became defensive when confronted. Client experienced severe stress and eventually blocked the developer.
