@@ -199,13 +199,13 @@ export default function FloatingAssistant() {
 					setMessages(formatted);
 					hasUserMessagesRef.current = formatted.some((m) => m.role === "user");
 				} else {
-					setMessages([
-						{
-							role: "assistant",
-							text: "Hello! I am your GarTex Assistant. How can I help you with your textile business today?",
-							isNew: false,
-						},
-					]);
+			setMessages([
+					{
+						role: "assistant",
+						text: "Hello! I am your GarTex Assistant. I can help you with:\n\n- **Account** verification & settings\n- **Products** listing & management\n- **Contracts** & payment proofs\n- **Buyer requests** & matching\n- **Premium** plans & billing\n- **LC (Letter of Credit)** guidance\n\nHow can I help you today?",
+						isNew: false,
+					},
+				]);
 				}
 				if (t) {
 					setTitle(t);
@@ -223,7 +223,7 @@ export default function FloatingAssistant() {
 		setMessages([
 			{
 				role: "assistant",
-				text: "Chat cleared. How can I help you with your textile business today?",
+				text: "Chat cleared. I can help you with account verification, products, contracts, payments, and more. What do you need?",
 				isNew: false,
 			},
 		]);
@@ -428,6 +428,10 @@ export default function FloatingAssistant() {
 		"Tell me about Premium benefits",
 		"How do contracts work?",
 		"Need help with onboarding",
+		"How to list products?",
+		"What payment methods are supported?",
+		"How does buyer request matching work?",
+		"What is LC (Letter of Credit)?",
 	];
 
 	return (

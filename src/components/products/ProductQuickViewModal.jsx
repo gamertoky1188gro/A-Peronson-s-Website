@@ -6,6 +6,7 @@ import { apiRequest, getCurrentUser, getToken } from "../../lib/auth.js";
 import { recordLeadSource } from "../../lib/leadSource.js";
 import AnimatedModal from "../AnimatedModal.jsx";
 import LazyImage from "../ui/LazyImage.jsx";
+import VideoEmbed from "../ui/VideoEmbed.jsx";
 
 function roleToProfileRoute(role, id) {
 	if (!id) {
@@ -292,17 +293,10 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 								</span>
 							</div>
 						</div>
-						{(item?.hasVideo || item?.product?.hasVideo) &&
-						(item?.video_url || item?.product?.video_url) ? (
-							<a
-								href={item?.video_url || item?.product?.video_url}
-								target="_blank"
-								rel="noreferrer"
-								className="mt-4 inline-block text-xs font-semibold text-sky-600 hover:underline dark:text-sky-400"
-							>
-								Open video link
-							</a>
-						) : null}
+					{(item?.hasVideo || item?.product?.hasVideo) &&
+					(item?.video_url || item?.product?.video_url) ? (
+						<VideoEmbed url={item?.video_url || item?.product?.video_url} className="mt-4" />
+					) : null}
 					</div>
 
 					<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4">

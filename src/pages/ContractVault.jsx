@@ -370,6 +370,8 @@ export default function ContractVaultPage({ embedded = false }) {
 		transaction_date: "",
 		amount: "",
 		currency: "USD",
+		lc_type: "",
+		usance_days: "",
 	});
 	const PAYMENT_FORM_RESET = {
 		type: "bank_transfer",
@@ -380,6 +382,8 @@ export default function ContractVaultPage({ embedded = false }) {
 		transaction_date: "",
 		amount: "",
 		currency: "USD",
+		lc_type: "",
+		usance_days: "",
 	};
 
 	const mainRef = useRef(null);
@@ -815,6 +819,12 @@ export default function ContractVaultPage({ embedded = false }) {
 					transaction_date: paymentForm.transaction_date,
 					amount: paymentForm.amount,
 					currency: paymentForm.currency,
+					...(paymentForm.type === "lc"
+						? {
+								lc_type: paymentForm.lc_type || undefined,
+								usance_days: paymentForm.usance_days ? Number(paymentForm.usance_days) : undefined,
+							}
+						: {}),
 				},
 			});
 			setPaymentForm({ ...PAYMENT_FORM_RESET });
@@ -1214,6 +1224,50 @@ export default function ContractVaultPage({ embedded = false }) {
 										<option value="bank_transfer">Bank transfer</option>
 										<option value="lc">Letter of credit (LC)</option>
 									</select>
+									{paymentForm.type === "lc" && (
+										<div className="grid gap-3 sm:grid-cols-2">
+											<div>
+												<label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+													LC Type
+												</label>
+												<select
+													value={paymentForm.lc_type}
+													onChange={(e) =>
+														setPaymentForm((p) => ({
+															...p,
+															lc_type: e.target.value,
+														}))
+													}
+													className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
+												>
+													<option value="">Select type</option>
+													<option value="sight">Sight</option>
+													<option value="usance">Usance</option>
+												</select>
+											</div>
+											{paymentForm.lc_type === "usance" && (
+												<div>
+													<label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+														Usance Days
+													</label>
+													<input
+														type="number"
+														min="1"
+														max="360"
+														value={paymentForm.usance_days}
+														placeholder="e.g. 30, 60, 90"
+														onChange={(e) =>
+															setPaymentForm((p) => ({
+																...p,
+																usance_days: e.target.value,
+															}))
+														}
+														className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
+													/>
+												</div>
+											)}
+										</div>
+									)}
 									{paymentTypeLoading ? (
 										<div className="flex items-center justify-center gap-1 py-2">
 											{["🌸", "🌼", "🌺", "🌷", "🌸"].map((emoji, i) => (

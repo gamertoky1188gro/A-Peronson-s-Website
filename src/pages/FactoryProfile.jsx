@@ -68,6 +68,7 @@ import CrmSummaryPanel from "../components/profile/CrmSummaryPanel.jsx";
 import VerificationPanel from "../components/profile/VerificationPanel.jsx";
 import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
+import VideoEmbed from "../components/ui/VideoEmbed.jsx";
 import { usePremiumCheck } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
 import { trackClientEvent } from "../lib/events.js";
@@ -1211,14 +1212,7 @@ export default function FactoryProfile() {
 																				{item.description || ""}
 																			</p>
 																			{item.video_url ? (
-																				<a
-																					href={item.video_url}
-																					target="_blank"
-																					rel="noreferrer"
-																					className="mt-4 inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5"
-																				>
-																					Open video link <ExternalLink className="h-4 w-4" />
-																				</a>
+																				<VideoEmbed url={item.video_url} className="mt-4" />
 																			) : null}
 																		</div>
 																	</div>

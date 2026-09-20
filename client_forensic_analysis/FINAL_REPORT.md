@@ -232,6 +232,11 @@ The codebase is substantial with ~95 server services and ~40+ React pages. Core 
 - LC Sight/Usance type selector
 - Recommendation/ranking algorithms
 
+### False Bugs Closed (No Code Changes Needed)
+- **BUG-013**: Account deletion already existed in OrgSettings (line 1243-1264)
+- **BUG-032**: Logo upload already existed in OrgSettings Appearance section (line 2550-2594)
+- **BUG-033**: Banner upload already existed in OrgSettings Appearance section (line 2596-2639)
+
 ### Fixes Applied (Sep 20, 2026)
 After the forensic analysis, the following code-level issues were fixed:
 
