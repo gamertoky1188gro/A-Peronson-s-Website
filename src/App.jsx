@@ -90,6 +90,7 @@ const AccessDenied = safeLazy(() => import("./pages/AccessDenied.jsx"));
 const NotFound = safeLazy(() => import("./pages/NotFound.jsx"));
 
 const OrderManagement = safeLazy(() => import("./pages/OrderManagement.jsx"));
+const BoostDetailsPage = safeLazy(() => import("./pages/BoostDetailsPage.jsx"));
 
 const AUTH_ROLES = ["buyer", "buying_house", "factory", "owner", "admin", "agent"];
 const OWNER_ROLES = ["owner", "admin", "buying_house", "factory"];
@@ -227,6 +228,14 @@ function AppRoutes() {
 				element={
 					<ProtectedRoute roles={AUTH_ROLES}>
 						<SearchResults />
+					</ProtectedRoute>
+				}
+			/>
+			<Route
+				path="/boosts/:id"
+				element={
+					<ProtectedRoute roles={AUTH_ROLES}>
+						<BoostDetailsPage />
 					</ProtectedRoute>
 				}
 			/>

@@ -137,7 +137,7 @@ const sections = [
 		id: "contact-information",
 		title: "Contact Information",
 		icon: Mail,
-		contact: "gartexhub@gmail.com",
+		contact: "gartexhubsupport@gmail.com",
 	},
 ];
 

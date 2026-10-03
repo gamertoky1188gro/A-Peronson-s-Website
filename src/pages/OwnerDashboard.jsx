@@ -175,10 +175,13 @@ const menuItems = [
 	{ id: "members", label: "Member Management", short: "Members" },
 	{ id: "contracts", label: "Contracts Vault", short: "Contracts" },
 	{ id: "insights", label: "Insights & Analytics", short: "Insights" },
-	{ id: "subscription", label: "Subscription", short: "Billing" },
+	{ id: "subscription", label: "Subscription & Billing", short: "Billing" },
 	{ id: "verification", label: "Verification", short: "Verify" },
 	{ id: "profile", label: "My Profile", short: "Profile" },
 	{ id: "settings", label: "Settings", short: "Settings" },
+	{ id: "automation", label: "Automation", short: "Auto" },
+	{ id: "assistant", label: "Assistant", short: "AI" },
+	{ id: "branding", label: "Branding", short: "Brand" },
 ];
 
 const quickActions = [
@@ -535,7 +538,7 @@ export default function OwnerDashboard() {
 										</SectionCard>
 
 										<SectionCard
-											title="Current Plan"
+											title="Subscription & Billing"
 											subtitle="Subscription overview and next step."
 											action={
 												<span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
@@ -1147,20 +1150,38 @@ export default function OwnerDashboard() {
 
 						{active === "profile" && !loading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
-								<OrgSettings embedded={true} />
+								<OrgSettings embedded={true} initialTabProp="profile" />
 							</div>
 						)}
 
 						{active === "settings" && !loading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
-								<OrgSettings embedded={true} />
+								<OrgSettings embedded={true} initialTabProp="security" />
+							</div>
+						)}
+
+						{active === "automation" && !loading && (
+							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
+								<OrgSettings embedded={true} initialTabProp="general" />
+							</div>
+						)}
+
+						{active === "assistant" && !loading && (
+							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
+								<OrgSettings embedded={true} initialTabProp="assistant_knowledge" />
+							</div>
+						)}
+
+						{active === "branding" && !loading && (
+							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
+								<OrgSettings embedded={true} initialTabProp="branding" />
 							</div>
 						)}
 
 						{active === "subscription" && !loading && (
 							<div className="space-y-6">
 								<SectionCard
-									title="Current Plan"
+									title="Subscription & Billing"
 									subtitle="Subscription, billing, and limits at a glance."
 									action={
 										<span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
@@ -1177,7 +1198,7 @@ export default function OwnerDashboard() {
 										<div className="rounded-2xl bg-slate-50 p-5 dark:bg-white/5">
 											<div className="text-sm text-slate-500 dark:text-slate-400">Billing Settings</div>
 											<button
-												onClick={() => go("/org-settings?tab=billing")}
+												onClick={() => go("/owner?tab=subscription")}
 												className="mt-2 text-lg font-semibold text-slate-950 hover:text-sky-600 dark:text-white dark:hover:text-sky-300"
 											>
 												Open billing →

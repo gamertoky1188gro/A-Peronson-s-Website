@@ -402,7 +402,13 @@ export default function HelpCenterPage() {
 								<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 								<input
 									value={search}
-									onChange={(e) => setSearch(e.target.value)}
+									onChange={(e) => {
+										setSearch(e.target.value);
+										setFaqQuery(e.target.value);
+									}}
+									onKeyDown={(e) => {
+										if (e.key === "Enter") jumpTo("faq");
+									}}
 									placeholder="Search users, terms, workflows..."
 									className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
 								/>
@@ -411,7 +417,11 @@ export default function HelpCenterPage() {
 								{["verification", "contracts", "messages", "premium", "sub-accounts"].map((tag) => (
 									<button
 										key={tag}
-										onClick={() => setSearch(tag)}
+										onClick={() => {
+											setSearch(tag);
+											setFaqQuery(tag);
+											jumpTo("faq");
+										}}
 										className="rounded-full border border-slate-200 px-3 py-1.5 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:hover:border-sky-500/30"
 									>
 										{tag}
@@ -979,7 +989,7 @@ export default function HelpCenterPage() {
 								<div className="grid gap-4 lg:grid-cols-2">
 									<div className="flex flex-wrap gap-3 lg:justify-end lg:self-center">
 										<a
-											href="mailto:gartexhub@gmail.com"
+											href="mailto:gartexhubsupport@gmail.com"
 											className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-sky-500/30"
 										>
 											<Headphones className="h-4 w-4" />

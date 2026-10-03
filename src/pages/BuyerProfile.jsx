@@ -50,7 +50,7 @@ import {
 */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Atom } from "react-loading-indicators";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import JourneyTimeline from "../components/JourneyTimeline.jsx";
 import CrmSummaryPanel from "../components/profile/CrmSummaryPanel.jsx";
 import VerificationPanel from "../components/profile/VerificationPanel.jsx";
@@ -770,7 +770,14 @@ export default function BuyerProfile() {
 														? "Requested"
 														: "Connect"}
 											</button>
-											{currentUser?.id === user?.id ? null : (
+											{currentUser?.id === user?.id ? (
+												<Link
+													to="/org-settings?tab=profile"
+													className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+												>
+													Edit profile
+												</Link>
+											) : (
 												<>
 													<button
 														onClick={requestRelationship}

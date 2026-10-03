@@ -72,7 +72,7 @@ const publicLinks = [
 	{ to: "/pricing", label: "Pricing" },
 	{ to: "/about", label: "About" },
 	{ to: "/help", label: "Help" },
-	{ to: "mailto:gartexhub@gmail.com", label: "Support", external: true },
+	{ to: "mailto:gartexhubsupport@gmail.com", label: "Support", external: true },
 ];
 
 // Auth navigation dropdown structure
@@ -164,13 +164,14 @@ const navigationGroups = [
 		label: "Support",
 		icon: Settings,
 		items: [
-			{ to: "mailto:gartexhub@gmail.com", label: "Contact Support", external: true },
+			{ to: "mailto:gartexhubsupport@gmail.com", label: "Contact Support", external: true },
 			{ to: "/feedback", label: "Feedback" },
 			{
 				to: "/onboarding",
 				label: "Onboarding",
 				roles: ["buyer", "buying_house", "factory", "owner", "admin", "agent"],
 			},
+			{ to: "/org-settings", label: "Settings" },
 		],
 	},
 ];
@@ -192,15 +193,30 @@ export default function NavBar() {
 			navigationGroups
 				.map((group) => ({
 					...group,
-					items: group.items.filter(
-						(item) =>
-							item.external ||
-							(isRouteValid(item.to) &&
-								(!item.roles || item.roles.includes(String(user?.role || "").toLowerCase()))),
-					),
+					items: group.items
+						.filter(
+							(item) =>
+								item.external ||
+								(isRouteValid(item.to) &&
+									(!item.roles || item.roles.includes(String(user?.role || "").toLowerCase()))),
+						)
+						.map((item) => {
+							if (item.label !== "My Profile" || !userId) return item;
+							const role = String(user?.role || "").toLowerCase();
+							const id = encodeURIComponent(userId);
+							const to =
+								role === "factory"
+									? `/factory/${id}`
+									: role === "buyer"
+										? `/buyer/${id}`
+										: role === "buying_house" || role === "agent"
+											? `/buying-house/${id}`
+											: `/profile/${id}`;
+							return { ...item, to };
+						}),
 				}))
 				.filter((group) => group.items.length > 0),
-		[user?.role],
+		[user?.role, userId],
 	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchResults, setSearchResults] = useState([]);
@@ -1091,7 +1107,16 @@ export default function NavBar() {
 							</div>
 
 							<div className="flex items-center justify-between border-t border-slate-900/5 px-5 py-4 dark:border-white/10">
-								<button
+								<div className="flex items-center gap-2">
+									<Link
+										to="/org-settings"
+										aria-label="Settings"
+										className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
+									>
+										<Settings className="h-4 w-4" />
+										Settings
+									</Link>
+									<button
 									onClick={toggleTheme}
 									className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
 								>
@@ -1106,6 +1131,7 @@ export default function NavBar() {
 										Logout
 									</button>
 								) : null}
+								</div>
 							</div>
 						</Motion.div>
 					</Motion.div>

@@ -176,6 +176,14 @@ export default function FeedItemCard({
 										<span className="hidden sm:inline">Boosted</span>
 									</span>
 								) : null}
+								<Link
+									to={`/boosts/${encodeURIComponent(item.id)}`}
+									className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-1 text-[11px] font-semibold text-sky-700 ring-1 ring-sky-500/20 hover:bg-sky-500/25 dark:bg-sky-400/10 dark:text-sky-200 dark:ring-sky-300/25"
+									title="Boost this post"
+								>
+									<Zap size={13} />
+									<span className="hidden sm:inline">Boost</span>
+								</Link>
 								{String(item.certificationStatus || "").toLowerCase() === "certified" ? (
 									<span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
 										Certified

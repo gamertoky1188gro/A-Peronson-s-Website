@@ -508,16 +508,19 @@ export default function TexHub() {
 					label: "No live buyer requests yet",
 					status: "Live",
 					icon: "Search",
+					href: "/feed",
 				},
 				{
 					label: "Verified factories",
 					status: "Matched by compliance",
 					icon: "ShieldCheck",
+					href: "/search",
 				},
 				{
 					label: "Internal Agent Lock System",
 					status: "Idle",
 					icon: "LockKeyhole",
+					href: "/agent",
 				},
 			],
 		}),
@@ -864,9 +867,10 @@ export default function TexHub() {
 									{timeline.map((item) => {
 										const Icon = iconMap[item.icon] || Search;
 										return (
-											<div
+											<Link
 												key={item.label}
-												className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
+												to={item.href || "/feed"}
+												className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-sky-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-sky-500/30"
 											>
 												<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/10">
 													<Icon className="h-5 w-5 text-sky-600 dark:text-sky-200" />
@@ -877,12 +881,15 @@ export default function TexHub() {
 														{item.status}
 													</div>
 												</div>
-											</div>
+											</Link>
 										);
 									})}
 								</div>
 
-								<div className="mt-5 rounded-3xl border border-slate-200 bg-slate-100 p-4 dark:border-white/10 dark:bg-white/10">
+								<Link
+									to="/search"
+									className="mt-5 block rounded-3xl border border-slate-200 bg-slate-100 p-4 transition hover:border-sky-300 hover:shadow-md dark:border-white/10 dark:bg-white/10 dark:hover:border-sky-500/30"
+								>
 									<div className="flex items-center justify-between">
 										<div className="flex items-center gap-2 text-sm font-medium">
 											<BadgeCheck className="h-4 w-4 text-cyan-600 dark:text-cyan-200" />{" "}
@@ -899,7 +906,7 @@ export default function TexHub() {
 											</div>
 										))}
 									</div>
-								</div>
+								</Link>
 							</div>
 						</Card>
 					</div>

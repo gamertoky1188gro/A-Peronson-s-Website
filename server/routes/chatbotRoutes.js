@@ -5,7 +5,7 @@ import {
 	replyWithChatbot,
 	updateChatbotSettingsController,
 } from "../controllers/chatbotController.js";
-import { requireAuth } from "../middleware/auth.js";
+import { allowRoles, requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -14,7 +14,18 @@ router.get("/profile/:userId", requireAuth, getChatbotProfile);
 
 // Generate an optional bot reply for a chat thread.
 router.post("/reply", requireAuth, replyWithChatbot);
-router.get("/settings", requireAuth, getChatbotSettingsController);
-router.post("/settings", requireAuth, updateChatbotSettingsController);
+// Chatbot control plane — org managers only (buyers/agents must not change these).
+router.get(
+	"/settings",
+	requireAuth,
+	allowRoles("owner", "admin", "buying_house", "factory"),
+	getChatbotSettingsController,
+);
+router.post(
+	"/settings",
+	requireAuth,
+	allowRoles("owner", "admin", "buying_house", "factory"),
+	updateChatbotSettingsController,
+);
 
 export default router;

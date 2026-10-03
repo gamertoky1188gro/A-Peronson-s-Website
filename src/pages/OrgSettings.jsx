@@ -230,7 +230,6 @@ const TABS = [
 	{ id: "security", label: "Security", requiredRole: "factory" },
 	{ id: "members", label: "Members", requiredRole: "factory" },
 	{ id: "subscription", label: "Subscription", requiredRole: "factory" },
-	{ id: "boosts", label: "Boosts", requiredRole: "manager" },
 	{ id: "notifications", label: "Notifications", requiredRole: "viewer" },
 	{
 		id: "assistant_knowledge",
@@ -239,14 +238,17 @@ const TABS = [
 	},
 ];
 
-export default function OrgSettings({ embedded = false }) {
+const STANDALONE_TAB_IDS = ["profile", "theme", "security", "notifications", "verification"];
+
+export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const tabParamName = embedded ? "settingsTab" : "tab";
+	const visibleTabs = embedded ? TABS : TABS.filter((t) => STANDALONE_TAB_IDS.includes(t.id));
 	const initialTab = useMemo(() => {
-		const candidate = searchParams.get(tabParamName) || "general";
-		return TABS.some((t) => t.id === candidate) ? candidate : "general";
-	}, [searchParams, tabParamName]);
+		const candidate = searchParams.get(tabParamName) || initialTabProp || "profile";
+		return visibleTabs.some((t) => t.id === candidate) ? candidate : "profile";
+	}, [searchParams, tabParamName, initialTabProp]);
 
 	const [tab, setTab] = useState(initialTab);
 	const goSettingsTab = useCallback(
@@ -277,12 +279,12 @@ export default function OrgSettings({ embedded = false }) {
 	const isOrgManager = ["owner", "admin", "buying_house", "factory"].includes(currentUserRole);
 
 	const accessibleTabs = useMemo(
-		() => TABS.filter((t) => t.requiredRole && hasRoleAccess(currentUserRole, t.requiredRole)),
+		() => visibleTabs.filter((t) => t.requiredRole && hasRoleAccess(currentUserRole, t.requiredRole)),
 		[currentUserRole],
 	);
 
 	const activeTab = useMemo(
-		() => (accessibleTabs.some((t) => t.id === tab) ? tab : accessibleTabs[0]?.id || "general"),
+		() => (accessibleTabs.some((t) => t.id === tab) ? tab : accessibleTabs[0]?.id || "profile"),
 		[tab, accessibleTabs],
 	);
 
@@ -682,6 +684,13 @@ export default function OrgSettings({ embedded = false }) {
 			const data = await apiRequest("/users/me", { token });
 			if (data) {
 				setProfileDisplayName(String(data.display_name || data.name || ""));
+				try {
+					if (!localStorage.getItem("orgNameInitial")) {
+						localStorage.setItem("orgNameInitial", String(data.display_name || data.name || ""));
+					}
+				} catch {
+					/* ignore */
+				}
 				setProfileHeadline(String(data.profile?.headline || ""));
 				setProfileBio(String(data.profile?.bio || ""));
 				setProfileAvatarUrl(String(data.avatar_url || data.profile?.avatar_url || ""));
@@ -1002,6 +1011,15 @@ export default function OrgSettings({ embedded = false }) {
 				},
 			});
 			setProfileFeedback("Profile saved.");
+			try {
+				const initial = localStorage.getItem("orgNameInitial") || "";
+				if (initial && profileDisplayName !== initial) {
+					localStorage.setItem("orgNameChangedAt", String(Date.now()));
+				}
+				localStorage.setItem("orgNameInitial", profileDisplayName);
+			} catch {
+				/* ignore */
+			}
 		} catch (err) {
 			setProfileFeedback(err.message || "Failed to save");
 		} finally {
@@ -1853,16 +1871,66 @@ export default function OrgSettings({ embedded = false }) {
 			{activeTab === "profile" && hasRoleAccess(currentUserRole, "observer") && (
 				<div className="grid gap-6 lg:grid-cols-2">
 					<SectionCard
+						title="Privacy"
+						subtitle="Who can see your profile. Detailed privacy controls live in the Privacy tab."
+						className="lg:col-span-2"
+					>
+						<div className="max-w-sm">
+							<Label>Profile Visibility</Label>
+							<Select
+								value={profileVisibility}
+								onChange={(e) => {
+									setProfileVisibility(e.target.value);
+									saveVisibility(e.target.value);
+								}}
+							>
+								<option>Public</option>
+								<option>Network</option>
+								<option>Private</option>
+							</Select>
+						</div>
+					</SectionCard>
+					<SectionCard
 						title="Profile Section"
 						subtitle="Manage how your profile looks to buyers and partners."
 					>
 						<div className="grid gap-4 sm:grid-cols-2">
 							<div>
 								<Label>Organization Name</Label>
-								<Input
-									value={profileDisplayName}
-									onChange={(e) => setProfileDisplayName(e.target.value)}
-								/>
+								{(() => {
+									const changedAt = Number(localStorage.getItem("orgNameChangedAt") || 0);
+									const locked = changedAt > 0 && Date.now() - changedAt < 90 * 24 * 3600 * 1000;
+									const verified =
+										String(verification?.status || "").toLowerCase() === "verified" ||
+										verification?.verified === true;
+									if (verified) {
+										return (
+											<p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+												Verified account — name changes require re-uploading Trade License and documents.{" "}
+												<button
+													type="button"
+													onClick={() => goSettingsTab("verification")}
+													className="font-semibold underline"
+												>
+													Go to Verification
+												</button>
+											</p>
+										);
+									}
+									if (locked) {
+										return (
+											<p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+												Name locked — organization name can be changed again after 90 days of the last change.
+											</p>
+										);
+									}
+									return (
+										<Input
+											value={profileDisplayName}
+											onChange={(e) => setProfileDisplayName(e.target.value)}
+										/>
+									);
+								})()}
 							</div>
 							<div>
 								<Label>Headline</Label>
@@ -1941,8 +2009,8 @@ export default function OrgSettings({ embedded = false }) {
 					</SectionCard>
 
 					<SectionCard
-						title="Contact & Privacy"
-						subtitle="Edit contact details, visibility, and notification preferences."
+						title="Contact"
+						subtitle="Edit contact details."
 					>
 						<div className="space-y-4">
 							<div>
@@ -1954,96 +2022,7 @@ export default function OrgSettings({ embedded = false }) {
 								<Input value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} />
 							</div>
 							<PrimaryButton onClick={saveContactSettings}>Save Contact</PrimaryButton>
-							<div className="grid gap-3 sm:grid-cols-3">
-								<Toggle
-									checked={notifEmail}
-									onChange={(v) => {
-										setNotifEmail(v);
-										saveNotificationPref("email", v);
-									}}
-									label="Email Notifications"
-								/>
-								<Toggle
-									checked={notifPush}
-									onChange={(v) => {
-										setNotifPush(v);
-										saveNotificationPref("push", v);
-									}}
-									label="Push Notifications"
-								/>
-								<Toggle
-									checked={notifInApp}
-									onChange={(v) => {
-										setNotifInApp(v);
-										saveNotificationPref("in_app", v);
-									}}
-									label="In-App Notifications"
-								/>
-							</div>
-							<div>
-								<Label>Profile Visibility</Label>
-								<Select
-									value={profileVisibility}
-									onChange={(e) => {
-										setProfileVisibility(e.target.value);
-										saveVisibility(e.target.value);
-									}}
-								>
-									<option>Public</option>
-									<option>Network</option>
-									<option>Private</option>
-								</Select>
-							</div>
 						</div>
-					</SectionCard>
-
-					<SectionCard
-						title="Password & Security"
-						subtitle="Change password and keep account access protected."
-					>
-						<div className="grid gap-4 sm:grid-cols-2">
-							<div className="sm:col-span-2">
-								<Badge tone={totpEnabled ? "green" : "red"}>
-									2FA {totpEnabled ? "Enabled" : "Disabled"}
-								</Badge>
-							</div>
-							<div>
-								<Label>Current password</Label>
-								<Input
-									type="password"
-									value={currentPassword}
-									onChange={(e) => setCurrentPassword(e.target.value)}
-								/>
-							</div>
-							<div>
-								<Label>New password</Label>
-								<Input
-									type="password"
-									value={newPassword}
-									onChange={(e) => setNewPassword(e.target.value)}
-								/>
-							</div>
-							<div className="sm:col-span-2">
-								<Label>Confirm new password</Label>
-								<Input
-									type="password"
-									value={confirmPassword}
-									onChange={(e) => setConfirmPassword(e.target.value)}
-								/>
-							</div>
-						</div>
-						<div className="mt-4 flex flex-wrap gap-3">
-							<PrimaryButton onClick={changePassword} disabled={changingPassword}>
-								{changingPassword ? "Changing..." : "Change Password"}
-							</PrimaryButton>
-						</div>
-						{passwordFeedback && (
-							<p
-								className={`mt-2 text-sm ${passwordFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
-							>
-								{passwordFeedback}
-							</p>
-						)}
 					</SectionCard>
 
 					<SectionCard
@@ -2406,6 +2385,51 @@ export default function OrgSettings({ embedded = false }) {
 			{/* ==================== SECURITY TAB ==================== */}
 			{activeTab === "security" && hasRoleAccess(currentUserRole, "factory") && (
 				<div className="grid gap-6 lg:grid-cols-2">
+				<SectionCard title="Password & Security" subtitle="Change password and keep account access protected.">
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div className="sm:col-span-2">
+							<Badge tone={totpEnabled ? "green" : "red"}>
+								2FA {totpEnabled ? "Enabled" : "Disabled"}
+							</Badge>
+						</div>
+						<div>
+							<Label>Current password</Label>
+							<Input
+								type="password"
+								value={currentPassword}
+								onChange={(e) => setCurrentPassword(e.target.value)}
+							/>
+						</div>
+						<div>
+							<Label>New password</Label>
+							<Input
+								type="password"
+								value={newPassword}
+								onChange={(e) => setNewPassword(e.target.value)}
+							/>
+						</div>
+						<div className="sm:col-span-2">
+							<Label>Confirm new password</Label>
+							<Input
+								type="password"
+								value={confirmPassword}
+								onChange={(e) => setConfirmPassword(e.target.value)}
+							/>
+						</div>
+					</div>
+					<div className="mt-4 flex flex-wrap gap-3">
+						<PrimaryButton onClick={changePassword} disabled={changingPassword}>
+							{changingPassword ? "Changing..." : "Change Password"}
+						</PrimaryButton>
+					</div>
+					{passwordFeedback && (
+						<p
+							className={`mt-2 text-sm ${passwordFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}
+						>
+							{passwordFeedback}
+						</p>
+					)}
+				</SectionCard>
 				<SectionCard title="Security Keys (WebAuthn)" subtitle="Register hardware security keys or biometric authenticators for passwordless sign-in.">
 					<p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
 						Security keys use your device's built-in authenticator (fingerprint, face recognition, or a physical USB key) to verify your identity instead of a password. They are phishing-resistant and more secure than SMS codes.
