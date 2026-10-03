@@ -54,7 +54,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       media="print"
-      onload="this.media='all'"
+      id="font-css"
     />
     <noscript>
       <link
@@ -73,6 +73,8 @@
         ) {
           document.documentElement.classList.add("dark");
         }
+        var fontCss = document.getElementById("font-css");
+        if (fontCss) fontCss.media = "all";
       })();
     </script>
     <style>

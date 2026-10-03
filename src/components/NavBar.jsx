@@ -185,6 +185,7 @@ export default function NavBar() {
 	const [openDropdown, setOpenDropdown] = useState(null);
 	const [searchExpanded, setSearchExpanded] = useState(false);
 	const user = getCurrentUser();
+	const userId = user?.id || "";
 
 	const validPublicLinks = useMemo(() => publicLinks.filter((link) => isRouteValid(link.to)), []);
 
@@ -242,7 +243,6 @@ export default function NavBar() {
 
 	const location = useLocation();
 	const navigate = useNavigate();
-	const userId = user?.id || "";
 	const searchInputRef = useRef(null);
 	const isMac = useMemo(
 		() => typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.platform),
