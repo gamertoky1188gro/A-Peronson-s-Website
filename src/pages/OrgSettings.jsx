@@ -1633,7 +1633,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 		<>
 			<LockModal />
 			{/* Tab Navigation */}
-			<div className="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+			<div className="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}>
 				<div className="flex min-w-max gap-2">
 					{accessibleTabs.map((tabItem) => (
 						<button
@@ -3113,7 +3113,9 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 									? "Expiring Soon"
 									: "Expired"}
 						</Badge>
-						<Badge tone="violet">{remainingDays} days left</Badge>
+						{(verificationStatus === "expiring_soon" || verificationStatus === "expired") && (
+							<Badge tone="violet">{remainingDays} days left</Badge>
+						)}
 						<SecondaryButton onClick={onThemeToggle}>
 							{theme === "dark" ? "Light mode" : "Dark mode"}
 						</SecondaryButton>

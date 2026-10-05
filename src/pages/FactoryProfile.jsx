@@ -719,6 +719,7 @@ export default function FactoryProfile() {
 										<Pill tone="info">{industry}</Pill>
 										<Pill tone="info">Trust {trustScore === null ? "—" : trustScore}%</Pill>
 									</div>
+									{currentUser?.id !== user?.id ? (
 									<div className="mt-4 grid grid-cols-3 gap-2">
 										<button
 											onClick={contact}
@@ -743,6 +744,7 @@ export default function FactoryProfile() {
 													: "Connect"}
 										</button>
 									</div>
+									) : null}
 									{currentUser?.id === user?.id ? (
 									<div className="mt-3 flex flex-wrap gap-2">
 										<Link

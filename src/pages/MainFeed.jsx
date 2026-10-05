@@ -977,7 +977,7 @@ export default function MainFeed() {
 							style={{ scale: reduceMotion ? 1 : heroScale }}
 						>
 							<div className="flex flex-col gap-3 sm:gap-5 xl:flex-row xl:items-end xl:justify-between">
-								<div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:w-[540px]">
+								<div className="grid grid-cols-3 gap-2 sm:gap-3 xl:w-[540px]">
 									<StatCard
 										icon={<BriefcaseBusiness className="h-3 w-3" />}
 										label={feedConfig.labels.stats.buyer_requests}

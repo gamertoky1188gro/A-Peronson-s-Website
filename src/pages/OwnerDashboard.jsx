@@ -137,12 +137,12 @@ const StatCard = memo(function StatCard({
 }) {
 	const isNumeric = typeof value === "number" && !Number.isNaN(value);
 	return (
-		<HoverCard className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-5 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
+		<HoverCard className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/70 p-4 shadow-[0_18px_45px_rgba(8,15,33,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-900/70 sm:p-5">
 			<div className={cn("absolute inset-x-0 top-0 h-1 bg-gradient-to-r", accent)} />
-			<p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
-			<div className="mt-3 flex items-end justify-between gap-3">
-				<div>
-					<div className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
+			<p className="truncate text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">{label}</p>
+			<div className="mt-2 flex items-end justify-between gap-2 sm:mt-3 sm:gap-3">
+				<div className="min-w-0">
+					<div className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
 						{isNumeric ? (
 							<ScaleIn>
 								<CountUp value={value} />
@@ -151,15 +151,15 @@ const StatCard = memo(function StatCard({
 							value
 						)}
 					</div>
-					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sub}</p>
+					<p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400 sm:text-sm">{sub}</p>
 				</div>
 				<div
 					className={cn(
-						"flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg",
+						"flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg sm:h-12 sm:w-12",
 						accent,
 					)}
 				>
-					<SparkIcon className="h-5 w-5" />
+					<SparkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
 				</div>
 			</div>
 		</HoverCard>
@@ -474,7 +474,7 @@ export default function OwnerDashboard() {
 							<div className="space-y-6">
 								<CoreMetricsCards />
 								<ScrollReveal as="section">
-									<StaggerContainer className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+									<StaggerContainer className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
 										<StaggerItem>
 											<StatCard
 												label="Requests"

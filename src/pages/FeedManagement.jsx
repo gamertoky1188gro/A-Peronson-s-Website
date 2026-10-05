@@ -118,6 +118,7 @@ export default function FeedManagementPage() {
 	const [editingPost, setEditingPost] = useState(null);
 	const [pageLoading, setPageLoading] = useState(true);
 	const [confirmDelete, setConfirmDelete] = useState(null);
+	const [editorTab, setEditorTab] = useState("create");
 
 	useEffect(() => {
 		let postsDone = false;
@@ -418,8 +419,25 @@ export default function FeedManagementPage() {
 					</div>
 				) : null}
 
+				<div className="mb-6 flex gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-1.5 dark:border-slate-800 dark:bg-slate-950/70">
+					<button
+						type="button"
+						onClick={() => setEditorTab("create")}
+						className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${editorTab === "create" ? "bg-sky-500 text-white shadow" : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"}`}
+					>
+						Create a Post
+					</button>
+					<button
+						type="button"
+						onClick={() => setEditorTab("posts")}
+						className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${editorTab === "posts" ? "bg-sky-500 text-white shadow" : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"}`}
+					>
+						Your Posts
+					</button>
+				</div>
+
 				<div className="grid gap-6 lg:grid-cols-5">
-					<div className="lg:col-span-3 space-y-6">
+					<div className={cn("lg:col-span-3 space-y-6", editorTab !== "create" && "hidden")}>
 						<section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
 							<div className={cn("border-b px-5 py-4", mutedBorder)}>
 								<div className="flex items-center gap-3">
@@ -716,7 +734,7 @@ export default function FeedManagementPage() {
 					</div>
 
 					<div className="lg:col-span-2 space-y-6">
-						<section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+						<section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg, editorTab !== "create" && "hidden")}>
 							<div className={cn("border-b px-5 py-4", mutedBorder)}>
 								<h2 className="text-lg font-semibold">Live Preview</h2>
 								<p className={cn("text-sm", subtleText)}>Rendered markdown from your README field.</p>
@@ -831,7 +849,7 @@ export default function FeedManagementPage() {
 							</div>
 						</section>
 
-						<section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+						<section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg, editorTab !== "posts" && "hidden")}>
 							<div className={cn("border-b px-5 py-4", mutedBorder)}>
 								<h2 className="text-lg font-semibold">Your posts</h2>
 								<p className={cn("text-sm", subtleText)}>Fetched from /api/feed/posts/mine</p>

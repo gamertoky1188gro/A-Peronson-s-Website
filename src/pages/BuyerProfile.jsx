@@ -746,6 +746,8 @@ export default function BuyerProfile() {
 											</div>
 										</div>
 										<div className="flex flex-wrap items-center gap-2 pb-1">
+											{currentUser?.id !== user?.id ? (
+											<>
 											<button
 												onClick={contact}
 												className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
@@ -770,6 +772,7 @@ export default function BuyerProfile() {
 														? "Requested"
 														: "Connect"}
 											</button>
+											</> 											) : null}
 											{currentUser?.id === user?.id ? (
 												<Link
 													to="/org-settings?tab=profile"
