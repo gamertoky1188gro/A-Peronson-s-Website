@@ -167,6 +167,7 @@ export async function runSync({ apiRequest, token = "", verifyHash = true } = {}
 		return { status: "reset-pending", fullResync: true };
 	}
 	const localSeq = await getLocalSequence();
+	if (!token) return { status: "signed-out", localSeq };
 
 	let head;
 	try {
@@ -175,6 +176,7 @@ export async function runSync({ apiRequest, token = "", verifyHash = true } = {}
 		return { status: "error", stage: "head", error: err?.message || String(err) };
 	}
 	if (head?.unavailable) return { status: "no-sync", localSeq };
+	if (head?.unauthenticated) return { status: "signed-out", localSeq };
 	if (head?.resetRequired) {
 		await setFullResyncPending(true, "server requested RESET_REQUIRED at head");
 		return { status: "reset-required", fullResync: true };
@@ -202,6 +204,7 @@ export async function runSync({ apiRequest, token = "", verifyHash = true } = {}
 		return { status: "error", stage: "delta", error: err?.message || String(err) };
 	}
 	if (delta?.unavailable) return { status: "no-sync", localSeq };
+	if (delta?.unauthenticated) return { status: "signed-out", localSeq };
 	if (delta?.resetRequired) {
 		await setFullResyncPending(true, "server requested RESET_REQUIRED at delta");
 		return { status: "reset-required", fullResync: true };

@@ -11,6 +11,14 @@ function isNoSyncError(err) {
 	return status === 404 || status === 405 || status === 501;
 }
 
+// 401/403 = signed out (or token expired). Sync is per-user, so there is
+// nothing to sync — report signed-out instead of throwing, otherwise every
+// logged-out heartbeat spams the console + server logs with 401 noise.
+function isAuthError(err) {
+	const status = err?.status ?? err?.details?.status;
+	return status === 401 || status === 403;
+}
+
 export async function fetchSyncHead(apiRequest, token) {
 	try {
 		const data = await apiRequest("/sync/head", { token });
@@ -22,6 +30,7 @@ export async function fetchSyncHead(apiRequest, token) {
 		};
 	} catch (err) {
 		if (isNoSyncError(err)) return { unavailable: true, reason: SYNC_UNAVAILABLE };
+		if (isAuthError(err)) return { unauthenticated: true };
 		throw err;
 	}
 }
@@ -113,6 +122,7 @@ export async function fetchSyncDelta(
 		};
 	} catch (err) {
 		if (isNoSyncError(err)) return { unavailable: true, reason: SYNC_UNAVAILABLE, changes: [] };
+		if (isAuthError(err)) return { unauthenticated: true, changes: [] };
 		throw err;
 	}
 }

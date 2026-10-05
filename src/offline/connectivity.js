@@ -148,14 +148,35 @@ function markReachable(latencyMs, syncUnavailable) {
 	});
 }
 
+function readAuthToken() {
+	// Same key as src/lib/auth.js TOKEN_KEY ("jwt"). Read directly instead of
+	// importing auth.js to avoid a dependency cycle with the offline layer.
+	try {
+		if (typeof localStorage !== "undefined") {
+			const t = localStorage.getItem("jwt") || sessionStorage.getItem("jwt");
+			if (t) return t;
+		}
+	} catch {
+		/* storage unavailable */
+	}
+	return "";
+}
+
 export async function pingNow() {
-	const url = options.heartbeatUrl || DEFAULT_HEARTBEAT_URL;
 	const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
 
 	if (typeof navigator !== "undefined" && navigator.onLine === false) {
 		await markUnreachable();
 		return { ...status };
 	}
+
+	// Logged in -> heartbeat the sync endpoint (proves sync path works).
+	// Logged out -> /api/sync/head would 401 and spam the console with
+	// "Failed to load resource" noise, so ping the public /health instead.
+	// Either 200 means the backend is reachable.
+	const token = readAuthToken();
+	const url = token ? options.heartbeatUrl || DEFAULT_HEARTBEAT_URL : "/health";
+	const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
 	const controller = typeof AbortController === "undefined" ? null : new AbortController();
 	const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
@@ -165,15 +186,16 @@ export async function pingNow() {
 			method: "GET",
 			cache: "no-store",
 			credentials: "same-origin",
+			headers,
 			signal: controller?.signal,
 		});
 		const latencyMs = Date.now() - startedAt;
 		if (res.ok || NO_SYNC_STATUSES.has(res.status)) {
-			markReachable(latencyMs, !res.ok);
+			markReachable(latencyMs, !res.ok || !token);
 		} else if (res.status >= 500) {
 			await markUnreachable();
 		} else {
-			// Other 4xx (e.g. 401): backend reachable -> link is fine.
+			// Other 4xx (e.g. expired token): backend reachable -> link is fine.
 			markReachable(latencyMs, true);
 		}
 	} catch {
