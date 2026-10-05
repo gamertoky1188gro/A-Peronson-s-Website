@@ -57,6 +57,7 @@ import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { usePremiumCheck } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
+import { useFallbackCover } from "../lib/fallbackCover.js";
 import { trackClientEvent } from "../lib/events.js";
 import { recordLeadSource } from "../lib/leadSource.js";
 import { logger } from "../lib/logger.js";
@@ -836,6 +837,7 @@ export default function BuyingHouseProfile() {
 	const partnerTotal = partnerNetwork?.total_connected ?? profile?.counts?.connected_factories ?? 0;
 	const requestsCount = profile?.counts?.requests ?? 0;
 	const coverImage = user?.profile?.cover_image_url;
+	const fallbackCover = useFallbackCover(!coverImage);
 	const avatarImage = user?.profile?.profile_image;
 	const capacity = user?.profile?.sourcing_capacity || "—";
 	const companiesWorked = user?.profile?.companies_worked_with || [];
@@ -880,9 +882,9 @@ export default function BuyingHouseProfile() {
 				<div className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/90 shadow-[0_20px_60px_-25px_rgba(2,132,199,0.35)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
 					<div className="relative">
 						<div className="h-56 w-full bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600 sm:h-64">
-							{coverImage ? (
+							{coverImage || fallbackCover ? (
 								<img
-									src={coverImage}
+									src={coverImage || fallbackCover}
 									alt="Cover"
 									className="h-full w-full object-cover opacity-80 mix-blend-overlay"
 								/>

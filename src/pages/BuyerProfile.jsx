@@ -58,6 +58,7 @@ import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { usePremiumCheck } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
+import { useFallbackCover } from "../lib/fallbackCover.js";
 import { trackClientEvent } from "../lib/events.js";
 import { recordLeadSource } from "../lib/leadSource.js";
 import { logger } from "../lib/logger.js";
@@ -674,6 +675,7 @@ export default function BuyerProfile() {
 	].filter(Boolean);
 
 	const coverImage = user?.profile?.cover_image_url;
+	const fallbackCover = useFallbackCover(!coverImage);
 	const avatarImage = user?.profile?.profile_image;
 
 	return (
@@ -704,6 +706,13 @@ export default function BuyerProfile() {
 								{coverImage ? (
 									<motion.img
 										src={coverImage}
+										alt="Cover"
+										className="absolute inset-0 h-full w-full object-cover"
+										style={{ y: reduceMotion ? 0 : coverParallax }}
+									/>
+								) : fallbackCover ? (
+									<motion.img
+										src={fallbackCover}
 										alt="Cover"
 										className="absolute inset-0 h-full w-full object-cover"
 										style={{ y: reduceMotion ? 0 : coverParallax }}

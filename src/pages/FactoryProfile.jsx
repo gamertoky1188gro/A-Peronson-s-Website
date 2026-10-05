@@ -71,6 +71,7 @@ import NeonAtom from "../components/ui/NeonAtom.jsx";
 import VideoEmbed from "../components/ui/VideoEmbed.jsx";
 import { usePremiumCheck } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
+import { useFallbackCover } from "../lib/fallbackCover.js";
 import { trackClientEvent } from "../lib/events.js";
 import { recordLeadSource } from "../lib/leadSource.js";
 import { logger } from "../lib/logger.js";
@@ -666,6 +667,7 @@ export default function FactoryProfile() {
 	].filter(Boolean);
 
 	const coverImage = user?.profile?.cover_image_url;
+	const fallbackCover = useFallbackCover(!coverImage);
 	const avatarImage = user?.profile?.profile_image;
 
 	return (
@@ -698,7 +700,13 @@ export default function FactoryProfile() {
 								}
 							/>
 							<div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100 dark:border-slate-800 dark:bg-slate-900">
-								<div className="h-28 bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600" />
+								{coverImage ? (
+									<img src={coverImage} alt="Cover" className="h-28 w-full object-cover" />
+								) : fallbackCover ? (
+									<img src={fallbackCover} alt="Cover" className="h-28 w-full object-cover" />
+								) : (
+									<div className="h-28 bg-gradient-to-r from-sky-600 via-cyan-500 to-blue-600" />
+								)}
 								<div className="relative px-5 pb-5 pt-0">
 									<div className="-mt-10 flex items-end gap-4">
 										<AvatarFallback name={displayName} imageUrl={avatarImage} />
