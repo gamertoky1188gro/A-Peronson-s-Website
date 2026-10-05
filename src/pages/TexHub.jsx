@@ -202,9 +202,9 @@ function AnimatedHeroHeading({ text, className = "" }) {
 											initial={{ opacity: 0, y: 10 }}
 											animate={{ opacity: 1, y: 0 }}
 											transition={{
-												duration: 0.8,
+												duration: 0.45,
 												ease: "easeOut",
-												delay: charIndex * 0.012,
+												delay: charIndex * 0.005,
 											}}
 										>
 											{ch}
@@ -765,8 +765,7 @@ export default function TexHub() {
 					<motion.div
 						variants={staggerContainerVariants}
 						initial="hidden"
-						whileInView="visible"
-						viewport={{ once: true, margin: "-60px" }}
+						animate="visible"
 					>
 						<motion.div variants={staggerChildVariants} className="flex flex-wrap gap-2">
 							<Pill>Bangladesh-centric</Pill>
