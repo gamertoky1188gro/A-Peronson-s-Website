@@ -172,36 +172,51 @@ export async function pingNow() {
 
 	// Logged in -> heartbeat the sync endpoint (proves sync path works).
 	// Logged out -> /api/sync/head would 401 and spam the console with
-	// "Failed to load resource" noise, so ping the public /health instead.
-	// Either 200 means the backend is reachable.
+	// "Failed to load resource" noise, so probe public URLs instead.
+	// NOTE: adblockers sometimes block individual paths (seen: /health hit
+	// by ERR_BLOCKED_BY_CLIENT), so probe a chain — any HTTP response,
+	// even 404, proves the backend is reachable. Only total failure of
+	// every candidate means offline.
 	const token = readAuthToken();
-	const url = token ? options.heartbeatUrl || DEFAULT_HEARTBEAT_URL : "/health";
-	const headers = token ? { Authorization: `Bearer ${token}` } : {};
+	const candidates = token
+		? [{ url: options.heartbeatUrl || DEFAULT_HEARTBEAT_URL, headers: { Authorization: `Bearer ${token}` } }]
+		: [
+				{ url: "/health", headers: {} },
+				{ url: "/favicon.ico", headers: {} },
+				{ url: "/manifest.json", headers: {} },
+			];
 
 	const controller = typeof AbortController === "undefined" ? null : new AbortController();
-	const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
-	const startedAt = Date.now();
 	try {
-		const res = await fetch(url, {
-			method: "GET",
-			cache: "no-store",
-			credentials: "same-origin",
-			headers,
-			signal: controller?.signal,
-		});
-		const latencyMs = Date.now() - startedAt;
-		if (res.ok || NO_SYNC_STATUSES.has(res.status)) {
-			markReachable(latencyMs, !res.ok || !token);
-		} else if (res.status >= 500) {
-			await markUnreachable();
-		} else {
-			// Other 4xx (e.g. expired token): backend reachable -> link is fine.
-			markReachable(latencyMs, true);
+		for (const { url, headers } of candidates) {
+			const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+			const startedAt = Date.now();
+			try {
+				const res = await fetch(url, {
+					method: "GET",
+					cache: "no-store",
+					credentials: "same-origin",
+					headers,
+					signal: controller?.signal,
+				});
+				const latencyMs = Date.now() - startedAt;
+				if (timer) clearTimeout(timer);
+				if (res.ok || NO_SYNC_STATUSES.has(res.status)) {
+					markReachable(latencyMs, !res.ok || !token);
+					return { ...status };
+				}
+				if (res.status >= 500) continue; // try next candidate
+				// Other 4xx (e.g. expired token): backend reachable -> link is fine.
+				markReachable(latencyMs, true);
+				return { ...status };
+			} catch {
+				if (timer) clearTimeout(timer);
+				continue; // blocked/aborted/timeout -> try next candidate
+			}
 		}
+		await markUnreachable();
 	} catch {
 		await markUnreachable();
-	} finally {
-		if (timer) clearTimeout(timer);
 	}
 	return { ...status };
 }
