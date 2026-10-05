@@ -51,7 +51,6 @@ import ScrollReveal from "../components/ScrollReveal.jsx";
 import ScrollVelocityText from "../components/ScrollVelocityText.jsx";
 import StickySection from "../components/StickySection.jsx";
 import TextColorReveal from "../components/TextColorReveal.jsx";
-import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { apiRequest, getToken } from "../lib/auth.js";
 import usePageMeta from "../lib/usePageMeta.js";
 
@@ -529,7 +528,6 @@ export default function TexHub() {
 
 	const [home, setHome] = useState(initialHome);
 	const [loadError, setLoadError] = useState("");
-	const [loading, setLoading] = useState(true);
 	const [mode, setMode] = useState("professional");
 
 	const iconMap = {
@@ -565,12 +563,6 @@ export default function TexHub() {
 					return;
 				}
 				setLoadError(String(err?.message || "Failed to load"));
-			})
-			.finally(() => {
-				if (!alive) {
-					return;
-				}
-				setLoading(false);
 			});
 
 		return () => {
@@ -679,9 +671,9 @@ export default function TexHub() {
 		return () => sectionObserver.current?.disconnect();
 	}, [sectionIds]);
 
-	if (loading) {
-		return <NeonAtom fill={true} size={64} text="Loading..." timeout={10000} />;
-	}
+	// Render instantly from static initialHome fallbacks; /system/home refreshes
+	// numbers in the background. Gating the hero on the API pushed LCP to ~19s
+	// on cold backends, so the loader must never block first paint.
 
 	return (
 		<div className="relative bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white">
