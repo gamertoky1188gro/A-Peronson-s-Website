@@ -618,6 +618,7 @@ export default function FactoryProfile() {
 	});
 	const [reviewDeleteId, setReviewDeleteId] = useState(null);
 	const [feedback, setFeedback] = useState(null);
+	const fallbackCover = useFallbackCover(!user?.profile?.cover_image_url);
 	const isBoosted = Boolean(profileBoost);
 
 	if (loading) {
@@ -667,7 +668,6 @@ export default function FactoryProfile() {
 	].filter(Boolean);
 
 	const coverImage = user?.profile?.cover_image_url;
-	const fallbackCover = useFallbackCover(!coverImage);
 	const avatarImage = user?.profile?.profile_image;
 
 	return (

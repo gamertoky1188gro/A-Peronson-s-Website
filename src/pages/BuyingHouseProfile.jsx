@@ -806,6 +806,8 @@ export default function BuyingHouseProfile() {
 		});
 	}, [products, searchProducts]);
 
+	const fallbackCover = useFallbackCover(!user?.profile?.cover_image_url);
+
 	if (loading) {
 		return <NeonAtom fill={true} timeout={10000} />;
 	}
@@ -837,7 +839,6 @@ export default function BuyingHouseProfile() {
 	const partnerTotal = partnerNetwork?.total_connected ?? profile?.counts?.connected_factories ?? 0;
 	const requestsCount = profile?.counts?.requests ?? 0;
 	const coverImage = user?.profile?.cover_image_url;
-	const fallbackCover = useFallbackCover(!coverImage);
 	const avatarImage = user?.profile?.profile_image;
 	const capacity = user?.profile?.sourcing_capacity || "—";
 	const companiesWorked = user?.profile?.companies_worked_with || [];

@@ -280,6 +280,7 @@ export default function BuyerProfile() {
 	});
 	const [reviewDeleteId, setReviewDeleteId] = useState(null);
 	const [feedback, setFeedback] = useState(null);
+	const fallbackCover = useFallbackCover(!user?.profile?.cover_image_url);
 	const [editingCapacity, setEditingCapacity] = useState(false);
 	const [capacityValue, setCapacityValue] = useState("");
 	const isBoosted = Boolean(profileBoost);
@@ -675,7 +676,6 @@ export default function BuyerProfile() {
 	].filter(Boolean);
 
 	const coverImage = user?.profile?.cover_image_url;
-	const fallbackCover = useFallbackCover(!coverImage);
 	const avatarImage = user?.profile?.profile_image;
 
 	return (
