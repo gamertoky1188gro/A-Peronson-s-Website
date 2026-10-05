@@ -40,6 +40,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 # ── Googlebot ────────────────────────────────────────
 User-agent: Googlebot
@@ -87,6 +90,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 # ── Bingbot ──────────────────────────────────────────
 User-agent: Bingbot
@@ -134,6 +140,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 # ── AI Crawlers ──────────────────────────────────────
 User-agent: GPTBot
@@ -174,6 +183,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 User-agent: ChatGPT-User
 Allow: /
@@ -213,6 +225,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 User-agent: CCBot
 Allow: /
@@ -252,6 +267,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 User-agent: anthropic-ai
 Allow: /
@@ -291,6 +309,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 User-agent: ClaudeBot
 Allow: /
@@ -330,6 +351,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 User-agent: Google-Extended
 Allow: /
@@ -369,6 +393,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 User-agent: Bytespider
 Allow: /
@@ -408,6 +435,9 @@ Disallow: /feedback
 Disallow: /call
 Disallow: /join-requests/
 Disallow: /tasks
+# Secret/obfuscated paths — never index (see route /:time/meow/:date/SignupUltra).
+Disallow: /access-denied
+Disallow: /*/meow/*
 
 # ── Bad bots ─────────────────────────────────────────
 User-agent: AhrefsBot

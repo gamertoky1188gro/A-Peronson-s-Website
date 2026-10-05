@@ -285,9 +285,9 @@ function SectionHeading({ eyebrow, title, description }) {
  */
 export default function About() {
 	usePageMeta({
-		title: "About — GarTexHub",
+		title: "About GarTexHub | B2B Garment & Textile Sourcing Marketplace for Bangladesh Apparel",
 		description:
-			"Learn about GarTexHub — the global textile and garment marketplace connecting verified factories, buying houses, and suppliers worldwide.",
+			"About GarTexHub — the B2B garment and textile sourcing marketplace connecting Bangladesh apparel buyers, factories and buying houses.",
 		canonical: "https://gartexhub.onrender.com/about",
 		url: "/about",
 	});

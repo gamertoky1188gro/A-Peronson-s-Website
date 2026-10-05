@@ -59,6 +59,7 @@ export default function AccessDenied() {
 		description:
 			"You don't have permission to access this page on GarTexHub. Upgrade your plan or contact support.",
 		url: "/access-denied",
+		robots: "noindex,nofollow",
 	});
 
 	const { theme, toggleTheme } = useTheme();

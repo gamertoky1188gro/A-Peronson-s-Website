@@ -180,9 +180,9 @@ function StatCard({ icon: Icon, title, text }) {
 
 export default function HelpCenterPage() {
 	usePageMeta({
-		title: "Help Center — GarTexHub",
+		title: "Help Center | Garment Sourcing FAQs for Buyers & Apparel Manufacturers — GarTexHub",
 		type: "website",
-		description: "Get help with GarTexHub. Browse FAQs, documentation, and submit support tickets.",
+		description: "Garment sourcing help and FAQs for buyers, factories and buying houses — verification, messaging, contracts and plans.",
 		canonical: "https://gartexhub.onrender.com/help",
 		siteName: "GarTexHub",
 		locale: "en_US",
@@ -358,6 +358,7 @@ export default function HelpCenterPage() {
 									Help Center
 								</div>
 								<h1 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl dark:text-white">
+									<span className="sr-only">Garment Sourcing Help &amp; FAQs — </span>
 									Industrial reliability, tech-forward SaaS guidance.
 								</h1>
 								<p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">

@@ -31,4 +31,9 @@ export const ROUTES = {
 	ADMIN: "/admin",
 	ADMIN_GOVERNANCE: "/admin/governance",
 	TASKS: "/tasks",
+	VERIFICATION: "/verification",
+	SHARE: "/share/:entityType/:entityId",
+	BOOSTS: "/boosts/:id",
+	ORDERS: "/orders",
+	PROFILE: "/profile/:id",
 };

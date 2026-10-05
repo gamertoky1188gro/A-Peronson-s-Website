@@ -27,6 +27,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import LazyImage from "../components/ui/LazyImage.jsx";
 import { apiRequest, getToken, getCurrentUser } from "../lib/auth.js";
+import usePageMeta from "../lib/usePageMeta.js";
 
 const TYPE_LABELS = {
 	buyer_request: { label: "Buyer Request", icon: "\uD83D\uDCBC", color: "from-blue-500 to-indigo-600" },
@@ -401,6 +402,24 @@ export default function SharedPost() {
 	}
 
 	const typeInfo = TYPE_LABELS[entityType] || TYPE_LABELS.feed_post;
+
+	const sharedTitle =
+		post?.title || post?.product || post?.product_name || post?.caption || "Shared post";
+	const sharedAuthor = post?.author?.name || "a GarTexHub member";
+	const sharedExcerpt = String(
+		post?.description || post?.description_markdown || post?.caption || post?.custom_description || sharedTitle,
+	)
+		.replace(/\s+/g, " ")
+		.trim()
+		.slice(0, 157);
+	usePageMeta({
+		title: post ? `${sharedTitle} — shared by ${sharedAuthor} on GarTexHub` : "Shared post — GarTexHub",
+		type: "article",
+		description: post
+			? sharedExcerpt
+			: "This shared GarTexHub post is unavailable or was removed. Join GarTexHub to connect with garment buyers and suppliers.",
+		robots: post ? "index,follow" : "noindex,nofollow",
+	});
 
 	if (loading) {
 		return (

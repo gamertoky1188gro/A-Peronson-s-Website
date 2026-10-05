@@ -301,10 +301,10 @@ function GlassSurface({ className = "", children }) {
 
 export default function TexHub() {
 	usePageMeta({
-		title: "GarTexHub — B2B Textile & Garment Sourcing Platform",
+		title: "Garment Sourcing Platform | Apparel Manufacturers & Buying Houses in Bangladesh — GarTexHub",
 		type: "website",
 		description:
-			"A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, and connect with verified partners.",
+			"Garment sourcing made simple — connect with verified apparel manufacturers and buying houses in Bangladesh.",
 		canonical: "https://gartexhub.onrender.com/",
 		siteName: "GarTexHub",
 		locale: "en_US",
@@ -322,7 +322,7 @@ export default function TexHub() {
 	const initialHome = useMemo(
 		() => ({
 			hero: {
-				headline: "Where global buyers, factories, and buying houses connect with clarity",
+				headline: "Garment Sourcing Platform — Where Global Buyers, Factories & Buying Houses Connect in Bangladesh",
 				subheadline:
 					"A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.",
 				presentation_rule:
@@ -838,6 +838,23 @@ export default function TexHub() {
 									</MagneticLinkButton>
 								</>
 							)}
+						</motion.div>
+
+						<motion.div
+							variants={staggerChildVariants}
+							className="mt-4 text-xs text-slate-500 dark:text-slate-400"
+						>
+							<Link to="/pricing" aria-label="Compare garment sourcing plans and pricing">
+								Compare sourcing plans
+							</Link>
+							<span aria-hidden="true"> · </span>
+							<Link to="/about" aria-label="About GarTexHub garment sourcing marketplace">
+								About GarTexHub
+							</Link>
+							<span aria-hidden="true"> · </span>
+							<Link to="/help" aria-label="Garment sourcing help center and FAQs">
+								Help center
+							</Link>
 						</motion.div>
 
 						<motion.div variants={staggerChildVariants} className="mt-8 grid gap-3 sm:grid-cols-3">

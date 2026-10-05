@@ -25,7 +25,16 @@ export default function Footer() {
 							</span>
 							<span className="text-lg font-bold text-slate-900 dark:text-white">GarTexHub</span>
 						</div>
-						<div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
+						<div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-slate-600 dark:text-slate-400">
+							<Link to="/pricing" className="hover:text-gtBlue">
+								Garment sourcing pricing
+							</Link>
+							<Link to="/about" className="hover:text-gtBlue">
+								About our marketplace
+							</Link>
+							<Link to="/help" className="hover:text-gtBlue">
+								Sourcing help &amp; FAQs
+							</Link>
 							<Link to="/terms" className="hover:text-gtBlue">
 								Terms & Conditions
 							</Link>

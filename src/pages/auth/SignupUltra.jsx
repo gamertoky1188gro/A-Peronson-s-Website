@@ -43,7 +43,7 @@ export default function SignupUltra() {
 		title: "Sign Up — GarTexHub",
 		description:
 			"Join GarTexHub — the global textile and garment marketplace. Create your account and connect with verified factories, buyers, and suppliers.",
-		url: "/signup",
+		robots: "noindex,nofollow",
 	});
 
 	const { time, date } = useParams();

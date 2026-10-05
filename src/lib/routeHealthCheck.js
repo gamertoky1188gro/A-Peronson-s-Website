@@ -32,7 +32,10 @@ export const ROUTE_MANIFEST = [
 	"/admin/governance",
 	"/tasks",
 	"/verification",
-	"/verification-center",
+	"/share/:entityType/:entityId",
+	"/boosts/:id",
+	"/orders",
+	"/profile/:id",
 ];
 
 const ROUTE_PATTERNS = [
@@ -41,11 +44,12 @@ const ROUTE_PATTERNS = [
 	/^\/factory\/[^/]+$/,
 	/^\/buying-house\/[^/]+$/,
 	/^\/profile\/[^/]+$/,
+	/^\/share\/[^/]+\/[^/]+$/,
+	/^\/boosts\/[^/]+$/,
 	/^\/[^/]+\/meow\/[^/]+\/SignupUltra$/,
 	/^\/org-settings\?.+$/,
 	/^\/join-requests\/[^/]+$/,
 	/^\/verification$/,
-	/^\/verification-center$/,
 ];
 
 export function isRouteValid(path) {

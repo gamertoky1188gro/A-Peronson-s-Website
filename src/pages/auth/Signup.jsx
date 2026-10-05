@@ -130,6 +130,7 @@ export default function Signup() {
 		description:
 			"Join GarTexHub — the B2B sourcing platform for garments and textiles. Create your account as a buyer, factory, or buying house.",
 		canonical: "https://gartexhub.onrender.com/signup",
+		robots: "noindex,nofollow",
 		siteName: "GarTexHub",
 		locale: "en_US",
 	});

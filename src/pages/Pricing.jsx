@@ -671,10 +671,10 @@ function FAQItem({ q, a }) {
 
 export default function PricingPage() {
 	usePageMeta({
-		title: "Pricing — GarTexHub",
+		title: "Garment Sourcing Plans & Pricing for Buyers, Factories & Buying Houses — GarTexHub",
 		type: "website",
 		description:
-			"Choose the right plan for your garment and textile sourcing needs. Free and premium tiers for buyers, factories, and buying houses.",
+			"Compare GarTexHub sourcing plans and pricing for buyers, factories and buying houses — free and premium tiers.",
 		canonical: "https://gartexhub.onrender.com/pricing",
 		siteName: "GarTexHub",
 		locale: "en_US",
@@ -918,7 +918,7 @@ export default function PricingPage() {
 							Pricing
 						</div>
 						<h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
-							Clear plans for serious sourcing teams
+							Clear plans for serious garment sourcing teams
 						</h1>
 						<p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">
 							Borderless surfaces, verified signals, and export-ready reporting — built for buying
