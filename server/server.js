@@ -14,8 +14,8 @@ import { logHub } from "./log/logHub.js";
 import { registerLogHttp, startLogTransport } from "./log/transport.js";
 import viewerRouter from "./log/viewer/router.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-import { requestLogger } from "./middleware/requestLogger.js";
 import { requestCapture } from "./middleware/requestCapture.js";
+import { requestLogger } from "./middleware/requestLogger.js";
 import { REALTIME_EVENTS, realtimeBus } from "./realtime/realtimeBus.js";
 import adminConfigRoutes from "./routes/adminConfigRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -64,15 +64,16 @@ import ratingsRoutes from "./routes/ratingsRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import requirementRoutes from "./routes/requirementRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
+import seoRoutes from "./routes/seoRoutes.js";
 import socialRoutes from "./routes/socialRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
+import syncRoutes from "./routes/syncRoutes.js";
 import systemRoutes from "./routes/systemRoutes.js";
 import uploadsRoutes from "./routes/uploadsRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
-import seoRoutes from "./routes/seoRoutes.js";
 import workflowLifecycleRoutes from "./routes/workflowLifecycleRoutes.js";
 import {
 	initAllUserSessions,
@@ -372,6 +373,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/join-requests", joinRequestRoutes);
 
 app.use("/api/social", socialRoutes);
+app.use("/api/sync", syncRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/qdrant", qdrantRoutes);
 app.use("/api/presets", presetsRoutes);
@@ -400,17 +402,17 @@ app.use("/api/workflow", workflowLifecycleRoutes);
 app.use("/api/infra", infraRoutes);
 app.use("/api/network", networkRoutes);
 app.use("/api/exports", exportRoutes);
-	app.use("/api/logs", logRoutes);
-	app.use("/log-viewer", viewerRouter);
-	app.use("/api/dev", devRoutes);
-	app.use(seoRoutes);
-	app.get("/health", (_req, res) => {
-		res.status(200).json({ status: "ok", uptime: process.uptime(), timestamp: Date.now() });
-	});
+app.use("/api/logs", logRoutes);
+app.use("/log-viewer", viewerRouter);
+app.use("/api/dev", devRoutes);
+app.use(seoRoutes);
+app.get("/health", (_req, res) => {
+	res.status(200).json({ status: "ok", uptime: process.uptime(), timestamp: Date.now() });
+});
 
-	app.use(errorHandler);
+app.use(errorHandler);
 
-	if (serveDist && fs.existsSync(distRoot)) {
+if (serveDist && fs.existsSync(distRoot)) {
 	app.get(/.*/, (req, res) => {
 		if (req.path.match(/\.\w+$/)) {
 			return res.status(404).end();
@@ -1276,8 +1278,8 @@ async function start() {
 							);
 							return;
 						}
-					ensureVenv().catch((err) => logError("ensureVenv_failed", err));
-					scanAndAnalyzeExistingFiles().catch((err) => logError("scanExistingFiles_failed", err));
+						ensureVenv().catch((err) => logError("ensureVenv_failed", err));
+						scanAndAnalyzeExistingFiles().catch((err) => logError("scanExistingFiles_failed", err));
 					}, 5000);
 				})
 				.catch((err) => logError("server: uploadsService import failed", err));

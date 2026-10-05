@@ -33,6 +33,10 @@ import usePageMeta from "../lib/usePageMeta.js";
 
 const Motion = motion;
 
+// HyperCache Phase 4: SSE-invalidation coalescing state lives in refs inside
+// the component (never module scope) so hooks order is unaffected and
+// concurrent mounts cannot share the in-flight flag.
+
 const TABS = ["All", "Buyer Requests", "Company Products", "Posts"];
 
 const FEED_CATEGORIES = [
@@ -242,7 +246,7 @@ const Pill = memo(function Pill({ children, active = false, onClick }) {
 	return (
 		<button
 			onClick={onClick}
-			className={cx(
+			class={cx(
 				"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm",
 				active
 					? "bg-sky-500 text-white shadow-lg shadow-sky-500/25"
@@ -256,16 +260,16 @@ const Pill = memo(function Pill({ children, active = false, onClick }) {
 
 const StatCard = memo(function StatCard({ icon, label, value, accent = "sky" }) {
 	return (
-		<div className="rounded-3xl border border-white/60 bg-white/80 p-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70 sm:p-3">
-			<div className="flex items-center justify-between gap-2">
-				<div className="flex-1">
-					<p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
+		<div class="rounded-3xl border border-white/60 bg-white/80 p-2.5 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70 sm:p-3">
+			<div class="flex items-center justify-between gap-2">
+				<div class="flex-1">
+					<p class="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
 						{label}
 					</p>
-					<p className="text-lg font-semibold text-slate-900 dark:text-white sm:text-xl">{value}</p>
+					<p class="text-lg font-semibold text-slate-900 dark:text-white sm:text-xl">{value}</p>
 				</div>
 				<div
-					className={cx(
+					class={cx(
 						"flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
 						accent === "sky" && "bg-sky-500/15 text-sky-600 dark:text-sky-400",
 						accent === "blue" && "bg-blue-500/15 text-blue-600 dark:text-blue-400",
@@ -283,7 +287,7 @@ const ActionButton = memo(function ActionButton({ icon, label, onClick }) {
 	return (
 		<button
 			onClick={onClick}
-			className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-500 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-sky-500 dark:hover:text-white"
+			class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-500 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-sky-500 dark:hover:text-white"
 		>
 			{icon}
 			{label}
@@ -354,8 +358,96 @@ export default function MainFeed() {
 	const [expressBusyId, setExpressBusyId] = useState("");
 	const [claimedRequestId, setClaimedRequestId] = useState("");
 
-	const liveRef = useRef({ token, activeCategory, activeType, unique, feedConfig, nextCursor: nextCursorRef.current });
-	liveRef.current = { token, activeCategory, activeType, unique, feedConfig, nextCursor: nextCursorRef.current };
+	const liveRef = useRef({
+		token,
+		activeCategory,
+		activeType,
+		unique,
+		feedConfig,
+		nextCursor: nextCursorRef.current,
+	});
+	liveRef.current = {
+		token,
+		activeCategory,
+		activeType,
+		unique,
+		feedConfig,
+		nextCursor: nextCursorRef.current,
+	};
+
+	// HyperCache Phase 4: per-mount invalidation coalescing (replaces the old
+	// module-scope flag). Queued invalidations drain after the in-flight pass;
+	// the queue is dropped on unmount.
+	const syncInFlightRef = useRef(false);
+	const syncQueueRef = useRef([]);
+	const syncUnmountedRef = useRef(false);
+	useEffect(() => {
+		syncUnmountedRef.current = false;
+		return () => {
+			syncUnmountedRef.current = true;
+			syncQueueRef.current.length = 0;
+		};
+	}, []);
+
+	// HyperCache Phase 2: render Dexie feedPosts snapshot instantly on mount (if present).
+	// Filtered to the active tab/category so a stale page from another filter
+	// never flashes under the current tab.
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			try {
+				const { getDb } = await import("../offline/db.js");
+				const s = liveRef.current;
+				const tab = s.activeType || "All";
+				const catLabel = s.activeCategory || "";
+				const acceptedFeedTypes =
+					tab === "Buyer Requests"
+						? new Set(["buyer_request", "requests", "request"])
+						: tab === "Company Products"
+							? new Set(["company_product", "product", "products"])
+							: tab === "Posts"
+								? new Set(["user_feed_post", "post", "posts"])
+								: null;
+				const acceptedCategory =
+					!catLabel || /^all\b/i.test(catLabel) ? null : catLabel.toLowerCase();
+				const rows = await getDb()
+					.table("feedPosts")
+					.orderBy("updatedAt")
+					.reverse()
+					.limit(60)
+					.toArray();
+				const matching = rows.filter((r) => {
+					if (acceptedFeedTypes && r?.feed_type && !acceptedFeedTypes.has(String(r.feed_type)))
+						return false;
+					if (acceptedCategory && String(r?.category || "").toLowerCase() !== acceptedCategory)
+						return false;
+					return true;
+				});
+				const page = matching.slice(0, 24);
+				if (cancelled || page.length === 0) return;
+				const raws = page.map((r) => r.raw || r).filter((r) => r?.id != null);
+				if (raws.length === 0) return;
+				const normalized = raws
+					.map((raw) => {
+						try {
+							return normalizeFeedItem(raw);
+						} catch {
+							return null;
+						}
+					})
+					.filter(Boolean);
+				if (normalized.length === 0) return;
+				setItems(normalized);
+				// Dismiss the loading spinner instantly; background refresh still runs below.
+				if (!loadFlags.current.feed) markLoaded("feed");
+			} catch {
+				/* IndexedDB unavailable — fall through to network */
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [markLoaded]);
 
 	const highlightKey = searchParams.get("item") || "";
 	const sentinelRef = useRef(null);
@@ -461,6 +553,37 @@ export default function MainFeed() {
 				const rows = Array.isArray(data?.items) ? data.items : [];
 				const normalized = rows.map(normalizeFeedItem);
 
+				// HyperCache Phase 2: upsert fresh rows into Dexie (fire-and-forget).
+				try {
+					const { getDb } = await import("../offline/db.js");
+					const now = Date.now();
+					const toEpochMs = (value, fallback) => {
+						if (value === null || value === undefined || value === "") return fallback;
+						if (typeof value === "number" && Number.isFinite(value)) {
+							return value < 1e12 ? value * 1000 : value;
+						}
+						const t = new Date(value).getTime();
+						return Number.isFinite(t) ? t : fallback;
+					};
+					const records = rows
+						.filter((r) => r?.id != null)
+						.map((r) => ({
+							id: r.id,
+							feed_type: r.feed_type || "",
+							category: r.category || "",
+							updatedAt: toEpochMs(r.updated_at ?? r.created_at, now),
+							raw: r,
+						}));
+					if (records.length > 0) {
+						getDb()
+							.table("feedPosts")
+							.bulkPut(records)
+							.catch(() => {});
+					}
+				} catch {
+					/* IndexedDB unavailable — ignore */
+				}
+
 				setTags(Array.isArray(data?.tags) ? data.tags : []);
 				setItems((previous) => {
 					if (reset) {
@@ -518,7 +641,9 @@ export default function MainFeed() {
 			.finally(() => {
 				if (!cancelled) markLoaded("config");
 			});
-		return () => { cancelled = true; };
+		return () => {
+			cancelled = true;
+		};
 	}, [markLoaded]);
 
 	useEffect(() => {
@@ -580,9 +705,69 @@ export default function MainFeed() {
 				});
 				setItems((prev) => prev.map((i) => (i.id === normalized.id ? normalized : i)));
 			},
+			// HyperCache Phase 4: SSE invalidations -> offline sync engine delta.
+			// Dynamic import with @vite-ignore so the build never breaks when
+			// the Phase 2 syncEngine track hasn't landed yet. Coalesced via
+			// refs (never module scope); queued events drain after the
+			// in-flight pass and are dropped on unmount.
+			async onInvalidate(invalidation) {
+				if (!invalidation || syncUnmountedRef.current) {
+					return;
+				}
+				if (syncInFlightRef.current) {
+					syncQueueRef.current.push(invalidation);
+					if (syncQueueRef.current.length > 20) syncQueueRef.current.shift();
+					return;
+				}
+				syncInFlightRef.current = true;
+				try {
+					let current = invalidation;
+					while (current) {
+						if (syncUnmountedRef.current) break;
+						try {
+							const mod = await import(/* @vite-ignore */ "../offline/syncEngine.js");
+							const applyDelta =
+								mod?.applyDelta || mod?.default?.applyDelta || mod?.syncEngine?.applyDelta;
+							if (typeof applyDelta === "function") {
+								await applyDelta(current);
+							} else if (
+								typeof mod?.runSync === "function" ||
+								typeof mod?.default?.runSync === "function"
+							) {
+								// syncEngine (Phase 2) exposes runSync instead of per-event
+								// applyDelta — one sync pass catches up from the delta log.
+								const runSync = mod.runSync || mod.default.runSync;
+								await runSync({ apiRequest, token: getToken() });
+							} else {
+								// TODO(Phase 2): syncEngine has no delta entrypoint yet.
+								logger.debug("[feed] syncEngine has no applyDelta/runSync, skipped", {
+									entity: current.entity,
+									id: current.id,
+								});
+							}
+						} catch {
+							// TODO(Phase 2): syncEngine module not present — invalidation dropped.
+							logger.debug("[feed] syncEngine unavailable, skipped applyDelta", {
+								entity: current.entity,
+								id: current.id,
+							});
+						}
+						current = syncQueueRef.current.shift() || null;
+						// Coalesce the backlog into a single extra pass: one runSync
+						// already catches up from the delta log.
+						if (current && syncQueueRef.current.length > 0) syncQueueRef.current.length = 0;
+					}
+				} finally {
+					syncInFlightRef.current = false;
+				}
+			},
 		});
 
-		return () => source?.close();
+		return () => {
+			syncUnmountedRef.current = true;
+			syncQueueRef.current.length = 0;
+			source?.close();
+		};
 	}, []);
 
 	useEffect(() => {
@@ -762,26 +947,33 @@ export default function MainFeed() {
 	);
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} size={80} text="Loading feed..." timeout={10000} />;
+		return <NeonAtom fill={true} size={80} text="Loading feed..." timeout={10_000} />;
 	}
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
+		<div class="flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
 			<motion.div
 				style={{ y: reduceMotion ? 0 : bgParallax }}
-				className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"
+				class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"
 			/>
-			<div className="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
-				<div className="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-4 px-4 py-4 sm:gap-6 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6 min-h-0">
+			<div class="flex min-h-0 flex-1 flex-col text-slate-900 transition-colors dark:text-white">
+				<div class="mx-auto flex w-full max-w-[1500px] flex-1 flex-col gap-4 px-4 py-4 sm:gap-6 md:px-6 lg:flex-row lg:overflow-hidden lg:p-6 min-h-0">
 					{/* Mobile hamburger */}
-					<div className="flex items-center justify-between lg:hidden">
-						<h1 className="text-base font-bold text-slate-900 dark:text-white sm:text-lg">Feed</h1>
+					<div class="flex items-center justify-between lg:hidden">
+						<h1 class="text-base font-bold text-slate-900 dark:text-white sm:text-lg">Feed</h1>
 						<button
 							onClick={() => setSidebarOpen(true)}
-							className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-600 shadow-sm dark:bg-slate-800 dark:text-slate-300"
+							class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-600 shadow-sm dark:bg-slate-800 dark:text-slate-300"
 							aria-label="Open sidebar"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-5 w-5"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+							>
 								<path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
 							</svg>
 						</button>
@@ -789,86 +981,105 @@ export default function MainFeed() {
 
 					{/* Mobile drawer overlay */}
 					{sidebarOpen && (
-						<div className="fixed inset-0 z-50 lg:hidden">
-							<div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
-							<aside className="absolute left-0 top-0 h-full w-[320px] max-w-[85vw] overflow-y-auto border-r border-white/10 bg-white/95 p-4 backdrop-blur-2xl dark:bg-slate-950/95">
-								<div className="flex justify-end mb-4">
+						<div class="fixed inset-0 z-50 lg:hidden">
+							<div class="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
+							<aside class="absolute left-0 top-0 h-full w-[320px] max-w-[85vw] overflow-y-auto border-r border-white/10 bg-white/95 p-4 backdrop-blur-2xl dark:bg-slate-950/95">
+								<div class="flex justify-end mb-4">
 									<button
 										onClick={() => setSidebarOpen(false)}
-										className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+										class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
 										aria-label="Close sidebar"
 									>
 										✕
 									</button>
 								</div>
-							{/* ====== MOBILE SIDEBAR CONTENT ====== */}
-							{/* Header */}
-							<Link to={profileUrl(user)} onClick={() => setSidebarOpen(false)} className="block rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20 transition hover:shadow-2xl hover:shadow-sky-500/30">
-								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-3">
-										{user?.profile?.profile_image || user?.avatar_url ? (
-											<img
-												src={user.profile?.profile_image || user.avatar_url}
-												alt={user?.name || "User"}
-												className="h-12 w-12 rounded-2xl object-cover"
-											/>
-										) : (
-											<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-												<LayoutGrid className="h-6 w-6" />
+								{/* ====== MOBILE SIDEBAR CONTENT ====== */}
+								{/* Header */}
+								<Link
+									to={profileUrl(user)}
+									onClick={() => setSidebarOpen(false)}
+									class="block rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20 transition hover:shadow-2xl hover:shadow-sky-500/30"
+								>
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-3">
+											{user?.profile?.profile_image || user?.avatar_url ? (
+												<img
+													src={user.profile?.profile_image || user.avatar_url}
+													alt={user?.name || "User"}
+													class="h-12 w-12 rounded-2xl object-cover"
+												/>
+											) : (
+												<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+													<LayoutGrid class="h-6 w-6" />
+												</div>
+											)}
+											<div>
+												<p class="text-sm/none font-medium opacity-90">
+													{user?.role
+														? user.role.charAt(0).toUpperCase() +
+															user.role.slice(1).replace(/_/g, " ")
+														: "User"}
+												</p>
+												<p class="text-lg font-semibold sm:text-xl">
+													{user?.name || "Feed Center"}
+												</p>
 											</div>
-										)}
-										<div>
-											<p className="text-sm/none font-medium opacity-90">
-												{user?.role
-													? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ")
-													: "User"}
-											</p>
-											<p className="text-lg font-semibold sm:text-xl">{user?.name || "Feed Center"}</p>
 										</div>
 									</div>
-								</div>
-								<div className="mt-4 flex items-center gap-2 text-sm opacity-95">
-									<BadgeCheck className="h-4 w-4" />
-									{user?.profile?.bio || feedConfig.labels.premium_badge}
-								</div>
-								{user?.email && <div className="mt-2 text-xs opacity-75">{user.email}</div>}
-							</Link>
-								{/* Quick Actions */}
-								<div className="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-									<div className="flex items-center justify-between">
-										<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{feedConfig.labels.quick_actions}</h2>
-										<span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">{feedConfig.labels.live_status}</span>
+									<div class="mt-4 flex items-center gap-2 text-sm opacity-95">
+										<BadgeCheck class="h-4 w-4" />
+										{user?.profile?.bio || feedConfig.labels.premium_badge}
 									</div>
-									<div className="mt-4 grid gap-3">
+									{user?.email && <div class="mt-2 text-xs opacity-75">{user.email}</div>}
+								</Link>
+								{/* Quick Actions */}
+								<div class="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+									<div class="flex items-center justify-between">
+										<h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+											{feedConfig.labels.quick_actions}
+										</h2>
+										<span class="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+											{feedConfig.labels.live_status}
+										</span>
+									</div>
+									<div class="mt-4 grid gap-3">
 										{quickActions.map((a) => (
 											<Link
 												key={a.to}
 												to={a.to}
 												onClick={() => setSidebarOpen(false)}
-												className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-sky-500/10 dark:hover:text-sky-300"
+												class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-sky-500/10 dark:hover:text-sky-300"
 											>
-												<span className="flex items-center gap-2">
-													{a.label.includes("Post") ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+												<span class="flex items-center gap-2">
+													{a.label.includes("Post") ? (
+														<Upload class="h-4 w-4" />
+													) : (
+														<Plus class="h-4 w-4" />
+													)}
 													{a.label}
 												</span>
-												<ChevronDown className="h-4 w-4" />
+												<ChevronDown class="h-4 w-4" />
 											</Link>
 										))}
 									</div>
 								</div>
 								{/* Search */}
-								<div className="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-									<div className="flex items-center justify-between gap-3">
-										<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Search</h2>
-										<span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">Feed</span>
+								<div class="mt-4 rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+									<div class="flex items-center justify-between gap-3">
+										<h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+											Search
+										</h2>
+										<span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+											Feed
+										</span>
 									</div>
-									<div className="mt-4 relative">
-										<Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+									<div class="mt-4 relative">
+										<Search class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 										<input
 											value={search}
 											onChange={(e) => setSearch(e.target.value)}
 											placeholder={feedConfig.labels.search_placeholder}
-											className="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+											class="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
 										/>
 									</div>
 								</div>
@@ -879,88 +1090,91 @@ export default function MainFeed() {
 					{/* ====== SIDEBAR ====== */}
 					<aside
 						data-lenis-prevent={isLargeScreen ? true : undefined}
-						className="hidden lg:flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto scrollbar-invisible"
+						class="hidden lg:flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:h-full lg:w-[320px] lg:overflow-y-auto scrollbar-invisible"
 					>
 						{/* Header */}
-						<Link to={profileUrl(user)} className="block rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20 transition hover:shadow-2xl hover:shadow-sky-500/30">
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
+						<Link
+							to={profileUrl(user)}
+							class="block rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20 transition hover:shadow-2xl hover:shadow-sky-500/30"
+						>
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-3">
 									{user?.profile?.profile_image || user?.avatar_url ? (
 										<img
 											src={user.profile?.profile_image || user.avatar_url}
 											alt={user?.name || "User"}
-											className="h-12 w-12 rounded-2xl object-cover"
+											class="h-12 w-12 rounded-2xl object-cover"
 										/>
 									) : (
-										<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-											<LayoutGrid className="h-6 w-6" />
+										<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+											<LayoutGrid class="h-6 w-6" />
 										</div>
 									)}
 									<div>
-										<p className="text-sm/none font-medium opacity-90">
+										<p class="text-sm/none font-medium opacity-90">
 											{user?.role
 												? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace(/_/g, " ")
 												: "User"}
 										</p>
-										<p className="text-xl font-semibold">{user?.name || "Feed Center"}</p>
+										<p class="text-xl font-semibold">{user?.name || "Feed Center"}</p>
 									</div>
 								</div>
 							</div>
-							<div className="mt-4 flex items-center gap-2 text-sm opacity-95">
-								<BadgeCheck className="h-4 w-4" />
+							<div class="mt-4 flex items-center gap-2 text-sm opacity-95">
+								<BadgeCheck class="h-4 w-4" />
 								{user?.profile?.bio || feedConfig.labels.premium_badge}
 							</div>
-							{user?.email && <div className="mt-2 text-xs opacity-75">{user.email}</div>}
+							{user?.email && <div class="mt-2 text-xs opacity-75">{user.email}</div>}
 						</Link>
 
 						{/* Quick Actions */}
-						<div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-							<div className="flex items-center justify-between">
-								<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+						<div class="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+							<div class="flex items-center justify-between">
+								<h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
 									{feedConfig.labels.quick_actions}
 								</h2>
-								<span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+								<span class="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
 									{feedConfig.labels.live_status}
 								</span>
 							</div>
-							<div className="mt-4 grid gap-3">
+							<div class="mt-4 grid gap-3">
 								{quickActions.map((a) => (
 									<Link
 										key={a.to}
 										to={a.to}
-										className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-sky-500/10 dark:hover:text-sky-300"
+										class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-sky-500/10 dark:hover:text-sky-300"
 									>
-										<span className="flex items-center gap-2">
+										<span class="flex items-center gap-2">
 											{a.label.includes("Post") ? (
-												<Upload className="h-4 w-4" />
+												<Upload class="h-4 w-4" />
 											) : (
-												<Plus className="h-4 w-4" />
+												<Plus class="h-4 w-4" />
 											)}
 											{a.label}
 										</span>
-										<ChevronDown className="h-4 w-4" />
+										<ChevronDown class="h-4 w-4" />
 									</Link>
 								))}
 							</div>
 						</div>
 
 						{/* Search */}
-						<div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-							<div className="flex items-center justify-between gap-3">
-								<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+						<div class="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+							<div class="flex items-center justify-between gap-3">
+								<h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
 									Search
 								</h2>
-								<span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+								<span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
 									Feed
 								</span>
 							</div>
-							<div className="mt-4 relative">
-								<Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+							<div class="mt-4 relative">
+								<Search class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 								<input
 									value={search}
 									onChange={(e) => setSearch(e.target.value)}
 									placeholder={feedConfig.labels.search_placeholder}
-									className="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+									class="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
 								/>
 							</div>
 						</div>
@@ -969,29 +1183,29 @@ export default function MainFeed() {
 					{/* ====== MAIN CONTENT ====== */}
 					<main
 						data-lenis-prevent={isLargeScreen ? true : undefined}
-						className="min-w-0 flex-1 space-y-4 overflow-y-auto pb-4 sm:space-y-6 lg:pb-0 scrollbar-invisible"
+						class="min-w-0 flex-1 space-y-4 overflow-y-auto pb-4 sm:space-y-6 lg:pb-0 scrollbar-invisible"
 					>
 						{/* Hero Section */}
 						<motion.section
-							className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5 md:p-6"
+							class="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5 md:p-6"
 							style={{ scale: reduceMotion ? 1 : heroScale }}
 						>
-							<div className="flex flex-col gap-3 sm:gap-5 xl:flex-row xl:items-end xl:justify-between">
-								<div className="grid grid-cols-3 gap-2 sm:gap-3 xl:w-[540px]">
+							<div class="flex flex-col gap-3 sm:gap-5 xl:flex-row xl:items-end xl:justify-between">
+								<div class="grid grid-cols-3 gap-2 sm:gap-3 xl:w-[540px]">
 									<StatCard
-										icon={<BriefcaseBusiness className="h-3 w-3" />}
+										icon={<BriefcaseBusiness class="h-3 w-3" />}
 										label={feedConfig.labels.stats.buyer_requests}
 										value={String(stats.requests)}
 										accent="sky"
 									/>
 									<StatCard
-										icon={<LayoutGrid className="h-3 w-3" />}
+										icon={<LayoutGrid class="h-3 w-3" />}
 										label={feedConfig.labels.stats.company_products}
 										value={String(stats.products)}
 										accent="blue"
 									/>
 									<StatCard
-										icon={<Bell className="h-3 w-3" />}
+										icon={<Bell class="h-3 w-3" />}
 										label={feedConfig.labels.stats.feed_posts}
 										value={String(stats.posts)}
 										accent="indigo"
@@ -1001,9 +1215,9 @@ export default function MainFeed() {
 						</motion.section>
 
 						{/* Tabs */}
-						<section className="rounded-[32px] border border-white/70 bg-white/75 p-3 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-4 md:p-5">
-							<div className="flex flex-col gap-3 sm:gap-4 xl:flex-row xl:items-center xl:justify-between">
-								<div className="flex flex-wrap gap-2">
+						<section class="rounded-[32px] border border-white/70 bg-white/75 p-3 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-4 md:p-5">
+							<div class="flex flex-col gap-3 sm:gap-4 xl:flex-row xl:items-center xl:justify-between">
+								<div class="flex flex-wrap gap-2">
 									{feedConfig.tabs.map((tab) => (
 										<Pill key={tab} active={activeType === tab} onClick={() => setActiveType(tab)}>
 											{tab}
@@ -1012,7 +1226,7 @@ export default function MainFeed() {
 									<button
 										type="button"
 										onClick={() => setUnique((v) => !v)}
-										className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all sm:px-4 sm:py-2 sm:text-sm ${
+										class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all sm:px-4 sm:py-2 sm:text-sm ${
 											unique
 												? "bg-emerald-500 text-white shadow-md shadow-emerald-500/25"
 												: "border border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30"
@@ -1021,19 +1235,19 @@ export default function MainFeed() {
 										{unique ? "Unique ON" : "Unique OFF"}
 									</button>
 								</div>
-								<div className="flex flex-wrap items-center gap-3">
+								<div class="flex flex-wrap items-center gap-3">
 									<button
 										onClick={() => setFiltersOpen((v) => !v)}
-										className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
+										class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
 									>
-										<Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+										<Filter class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 										Filters
 									</button>
 									<Link
 										to="/feed/manage"
-										className="inline-flex items-center gap-1.5 rounded-full bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
+										class="inline-flex items-center gap-1.5 rounded-full bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
 									>
-										<Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+										<Plus class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 										Create post
 									</Link>
 								</div>
@@ -1044,26 +1258,26 @@ export default function MainFeed() {
 						{filtersOpen && (
 							<section
 								ref={filtersPanelRef}
-								className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5"
+								class="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5"
 							>
-								<div className="flex items-center justify-between mb-4">
-									<h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+								<div class="flex items-center justify-between mb-4">
+									<h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
 										Filter by Category
 									</h3>
 									<button
 										onClick={() => setFiltersOpen(false)}
-										className="text-xs text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400"
+										class="text-xs text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400"
 									>
 										Close
 									</button>
 								</div>
-								<div className="flex flex-wrap gap-2">
+								<div class="flex flex-wrap gap-2">
 									{FEED_CATEGORIES.map((cat) => (
 										<button
 											key={cat}
 											type="button"
 											onClick={() => setActiveCategory(cat)}
-											className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+											class={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
 												activeCategory === cat
 													? "bg-sky-500 text-white shadow-md shadow-sky-500/25"
 													: "border border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30"
@@ -1079,7 +1293,7 @@ export default function MainFeed() {
 						{/* Notice */}
 						{notice?.message && (
 							<div
-								className={`rounded-2xl p-4 text-sm ring-1 ${
+								class={`rounded-2xl p-4 text-sm ring-1 ${
 									notice.type === "error"
 										? "bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30"
 										: notice.type === "success"
@@ -1087,8 +1301,8 @@ export default function MainFeed() {
 											: "bg-sky-50 text-sky-800 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-200 dark:ring-sky-500/25"
 								}`}
 							>
-								<div className="flex items-center justify-between gap-3">
-									<p className="font-medium">{notice.message}</p>
+								<div class="flex items-center justify-between gap-3">
+									<p class="font-medium">{notice.message}</p>
 									{claimedRequestId && (
 										<button
 											type="button"
@@ -1099,7 +1313,7 @@ export default function MainFeed() {
 													},
 												})
 											}
-											className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+											class="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 										>
 											Open Chat
 										</button>
@@ -1109,15 +1323,15 @@ export default function MainFeed() {
 						)}
 
 						{/* Feed Items */}
-						<section className="grid gap-5">
+						<section class="grid gap-5">
 							{error ? (
-								<div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
+								<div class="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
 									{error}
-									<div className="mt-3">
+									<div class="mt-3">
 										<button
 											type="button"
 											onClick={() => loadFeedPage({ reset: true })}
-											className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+											class="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 										>
 											Retry
 										</button>
@@ -1126,7 +1340,7 @@ export default function MainFeed() {
 							) : null}
 
 							{!(loading || error) && filtered.length === 0 && (
-								<div className="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-6 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-400 sm:p-10">
+								<div class="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-6 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-400 sm:p-10">
 									{feedConfig.messages.no_results}
 								</div>
 							)}
@@ -1174,16 +1388,16 @@ export default function MainFeed() {
 									);
 								})}
 
-							<div ref={sentinelRef} className="h-10" />
+							<div ref={sentinelRef} class="h-10" />
 
 							{loadingMore ? (
-								<div className="rounded-[28px] border border-white/60 bg-white/85 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 p-5">
-									<div className="h-3 w-40 mx-auto rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5" />
+								<div class="rounded-[28px] border border-white/60 bg-white/85 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 p-5">
+									<div class="h-3 w-40 mx-auto rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5" />
 								</div>
 							) : null}
 
 							{!(loading || error) && nextCursor === null ? (
-								<div className="text-center text-xs text-slate-400 dark:text-slate-500 py-3">
+								<div class="text-center text-xs text-slate-400 dark:text-slate-500 py-3">
 									{feedConfig.messages.all_caught_up}
 								</div>
 							) : null}

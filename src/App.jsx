@@ -6,13 +6,14 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Footer from "./components/Footer.jsx";
 import NavBar from "./components/NavBar.jsx";
+import OfflineBanner from "./components/OfflineBanner.jsx";
 import ScrollProgressBar from "./components/ScrollProgressBar.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import { ToastProvider } from "./components/ToastContainer.jsx";
 import NeonAtom from "./components/ui/NeonAtom.jsx";
 import { clearSession, getCurrentUser, getToken, verifyAndSyncUser } from "./lib/auth.js";
-import { logger } from "./lib/logger.js";
 import { trackClientEvent } from "./lib/events.js";
+import { logger } from "./lib/logger.js";
 
 const FloatingAssistant = lazy(() => import("./components/FloatingAssistant.jsx"));
 const CyberpunkCursor = lazy(() => import("./components/ui/CyberpunkCursor.jsx"));
@@ -20,9 +21,9 @@ const LenisProvider = lazy(() => import("./components/LenisProvider.jsx"));
 
 function LazyLoadError() {
 	return (
-		<div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8 text-center">
-			<div className="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
-				<svg className="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<div class="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8 text-center">
+			<div class="rounded-full bg-red-100 p-4 dark:bg-red-900/30">
+				<svg class="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -31,13 +32,13 @@ function LazyLoadError() {
 					/>
 				</svg>
 			</div>
-			<h2 className="text-xl font-semibold text-slate-900 dark:text-white">Failed to load page</h2>
-			<p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
+			<h2 class="text-xl font-semibold text-slate-900 dark:text-white">Failed to load page</h2>
+			<p class="max-w-md text-sm text-slate-500 dark:text-slate-400">
 				The page could not be loaded. This may be a network issue or a new version was deployed.
 			</p>
 			<button
 				onClick={() => window.location.reload()}
-				className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
+				class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
 			>
 				Refresh Page
 			</button>
@@ -139,24 +140,36 @@ function ProtectedRoute({ children, roles }) {
 	const isUnlockPage = location.pathname === "/settings" || location.pathname === "/profile";
 	if (isLocked && !isUnlockPage) {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#0b1220] px-4">
-				<div className="max-w-md w-full rounded-3xl border border-white/70 bg-white/80 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80">
-					<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-						<svg className="h-8 w-8 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+			<div class="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#0b1220] px-4">
+				<div class="max-w-md w-full rounded-3xl border border-white/70 bg-white/80 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80">
+					<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+						<svg
+							class="h-8 w-8 text-amber-600 dark:text-amber-400"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={2}
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+							/>
 						</svg>
 					</div>
-					<h2 className="text-xl font-bold text-slate-900 dark:text-white">Account Locked</h2>
-					<p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+					<h2 class="text-xl font-bold text-slate-900 dark:text-white">Account Locked</h2>
+					<p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
 						Your account has been temporarily locked. Some features are limited.
 					</p>
 					<button
 						type="button"
 						onClick={() => {
-							try { localStorage.removeItem("ght_account_locked"); } catch {}
+							try {
+								localStorage.removeItem("ght_account_locked");
+							} catch {}
 							window.location.href = "/settings";
 						}}
-						className="mt-6 rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/25 transition hover:bg-amber-600"
+						class="mt-6 rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/25 transition hover:bg-amber-600"
 					>
 						Unlock Account
 					</button>
@@ -166,7 +179,7 @@ function ProtectedRoute({ children, roles }) {
 							clearSession();
 							window.location.href = "/login";
 						}}
-						className="mt-3 block w-full text-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+						class="mt-3 block w-full text-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
 					>
 						Log out instead
 					</button>
@@ -193,9 +206,30 @@ function AppRoutes() {
 			<Route path="/terms" element={<Terms />} />
 			<Route path="/privacy" element={<Privacy />} />
 			<Route path="/help" element={<HelpCenter />} />
-			<Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
-			<Route path="/signup" element={<ErrorBoundary><Signup /></ErrorBoundary>} />
-			<Route path="/share/:entityType/:entityId" element={<ErrorBoundary><SharedPost /></ErrorBoundary>} />
+			<Route
+				path="/login"
+				element={
+					<ErrorBoundary>
+						<Login />
+					</ErrorBoundary>
+				}
+			/>
+			<Route
+				path="/signup"
+				element={
+					<ErrorBoundary>
+						<Signup />
+					</ErrorBoundary>
+				}
+			/>
+			<Route
+				path="/share/:entityType/:entityId"
+				element={
+					<ErrorBoundary>
+						<SharedPost />
+					</ErrorBoundary>
+				}
+			/>
 			<Route path="/:time/meow/:date/SignupUltra" element={<SignupUltra />} />
 			<Route
 				path="/onboarding"
@@ -424,7 +458,7 @@ function AppRoutes() {
 					</ProtectedRoute>
 				}
 			/>
-	
+
 			<Route
 				path="/orders"
 				element={
@@ -473,7 +507,7 @@ function AppLayout() {
 			<ErrorBoundary>
 				<Suspense
 					fallback={
-						<div className="flex min-h-screen items-center justify-center">
+						<div class="flex min-h-screen items-center justify-center">
 							<NeonAtom size={48} />
 						</div>
 					}
@@ -484,17 +518,17 @@ function AppLayout() {
 		) : (
 			<>
 				{hideChrome ? null : <ScrollProgressBar />}
-				<div className="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
+				<div class="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
 					<div
-						className={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
+						class={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
 						style={{ width: "100%" }}
 					>
 						{hideChrome ? null : <NavBar />}
-						<main className="flex flex-1 min-h-0 flex-col bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
+						<main class="flex flex-1 min-h-0 flex-col bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
 							<ErrorBoundary>
 								<Suspense
 									fallback={
-										<div className="flex min-h-screen items-center justify-center">
+										<div class="flex min-h-screen items-center justify-center">
 											<NeonAtom size={48} />
 										</div>
 									}
@@ -504,7 +538,7 @@ function AppLayout() {
 										initial={{ opacity: 0, y: 8 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-										className="flex min-h-0 flex-1 flex-col"
+										class="flex min-h-0 flex-1 flex-col"
 									>
 										<AppRoutes />
 									</motion.div>
@@ -650,6 +684,7 @@ function App() {
 					<AppLayout />
 				</ErrorBoundary>
 				<ScrollToTop />
+				<OfflineBanner />
 			</ToastProvider>
 		</BrowserRouter>
 	);

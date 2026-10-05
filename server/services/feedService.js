@@ -407,11 +407,96 @@ function diversifyFeedItems(
 
 const MAX_FEED_AGE_DAYS = 90;
 
+// HyperCache Phase 5 — feed engine stabilization.
+// Per-request fan-out guards: bound the enrichment `in` queries and the
+// link-preview batch so a single feed request cannot fan out unboundedly.
+// These caps are generous on purpose — they only bite on pathological
+// catalog sizes and never change the ranking formula.
+const MAX_FEED_FANOUT_IDS = 5000;
+const MAX_FEED_LINK_PREVIEW_URLS = 200;
+
+// Stable opaque cursor (cursor_v2): base64url of { s, t, id } where
+// s = ranking_score of the last item on the page,
+// t = created_at epoch ms of that item,
+// id = id of that item.
+// The feed sort is the total order (ranking_score desc, created_at desc,
+// id asc), so the keyset filter below always selects a suffix of the
+// sorted list. Integer `cursor` (offset) semantics are untouched — old
+// clients that never send cursor_v2 see byte-identical behavior.
+function toEpochMs(value) {
+	const ms = new Date(value).getTime();
+	return Number.isFinite(ms) ? ms : 0;
+}
+
+function feedSortKey(item) {
+	const score = Number(item?._ranking?.ranking_score);
+	return {
+		score: Number.isFinite(score) ? score : 0,
+		createdAtMs: toEpochMs(item?.created_at),
+		id: String(item?.id || ""),
+	};
+}
+
+function compareFeedSortKey(a, b) {
+	if (a.score !== b.score) {
+		return b.score - a.score;
+	}
+	if (a.createdAtMs !== b.createdAtMs) {
+		return b.createdAtMs - a.createdAtMs;
+	}
+	if (a.id === b.id) {
+		return 0;
+	}
+	return a.id < b.id ? -1 : 1;
+}
+
+function encodeFeedCursorV2(key) {
+	try {
+		const payload = { s: key.score, t: key.createdAtMs, id: key.id };
+		return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+	} catch {
+		return null;
+	}
+}
+
+function decodeFeedCursorV2(value) {
+	if (typeof value !== "string" || !value || value.length > 512) {
+		return null;
+	}
+	try {
+		const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
+		const score = Number(parsed?.s);
+		const createdAtMs = Number(parsed?.t);
+		const id = String(parsed?.id || "");
+		if (!(Number.isFinite(score) && Number.isFinite(createdAtMs) && id) || id.length > 200) {
+			return null;
+		}
+		return { score, createdAtMs, id };
+	} catch {
+		return null;
+	}
+}
+
+// Keyset condition: keep items strictly AFTER the decoded cursor in the
+// total feed order. Invalid/absent cursors never reach here (callers fall
+// back to the legacy integer-offset slice).
+function isFeedItemAfterKeyset(item, key) {
+	const k = feedSortKey(item);
+	if (k.score !== key.score) {
+		return k.score < key.score;
+	}
+	if (k.createdAtMs !== key.createdAtMs) {
+		return k.createdAtMs < key.createdAtMs;
+	}
+	return k.id > key.id;
+}
+
 export async function getCombinedFeed({
 	unique = false,
 	type = "all",
 	category = "",
 	cursor = 0,
+	cursor_v2 = null,
 	limit = 12,
 	viewer = null,
 }) {
@@ -448,12 +533,15 @@ export async function getCombinedFeed({
 
 	const authorIds = [...new Set(allItemEntries.map((i) => i.authorId).filter(Boolean))];
 	const itemIds = allItemEntries.map((i) => i.id);
+	// Phase 5 guard: cap enrichment fan-out (generous; normal catalogs unaffected).
+	const cappedAuthorIds = authorIds.slice(0, MAX_FEED_FANOUT_IDS);
+	const cappedItemIds = itemIds.slice(0, MAX_FEED_FANOUT_IDS);
 
 	const now = new Date();
 	const [users, socialInteractions, boosts, ratingsStore] = await Promise.all([
-		authorIds.length > 0
+		cappedAuthorIds.length > 0
 			? prisma.user.findMany({
-					where: { id: { in: authorIds } },
+					where: { id: { in: cappedAuthorIds } },
 					select: {
 						id: true,
 						name: true,
@@ -468,7 +556,7 @@ export async function getCombinedFeed({
 			: [],
 		itemIds.length > 0
 			? prisma.socialInteraction.findMany({
-					where: { entity_id: { in: itemIds } },
+					where: { entity_id: { in: cappedItemIds } },
 				})
 			: [],
 		prisma.boost.findMany({
@@ -528,7 +616,8 @@ export async function getCombinedFeed({
 
 	const feedPostLinks = combined
 		.filter((i) => i.feed_type === "user_feed_post" && Array.isArray(i.links))
-		.flatMap((i) => i.links);
+		.flatMap((i) => i.links)
+		.slice(0, MAX_FEED_LINK_PREVIEW_URLS);
 	if (feedPostLinks.length > 0) {
 		const previews = await batchGetLinkPreviews(feedPostLinks);
 		const previewMap = new Map(previews.map((p) => [p.url, p]));
@@ -656,21 +745,17 @@ export async function getCombinedFeed({
 		};
 	});
 
-	let sortedItems = ranked
-		.sort((a, b) => b._ranking.ranking_score - a._ranking.ranking_score)
-		.map((item) => {
-			const next = { ...item };
-			next._ranking = undefined;
-			return next;
-		});
+	// Total order: ranking_score desc, created_at desc, id asc. The score
+	// comparison is unchanged from before; the created_at/id tiebreakers
+	// only make exact-score ties deterministic (required for keyset
+	// correctness). Offset pagination works identically under any order.
+	const sortedItems = ranked.sort((a, b) => compareFeedSortKey(feedSortKey(a), feedSortKey(b)));
 
-	if (unique) {
-		sortedItems = diversifyFeedItems(sortedItems, {
-			explorationRate: 0.2,
-			maxSameAuthorRun: 1,
-			maxSameCategoryRun: 2,
-		});
-	}
+	const diversifyOptions = {
+		explorationRate: 0.2,
+		maxSameAuthorRun: 1,
+		maxSameCategoryRun: 2,
+	};
 
 	const boostActiveCount = sortedItems.filter((item) => item.feed_metadata?.boost_active).length;
 	const totalItemCount = sortedItems.length;
@@ -680,8 +765,36 @@ export async function getCombinedFeed({
 	}).length;
 	const safeCursor = Math.max(0, Math.floor(Number(cursor || 0)));
 	const safeLimit = Math.min(50, Math.max(1, Math.floor(Number(limit || 12))));
-	const pageItems = sortedItems.slice(safeCursor, safeCursor + safeLimit);
-	const nextCursor = safeCursor + safeLimit < totalItemCount ? safeCursor + safeLimit : null;
+
+	// Phase 5: stable opaque cursor. When a valid cursor_v2 is present it
+	// takes precedence and the integer offset is ignored; otherwise the
+	// legacy offset slice below runs exactly as before.
+	const keyset = decodeFeedCursorV2(cursor_v2);
+	let orderedPage;
+	let nextCursor;
+	let nextCursorV2;
+	if (keyset) {
+		const tail = sortedItems.filter((item) => isFeedItemAfterKeyset(item, keyset));
+		const ordered = unique ? diversifyFeedItems(tail, diversifyOptions) : tail;
+		orderedPage = ordered.slice(0, safeLimit);
+		const hasMore = ordered.length > safeLimit;
+		// No meaningful integer offset on the keyset path; old clients never
+		// send cursor_v2 so they never observe this branch.
+		nextCursor = null;
+		const last = orderedPage[orderedPage.length - 1];
+		nextCursorV2 = hasMore && last ? encodeFeedCursorV2(feedSortKey(last)) : null;
+	} else {
+		const ordered = unique ? diversifyFeedItems(sortedItems, diversifyOptions) : sortedItems;
+		orderedPage = ordered.slice(safeCursor, safeCursor + safeLimit);
+		nextCursor = safeCursor + safeLimit < totalItemCount ? safeCursor + safeLimit : null;
+		const last = orderedPage[orderedPage.length - 1];
+		nextCursorV2 = nextCursor != null && last ? encodeFeedCursorV2(feedSortKey(last)) : null;
+	}
+	const pageItems = orderedPage.map((item) => {
+		const next = { ...item };
+		next._ranking = undefined;
+		return next;
+	});
 
 	logInfo("Feed ranking components", {
 		total_items: totalItemCount,
@@ -711,6 +824,7 @@ export async function getCombinedFeed({
 		unique,
 		cursor: safeCursor,
 		next_cursor: nextCursor,
+		next_cursor_v2: nextCursorV2,
 		metadata: {
 			boost: {
 				active_item_count: boostActiveCount,
@@ -760,7 +874,16 @@ export async function getShareablePost(entityType, entityId) {
 		: null;
 
 	const authorProfile = author?.profile || {};
-	const profile = typeof authorProfile === "string" ? (() => { try { return JSON.parse(authorProfile); } catch { return {}; } })() : authorProfile;
+	const profile =
+		typeof authorProfile === "string"
+			? (() => {
+					try {
+						return JSON.parse(authorProfile);
+					} catch {
+						return {};
+					}
+				})()
+			: authorProfile;
 
 	return {
 		...raw,

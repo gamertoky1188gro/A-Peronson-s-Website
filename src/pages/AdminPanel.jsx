@@ -1,4 +1,7 @@
 import { startAuthentication } from "@simplewebauthn/browser";
+// HyperCache cacheMode: admin (network-required) — admin panels must always
+// read fresh server state (moderation queues, entitlements); never serve from
+// the shared-entity cache. No behavior change — registry note only.
 import {
 	Activity,
 	ArrowUpRight,
@@ -30,6 +33,7 @@ import AccessDeniedState from "../components/AccessDeniedState.jsx";
 import RejectionReasonModal from "../components/admin/RejectionReasonModal.jsx";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import { useToast } from "../components/ToastContainer.jsx";
+import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import {
 	useActionGroups,
@@ -56,7 +60,6 @@ import { AdminPlatformSection } from "./admin/sections/AdminPlatformSection.jsx"
 import { AdminSecuritySection } from "./admin/sections/AdminSecuritySection.jsx";
 import { AdminServerSection } from "./admin/sections/AdminServerSection.jsx";
 import { FileExplorerSection } from "./admin/sections/FileExplorerSection.jsx";
-import LazyImage from "../components/ui/LazyImage.jsx";
 
 const {
 	KNOWN_ROLES,
@@ -110,7 +113,7 @@ const {
 
 function SkeletonChart({ height = 320 }) {
 	return (
-		<div className="flex items-center justify-center" style={{ height }}>
+		<div class="flex items-center justify-center" style={{ height }}>
 			<Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 		</div>
 	);
@@ -118,17 +121,17 @@ function SkeletonChart({ height = 320 }) {
 
 function SectionTitle({ title, subtitle, icon: TitleIcon }) {
 	return (
-		<div className="mb-4 flex items-center justify-between gap-4">
+		<div class="mb-4 flex items-center justify-between gap-4">
 			<div>
-				<div className="flex items-center gap-2">
-					<div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-2 text-sky-300 shadow-lg shadow-sky-500/10">
-						<TitleIcon className="h-4 w-4" />
+				<div class="flex items-center gap-2">
+					<div class="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-2 text-sky-300 shadow-lg shadow-sky-500/10">
+						<TitleIcon class="h-4 w-4" />
 					</div>
-					<h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+					<h2 class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
 						{title}
 					</h2>
 				</div>
-				<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+				<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
 			</div>
 		</div>
 	);
@@ -137,25 +140,25 @@ function SectionTitle({ title, subtitle, icon: TitleIcon }) {
 function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
 	if (loading) {
 		return (
-			<div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-				<div className="flex items-center justify-center">
+			<div class="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+				<div class="flex items-center justify-center">
 					<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 				</div>
 			</div>
 		);
 	}
 	return (
-		<div className="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-sky-300/70 hover:shadow-[0_24px_80px_-28px_rgba(14,165,233,0.45)] dark:border-white/10 dark:bg-slate-950/70">
-			<div className="flex items-start justify-between gap-4">
+		<div class="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-sky-300/70 hover:shadow-[0_24px_80px_-28px_rgba(14,165,233,0.45)] dark:border-white/10 dark:bg-slate-950/70">
+			<div class="flex items-start justify-between gap-4">
 				<div>
-					<p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
-					<div className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+					<p class="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+					<div class="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
 						{value}
 					</div>
-					<p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+					<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
 				</div>
-				<div className="rounded-2xl border border-sky-400/15 bg-gradient-to-br from-sky-400/20 to-blue-500/10 p-3 text-sky-500 shadow-lg shadow-sky-500/10 dark:text-sky-300">
-					<CardIcon className="h-5 w-5" />
+				<div class="rounded-2xl border border-sky-400/15 bg-gradient-to-br from-sky-400/20 to-blue-500/10 p-3 text-sky-500 shadow-lg shadow-sky-500/10 dark:text-sky-300">
+					<CardIcon class="h-5 w-5" />
 				</div>
 			</div>
 		</div>
@@ -164,7 +167,7 @@ function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
 
 function Pill({ children }) {
 	return (
-		<span className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/8 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm shadow-sky-500/5 dark:text-sky-300">
+		<span class="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/8 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm shadow-sky-500/5 dark:text-sky-300">
 			{children}
 		</span>
 	);
@@ -172,27 +175,27 @@ function Pill({ children }) {
 
 function BenefitCard({ title, items, accent = "sky" }) {
 	return (
-		<div className="rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_60px_-30px_rgba(59,130,246,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-			<div className="flex items-center justify-between gap-4">
+		<div class="rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_60px_-30px_rgba(59,130,246,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+			<div class="flex items-center justify-between gap-4">
 				<div>
-					<h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
-					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+					<h3 class="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+					<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
 						Premium capability stack and operational advantages.
 					</p>
 				</div>
 				<div
-					className={`rounded-2xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
+					class={`rounded-2xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
 				>
-					<Sparkles className="h-4 w-4" />
+					<Sparkles class="h-4 w-4" />
 				</div>
 			</div>
-			<div className="mt-5 grid gap-2 sm:grid-cols-2">
+			<div class="mt-5 grid gap-2 sm:grid-cols-2">
 				{items.map((item) => (
 					<div
 						key={item}
-						className="flex items-start gap-2 rounded-2xl border border-slate-200/70 bg-slate-50/90 p-3 text-sm text-slate-700 dark:border-white/5 dark:bg-white/5 dark:text-slate-300"
+						class="flex items-start gap-2 rounded-2xl border border-slate-200/70 bg-slate-50/90 p-3 text-sm text-slate-700 dark:border-white/5 dark:bg-white/5 dark:text-slate-300"
 					>
-						<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
+						<CheckCircle2 class="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
 						<span>{item}</span>
 					</div>
 				))}
@@ -219,54 +222,54 @@ function AdminSecurityGate({
 	}
 
 	return (
-		<div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/90 p-6 backdrop-blur-md">
-			<div className="admin-panel admin-sweep w-full max-w-lg rounded-3xl p-6 shadow-2xl">
-				<h2 className="text-lg font-bold text-white">Security verification required</h2>
-				<p className="mt-2 text-sm text-slate-300">
+		<div class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/90 p-6 backdrop-blur-md">
+			<div class="admin-panel admin-sweep w-full max-w-lg rounded-3xl p-6 shadow-2xl">
+				<h2 class="text-lg font-bold text-white">Security verification required</h2>
+				<p class="mt-2 text-sm text-slate-300">
 					{message ||
 						"Admin security verification required. Use any one of the following methods to unlock the panel."}
 				</p>
 
-				<div className="mt-5 grid grid-cols-1 gap-3">
-					<label className="text-xs text-slate-400">
+				<div class="mt-5 grid grid-cols-1 gap-3">
+					<label class="text-xs text-slate-400">
 						MFA code
 						<input
 							value={mfaCode}
 							onChange={(e) => setMfaCode(e.target.value)}
-							className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
+							class="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
 							placeholder="Enter MFA code"
 						/>
 					</label>
-					<label className="text-xs text-slate-400">
+					<label class="text-xs text-slate-400">
 						Passkey
 						<button
 							type="button"
 							onClick={onPasskeyAuth}
 							disabled={passkeyBusy}
-							className="mt-1 w-full rounded-xl bg-indigo-500/80 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+							class="mt-1 w-full rounded-xl bg-indigo-500/80 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
 						>
 							{passkeyBusy ? "Opening passkey..." : "Verify with passkey"}
 						</button>
 					</label>
-					<label className="text-xs text-slate-400">
+					<label class="text-xs text-slate-400">
 						Setup/step-up code
 						<input
 							value={stepUpCode}
 							onChange={(e) => setStepUpCode(e.target.value)}
-							className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
+							class="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
 							placeholder="Enter setup code"
 						/>
 					</label>
 				</div>
 
-				{notice ? <p className="mt-3 text-xs text-sky-200">{notice}</p> : null}
+				{notice ? <p class="mt-3 text-xs text-sky-200">{notice}</p> : null}
 
-				<div className="mt-5 flex flex-wrap gap-2">
+				<div class="mt-5 flex flex-wrap gap-2">
 					<button
 						type="button"
 						onClick={onUnlock}
 						disabled={passkeyBusy}
-						className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+						class="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
 					>
 						Unlock access
 					</button>
@@ -274,7 +277,7 @@ function AdminSecurityGate({
 						type="button"
 						onClick={onDecline}
 						disabled={passkeyBusy}
-						className="rounded-full border border-slate-600 px-4 py-2 text-xs font-semibold text-slate-200 disabled:opacity-60"
+						class="rounded-full border border-slate-600 px-4 py-2 text-xs font-semibold text-slate-200 disabled:opacity-60"
 					>
 						Decline
 					</button>
@@ -285,7 +288,7 @@ function AdminSecurityGate({
 }
 
 function SkeletonLine({ className = "" }) {
-	return <div className={`skeleton rounded-xl ${className}`} />;
+	return <div class={`skeleton rounded-xl ${className}`} />;
 }
 
 function Badge({ children, tone = "default", darkMode = true }) {
@@ -305,7 +308,7 @@ function Badge({ children, tone = "default", darkMode = true }) {
 
 	return (
 		<span
-			className={cn(
+			class={cn(
 				"inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium",
 				base[tone],
 			)}
@@ -335,25 +338,25 @@ function StatCard({ icon: Icon, title, value, meta, tone = "sky", darkMode }) {
 		: "border-slate-200 bg-white shadow-sm";
 
 	return (
-		<div className={cn("rounded-3xl border p-5 transition hover:-translate-y-0.5", shell)}>
+		<div class={cn("rounded-3xl border p-5 transition hover:-translate-y-0.5", shell)}>
 			<div
-				className={cn(
+				class={cn(
 					"inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium",
 					toneClasses[tone],
 				)}
 			>
-				<Icon className="h-3.5 w-3.5" />
+				<Icon class="h-3.5 w-3.5" />
 				{title}
 			</div>
 			<div
-				className={cn(
+				class={cn(
 					"mt-4 text-2xl font-semibold tracking-tight",
 					darkMode ? "text-white" : "text-slate-900",
 				)}
 			>
 				{value}
 			</div>
-			<p className={cn("mt-1 text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>{meta}</p>
+			<p class={cn("mt-1 text-sm", darkMode ? "text-slate-400" : "text-slate-500")}>{meta}</p>
 		</div>
 	);
 }
@@ -381,15 +384,15 @@ function SectionCard({
 		: "border-sky-200 bg-sky-50 text-sky-600";
 
 	return (
-		<section className={cn("rounded-[28px] border p-5 transition", shell)}>
-			<div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-				<div className="flex items-start gap-3">
-					<div className={cn("rounded-2xl border p-3", iconShell)}>
-						<Icon className="h-5 w-5" />
+		<section class={cn("rounded-[28px] border p-5 transition", shell)}>
+			<div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+				<div class="flex items-start gap-3">
+					<div class={cn("rounded-2xl border p-3", iconShell)}>
+						<Icon class="h-5 w-5" />
 					</div>
 					<div>
-						<h3 className={cn("text-lg font-semibold tracking-tight", titleClass)}>{title}</h3>
-						<p className={cn("mt-1 max-w-2xl text-sm", subClass)}>{subtitle}</p>
+						<h3 class={cn("text-lg font-semibold tracking-tight", titleClass)}>{title}</h3>
+						<p class={cn("mt-1 max-w-2xl text-sm", subClass)}>{subtitle}</p>
 					</div>
 				</div>
 				{actionLabel ? (
@@ -397,12 +400,12 @@ function SectionCard({
 						type="button"
 						onClick={onAction}
 						disabled={!onAction}
-						className={cn(
+						class={cn(
 							"inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60",
 							buttonClass,
 						)}
 					>
-						<ActionIcon className="h-4 w-4" />
+						<ActionIcon class="h-4 w-4" />
 						{actionLabel}
 					</button>
 				) : null}
@@ -428,7 +431,7 @@ function cmsChipClass(dark, active = false) {
 function CmsMiniBadge({ dark, children }) {
 	return (
 		<span
-			className={[
+			class={[
 				"inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium",
 				dark
 					? "border-sky-400/20 bg-sky-400/10 text-sky-200"
@@ -443,18 +446,18 @@ function CmsMiniBadge({ dark, children }) {
 function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 	return (
 		<div
-			className={[
+			class={[
 				"group relative overflow-hidden rounded-3xl border p-5 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5",
 				dark
 					? "border-white/10 bg-slate-950/70 text-white shadow-[0_12px_40px_rgba(2,8,23,0.35)]"
 					: "border-slate-200/80 bg-white text-slate-900 shadow-[0_12px_30px_rgba(15,23,42,0.06)]",
 			].join(" ")}
 		>
-			<div className="absolute inset-0 bg-gradient-to-br from-sky-400/10 via-transparent to-blue-500/5 opacity-0 transition group-hover:opacity-100" />
-			<div className="relative flex items-start justify-between gap-4">
+			<div class="absolute inset-0 bg-gradient-to-br from-sky-400/10 via-transparent to-blue-500/5 opacity-0 transition group-hover:opacity-100" />
+			<div class="relative flex items-start justify-between gap-4">
 				<div>
 					<p
-						className={
+						class={
 							dark
 								? "text-xs uppercase tracking-[0.28em] text-slate-400"
 								: "text-xs uppercase tracking-[0.28em] text-slate-500"
@@ -462,18 +465,18 @@ function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 					>
 						{label}
 					</p>
-					<div className="mt-2 flex items-end gap-3">
-						<h3 className="text-3xl font-semibold tracking-tight">{value}</h3>
+					<div class="mt-2 flex items-end gap-3">
+						<h3 class="text-3xl font-semibold tracking-tight">{value}</h3>
 						{trend ? (
-							<span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-500">
-								<ArrowUpRight className="h-3 w-3" /> {trend}
+							<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-500">
+								<ArrowUpRight class="h-3 w-3" /> {trend}
 							</span>
 						) : null}
 					</div>
-					<p className={dark ? "mt-2 text-sm text-slate-400" : "mt-2 text-sm text-slate-600"}>{meta}</p>
+					<p class={dark ? "mt-2 text-sm text-slate-400" : "mt-2 text-sm text-slate-600"}>{meta}</p>
 				</div>
-				<div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-3 text-sky-400">
-					<Icon className="h-5 w-5" />
+				<div class="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-3 text-sky-400">
+					<Icon class="h-5 w-5" />
 				</div>
 			</div>
 		</div>
@@ -483,7 +486,7 @@ function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
 function CmsSectionCard({ dark, title, subtitle, icon: Icon, action, children, accent = "sky" }) {
 	return (
 		<section
-			className={[
+			class={[
 				"overflow-hidden rounded-3xl border backdrop-blur-xl",
 				dark
 					? "border-white/10 bg-slate-950/70 shadow-[0_18px_55px_rgba(2,8,23,0.4)]"
@@ -491,14 +494,14 @@ function CmsSectionCard({ dark, title, subtitle, icon: Icon, action, children, a
 			].join(" ")}
 		>
 			<div
-				className={[
+				class={[
 					"flex flex-wrap items-start justify-between gap-4 border-b p-5",
 					dark ? "border-white/10" : "border-slate-100",
 				].join(" ")}
 			>
-				<div className="flex items-start gap-4">
+				<div class="flex items-start gap-4">
 					<div
-						className={[
+						class={[
 							"rounded-2xl p-3",
 							accent === "sky"
 								? dark
@@ -509,24 +512,24 @@ function CmsSectionCard({ dark, title, subtitle, icon: Icon, action, children, a
 									: "bg-blue-50 text-blue-600",
 						].join(" ")}
 					>
-						<Icon className="h-5 w-5" />
+						<Icon class="h-5 w-5" />
 					</div>
 					<div>
 						<h2
-							className={
+							class={
 								dark ? "text-lg font-semibold text-white" : "text-lg font-semibold text-slate-900"
 							}
 						>
 							{title}
 						</h2>
-						<p className={dark ? "mt-1 text-sm text-slate-400" : "mt-1 text-sm text-slate-600"}>
+						<p class={dark ? "mt-1 text-sm text-slate-400" : "mt-1 text-sm text-slate-600"}>
 							{subtitle}
 						</p>
 					</div>
 				</div>
 				{action}
 			</div>
-			<div className="p-5">{children}</div>
+			<div class="p-5">{children}</div>
 		</section>
 	);
 }
@@ -540,7 +543,7 @@ function ultraMetricShell(dark) {
 function UltraPill({ dark, active = false, children }) {
 	return (
 		<span
-			className={cn(
+			class={cn(
 				"inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium",
 				active
 					? dark
@@ -568,28 +571,28 @@ function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = "default" }
 
 	return (
 		<div
-			className={cn(
+			class={cn(
 				ultraMetricShell(dark),
 				"relative overflow-hidden rounded-3xl border p-5 backdrop-blur-xl",
 			)}
 		>
-			<div className={cn("absolute inset-0 bg-gradient-to-br opacity-80", toneClass)} />
-			<div className="relative flex items-start justify-between gap-4">
+			<div class={cn("absolute inset-0 bg-gradient-to-br opacity-80", toneClass)} />
+			<div class="relative flex items-start justify-between gap-4">
 				<div>
-					<p className={cn("text-sm font-medium", dark ? "text-slate-300" : "text-slate-600")}>
+					<p class={cn("text-sm font-medium", dark ? "text-slate-300" : "text-slate-600")}>
 						{label}
 					</p>
-					<div className="mt-2 flex items-end gap-2">
-						<h3 className="text-3xl font-semibold tracking-tight">{value}</h3>
+					<div class="mt-2 flex items-end gap-2">
+						<h3 class="text-3xl font-semibold tracking-tight">{value}</h3>
 						{sub ? (
-							<span className={cn("pb-1 text-xs", dark ? "text-slate-400" : "text-slate-500")}>
+							<span class={cn("pb-1 text-xs", dark ? "text-slate-400" : "text-slate-500")}>
 								{sub}
 							</span>
 						) : null}
 					</div>
 				</div>
-				<div className={cn("rounded-2xl p-3", dark ? "bg-slate-950/30" : "bg-slate-100")}>
-					<Icon className="h-5 w-5 text-cyan-300" />
+				<div class={cn("rounded-2xl p-3", dark ? "bg-slate-950/30" : "bg-slate-100")}>
+					<Icon class="h-5 w-5 text-cyan-300" />
 				</div>
 			</div>
 		</div>
@@ -599,29 +602,29 @@ function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = "default" }
 function UltraSectionCard({ dark, title, subtitle, children, right }) {
 	return (
 		<section
-			className={cn(
+			class={cn(
 				ultraMetricShell(dark),
 				"relative overflow-hidden rounded-[28px] border p-6 backdrop-blur-xl",
 			)}
 		>
-			<div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+			<div class="mb-5 flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<div className="flex items-center gap-2">
+					<div class="flex items-center gap-2">
 						<h2
-							className={cn(
+							class={cn(
 								"text-xl font-semibold tracking-tight",
 								dark ? "text-white" : "text-slate-900",
 							)}
 						>
 							{title}
 						</h2>
-						<span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
+						<span class="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
 							live
 						</span>
 					</div>
 					{subtitle ? (
 						<p
-							className={cn(
+							class={cn(
 								"mt-2 max-w-2xl text-sm leading-6",
 								dark ? "text-slate-400" : "text-slate-600",
 							)}
@@ -640,27 +643,27 @@ function UltraSectionCard({ dark, title, subtitle, children, right }) {
 function UltraToggle({ dark, on, label, hint, onToggle }) {
 	return (
 		<div
-			className={cn(
+			class={cn(
 				"flex items-center justify-between gap-4 rounded-2xl border p-4",
 				dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 			)}
 		>
 			<div>
-				<p className={cn("font-medium", dark ? "text-white" : "text-slate-900")}>{label}</p>
+				<p class={cn("font-medium", dark ? "text-white" : "text-slate-900")}>{label}</p>
 				{hint ? (
-					<p className={cn("mt-1 text-sm", dark ? "text-slate-400" : "text-slate-500")}>{hint}</p>
+					<p class={cn("mt-1 text-sm", dark ? "text-slate-400" : "text-slate-500")}>{hint}</p>
 				) : null}
 			</div>
-			<div className="flex items-center gap-3">
+			<div class="flex items-center gap-3">
 				<span
-					className={cn("text-sm", on ? "text-cyan-300" : dark ? "text-slate-400" : "text-slate-500")}
+					class={cn("text-sm", on ? "text-cyan-300" : dark ? "text-slate-400" : "text-slate-500")}
 				>
 					{on ? "On" : "Off"}
 				</span>
 				<button
 					type="button"
 					onClick={onToggle}
-					className={cn(
+					class={cn(
 						"flex h-10 w-20 items-center rounded-full border px-1 transition",
 						on
 							? "border-cyan-400/40 bg-cyan-500/20"
@@ -671,7 +674,7 @@ function UltraToggle({ dark, on, label, hint, onToggle }) {
 					aria-pressed={on}
 				>
 					<div
-						className={cn(
+						class={cn(
 							"h-8 w-8 rounded-full shadow-md transition-transform",
 							on ? "translate-x-10 bg-cyan-400" : dark ? "bg-slate-400" : "bg-slate-500",
 						)}
@@ -706,26 +709,26 @@ function UltraTinyChart({
 
 	return (
 		<div
-			className={cn(
+			class={cn(
 				"rounded-[24px] border p-4",
 				dark ? "border-white/10 bg-slate-950/25" : "border-slate-200 bg-white",
 			)}
 		>
-			<div className="mb-3 flex items-center justify-between">
+			<div class="mb-3 flex items-center justify-between">
 				<div>
-					<p className={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
+					<p class={cn("text-sm font-medium", dark ? "text-white" : "text-slate-900")}>
 						Live Metrics
 					</p>
-					<p className={cn("text-xs", dark ? "text-slate-400" : "text-slate-500")}>
+					<p class={cn("text-xs", dark ? "text-slate-400" : "text-slate-500")}>
 						Metrics coming from live feeds.
 					</p>
 				</div>
-				<div className="flex items-center gap-2 text-xs text-cyan-300">
-					<Activity className="h-4 w-4" />
+				<div class="flex items-center gap-2 text-xs text-cyan-300">
+					<Activity class="h-4 w-4" />
 					streaming
 				</div>
 			</div>
-			<svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full">
+			<svg viewBox={`0 0 ${width} ${height}`} class="h-44 w-full">
 				<defs>
 					<linearGradient id="ultraSkyFill" x1="0" x2="0" y1="0" y2="1">
 						<stop offset="0%" stopColor="rgba(56,189,248,0.38)" />
@@ -733,30 +736,30 @@ function UltraTinyChart({
 					</linearGradient>
 				</defs>
 				<path d={area} fill="url(#ultraSkyFill)" />
-				<path d={path} fill="none" stroke="currentColor" strokeWidth="3" className="text-cyan-300" />
+				<path d={path} fill="none" stroke="currentColor" strokeWidth="3" class="text-cyan-300" />
 				{safePoints.map((p, i) => (
 					<circle
 						key={i}
 						cx={pad + i * step}
 						cy={y(p)}
 						r="4.2"
-						className="fill-cyan-300 text-cyan-300"
+						class="fill-cyan-300 text-cyan-300"
 					/>
 				))}
 			</svg>
-			<div className="mt-2 grid grid-cols-3 gap-3 text-center text-xs">
+			<div class="mt-2 grid grid-cols-3 gap-3 text-center text-xs">
 				{safeKpis.slice(0, 3).map((row) => (
 					<div
 						key={row.label}
-						className={cn(
+						class={cn(
 							"rounded-2xl border p-3",
 							dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 						)}
 					>
-						<div className={cn("font-semibold", dark ? "text-white" : "text-slate-900")}>
+						<div class={cn("font-semibold", dark ? "text-white" : "text-slate-900")}>
 							{row.value}
 						</div>
-						<div className={dark ? "text-slate-400" : "text-slate-500"}>{row.label}</div>
+						<div class={dark ? "text-slate-400" : "text-slate-500"}>{row.label}</div>
 					</div>
 				))}
 			</div>
@@ -2938,7 +2941,8 @@ export default function AdminPanel() {
 		: "rounded-2xl border border-slate-200 bg-slate-50 p-4";
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} timeout={10000} />;	}
+		return <NeonAtom fill={true} timeout={10_000} />;
+	}
 
 	if (!isAllowedAdminViewer) {
 		const roles = adminPanelAllowedRoles.join(", ");
@@ -2965,43 +2969,43 @@ export default function AdminPanel() {
 				onDecline={handleSecurityDecline}
 			/>
 			<div
-				className={`admin-shell h-screen w-screen ${themeStyles.shell} ${themeStyles.background} flex overflow-hidden transition-colors`}
+				class={`admin-shell h-screen w-screen ${themeStyles.shell} ${themeStyles.background} flex overflow-hidden transition-colors`}
 			>
-				<div className="admin-plasma" />
-				<div className="admin-current" />
-				<div className="admin-noise" />
+				<div class="admin-plasma" />
+				<div class="admin-current" />
+				<div class="admin-noise" />
 
 				<aside
-					className={`fixed left-0 top-0 z-20 h-full w-[320px] overflow-hidden border-r border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 ${
+					class={`fixed left-0 top-0 z-20 h-full w-[320px] overflow-hidden border-r border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 ${
 						sidebarOpen ? "translate-x-0" : "-translate-x-full"
 					} lg:translate-x-0`}
 				>
-					<div className="absolute inset-0 pointer-events-none">
+					<div class="absolute inset-0 pointer-events-none">
 						<div
-							className={`absolute -top-20 -right-20 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-cyan-500/18" : "bg-sky-300/35"}`}
+							class={`absolute -top-20 -right-20 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-cyan-500/18" : "bg-sky-300/35"}`}
 						/>
 						<div
-							className={`absolute -bottom-24 -left-16 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-blue-500/12" : "bg-cyan-300/25"}`}
+							class={`absolute -bottom-24 -left-16 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-blue-500/12" : "bg-cyan-300/25"}`}
 						/>
 					</div>
 
-					<div className="relative flex h-full flex-col p-5">
+					<div class="relative flex h-full flex-col p-5">
 						{/* Header */}
-						<div className="flex items-start justify-between gap-4">
-							<div className="flex items-center gap-3">
+						<div class="flex items-start justify-between gap-4">
+							<div class="flex items-center gap-3">
 								<div
-									className={`grid h-12 w-12 place-items-center rounded-2xl ${adminDark ? "bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600" : "bg-gradient-to-br from-sky-400 via-cyan-400 to-blue-500"} shadow-[0_0_24px_rgba(56,189,248,0.25)]`}
+									class={`grid h-12 w-12 place-items-center rounded-2xl ${adminDark ? "bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600" : "bg-gradient-to-br from-sky-400 via-cyan-400 to-blue-500"} shadow-[0_0_24px_rgba(56,189,248,0.25)]`}
 								>
-									<span className="text-lg font-black tracking-tight text-white">G</span>
+									<span class="text-lg font-black tracking-tight text-white">G</span>
 								</div>
 								<div>
-									<div className={`text-lg font-semibold tracking-tight ${themeStyles.soft}`}>
+									<div class={`text-lg font-semibold tracking-tight ${themeStyles.soft}`}>
 										GarTexHub
 									</div>
 									<div
-										className={`mt-0.5 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${themeStyles.chip}`}
+										class={`mt-0.5 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${themeStyles.chip}`}
 									>
-										<Crown className="h-3.5 w-3.5" />
+										<Crown class="h-3.5 w-3.5" />
 										Admin Matrix
 									</div>
 								</div>
@@ -3009,16 +3013,16 @@ export default function AdminPanel() {
 
 							<button
 								onClick={toggleTheme}
-								className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all duration-300 ${
+								class={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all duration-300 ${
 									adminDark
 										? "border-white/10 bg-white/5 hover:bg-white/10"
 										: "border-slate-200 bg-white hover:bg-slate-50"
 								}`}
 							>
 								{adminDark ? (
-									<SunMedium className="h-5 w-5 text-cyan-200" />
+									<SunMedium class="h-5 w-5 text-cyan-200" />
 								) : (
-									<Moon className="h-5 w-5 text-sky-700" />
+									<Moon class="h-5 w-5 text-sky-700" />
 								)}
 							</button>
 						</div>
@@ -3026,7 +3030,7 @@ export default function AdminPanel() {
 						{/* Navigation */}
 						<nav
 							data-lenis-prevent={true}
-							className="mt-6 space-y-2 overflow-y-auto overflow-x-hidden pr-1"
+							class="mt-6 space-y-2 overflow-y-auto overflow-x-hidden pr-1"
 						>
 							{sidebarItems.map((item) => {
 								const Icon = item.icon;
@@ -3036,12 +3040,12 @@ export default function AdminPanel() {
 										key={item.id}
 										type="button"
 										onClick={() => setActiveCategory(item.id)}
-										className={`group relative flex w-full items-center gap-3 rounded-[16px] border px-4 py-3 text-left transition-all duration-300 ${
+										class={`group relative flex w-full items-center gap-3 rounded-[16px] border px-4 py-3 text-left transition-all duration-300 ${
 											isActive ? themeStyles.itemActive : themeStyles.item
 										} ${isActive ? "border-cyan-300/20" : "border-transparent"}`}
 									>
 										<div
-											className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all duration-300 ${
+											class={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all duration-300 ${
 												isActive
 													? adminDark
 														? "border-cyan-300/20 bg-cyan-400/12"
@@ -3052,39 +3056,39 @@ export default function AdminPanel() {
 											}`}
 										>
 											<Icon
-												className={`h-5 w-5 ${isActive ? themeStyles.accentText : themeStyles.soft}`}
+												class={`h-5 w-5 ${isActive ? themeStyles.accentText : themeStyles.soft}`}
 											/>
 										</div>
 
 										{/* Tooltip */}
-										<div className="absolute left-[70px] z-50 whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-[-5px] group-hover:translate-x-0 transition-all duration-200 pointer-events-none">
+										<div class="absolute left-[70px] z-50 whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-[-5px] group-hover:translate-x-0 transition-all duration-200 pointer-events-none">
 											<div
-												className={`px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg ${adminDark ? "bg-slate-900 text-white border border-white/10" : "bg-white text-slate-900 border border-slate-200"}`}
+												class={`px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg ${adminDark ? "bg-slate-900 text-white border border-white/10" : "bg-white text-slate-900 border border-slate-200"}`}
 											>
 												{item.label}
 											</div>
 										</div>
 
-										<div className="min-w-0 flex-1">
-											<div className="flex items-center gap-2">
+										<div class="min-w-0 flex-1">
+											<div class="flex items-center gap-2">
 												<span
-													className={`truncate text-sm font-medium ${adminDark ? "text-white" : "text-slate-900"}`}
+													class={`truncate text-sm font-medium ${adminDark ? "text-white" : "text-slate-900"}`}
 												>
 													{item.label}
 												</span>
 												{item.accent && (
 													<span
-														className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${themeStyles.chip}`}
+														class={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${themeStyles.chip}`}
 													>
 														Core
 													</span>
 												)}
 											</div>
-											<p className={`mt-0.5 truncate text-xs ${themeStyles.muted}`}>{item.sub}</p>
+											<p class={`mt-0.5 truncate text-xs ${themeStyles.muted}`}>{item.sub}</p>
 										</div>
 
 										<ChevronRight
-											className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? themeStyles.accentText : themeStyles.muted}`}
+											class={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? themeStyles.accentText : themeStyles.muted}`}
 										/>
 									</button>
 								);
@@ -3094,32 +3098,32 @@ export default function AdminPanel() {
 				</aside>
 
 				<main
-					className={`relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden pr-4 py-4 sm:pr-6 sm:py-6 ${sidebarOpen ? "pl-[320px]" : "pl-0"} lg:pl-[320px]`}
+					class={`relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden pr-4 py-4 sm:pr-6 sm:py-6 ${sidebarOpen ? "pl-[320px]" : "pl-0"} lg:pl-[320px]`}
 				>
-					<div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+					<div class="flex flex-wrap items-center justify-between gap-3 pb-4">
 						<button
 							type="button"
 							onClick={() => setSidebarOpen(!sidebarOpen)}
-							className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 lg:hidden"
+							class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 lg:hidden"
 						>
-							<Menu className="h-5 w-5" />
+							<Menu class="h-5 w-5" />
 						</button>
-						<div className="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
-							<Search className="h-4 w-4 text-sky-200/80" />
+						<div class="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
+							<Search class="h-4 w-4 text-sky-200/80" />
 							<input
-								className="w-full bg-transparent text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none"
+								class="w-full bg-transparent text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none"
 								placeholder="Search accounts, contracts, proofs..."
 							/>
 						</div>
 						<button
 							type="button"
 							onClick={() => setAdminDark((prev) => !prev)}
-							className="admin-panel flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white/90"
+							class="admin-panel flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white/90"
 						>
 							{adminDark ? (
-								<Sun className="h-4 w-4 text-yellow-300" />
+								<Sun class="h-4 w-4 text-yellow-300" />
 							) : (
-								<Moon className="h-4 w-4 text-slate-700" />
+								<Moon class="h-4 w-4 text-slate-700" />
 							)}
 							{adminDark ? "Light" : "Dark"}
 						</button>
@@ -3128,15 +3132,15 @@ export default function AdminPanel() {
 					{/* Mobile backdrop */}
 					{sidebarOpen && (
 						<div
-							className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+							class="fixed inset-0 z-40 bg-black/50 lg:hidden"
 							onClick={() => setSidebarOpen(false)}
 						/>
 					)}
 
-					<div data-lenis-prevent={true} className="flex-1 overflow-y-auto pb-6 pr-2">
-						<div className="space-y-8">
+					<div data-lenis-prevent={true} class="flex-1 overflow-y-auto pb-6 pr-2">
+						<div class="space-y-8">
 							{error ? (
-								<div className="admin-panel admin-sweep rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+								<div class="admin-panel admin-sweep rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
 									{error}
 								</div>
 							) : null}
@@ -3179,21 +3183,21 @@ export default function AdminPanel() {
 											setRejectionItem={setRejectionItem}
 										/>
 									)}
-									<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-										<section className="space-y-4">
-											<div className="admin-card admin-sweep rounded-3xl p-6">
-												<div className="flex flex-wrap items-center justify-between gap-3">
-													<div className="flex items-center gap-2">
-														<CategoryIcon className="h-5 w-5 text-orange-200/80" />
+									<div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+										<section class="space-y-4">
+											<div class="admin-card admin-sweep rounded-3xl p-6">
+												<div class="flex flex-wrap items-center justify-between gap-3">
+													<div class="flex items-center gap-2">
+														<CategoryIcon class="h-5 w-5 text-orange-200/80" />
 														<div>
-															<p className="text-sm font-bold">{activeData?.label || "Module"}</p>
-															<p className="text-xs text-slate-500">
+															<p class="text-sm font-bold">{activeData?.label || "Module"}</p>
+															<p class="text-xs text-slate-500">
 																{activeData?.sections?.length || 0} sections
 															</p>
 														</div>
 													</div>
 													<span
-														className={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge("live")}`}
+														class={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge("live")}`}
 													>
 														live
 													</span>
@@ -3242,13 +3246,13 @@ export default function AdminPanel() {
 													couponReport={couponReport}
 													signups={signups}
 													strikeHistory={strikeHistory}
-												fraudReview={fraudReview}
-												orgOwnership={orgOwnership}
-												duplicateDisputes={duplicateDisputes}
-												setDuplicateDisputes={setDuplicateDisputes}
-												refreshDuplicateDisputes={refreshDuplicateDisputes}
-												resolveDuplicateDispute={resolveDuplicateDispute}
-												policyQueueItems={policyQueueItems}
+													fraudReview={fraudReview}
+													orgOwnership={orgOwnership}
+													duplicateDisputes={duplicateDisputes}
+													setDuplicateDisputes={setDuplicateDisputes}
+													refreshDuplicateDisputes={refreshDuplicateDisputes}
+													resolveDuplicateDispute={resolveDuplicateDispute}
+													policyQueueItems={policyQueueItems}
 													policyReviewRows={policyReviewRows}
 													policyMetrics={policyMetrics}
 													reputationSenderId={reputationSenderId}
@@ -3484,7 +3488,7 @@ export default function AdminPanel() {
 										activeCategory === "files" ||
 										activeCategory === "media-review" ||
 										activeCategory === "finance" ? null : (
-											<aside className="space-y-4">
+											<aside class="space-y-4">
 												{activeCategory === "config" ? (
 													<AdminConfigSection
 														configEditorTab={configEditorTab}
@@ -3538,45 +3542,45 @@ export default function AdminPanel() {
 			/>
 
 			{aiModalDoc && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center">
-					<button onClick={() => setAiModalDoc(null)} className="absolute inset-0 bg-black/50" />
+				<div class="fixed inset-0 z-50 flex items-center justify-center">
+					<button onClick={() => setAiModalDoc(null)} class="absolute inset-0 bg-black/50" />
 					<div
 						data-lenis-prevent={true}
-						className="relative w-[92vw] max-w-2xl max-h-[85vh] overflow-auto rounded-2xl bg-white dark:bg-slate-900 shadow-2xl"
+						class="relative w-[92vw] max-w-2xl max-h-[85vh] overflow-auto rounded-2xl bg-white dark:bg-slate-900 shadow-2xl"
 					>
-						<div className="sticky top-0 bg-white dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+						<div class="sticky top-0 bg-white dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
 							<div>
-								<p className="font-semibold text-slate-900 dark:text-white">AI Analysis Details</p>
-								<p className="text-xs text-slate-500">{aiModalDoc.file_path || aiModalDoc.entity_id}</p>
+								<p class="font-semibold text-slate-900 dark:text-white">AI Analysis Details</p>
+								<p class="text-xs text-slate-500">{aiModalDoc.file_path || aiModalDoc.entity_id}</p>
 							</div>
 							<button
 								onClick={() => setAiModalDoc(null)}
-								className="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+								class="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
 							>
-								<X className="h-5 w-5" />
+								<X class="h-5 w-5" />
 							</button>
 						</div>
-						<div className="p-6 space-y-5">
+						<div class="p-6 space-y-5">
 							{aiModalDoc.public_url && (
-								<div className="rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+								<div class="rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
 									{aiModalDoc.type === "video" ? (
-										<video src={aiModalDoc.public_url} controls={true} className="w-full max-h-64" />
+										<video src={aiModalDoc.public_url} controls={true} class="w-full max-h-64" />
 									) : (
 										<LazyImage
 											src={aiModalDoc.public_url}
 											alt="Preview"
 											width={600}
 											height={400}
-											className="w-full max-h-64 object-contain"
+											class="w-full max-h-64 object-contain"
 										/>
 									)}
 								</div>
 							)}
-							<div className="grid grid-cols-5 gap-3">
-								<div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
-									<p className="text-xs text-slate-500 mb-1">Label</p>
+							<div class="grid grid-cols-5 gap-3">
+								<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+									<p class="text-xs text-slate-500 mb-1">Label</p>
 									<p
-										className={`text-lg font-bold ${
+										class={`text-lg font-bold ${
 											aiModalDoc.ai_label === "HIGH RISK"
 												? "text-red-600"
 												: aiModalDoc.ai_label === "HARAM"
@@ -3589,22 +3593,22 @@ export default function AdminPanel() {
 										{aiModalDoc.ai_label || "PENDING"}
 									</p>
 								</div>
-								<div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
-									<p className="text-xs text-slate-500 mb-1">Score</p>
-									<p className="text-lg font-bold text-slate-900 dark:text-white">
+								<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+									<p class="text-xs text-slate-500 mb-1">Score</p>
+									<p class="text-lg font-bold text-slate-900 dark:text-white">
 										{aiModalDoc.ai_score ?? "—"}
 									</p>
 								</div>
-								<div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
-									<p className="text-xs text-slate-500 mb-1">Confidence</p>
-									<p className="text-lg font-bold text-slate-900 dark:text-white">
+								<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+									<p class="text-xs text-slate-500 mb-1">Confidence</p>
+									<p class="text-lg font-bold text-slate-900 dark:text-white">
 										{aiModalDoc.ai_confidence || "—"}
 									</p>
 								</div>
-								<div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
-									<p className="text-xs text-slate-500 mb-1">Severity</p>
+								<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+									<p class="text-xs text-slate-500 mb-1">Severity</p>
 									<p
-										className={`text-lg font-bold ${
+										class={`text-lg font-bold ${
 											aiModalDoc.ai_severity === "high"
 												? "text-red-600"
 												: aiModalDoc.ai_severity === "medium"
@@ -3617,10 +3621,10 @@ export default function AdminPanel() {
 										{aiModalDoc.ai_severity || "—"}
 									</p>
 								</div>
-								<div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
-									<p className="text-xs text-slate-500 mb-1">Early Exit</p>
+								<div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-center">
+									<p class="text-xs text-slate-500 mb-1">Early Exit</p>
 									<p
-										className={`text-lg font-bold ${aiModalDoc.ai_early_exit ? "text-cyan-500" : "text-slate-400"}`}
+										class={`text-lg font-bold ${aiModalDoc.ai_early_exit ? "text-cyan-500" : "text-slate-400"}`}
 									>
 										{aiModalDoc.ai_early_exit ? "Yes" : "No"}
 									</p>
@@ -3628,14 +3632,14 @@ export default function AdminPanel() {
 							</div>
 							{aiModalDoc.ai_signals && aiModalDoc.ai_signals.length > 0 && (
 								<div>
-									<p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase">
+									<p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase">
 										Signals
 									</p>
-									<div className="space-y-1.5">
+									<div class="space-y-1.5">
 										{aiModalDoc.ai_signals.slice(0, 15).map((sig, i) => (
 											<div
 												key={i}
-												className={`rounded-lg px-3 py-2 text-sm ${
+												class={`rounded-lg px-3 py-2 text-sm ${
 													sig.risk === "high"
 														? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
 														: sig.risk === "medium"
@@ -3643,7 +3647,7 @@ export default function AdminPanel() {
 															: "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
 												}`}
 											>
-												<span className="font-medium capitalize">[{sig.risk}]</span> {sig.message}
+												<span class="font-medium capitalize">[{sig.risk}]</span> {sig.message}
 											</div>
 										))}
 									</div>
@@ -3651,10 +3655,10 @@ export default function AdminPanel() {
 							)}
 							{aiModalDoc.ai_details && (
 								<div>
-									<p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase">
+									<p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase">
 										Score Breakdown
 									</p>
-									<div className="grid grid-cols-4 gap-2">
+									<div class="grid grid-cols-4 gap-2">
 										{[
 											{ key: "ocr_score", label: "OCR" },
 											{ key: "detection_score", label: "YOLO" },
@@ -3665,10 +3669,10 @@ export default function AdminPanel() {
 												aiModalDoc.ai_details[key] !== null && (
 													<div
 														key={key}
-														className="rounded-lg bg-slate-50 dark:bg-slate-800 p-2 text-center"
+														class="rounded-lg bg-slate-50 dark:bg-slate-800 p-2 text-center"
 													>
-														<p className="text-[10px] text-slate-500 mb-0.5">{label}</p>
-														<p className="text-sm font-bold text-slate-900 dark:text-white">
+														<p class="text-[10px] text-slate-500 mb-0.5">{label}</p>
+														<p class="text-sm font-bold text-slate-900 dark:text-white">
 															{aiModalDoc.ai_details[key]}
 														</p>
 													</div>
@@ -3676,7 +3680,7 @@ export default function AdminPanel() {
 										)}
 									</div>
 									{aiModalDoc.ai_details.weights && (
-										<div className="mt-2 text-xs text-slate-400">
+										<div class="mt-2 text-xs text-slate-400">
 											Weights: OCR {((aiModalDoc.ai_details.weights.ocr || 0) * 100).toFixed(0)}% |
 											YOLO {((aiModalDoc.ai_details.weights.yolo || 0) * 100).toFixed(0)}% | NSFW{" "}
 											{((aiModalDoc.ai_details.weights.nsfw || 0) * 100).toFixed(0)}% | Vision{" "}
@@ -3686,7 +3690,7 @@ export default function AdminPanel() {
 								</div>
 							)}
 							{aiModalDoc.ai_timing && (
-								<div className="text-xs text-slate-400 text-center">
+								<div class="text-xs text-slate-400 text-center">
 									Timing:{" "}
 									{Object.entries(aiModalDoc.ai_timing)
 										.map(([k, v]) => `${k}: ${typeof v === "number" ? `${v.toFixed(2)}s` : v}`)
@@ -3694,11 +3698,11 @@ export default function AdminPanel() {
 								</div>
 							)}
 							{aiModalDoc.ai_analyzed_at && (
-								<p className="text-xs text-slate-400 text-center">
+								<p class="text-xs text-slate-400 text-center">
 									Analyzed: {new Date(aiModalDoc.ai_analyzed_at).toLocaleString()}
 								</p>
 							)}
-							<div className="flex gap-3 pt-2">
+							<div class="flex gap-3 pt-2">
 								<button
 									onClick={async () => {
 										await apiRequest(`/admin/media/${aiModalDoc.id}/approve`, {
@@ -3708,7 +3712,7 @@ export default function AdminPanel() {
 										setAiModalDoc(null);
 										setModerationPending((prev) => prev.filter((d) => d.id !== aiModalDoc.id));
 									}}
-									className="flex-1 bg-emerald-500 text-white py-2 rounded-xl font-medium hover:bg-emerald-600"
+									class="flex-1 bg-emerald-500 text-white py-2 rounded-xl font-medium hover:bg-emerald-600"
 								>
 									Approve
 								</button>
@@ -3738,13 +3742,13 @@ export default function AdminPanel() {
 										}
 									}}
 									disabled={reanalyzingId === aiModalDoc.id}
-									className="flex-1 bg-sky-500 text-white py-2 rounded-xl font-medium hover:bg-sky-600 disabled:opacity-50 flex items-center justify-center gap-2"
+									class="flex-1 bg-sky-500 text-white py-2 rounded-xl font-medium hover:bg-sky-600 disabled:opacity-50 flex items-center justify-center gap-2"
 								>
 									{reanalyzingId === aiModalDoc.id ? (
 										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
 									) : (
 										<>
-											<RefreshCw className="h-4 w-4" />
+											<RefreshCw class="h-4 w-4" />
 											Reanalyze
 										</>
 									)}
@@ -3755,7 +3759,7 @@ export default function AdminPanel() {
 										setRejectionModalOpen(true);
 										setRejectionItem(aiModalDoc);
 									}}
-									className="flex-1 bg-red-500 text-white py-2 rounded-xl font-medium hover:bg-red-600"
+									class="flex-1 bg-red-500 text-white py-2 rounded-xl font-medium hover:bg-red-600"
 								>
 									Reject
 								</button>
@@ -3776,13 +3780,13 @@ export default function AdminPanel() {
 			/>
 
 			{passwordResetTarget && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center">
+				<div class="fixed inset-0 z-50 flex items-center justify-center">
 					<button
 						onClick={() => setPasswordResetTarget(null)}
-						className="absolute inset-0 bg-black/50"
+						class="absolute inset-0 bg-black/50"
 					/>
-					<div className="relative w-[92vw] max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
-						<h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+					<div class="relative w-[92vw] max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+						<h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
 							Reset Password
 						</h3>
 						<input
@@ -3790,18 +3794,18 @@ export default function AdminPanel() {
 							value={passwordResetValue}
 							onChange={(e) => setPasswordResetValue(e.target.value)}
 							placeholder="Enter new password (min 8 characters)"
-							className="mb-4 w-full rounded-xl border border-slate-200 px-4 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+							class="mb-4 w-full rounded-xl border border-slate-200 px-4 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
 						/>
-						<div className="flex gap-3">
+						<div class="flex gap-3">
 							<button
 								onClick={() => setPasswordResetTarget(null)}
-								className="flex-1 rounded-xl bg-slate-100 py-2 font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+								class="flex-1 rounded-xl bg-slate-100 py-2 font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
 							>
 								Cancel
 							</button>
 							<button
 								onClick={confirmResetPassword}
-								className="flex-1 rounded-xl bg-sky-500 py-2 font-medium text-white hover:bg-sky-600"
+								class="flex-1 rounded-xl bg-sky-500 py-2 font-medium text-white hover:bg-sky-600"
 							>
 								Confirm
 							</button>
@@ -3811,13 +3815,13 @@ export default function AdminPanel() {
 			)}
 
 			{resolutionReportTarget && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center">
+				<div class="fixed inset-0 z-50 flex items-center justify-center">
 					<button
 						onClick={() => setResolutionReportTarget(null)}
-						className="absolute inset-0 bg-black/50"
+						class="absolute inset-0 bg-black/50"
 					/>
-					<div className="relative w-[92vw] max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
-						<h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+					<div class="relative w-[92vw] max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+						<h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
 							Resolution Note
 						</h3>
 						<input
@@ -3825,18 +3829,18 @@ export default function AdminPanel() {
 							value={resolutionNote}
 							onChange={(e) => setResolutionNote(e.target.value)}
 							placeholder="Resolution note (optional)"
-							className="mb-4 w-full rounded-xl border border-slate-200 px-4 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+							class="mb-4 w-full rounded-xl border border-slate-200 px-4 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
 						/>
-						<div className="flex gap-3">
+						<div class="flex gap-3">
 							<button
 								onClick={() => setResolutionReportTarget(null)}
-								className="flex-1 rounded-xl bg-slate-100 py-2 font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+								class="flex-1 rounded-xl bg-slate-100 py-2 font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
 							>
 								Cancel
 							</button>
 							<button
 								onClick={confirmResolveReport}
-								className="flex-1 rounded-xl bg-sky-500 py-2 font-medium text-white hover:bg-sky-600"
+								class="flex-1 rounded-xl bg-sky-500 py-2 font-medium text-white hover:bg-sky-600"
 							>
 								Confirm
 							</button>
@@ -3846,13 +3850,13 @@ export default function AdminPanel() {
 			)}
 
 			{assignTicketTarget && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center">
+				<div class="fixed inset-0 z-50 flex items-center justify-center">
 					<button
 						onClick={() => setAssignTicketTarget(null)}
-						className="absolute inset-0 bg-black/50"
+						class="absolute inset-0 bg-black/50"
 					/>
-					<div className="relative w-[92vw] max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
-						<h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
+					<div class="relative w-[92vw] max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+						<h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
 							Assign Support Ticket
 						</h3>
 						<input
@@ -3860,18 +3864,18 @@ export default function AdminPanel() {
 							value={assigneeIdValue}
 							onChange={(e) => setAssigneeIdValue(e.target.value)}
 							placeholder="User ID (leave blank to clear)"
-							className="mb-4 w-full rounded-xl border border-slate-200 px-4 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+							class="mb-4 w-full rounded-xl border border-slate-200 px-4 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
 						/>
-						<div className="flex gap-3">
+						<div class="flex gap-3">
 							<button
 								onClick={() => setAssignTicketTarget(null)}
-								className="flex-1 rounded-xl bg-slate-100 py-2 font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+								class="flex-1 rounded-xl bg-slate-100 py-2 font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
 							>
 								Cancel
 							</button>
 							<button
 								onClick={confirmAssignTicket}
-								className="flex-1 rounded-xl bg-sky-500 py-2 font-medium text-white hover:bg-sky-600"
+								class="flex-1 rounded-xl bg-sky-500 py-2 font-medium text-white hover:bg-sky-600"
 							>
 								Confirm
 							</button>

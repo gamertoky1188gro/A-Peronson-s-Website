@@ -9,11 +9,14 @@ if (!JWT_SECRET) {
 const JWT_ISSUER = process.env.JWT_ISSUER || "gartexhub-api";
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "gartexhub-client";
 
-function sendEvent(res, event, data) {
+function sendEvent(res, event, data, id) {
+	if (id !== undefined && id !== null) {
+		res.write(`id: ${id}\n`);
+	}
 	res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 }
 
-export function feedStream(req, res) {
+export async function feedStream(req, res) {
 	const authHeader = req.headers.authorization || "";
 	const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 	if (!token) {
@@ -52,10 +55,53 @@ export function feedStream(req, res) {
 	const onDeleted = ({ postId }) => {
 		sendEvent(res, "deleted_post", { id: postId });
 	};
+	const onInvalidate = (payload = {}) => {
+		sendEvent(
+			res,
+			"invalidate",
+			{
+				type: "invalidate",
+				seq: payload.seq ?? null,
+				entity: payload.entity,
+				id: payload.id !== undefined && payload.id !== null ? String(payload.id) : payload.id,
+				version: payload.version,
+				hash: payload.hash,
+			},
+			payload.seq ?? undefined,
+		);
+	};
 
+	const invalidateEvent = REALTIME_EVENTS.feedInvalidated || "feed:invalidated";
 	realtimeBus.on(REALTIME_EVENTS.feedPostCreated, onCreated);
 	realtimeBus.on(REALTIME_EVENTS.feedPostUpdated, onUpdated);
 	realtimeBus.on(REALTIME_EVENTS.feedPostDeleted, onDeleted);
+	realtimeBus.on(invalidateEvent, onInvalidate);
+
+	// Optional replay: Last-Event-ID header or ?since= query replays missed
+	// invalidations via syncService.getDelta(since, limit). Best effort — if
+	// the Phase 2 syncService track hasn't landed, skip replay and stream live.
+	const sinceRaw = req.query?.since ?? req.headers["last-event-id"];
+	const since =
+		sinceRaw !== undefined && sinceRaw !== null && sinceRaw !== "" ? Number(sinceRaw) : null;
+	if (Number.isFinite(since)) {
+		try {
+			const syncService = await import("../services/syncService.js");
+			if (typeof syncService.getDelta === "function") {
+				const delta = await syncService.getDelta(since, 200);
+				for (const change of delta?.changes || []) {
+					onInvalidate({
+						seq: change.seqNumber ?? change.seq ?? null,
+						entity: change.entity_type,
+						id: change.entity_id,
+						version: change.entity_version,
+						hash: change.content_hash ?? null,
+					});
+				}
+			}
+		} catch {
+			/* syncService not present yet — live stream only */
+		}
+	}
 
 	const keepalive = setInterval(() => {
 		res.write(":keepalive\n\n");
@@ -65,6 +111,7 @@ export function feedStream(req, res) {
 		realtimeBus.off(REALTIME_EVENTS.feedPostCreated, onCreated);
 		realtimeBus.off(REALTIME_EVENTS.feedPostUpdated, onUpdated);
 		realtimeBus.off(REALTIME_EVENTS.feedPostDeleted, onDeleted);
+		realtimeBus.off(invalidateEvent, onInvalidate);
 		clearInterval(keepalive);
 	});
 }

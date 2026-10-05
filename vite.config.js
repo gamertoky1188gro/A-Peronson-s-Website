@@ -1,6 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -50,7 +51,22 @@ export default defineConfig({
 		reportCompressedSize: false,
 		sourcemap: "hidden",
 	},
-	plugins: [tailwindcss(), react()],
+	plugins: [
+		tailwindcss(),
+		react(),
+		VitePWA({
+			strategies: "injectManifest",
+			srcDir: "src",
+			filename: "sw.js",
+			registerType: "autoUpdate",
+			injectRegister: false,
+			manifest: false,
+			devOptions: { enabled: false },
+			injectManifest: {
+				globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
+			},
+		}),
+	],
 	server: {
 		allowedHosts: process.env.VITE_ALLOWED_HOSTS
 			? process.env.VITE_ALLOWED_HOSTS.split(",").map((s) => s.trim())

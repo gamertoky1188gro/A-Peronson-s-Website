@@ -33,7 +33,7 @@ model User {
   created_at                                        DateTime         @default(now())
   updated_at                                        DateTime?
   password_reset_at                                 DateTime?
-  policy_updated_at                               DateTime?
+  policy_updated_at                                 DateTime?
   agentCapacityRecords                              AgentCapacity[]  @relation("AgentCapacityAgent")
   event_logs_event_logs_actor_idTousers             EventLog[]       @relation("event_logs_actor_idTousers")
   event_logs_event_logs_org_owner_idTousers         EventLog[]       @relation("event_logs_org_owner_idTousers")
@@ -145,6 +145,8 @@ model Requirement {
   priceOriginalMax           Float?
   priceBaseMin               Float?
   priceBaseMax               Float?
+  version                    Int       @default(1)
+  content_hash               String?
 
   @@index([buyer_id])
   @@index([assigned_agent_id])
@@ -186,16 +188,18 @@ model Product {
   priceOriginal              Float?
   currencyOriginal           String?
   priceNormalizedBase        Float?
-  content_review_status     String?
+  content_review_status      String?
   content_review_reason      String?
   content_review_flags       Json?
   content_reviewed_at        DateTime?
   content_reviewed_by        String?
   priceOriginalMin           Float?
-  priceOriginalMax          Float?
+  priceOriginalMax           Float?
   priceBaseMin               Float?
   priceBaseMax               Float?
   currency                   String?
+  version                    Int       @default(1)
+  content_hash               String?
 
   @@index([company_id])
   @@index([status, category, content_review_status, created_at])
@@ -203,7 +207,7 @@ model Product {
 }
 
 model FeedPost {
-  id                   String   @id
+  id                   String    @id
   user_id              String
   title                String
   description_markdown String
@@ -218,14 +222,40 @@ model FeedPost {
   location_tag         String?
   media                Json?
   category             String?
-  status               String   @default("published")
-  created_at           DateTime @default(now())
+  status               String    @default("published")
+  version              Int       @default(1)
+  content_hash         String?
+  created_at           DateTime  @default(now())
   updated_at           DateTime?
 
   @@index([user_id, created_at])
   @@index([user_id])
   @@index([status, created_at])
   @@map("feed_posts")
+}
+
+// =====================================================
+// HyperCache Phase 3 — backend sync protocol + change ledger.
+// Append-only ledger of entity mutations. Clients poll
+// GET /api/sync/delta?since=<seq> to converge. seq is a
+// BigInt autoincrement (supported on the postgresql provider);
+// id stays a String for cross-system correlation.
+// =====================================================
+
+model SyncChange {
+  id             String   @id @default(cuid())
+  seq            BigInt   @unique @default(autoincrement())
+  scope          String?
+  entity_type    String
+  entity_id      String
+  operation      String
+  entity_version Int
+  content_hash   String?
+  occurred_at    DateTime @default(now())
+
+  @@index([seq])
+  @@index([entity_type, entity_id])
+  @@map("sync_changes")
 }
 
 model FxRate {
@@ -547,14 +577,14 @@ model BusinessRelationship {
 }
 
 model LicenseRequest {
-  id               String    @id
-  requester_id     String
-  recipient_id     String
-  license_name     String
-  status           String    @default("pending")
+  id                String    @id
+  requester_id      String
+  recipient_id      String
+  license_name      String
+  status            String    @default("pending")
   uploaded_file_url String?
-  created_at       DateTime  @default(now())
-  responded_at     DateTime?
+  created_at        DateTime  @default(now())
+  responded_at      DateTime?
 
   @@index([requester_id])
   @@index([recipient_id, status])
@@ -643,12 +673,12 @@ model Document {
 }
 
 model DocumentView {
-  id           String   @id
-  document_id  String
-  viewer_id    String?
-  viewer_ip    String?
-  viewed_at    DateTime @default(now())
-  metadata     Json?
+  id          String   @id
+  document_id String
+  viewer_id   String?
+  viewer_ip   String?
+  viewed_at   DateTime @default(now())
+  metadata    Json?
 
   @@index([document_id, viewed_at])
   @@map("document_views")
@@ -1046,15 +1076,15 @@ model AssistantKnowledge {
 }
 
 model AssistantRule {
-  id          String   @id @default(cuid())
-  org_id      String?
-  rule_key    String   @unique
+  id         String    @id @default(cuid())
+  org_id     String?
+  rule_key   String    @unique
   name       String?
   pattern    String?
   response   String?
   conditions Json?
-  priority   Int      @default(0)
-  active     Boolean  @default(true)
+  priority   Int       @default(0)
+  active     Boolean   @default(true)
   created_at DateTime  @default(now())
   updated_at DateTime?
 
@@ -1063,33 +1093,33 @@ model AssistantRule {
 }
 
 model AssistantConfig {
-  id          String   @id @default(cuid())
-  org_id      String   @unique
-  config_key  String   @default("default")
-  settings   Json?
-  prompt     String?
-  model      String?
+  id          String    @id @default(cuid())
+  org_id      String    @unique
+  config_key  String    @default("default")
+  settings    Json?
+  prompt      String?
+  model       String?
   temperature Float?
-  max_tokens Int?
-  active    Boolean  @default(true)
-  created_at DateTime  @default(now())
-  updated_at DateTime?
+  max_tokens  Int?
+  active      Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime?
 
   @@map("assistant_config")
 }
 
 model AiResponseAudit {
-  id              String    @id @default(cuid())
-  org_id          String?
-  user_id         String?
-  session_id      String?
-  query          String
-  response       String?
-  model          String?
-  tokens_used    Int?
-  latency_ms     Int?
-  error         String?
-  created_at     DateTime  @default(now())
+  id          String   @id @default(cuid())
+  org_id      String?
+  user_id     String?
+  session_id  String?
+  query       String
+  response    String?
+  model       String?
+  tokens_used Int?
+  latency_ms  Int?
+  error       String?
+  created_at  DateTime @default(now())
 
   @@index([org_id, created_at])
   @@index([user_id, created_at])
@@ -1097,15 +1127,15 @@ model AiResponseAudit {
 }
 
 model AdminAudit {
-  id              String    @id @default(cuid())
-  admin_id         String
-  action          String
-  entity_type     String?
-  entity_id      String?
-  details        Json?
-  ip_address     String?
-  user_agent     String?
-  created_at     DateTime  @default(now())
+  id          String   @id @default(cuid())
+  admin_id    String
+  action      String
+  entity_type String?
+  entity_id   String?
+  details     Json?
+  ip_address  String?
+  user_agent  String?
+  created_at  DateTime @default(now())
 
   @@index([admin_id, created_at])
   @@index([entity_type, entity_id])
@@ -1114,32 +1144,32 @@ model AdminAudit {
 }
 
 model WorkflowAuditLog {
-  id              String    @id @default(cuid())
-  journey_id      String
-  transition_id  String?
+  id            String   @id @default(cuid())
+  journey_id    String
+  transition_id String?
   action        String
   actor_id      String?
   details       Json?
-  created_at    DateTime  @default(now())
+  created_at    DateTime @default(now())
 
   @@index([journey_id, created_at])
   @@map("workflow_audit_logs")
 }
 
 model SupportTicket {
-  id              String    @id
-  user_id         String
-  org_id          String?
-  subject        String
-  description    String?
-  status         String    @default("open")
-  priority       String    @default("normal")
-  category       String?
-  assigned_to    String?
-  assigned_at   DateTime?
-  resolved_at   DateTime?
-  created_at    DateTime  @default(now())
-  updated_at    DateTime?
+  id          String    @id
+  user_id     String
+  org_id      String?
+  subject     String
+  description String?
+  status      String    @default("open")
+  priority    String    @default("normal")
+  category    String?
+  assigned_to String?
+  assigned_at DateTime?
+  resolved_at DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime?
 
   @@index([user_id, created_at])
   @@index([status, created_at])
@@ -1147,20 +1177,20 @@ model SupportTicket {
 }
 
 model SupportTicketMessage {
-  id          String    @id
+  id          String   @id
   ticket_id   String
   sender_id   String
-  message    String
+  message     String
   is_internal Boolean  @default(false)
-  created_at DateTime  @default(now())
+  created_at  DateTime @default(now())
 
   @@index([ticket_id, created_at])
   @@map("support_ticket_messages")
 }
 
 model EsignWebhookNonce {
-  id          String    @id @default(cuid())
-  nonce       String    @unique
+  id         String    @id @default(cuid())
+  nonce      String    @unique
   used_at    DateTime?
   created_at DateTime  @default(now())
 
@@ -1169,20 +1199,20 @@ model EsignWebhookNonce {
 }
 
 model Rating {
-  id                String   @id
-  profile_key       String
-  from_user_id      String
-  interaction_type  String?
-  score             Int?
-  comment           String?
-  sample_accuracy   Int?
+  id                  String   @id
+  profile_key         String
+  from_user_id        String
+  interaction_type    String?
+  score               Int?
+  comment             String?
+  sample_accuracy     Int?
   communication_speed Int?
-  quality_control   Int?
+  quality_control     Int?
   delivery_timeliness Int?
   after_sales_support Int?
-  reliability_flags Json?
-  auto_generated    Boolean  @default(false)
-  created_at        DateTime @default(now())
+  reliability_flags   Json?
+  auto_generated      Boolean  @default(false)
+  created_at          DateTime @default(now())
 
   @@index([from_user_id])
   @@index([profile_key])
@@ -1453,147 +1483,147 @@ model GovernanceMonthlyReport {
 // =====================================================
 
 model AdminModule {
-  id              String    @id @default(cuid())
-  module_id        String    @unique
-  label            String
-  icon_name        String?
-  sort_order       Int       @default(0)
-  active          Boolean   @default(true)
-  sections         AdminSection[]
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
+  id         String         @id @default(cuid())
+  module_id  String         @unique
+  label      String
+  icon_name  String?
+  sort_order Int            @default(0)
+  active     Boolean        @default(true)
+  sections   AdminSection[]
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
 
   @@map("admin_modules")
 }
 
 model AdminSection {
-  id              String    @id @default(cuid())
-  section_id       String    @unique
-  module_id        String
-  title           String
-  sort_order       Int       @default(0)
-  active          Boolean   @default(true)
-  features        Json?
-  module          AdminModule @relation(fields: [module_id], references: [id], onDelete: Cascade)
+  id         String      @id @default(cuid())
+  section_id String      @unique
+  module_id  String
+  title      String
+  sort_order Int         @default(0)
+  active     Boolean     @default(true)
+  features   Json?
+  module     AdminModule @relation(fields: [module_id], references: [id], onDelete: Cascade)
 
   @@map("admin_sections")
 }
 
 model AdminAction {
-  id              String    @id @default(cuid())
-  action_id       String    @unique
-  label           String
-  category        String?
-  group_label     String?
-  sort_order      Int       @default(0)
-  active          Boolean   @default(true)
-  fields          Json
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
+  id          String   @id @default(cuid())
+  action_id   String   @unique
+  label       String
+  category    String?
+  group_label String?
+  sort_order  Int      @default(0)
+  active      Boolean  @default(true)
+  fields      Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   @@map("admin_actions")
 }
 
 model AdminCapability {
-  id              String    @id @default(cuid())
-  capability_id   String    @unique
-  module_id        String
-  title            String
-  count            Int       @default(0)
-  icon_name        String?
-  subtitle        String?
-  sort_order       Int       @default(0)
-  active           Boolean   @default(true)
+  id            String  @id @default(cuid())
+  capability_id String  @unique
+  module_id     String
+  title         String
+  count         Int     @default(0)
+  icon_name     String?
+  subtitle      String?
+  sort_order    Int     @default(0)
+  active        Boolean @default(true)
 
   @@map("admin_capabilities")
 }
 
 model AdminUiConfig {
-  id              String    @id @default("default")
+  id              String   @id @default("default")
   section_metrics Json?
   chart_palette   String[]
-  empty_states   Json?
-  updated_at     DateTime  @updatedAt
+  empty_states    Json?
+  updated_at      DateTime @updatedAt
 
   @@map("admin_ui_config")
 }
 
 model AdminMockData {
-  id              String    @id @default(cuid())
-  data_key        String    @unique
-  data_type       String
-  payload        Json
-  active          Boolean   @default(true)
-  sort_order      Int       @default(0)
+  id         String  @id @default(cuid())
+  data_key   String  @unique
+  data_type  String
+  payload    Json
+  active     Boolean @default(true)
+  sort_order Int     @default(0)
 
   @@map("admin_mock_data")
 }
 
 model AdminRoleConfig {
-  id              String    @id @default(cuid())
-  role_key        String    @unique
-  label           String
-  is_admin_role   Boolean   @default(false)
-  benefits        String[]
-  active          Boolean   @default(true)
+  id            String   @id @default(cuid())
+  role_key      String   @unique
+  label         String
+  is_admin_role Boolean  @default(false)
+  benefits      String[]
+  active        Boolean  @default(true)
 
   @@map("admin_role_config")
 }
 
 model GovernanceConfig {
-  id              String    @id @default("default")
-  initial_policy  Json?
-  initial_version Json?
+  id                 String   @id @default("default")
+  initial_policy     Json?
+  initial_version    Json?
   initial_simulation Json?
-  initial_template Json?
-  default_rules   Json?
-  updated_at      DateTime  @updatedAt
+  initial_template   Json?
+  default_rules      Json?
+  updated_at         DateTime @updatedAt
 
   @@map("governance_config")
 }
 
 model AdminBranding {
-  id              String    @id @default(cuid())
-  brand_key       String    @unique
-  value          String
-  active         Boolean   @default(true)
+  id        String  @id @default(cuid())
+  brand_key String  @unique
+  value     String
+  active    Boolean @default(true)
 
   @@map("admin_branding")
 }
 
 model AdminSecurityPurpose {
-  id              String    @id @default(cuid())
-  purpose_key     String    @unique
-  purpose_type   String
-  active         Boolean   @default(true)
+  id           String  @id @default(cuid())
+  purpose_key  String  @unique
+  purpose_type String
+  active       Boolean @default(true)
 
   @@map("admin_security_purposes")
 }
 
 model AdminConfigHistory {
-  id              String    @id @default(cuid())
-  config_type     String
-  changed_by      String
-  previous_value  Json?
-  new_value       Json?
-  created_at      DateTime  @default(now())
+  id             String   @id @default(cuid())
+  config_type    String
+  changed_by     String
+  previous_value Json?
+  new_value      Json?
+  created_at     DateTime @default(now())
 
   @@index([config_type, created_at])
   @@map("admin_config_history")
 }
 
 model NotificationPreferences {
-  id              String    @id @default(cuid())
-  user_id         String    @unique
-  email_enabled   Boolean   @default(true)
-  push_enabled    Boolean   @default(true)
-  message_notifs  Boolean   @default(true)
-  requirement_notifs Boolean @default(true)
-  contract_notifs Boolean  @default(true)
-  smart_match_notifs Boolean @default(true)
-  monthly_summary Boolean  @default(true)
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
+  id                 String   @id @default(cuid())
+  user_id            String   @unique
+  email_enabled      Boolean  @default(true)
+  push_enabled       Boolean  @default(true)
+  message_notifs     Boolean  @default(true)
+  requirement_notifs Boolean  @default(true)
+  contract_notifs    Boolean  @default(true)
+  smart_match_notifs Boolean  @default(true)
+  monthly_summary    Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
 
   @@map("notification_preferences")
 }
@@ -1649,19 +1679,19 @@ model Order {
   order_type        String    @default("MAIN")
   status            String    @default("draft")
   product_title     String?
-  quantity           String?
-  unit_price         Float?
-  currency           String?   @default("USD")
-  total_amount       Float?
-  description        String?
-  specs              Json?
-  sample_request_id  String?
-  parent_order_id    String?
-  delivery_date      DateTime?
-  shipping_terms     String?
-  payment_terms      String?
-  created_at         DateTime  @default(now())
-  updated_at         DateTime?
+  quantity          String?
+  unit_price        Float?
+  currency          String?   @default("USD")
+  total_amount      Float?
+  description       String?
+  specs             Json?
+  sample_request_id String?
+  parent_order_id   String?
+  delivery_date     DateTime?
+  shipping_terms    String?
+  payment_terms     String?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime?
 
   @@index([buyer_id, created_at])
   @@index([factory_id, created_at])

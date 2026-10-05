@@ -3,13 +3,35 @@ import { getBuyerRequestSubmissionErrors } from "../../shared/requirementValidat
 import { logInfo } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
 import { limitWordCount, sanitizeString } from "../utils/validators.js";
+import { appendChange, emitAfterCommit } from "./changeLogService.js";
+import { contentHash } from "./contentHashService.js";
 import { extractOriginalPrice, getBaseCurrency, normalizePriceRange } from "./currencyService.js";
 import { getPlanForUser } from "./entitlementService.js";
+import {
+	nextVersion,
+	withBumpedVersionHash,
+	withInitialVersionHash,
+} from "./entityVersionService.js";
+import { bumpFeedGeneration } from "./feedGenerationService.js";
 import { createNotification, emitNotificationsForEntity } from "./notificationService.js";
 import { deleteRequirementIndex, indexRequirement } from "./openSearchService.js";
 import { moderateTextOrRedact } from "./policyService.js";
 import { indexRequirement as indexRequirementQdrant } from "./qdrantService.js";
 import { recordMilestone } from "./ratingsService.js";
+
+// HyperCache Phase 5: best-effort feed generation bump after commit.
+// Fire-and-forget with a catch — generation freshness must never break
+// or slow down the entity write path.
+function bumpFeedGenerationBestEffort() {
+	try {
+		const pending = bumpFeedGeneration();
+		if (pending && typeof pending.catch === "function") {
+			pending.catch(() => {});
+		}
+	} catch {
+		// best-effort only
+	}
+}
 
 function buildRequirementSummary(requirement) {
 	if (!requirement) {
@@ -310,7 +332,23 @@ export async function createRequirement(buyerId, payload) {
 		// silent: never block creation due to moderation pipeline failures
 	}
 
-	await prisma.requirement.create({ data: requirement });
+	// HyperCache Phase 5: entity write + ledger append in one $transaction
+	// (entity_type "requirement") following the feedPostService.js pattern.
+	const requirementLedgerRow = await prisma.$transaction(async (tx) => {
+		const created = await tx.requirement.create({
+			data: withInitialVersionHash(requirement, contentHash(requirement)),
+		});
+		return appendChange(tx, {
+			scope: String(buyerId || ""),
+			entity_type: "requirement",
+			entity_id: created.id,
+			operation: "CREATE",
+			entity_version: created.version ?? 1,
+			content_hash: created.content_hash ?? null,
+		});
+	});
+	emitAfterCommit(requirementLedgerRow);
+	bumpFeedGenerationBestEffort();
 	try {
 		const author = await prisma.user.findUnique({ where: { id: buyerId } });
 		await indexRequirement(requirement, {
@@ -641,7 +679,26 @@ export async function updateRequirement(requirementId, patch, actor) {
 		next.custom_description = limitWordCount(next.custom_description, maxWords);
 	}
 
-	await prisma.requirement.update({ where: { id: requirementId }, data: next });
+	// HyperCache Phase 5: version bump + ledger append in one $transaction
+	// (entity_type "requirement", operation UPDATE) following feedPostService.js.
+	const { version: _ignoredReqVersion, content_hash: _ignoredReqHash, ...hashableReqNext } = next;
+	const requirementUpdateHash = contentHash(hashableReqNext);
+	const requirementUpdateLedgerRow = await prisma.$transaction(async (tx) => {
+		await tx.requirement.update({
+			where: { id: requirementId },
+			data: withBumpedVersionHash(next, existing.version, requirementUpdateHash),
+		});
+		return appendChange(tx, {
+			scope: String(next.buyer_id || ""),
+			entity_type: "requirement",
+			entity_id: requirementId,
+			operation: "UPDATE",
+			entity_version: nextVersion(existing.version),
+			content_hash: requirementUpdateHash,
+		});
+	});
+	emitAfterCommit(requirementUpdateLedgerRow);
+	bumpFeedGenerationBestEffort();
 	try {
 		const author = await prisma.user.findUnique({
 			where: { id: next.buyer_id },
@@ -687,7 +744,21 @@ export async function removeRequirement(requirementId, actor) {
 	if (actor.role === "buyer" && target.buyer_id !== actor.id) {
 		return "forbidden";
 	}
-	await prisma.requirement.delete({ where: { id: requirementId } });
+	// HyperCache Phase 5: tombstone ledger row in the same $transaction
+	// (entity_type "requirement", operation DELETE) following feedPostService.js.
+	const requirementDeleteLedgerRow = await prisma.$transaction(async (tx) => {
+		await tx.requirement.delete({ where: { id: requirementId } });
+		return appendChange(tx, {
+			scope: String(target.buyer_id || ""),
+			entity_type: "requirement",
+			entity_id: requirementId,
+			operation: "DELETE",
+			entity_version: nextVersion(target.version),
+			content_hash: target.content_hash ?? null,
+		});
+	});
+	emitAfterCommit(requirementDeleteLedgerRow);
+	bumpFeedGenerationBestEffort();
 	try {
 		await deleteRequirementIndex(requirementId);
 	} catch {

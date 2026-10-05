@@ -3,13 +3,21 @@ import fs from "node:fs";
 import path from "node:path";
 import { logError, logWarn } from "../utils/logger.js";
 import { isAgent, isOwnerOrAdmin } from "../utils/permissions.js";
-import { isAIAnalyticsEnabled, runImageFileAnalysis } from "./aiModerationService.js";
 import prisma from "../utils/prisma.js";
 import { limitWordCount, sanitizeString } from "../utils/validators.js";
 import { getAdminConfig } from "./adminConfigService.js";
+import { isAIAnalyticsEnabled, runImageFileAnalysis } from "./aiModerationService.js";
+import { appendChange, emitAfterCommit } from "./changeLogService.js";
+import { contentHash } from "./contentHashService.js";
 import { extractOriginalPrice, getBaseCurrency, normalizePriceRange } from "./currencyService.js";
 import { getPlanForUser } from "./entitlementService.js";
+import {
+	nextVersion,
+	withBumpedVersionHash,
+	withInitialVersionHash,
+} from "./entityVersionService.js";
 import { trackEvent } from "./eventTrackingService.js";
+import { bumpFeedGeneration } from "./feedGenerationService.js";
 import { createNotification, emitNotificationsForEntity } from "./notificationService.js";
 import { deleteProductIndex, indexProduct } from "./openSearchService.js";
 import { moderateTextOrRedact } from "./policyService.js";
@@ -41,6 +49,20 @@ const MUSIC_INSTRUMENT_KEYWORDS = [
 const PRODUCT_STATUSES = new Set(["draft", "published"]);
 const IMAGE_URL_LIMIT = 12;
 const REVIEW_STATUSES = new Set(["approved", "pending_review", "rejected"]);
+
+// HyperCache Phase 5: best-effort feed generation bump after commit.
+// Fire-and-forget with a catch — generation freshness must never break
+// or slow down the entity write path.
+function bumpFeedGenerationBestEffort() {
+	try {
+		const pending = bumpFeedGeneration();
+		if (pending && typeof pending.catch === "function") {
+			pending.catch(() => {});
+		}
+	} catch {
+		// best-effort only
+	}
+}
 
 function normalizeVideoReview(row) {
 	const reviewStatus = row.video_review_status || "approved";
@@ -469,7 +491,7 @@ async function runProductImageAIAnalysis(productId, imageUrls) {
 		const flagged = [];
 		for (const url of imageUrls) {
 			const fullPath = resolveMediaFilePath(url);
-			if (!fullPath || !fs.existsSync(fullPath)) {
+			if (!(fullPath && fs.existsSync(fullPath))) {
 				continue;
 			}
 			const result = await runImageFileAnalysis(fullPath);
@@ -636,7 +658,23 @@ export async function createProduct(user, payload) {
 	}
 
 	row.description = description;
-	await prisma.product.create({ data: row });
+	// HyperCache Phase 5: entity write + ledger append in one $transaction
+	// (entity_type "product") following the feedPostService.js pattern.
+	const productLedgerRow = await prisma.$transaction(async (tx) => {
+		const created = await tx.product.create({
+			data: withInitialVersionHash(row, contentHash(row)),
+		});
+		return appendChange(tx, {
+			scope: ownerId,
+			entity_type: "product",
+			entity_id: created.id,
+			operation: "CREATE",
+			entity_version: created.version ?? 1,
+			content_hash: created.content_hash ?? null,
+		});
+	});
+	emitAfterCommit(productLedgerRow);
+	bumpFeedGenerationBestEffort();
 
 	if (!isDraft && row.content_review_status !== "rejected") {
 		runProductImageAIAnalysis(row.id, imageUrls).catch((err) =>
@@ -957,7 +995,26 @@ export async function updateProductById(actor, productId, patch = {}) {
 	next.priceBaseMax = normalizedPrice.priceBaseMax;
 	next.priceNormalizedBase = normalizedPrice.priceBaseMin;
 
-	await prisma.product.update({ where: { id }, data: next });
+	// HyperCache Phase 5: version bump + ledger append in one $transaction
+	// (entity_type "product", operation UPDATE) following feedPostService.js.
+	const { version: _ignoredVersion, content_hash: _ignoredHash, ...hashableNext } = next;
+	const productUpdateHash = contentHash(hashableNext);
+	const productUpdateLedgerRow = await prisma.$transaction(async (tx) => {
+		await tx.product.update({
+			where: { id },
+			data: withBumpedVersionHash(next, existing.version, productUpdateHash),
+		});
+		return appendChange(tx, {
+			scope: ownerId,
+			entity_type: "product",
+			entity_id: id,
+			operation: "UPDATE",
+			entity_version: nextVersion(existing.version),
+			content_hash: productUpdateHash,
+		});
+	});
+	emitAfterCommit(productUpdateLedgerRow);
+	bumpFeedGenerationBestEffort();
 	try {
 		await indexProduct(next, {
 			...(ownerRecord || {}),
@@ -1039,7 +1096,21 @@ export async function removeProduct(actor, productId) {
 		return "forbidden";
 	}
 
-	await prisma.product.delete({ where: { id } });
+	// HyperCache Phase 5: tombstone ledger row in the same $transaction
+	// (entity_type "product", operation DELETE) following feedPostService.js.
+	const productDeleteLedgerRow = await prisma.$transaction(async (tx) => {
+		await tx.product.delete({ where: { id } });
+		return appendChange(tx, {
+			scope: String(existing.company_id || ""),
+			entity_type: "product",
+			entity_id: id,
+			operation: "DELETE",
+			entity_version: nextVersion(existing.version),
+			content_hash: existing.content_hash ?? null,
+		});
+	});
+	emitAfterCommit(productDeleteLedgerRow);
+	bumpFeedGenerationBestEffort();
 
 	try {
 		await deleteProductIndex(id);

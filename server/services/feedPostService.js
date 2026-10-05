@@ -6,12 +6,34 @@ import {
 } from "../realtime/realtimeBus.js";
 import prisma from "../utils/prisma.js";
 import { limitWordCount, sanitizeString } from "../utils/validators.js";
+import { appendChange, emitAfterCommit } from "./changeLogService.js";
+import { contentHash } from "./contentHashService.js";
 import { getPlanForUser } from "./entitlementService.js";
+import {
+	nextVersion,
+	withBumpedVersionHash,
+	withInitialVersionHash,
+} from "./entityVersionService.js";
+import { bumpFeedGeneration } from "./feedGenerationService.js";
 import { batchGetLinkPreviews } from "./linkPreviewService.js";
 import { moderateTextOrRedact } from "./policyService.js";
 
 const STATUSES = new Set(["draft", "published"]);
 const MEDIA_TYPES = new Set(["image", "video"]);
+
+// HyperCache Phase 5: best-effort feed generation bump after commit.
+// Fire-and-forget with a catch — generation freshness must never break
+// or slow down the entity write path.
+function bumpFeedGenerationBestEffort() {
+	try {
+		const pending = bumpFeedGeneration();
+		if (pending && typeof pending.catch === "function") {
+			pending.catch(() => {});
+		}
+	} catch {
+		// best-effort only
+	}
+}
 
 function toSafeArray(value) {
 	if (Array.isArray(value)) {
@@ -308,7 +330,24 @@ export async function createFeedPost(actor, payload = {}) {
 	} catch {
 		// silent
 	}
-	await prisma.feedPost.create({ data: next });
+	// HyperCache Phase 3 representative pattern: entity write +
+	// ledger append in one $transaction (messageService.js:544-559 shape).
+	// NOTE: requires `prisma generate` + the hypercache migration draft.
+	const ledgerRow = await prisma.$transaction(async (tx) => {
+		const created = await tx.feedPost.create({
+			data: withInitialVersionHash(next, contentHash(next)),
+		});
+		return appendChange(tx, {
+			scope: ownerId,
+			entity_type: "feed_post",
+			entity_id: created.id,
+			operation: "CREATE",
+			entity_version: created.version,
+			content_hash: created.content_hash,
+		});
+	});
+	emitAfterCommit(ledgerRow);
+	bumpFeedGenerationBestEffort();
 
 	const author = actor
 		? await prisma.user.findUnique({
@@ -361,10 +400,25 @@ export async function updateFeedPost(actor, postId, payload = {}) {
 			// silent
 		}
 	}
-	await prisma.feedPost.update({
-		where: { id: String(postId) },
-		data: updated,
+	// NOTE: requires `prisma generate` + the hypercache migration draft.
+	// HyperCache Phase 3: version bump + ledger append in one $transaction.
+	const hash = contentHash(updated);
+	const ledgerRow = await prisma.$transaction(async (tx) => {
+		await tx.feedPost.update({
+			where: { id: String(postId) },
+			data: withBumpedVersionHash(updated, current.version, hash),
+		});
+		return appendChange(tx, {
+			scope: String(actor.id),
+			entity_type: "feed_post",
+			entity_id: String(postId),
+			operation: "UPDATE",
+			entity_version: nextVersion(current.version),
+			content_hash: hash,
+		});
 	});
+	emitAfterCommit(ledgerRow);
+	bumpFeedGenerationBestEffort();
 
 	const author = actor
 		? await prisma.user.findUnique({
@@ -400,6 +454,20 @@ export async function deleteFeedPost(actor, postId) {
 		throw err;
 	}
 
-	await prisma.feedPost.delete({ where: { id: String(postId) } });
+	// HyperCache Phase 3: tombstone ledger row in the same $transaction.
+	// DELETE records nextVersion(target.version) so versions stay monotonic.
+	const deleteLedgerRow = await prisma.$transaction(async (tx) => {
+		await tx.feedPost.delete({ where: { id: String(postId) } });
+		return appendChange(tx, {
+			scope: target.user_id ? String(target.user_id) : null,
+			entity_type: "feed_post",
+			entity_id: String(postId),
+			operation: "DELETE",
+			entity_version: nextVersion(target.version),
+			content_hash: target.content_hash ?? null,
+		});
+	});
+	emitAfterCommit(deleteLedgerRow);
+	bumpFeedGenerationBestEffort();
 	emitFeedPostDeleted(postId);
 }
