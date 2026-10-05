@@ -44,24 +44,14 @@
       name="description"
       content="GarTexHub — The global marketplace connecting textile and garment buyers with verified factories, buying houses, and suppliers. Source products, post requirements, and manage your textile supply chain."
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link rel="dns-prefetch" href="https://gartexhub.onrender.com" />
     <link rel="preconnect" href="https://gartexhub.onrender.com" crossorigin />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      media="print"
-      id="font-css"
+      rel="preload"
+      href="/fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      />
-    </noscript>
     <link rel="prefetch" href="/login" as="document" />
     <link rel="prefetch" href="/signup" as="document" />
     <script>"use strict";
@@ -73,8 +63,6 @@
         ) {
           document.documentElement.classList.add("dark");
         }
-        var fontCss = document.getElementById("font-css");
-        if (fontCss) fontCss.media = "all";
       })();
     </script>
     <style>
