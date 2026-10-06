@@ -145,7 +145,7 @@ function Badge({ children, tone = "slate" }) {
 		yellow: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300",
 		red: "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300",
 		sky: "bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300",
-		violet: "bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300",
+		violet: "bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300",
 	};
 	return (
 		<span
@@ -2091,7 +2091,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 						<div class="mt-4 flex gap-3">
 							<PrimaryButton onClick={saveProfileSettings} disabled={loadingProfile}>
 								{loadingProfile ? (
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 								) : (
 									"Save Profile"
 								)}
@@ -2176,7 +2176,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 								<div class="space-y-3">
 									{loadingSessions ? (
 										<Mosaic
-											color="#3b00ff"
+											color="#0ea5e9"
 											size="large"
 											style={{ fontSize: "40px" }}
 											text=""
@@ -2574,7 +2574,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 						<div class="space-y-3">
 							{loadingSessions ? (
 								<Mosaic
-									color="#3b00ff"
+									color="#0ea5e9"
 									size="large"
 									style={{ fontSize: "40px" }}
 									text=""
@@ -2715,7 +2715,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 										{logoUploading ? (
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""
@@ -2761,7 +2761,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 										{bannerUploading ? (
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""
@@ -3030,7 +3030,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 							)}
 							{loadingBoosts ? (
 								<div class="flex justify-center py-4">
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 								</div>
 							) : boosts.length > 0 ? (
 								<div class="space-y-2">

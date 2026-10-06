@@ -764,7 +764,7 @@ export default function NavBar() {
 							{user && searchOpen && searchQuery.trim().length > 0 ? (
 								<div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[360px] overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-2 shadow-[0_25px_70px_rgba(15,23,42,0.16)] backdrop-blur-2xl dark:bg-slate-950/95">
 									{searchLoading ? (
-										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 									) : null}
 									{!searchLoading && searchError ? (
 										<p className="px-2 py-3 text-xs text-rose-500">{searchError}</p>
@@ -834,7 +834,7 @@ export default function NavBar() {
 														{actionBusyKey === `friend:${result.id}` ? (
 															<ThreeDot
 																variant="bounce"
-																color="#6100ff"
+																color="#0ea5e9"
 																size="small"
 																text=""
 																textColor=""
@@ -859,7 +859,7 @@ export default function NavBar() {
 															<button
 																disabled={actionBusyKey === `call:${result.id}`}
 																onClick={() => callFriend(result.id)}
-																className="inline-flex items-center rounded-xl bg-violet-500/10 px-2.5 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-violet-300"
+																className="inline-flex items-center rounded-xl bg-sky-500/10 px-2.5 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:text-sky-300"
 															>
 																Call
 															</button>

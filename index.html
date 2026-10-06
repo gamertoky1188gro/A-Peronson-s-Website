@@ -56,12 +56,18 @@
     <link rel="prefetch" href="/signup" as="document" />
     <script>"use strict";
       (() => {
-        const theme = localStorage.getItem("theme");
-        if (
-          theme === "dark" ||
-          (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)
-        ) {
-          document.documentElement.classList.add("dark");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", "blue");
+        const stored = localStorage.getItem("theme");
+        let resolved = "light";
+        if (stored === "dark" || stored === "light") {
+          resolved = stored;
+        } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          resolved = "dark";
+        }
+        root.setAttribute("data-mode", resolved);
+        if (resolved === "dark") {
+          root.classList.add("dark");
         }
       })();
     </script>

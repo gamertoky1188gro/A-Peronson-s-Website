@@ -76,7 +76,7 @@ function Badge({ tone = "neutral", children, className = "" }) {
 		amber: "bg-amber-500/15 text-amber-700 ring-amber-500/20 dark:text-amber-300",
 		sky: "bg-sky-500/15 text-sky-700 ring-sky-500/20 dark:text-sky-300",
 		blue: "bg-blue-500/15 text-blue-700 ring-blue-500/20 dark:text-blue-300",
-		violet: "bg-violet-500/15 text-violet-700 ring-violet-500/20 dark:text-violet-300",
+		violet: "bg-sky-500/15 text-sky-700 ring-sky-500/20 dark:text-sky-300",
 	};
 	return (
 		<span
@@ -227,7 +227,7 @@ function MediaGate({ gate, onAction, onDismiss }) {
 }
 
 const PulseSpinner = ({ className }) => (
-	<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+	<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 );
 
 export default function CallInterface() {

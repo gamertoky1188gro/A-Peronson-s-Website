@@ -133,7 +133,7 @@ const Skeleton = ({ className = "", size }) => (
 	<div className={`flex items-center justify-center ${className}`}>
 		<ThreeDot
 			variant="bounce"
-			color="#6100ff"
+			color="#0ea5e9"
 			size="large"
 			style={{ fontSize: `${size || 48}px` }}
 			text=""
@@ -470,7 +470,7 @@ export default function About() {
 										<div className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""

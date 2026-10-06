@@ -1,0 +1,51 @@
+/*
+ * Palette extracted from:
+ * src/components/JourneyTimeline.jsx
+ *
+ * Primary Tailwind references:
+ * bg-white
+ * ring-slate-200/70
+ * text-slate-900
+ * text-slate-500
+ * bg-emerald-50
+ * text-emerald-700
+ * ring-emerald-200
+ * bg-slate-50
+ * ring-slate-200
+ * text-slate-600
+ *
+ * Extracted colors:
+ * #ffffff
+ * rgba(226, 232, 240, 0.7)
+ * #0f172a
+ * #64748b
+ * #ecfdf5
+ * #047857
+ * #a7f3d0
+ * #f8fafc
+ * #e2e8f0
+ * #475569
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: #f8fafc; /* bg-slate-50 (page background) */
+  --color-surface: #ffffff; /* bg-white (surface / card) */
+  --color-surface-elevated: #ecfdf5; /* bg-emerald-50 (elevated surface) */
+
+  /* Text */
+  --color-text-emerald-700: #047857; /* text-emerald-700 (success) */
+  --color-text-slate-900: #0f172a; /* text-slate-900 */
+  --color-text-muted: #64748b; /* text-slate-500 (muted text) */
+  --color-text-slate-600: #475569; /* text-slate-600 */
+
+  /* Borders / Dividers / Rings */
+  --color-ring: #a7f3d0; /* ring-emerald-200 (focus ring) */
+  --color-ring-2: rgba(226, 232, 240, 0.7); /* ring-slate-200/70 (focus ring) */
+  --color-ring-3: #e2e8f0; /* ring-slate-200 (focus ring) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-success: #ecfdf5; /* alias -> --color-surface-elevated (bg-emerald-50 (elevated surface)) */
+
+}

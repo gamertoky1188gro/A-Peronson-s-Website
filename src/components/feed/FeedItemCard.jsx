@@ -287,7 +287,7 @@ export default function FeedItemCard({
 			<div className="relative p-4">
 				<div className="flex items-center justify-between gap-3">
 					<p
-						className={`text-xs font-semibold${isBuyerRequest ? "text-emerald-700 dark:text-emerald-300" : isUserFeedPost ? "text-fuchsia-700 dark:text-fuchsia-300" : "text-indigo-700 dark:text-indigo-300"}`}
+						className={`text-xs font-semibold${isBuyerRequest ? "text-emerald-700 dark:text-emerald-300" : isUserFeedPost ? "text-sky-700 dark:text-sky-300" : "text-blue-700 dark:text-blue-300"}`}
 					>
 						{isBuyerRequest ? "Buyer Request" : isUserFeedPost ? "Feed Post" : "Company Product"}
 					</p>

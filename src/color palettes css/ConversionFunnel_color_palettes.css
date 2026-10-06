@@ -1,0 +1,57 @@
+/*
+ * Palette extracted from:
+ * src/components/analytics/ConversionFunnel.jsx
+ *
+ * Primary Tailwind references:
+ * border-slate-200
+ * bg-white
+ * text-slate-400
+ * dark:border-slate-700
+ * dark:bg-slate-950/40
+ * text-slate-600
+ * dark:text-slate-300
+ * bg-slate-100
+ * dark:bg-slate-800
+ * from-sky-400
+ * to-cyan-400
+ * text-white
+ *
+ * Extracted colors:
+ * #e2e8f0
+ * #ffffff
+ * #94a3b8
+ * #334155
+ * rgba(2, 6, 23, 0.4)
+ * #475569
+ * #cbd5e1
+ * #f1f5f9
+ * #1e293b
+ * #38bdf8
+ * #22d3ee
+ * Theme: supports .dark variant (class-based dark mode)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: #f1f5f9; /* bg-slate-100 (page background) */
+  --color-surface: #ffffff; /* bg-white (surface / card) */
+
+  /* Text */
+  --color-text-muted: #94a3b8; /* text-slate-400 (muted text) */
+  --color-text-slate-600: #475569; /* text-slate-600 */
+  --color-text-primary: #ffffff; /* text-white (heading / primary text) */
+
+  /* Borders / Dividers / Rings */
+  --color-border-slate-200: #e2e8f0; /* border-slate-200 (border) */
+
+  /* Gradients (every distinct stop-set preserved) */
+  --gradient-primary: linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%); /* from-sky-400 to-cyan-400 (gradient; direction 90deg) */
+
+}
+
+.dark {
+  --color-background: rgba(2, 6, 23, 0.4); /* dark:dark:bg-slate-950/40 */
+  --color-background-dark-slate-800: #1e293b; /* dark:dark:bg-slate-800 */
+  --color-border-dark-slate-700: #334155; /* dark:dark:border-slate-700 */
+  --color-text-dark-slate-300: #cbd5e1; /* dark:dark:text-slate-300 */
+}

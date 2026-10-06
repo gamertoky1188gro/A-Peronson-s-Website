@@ -534,7 +534,7 @@ export default function SupportReports() {
 									className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-500 px-5 py-4 text-sm font-semibold text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
 								>
 									{loading ? (
-										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 									) : (
 										<Check className="h-4 w-4" />
 									)}
@@ -567,7 +567,7 @@ export default function SupportReports() {
 										{ticketsLoading ? (
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""
@@ -581,7 +581,7 @@ export default function SupportReports() {
 
 								{ticketsLoading ? (
 									<Mosaic
-										color="#3b00ff"
+										color="#0ea5e9"
 										size="large"
 										style={{ fontSize: "40px" }}
 										text=""

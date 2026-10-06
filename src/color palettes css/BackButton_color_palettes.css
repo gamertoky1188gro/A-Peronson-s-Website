@@ -1,0 +1,17 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/BackButton.jsx
+ *
+ * Primary Tailwind references:
+ * (no Tailwind color utilities detected — inherits global theme)
+ *
+ * Extracted colors:
+ * currentColor
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Arbitrary / inline / SVG colors + explicit shadows/gradients (verbatim) */
+  --color-inline-1: currentColor; /* verbatim `stroke="currentColor"` near: stroke="currentColor" */
+
+}

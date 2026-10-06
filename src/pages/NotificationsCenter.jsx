@@ -574,7 +574,7 @@ export default function NotificationsCenter() {
 									<StaggerContainer className="space-y-3">
 										{loading ? (
 											<Mosaic
-												color="#3b00ff"
+												color="#0ea5e9"
 												size="large"
 												style={{ fontSize: "40px" }}
 												text=""
@@ -647,7 +647,7 @@ export default function NotificationsCenter() {
 												{loadingViews ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""
@@ -707,7 +707,7 @@ export default function NotificationsCenter() {
 										{loadingAlerts ? (
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""

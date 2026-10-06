@@ -396,7 +396,7 @@ function FileAttachmentCard({
 							<div className="px-3 text-[11px] font-semibold opacity-70">
 								{pdfPreview.loading ? (
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Generating preview..."
 										textColor="#94a3b8"
@@ -419,7 +419,7 @@ function FileAttachmentCard({
 				>
 					<div className="max-h-28 overflow-hidden p-3 text-left">
 						{textPreview.loading ? (
-							<Atom color="#5900ff" size="small" text="Loading preview..." textColor="#94a3b8" />
+							<Atom color="#0ea5e9" size="small" text="Loading preview..." textColor="#94a3b8" />
 						) : textPreview.error ? (
 							<div className="text-[11px] font-semibold opacity-70">{textPreview.error}</div>
 						) : (

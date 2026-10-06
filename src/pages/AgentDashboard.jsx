@@ -721,7 +721,7 @@ export default function AgentDashboard() {
 											{aiLoading ? (
 												<ThreeDot
 													variant="bounce"
-													color="#6100ff"
+													color="#0ea5e9"
 													size="small"
 													text=""
 													textColor=""

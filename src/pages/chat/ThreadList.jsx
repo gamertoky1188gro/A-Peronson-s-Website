@@ -51,7 +51,7 @@ export default function ThreadList({
 				className="h-[calc(100vh-250px)] overflow-auto pr-1 custom-scrollbar"
 			>
 				{loading ? (
-					<Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+					<Mosaic color="#0ea5e9" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 				) : null}
 				{!loading && visibleError ? (
 					<div className="p-4 text-center text-sm text-red-400">{visibleError}</div>
@@ -75,7 +75,7 @@ export default function ThreadList({
 								<div style={style} className="pb-1">
 									<button
 										key={thread.id}
-										className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? "ring-1 ring-gtBlue/20" : ""}${isFriendRequest ? " ring-2 ring-violet-400/30" : ""}`}
+										className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? "ring-1 ring-gtBlue/20" : ""}${isFriendRequest ? " ring-2 ring-sky-400/30" : ""}`}
 										style={{
 											background: isActive
 												? theme.threadActiveBg
@@ -122,7 +122,7 @@ export default function ThreadList({
 													</p>
 													<div className="ml-2 flex flex-shrink-0 items-center gap-1">
 														{thread.isFriendThread ? (
-															<span className="rounded-full bg-violet-100 px-2 py-0.5 text-[9px] font-bold uppercase text-violet-700">
+															<span className="rounded-full bg-sky-100 px-2 py-0.5 text-[9px] font-bold uppercase text-sky-700">
 																Request
 															</span>
 														) : null}

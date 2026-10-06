@@ -2362,7 +2362,7 @@ export default function BuyerRequestManagement() {
 														{saving ? (
 															<ThreeDot
 																variant="bounce"
-																color="#6100ff"
+																color="#0ea5e9"
 																size="small"
 																text=""
 																textColor=""
@@ -2383,7 +2383,7 @@ export default function BuyerRequestManagement() {
 															{saving ? (
 																<ThreeDot
 																	variant="bounce"
-																	color="#6100ff"
+																	color="#0ea5e9"
 																	size="small"
 																	text=""
 																	textColor=""
@@ -2715,7 +2715,7 @@ export default function BuyerRequestManagement() {
 																						{smartMatchLoading === r.id ? (
 																							<ThreeDot
 																								variant="bounce"
-																								color="#6100ff"
+																								color="#0ea5e9"
 																								size="small"
 																								text=""
 																								textColor=""
@@ -2873,7 +2873,7 @@ export default function BuyerRequestManagement() {
 																						{uploadingAttachmentId === r.id ? (
 																							<ThreeDot
 																								variant="bounce"
-																								color="#6100ff"
+																								color="#0ea5e9"
 																								size="small"
 																								text=""
 																								textColor=""
@@ -2932,7 +2932,7 @@ export default function BuyerRequestManagement() {
 													{loadingBrowse ? (
 														<ThreeDot
 															variant="bounce"
-															color="#6100ff"
+															color="#0ea5e9"
 															size="small"
 															text=""
 															textColor=""

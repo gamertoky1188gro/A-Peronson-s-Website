@@ -1,0 +1,17 @@
+/*
+ * Palette extracted from:
+ * src/components/TextColorReveal.jsx
+ *
+ * Primary Tailwind references:
+ * (no Tailwind color utilities detected — inherits global theme)
+ *
+ * Extracted colors:
+ * #0ea5e9
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Arbitrary / inline / SVG colors + explicit shadows/gradients (verbatim) */
+  --color-inline-1: #0ea5e9; /* verbatim `rgb(14, 165, 233)` near: rgb(14, 165, 233) */
+
+}

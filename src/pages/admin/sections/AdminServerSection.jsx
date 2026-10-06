@@ -35,7 +35,7 @@ function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
 		return (
 			<div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
 				<div className="flex items-center justify-center">
-					<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+					<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 				</div>
 			</div>
 		);
@@ -903,7 +903,7 @@ export function AdminServerSection({
 									)}
 								>
 									{openSearchConfigBusy ? (
-										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 									) : (
 										"Save settings"
 									)}
@@ -1177,7 +1177,7 @@ export function AdminServerSection({
 									className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] disabled:opacity-60"
 								>
 									{emailConfigBusy ? (
-										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 									) : (
 										"Save settings"
 									)}
@@ -1258,7 +1258,7 @@ export function AdminServerSection({
 							)}
 						>
 							{adminUiSettingsBusy ? (
-								<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+								<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 							) : (
 								"Save settings"
 							)}

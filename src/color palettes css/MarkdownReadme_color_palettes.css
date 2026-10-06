@@ -1,0 +1,20 @@
+/*
+ * Palette extracted from:
+ * src/components/feed/MarkdownReadme.jsx
+ *
+ * Primary Tailwind references:
+ * prose-pre:bg-slate-900
+ *
+ * Extracted colors:
+ * #0f172a
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* States (hover / focus / active / disabled / responsive / data / aria) */
+  --color-bg-slate-900-prose-pre: #0f172a; /* prose-pre:prose-pre:bg-slate-900 (state) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-danger: #0f172a; /* alias -> --color-bg-slate-900-prose-pre (prose-pre:prose-pre:bg-slate-900 (state)) */
+
+}

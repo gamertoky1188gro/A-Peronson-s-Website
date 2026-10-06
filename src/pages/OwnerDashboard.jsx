@@ -456,7 +456,7 @@ export default function OwnerDashboard() {
 					<main className="flex flex-col flex-1 min-h-0 px-4 py-6 sm:px-6 xl:px-8">
 						{loading && (
 							<Mosaic
-								color="#3b00ff"
+								color="#0ea5e9"
 								size="large"
 								style={{ fontSize: "40px" }}
 								text=""

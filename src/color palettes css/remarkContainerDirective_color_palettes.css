@@ -1,0 +1,25 @@
+/*
+ * Palette extracted from:
+ * src/lib/remarkContainerDirective.js
+ *
+ * Primary Tailwind references:
+ * bg-slate-800/30
+ * border-sky-500
+ *
+ * Extracted colors:
+ * rgba(30, 41, 59, 0.3)
+ * #0ea5e9
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: rgba(30, 41, 59, 0.3); /* bg-slate-800/30 (page background) */
+
+  /* Borders / Dividers / Rings */
+  --color-border-sky-500: #0ea5e9; /* border-sky-500 (border) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-info: #0ea5e9; /* alias -> --color-border-sky-500 (border-sky-500 (border)) */
+
+}

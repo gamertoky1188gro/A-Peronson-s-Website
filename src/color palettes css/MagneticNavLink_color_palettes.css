@@ -1,0 +1,56 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/MagneticNavLink.jsx
+ *
+ * Primary Tailwind references:
+ * text-sky-700
+ * dark:text-sky-300
+ * text-slate-600
+ * hover:text-slate-950
+ * dark:text-slate-300
+ * dark:hover:text-white
+ * bg-sky-500/15
+ * ring-sky-400/30
+ * shadow-[0_0_0_1px_rgba(56,189,248,0.12)]
+ *
+ * Extracted colors:
+ * #0369a1
+ * #7dd3fc
+ * #475569
+ * #020617
+ * #cbd5e1
+ * #ffffff
+ * rgba(14, 165, 233, 0.15)
+ * rgba(56, 189, 248, 0.3)
+ * rgba(56, 189, 248, 0.12)
+ * Theme: supports .dark variant (class-based dark mode)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: rgba(14, 165, 233, 0.15); /* bg-sky-500/15 (page background) */
+
+  /* Text */
+  --color-text-sky-700: #0369a1; /* text-sky-700 (info) */
+  --color-text-slate-600: #475569; /* text-slate-600 */
+
+  /* Borders / Dividers / Rings */
+  --color-ring: rgba(56, 189, 248, 0.3); /* ring-sky-400/30 (focus ring) */
+
+  /* States (hover / focus / active / disabled / responsive / data / aria) */
+  --color-text-hover: #020617; /* hover:hover:text-slate-950 (state) */
+  --color-text-white-dark-hover: #ffffff; /* dark:hover:dark:hover:text-white (state) */
+
+  /* Arbitrary / inline / SVG colors + explicit shadows/gradients (verbatim) */
+  --shadow-custom: 0 0 0 1px rgba(56,189,248,0.12); /* shadow-[0_0_0_1px_rgba(56,189,248,0.12)] (explicit shadow/glow) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-info: rgba(14, 165, 233, 0.15); /* alias -> --color-background (bg-sky-500/15 (page background)) */
+
+}
+
+.dark {
+  --color-text-dark-sky-300: #7dd3fc; /* dark:dark:text-sky-300 */
+  --color-text-dark-slate-300: #cbd5e1; /* dark:dark:text-slate-300 */
+  --color-text-primary: #ffffff; /* dark:hover:dark:hover:text-white */
+}

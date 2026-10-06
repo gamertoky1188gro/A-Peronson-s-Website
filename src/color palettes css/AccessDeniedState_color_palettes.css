@@ -1,0 +1,28 @@
+/*
+ * Palette extracted from:
+ * src/components/AccessDeniedState.jsx
+ *
+ * Primary Tailwind references:
+ * bg-amber-50
+ * text-amber-800
+ * text-[#0A66C2]
+ *
+ * Extracted colors:
+ * #fffbeb
+ * #92400e
+ * #0a66c2
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: #fffbeb; /* bg-amber-50 (page background) */
+
+  /* Text */
+  --color-text-0a66c2: #0a66c2; /* text-[#0A66C2] (arbitrary text) */
+  --color-text-amber-800: #92400e; /* text-amber-800 (warning) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-warning: #fffbeb; /* alias -> --color-background (bg-amber-50 (page background)) */
+
+}

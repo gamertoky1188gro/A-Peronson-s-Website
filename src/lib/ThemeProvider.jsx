@@ -17,6 +17,11 @@ export function ThemeProvider({ children }) {
 	const resolved = useMemo(() => resolveTheme(theme), [theme]);
 
 	useEffect(() => {
+		// Canonical theme name is fixed; modes switch values centrally.
+		document.documentElement.setAttribute("data-theme", "blue");
+	}, []);
+
+	useEffect(() => {
 		dispatch(syncThemeFromStorage());
 	}, [dispatch]);
 
@@ -46,8 +51,16 @@ export function ThemeProvider({ children }) {
 			value={{
 				theme: resolved,
 				themeMode: theme,
+				themeName: "blue",
 				resolvedTheme: resolved,
 				setTheme: (t) => dispatch(setTheme(t)),
+				/** Canonical runtime API: setTheme("blue") keeps the blue theme (mode via dark/light/system). */
+				setThemeName: (name) => {
+					if (name && name !== "blue") {
+						return;
+					}
+					document.documentElement.setAttribute("data-theme", "blue");
+				},
 				toggleTheme: () => dispatch(toggleTheme()),
 			}}
 		>

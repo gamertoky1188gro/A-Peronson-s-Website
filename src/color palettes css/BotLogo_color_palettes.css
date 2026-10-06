@@ -1,0 +1,23 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/BotLogo.jsx
+ *
+ * Primary Tailwind references:
+ * (no Tailwind color utilities detected — inherits global theme)
+ *
+ * Extracted colors:
+ * #0a66c2
+ * #2e8bff
+ * #ffffff
+ * currentColor
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Arbitrary / inline / SVG colors + explicit shadows/gradients (verbatim) */
+  --color-inline-1: #0a66c2; /* verbatim `#0A66C2` near: #0A66C2 */
+  --color-inline-2: #2e8bff; /* verbatim `#2E8BFF` near: #2E8BFF */
+  --color-inline-3: #ffffff; /* verbatim `#FFFFFF` near: #FFFFFF */
+  --color-inline-4: currentColor; /* verbatim `stroke="currentColor"` near: stroke="currentColor" */
+
+}

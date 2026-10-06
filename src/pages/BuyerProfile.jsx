@@ -1145,7 +1145,7 @@ export default function BuyerProfile() {
 												))}
 												{loadingRequests ? (
 													<Atom
-														color="#5900ff"
+														color="#0ea5e9"
 														size="large"
 														style={{ fontSize: "32px" }}
 														text=""

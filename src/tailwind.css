@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./theme/blueTheme.css";
 @plugin "@tailwindcss/typography";
 
 /* Self-hosted Inter (variable 300-700, latin). Same-origin + preloaded in
@@ -26,6 +27,77 @@
 	--shadow-dividerLDark: inset 1px 0 0 rgba(255, 255, 255, 0.08);
 	--shadow-dividerR: inset -1px 0 0 rgba(15, 23, 42, 0.12);
 	--shadow-dividerRDark: inset -1px 0 0 rgba(255, 255, 255, 0.08);
+
+	/* Semantic Blue Theme tokens (Tailwind v4: bg-theme-primary, text-theme-muted, border-theme-border, …) */
+	--color-theme-bg-deepest: var(--theme-slate-950);
+	--color-theme-bg: var(--theme-slate-900);
+	--color-theme-bg-light: var(--theme-slate-50);
+	--color-theme-surface: var(--theme-surface);
+	--color-theme-surface-solid: var(--theme-surface-solid);
+	--color-theme-primary: var(--theme-sky-500);
+	--color-theme-primary-hover: var(--theme-sky-600);
+	--color-theme-primary-active: var(--theme-sky-700);
+	--color-theme-primary-strong: var(--theme-blue-600);
+	--color-theme-secondary: var(--theme-blue-500);
+	--color-theme-sky: var(--theme-sky-400);
+	--color-theme-cyan: var(--theme-cyan-400);
+	--color-theme-soft-blue: var(--theme-blue-400);
+	--color-theme-text: var(--theme-text);
+	--color-theme-text-secondary: var(--theme-text-secondary);
+	--color-theme-text-muted: var(--theme-text-muted);
+	--color-theme-text-faint: var(--theme-text-faint);
+	--color-theme-border: var(--theme-border);
+	--color-theme-border-accent: var(--theme-border-accent);
+	--color-theme-accent: var(--theme-accent);
+	--color-theme-success: var(--theme-emerald-500);
+	--color-theme-warning: var(--theme-amber-500);
+	--color-theme-danger: var(--theme-rose-500);
+	--color-theme-info: var(--theme-sky-500);
+}
+
+/* Canonical runtime theme scope. JS sets data-theme="blue" + data-mode on <html>. */
+:root,
+[data-theme="blue"] {
+	color-scheme: light dark;
+}
+[data-mode="light"] {
+	color-scheme: light;
+}
+[data-mode="dark"],
+.dark {
+	color-scheme: dark;
+}
+
+::selection {
+	background: rgba(14, 165, 233, 0.28);
+}
+
+/* Semantic gradient / glow / shadow helpers (single source: blueTheme.css vars). */
+@layer utilities {
+	.theme-gradient-primary {
+		background-image: var(--theme-gradient-primary);
+	}
+	.theme-gradient-hero {
+		background-image: var(--theme-gradient-hero);
+	}
+	.theme-gradient-sky-cyan {
+		background-image: linear-gradient(90deg, #38bdf8 0%, #22d3ee 100%);
+	}
+	.theme-gradient-blue-cyan {
+		background-image: linear-gradient(90deg, #2563eb 0%, #22d3ee 100%);
+	}
+	.theme-gradient-glass {
+		background-image: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%);
+	}
+	.theme-glow-blue {
+		box-shadow: 0 0 24px rgba(59, 130, 246, 0.25);
+	}
+	.theme-glow-cyan {
+		box-shadow: 0 0 24px rgba(34, 211, 238, 0.25);
+	}
+	.theme-glow-soft {
+		box-shadow: 0 0 32px rgba(56, 189, 248, 0.14);
+	}
 }
 
 html,

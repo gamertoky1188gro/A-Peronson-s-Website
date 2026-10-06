@@ -1,0 +1,58 @@
+/*
+ * Palette extracted from:
+ * src/pages/chat/ChatSidebar.jsx
+ *
+ * Primary Tailwind references:
+ * bg-white
+ * text-orange-400
+ * bg-[#171031]
+ * text-[#D4FF59]
+ * bg-gtBlue
+ * text-white
+ * bg-[rgba(10,102,194,0.18)]
+ * text-slate-400
+ * hover:bg-white
+ * hover:text-gtBlue
+ * text-[#8f95bb]
+ * hover:text-white
+ * bg-red-500
+ *
+ * Extracted colors:
+ * #ffffff
+ * #fb923c
+ * #171031
+ * #d4ff59
+ * #0a66c2
+ * rgba(10, 102, 194, 0.18)
+ * #94a3b8
+ * #8f95bb
+ * #ef4444
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: #ffffff; /* bg-white (page background) */
+  --color-surface: #171031; /* bg-[#171031] (surface / card) */
+  --color-surface-elevated: rgba(10, 102, 194, 0.18); /* bg-[rgba(10,102,194,0.18)] (elevated surface) */
+  --color-bg-gtblue: #0a66c2; /* bg-gtBlue (brand) */
+  --color-bg-red-500: #ef4444; /* bg-red-500 (danger) */
+
+  /* Text */
+  --color-text-d4ff59: #d4ff59; /* text-[#D4FF59] (arbitrary text) */
+  --color-text-8f95bb: #8f95bb; /* text-[#8f95bb] (arbitrary text) */
+  --color-text-orange-400: #fb923c; /* text-orange-400 */
+  --color-text-muted: #94a3b8; /* text-slate-400 (muted text) */
+  --color-text-primary: #ffffff; /* text-white (heading / primary text) */
+
+  /* States (hover / focus / active / disabled / responsive / data / aria) */
+  --color-panel-hover: #ffffff; /* hover:hover:bg-white (state) */
+  --color-text-hover: #0a66c2; /* hover:hover:text-gtBlue (state) */
+  --color-text-hover-2: #ffffff; /* hover:hover:text-white (state) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-brand: #0a66c2; /* alias -> --color-bg-gtblue (bg-gtBlue (brand)) */
+  --color-danger: #ef4444; /* alias -> --color-bg-red-500 (bg-red-500 (danger)) */
+  --color-warning: #fb923c; /* alias -> --color-text-orange-400 (text-orange-400) */
+
+}

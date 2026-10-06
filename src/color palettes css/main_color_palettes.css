@@ -1,0 +1,16 @@
+/*
+ * Palette extracted from:
+ * src/main.jsx
+ *
+ * Primary Tailwind references:
+ * (no Tailwind color utilities detected — inherits global theme)
+ *
+ * Extracted colors:
+ * (none — inherits theme / transparent)
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* No explicit color utilities in this file — inherits global theme. */
+  /* Theme tokens: light #f8fafc / dark #0f172a (themeSlice), brand gtBlue #0a66c2. */
+}

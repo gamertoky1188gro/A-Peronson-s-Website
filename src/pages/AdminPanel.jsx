@@ -46,6 +46,7 @@ import {
 import { apiRequest, getCurrentUser, getToken, saveSession } from "../lib/auth.js";
 import { secureStorage } from "../lib/secureStorage.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
+import { accentClasses } from "../theme/theme-utils.js";
 import * as Helpers from "./AdminPanel.helpers.js";
 import * as Utils from "./AdminPanel.utils.js";
 import { AdminAISection } from "./admin/sections/AdminAISection.jsx";
@@ -114,7 +115,7 @@ const {
 function SkeletonChart({ height = 320 }) {
 	return (
 		<div class="flex items-center justify-center" style={{ height }}>
-			<Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+			<Mosaic color="#0ea5e9" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 		</div>
 	);
 }
@@ -142,7 +143,7 @@ function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
 		return (
 			<div class="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
 				<div class="flex items-center justify-center">
-					<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+					<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 				</div>
 			</div>
 		);
@@ -174,6 +175,7 @@ function Pill({ children }) {
 }
 
 function BenefitCard({ title, items, accent = "sky" }) {
+	const ac = accentClasses(accent);
 	return (
 		<div class="rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_60px_-30px_rgba(59,130,246,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
 			<div class="flex items-center justify-between gap-4">
@@ -183,9 +185,7 @@ function BenefitCard({ title, items, accent = "sky" }) {
 						Premium capability stack and operational advantages.
 					</p>
 				</div>
-				<div
-					class={`rounded-2xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
-				>
+				<div class={`rounded-2xl border p-2 ${ac.border} ${ac.bg} ${ac.text}`}>
 					<Sparkles class="h-4 w-4" />
 				</div>
 			</div>
@@ -3745,7 +3745,7 @@ export default function AdminPanel() {
 									class="flex-1 bg-sky-500 text-white py-2 rounded-xl font-medium hover:bg-sky-600 disabled:opacity-50 flex items-center justify-center gap-2"
 								>
 									{reanalyzingId === aiModalDoc.id ? (
-										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 									) : (
 										<>
 											<RefreshCw class="h-4 w-4" />

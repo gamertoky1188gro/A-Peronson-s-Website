@@ -1,0 +1,17 @@
+/*
+ * Palette extracted from:
+ * src/components/AnimatedModal.jsx
+ *
+ * Primary Tailwind references:
+ * bg-black/50
+ *
+ * Extracted colors:
+ * rgba(0, 0, 0, 0.5)
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: rgba(0, 0, 0, 0.5); /* bg-black/50 (page background) */
+
+}

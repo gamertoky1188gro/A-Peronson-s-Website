@@ -226,7 +226,7 @@ function ActionButton({ children, icon: Icon, onClick, variant = "primary", disa
 			className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sky-400/50 disabled:cursor-not-allowed disabled:opacity-60 ${styles[variant]}`}
 		>
 			{loading ? (
-				<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+				<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 			) : Icon ? (
 				<Icon size={16} />
 			) : null}
@@ -1148,7 +1148,7 @@ export default function BuyingHouseProfile() {
 											<div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
 												<ThreeDot
 													variant="bounce"
-													color="#6100ff"
+													color="#0ea5e9"
 													size="small"
 													text=""
 													textColor=""
@@ -1219,7 +1219,7 @@ export default function BuyingHouseProfile() {
 												<div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""

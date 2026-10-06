@@ -18,6 +18,9 @@ function getInitialTheme() {
 function applyThemeToDOM(mode) {
 	const resolved = resolveTheme(mode);
 	const root = document.documentElement;
+	// Canonical Blue Theme scope (section 11: runtime dynamic theming).
+	root.setAttribute("data-theme", "blue");
+	root.setAttribute("data-mode", resolved);
 	if (resolved === "dark") {
 		root.classList.add("dark");
 	} else {
@@ -68,4 +71,24 @@ const themeSlice = createSlice({
 
 export const { setTheme, toggleTheme, syncThemeFromStorage } = themeSlice.actions;
 export { applyThemeToDOM };
+
+/**
+ * Canonical runtime API (THEME.md): setThemeName("blue").
+ * Theme name is fixed; modes (dark/light/system) switch values centrally.
+ */
+export function setThemeName(name) {
+	if (name && name !== "blue") {
+		return;
+	}
+	if (typeof document !== "undefined") {
+		document.documentElement.setAttribute("data-theme", "blue");
+	}
+}
+
+/** Back-compat alias so setTheme("blue") keeps the canonical theme. */
+export function setCanonicalTheme(nameOrMode) {
+	if (nameOrMode === "blue") {
+		setThemeName("blue");
+	}
+}
 export default themeSlice.reducer;

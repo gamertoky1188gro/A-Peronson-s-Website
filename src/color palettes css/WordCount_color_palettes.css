@@ -1,0 +1,23 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/WordCount.jsx
+ *
+ * Primary Tailwind references:
+ * text-red-500
+ * text-slate-400
+ *
+ * Extracted colors:
+ * #ef4444
+ * #94a3b8
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Text */
+  --color-text-red-500: #ef4444; /* text-red-500 (danger) */
+  --color-text-muted: #94a3b8; /* text-slate-400 (muted text) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-danger: #ef4444; /* alias -> --color-text-red-500 (text-red-500 (danger)) */
+
+}

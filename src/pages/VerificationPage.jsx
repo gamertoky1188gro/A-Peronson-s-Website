@@ -714,7 +714,7 @@ export default function VerificationPage({ embedded = false }) {
 								</select>
 								{savingCountry && (
 									<span className="flex items-center">
-										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 									</span>
 								)}
 							</div>
@@ -795,7 +795,7 @@ export default function VerificationPage({ embedded = false }) {
 											{busyDoc === requiredDocs[idx] ? (
 												<ThreeDot
 													variant="bounce"
-													color="#6100ff"
+													color="#0ea5e9"
 													size="small"
 													text=""
 													textColor=""
@@ -920,7 +920,7 @@ export default function VerificationPage({ embedded = false }) {
 												key={`${file.file_name}-${idx}`}
 												className={`flex items-center gap-3 rounded-2xl border p-3 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"}`}
 											>
-												<div className={`grid h-10 w-10 place-items-center rounded-xl ${file.file_type?.startsWith("video") ? "bg-purple-500/15 text-purple-400" : "bg-sky-500/15 text-sky-400"}`}>
+												<div className={`grid h-10 w-10 place-items-center rounded-xl ${file.file_type?.startsWith("video") ? "bg-cyan-500/15 text-cyan-400" : "bg-sky-500/15 text-sky-400"}`}>
 													{file.file_type?.startsWith("video") ? (
 														<span className="text-lg">🎬</span>
 													) : (
@@ -983,7 +983,7 @@ export default function VerificationPage({ embedded = false }) {
 							/>
 							{verifyingCode && (
 								<div className="mt-3 flex items-center gap-2 text-sm text-sky-400">
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 									<span>Verifying code...</span>
 								</div>
 							)}

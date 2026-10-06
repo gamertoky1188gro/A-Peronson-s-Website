@@ -178,7 +178,7 @@ export default function IndustryPage() {
 	if (loading) {
 		return (
 			<div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.22),transparent_30%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.16),transparent_32%),linear-gradient(180deg,rgba(248,250,252,1),rgba(239,246,255,1),rgba(248,250,252,1))] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_26%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.12),transparent_28%),linear-gradient(180deg,rgba(2,6,23,1),rgba(3,7,18,1),rgba(2,6,23,1))] p-6 text-slate-600 dark:text-slate-200 flex items-center justify-center">
-				<Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+				<Mosaic color="#0ea5e9" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 			</div>
 		);
 	}

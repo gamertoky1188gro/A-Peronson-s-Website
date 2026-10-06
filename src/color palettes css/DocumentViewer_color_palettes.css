@@ -1,0 +1,22 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/DocumentViewer.jsx
+ *
+ * Primary Tailwind references:
+ * bg-black/60
+ * text-white
+ *
+ * Extracted colors:
+ * rgba(0, 0, 0, 0.6)
+ * #ffffff
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: rgba(0, 0, 0, 0.6); /* bg-black/60 (page background) */
+
+  /* Text */
+  --color-text-primary: #ffffff; /* text-white (heading / primary text) */
+
+}

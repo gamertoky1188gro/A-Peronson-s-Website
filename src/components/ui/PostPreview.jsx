@@ -31,7 +31,7 @@ export default function PostPreview({ item }) {
 						Category
 					</span>
 					<div className="mt-1">
-						<span className="inline-flex rounded-full bg-fuchsia-500/10 px-3 py-1 text-xs font-semibold text-fuchsia-700 dark:text-fuchsia-300">
+						<span className="inline-flex rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
 							{item.category}
 						</span>
 					</div>

@@ -1002,7 +1002,7 @@ export default function ProductManagement() {
 															{mediaBusy ? (
 																<ThreeDot
 																	variant="bounce"
-																	color="#6100ff"
+																	color="#0ea5e9"
 																	size="small"
 																	text=""
 																	textColor=""
@@ -1072,7 +1072,7 @@ export default function ProductManagement() {
 															{videoBusy ? (
 																<ThreeDot
 																	variant="bounce"
-																	color="#6100ff"
+																	color="#0ea5e9"
 																	size="small"
 																	text=""
 																	textColor=""
@@ -1173,7 +1173,7 @@ export default function ProductManagement() {
 												{saving ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""

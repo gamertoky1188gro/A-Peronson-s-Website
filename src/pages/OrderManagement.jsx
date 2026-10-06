@@ -31,7 +31,7 @@ const STATUS_FLOW_MAIN = {
 	draft: { label: "Draft", color: "text-slate-400 bg-slate-900/30 border-slate-700/50", icon: Edit3 },
 	pending: { label: "Pending", color: "text-amber-400 bg-amber-900/30 border-amber-700/50", icon: Clock },
 	confirmed: { label: "Confirmed", color: "text-blue-400 bg-blue-900/30 border-blue-700/50", icon: CheckCircle2 },
-	processing: { label: "Processing", color: "text-purple-400 bg-purple-900/30 border-purple-700/50", icon: Clock },
+	processing: { label: "Processing", color: "text-sky-400 bg-sky-900/30 border-sky-700/50", icon: Clock },
 	shipped: { label: "Shipped", color: "text-cyan-400 bg-cyan-900/30 border-cyan-700/50", icon: Send },
 	delivered: { label: "Delivered", color: "text-emerald-400 bg-emerald-900/30 border-emerald-700/50", icon: CheckCircle2 },
 };
@@ -57,7 +57,7 @@ function OrderCard({ order, onView, onConvert }) {
 			<div className="mb-3 flex items-start justify-between">
 				<div>
 					<div className="flex items-center gap-2">
-						<span className={`rounded-md px-2 py-0.5 text-xs font-bold ${isSample ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" : "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400"}`}>
+						<span className={`rounded-md px-2 py-0.5 text-xs font-bold ${isSample ? "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400" : "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400"}`}>
 							{order.order_type}
 						</span>
 						<h3 className="text-sm font-semibold text-slate-900 dark:text-white">{order.product_title || "Untitled Order"}</h3>

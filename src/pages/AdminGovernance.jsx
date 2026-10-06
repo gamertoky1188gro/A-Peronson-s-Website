@@ -769,7 +769,7 @@ export default function AdminGovernance() {
 						title="Enforcement History Viewer"
 						subtitle="The most recent 50 enforcement entries, showing action, user ID, reason, and creation time."
 						right={
-							<div className="rounded-full bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-700 dark:text-violet-300">
+							<div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
 								GET /enforcement/history?limit=50
 							</div>
 						}
@@ -889,7 +889,7 @@ export default function AdminGovernance() {
 						<span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 font-medium text-emerald-700 dark:text-emerald-300">
 							<CheckCircle2 className="h-3.5 w-3.5" /> Raw JSON outputs
 						</span>
-						<span className="inline-flex items-center gap-2 rounded-full bg-violet-500/10 px-3 py-1 font-medium text-violet-700 dark:text-violet-300">
+						<span className="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 font-medium text-sky-700 dark:text-sky-300">
 							<Globe2 className="h-3.5 w-3.5" /> Owner/Admin access
 						</span>
 					</div>

@@ -1,0 +1,21 @@
+/*
+ * Palette extracted from:
+ * src/store/configSlice.js
+ *
+ * Primary Tailwind references:
+ * (no Tailwind color utilities detected — inherits global theme)
+ *
+ * Extracted colors:
+ * #38bdf8
+ * #60a5fa
+ * #0f172a
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Arbitrary / inline / SVG colors + explicit shadows/gradients (verbatim) */
+  --color-inline-1: #38bdf8; /* verbatim `#38bdf8` near: #38bdf8 */
+  --color-inline-2: #60a5fa; /* verbatim `#60a5fa` near: #60a5fa */
+  --color-inline-3: #0f172a; /* verbatim `#0f172a` near: #0f172a */
+
+}

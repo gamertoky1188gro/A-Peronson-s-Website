@@ -256,7 +256,7 @@ export function AdminHomeSection({
 							<p className="text-sm text-slate-500 dark:text-slate-400">Total accounts</p>
 							<div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
 								{loading ? (
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 								) : (
 									formatNumber(summary?.users?.total)
 								)}
@@ -266,7 +266,7 @@ export function AdminHomeSection({
 							<p className="text-sm text-slate-500 dark:text-slate-400">Verification pending</p>
 							<div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
 								{loading ? (
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 								) : (
 									formatNumber(summary?.verification?.pending)
 								)}
@@ -276,7 +276,7 @@ export function AdminHomeSection({
 							<p className="text-sm text-slate-500 dark:text-slate-400">Reports open</p>
 							<div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
 								{loading ? (
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 								) : (
 									formatNumber(summary?.support?.open)
 								)}
@@ -286,14 +286,14 @@ export function AdminHomeSection({
 							<p className="text-sm text-slate-500 dark:text-slate-400">Domain clicks / visits</p>
 							<div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
 								{loading ? (
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 								) : (
 									`${formatNumber(summary?.traffic?.clicks)} / ${formatNumber(summary?.traffic?.visits)}`
 								)}
 							</div>
 							<div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
 								{loading ? (
-									<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 								) : (
 									<>
 										Spend: {formatCurrency(summary?.traffic?.spend || 0)} · CPC:{" "}
@@ -328,7 +328,7 @@ export function AdminHomeSection({
 												{loading ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""
@@ -349,7 +349,7 @@ export function AdminHomeSection({
 												{loading ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""
@@ -370,7 +370,7 @@ export function AdminHomeSection({
 												{loading ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""
@@ -391,7 +391,7 @@ export function AdminHomeSection({
 												{loading ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""
@@ -442,7 +442,7 @@ export function AdminHomeSection({
 										{loading ? (
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""
@@ -458,7 +458,7 @@ export function AdminHomeSection({
 										{loading ? (
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""

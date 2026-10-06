@@ -695,7 +695,7 @@ export default function Insights() {
 												{exportLoading ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""
@@ -755,7 +755,7 @@ export default function Insights() {
 												{exportLoading ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="small"
 														text=""
 														textColor=""
@@ -1087,7 +1087,7 @@ export default function Insights() {
 												{viewerLoading ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="medium"
 														style={{ fontSize: "24px" }}
 														text=""
@@ -1127,7 +1127,7 @@ export default function Insights() {
 												{viewerLoading ? (
 													<ThreeDot
 														variant="bounce"
-														color="#6100ff"
+														color="#0ea5e9"
 														size="medium"
 														style={{ fontSize: "24px" }}
 														text=""

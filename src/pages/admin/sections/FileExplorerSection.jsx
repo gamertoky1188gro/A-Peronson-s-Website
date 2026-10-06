@@ -373,7 +373,7 @@ export function FileExplorerSection({ adminDark }) {
 					disabled={loading}
 				>
 					{loading ? (
-						<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+						<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 					) : (
 						<RefreshCw className="h-4 w-4" />
 					)}
@@ -435,7 +435,7 @@ export function FileExplorerSection({ adminDark }) {
 
 					{loading ? (
 						<Mosaic
-							color="#3b00ff"
+							color="#0ea5e9"
 							size="large"
 							style={{ fontSize: "40px" }}
 							text=""

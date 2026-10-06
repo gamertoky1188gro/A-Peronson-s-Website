@@ -596,7 +596,7 @@ export default function Login() {
 									className={`group inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold shadow-lg shadow-sky-500/20 transition ${theme.button}`}
 								>
 									{loading ? (
-										<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 									) : (
 										"Sign in"
 									)}
@@ -616,7 +616,7 @@ export default function Login() {
 										{passkeyLoading ? (
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""
@@ -635,7 +635,7 @@ export default function Login() {
 										{enrollLoading ? (
 											<ThreeDot
 												variant="bounce"
-												color="#6100ff"
+												color="#0ea5e9"
 												size="small"
 												text=""
 												textColor=""

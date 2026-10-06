@@ -1,0 +1,65 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/IconNavLink.jsx
+ *
+ * Primary Tailwind references:
+ * text-slate-600
+ * hover:text-sky-600
+ * dark:text-slate-300
+ * dark:hover:text-sky-300
+ * text-sky-600
+ * dark:text-sky-300
+ * bg-sky-500/15
+ * ring-sky-400/30
+ * bg-cyan-500
+ * text-white
+ * border-white/10
+ * bg-slate-950/95
+ * dark:bg-slate-900/95
+ *
+ * Extracted colors:
+ * #475569
+ * #0284c7
+ * #cbd5e1
+ * #7dd3fc
+ * rgba(14, 165, 233, 0.15)
+ * rgba(56, 189, 248, 0.3)
+ * #06b6d4
+ * #ffffff
+ * rgba(255, 255, 255, 0.1)
+ * rgba(2, 6, 23, 0.95)
+ * rgba(15, 23, 42, 0.95)
+ * Theme: supports .dark variant (class-based dark mode)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: rgba(2, 6, 23, 0.95); /* bg-slate-950/95 (page background) */
+  --color-surface: rgba(14, 165, 233, 0.15); /* bg-sky-500/15 (surface / card) */
+  --color-surface-elevated: #06b6d4; /* bg-cyan-500 (elevated surface) */
+
+  /* Text */
+  --color-text-sky-600: #0284c7; /* text-sky-600 (info) */
+  --color-text-slate-600: #475569; /* text-slate-600 */
+  --color-text-primary: #ffffff; /* text-white (heading / primary text) */
+
+  /* Borders / Dividers / Rings */
+  --color-border: rgba(255, 255, 255, 0.1); /* border-white/10 (default border) */
+  --color-ring: rgba(56, 189, 248, 0.3); /* ring-sky-400/30 (focus ring) */
+
+  /* States (hover / focus / active / disabled / responsive / data / aria) */
+  --color-text-hover: #0284c7; /* hover:hover:text-sky-600 (state) */
+  --color-text-sky-300-dark-hover: #7dd3fc; /* dark:hover:dark:hover:text-sky-300 (state) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-info: rgba(14, 165, 233, 0.15); /* alias -> --color-surface (bg-sky-500/15 (surface / card)) */
+  --color-accent: #06b6d4; /* alias -> --color-surface-elevated (bg-cyan-500 (elevated surface)) */
+
+}
+
+.dark {
+  --color-background: rgba(15, 23, 42, 0.95); /* dark:dark:bg-slate-900/95 */
+  --color-text-dark-sky-300: #7dd3fc; /* dark:hover:dark:hover:text-sky-300 */
+  --color-text-dark-sky-300-dark: #7dd3fc; /* dark:dark:text-sky-300 */
+  --color-text-dark-slate-300: #cbd5e1; /* dark:dark:text-slate-300 */
+}

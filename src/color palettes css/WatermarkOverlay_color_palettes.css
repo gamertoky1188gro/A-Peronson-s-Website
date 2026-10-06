@@ -1,0 +1,27 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/WatermarkOverlay.jsx
+ *
+ * Primary Tailwind references:
+ * text-slate-900
+ * dark:text-white
+ *
+ * Extracted colors:
+ * #0f172a
+ * #ffffff
+ * rgba(0, 0, 0, 0.04)
+ * Theme: supports .dark variant (class-based dark mode)
+ */
+
+:root {
+  /* Text */
+  --color-text-slate-900: #0f172a; /* text-slate-900 */
+
+  /* Arbitrary / inline / SVG colors + explicit shadows/gradients (verbatim) */
+  --color-inline-1: rgba(0, 0, 0, 0.04); /* verbatim `rgba(0,0,0,0.04)` near: rgba(0,0,0,0.04) */
+
+}
+
+.dark {
+  --color-text-primary: #ffffff; /* dark:dark:text-white */
+}

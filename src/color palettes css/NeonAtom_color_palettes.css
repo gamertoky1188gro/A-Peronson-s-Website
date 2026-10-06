@@ -1,0 +1,50 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/NeonAtom.jsx
+ *
+ * Primary Tailwind references:
+ * bg-[#050212]
+ * bg-[radial-gradient(circle_at_center,#150833_0%,#050212_60%)]
+ * text-red-400
+ * border-white/5
+ * text-gray-400
+ *
+ * Extracted colors:
+ * #050212
+ * #150833
+ * #f87171
+ * rgba(255, 255, 255, 0.05)
+ * #9ca3af
+ * #00ffff
+ * #00bfff
+ * #ff00ff
+ * #8a2be2
+ * #0040ff
+ * #ffffff
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: #050212; /* bg-[#050212] (page background) */
+
+  /* Text */
+  --color-text-muted: #9ca3af; /* text-gray-400 (muted text) */
+  --color-text-red-400: #f87171; /* text-red-400 (danger) */
+
+  /* Borders / Dividers / Rings */
+  --color-border-subtle: rgba(255, 255, 255, 0.05); /* border-white/5 (subtle border) */
+
+  /* Arbitrary / inline / SVG colors + explicit shadows/gradients (verbatim) */
+  --gradient-custom: radial-gradient(circle at center,#150833 0%,#050212 60%); /* explicit gradient() in source */
+  --color-inline-1: #00ffff; /* verbatim `#00ffff` near: #00ffff */
+  --color-inline-2: #00bfff; /* verbatim `#00bfff` near: #00bfff */
+  --color-inline-3: #ff00ff; /* verbatim `#ff00ff` near: #ff00ff */
+  --color-inline-4: #8a2be2; /* verbatim `#8a2be2` near: #8a2be2 */
+  --color-inline-5: #0040ff; /* verbatim `#0040ff` near: #0040ff */
+  --color-inline-6: #ffffff; /* verbatim `#fff` near: #fff */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-danger: #f87171; /* alias -> --color-text-red-400 (text-red-400 (danger)) */
+
+}

@@ -272,7 +272,7 @@ function MagneticLinkButton({ to, className = "", children }) {
 const SkeletonLine = ({ className = "", size = 24 }) => (
 	<ThreeDot
 		variant="bounce"
-		color="#6100ff"
+		color="#0ea5e9"
 		size="medium"
 		style={{ fontSize: `${size}px` }}
 		text=""

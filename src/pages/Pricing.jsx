@@ -550,7 +550,7 @@ function AnalyticsCard({ tiles = [], loading = false, loadError = "" }) {
 					{loading ? (
 						<div className="flex h-64 items-center justify-center">
 							<Atom
-								color="#5900ff"
+								color="#0ea5e9"
 								size="large"
 								style={{ fontSize: "40px" }}
 								text=""
@@ -574,7 +574,7 @@ function AnalyticsCard({ tiles = [], loading = false, loadError = "" }) {
 				{loadError && (
 					<div className="flex h-64 items-center justify-center">
 						<Mosaic
-							color="#3b00ff"
+							color="#0ea5e9"
 							size="large"
 							style={{ fontSize: "40px" }}
 							text=""

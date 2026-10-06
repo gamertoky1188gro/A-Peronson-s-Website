@@ -1301,7 +1301,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{pdfState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Loading preview..."
 										textColor="#94a3b8"
@@ -1367,7 +1367,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{spreadsheetState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Loading preview..."
 										textColor="#94a3b8"
@@ -1434,7 +1434,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{rtfState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Loading preview..."
 										textColor="#94a3b8"
@@ -1471,7 +1471,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{textState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Loading preview..."
 										textColor="#94a3b8"
@@ -1510,7 +1510,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{textState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Loading preview..."
 										textColor="#94a3b8"
@@ -1525,7 +1525,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{highlightState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Formatting and highlighting..."
 										textColor="#94a3b8"
@@ -1559,7 +1559,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{textState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Loading preview..."
 										textColor="#94a3b8"
@@ -1573,7 +1573,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							) : null}
 							{highlightState.loading ? (
 								<div className="text-sm text-slate-300">
-									<Atom color="#5900ff" size="small" text="Highlighting..." textColor="#94a3b8" />
+									<Atom color="#0ea5e9" size="small" text="Highlighting..." textColor="#94a3b8" />
 								</div>
 							) : null}
 							{highlightState.error ? (
@@ -1603,7 +1603,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{textState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Loading preview..."
 										textColor="#94a3b8"
@@ -1628,7 +1628,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							{textState.loading ? (
 								<div className="text-sm text-slate-300">
 									<Atom
-										color="#5900ff"
+										color="#0ea5e9"
 										size="small"
 										text="Loading preview..."
 										textColor="#94a3b8"

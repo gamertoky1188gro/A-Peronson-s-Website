@@ -1,11 +1,12 @@
 import { ArrowUpRight, CheckCircle2, RefreshCw, Sparkles } from "lucide-react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
 import { cn } from "../../../lib/cn.js";
+import { accentClasses } from "../../../theme/theme-utils.js";
 
 export function SkeletonChart({ height = 320 }) {
 	return (
 		<div className="flex items-center justify-center" style={{ height }}>
-			<Mosaic color="#3b00ff" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
+			<Mosaic color="#0ea5e9" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 		</div>
 	);
 }
@@ -33,7 +34,7 @@ export function MetricCard({ label, value, hint, icon: CardIcon, loading = false
 		return (
 			<div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
 				<div className="flex items-center justify-center">
-					<ThreeDot variant="bounce" color="#6100ff" size="small" text="" textColor="" />
+					<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
 				</div>
 			</div>
 		);
@@ -65,6 +66,7 @@ export function Pill({ children }) {
 }
 
 export function BenefitCard({ title, items, accent = "sky" }) {
+	const ac = accentClasses(accent);
 	return (
 		<div className="rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_60px_-30px_rgba(59,130,246,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
 			<div className="flex items-center justify-between gap-4">
@@ -74,9 +76,7 @@ export function BenefitCard({ title, items, accent = "sky" }) {
 						Premium capability stack and operational advantages.
 					</p>
 				</div>
-				<div
-					className={`rounded-2xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
-				>
+				<div className={`rounded-2xl border p-2 ${ac.border} ${ac.bg} ${ac.text}`}>
 					<Sparkles className="h-4 w-4" />
 				</div>
 			</div>
@@ -384,6 +384,7 @@ export function CmsSectionCard({
 	children,
 	accent = "sky",
 }) {
+	const ac = accentClasses(accent);
 	return (
 		<section
 			className={[
@@ -395,9 +396,7 @@ export function CmsSectionCard({
 		>
 			<div className="flex items-center justify-between gap-4 border-b border-slate-200/50 px-6 py-4 dark:border-white/5">
 				<div className="flex items-center gap-3">
-					<div
-						className={`rounded-xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}
-					>
+					<div className={`rounded-xl border p-2 ${ac.border} ${ac.bg} ${ac.text}`}>
 						<Icon className="h-5 w-5" />
 					</div>
 					<div>

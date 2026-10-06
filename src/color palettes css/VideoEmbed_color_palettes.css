@@ -1,0 +1,25 @@
+/*
+ * Palette extracted from:
+ * src/components/ui/VideoEmbed.jsx
+ *
+ * Primary Tailwind references:
+ * bg-sky-500
+ * text-white
+ *
+ * Extracted colors:
+ * #0ea5e9
+ * #ffffff
+ * Theme: inherits light/dark/system via .dark class (no file-specific dark: override)
+ */
+
+:root {
+  /* Main colors / Backgrounds */
+  --color-background: #0ea5e9; /* bg-sky-500 (page background) */
+
+  /* Text */
+  --color-text-primary: #ffffff; /* text-white (heading / primary text) */
+
+  /* Semantic aliases (derived, not new colors) */
+  --color-info: #0ea5e9; /* alias -> --color-background (bg-sky-500 (page background)) */
+
+}
