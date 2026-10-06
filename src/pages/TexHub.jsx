@@ -835,15 +835,15 @@ export default function TexHub() {
 							variants={staggerChildVariants}
 							className="mt-4 text-xs text-slate-500 dark:text-slate-400"
 						>
-							<Link to="/pricing" aria-label="Compare garment sourcing plans and pricing">
+							<Link to="/pricing">
 								Compare sourcing plans
 							</Link>
 							<span aria-hidden="true"> · </span>
-							<Link to="/about" aria-label="About GarTexHub garment sourcing marketplace">
+							<Link to="/about">
 								About GarTexHub
 							</Link>
 							<span aria-hidden="true"> · </span>
-							<Link to="/help" aria-label="Garment sourcing help center and FAQs">
+							<Link to="/help">
 								Help center
 							</Link>
 						</motion.div>
@@ -963,10 +963,8 @@ export default function TexHub() {
 									<Card className="min-w-[280px] snap-start lg:min-w-0 p-6">
 										<div className="flex items-center justify-between">
 											<div className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-300">
-												<TextColorReveal fromColor="rgb(14,165,233)" toColor="rgb(99,102,241)">
-													{item.step}
-												</TextColorReveal>
-											</div>
+														{item.step}
+												</div>
 											<div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-100">
 												<Icon className="h-5 w-5" />
 											</div>
