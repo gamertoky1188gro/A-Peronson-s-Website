@@ -63,7 +63,22 @@ export default defineConfig({
 			manifest: false,
 			devOptions: { enabled: false },
 			injectManifest: {
-				globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
+				// Shell-only precache. Precaching every lazy route chunk made
+				// first visits download the whole app (~150 files) and starved
+				// the critical path. Page/component chunks load on demand and
+				// are runtime-cached by src/sw.js (CacheFirst, capped).
+				globPatterns: [
+					"index.html",
+					"assets/index-*.{js,css}",
+					"fonts/*.woff2",
+					"manifest.json",
+					"favicon.*",
+					"android-chrome-*.png",
+					"apple-touch-icon.png",
+					"screenshot-*.png",
+					"og-image.png",
+				],
+				globIgnores: ["**/*.map"],
 			},
 		}),
 	],

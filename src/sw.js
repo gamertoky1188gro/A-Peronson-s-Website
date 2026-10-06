@@ -5,7 +5,9 @@
 //
 // Routing policy:
 // - NetworkOnly: /api/*, /ws*, /api/feed/stream (never cached, incl. SSE)
-// - CacheFirst: /assets/* (hashed at build time)
+// - CacheFirst: /assets/* (hashed at build time, capped — lazy route chunks
+//   are cached on first use, never precached, so first visits only fetch
+//   the shell + vendors + current route)
 // - StaleWhileRevalidate: fonts (googleapis/gstatic) + icons (svg/png/ico/woff2)
 // - Navigations: cached /index.html served app-shell-first, network revalidates;
 //   network fallback when nothing cached yet. Offline -> cached shell.
@@ -48,8 +50,25 @@ async function cacheFirst(request, cacheName) {
 	const response = await fetch(request);
 	if (response && (response.status === 200 || response.type === "opaque")) {
 		cache.put(request, response.clone()).catch(() => {});
+		// Cap the assets cache so lazy chunks can't grow it unbounded.
+		if (cacheName === ASSETS_CACHE) {
+			eventLoopTrim(cache);
+		}
 	}
 	return response;
+}
+
+// Fire-and-forget trim: keep the newest ~120 entries.
+function eventLoopTrim(cache) {
+	Promise.resolve()
+		.then(() => cache.keys())
+		.then((keys) => {
+			if (keys.length > 120) {
+				return cache.delete(keys[0]).catch(() => {});
+			}
+			return null;
+		})
+		.catch(() => {});
 }
 
 async function staleWhileRevalidate(request, cacheName) {
