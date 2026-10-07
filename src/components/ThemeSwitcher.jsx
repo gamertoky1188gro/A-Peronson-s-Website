@@ -64,6 +64,17 @@ export default function ThemeSwitcher() {
 		};
 	}, [hotkey]);
 
+	// Lock background scroll while the modal is open so wheel/touch gestures
+	// over the backdrop can never move the page behind it.
+	useEffect(() => {
+		if (!open) return;
+		const prev = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+		return () => {
+			document.body.style.overflow = prev;
+		};
+	}, [open ]);
+
 	if (!open) return null;
 
 	return (
@@ -100,6 +111,8 @@ export default function ThemeSwitcher() {
 				</div>
 				<div
 					data-lenis-prevent
+					onWheel={(e) => e.stopPropagation()}
+					onTouchMove={(e) => e.stopPropagation()}
 					class="grid max-h-[60vh] grid-cols-1 gap-2 overflow-y-auto overscroll-contain p-4 sm:grid-cols-2"
 				>
 					{THEMES.map((t) => {

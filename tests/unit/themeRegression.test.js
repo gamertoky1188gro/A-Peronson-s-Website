@@ -304,7 +304,7 @@ describe("twelve-theme system (blue preserved + 11 personalities)", () => {
 		expect(css).toContain("Authored overlay");
 		expect(css).toContain("--theme-green-500: #22c55e;");
 		expect(css).toContain("--theme-teal-500: #14b8a6;");
-		expect(css).toContain("--theme-brand:          #16a34a;");
+		expect(css).toContain("--theme-brand: #16a34a;");
 		expect(css).toContain("--theme-gradient-forest:");
 	});
 
@@ -315,6 +315,14 @@ describe("twelve-theme system (blue preserved + 11 personalities)", () => {
 		expect(css).toContain("--theme-pink-600: #db2777;");
 		expect(css).toContain("--theme-violet-600: #7c3aed;");
 		expect(css).toContain("--theme-gradient-crimson:");
+	});
+
+	test("ThemeSwitcher list is scroll-contained (lenis opt-out + body lock)", () => {
+		const src = read("src/components/ThemeSwitcher.jsx");
+		expect(src).toContain("data-lenis-prevent");
+		expect(src).toContain("overscroll-contain");
+		expect(src).toContain("stopPropagation");
+		expect(src).toContain("document.body.style.overflow");
 	});
 
 	test("personalities are not blue-swaps: primaries differ per theme", () => {
