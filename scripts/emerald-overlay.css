@@ -1,0 +1,411 @@
+/* ==========================================================================
+ * Emerald Noir v2 — authored overlay (luxury fintech / secure enterprise noir)
+ * Appended AFTER the generated base in src/theme/themes/emerald.css by
+ * scripts/generate-themes.py; values here WIN on conflict.
+ * Emerald = brand. Green = success. Teal = secondary highlight.
+ * Amber = warning. Rose/red = danger.
+ *
+ * Submitted draft verified leak-free (no bare :root / .dark selectors).
+ * ========================================================================== */
+
+/* --------------------------------------------------------------------------
+ * LIGHT MODE
+ * -------------------------------------------------------------------------- */
+[data-theme="emerald"] {
+	/* ---- Neutral ramp ---------------------------------------------------- */
+	--theme-black: #000000;
+	--theme-white: #ffffff;
+
+	--theme-slate-50: #f3f8f5;
+	--theme-slate-100: #e4efe9;
+	--theme-slate-200: #cfdfd6;
+	--theme-slate-300: #b2c9bc;
+	--theme-slate-400: #8fa99a;
+	--theme-slate-500: #6d8779;
+	--theme-slate-600: #536c60;
+	--theme-slate-700: #3e554a;
+	--theme-slate-800: #2b3e35;
+	--theme-slate-900: #17251f;
+	--theme-slate-950: #08130e;
+
+	--theme-gray-100: #e4efe9;
+	--theme-gray-300: #b2c9bc;
+	--theme-gray-400: #8fa99a;
+	--theme-gray-500-20: rgba(109, 135, 121, 0.2);
+	--theme-gray-700: #3e554a;
+
+	--theme-zinc-200: #cfdfd6;
+	--theme-zinc-500-15: rgba(109, 135, 121, 0.15);
+	--theme-zinc-500-20: rgba(109, 135, 121, 0.2);
+	--theme-zinc-700: #3e554a;
+
+	/* ---- Primary identity: blue-family consumers collapse into Emerald --- */
+	--theme-blue-50: #ecfdf5;
+	--theme-blue-100: #d1fae5;
+	--theme-blue-200: #a7f3d0;
+	--theme-blue-300: #6ee7b7;
+	--theme-blue-300-25: rgba(110, 231, 183, 0.25);
+	--theme-blue-400: #34d399;
+	--theme-blue-400-10: rgba(52, 211, 153, 0.1);
+	--theme-blue-400-18: rgba(52, 211, 153, 0.18);
+	--theme-blue-400-20: rgba(52, 211, 153, 0.2);
+	--theme-blue-500: #10b981;
+	--theme-blue-500-5: rgba(16, 185, 129, 0.05);
+	--theme-blue-500-10: rgba(16, 185, 129, 0.1);
+	--theme-blue-500-15: rgba(16, 185, 129, 0.15);
+	--theme-blue-500-20: rgba(16, 185, 129, 0.2);
+	--theme-blue-600: #059669;
+	--theme-blue-700: #047857;
+	--theme-blue-700-50: rgba(4, 120, 87, 0.5);
+	--theme-blue-800: #065f46;
+	--theme-blue-900-30: rgba(6, 78, 59, 0.3);
+	--theme-blue-950-40: rgba(2, 44, 34, 0.4);
+
+	/* ---- Teal / glass highlight family ----------------------------------- */
+	--theme-cyan-50: #ecfdf8;
+	--theme-cyan-100: #ccfbf1;
+	--theme-cyan-200: #99f6e4;
+	--theme-cyan-300: #5eead4;
+	--theme-cyan-300-15: rgba(94, 234, 212, 0.15);
+	--theme-cyan-300-20: rgba(94, 234, 212, 0.2);
+	--theme-cyan-300-25: rgba(94, 234, 212, 0.25);
+	--theme-cyan-400: #2dd4bf;
+	--theme-cyan-400-10: rgba(45, 212, 191, 0.1);
+	--theme-cyan-400-12: rgba(45, 212, 191, 0.12);
+	--theme-cyan-400-15: rgba(45, 212, 191, 0.15);
+	--theme-cyan-400-18: rgba(45, 212, 191, 0.18);
+	--theme-cyan-400-20: rgba(45, 212, 191, 0.2);
+	--theme-cyan-400-30: rgba(45, 212, 191, 0.3);
+	--theme-cyan-400-40: rgba(45, 212, 191, 0.4);
+	--theme-cyan-50-80: rgba(236, 253, 248, 0.8);
+	--theme-cyan-500: #14b8a6;
+	--theme-cyan-500-5: rgba(20, 184, 166, 0.05);
+	--theme-cyan-500-10: rgba(20, 184, 166, 0.1);
+	--theme-cyan-500-15: rgba(20, 184, 166, 0.15);
+	--theme-cyan-500-18: rgba(20, 184, 166, 0.18);
+	--theme-cyan-500-20: rgba(20, 184, 166, 0.2);
+	--theme-cyan-500-25: rgba(20, 184, 166, 0.25);
+	--theme-cyan-500-30: rgba(20, 184, 166, 0.3);
+	--theme-cyan-500-40: rgba(20, 184, 166, 0.4);
+	--theme-cyan-600: #0d9488;
+	--theme-cyan-700: #0f766e;
+	--theme-cyan-700-50: rgba(15, 118, 110, 0.5);
+	--theme-cyan-900-30: rgba(19, 78, 74, 0.3);
+	--theme-cyan-950-20: rgba(4, 47, 46, 0.2);
+	--theme-cyan-950-30: rgba(4, 47, 46, 0.3);
+	--theme-cyan-950-40: rgba(4, 47, 46, 0.4);
+
+	/* ---- Emerald semantic scale ------------------------------------------- */
+	--theme-emerald-50: #ecfdf5;
+	--theme-emerald-100: #d1fae5;
+	--theme-emerald-200: #a7f3d0;
+	--theme-emerald-200-80: rgba(167, 243, 208, 0.8);
+	--theme-emerald-300: #6ee7b7;
+	--theme-emerald-400: #34d399;
+	--theme-emerald-400-8: rgba(52, 211, 153, 0.08);
+	--theme-emerald-400-10: rgba(52, 211, 153, 0.1);
+	--theme-emerald-400-15: rgba(52, 211, 153, 0.15);
+	--theme-emerald-400-20: rgba(52, 211, 153, 0.2);
+	--theme-emerald-400-25: rgba(52, 211, 153, 0.25);
+	--theme-emerald-400-30: rgba(52, 211, 153, 0.3);
+	--theme-emerald-400-40: rgba(52, 211, 153, 0.4);
+	--theme-emerald-500: #10b981;
+	--theme-emerald-500-10: rgba(16, 185, 129, 0.1);
+	--theme-emerald-500-12: rgba(16, 185, 129, 0.12);
+	--theme-emerald-500-15: rgba(16, 185, 129, 0.15);
+	--theme-emerald-500-20: rgba(16, 185, 129, 0.2);
+	--theme-emerald-500-25: rgba(16, 185, 129, 0.25);
+	--theme-emerald-500-30: rgba(16, 185, 129, 0.3);
+	--theme-emerald-600: #059669;
+	--theme-emerald-700: #047857;
+	--theme-emerald-700-50: rgba(4, 120, 87, 0.5);
+	--theme-emerald-800: #065f46;
+	--theme-emerald-900: #064e3b;
+	--theme-emerald-900-30: rgba(6, 78, 59, 0.3);
+	--theme-emerald-900-40: rgba(6, 78, 59, 0.4);
+	--theme-emerald-900-50: rgba(6, 78, 59, 0.5);
+	--theme-emerald-900-60: rgba(6, 78, 59, 0.6);
+	--theme-emerald-950-30: rgba(2, 44, 34, 0.3);
+	--theme-emerald-950-40: rgba(2, 44, 34, 0.4);
+	--theme-emerald-950-60: rgba(2, 44, 34, 0.6);
+
+	/* ---- Legacy hue families → Emerald/Teal spectrum ---------------------- */
+	--theme-indigo-50: #f0fdfa;
+	--theme-indigo-100: #ccfbf1;
+	--theme-indigo-200: #99f6e4;
+	--theme-indigo-300: #5eead4;
+	--theme-indigo-400: #2dd4bf;
+	--theme-indigo-400-10: rgba(45, 212, 191, 0.1);
+	--theme-indigo-500: #14b8a6;
+	--theme-indigo-500-10: rgba(20, 184, 166, 0.1);
+	--theme-indigo-500-15: rgba(20, 184, 166, 0.15);
+	--theme-indigo-500-20: rgba(20, 184, 166, 0.2);
+	--theme-indigo-500-30: rgba(20, 184, 166, 0.3);
+	--theme-indigo-500-80: rgba(20, 184, 166, 0.8);
+	--theme-indigo-600: #0d9488;
+	--theme-indigo-700: #0f766e;
+
+	--theme-violet-100: #d1fae5;
+	--theme-violet-200: #a7f3d0;
+	--theme-violet-300: #6ee7b7;
+	--theme-violet-400-30: rgba(52, 211, 153, 0.3);
+	--theme-violet-500: #10b981;
+	--theme-violet-500-10: rgba(16, 185, 129, 0.1);
+	--theme-violet-500-15: rgba(16, 185, 129, 0.15);
+	--theme-violet-500-20: rgba(16, 185, 129, 0.2);
+	--theme-violet-700: #047857;
+	--theme-violet-950-60: rgba(2, 47, 46, 0.6);
+
+	--theme-purple-100: #d1fae5;
+	--theme-purple-400: #6ee7b7;
+	--theme-purple-500-15: rgba(16, 185, 129, 0.15);
+	--theme-purple-600: #059669;
+	--theme-purple-700: #047857;
+	--theme-purple-700-50: rgba(4, 120, 87, 0.5);
+	--theme-purple-900-30: rgba(6, 78, 59, 0.3);
+
+	--theme-fuchsia-300: #6ee7b7;
+	--theme-fuchsia-500-10: rgba(16, 185, 129, 0.1);
+	--theme-fuchsia-700: #047857;
+	--theme-pink-500: #34d399;
+	--theme-pink-600: #059669;
+
+	/* ---- Warning / danger -------------------------------------------------- */
+	--theme-amber-50: #fffbeb;
+	--theme-amber-100: #fef3c7;
+	--theme-amber-200: #fde68a;
+	--theme-amber-300: #fcd34d;
+	--theme-amber-400: #fbbf24;
+	--theme-amber-500: #f59e0b;
+	--theme-amber-600: #d97706;
+	--theme-amber-700: #b45309;
+	--theme-amber-800: #92400e;
+	--theme-amber-900: #78350f;
+	--theme-amber-950: #451a03;
+
+	--theme-orange-100: #ffedd5;
+	--theme-orange-200-80: rgba(254, 215, 170, 0.8);
+	--theme-orange-300: #fdba74;
+	--theme-orange-400: #fb923c;
+	--theme-orange-500: #f97316;
+	--theme-orange-600: #ea580c;
+
+	--theme-red-50: #fef2f2;
+	--theme-red-100: #fee2e2;
+	--theme-red-200: #fecaca;
+	--theme-red-300: #fca5a5;
+	--theme-red-400: #f87171;
+	--theme-red-500: #ef4444;
+	--theme-red-600: #dc2626;
+	--theme-red-700: #b91c1c;
+	--theme-red-800: #991b1b;
+	--theme-red-900: #7f1d1d;
+
+	--theme-rose-50: #fff1f2;
+	--theme-rose-100: #ffe4e6;
+	--theme-rose-200: #fecdd3;
+	--theme-rose-300: #fda4af;
+	--theme-rose-400: #fb7185;
+	--theme-rose-500: #f43f5e;
+	--theme-rose-600: #e11d48;
+	--theme-rose-700: #be123c;
+	--theme-rose-800: #9f1239;
+	--theme-rose-900: #881337;
+
+	/* ---- Product roles ------------------------------------------------------ */
+	--theme-brand: #10b981;
+	--theme-brand-hover: #059669;
+
+	--theme-accent: #047857;
+	--theme-accent-strong: #065f46;
+	--theme-border: #c9ddd2;
+	--theme-border-accent: rgba(4, 120, 87, 0.24);
+
+	--theme-input-placeholder: #5f7669;
+
+	--theme-success-text: #15803d;
+	--theme-warning-text: #b45309;
+	--theme-danger-text: #be123c;
+
+	--theme-surface: rgba(255, 255, 255, 0.72);
+	--theme-surface-solid: #ffffff;
+
+	--theme-text: #07150f;
+	--theme-text-bright: #07150f;
+	--theme-text-secondary: #29473a;
+	--theme-text-muted: #557165;
+	--theme-text-faint: #5f7669;
+
+	/* ---- Chat --------------------------------------------------------------- */
+	--theme-chat-accent: #059669;
+	--theme-chat-input: #e4efe9;
+	--theme-chat-muted: #557165;
+	--theme-chat-page-bg: #f3f8f5;
+	--theme-chat-panel-bg: #ffffff;
+	--theme-chat-right-panel: #ffffff;
+	--theme-chat-subpanel: #f7fbf8;
+	--theme-chat-text: #17251f;
+	--theme-chat-thread-active: #d9f7e8;
+	--theme-chat-thread-idle: transparent;
+	--theme-chat-tile: #e4efe9;
+	--theme-chat-shadow: 0 10px 28px rgba(8, 19, 14, 0.1);
+
+	/* ---- Canonical gradients ------------------------------------------------- */
+	--theme-gradient-primary: linear-gradient(90deg, #059669 0%, #10b981 50%, #34d399 100%);
+
+	--theme-gradient-hero: linear-gradient(135deg, #ecfdf5 0%, #ffffff 52%, #ccfbf1 100%);
+
+	--theme-gradient-brand: linear-gradient(135deg, #047857 0%, #10b981 48%, #2dd4bf 100%);
+
+	--theme-gradient-glass: linear-gradient(
+		135deg,
+		rgba(16, 185, 129, 0.16) 0%,
+		rgba(45, 212, 191, 0.08) 50%,
+		rgba(255, 255, 255, 0.05) 100%
+	);
+
+	--theme-gradient-success: linear-gradient(90deg, #15803d 0%, #22c55e 100%);
+
+	--theme-gradient-warning: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+
+	--theme-gradient-danger: linear-gradient(90deg, #be123c 0%, #f43f5e 100%);
+
+	--theme-gradient-info: linear-gradient(90deg, #0f766e 0%, #14b8a6 100%);
+
+	--theme-gradient-dark: linear-gradient(135deg, #08130e 0%, #17251f 52%, #123b2d 100%);
+
+	/* ---- Canonical shadows ---------------------------------------------------- */
+	--theme-shadow-1: 0 10px 28px rgba(8, 19, 14, 0.08);
+	--theme-shadow-2: 0 18px 48px rgba(8, 19, 14, 0.1);
+	--theme-shadow-3: 0 24px 70px -28px rgba(5, 150, 105, 0.26);
+	--theme-shadow-4: 0 24px 90px -32px rgba(8, 19, 14, 0.18);
+	--theme-shadow-5: 0 0 0 1px rgba(16, 185, 129, 0.16), 0 12px 28px rgba(16, 185, 129, 0.1);
+	--theme-shadow-6: 0 0 28px rgba(16, 185, 129, 0.16);
+	--theme-shadow-7: 0 0 42px rgba(45, 212, 191, 0.14);
+	--theme-shadow-8: 0 0 0 4px rgba(16, 185, 129, 0.12);
+	--theme-shadow-9: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+	--theme-shadow-10: inset 0 0 0 1px rgba(4, 120, 87, 0.18);
+	--theme-shadow-11: 0 18px 55px -26px rgba(5, 150, 105, 0.34);
+
+	/* ---- Compatibility aliases ------------------------------------------------- */
+	--theme-gradient-1: var(--theme-gradient-primary);
+	--theme-gradient-2: var(--theme-gradient-brand);
+	--theme-gradient-3: var(--theme-gradient-glass);
+	--theme-gradient-4: var(--theme-gradient-info);
+	--theme-gradient-5: var(--theme-gradient-success);
+	--theme-gradient-6: var(--theme-gradient-warning);
+	--theme-gradient-7: var(--theme-gradient-hero);
+	--theme-gradient-8: var(--theme-gradient-dark);
+
+	--theme-custom-noir: #08130e;
+	--theme-custom-forest: #17251f;
+	--theme-custom-panel: #0b2118;
+	--theme-custom-glass: rgba(255, 255, 255, 0.05);
+}
+
+/* --------------------------------------------------------------------------
+ * DARK MODE — the real Emerald Noir experience
+ * -------------------------------------------------------------------------- */
+[data-theme="emerald"][data-mode="dark"],
+.dark[data-theme="emerald"] {
+	/* ---- Neutral ramp ------------------------------------------------------- */
+	--theme-slate-50: #e6f4ec;
+	--theme-slate-100: #cee5d7;
+	--theme-slate-200: #b4d1c0;
+	--theme-slate-300: #96b8a5;
+	--theme-slate-400: #789889;
+	--theme-slate-500: #668a79;
+	--theme-slate-600: #4f6f5f;
+	--theme-slate-700: #385246;
+	--theme-slate-800: #263b31;
+	--theme-slate-900: #172a22;
+	--theme-slate-950: #03120d;
+
+	--theme-gray-100: #cee5d7;
+	--theme-gray-300: #96b8a5;
+	--theme-gray-400: #789889;
+	--theme-gray-500-20: rgba(120, 152, 137, 0.2);
+	--theme-gray-700: #385246;
+
+	--theme-zinc-200: #b4d1c0;
+	--theme-zinc-500-15: rgba(102, 138, 121, 0.15);
+	--theme-zinc-500-20: rgba(102, 138, 121, 0.2);
+	--theme-zinc-700: #385246;
+
+	/* ---- Adaptive product roles ---------------------------------------------- */
+	--theme-accent: #34d399;
+	--theme-accent-strong: #6ee7b7;
+	--theme-border: #23483a;
+	--theme-border-accent: rgba(52, 211, 153, 0.26);
+	--theme-input-placeholder: #789889;
+
+	--theme-success-text: #6ee7b7;
+	--theme-warning-text: #fbbf24;
+	--theme-danger-text: #fb7185;
+
+	--theme-surface: rgba(255, 255, 255, 0.045);
+	--theme-surface-solid: #061a12;
+
+	--theme-text: #ecfdf5;
+	--theme-text-bright: #f0fdf4;
+	--theme-text-secondary: #c8e7d6;
+	--theme-text-muted: #8eae9d;
+	--theme-text-faint: #6e8a7c;
+
+	/* ---- Chat ----------------------------------------------------------------- */
+	--theme-chat-accent: #10b981;
+	--theme-chat-input: #0d2a1d;
+	--theme-chat-muted: #8eae9d;
+	--theme-chat-page-bg: #03120d;
+	--theme-chat-panel-bg: #071a12;
+	--theme-chat-right-panel: #091f16;
+	--theme-chat-subpanel: #0b261a;
+	--theme-chat-text: #ecfdf5;
+	--theme-chat-thread-active: #123b2d;
+	--theme-chat-thread-idle: rgba(3, 18, 13, 0.58);
+	--theme-chat-tile: #0d2a1d;
+	--theme-chat-shadow: 0 16px 48px rgba(0, 0, 0, 0.42);
+
+	/* ---- Dark gradients -------------------------------------------------------- */
+	--theme-gradient-primary: linear-gradient(90deg, #059669 0%, #10b981 52%, #34d399 100%);
+	--theme-gradient-hero: linear-gradient(135deg, #061a12 0%, #0b261a 50%, #073f2e 100%);
+	--theme-gradient-brand: linear-gradient(135deg, #047857 0%, #10b981 48%, #2dd4bf 100%);
+	--theme-gradient-glass: linear-gradient(
+		135deg,
+		rgba(16, 185, 129, 0.18) 0%,
+		rgba(45, 212, 191, 0.08) 52%,
+		rgba(255, 255, 255, 0.02) 100%
+	);
+	--theme-gradient-success: linear-gradient(90deg, #166534 0%, #22c55e 100%);
+	--theme-gradient-warning: linear-gradient(90deg, #b45309 0%, #f59e0b 100%);
+	--theme-gradient-danger: linear-gradient(90deg, #9f1239 0%, #f43f5e 100%);
+	--theme-gradient-info: linear-gradient(90deg, #0f766e 0%, #2dd4bf 100%);
+	--theme-gradient-dark: linear-gradient(135deg, #03120d 0%, #061a12 50%, #032b20 100%);
+
+	/* ---- Dark shadows ----------------------------------------------------------- */
+	--theme-shadow-1: 0 16px 40px rgba(0, 0, 0, 0.3);
+	--theme-shadow-2: 0 22px 64px rgba(0, 0, 0, 0.38);
+	--theme-shadow-3: 0 24px 80px -30px rgba(16, 185, 129, 0.3);
+	--theme-shadow-4: 0 28px 100px -34px rgba(0, 0, 0, 0.48);
+	--theme-shadow-5: 0 0 0 1px rgba(52, 211, 153, 0.16), 0 14px 34px rgba(16, 185, 129, 0.14);
+	--theme-shadow-6: 0 0 28px rgba(52, 211, 153, 0.2);
+	--theme-shadow-7: 0 0 48px rgba(45, 212, 191, 0.16);
+	--theme-shadow-8: 0 0 0 4px rgba(52, 211, 153, 0.14);
+	--theme-shadow-9: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+	--theme-shadow-10: inset 0 0 0 1px rgba(52, 211, 153, 0.18);
+	--theme-shadow-11: 0 20px 70px -34px rgba(16, 185, 129, 0.42);
+
+	/* Dark surface helpers */
+	--theme-custom-noir: #03120d;
+	--theme-custom-forest: #061a12;
+	--theme-custom-panel: #0b261a;
+	--theme-custom-glass: rgba(255, 255, 255, 0.045);
+}
+
+/* ==========================================================================
+ * Accessibility intent
+ * --------------------------------------------------------------------------
+ * Core text/role pairings are selected to comfortably clear WCAG AA contrast
+ * for normal text. Keep focus indicators visible; don't rely on color alone
+ * for success/warning/danger states.
+ * ========================================================================== */

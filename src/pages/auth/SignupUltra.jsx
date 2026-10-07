@@ -2,14 +2,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
-import NeonAtom from "../../components/ui/NeonAtom.jsx";
-import { apiRequest, getCurrentUser, getRoleHome, saveSession } from "../../lib/auth.js";
-import usePageMeta from "../../lib/usePageMeta.js";
 import {
 	COUNTRY_OPTIONS,
 	ELEVATED_ACCOUNT_TYPES,
 	FACTORY_SECTOR_OPTIONS,
 } from "../../../shared/config/platformTaxonomy.js";
+import NeonAtom from "../../components/ui/NeonAtom.jsx";
+import { apiRequest, getCurrentUser, getRoleHome, saveSession } from "../../lib/auth.js";
+import usePageMeta from "../../lib/usePageMeta.js";
 
 const POSITIONS = [
 	"Owner",
@@ -141,7 +141,10 @@ export default function SignupUltra() {
 			return;
 		}
 		try {
-			const effectivePosition = form.position === "Other" && form.customPosition.trim() ? form.customPosition.trim() : form.position;
+			const effectivePosition =
+				form.position === "Other" && form.customPosition.trim()
+					? form.customPosition.trim()
+					: form.position;
 			const payload = {
 				name: form.name,
 				email: form.email,
@@ -158,7 +161,7 @@ export default function SignupUltra() {
 			const data = await apiRequest("/auth/register", {
 				method: "POST",
 				body: payload,
-				signal: AbortSignal.timeout(30000),
+				signal: AbortSignal.timeout(30_000),
 			});
 			saveSession(data.user, data.token);
 			navigate(getRoleHome(data.user.role), { replace: true });
@@ -170,21 +173,21 @@ export default function SignupUltra() {
 	};
 
 	if (loading) {
-		return <NeonAtom fill={true} timeout={10000} />;
+		return <NeonAtom fill={true} timeout={10_000} />;
 	}
 
 	return (
-		<div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4">
-			<div className="w-full max-w-2xl bg-white rounded-xl p-8 shadow-[0_0_20px_rgba(10,102,194,0.35)] ring-1 ring-slate-200/60 dark:bg-slate-900/70 dark:shadow-none dark:ring-white/10">
-				<div className="flex items-center gap-2 mb-2">
-					<span className="bg-gtBlue text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">
+		<div class="min-h-screen bg-slate-50 dark:bg-[var(--theme-slate-950)] flex items-center justify-center p-4">
+			<div class="w-full max-w-2xl bg-white rounded-xl p-8 shadow-[0_0_20px_rgba(10,102,194,0.35)] ring-1 ring-slate-200/60 dark:bg-slate-900/70 dark:shadow-none dark:ring-white/10">
+				<div class="flex items-center gap-2 mb-2">
+					<span class="bg-gtBlue text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">
 						Ultra Access
 					</span>
-					<h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+					<h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">
 						Elevated Registration
 					</h1>
 				</div>
-				<p className="text-sm text-slate-500 dark:text-slate-300">
+				<p class="text-sm text-slate-500 dark:text-slate-300">
 					Authorized personnel only. Create Admin, Agent, or Owner accounts directly.
 				</p>
 
@@ -194,41 +197,41 @@ export default function SignupUltra() {
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-						className="mt-6 grid md:grid-cols-2 gap-4"
+						class="mt-6 grid md:grid-cols-2 gap-4"
 						onSubmit={handleSubmit}
 					>
 						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								Full Name
 							</label>
 							<input
-								className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+								class="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[var(--theme-custom-0b1224)] dark:text-slate-100"
 								value={form.name}
 								onChange={(e) => onChange("name", e.target.value)}
 								required={true}
 							/>
 						</div>
 						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								Secret Email
 							</label>
 							<input
 								type="email"
-								className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+								class="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[var(--theme-custom-0b1224)] dark:text-slate-100"
 								value={form.email}
 								onChange={(e) => onChange("email", e.target.value)}
 								required={true}
 							/>
 						</div>
 						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								Master Password
 							</label>
-							<div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+							<div class="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[var(--theme-custom-0b1224)] focus-within:ring-2 focus-within:ring-[var(--theme-brand-20)]">
 								<input
 									type={passwordVisible ? "text" : "password"}
 									placeholder="--------"
-									className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
+									class="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
 									value={form.password}
 									onChange={(e) => onChange("password", e.target.value)}
 									required={true}
@@ -236,21 +239,21 @@ export default function SignupUltra() {
 								<button
 									type="button"
 									onClick={() => setPasswordVisible((prev) => !prev)}
-									className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+									class="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
 								>
 									{passwordVisible ? "Hide" : "Show"}
 								</button>
 							</div>
 						</div>
 						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								Confirm Password
 							</label>
-							<div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+							<div class="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[var(--theme-custom-0b1224)] focus-within:ring-2 focus-within:ring-[var(--theme-brand-20)]">
 								<input
 									type={confirmVisible ? "text" : "password"}
 									placeholder="--------"
-									className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
+									class="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
 									value={form.confirmPassword}
 									onChange={(e) => onChange("confirmPassword", e.target.value)}
 									required={true}
@@ -258,18 +261,18 @@ export default function SignupUltra() {
 								<button
 									type="button"
 									onClick={() => setConfirmVisible((prev) => !prev)}
-									className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+									class="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
 								>
 									{confirmVisible ? "Hide" : "Show"}
 								</button>
 							</div>
 						</div>
 						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								Elevated Role
 							</label>
 							<select
-								className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
+								class="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[var(--theme-custom-0b1224)] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
 								value={form.role}
 								onChange={(e) => onChange("role", e.target.value)}
 							>
@@ -281,11 +284,11 @@ export default function SignupUltra() {
 							</select>
 						</div>
 						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								HQ Country
 							</label>
 							<select
-								className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+								class="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[var(--theme-custom-0b1224)] dark:text-slate-100"
 								value={form.country}
 								onChange={(e) => onChange("country", e.target.value)}
 								required={true}
@@ -299,22 +302,22 @@ export default function SignupUltra() {
 							</select>
 						</div>
 						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								Organization / Entity
 							</label>
 							<input
-								className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+								class="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[var(--theme-custom-0b1224)] dark:text-slate-100"
 								value={form.organization}
 								onChange={(e) => onChange("organization", e.target.value)}
 								required={true}
 							/>
 						</div>
 						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 								Your Position
 							</label>
 							<select
-								className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
+								class="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[var(--theme-custom-0b1224)] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
 								value={form.position}
 								onChange={(e) => onChange("position", e.target.value)}
 								required={true}
@@ -328,7 +331,7 @@ export default function SignupUltra() {
 							</select>
 							{form.position === "Other" ? (
 								<input
-									className="mt-2 w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+									class="mt-2 w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[var(--theme-custom-0b1224)] dark:text-slate-100"
 									value={form.customPosition}
 									onChange={(e) => onChange("customPosition", e.target.value)}
 									placeholder="Enter your position"
@@ -338,12 +341,12 @@ export default function SignupUltra() {
 						</div>
 
 						{form.role === "factory" ? (
-							<div className="md:col-span-2">
-								<label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
+							<div class="md:col-span-2">
+								<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
 									Factory sector
 								</label>
 								<select
-									className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
+									class="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[var(--theme-custom-0b1224)] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark"
 									value={form.factorySector}
 									onChange={(e) => onChange("factorySector", e.target.value)}
 									required={true}
@@ -358,8 +361,8 @@ export default function SignupUltra() {
 							</div>
 						) : null}
 
-						<div className="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[#0a3d78] leading-relaxed shadow-borderless dark:shadow-borderlessDark dark:bg-[#0a1a33] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">
-							<p className="font-bold mb-1 underline">⚠️ Security Notice:</p>
+						<div class="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[var(--theme-custom-0a3d78)] leading-relaxed shadow-borderless dark:shadow-borderlessDark dark:bg-[var(--theme-custom-0a1a33)] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">
+							<p class="font-bold mb-1 underline">⚠️ Security Notice:</p>
 							<p>
 								Admin and Owner accounts are automatically granted full system verification and
 								override capabilities. All actions performed through this terminal are logged for
@@ -368,15 +371,15 @@ export default function SignupUltra() {
 						</div>
 
 						{error ? (
-							<p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded shadow-borderless dark:shadow-borderlessDark dark:bg-rose-500/10 dark:text-rose-200">
+							<p class="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded shadow-borderless dark:shadow-borderlessDark dark:bg-rose-500/10 dark:text-rose-200">
 								Auth Error: {error}
 							</p>
 						) : null}
 
-						<div className="md:col-span-2 pt-2">
+						<div class="md:col-span-2 pt-2">
 							<button
 								disabled={loading}
-								className="w-full py-3.5 rounded-lg bg-gtBlue hover:bg-gtBlueHover text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
+								class="w-full py-3.5 rounded-lg bg-gtBlue hover:bg-gtBlueHover text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
 							>
 								{loading ? (
 									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />

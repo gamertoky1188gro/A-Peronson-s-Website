@@ -1,0 +1,855 @@
+/* ==========================================================================
+ * Royal Sapphire — authored overlay (enterprise flagship theme)
+ * Appended AFTER the generated base in src/theme/themes/sapphire.css by
+ * scripts/generate-themes.py; values here WIN on conflict. Sapphire-led
+ * system: sapphire primary, azure secondary, sky highlight, restrained
+ * royal gold, blue-tinted slate neutrals, layered shadows.
+ *
+ * Submitted draft verified leak-free (no bare :root / .dark selectors).
+ * ========================================================================== */
+
+[data-theme="sapphire"] {
+	color-scheme: light;
+
+	/* ========================================================================
+     ROYAL SAPPHIRE
+     Primary brand scale
+     ======================================================================== */
+
+	--theme-sapphire-50: #f3f6ff;
+	--theme-sapphire-100: #e5ebff;
+	--theme-sapphire-200: #cdd8ff;
+	--theme-sapphire-300: #a9baff;
+	--theme-sapphire-400: #7f97ff;
+	--theme-sapphire-500: #5874f5;
+	--theme-sapphire-600: #405ce3;
+	--theme-sapphire-700: #3048c7;
+	--theme-sapphire-800: #263a9f;
+	--theme-sapphire-900: #20327d;
+	--theme-sapphire-950: #111a45;
+
+	/* ========================================================================
+     AZURE
+     Secondary enterprise blue
+     ======================================================================== */
+
+	--theme-azure-50: #eff8ff;
+	--theme-azure-100: #dff1ff;
+	--theme-azure-200: #bde2ff;
+	--theme-azure-300: #8dcbff;
+	--theme-azure-400: #55adff;
+	--theme-azure-500: #2f8df3;
+	--theme-azure-600: #2175d5;
+	--theme-azure-700: #1d60b2;
+	--theme-azure-800: #1d4f91;
+	--theme-azure-900: #1d426f;
+	--theme-azure-950: #112846;
+
+	/* ========================================================================
+     SKY
+     Bright highlight / realtime / informational blue
+     ======================================================================== */
+
+	--theme-sky-50: #f0f9ff;
+	--theme-sky-100: #dff4ff;
+	--theme-sky-200: #bceaff;
+	--theme-sky-300: #8bdcff;
+	--theme-sky-400: #55c9ff;
+	--theme-sky-500: #20b6f3;
+	--theme-sky-600: #1297d4;
+	--theme-sky-700: #107aae;
+	--theme-sky-800: #12658f;
+	--theme-sky-900: #145474;
+	--theme-sky-950: #0b344a;
+
+	/* ========================================================================
+     INDIGO
+     Technical / secondary / analytics support
+     ======================================================================== */
+
+	--theme-indigo-50: #f1f3ff;
+	--theme-indigo-100: #e3e7ff;
+	--theme-indigo-200: #cbd2ff;
+	--theme-indigo-300: #a7b2ff;
+	--theme-indigo-400: #7b8af8;
+	--theme-indigo-500: #5b67e8;
+	--theme-indigo-600: #474fd0;
+	--theme-indigo-700: #3b42b5;
+	--theme-indigo-800: #323895;
+	--theme-indigo-900: #2e3377;
+	--theme-indigo-950: #191d46;
+
+	/* ========================================================================
+     VIOLET
+     Very restrained premium/AI supporting color
+     ======================================================================== */
+
+	--theme-violet-50: #f7f4ff;
+	--theme-violet-100: #eee8ff;
+	--theme-violet-200: #ddd5ff;
+	--theme-violet-300: #c5b7ff;
+	--theme-violet-400: #a58cff;
+	--theme-violet-500: #8567f3;
+	--theme-violet-600: #704ddd;
+	--theme-violet-700: #5d3fc0;
+	--theme-violet-800: #4c359b;
+	--theme-violet-900: #403080;
+	--theme-violet-950: #24184a;
+
+	/* ========================================================================
+     CYAN
+     Realtime / live / network / technical highlights
+     ======================================================================== */
+
+	--theme-cyan-50: #edfdff;
+	--theme-cyan-100: #d5f9ff;
+	--theme-cyan-200: #acf1fa;
+	--theme-cyan-300: #77e5f2;
+	--theme-cyan-400: #3ed5e8;
+	--theme-cyan-500: #16bfd5;
+	--theme-cyan-600: #109bb1;
+	--theme-cyan-700: #117f92;
+	--theme-cyan-800: #166777;
+	--theme-cyan-900: #195668;
+	--theme-cyan-950: #0b3440;
+
+	/* ========================================================================
+     BLUE-TINTED SLATE
+     Neutral system deliberately tuned toward sapphire.
+     ======================================================================== */
+
+	--theme-slate-50: #f5f8ff;
+	--theme-slate-100: #eaf0fb;
+	--theme-slate-200: #d7e0ef;
+	--theme-slate-300: #bdc9dc;
+	--theme-slate-400: #98a7be;
+	--theme-slate-500: #73839d;
+	--theme-slate-600: #5b6b85;
+	--theme-slate-700: #44536c;
+	--theme-slate-800: #303f57;
+	--theme-slate-900: #1c2a40;
+	--theme-slate-950: #0b1424;
+
+	/* ========================================================================
+     NEUTRAL
+     Used when a completely neutral fallback is needed.
+     ======================================================================== */
+
+	--theme-gray-50: #f8fafc;
+	--theme-gray-100: #f1f5f9;
+	--theme-gray-200: #e2e8f0;
+	--theme-gray-300: #cbd5e1;
+	--theme-gray-400: #94a3b8;
+	--theme-gray-500: #64748b;
+	--theme-gray-600: #475569;
+	--theme-gray-700: #334155;
+	--theme-gray-800: #1e293b;
+	--theme-gray-900: #0f172a;
+	--theme-gray-950: #020617;
+
+	--theme-zinc-200: #d5dbe5;
+	--theme-zinc-500: #66758d;
+	--theme-zinc-700: #3d495c;
+
+	/* ========================================================================
+     SUCCESS
+     Semantic only — does not compete with sapphire branding.
+     ======================================================================== */
+
+	--theme-emerald-50: #ecfdf5;
+	--theme-emerald-100: #d1fae5;
+	--theme-emerald-200: #a7f3d0;
+	--theme-emerald-300: #6ee7b7;
+	--theme-emerald-400: #34d399;
+	--theme-emerald-500: #10b981;
+	--theme-emerald-600: #059669;
+	--theme-emerald-700: #047857;
+	--theme-emerald-800: #065f46;
+	--theme-emerald-900: #064e3b;
+	--theme-emerald-950: #022c22;
+
+	--theme-green-100: #d1fae5;
+	--theme-green-300: #6ee7b7;
+	--theme-green-400: #34d399;
+	--theme-green-500: #10b981;
+	--theme-green-600: #059669;
+	--theme-green-700: #047857;
+	--theme-green-900: #064e3b;
+
+	/* ========================================================================
+     WARNING / ROYAL GOLD
+     Gold is deliberately restrained so the interface stays sapphire-first.
+     ======================================================================== */
+
+	--theme-amber-50: #fff8e6;
+	--theme-amber-100: #ffefbf;
+	--theme-amber-200: #ffe28a;
+	--theme-amber-300: #f8cf62;
+	--theme-amber-400: #efb83d;
+	--theme-amber-500: #e09b16;
+	--theme-amber-600: #bd7c10;
+	--theme-amber-700: #975f0d;
+	--theme-amber-800: #77490d;
+	--theme-amber-900: #633b0a;
+	--theme-amber-950: #3d2305;
+
+	--theme-orange-100: #ffefbf;
+	--theme-orange-300: #f8cf62;
+	--theme-orange-400: #efb83d;
+	--theme-orange-500: #e09b16;
+	--theme-orange-600: #bd7c10;
+
+	--theme-yellow-100: #ffefbf;
+	--theme-yellow-300: #f8cf62;
+	--theme-yellow-500: #e09b16;
+
+	/* ========================================================================
+     DANGER
+     ======================================================================== */
+
+	--theme-red-50: #fff1f2;
+	--theme-red-100: #ffe0e3;
+	--theme-red-200: #ffc3ca;
+	--theme-red-300: #ff9ca8;
+	--theme-red-400: #f87585;
+	--theme-red-500: #ef4b5f;
+	--theme-red-600: #d93a4e;
+	--theme-red-700: #b82f40;
+	--theme-red-800: #972939;
+	--theme-red-900: #7e2733;
+	--theme-red-950: #430f18;
+
+	--theme-rose-50: #fff1f2;
+	--theme-rose-100: #ffe0e3;
+	--theme-rose-200: #ffc3ca;
+	--theme-rose-300: #ff9ca8;
+	--theme-rose-400: #f87585;
+	--theme-rose-500: #ef4b5f;
+	--theme-rose-600: #d93a4e;
+	--theme-rose-700: #b82f40;
+	--theme-rose-800: #972939;
+	--theme-rose-900: #7e2733;
+	--theme-rose-950: #430f18;
+
+	/* ========================================================================
+     BASE OVERLAYS
+     ======================================================================== */
+
+	--theme-black: #000000;
+	--theme-white: #ffffff;
+
+	--theme-black-05: rgba(0, 0, 0, 0.05);
+	--theme-black-10: rgba(0, 0, 0, 0.1);
+	--theme-black-20: rgba(0, 0, 0, 0.2);
+	--theme-black-30: rgba(0, 0, 0, 0.3);
+	--theme-black-40: rgba(0, 0, 0, 0.4);
+	--theme-black-50: rgba(0, 0, 0, 0.5);
+	--theme-black-60: rgba(0, 0, 0, 0.6);
+	--theme-black-70: rgba(0, 0, 0, 0.7);
+	--theme-black-80: rgba(0, 0, 0, 0.8);
+	--theme-black-90: rgba(0, 0, 0, 0.9);
+
+	--theme-white-05: rgba(255, 255, 255, 0.05);
+	--theme-white-08: rgba(255, 255, 255, 0.08);
+	--theme-white-10: rgba(255, 255, 255, 0.1);
+	--theme-white-12: rgba(255, 255, 255, 0.12);
+	--theme-white-15: rgba(255, 255, 255, 0.15);
+	--theme-white-20: rgba(255, 255, 255, 0.2);
+	--theme-white-30: rgba(255, 255, 255, 0.3);
+	--theme-white-40: rgba(255, 255, 255, 0.4);
+	--theme-white-50: rgba(255, 255, 255, 0.5);
+	--theme-white-60: rgba(255, 255, 255, 0.6);
+	--theme-white-70: rgba(255, 255, 255, 0.7);
+	--theme-white-80: rgba(255, 255, 255, 0.8);
+	--theme-white-90: rgba(255, 255, 255, 0.9);
+	--theme-white-95: rgba(255, 255, 255, 0.95);
+
+	/* ========================================================================
+     BRAND / SEMANTIC ALIASES
+     ======================================================================== */
+
+	--theme-brand: #405ce3;
+	--theme-brand-hover: #3048c7;
+	--theme-brand-active: #263a9f;
+
+	--theme-accent: #405ce3;
+	--theme-accent-strong: #3048c7;
+	--theme-accent-soft: #e5ebff;
+
+	--theme-primary: #405ce3;
+	--theme-primary-hover: #3048c7;
+	--theme-primary-active: #263a9f;
+	--theme-primary-soft: #e5ebff;
+
+	--theme-secondary: #2f8df3;
+	--theme-secondary-hover: #2175d5;
+	--theme-secondary-soft: #dff1ff;
+
+	--theme-tertiary: #20b6f3;
+	--theme-tertiary-hover: #1297d4;
+
+	--theme-focus: #5874f5;
+	--theme-focus-strong: #405ce3;
+
+	--theme-success: #10b981;
+	--theme-success-text: #047857;
+
+	--theme-warning: #e09b16;
+	--theme-warning-text: #975f0d;
+
+	--theme-danger: #ef4b5f;
+	--theme-danger-text: #b82f40;
+
+	/* ========================================================================
+     LIGHT SURFACE SYSTEM
+     ======================================================================== */
+
+	--theme-background: #f5f8ff;
+	--theme-bg: #f5f8ff;
+	--theme-page-bg: #f5f8ff;
+
+	--theme-surface: #f8fbff;
+	--theme-surface-solid: #ffffff;
+	--theme-surface-elevated: #ffffff;
+	--theme-surface-soft: #eef3ff;
+	--theme-surface-subtle: #eaf0fb;
+
+	--theme-card: rgba(255, 255, 255, 0.82);
+	--theme-card-solid: #ffffff;
+	--theme-panel: rgba(255, 255, 255, 0.9);
+	--theme-panel-solid: #ffffff;
+
+	--theme-overlay: rgba(17, 26, 69, 0.12);
+
+	/* ========================================================================
+     LIGHT TEXT
+     ======================================================================== */
+
+	--theme-text: #12213e;
+	--theme-text-bright: #08142d;
+	--theme-text-primary: #12213e;
+	--theme-text-secondary: #43516a;
+	--theme-text-muted: #65758f;
+	--theme-text-faint: #8290a7;
+
+	--theme-heading: #0d1a34;
+	--theme-body-text: #253552;
+
+	--theme-input-placeholder: #71809a;
+
+	/* ========================================================================
+     LIGHT BORDERS
+     ======================================================================== */
+
+	--theme-border: #d7e0ef;
+	--theme-border-soft: #e5ebf5;
+	--theme-border-strong: #bdc9dc;
+
+	--theme-border-accent: rgba(64, 92, 227, 0.28);
+	--theme-border-active: rgba(64, 92, 227, 0.55);
+	--theme-border-focus: rgba(88, 116, 245, 0.65);
+
+	/* ========================================================================
+     GLASS
+     ======================================================================== */
+
+	--theme-glass-bg: rgba(255, 255, 255, 0.64);
+	--theme-glass-bg-strong: rgba(255, 255, 255, 0.82);
+	--theme-glass-border: rgba(64, 92, 227, 0.16);
+	--theme-glass-border-strong: rgba(64, 92, 227, 0.28);
+	--theme-glass-highlight: rgba(255, 255, 255, 0.72);
+
+	/* ========================================================================
+     ALPHA BRAND TOKENS
+     ======================================================================== */
+
+	--theme-brand-05: rgba(64, 92, 227, 0.05);
+	--theme-brand-08: rgba(64, 92, 227, 0.08);
+	--theme-brand-10: rgba(64, 92, 227, 0.1);
+	--theme-brand-12: rgba(64, 92, 227, 0.12);
+	--theme-brand-15: rgba(64, 92, 227, 0.15);
+	--theme-brand-20: rgba(64, 92, 227, 0.2);
+	--theme-brand-25: rgba(64, 92, 227, 0.25);
+	--theme-brand-30: rgba(64, 92, 227, 0.3);
+	--theme-brand-40: rgba(64, 92, 227, 0.4);
+	--theme-brand-50: rgba(64, 92, 227, 0.5);
+	--theme-brand-60: rgba(64, 92, 227, 0.6);
+	--theme-brand-70: rgba(64, 92, 227, 0.7);
+	--theme-brand-80: rgba(64, 92, 227, 0.8);
+
+	/* ========================================================================
+     ALPHA SKY / AZURE
+     ======================================================================== */
+
+	--theme-azure-10: rgba(47, 141, 243, 0.1);
+	--theme-azure-15: rgba(47, 141, 243, 0.15);
+	--theme-azure-20: rgba(47, 141, 243, 0.2);
+	--theme-azure-30: rgba(47, 141, 243, 0.3);
+	--theme-azure-40: rgba(47, 141, 243, 0.4);
+	--theme-azure-50: rgba(47, 141, 243, 0.5);
+
+	--theme-sky-10: rgba(32, 182, 243, 0.1);
+	--theme-sky-15: rgba(32, 182, 243, 0.15);
+	--theme-sky-20: rgba(32, 182, 243, 0.2);
+	--theme-sky-30: rgba(32, 182, 243, 0.3);
+	--theme-sky-40: rgba(32, 182, 243, 0.4);
+	--theme-sky-50: rgba(32, 182, 243, 0.5);
+
+	/* ========================================================================
+     GRADIENT SYSTEM
+     Sapphire always leads the composition.
+     ======================================================================== */
+
+	--theme-gradient-primary: linear-gradient(135deg, #3048c7 0%, #405ce3 45%, #2f8df3 100%);
+
+	--theme-gradient-brand: linear-gradient(135deg, #263a9f 0%, #405ce3 52%, #55adff 100%);
+
+	--theme-gradient-royal: linear-gradient(135deg, #20327d 0%, #405ce3 48%, #7f97ff 100%);
+
+	--theme-gradient-azure: linear-gradient(90deg, #405ce3 0%, #2f8df3 55%, #20b6f3 100%);
+
+	--theme-gradient-sapphire: linear-gradient(90deg, #263a9f 0%, #405ce3 50%, #2f8df3 100%);
+
+	--theme-gradient-hero: linear-gradient(
+		135deg,
+		#111a45 0%,
+		#263a9f 30%,
+		#405ce3 62%,
+		#2f8df3 82%,
+		#20b6f3 100%
+	);
+
+	--theme-gradient-surface: linear-gradient(135deg, #f5f8ff 0%, #ffffff 52%, #eaf3ff 100%);
+
+	--theme-gradient-soft: linear-gradient(
+		135deg,
+		rgba(64, 92, 227, 0.12) 0%,
+		rgba(47, 141, 243, 0.08) 52%,
+		rgba(32, 182, 243, 0.06) 100%
+	);
+
+	--theme-gradient-success: linear-gradient(90deg, #059669 0%, #10b981 100%);
+
+	--theme-gradient-warning: linear-gradient(90deg, #bd7c10 0%, #e09b16 100%);
+
+	--theme-gradient-danger: linear-gradient(90deg, #b82f40 0%, #ef4b5f 100%);
+
+	/* ========================================================================
+     HERO / AURORA EFFECTS
+     ======================================================================== */
+
+	--theme-radial-brand: radial-gradient(
+		circle at 20% 15%,
+		rgba(64, 92, 227, 0.24) 0%,
+		rgba(64, 92, 227, 0.1) 28%,
+		transparent 64%
+	);
+
+	--theme-radial-azure: radial-gradient(
+		circle at 80% 25%,
+		rgba(47, 141, 243, 0.2) 0%,
+		rgba(47, 141, 243, 0.08) 30%,
+		transparent 66%
+	);
+
+	--theme-radial-sky: radial-gradient(
+		circle at 50% 100%,
+		rgba(32, 182, 243, 0.16) 0%,
+		rgba(32, 182, 243, 0.05) 34%,
+		transparent 70%
+	);
+
+	--theme-gradient-aurora:
+		radial-gradient(circle at 15% 20%, rgba(64, 92, 227, 0.22) 0%, transparent 34%),
+		radial-gradient(circle at 80% 18%, rgba(47, 141, 243, 0.18) 0%, transparent 32%),
+		radial-gradient(circle at 52% 100%, rgba(32, 182, 243, 0.14) 0%, transparent 36%);
+
+	/* ========================================================================
+     GLOW SYSTEM
+     ======================================================================== */
+
+	--theme-glow-brand-sm: 0 0 18px rgba(64, 92, 227, 0.24);
+
+	--theme-glow-brand: 0 0 28px rgba(64, 92, 227, 0.34);
+
+	--theme-glow-brand-lg: 0 0 48px rgba(64, 92, 227, 0.42);
+
+	--theme-glow-azure: 0 0 26px rgba(47, 141, 243, 0.3);
+
+	--theme-glow-sky: 0 0 24px rgba(32, 182, 243, 0.28);
+
+	/* ========================================================================
+     SHADOW SYSTEM
+     Layered shadows rather than one huge blur.
+     ======================================================================== */
+
+	--theme-shadow-xs: 0 1px 2px rgba(17, 26, 69, 0.06);
+
+	--theme-shadow-sm: 0 4px 12px rgba(17, 26, 69, 0.07);
+
+	--theme-shadow-md: 0 10px 28px rgba(17, 26, 69, 0.1), 0 2px 8px rgba(64, 92, 227, 0.05);
+
+	--theme-shadow-lg: 0 18px 48px rgba(17, 26, 69, 0.12), 0 5px 16px rgba(64, 92, 227, 0.07);
+
+	--theme-shadow-xl: 0 28px 80px rgba(17, 26, 69, 0.16), 0 8px 24px rgba(64, 92, 227, 0.08);
+
+	--theme-shadow-2xl: 0 36px 110px rgba(17, 26, 69, 0.2), 0 12px 34px rgba(64, 92, 227, 0.1);
+
+	--theme-shadow-brand: 0 18px 52px rgba(64, 92, 227, 0.24), 0 4px 16px rgba(47, 141, 243, 0.1);
+
+	--theme-shadow-focus: 0 0 0 3px rgba(88, 116, 245, 0.3), 0 0 0 1px rgba(64, 92, 227, 0.65);
+
+	--theme-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.68);
+
+	--theme-shadow-glass: 0 20px 60px rgba(17, 26, 69, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+
+	/* ========================================================================
+     CHAT / REALTIME
+     ======================================================================== */
+
+	--theme-chat-accent: #405ce3;
+	--theme-chat-accent-hover: #3048c7;
+	--theme-chat-page-bg: #f5f8ff;
+	--theme-chat-panel-bg: rgba(255, 255, 255, 0.92);
+	--theme-chat-right-panel: #ffffff;
+	--theme-chat-subpanel: #eef3ff;
+	--theme-chat-input: #eaf0fb;
+	--theme-chat-tile: #e5ebf5;
+	--theme-chat-text: #152542;
+	--theme-chat-muted: #66758d;
+	--theme-chat-thread-active: #e5ebff;
+	--theme-chat-thread-idle: transparent;
+
+	--theme-chat-shadow: 0 10px 30px rgba(17, 26, 69, 0.08), 0 2px 8px rgba(64, 92, 227, 0.05);
+
+	/* ========================================================================
+     COMPATIBILITY ALIASES
+     Lets old Tailwind-family references still resolve coherently.
+     ======================================================================== */
+
+	--theme-blue-50: var(--theme-sapphire-50);
+	--theme-blue-100: var(--theme-sapphire-100);
+	--theme-blue-200: var(--theme-sapphire-200);
+	--theme-blue-300: var(--theme-sapphire-300);
+	--theme-blue-400: var(--theme-sapphire-400);
+	--theme-blue-500: var(--theme-sapphire-500);
+	--theme-blue-600: var(--theme-sapphire-600);
+	--theme-blue-700: var(--theme-sapphire-700);
+	--theme-blue-800: var(--theme-sapphire-800);
+	--theme-blue-900: var(--theme-sapphire-900);
+	--theme-blue-950: var(--theme-sapphire-950);
+
+	--theme-brand-hover: var(--theme-primary-hover);
+
+	--theme-purple-100: var(--theme-violet-100);
+	--theme-purple-400: var(--theme-violet-400);
+	--theme-purple-500: var(--theme-violet-500);
+	--theme-purple-600: var(--theme-violet-600);
+	--theme-purple-700: var(--theme-violet-700);
+	--theme-purple-900: var(--theme-violet-900);
+
+	--theme-fuchsia-300: var(--theme-violet-300);
+	--theme-fuchsia-500: var(--theme-violet-500);
+	--theme-fuchsia-700: var(--theme-violet-700);
+
+	--theme-pink-500: var(--theme-violet-500);
+	--theme-pink-600: var(--theme-violet-600);
+
+	--theme-teal-400: var(--theme-emerald-400);
+	--theme-teal-500: var(--theme-emerald-500);
+	--theme-teal-600: var(--theme-emerald-600);
+
+	/* ========================================================================
+     DEFAULT LIGHT THEME ROLE MAPPING
+     ======================================================================== */
+
+	--theme-border-default: var(--theme-border);
+	--theme-text-default: var(--theme-text);
+	--theme-surface-default: var(--theme-surface);
+
+	--theme-link: var(--theme-brand);
+	--theme-link-hover: var(--theme-brand-hover);
+
+	--theme-button-primary: var(--theme-primary);
+	--theme-button-primary-hover: var(--theme-primary-hover);
+	--theme-button-primary-text: #ffffff;
+
+	--theme-button-secondary: var(--theme-secondary);
+	--theme-button-secondary-hover: var(--theme-secondary-hover);
+	--theme-button-secondary-text: #ffffff;
+
+	--theme-selection-bg: rgba(64, 92, 227, 0.2);
+	--theme-selection-text: #12213e;
+
+	--theme-gradient-dark: linear-gradient(90deg, #111a45 0%, #20327d 50%, #263a9f 100%);
+}
+
+/* ==========================================================================
+   ROYAL SAPPHIRE — DARK MODE
+   ========================================================================== */
+
+[data-theme="sapphire"][data-mode="dark"],
+.dark[data-theme="sapphire"] {
+	color-scheme: dark;
+
+	/* ------------------------------------------------------------------------
+     Dark role surface
+     ------------------------------------------------------------------------ */
+
+	--theme-background: #070d1c;
+	--theme-bg: #070d1c;
+	--theme-page-bg: #070d1c;
+
+	--theme-surface: rgba(255, 255, 255, 0.045);
+	--theme-surface-solid: #0d1629;
+	--theme-surface-elevated: #111d33;
+	--theme-surface-soft: #101c32;
+	--theme-surface-subtle: #14223b;
+
+	--theme-card: rgba(17, 29, 51, 0.72);
+	--theme-card-solid: #0e192d;
+	--theme-panel: rgba(13, 22, 41, 0.9);
+	--theme-panel-solid: #0d1629;
+
+	--theme-overlay: rgba(3, 8, 20, 0.72);
+
+	/* ------------------------------------------------------------------------
+     Dark text
+     ------------------------------------------------------------------------ */
+
+	--theme-text: #edf4ff;
+	--theme-text-bright: #ffffff;
+	--theme-text-primary: #edf4ff;
+	--theme-text-secondary: #bfd0ea;
+	--theme-text-muted: #8fa3c1;
+	--theme-text-faint: #6f82a1;
+
+	--theme-heading: #f7faff;
+	--theme-body-text: #c7d5e9;
+
+	--theme-input-placeholder: #7185a5;
+
+	/* ------------------------------------------------------------------------
+     Dark borders
+     ------------------------------------------------------------------------ */
+
+	--theme-border: #243554;
+	--theme-border-soft: #192945;
+	--theme-border-strong: #33486d;
+
+	--theme-border-accent: rgba(88, 116, 245, 0.3);
+	--theme-border-active: rgba(88, 116, 245, 0.56);
+	--theme-border-focus: rgba(127, 151, 255, 0.72);
+
+	/* ------------------------------------------------------------------------
+     Dark brand / interaction
+     ------------------------------------------------------------------------ */
+
+	--theme-brand: #7f97ff;
+	--theme-brand-hover: #a9baff;
+	--theme-brand-active: #cdd8ff;
+
+	--theme-accent: #7f97ff;
+	--theme-accent-strong: #5874f5;
+	--theme-accent-soft: rgba(88, 116, 245, 0.14);
+
+	--theme-primary: #5874f5;
+	--theme-primary-hover: #7f97ff;
+	--theme-primary-active: #a9baff;
+	--theme-primary-soft: rgba(88, 116, 245, 0.14);
+
+	--theme-secondary: #55adff;
+	--theme-secondary-hover: #8dcbff;
+	--theme-secondary-soft: rgba(47, 141, 243, 0.14);
+
+	--theme-tertiary: #55c9ff;
+	--theme-tertiary-hover: #8bdcff;
+
+	--theme-focus: #7f97ff;
+	--theme-focus-strong: #a9baff;
+
+	/* ------------------------------------------------------------------------
+     Dark semantic text
+     ------------------------------------------------------------------------ */
+
+	--theme-success-text: #6ee7b7;
+	--theme-warning-text: #f8cf62;
+	--theme-danger-text: #ff9ca8;
+
+	/* ------------------------------------------------------------------------
+     Dark glass
+     ------------------------------------------------------------------------ */
+
+	--theme-glass-bg: rgba(13, 22, 41, 0.58);
+	--theme-glass-bg-strong: rgba(17, 29, 51, 0.78);
+	--theme-glass-border: rgba(127, 151, 255, 0.16);
+	--theme-glass-border-strong: rgba(127, 151, 255, 0.3);
+	--theme-glass-highlight: rgba(255, 255, 255, 0.055);
+
+	/* ------------------------------------------------------------------------
+     Dark gradients
+     ------------------------------------------------------------------------ */
+
+	--theme-gradient-primary: linear-gradient(135deg, #263a9f 0%, #405ce3 45%, #2f8df3 100%);
+
+	--theme-gradient-brand: linear-gradient(135deg, #20327d 0%, #405ce3 48%, #55adff 100%);
+
+	--theme-gradient-royal: linear-gradient(135deg, #172766 0%, #3048c7 45%, #7f97ff 100%);
+
+	--theme-gradient-azure: linear-gradient(90deg, #405ce3 0%, #2f8df3 55%, #20b6f3 100%);
+
+	--theme-gradient-sapphire: linear-gradient(90deg, #20327d 0%, #405ce3 50%, #55adff 100%);
+
+	--theme-gradient-hero: linear-gradient(
+		135deg,
+		#070d1c 0%,
+		#111a45 26%,
+		#263a9f 54%,
+		#405ce3 76%,
+		#2f8df3 100%
+	);
+
+	--theme-gradient-surface: linear-gradient(135deg, #0d1629 0%, #111d33 55%, #14223b 100%);
+
+	--theme-gradient-soft: linear-gradient(
+		135deg,
+		rgba(64, 92, 227, 0.18) 0%,
+		rgba(47, 141, 243, 0.12) 52%,
+		rgba(32, 182, 243, 0.08) 100%
+	);
+
+	/* ------------------------------------------------------------------------
+     Dark aurora
+     ------------------------------------------------------------------------ */
+
+	--theme-radial-brand: radial-gradient(
+		circle at 18% 15%,
+		rgba(88, 116, 245, 0.24) 0%,
+		rgba(88, 116, 245, 0.09) 28%,
+		transparent 64%
+	);
+
+	--theme-radial-azure: radial-gradient(
+		circle at 82% 22%,
+		rgba(47, 141, 243, 0.2) 0%,
+		rgba(47, 141, 243, 0.07) 31%,
+		transparent 67%
+	);
+
+	--theme-radial-sky: radial-gradient(
+		circle at 50% 100%,
+		rgba(32, 182, 243, 0.15) 0%,
+		rgba(32, 182, 243, 0.04) 36%,
+		transparent 72%
+	);
+
+	--theme-gradient-aurora:
+		radial-gradient(circle at 14% 20%, rgba(88, 116, 245, 0.2) 0%, transparent 34%),
+		radial-gradient(circle at 82% 18%, rgba(47, 141, 243, 0.16) 0%, transparent 32%),
+		radial-gradient(circle at 52% 100%, rgba(32, 182, 243, 0.11) 0%, transparent 38%);
+
+	/* ------------------------------------------------------------------------
+     Dark glow
+     ------------------------------------------------------------------------ */
+
+	--theme-glow-brand-sm: 0 0 18px rgba(88, 116, 245, 0.28);
+
+	--theme-glow-brand: 0 0 30px rgba(88, 116, 245, 0.38);
+
+	--theme-glow-brand-lg: 0 0 54px rgba(88, 116, 245, 0.46);
+
+	--theme-glow-azure: 0 0 28px rgba(47, 141, 243, 0.32);
+
+	--theme-glow-sky: 0 0 26px rgba(32, 182, 243, 0.3);
+
+	/* ------------------------------------------------------------------------
+     Dark shadows
+     ------------------------------------------------------------------------ */
+
+	--theme-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
+
+	--theme-shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.28);
+
+	--theme-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.32), 0 2px 10px rgba(64, 92, 227, 0.07);
+
+	--theme-shadow-lg: 0 20px 52px rgba(0, 0, 0, 0.38), 0 5px 18px rgba(64, 92, 227, 0.08);
+
+	--theme-shadow-xl: 0 30px 84px rgba(0, 0, 0, 0.46), 0 8px 26px rgba(64, 92, 227, 0.1);
+
+	--theme-shadow-2xl: 0 42px 118px rgba(0, 0, 0, 0.54), 0 14px 38px rgba(64, 92, 227, 0.12);
+
+	--theme-shadow-brand: 0 20px 58px rgba(64, 92, 227, 0.25), 0 4px 18px rgba(47, 141, 243, 0.12);
+
+	--theme-shadow-focus: 0 0 0 3px rgba(127, 151, 255, 0.28), 0 0 0 1px rgba(127, 151, 255, 0.72);
+
+	--theme-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+	--theme-shadow-glass: 0 22px 64px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.055);
+
+	/* ------------------------------------------------------------------------
+     Dark chat
+     ------------------------------------------------------------------------ */
+
+	--theme-chat-accent: #5874f5;
+	--theme-chat-accent-hover: #7f97ff;
+	--theme-chat-page-bg: #070d1c;
+	--theme-chat-panel-bg: #0d1629;
+	--theme-chat-right-panel: #0d1629;
+	--theme-chat-subpanel: #101c32;
+	--theme-chat-input: #14223b;
+	--theme-chat-tile: #182944;
+	--theme-chat-text: #edf4ff;
+	--theme-chat-muted: #8fa3c1;
+	--theme-chat-thread-active: rgba(88, 116, 245, 0.14);
+	--theme-chat-thread-idle: rgba(7, 13, 28, 0.6);
+
+	--theme-chat-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+
+	/* ------------------------------------------------------------------------
+     Dark selection
+     ------------------------------------------------------------------------ */
+
+	--theme-selection-bg: rgba(127, 151, 255, 0.25);
+	--theme-selection-text: #ffffff;
+
+	/* ------------------------------------------------------------------------
+     Dark gradient aliases
+     ------------------------------------------------------------------------ */
+
+	--theme-gradient-dark: linear-gradient(90deg, #070d1c 0%, #111a45 50%, #20327d 100%);
+
+	--theme-gradient-dark-soft: linear-gradient(
+		90deg,
+		rgba(64, 92, 227, 0.16) 0%,
+		rgba(17, 29, 51, 0.3) 100%
+	);
+}
+
+/* ==========================================================================
+   ROYAL SAPPHIRE — COMMON ALIASES
+   These make the palette easier to consume from custom components.
+   ========================================================================== */
+
+[data-theme="sapphire"] {
+	--theme-color-primary: var(--theme-primary);
+	--theme-color-secondary: var(--theme-secondary);
+	--theme-color-highlight: var(--theme-tertiary);
+
+	--theme-color-brand: var(--theme-brand);
+	--theme-color-brand-hover: var(--theme-brand-hover);
+
+	--theme-color-bg: var(--theme-background);
+	--theme-color-surface: var(--theme-surface);
+	--theme-color-surface-solid: var(--theme-surface-solid);
+
+	--theme-color-text: var(--theme-text);
+	--theme-color-text-muted: var(--theme-text-muted);
+	--theme-color-text-faint: var(--theme-text-faint);
+
+	--theme-color-border: var(--theme-border);
+	--theme-color-border-accent: var(--theme-border-accent);
+
+	--theme-color-success: var(--theme-success);
+	--theme-color-warning: var(--theme-warning);
+	--theme-color-danger: var(--theme-danger);
+}

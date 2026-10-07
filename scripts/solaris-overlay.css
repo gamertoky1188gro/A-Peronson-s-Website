@@ -1,0 +1,1464 @@
+/* ==========================================================================
+ * Solaris Master — authored overlay (balanced solar: orange → pink → violet)
+ * Appended AFTER the generated base in src/theme/themes/solaris.css by
+ * scripts/generate-themes.py; values here WIN on conflict.
+ * Orange = energy/commerce/action, pink = social/futurist personality,
+ * violet = AI/premium/tech, gold = secondary solar highlight.
+ * Semantic colors stay semantic.
+ *
+ * Submitted draft verified leak-free (no bare :root / .dark selectors).
+ * NOTE: full 1,025-line master file was referenced via an inaccessible
+ * sandbox link; this overlay wires the supplied core-identity + dark-mode
+ * sections verbatim. Standard family scales remain generated base values.
+ * ========================================================================== */
+
+[data-theme="solaris"] {
+	/* Solar orange */
+	--theme-solar-orange-500: #ff7a18;
+
+	/* Solar gold */
+	--theme-solar-gold-500: #f5a623;
+
+	/* Radiant pink */
+	--theme-solar-pink-500: #ff4fa3;
+
+	/* Ultraviolet */
+	--theme-solar-violet-500: #8b5cf6;
+
+	/* Solar-eclipse surfaces */
+	--theme-solar-night-950: #08040d;
+	--theme-solar-night-900: #100718;
+	--theme-solar-night-800: #160c20;
+	--theme-solar-night-700: #21102e;
+
+	/* Signature gradients */
+	--theme-solar-gradient: linear-gradient(120deg, #ff7a18 0%, #ff4fa3 52%, #8b5cf6 100%);
+
+	--theme-solar-gradient-warm: linear-gradient(120deg, #ff7a18 0%, #ffd166 48%, #ff4fa3 100%);
+
+	--theme-solar-gradient-cosmic: linear-gradient(120deg, #ff4fa3 0%, #8b5cf6 100%);
+
+	/* Semantic brand roles */
+	--theme-brand: #ff7a18;
+	--theme-brand-hover: #e85d04;
+	--theme-accent: #ff7a18;
+	--theme-accent-strong: #d95708;
+	--theme-focus: #a78bfa;
+
+	/* Light surfaces */
+	--theme-surface: #fff9f4;
+	--theme-surface-solid: #ffffff;
+	--theme-text: #1a0b18;
+	--theme-text-secondary: #4f3b4d;
+	--theme-border: #ead8e4;
+}
+
+[data-theme="solaris"][data-mode="dark"],
+.dark[data-theme="solaris"] {
+	--theme-surface: rgba(255, 255, 255, 0.055);
+	--theme-surface-solid: #0b0710;
+
+	--theme-text: #fff7fc;
+	--theme-text-bright: #fff9fd;
+	--theme-text-muted: #efd5e3;
+	--theme-text-secondary: #d9bccd;
+
+	--theme-border: #3b2347;
+	--theme-border-accent: rgba(255, 122, 24, 0.32);
+
+	--theme-accent: #ffab66;
+	--theme-accent-strong: #ff7a18;
+
+	--theme-chat-page-bg: #08040d;
+	--theme-chat-panel-bg: #160c20;
+	--theme-chat-subpanel: #1b0f27;
+
+	--theme-gradient-primary: linear-gradient(90deg, #ff8a35 0%, #ff4fa3 52%, #9b7bff 100%);
+
+	--theme-gradient-hero: linear-gradient(
+		135deg,
+		rgba(255, 122, 24, 0.16) 0%,
+		rgba(255, 79, 163, 0.08) 48%,
+		rgba(139, 92, 246, 0.12) 100%
+	);
+
+	--theme-glow-brand:
+		0 0 0 1px rgba(255, 122, 24, 0.18), 0 0 28px rgba(255, 122, 24, 0.24),
+		0 0 70px rgba(255, 79, 163, 0.12);
+
+	--theme-glow-violet: 0 0 28px rgba(139, 92, 246, 0.2), 0 0 64px rgba(255, 79, 163, 0.1);
+}
+
+/* ==========================================================================
+   Solaris — fuller light roles + dark gradients (appended from master paste)
+   NOTE: these arrived under a mislabeled [data-theme="plasma"] selector;
+   values are Solaris (surface #fff9f4, chat-accent #ff7a18, solaris gradients)
+   so they are re-targeted here to [data-theme="solaris"]. Same scope, later
+   declarations win; verified no conflicts with the block above.
+   ========================================================================== */
+
+[data-theme="solaris"] {
+	--theme-input-placeholder: #9a8492;
+	--theme-success-text: #15803d;
+	--theme-warning-text: #a85f00;
+	--theme-text-bright: #140813;
+	--theme-text-faint: #9a8492;
+	--theme-text-muted: #6c5368;
+	--theme-chat-accent: #ff7a18;
+	--theme-chat-input: #f6ebe3;
+	--theme-chat-muted: #8f788f;
+	--theme-chat-page-bg: #fff9f4;
+	--theme-chat-panel-bg: #ffffff;
+	--theme-chat-right-panel: #ffffff;
+	--theme-chat-subpanel: #fffdfb;
+	--theme-chat-text: #3a2940;
+	--theme-chat-thread-active: #fff0df;
+	--theme-chat-thread-idle: transparent;
+	--theme-chat-tile: #f4ebe8;
+
+	--theme-gradient-primary: linear-gradient(90deg, #ff7a18 0%, #ff4fa3 54%, #8b5cf6 100%);
+	--theme-gradient-hero: linear-gradient(135deg, #fff0df 0%, #fff8f5 46%, #f8f5ff 100%);
+	--theme-gradient-solaris: linear-gradient(120deg, #ff7a18 0%, #ff4fa3 52%, #8b5cf6 100%);
+	--theme-gradient-solaris-warm: linear-gradient(120deg, #ff7a18 0%, #ffd166 46%, #ff4fa3 100%);
+	--theme-gradient-solaris-cosmic: linear-gradient(120deg, #ff4fa3 0%, #8b5cf6 100%);
+
+	--theme-shadow-solaris:
+		0 24px 70px -28px rgba(255, 122, 24, 0.34), 0 12px 36px -22px rgba(255, 79, 163, 0.2);
+	--theme-shadow-solaris-glow: 0 0 40px rgba(255, 122, 24, 0.2), 0 0 70px rgba(139, 92, 246, 0.12);
+	--theme-shadow-solaris-card: 0 18px 50px rgba(68, 31, 58, 0.1), 0 2px 10px rgba(68, 31, 58, 0.05);
+}
+
+[data-theme="solaris"][data-mode="dark"],
+.dark[data-theme="solaris"] {
+	--theme-chat-tile: #24132f;
+	--theme-gradient-dark: linear-gradient(90deg, #08040d 0%, #160c20 100%);
+	--theme-gradient-dark-2: linear-gradient(90deg, #08040d 0%, #160c20 50%, #08040d 100%);
+	--theme-gradient-dark-3: linear-gradient(
+		90deg,
+		rgba(22, 163, 74, 0.12) 0%,
+		rgba(34, 197, 94, 0.1) 100%
+	);
+	--theme-gradient-dark-4: linear-gradient(90deg, #08040d 0%, #08040d 50%, #160c20 100%);
+	--theme-gradient-dark-5: linear-gradient(
+		90deg,
+		#08040d 0%,
+		#08040d 50%,
+		rgba(70, 23, 7, 0.48) 100%
+	);
+	--theme-gradient-dark-6: linear-gradient(90deg, #08040d 0%, #461707 100%);
+	--theme-gradient-dark-7: linear-gradient(90deg, #59475c 0%, #766174 100%);
+	--theme-gradient-dark-8: linear-gradient(
+		90deg,
+		rgba(255, 154, 69, 0.12) 0%,
+		rgba(155, 123, 255, 0.12) 50%,
+		rgba(255, 107, 179, 0.12) 100%
+	);
+	--theme-gradient-dark-9: linear-gradient(
+		90deg,
+		rgba(70, 23, 7, 0.6) 0%,
+		rgba(70, 23, 7, 0.48) 50%,
+		rgba(70, 23, 7, 0.48) 100%
+	);
+	--theme-gradient-dark-10: linear-gradient(
+		90deg,
+		rgba(255, 122, 24, 0.144) 0%,
+		rgba(22, 12, 32, 0.2) 100%
+	);
+	--theme-gradient-dark-11: linear-gradient(90deg, rgba(255, 122, 24, 0.12) 0%, #08040d 100%);
+	--theme-gradient-dark-12: linear-gradient(
+		90deg,
+		rgba(70, 23, 7, 0.36) 0%,
+		rgba(8, 4, 13, 0.2) 100%
+	);
+	--theme-gradient-dark-13: linear-gradient(
+		90deg,
+		rgba(255, 122, 24, 0.12) 0%,
+		rgba(139, 92, 246, 0.12) 100%
+	);
+	--theme-gradient-dark-14: linear-gradient(
+		90deg,
+		rgba(255, 122, 24, 0.18) 0%,
+		rgba(255, 79, 163, 0.12) 50%,
+		transparent 100%
+	);
+	--theme-gradient-dark-15: linear-gradient(
+		90deg,
+		rgba(70, 23, 7, 0.72) 0%,
+		#08040d 50%,
+		#08040d 100%
+	);
+	--theme-gradient-dark-16: linear-gradient(
+		90deg,
+		rgba(70, 23, 7, 0.72) 0%,
+		#08040d 50%,
+		#160c20 100%
+	);
+	--theme-gradient-dark-17: linear-gradient(
+		90deg,
+		rgba(255, 122, 24, 0.12) 0%,
+		#08040d 50%,
+		rgba(139, 92, 246, 0.12) 100%
+	);
+	--theme-gradient-dark-18: linear-gradient(90deg, #08040d 0%, #08040d 50%, #461707 100%);
+	--theme-gradient-dark-19: linear-gradient(
+		90deg,
+		transparent 0%,
+		transparent 50%,
+		transparent 100%
+	);
+	--theme-gradient-dark-20: linear-gradient(
+		135deg,
+		rgba(255, 122, 24, 0.18) 0%,
+		rgba(255, 79, 163, 0.06) 100%
+	);
+	--theme-gradient-dark-21: linear-gradient(
+		90deg,
+		rgba(255, 122, 24, 0.18) 0%,
+		rgba(255, 122, 24, 0.06) 50%,
+		transparent 100%
+	);
+	--theme-gradient-dark-22: linear-gradient(90deg, #160c20 0%, #08040d 100%);
+	--theme-gradient-dark-23: linear-gradient(
+		90deg,
+		rgba(70, 23, 7, 0.6) 0%,
+		rgba(70, 23, 7, 0.36) 50%,
+		#08040d 100%
+	);
+	--theme-gradient-dark-24: linear-gradient(
+		90deg,
+		rgba(70, 23, 7, 0.48) 0%,
+		rgba(70, 23, 7, 0.24) 100%
+	);
+	--theme-gradient-dark-25: linear-gradient(90deg, #08040d 0%, transparent 100%);
+	--theme-gradient-dark-26: linear-gradient(90deg, #3a2940 0%, #59475c 100%);
+	--theme-gradient-dark-27: linear-gradient(
+		90deg,
+		rgba(255, 154, 69, 0.12) 0%,
+		rgba(255, 107, 179, 0.12) 50%,
+		rgba(155, 123, 255, 0.12) 100%
+	);
+
+	/* Solaris dark master aliases (later wins; verified same final values) */
+	--theme-chat-input: #21102e;
+	--theme-chat-muted: #d9bccd;
+	--theme-chat-shadow: 0 12px 40px rgba(0, 0, 0, 0.46), 0 2px 12px rgba(139, 92, 246, 0.08);
+	--theme-chat-thread-active: #4b1839;
+	--theme-chat-thread-idle: rgba(8, 4, 13, 0.58);
+	--theme-gradient-solaris: linear-gradient(120deg, #ff7a18 0%, #ff4fa3 52%, #8b5cf6 100%);
+	--theme-gradient-solaris-warm: linear-gradient(120deg, #ff7a18 0%, #ffd166 44%, #ff4fa3 100%);
+	--theme-gradient-solaris-cosmic: linear-gradient(120deg, #ff4fa3 0%, #8b5cf6 100%);
+}
+
+/* ==========================================================================
+   Solaris — refined master full-compat scales (appended from master paste)
+   Same [data-theme="solaris"] scope; later declarations win. Complete family
+   scales + alpha variants + solaris-mapped custom-* set. Verified consistent
+   with the block above (same 500 anchors / night surfaces).
+   ========================================================================== */
+
+[data-theme="solaris"] {
+	/* ── Solaris semantic foundation ── */
+	--theme-solar-orange-50: #fff7ed;
+	--theme-solar-orange-100: #ffedd5;
+	--theme-solar-orange-200: #fed7aa;
+	--theme-solar-orange-300: #fdba74;
+	--theme-solar-orange-400: #fb923c;
+	--theme-solar-orange-500: #ff7a18;
+	--theme-solar-orange-600: #e85d04;
+	--theme-solar-orange-700: #c84a03;
+	--theme-solar-orange-800: #9f3a05;
+	--theme-solar-orange-900: #762806;
+	--theme-solar-orange-950: #401303;
+
+	--theme-solar-gold-50: #fffbea;
+	--theme-solar-gold-100: #fff3c4;
+	--theme-solar-gold-200: #ffe69a;
+	--theme-solar-gold-300: #ffd166;
+	--theme-solar-gold-400: #ffbd45;
+	--theme-solar-gold-500: #f5a623;
+	--theme-solar-gold-600: #d98700;
+	--theme-solar-gold-700: #b76700;
+	--theme-solar-gold-800: #8f4d00;
+	--theme-solar-gold-900: #6b3700;
+	--theme-solar-gold-950: #3b1b00;
+
+	--theme-solar-pink-50: #fff4fa;
+	--theme-solar-pink-100: #ffe7f2;
+	--theme-solar-pink-200: #ffcfe4;
+	--theme-solar-pink-300: #ffafd0;
+	--theme-solar-pink-400: #ff78b8;
+	--theme-solar-pink-500: #ff4fa3;
+	--theme-solar-pink-600: #e83b8d;
+	--theme-solar-pink-700: #c72f75;
+	--theme-solar-pink-800: #9e255e;
+	--theme-solar-pink-900: #741b46;
+	--theme-solar-pink-950: #430d29;
+
+	--theme-solar-violet-50: #f7f4ff;
+	--theme-solar-violet-100: #eee9ff;
+	--theme-solar-violet-200: #ddd3ff;
+	--theme-solar-violet-300: #c7b5ff;
+	--theme-solar-violet-400: #a78bfa;
+	--theme-solar-violet-500: #8b5cf6;
+	--theme-solar-violet-600: #754bd6;
+	--theme-solar-violet-700: #633bbf;
+	--theme-solar-violet-800: #4f2d98;
+	--theme-solar-violet-900: #371e70;
+	--theme-solar-violet-950: #210e49;
+
+	--theme-solar-night-950: #08040d;
+	--theme-solar-night-900: #100718;
+	--theme-solar-night-800: #160c20;
+	--theme-solar-night-700: #21102e;
+	--theme-solar-night-600: #2f1740;
+
+	--theme-solar-ink: #1a0b18;
+	--theme-solar-ink-soft: #5b4159;
+	--theme-solar-cream: #fff9f4;
+	--theme-solar-glass: rgba(255, 255, 255, 0.68);
+	--theme-solar-glass-dark: rgba(16, 7, 24, 0.72);
+
+	--theme-solar-gradient: linear-gradient(120deg, #ff7a18 0%, #ff4fa3 52%, #8b5cf6 100%);
+	--theme-solar-gradient-warm: linear-gradient(120deg, #ff7a18 0%, #ffd166 48%, #ff4fa3 100%);
+	--theme-solar-gradient-cosmic: linear-gradient(120deg, #ff4fa3 0%, #8b5cf6 100%);
+	--theme-solar-gradient-glow: linear-gradient(
+		120deg,
+		rgba(255, 122, 24, 0.28) 0%,
+		rgba(255, 79, 163, 0.18) 50%,
+		rgba(139, 92, 246, 0.2) 100%
+	);
+	--theme-solar-focus: #a78bfa;
+	--theme-solar-success: #22c55e;
+	--theme-solar-warning: #f5a623;
+	--theme-solar-danger: #f43f5e;
+	--theme-amber-100: #fff4d6;
+	--theme-amber-100-80: rgba(255, 244, 214, 0.8);
+	--theme-amber-200: #ffe4a8;
+	--theme-amber-200-60: rgba(255, 228, 168, 0.6);
+	--theme-amber-200-70: rgba(255, 228, 168, 0.7);
+	--theme-amber-300: #ffd166;
+	--theme-amber-300-25: rgba(255, 209, 102, 0.25);
+	--theme-amber-300-70: rgba(255, 209, 102, 0.7);
+	--theme-amber-400: #ffbe45;
+	--theme-amber-400-10: rgba(255, 190, 69, 0.1);
+	--theme-amber-400-15: rgba(255, 190, 69, 0.15);
+	--theme-amber-400-20: rgba(255, 190, 69, 0.2);
+	--theme-amber-400-25: rgba(255, 190, 69, 0.25);
+	--theme-amber-400-30: rgba(255, 190, 69, 0.3);
+	--theme-amber-400-40: rgba(255, 190, 69, 0.4);
+	--theme-amber-50: #fff9e8;
+	--theme-amber-50-50: rgba(255, 249, 232, 0.5);
+	--theme-amber-500: #f5a623;
+	--theme-amber-500-10: rgba(245, 166, 35, 0.1);
+	--theme-amber-500-15: rgba(245, 166, 35, 0.15);
+	--theme-amber-500-20: rgba(245, 166, 35, 0.2);
+	--theme-amber-500-25: rgba(245, 166, 35, 0.25);
+	--theme-amber-500-30: rgba(245, 166, 35, 0.3);
+	--theme-amber-500-40: rgba(245, 166, 35, 0.4);
+	--theme-amber-600: #d98200;
+	--theme-amber-700: #b76300;
+	--theme-amber-700-50: rgba(183, 99, 0, 0.5);
+	--theme-amber-800: #8d4f00;
+	--theme-amber-800-40: rgba(141, 79, 0, 0.4);
+	--theme-amber-800-90: rgba(141, 79, 0, 0.9);
+	--theme-amber-900: #6f3000;
+	--theme-amber-900-20: rgba(111, 48, 0, 0.2);
+	--theme-amber-900-30: rgba(111, 48, 0, 0.3);
+	--theme-amber-900-40: rgba(111, 48, 0, 0.4);
+	--theme-amber-900-50: rgba(111, 48, 0, 0.5);
+	--theme-amber-900-60: rgba(111, 48, 0, 0.6);
+	--theme-amber-900-70: rgba(111, 48, 0, 0.7);
+	--theme-amber-950: #3c1800;
+	--theme-amber-950-20: rgba(60, 24, 0, 0.2);
+	--theme-amber-950-30: rgba(60, 24, 0, 0.3);
+	--theme-amber-950-40: rgba(60, 24, 0, 0.4);
+	--theme-amber-950-60: rgba(60, 24, 0, 0.6);
+	--theme-black: #000000;
+	--theme-black-10: rgba(0, 0, 0, 0.1);
+	--theme-black-20: rgba(0, 0, 0, 0.2);
+	--theme-black-25: rgba(0, 0, 0, 0.25);
+	--theme-black-30: rgba(0, 0, 0, 0.3);
+	--theme-black-35: rgba(0, 0, 0, 0.35);
+	--theme-black-40: rgba(0, 0, 0, 0.4);
+	--theme-black-50: rgba(0, 0, 0, 0.5);
+	--theme-black-60: rgba(0, 0, 0, 0.6);
+	--theme-black-70: rgba(0, 0, 0, 0.7);
+	--theme-black-85: rgba(0, 0, 0, 0.85);
+	--theme-black-90: rgba(0, 0, 0, 0.9);
+	--theme-blue-100: #ffd6eb;
+	--theme-blue-200: #ffb2d2;
+	--theme-blue-300: #ff88bd;
+	--theme-blue-300-25: rgba(255, 136, 189, 0.25);
+	--theme-blue-400: #ff6bb3;
+	--theme-blue-400-10: rgba(255, 107, 179, 0.1);
+	--theme-blue-400-18: rgba(255, 107, 179, 0.18);
+	--theme-blue-400-20: rgba(255, 107, 179, 0.2);
+	--theme-blue-50: #ffe8f2;
+	--theme-blue-500: #ff4fa3;
+	--theme-blue-500-10: rgba(255, 79, 163, 0.1);
+	--theme-blue-500-15: rgba(255, 79, 163, 0.15);
+	--theme-blue-500-20: rgba(255, 79, 163, 0.2);
+	--theme-blue-500-5: rgba(255, 79, 163, 0.05);
+	--theme-blue-600: #e43b8d;
+	--theme-blue-700: #c83076;
+	--theme-blue-700-50: rgba(200, 48, 118, 0.5);
+	--theme-blue-800: #9d245d;
+	--theme-blue-900-30: rgba(131, 24, 67, 0.3);
+	--theme-blue-950-40: rgba(72, 13, 37, 0.4);
+	--theme-brand-10: rgba(255, 122, 24, 0.1);
+	--theme-brand-15: rgba(255, 122, 24, 0.15);
+	--theme-brand-20: rgba(255, 122, 24, 0.2);
+	--theme-brand-40: rgba(255, 122, 24, 0.4);
+	--theme-brand-5: rgba(255, 122, 24, 0.05);
+	--theme-brand-hover: #d95708;
+	--theme-custom-020617-0: rgba(8, 4, 13, 0);
+	--theme-custom-020617-2: rgba(8, 4, 13, 0.02);
+	--theme-custom-020617-8: rgba(8, 4, 13, 0.08);
+	--theme-custom-020817-0-14: rgba(8, 4, 13, 0.14);
+	--theme-custom-020817-0-55: rgba(8, 4, 13, 0.55);
+	--theme-custom-020817-10: rgba(8, 4, 13, 0.1);
+	--theme-custom-020817-18: rgba(8, 4, 13, 0.18);
+	--theme-custom-020817-35: rgba(8, 4, 13, 0.35);
+	--theme-custom-020817-40: rgba(8, 4, 13, 0.4);
+	--theme-custom-0284c7-18: rgba(227, 97, 10, 0.18);
+	--theme-custom-0284c7-35: rgba(227, 97, 10, 0.35);
+	--theme-custom-0284c7-50: rgba(227, 97, 10, 0.5);
+	--theme-custom-0284c7-60: rgba(227, 97, 10, 0.6);
+	--theme-custom-030712: #08040d;
+	--theme-custom-040816: #08040d;
+	--theme-custom-050212: #08040d;
+	--theme-custom-050816: #08040d;
+	--theme-custom-050b16: #08040d;
+	--theme-custom-06101f: #08040d;
+	--theme-custom-06111f: #08040d;
+	--theme-custom-06131f: #160c20;
+	--theme-custom-07111f: #08040d;
+	--theme-custom-07111f-0: rgba(8, 4, 13, 0);
+	--theme-custom-080f21-8: rgba(22, 12, 32, 0.08);
+	--theme-custom-08111b: #08040d;
+	--theme-custom-081221: #160c20;
+	--theme-custom-081627: #160c20;
+	--theme-custom-081826-85: rgba(22, 12, 32, 0.85);
+	--theme-custom-084b8a: #a63f08;
+	--theme-custom-0891b2-0-55: rgba(117, 75, 214, 0.55);
+	--theme-custom-090d18: #08040d;
+	--theme-custom-0a1a33: #160c20;
+	--theme-custom-0a3d78: #d95708;
+	--theme-custom-0a66c2: #ff7a18;
+	--theme-custom-0a66c2-16: rgba(255, 122, 24, 0.16);
+	--theme-custom-0a66c2-18: rgba(255, 122, 24, 0.18);
+	--theme-custom-0a66c2-30: rgba(255, 122, 24, 0.3);
+	--theme-custom-0a66c2-35: rgba(255, 122, 24, 0.35);
+	--theme-custom-0b1020: #160c20;
+	--theme-custom-0b1120: #160c20;
+	--theme-custom-0b1220: #160c20;
+	--theme-custom-0b1224: #160c20;
+	--theme-custom-0b1324: #160c20;
+	--theme-custom-0b1627-80: rgba(22, 12, 32, 0.8);
+	--theme-custom-0b1728: #160c20;
+	--theme-custom-0e7490-42: rgba(99, 59, 191, 0.42);
+	--theme-custom-0e7490-45: rgba(99, 59, 191, 0.45);
+	--theme-custom-0e7490-8: rgba(99, 59, 191, 0.08);
+	--theme-custom-0ea5e9-0-14: rgba(255, 122, 24, 0.14);
+	--theme-custom-0ea5e9-0-28: rgba(255, 122, 24, 0.28);
+	--theme-custom-0ea5e9-0-55: rgba(255, 122, 24, 0.55);
+	--theme-custom-0ea5e9-12: rgba(255, 122, 24, 0.12);
+	--theme-custom-0ea5e9-16: rgba(255, 122, 24, 0.16);
+	--theme-custom-0ea5e9-18: rgba(255, 122, 24, 0.18);
+	--theme-custom-0ea5e9-22: rgba(255, 122, 24, 0.22);
+	--theme-custom-0ea5e9-24: rgba(255, 122, 24, 0.24);
+	--theme-custom-0ea5e9-35: rgba(255, 122, 24, 0.35);
+	--theme-custom-0ea5e9-45: rgba(255, 122, 24, 0.45);
+	--theme-custom-0ea5e9-50: rgba(255, 122, 24, 0.5);
+	--theme-custom-0ea5e9-85: rgba(255, 122, 24, 0.85);
+	--theme-custom-0ea5e9-90: rgba(255, 122, 24, 0.9);
+	--theme-custom-0f0d22: #160c20;
+	--theme-custom-0f172a-12: rgba(22, 12, 32, 0.12);
+	--theme-custom-0f172a-16: rgba(22, 12, 32, 0.16);
+	--theme-custom-0f172a-18: rgba(22, 12, 32, 0.18);
+	--theme-custom-0f172a-22: rgba(22, 12, 32, 0.22);
+	--theme-custom-0f172a-35: rgba(22, 12, 32, 0.35);
+	--theme-custom-0f172a-45: rgba(22, 12, 32, 0.45);
+	--theme-custom-0f172a-6: rgba(22, 12, 32, 0.06);
+	--theme-custom-0f172a-8: rgba(22, 12, 32, 0.08);
+	--theme-custom-0f172a-96: rgba(22, 12, 32, 0.96);
+	--theme-custom-10b981-0-14: rgba(22, 163, 74, 0.14);
+	--theme-custom-10b981-0-55: rgba(22, 163, 74, 0.55);
+	--theme-custom-10b981-16: rgba(22, 163, 74, 0.16);
+	--theme-custom-10b981-18: rgba(22, 163, 74, 0.18);
+	--theme-custom-10b981-65: rgba(22, 163, 74, 0.65);
+	--theme-custom-13171e: #160c20;
+	--theme-custom-14122b: #160c20;
+	--theme-custom-150833: #160c20;
+	--theme-custom-171031: #160c20;
+	--theme-custom-1f2448: #3a2940;
+	--theme-custom-22c55e-12: rgba(22, 163, 74, 0.12);
+	--theme-custom-22d3ee-16: rgba(155, 123, 255, 0.16);
+	--theme-custom-2563eb-10: rgba(228, 59, 141, 0.1);
+	--theme-custom-2563eb-22: rgba(228, 59, 141, 0.22);
+	--theme-custom-2a2744: #3a2940;
+	--theme-custom-34d399-90: rgba(34, 197, 94, 0.9);
+	--theme-custom-38bdf8-0-14: rgba(255, 154, 69, 0.14);
+	--theme-custom-38bdf8-12: rgba(255, 154, 69, 0.12);
+	--theme-custom-38bdf8-16: rgba(255, 154, 69, 0.16);
+	--theme-custom-38bdf8-22: rgba(255, 154, 69, 0.22);
+	--theme-custom-38bdf8-24: rgba(255, 154, 69, 0.24);
+	--theme-custom-38bdf8-35: rgba(255, 154, 69, 0.35);
+	--theme-custom-38bdf8-8: rgba(255, 154, 69, 0.08);
+	--theme-custom-3b82f6-0-28: rgba(255, 79, 163, 0.28);
+	--theme-custom-3b82f6-12: rgba(255, 79, 163, 0.12);
+	--theme-custom-3b82f6-16: rgba(255, 79, 163, 0.16);
+	--theme-custom-3b82f6-18: rgba(255, 79, 163, 0.18);
+	--theme-custom-3b82f6-24: rgba(255, 79, 163, 0.24);
+	--theme-custom-3b82f6-35: rgba(255, 79, 163, 0.35);
+	--theme-custom-3b82f6-8: rgba(255, 79, 163, 0.08);
+	--theme-custom-60a5fa-0-14: rgba(255, 107, 179, 0.14);
+	--theme-custom-60a5fa-16: rgba(255, 107, 179, 0.16);
+	--theme-custom-6366f1-22: rgba(255, 79, 163, 0.22);
+	--theme-custom-7dd3fc-12: rgba(255, 173, 106, 0.12);
+	--theme-custom-7dd3fc-16: rgba(255, 173, 106, 0.16);
+	--theme-custom-7dd3fc-22: rgba(255, 173, 106, 0.22);
+	--theme-custom-8f95bb: #b8a3a3;
+	--theme-custom-94a3b8-35: rgba(184, 163, 163, 0.35);
+	--theme-custom-94a3b8-75: rgba(184, 163, 163, 0.75);
+	--theme-custom-b8bfe8: #b9a2ff;
+	--theme-custom-bae6fd-35: rgba(255, 199, 143, 0.35);
+	--theme-custom-d4ff59: #ffd166;
+	--theme-custom-e2efff: #ffe0b2;
+	--theme-custom-e7f1ff: #ffe8f2;
+	--theme-custom-eaf3ff: #ffe8f2;
+	--theme-custom-edf6ff: #ffe8f2;
+	--theme-custom-eef6ff: #ffe8f2;
+	--theme-custom-eef7ff: #ffe8f2;
+	--theme-custom-eef8ff: #ffe8f2;
+	--theme-custom-ef4444-8: rgba(225, 29, 72, 0.08);
+	--theme-custom-eff8ff: #fff0df;
+	--theme-custom-eff9ff: #fff0df;
+	--theme-custom-f3f9ff: #fff0df;
+	--theme-custom-f5f9ff: #fff9f4;
+	--theme-custom-f7fbff: #fff9f4;
+	--theme-custom-f8fafc-95: rgba(255, 249, 244, 0.95);
+	--theme-custom-f8fbff: #fff9f4;
+	--theme-custom-f8fcff: #fff9f4;
+	--theme-custom-f8fdff: #fff9f4;
+	--theme-custom-fb7171-15: rgba(244, 63, 94, 0.15);
+	--theme-custom-ffffff-0-55: rgba(255, 255, 255, 0.55);
+	--theme-custom-ffffff-12: rgba(255, 255, 255, 0.12);
+	--theme-custom-ffffff-2: rgba(255, 255, 255, 0.02);
+	--theme-custom-ffffff-3: rgba(255, 255, 255, 0.03);
+	--theme-custom-ffffff-4: rgba(255, 255, 255, 0.04);
+	--theme-cyan-200: #d9ceff;
+	--theme-cyan-300: #b9a2ff;
+	--theme-cyan-300-15: rgba(185, 162, 255, 0.15);
+	--theme-cyan-300-20: rgba(185, 162, 255, 0.2);
+	--theme-cyan-300-25: rgba(185, 162, 255, 0.25);
+	--theme-cyan-400: #9b7bff;
+	--theme-cyan-400-10: rgba(155, 123, 255, 0.1);
+	--theme-cyan-400-12: rgba(155, 123, 255, 0.12);
+	--theme-cyan-400-15: rgba(155, 123, 255, 0.15);
+	--theme-cyan-400-18: rgba(155, 123, 255, 0.18);
+	--theme-cyan-400-20: rgba(155, 123, 255, 0.2);
+	--theme-cyan-400-30: rgba(155, 123, 255, 0.3);
+	--theme-cyan-400-40: rgba(155, 123, 255, 0.4);
+	--theme-cyan-50: #f8f5ff;
+	--theme-cyan-500: #8b5cf6;
+	--theme-cyan-500-10: rgba(139, 92, 246, 0.1);
+	--theme-cyan-500-15: rgba(139, 92, 246, 0.15);
+	--theme-cyan-500-18: rgba(139, 92, 246, 0.18);
+	--theme-cyan-500-20: rgba(139, 92, 246, 0.2);
+	--theme-cyan-500-25: rgba(139, 92, 246, 0.25);
+	--theme-cyan-500-5: rgba(139, 92, 246, 0.05);
+	--theme-cyan-600: #754bd6;
+	--theme-cyan-700: #633bbf;
+	--theme-cyan-700-50: rgba(99, 59, 191, 0.5);
+	--theme-cyan-900-30: rgba(76, 29, 149, 0.3);
+	--theme-cyan-950-20: rgba(42, 16, 82, 0.2);
+	--theme-cyan-950-30: rgba(42, 16, 82, 0.3);
+	--theme-cyan-950-40: rgba(42, 16, 82, 0.4);
+	--theme-emerald-100: #bbf7d0;
+	--theme-emerald-200: #86efac;
+	--theme-emerald-200-80: rgba(134, 239, 172, 0.8);
+	--theme-emerald-300: #4ade80;
+	--theme-emerald-400: #22c55e;
+	--theme-emerald-400-10: rgba(34, 197, 94, 0.1);
+	--theme-emerald-400-15: rgba(34, 197, 94, 0.15);
+	--theme-emerald-400-20: rgba(34, 197, 94, 0.2);
+	--theme-emerald-400-25: rgba(34, 197, 94, 0.25);
+	--theme-emerald-400-30: rgba(34, 197, 94, 0.3);
+	--theme-emerald-400-40: rgba(34, 197, 94, 0.4);
+	--theme-emerald-400-8: rgba(34, 197, 94, 0.08);
+	--theme-emerald-50: #dcfce7;
+	--theme-emerald-500: #16a34a;
+	--theme-emerald-500-10: rgba(22, 163, 74, 0.1);
+	--theme-emerald-500-12: rgba(22, 163, 74, 0.12);
+	--theme-emerald-500-15: rgba(22, 163, 74, 0.15);
+	--theme-emerald-500-20: rgba(22, 163, 74, 0.2);
+	--theme-emerald-500-25: rgba(22, 163, 74, 0.25);
+	--theme-emerald-500-30: rgba(22, 163, 74, 0.3);
+	--theme-emerald-600: #15803d;
+	--theme-emerald-700: #166534;
+	--theme-emerald-700-50: rgba(22, 101, 52, 0.5);
+	--theme-emerald-800: #14532d;
+	--theme-emerald-900: #14532d;
+	--theme-emerald-900-30: rgba(20, 83, 45, 0.3);
+	--theme-emerald-900-40: rgba(20, 83, 45, 0.4);
+	--theme-emerald-900-50: rgba(20, 83, 45, 0.5);
+	--theme-emerald-900-60: rgba(20, 83, 45, 0.6);
+	--theme-emerald-950-30: rgba(11, 46, 25, 0.3);
+	--theme-emerald-950-40: rgba(11, 46, 25, 0.4);
+	--theme-emerald-950-60: rgba(11, 46, 25, 0.6);
+	--theme-fuchsia-300: #b9a2ff;
+	--theme-fuchsia-500-10: rgba(139, 92, 246, 0.1);
+	--theme-fuchsia-700: #633bbf;
+	--theme-gray-100: #f4ebe8;
+	--theme-gray-300: #d4c4be;
+	--theme-gray-400: #b8a3a3;
+	--theme-gray-500-20: rgba(156, 135, 147, 0.2);
+	--theme-gray-700: #59475c;
+	--theme-green-100: #bbf7d0;
+	--theme-green-300: #4ade80;
+	--theme-green-400: #22c55e;
+	--theme-green-500-10: rgba(22, 163, 74, 0.1);
+	--theme-green-500-30: rgba(22, 163, 74, 0.3);
+	--theme-green-600: #15803d;
+	--theme-green-700: #166534;
+	--theme-green-900-30: rgba(20, 83, 45, 0.3);
+	--theme-indigo-100: #ffd6eb;
+	--theme-indigo-200: #ffb2d2;
+	--theme-indigo-300: #ff88bd;
+	--theme-indigo-400: #ff6bb3;
+	--theme-indigo-400-10: rgba(255, 107, 179, 0.1);
+	--theme-indigo-50: #ffe8f2;
+	--theme-indigo-500: #ff4fa3;
+	--theme-indigo-500-10: rgba(255, 79, 163, 0.1);
+	--theme-indigo-500-15: rgba(255, 79, 163, 0.15);
+	--theme-indigo-500-20: rgba(255, 79, 163, 0.2);
+	--theme-indigo-500-30: rgba(255, 79, 163, 0.3);
+	--theme-indigo-500-80: rgba(255, 79, 163, 0.8);
+	--theme-indigo-600: #e43b8d;
+	--theme-indigo-700: #c83076;
+	--theme-orange-100: #fff4d6;
+	--theme-orange-200-80: rgba(255, 228, 168, 0.8);
+	--theme-orange-300: #ffd166;
+	--theme-orange-400: #ffbe45;
+	--theme-orange-500: #f5a623;
+	--theme-orange-500-10: rgba(245, 166, 35, 0.1);
+	--theme-orange-500-15: rgba(245, 166, 35, 0.15);
+	--theme-orange-600: #d98200;
+	--theme-pink-500: #8b5cf6;
+	--theme-pink-600: #754bd6;
+	--theme-purple-100: #eee9ff;
+	--theme-purple-400: #9b7bff;
+	--theme-purple-500-15: rgba(139, 92, 246, 0.15);
+	--theme-purple-600: #754bd6;
+	--theme-purple-700: #633bbf;
+	--theme-purple-700-50: rgba(99, 59, 191, 0.5);
+	--theme-purple-900-30: rgba(76, 29, 149, 0.3);
+	--theme-red-100: #ffe4e6;
+	--theme-red-200: #fda4af;
+	--theme-red-200-80: rgba(253, 164, 175, 0.8);
+	--theme-red-200-90: rgba(253, 164, 175, 0.9);
+	--theme-red-300: #fb7185;
+	--theme-red-300-30: rgba(251, 113, 133, 0.3);
+	--theme-red-400: #f43f5e;
+	--theme-red-400-10: rgba(244, 63, 94, 0.1);
+	--theme-red-50: #fff1f2;
+	--theme-red-500: #e11d48;
+	--theme-red-500-10: rgba(225, 29, 72, 0.1);
+	--theme-red-500-15: rgba(225, 29, 72, 0.15);
+	--theme-red-500-20: rgba(225, 29, 72, 0.2);
+	--theme-red-500-25: rgba(225, 29, 72, 0.25);
+	--theme-red-500-30: rgba(225, 29, 72, 0.3);
+	--theme-red-600: #be123c;
+	--theme-red-700: #9f1239;
+	--theme-red-700-50: rgba(159, 18, 57, 0.5);
+	--theme-red-800: #881337;
+	--theme-red-800-40: rgba(136, 19, 55, 0.4);
+	--theme-red-900-20: rgba(136, 19, 55, 0.2);
+	--theme-red-900-30: rgba(136, 19, 55, 0.3);
+	--theme-red-900-50: rgba(136, 19, 55, 0.5);
+	--theme-red-950-25: rgba(75, 10, 30, 0.25);
+	--theme-red-950-30: rgba(75, 10, 30, 0.3);
+	--theme-rose-100: #ffe4e6;
+	--theme-rose-200: #fda4af;
+	--theme-rose-200-60: rgba(253, 164, 175, 0.6);
+	--theme-rose-200-80: rgba(253, 164, 175, 0.8);
+	--theme-rose-300: #fb7185;
+	--theme-rose-400: #f43f5e;
+	--theme-rose-400-20: rgba(244, 63, 94, 0.2);
+	--theme-rose-400-30: rgba(244, 63, 94, 0.3);
+	--theme-rose-50: #fff1f2;
+	--theme-rose-50-80: rgba(255, 241, 242, 0.8);
+	--theme-rose-500: #e11d48;
+	--theme-rose-500-10: rgba(225, 29, 72, 0.1);
+	--theme-rose-500-12: rgba(225, 29, 72, 0.12);
+	--theme-rose-500-15: rgba(225, 29, 72, 0.15);
+	--theme-rose-500-20: rgba(225, 29, 72, 0.2);
+	--theme-rose-500-25: rgba(225, 29, 72, 0.25);
+	--theme-rose-500-30: rgba(225, 29, 72, 0.3);
+	--theme-rose-500-40: rgba(225, 29, 72, 0.4);
+	--theme-rose-600: #be123c;
+	--theme-rose-700: #9f1239;
+	--theme-rose-800: #881337;
+	--theme-rose-800-40: rgba(136, 19, 55, 0.4);
+	--theme-rose-900: #881337;
+	--theme-rose-900-20: rgba(136, 19, 55, 0.2);
+	--theme-rose-900-30: rgba(136, 19, 55, 0.3);
+	--theme-rose-900-40: rgba(136, 19, 55, 0.4);
+	--theme-rose-900-50: rgba(136, 19, 55, 0.5);
+	--theme-rose-900-60: rgba(136, 19, 55, 0.6);
+	--theme-rose-950-20: rgba(75, 10, 30, 0.2);
+	--theme-rose-950-30: rgba(75, 10, 30, 0.3);
+	--theme-rose-950-40: rgba(75, 10, 30, 0.4);
+	--theme-rose-950-50: rgba(75, 10, 30, 0.5);
+	--theme-rose-950-60: rgba(75, 10, 30, 0.6);
+	--theme-sky-100: #ffe0b2;
+	--theme-sky-100-50: rgba(255, 224, 178, 0.5);
+	--theme-sky-100-70: rgba(255, 224, 178, 0.7);
+	--theme-sky-100-75: rgba(255, 224, 178, 0.75);
+	--theme-sky-100-80: rgba(255, 224, 178, 0.8);
+	--theme-sky-200: #ffc78f;
+	--theme-sky-200-30: rgba(255, 199, 143, 0.3);
+	--theme-sky-200-40: rgba(255, 199, 143, 0.4);
+	--theme-sky-200-50: rgba(255, 199, 143, 0.5);
+	--theme-sky-200-60: rgba(255, 199, 143, 0.6);
+	--theme-sky-200-70: rgba(255, 199, 143, 0.7);
+	--theme-sky-200-80: rgba(255, 199, 143, 0.8);
+	--theme-sky-200-90: rgba(255, 199, 143, 0.9);
+	--theme-sky-300: #ffad6a;
+	--theme-sky-300-25: rgba(255, 173, 106, 0.25);
+	--theme-sky-300-30: rgba(255, 173, 106, 0.3);
+	--theme-sky-300-35: rgba(255, 173, 106, 0.35);
+	--theme-sky-300-50: rgba(255, 173, 106, 0.5);
+	--theme-sky-300-60: rgba(255, 173, 106, 0.6);
+	--theme-sky-300-70: rgba(255, 173, 106, 0.7);
+	--theme-sky-300-90: rgba(255, 173, 106, 0.9);
+	--theme-sky-400: #ff9a45;
+	--theme-sky-400-10: rgba(255, 154, 69, 0.1);
+	--theme-sky-400-15: rgba(255, 154, 69, 0.15);
+	--theme-sky-400-18: rgba(255, 154, 69, 0.18);
+	--theme-sky-400-20: rgba(255, 154, 69, 0.2);
+	--theme-sky-400-25: rgba(255, 154, 69, 0.25);
+	--theme-sky-400-30: rgba(255, 154, 69, 0.3);
+	--theme-sky-400-40: rgba(255, 154, 69, 0.4);
+	--theme-sky-400-50: rgba(255, 154, 69, 0.5);
+	--theme-sky-400-60: rgba(255, 154, 69, 0.6);
+	--theme-sky-400-70: rgba(255, 154, 69, 0.7);
+	--theme-sky-400-80: rgba(255, 154, 69, 0.8);
+	--theme-sky-400-90: rgba(255, 154, 69, 0.9);
+	--theme-sky-50: #fff0df;
+	--theme-sky-50-30: rgba(255, 240, 223, 0.3);
+	--theme-sky-50-50: rgba(255, 240, 223, 0.5);
+	--theme-sky-50-60: rgba(255, 240, 223, 0.6);
+	--theme-sky-50-70: rgba(255, 240, 223, 0.7);
+	--theme-sky-50-80: rgba(255, 240, 223, 0.8);
+	--theme-sky-50-85: rgba(255, 240, 223, 0.85);
+	--theme-sky-50-90: rgba(255, 240, 223, 0.9);
+	--theme-sky-500: #ff7a18;
+	--theme-sky-500-10: rgba(255, 122, 24, 0.1);
+	--theme-sky-500-15: rgba(255, 122, 24, 0.15);
+	--theme-sky-500-20: rgba(255, 122, 24, 0.2);
+	--theme-sky-500-25: rgba(255, 122, 24, 0.25);
+	--theme-sky-500-30: rgba(255, 122, 24, 0.3);
+	--theme-sky-500-40: rgba(255, 122, 24, 0.4);
+	--theme-sky-500-5: rgba(255, 122, 24, 0.05);
+	--theme-sky-500-60: rgba(255, 122, 24, 0.6);
+	--theme-sky-500-8: rgba(255, 122, 24, 0.08);
+	--theme-sky-500-80: rgba(255, 122, 24, 0.8);
+	--theme-sky-600: #e3610a;
+	--theme-sky-600-20: rgba(227, 97, 10, 0.2);
+	--theme-sky-600-75: rgba(227, 97, 10, 0.75);
+	--theme-sky-600-80: rgba(227, 97, 10, 0.8);
+	--theme-sky-700: #b94f08;
+	--theme-sky-800: #a63f08;
+	--theme-sky-800-40: rgba(166, 63, 8, 0.4);
+	--theme-sky-800-50: rgba(166, 63, 8, 0.5);
+	--theme-sky-900: #7a2e08;
+	--theme-sky-900-10: rgba(122, 46, 8, 0.1);
+	--theme-sky-900-30: rgba(122, 46, 8, 0.3);
+	--theme-sky-900-40: rgba(122, 46, 8, 0.4);
+	--theme-sky-900-50: rgba(122, 46, 8, 0.5);
+	--theme-sky-900-60: rgba(122, 46, 8, 0.6);
+	--theme-sky-950: #461707;
+	--theme-sky-950-10: rgba(70, 23, 7, 0.1);
+	--theme-sky-950-20: rgba(70, 23, 7, 0.2);
+	--theme-sky-950-25: rgba(70, 23, 7, 0.25);
+	--theme-sky-950-30: rgba(70, 23, 7, 0.3);
+	--theme-sky-950-40: rgba(70, 23, 7, 0.4);
+	--theme-sky-950-50: rgba(70, 23, 7, 0.5);
+	--theme-sky-950-60: rgba(70, 23, 7, 0.6);
+	--theme-sky-950-70: rgba(70, 23, 7, 0.7);
+	--theme-slate-100: #f4ebe8;
+	--theme-slate-100-70: rgba(244, 235, 232, 0.7);
+	--theme-slate-100-90: rgba(244, 235, 232, 0.9);
+	--theme-slate-200: #e7d9d2;
+	--theme-slate-200-10: rgba(231, 217, 210, 0.1);
+	--theme-slate-200-30: rgba(231, 217, 210, 0.3);
+	--theme-slate-200-40: rgba(231, 217, 210, 0.4);
+	--theme-slate-200-50: rgba(231, 217, 210, 0.5);
+	--theme-slate-200-60: rgba(231, 217, 210, 0.6);
+	--theme-slate-200-70: rgba(231, 217, 210, 0.7);
+	--theme-slate-200-80: rgba(231, 217, 210, 0.8);
+	--theme-slate-200-90: rgba(231, 217, 210, 0.9);
+	--theme-slate-300: #d4c4be;
+	--theme-slate-300-70: rgba(212, 196, 190, 0.7);
+	--theme-slate-300-80: rgba(212, 196, 190, 0.8);
+	--theme-slate-400: #b8a3a3;
+	--theme-slate-400-15: rgba(184, 163, 163, 0.15);
+	--theme-slate-400-20: rgba(184, 163, 163, 0.2);
+	--theme-slate-400-70: rgba(184, 163, 163, 0.7);
+	--theme-slate-50: #fff9f4;
+	--theme-slate-50-50: rgba(255, 249, 244, 0.5);
+	--theme-slate-50-60: rgba(255, 249, 244, 0.6);
+	--theme-slate-50-70: rgba(255, 249, 244, 0.7);
+	--theme-slate-50-80: rgba(255, 249, 244, 0.8);
+	--theme-slate-50-90: rgba(255, 249, 244, 0.9);
+	--theme-slate-500: #9c8793;
+	--theme-slate-500-10: rgba(156, 135, 147, 0.1);
+	--theme-slate-500-15: rgba(156, 135, 147, 0.15);
+	--theme-slate-500-20: rgba(156, 135, 147, 0.2);
+	--theme-slate-600: #766174;
+	--theme-slate-700: #59475c;
+	--theme-slate-700-30: rgba(89, 71, 92, 0.3);
+	--theme-slate-700-50: rgba(89, 71, 92, 0.5);
+	--theme-slate-700-60: rgba(89, 71, 92, 0.6);
+	--theme-slate-700-70: rgba(89, 71, 92, 0.7);
+	--theme-slate-800: #3a2940;
+	--theme-slate-800-30: rgba(58, 41, 64, 0.3);
+	--theme-slate-800-50: rgba(58, 41, 64, 0.5);
+	--theme-slate-800-60: rgba(58, 41, 64, 0.6);
+	--theme-slate-800-70: rgba(58, 41, 64, 0.7);
+	--theme-slate-800-80: rgba(58, 41, 64, 0.8);
+	--theme-slate-900: #160c20;
+	--theme-slate-900-10: rgba(22, 12, 32, 0.1);
+	--theme-slate-900-20: rgba(22, 12, 32, 0.2);
+	--theme-slate-900-30: rgba(22, 12, 32, 0.3);
+	--theme-slate-900-40: rgba(22, 12, 32, 0.4);
+	--theme-slate-900-5: rgba(22, 12, 32, 0.05);
+	--theme-slate-900-50: rgba(22, 12, 32, 0.5);
+	--theme-slate-900-60: rgba(22, 12, 32, 0.6);
+	--theme-slate-900-70: rgba(22, 12, 32, 0.7);
+	--theme-slate-900-75: rgba(22, 12, 32, 0.75);
+	--theme-slate-900-80: rgba(22, 12, 32, 0.8);
+	--theme-slate-900-90: rgba(22, 12, 32, 0.9);
+	--theme-slate-900-95: rgba(22, 12, 32, 0.95);
+	--theme-slate-950: #08040d;
+	--theme-slate-950-0-55: rgba(8, 4, 13, 0.55);
+	--theme-slate-950-15: rgba(8, 4, 13, 0.15);
+	--theme-slate-950-20: rgba(8, 4, 13, 0.2);
+	--theme-slate-950-25: rgba(8, 4, 13, 0.25);
+	--theme-slate-950-30: rgba(8, 4, 13, 0.3);
+	--theme-slate-950-35: rgba(8, 4, 13, 0.35);
+	--theme-slate-950-40: rgba(8, 4, 13, 0.4);
+	--theme-slate-950-50: rgba(8, 4, 13, 0.5);
+	--theme-slate-950-60: rgba(8, 4, 13, 0.6);
+	--theme-slate-950-65: rgba(8, 4, 13, 0.65);
+	--theme-slate-950-70: rgba(8, 4, 13, 0.7);
+	--theme-slate-950-75: rgba(8, 4, 13, 0.75);
+	--theme-slate-950-80: rgba(8, 4, 13, 0.8);
+	--theme-slate-950-85: rgba(8, 4, 13, 0.85);
+	--theme-slate-950-90: rgba(8, 4, 13, 0.9);
+	--theme-slate-950-95: rgba(8, 4, 13, 0.95);
+	--theme-slate-950-98: rgba(8, 4, 13, 0.98);
+	--theme-teal-400-10: rgba(34, 197, 94, 0.1);
+	--theme-teal-500-15: rgba(22, 163, 74, 0.15);
+	--theme-teal-600: #15803d;
+	--theme-violet-100: #eee9ff;
+	--theme-violet-200: #d9ceff;
+	--theme-violet-300: #b9a2ff;
+	--theme-violet-400-30: rgba(155, 123, 255, 0.3);
+	--theme-violet-500: #8b5cf6;
+	--theme-violet-500-10: rgba(139, 92, 246, 0.1);
+	--theme-violet-500-15: rgba(139, 92, 246, 0.15);
+	--theme-violet-500-20: rgba(139, 92, 246, 0.2);
+	--theme-violet-700: #633bbf;
+	--theme-violet-950-60: rgba(42, 16, 82, 0.6);
+	--theme-white: #ffffff;
+	--theme-white-10: rgba(255, 255, 255, 0.1);
+	--theme-white-15: rgba(255, 255, 255, 0.15);
+	--theme-white-20: rgba(255, 255, 255, 0.2);
+	--theme-white-25: rgba(255, 255, 255, 0.25);
+	--theme-white-30: rgba(255, 255, 255, 0.3);
+	--theme-white-40: rgba(255, 255, 255, 0.4);
+	--theme-white-45: rgba(255, 255, 255, 0.45);
+	--theme-white-5: rgba(255, 255, 255, 0.05);
+	--theme-white-50: rgba(255, 255, 255, 0.5);
+	--theme-white-6: rgba(255, 255, 255, 0.06);
+	--theme-white-60: rgba(255, 255, 255, 0.6);
+	--theme-white-65: rgba(255, 255, 255, 0.65);
+	--theme-white-70: rgba(255, 255, 255, 0.7);
+	--theme-white-75: rgba(255, 255, 255, 0.75);
+	--theme-white-8: rgba(255, 255, 255, 0.08);
+	--theme-white-80: rgba(255, 255, 255, 0.8);
+	--theme-white-85: rgba(255, 255, 255, 0.85);
+	--theme-white-90: rgba(255, 255, 255, 0.9);
+	--theme-white-95: rgba(255, 255, 255, 0.95);
+	--theme-yellow-100: #fff4d6;
+	--theme-yellow-300: #ffd166;
+	--theme-yellow-500: #f5a623;
+	--theme-yellow-500-10: rgba(245, 166, 35, 0.1);
+	--theme-zinc-200: #e7d9d2;
+	--theme-zinc-500-15: rgba(156, 135, 147, 0.15);
+	--theme-zinc-500-20: rgba(156, 135, 147, 0.2);
+	--theme-zinc-700: #59475c;
+}
+
+/* ==========================================================================
+   Solaris — refined master roles / gradients / shadows (chunk B)
+   Same scope; later wins. NOTE: the paste's second custom-* set carried
+   plasma-mapped values for identical token names, so it is intentionally
+   excluded — chunk A's solaris-mapped custom-* set above stands.
+   ========================================================================== */
+
+[data-theme="solaris"] {
+	/* Compatibility families: preserve hue identity instead of collapsing every
+     utility into one neon color. */
+	--theme-brand: #ff2db5;
+	--theme-brand-hover: #c80b84;
+	--theme-brand-active: #a20b6a;
+	--theme-brand-5: rgba(255, 45, 181, 0.05);
+	--theme-brand-10: rgba(255, 45, 181, 0.1);
+	--theme-brand-15: rgba(255, 45, 181, 0.15);
+	--theme-brand-20: rgba(255, 45, 181, 0.2);
+	--theme-brand-40: rgba(255, 45, 181, 0.4);
+	--theme-blue-brand: var(--theme-blue-500);
+	--theme-cyan-brand: var(--theme-cyan-500);
+	--theme-violet-brand: var(--theme-violet-500);
+	--theme-purple-brand: var(--theme-violet-500);
+	--theme-pink-brand: var(--theme-pink-500);
+	--theme-fuchsia-brand: var(--theme-pink-500);
+	--theme-sky-brand: var(--theme-cyan-500);
+
+	--theme-pink-500: #ff2db5;
+	--theme-pink-600: #eb0f9d;
+	--theme-fuchsia-300: #ff9cdf;
+	--theme-fuchsia-500: #ff2db5;
+	--theme-fuchsia-700: #c80b84;
+	--theme-purple-100: #e9e0ff;
+	--theme-purple-400: #a88bff;
+	--theme-purple-500-15: rgba(139, 92, 246, 0.15);
+	--theme-purple-600: #7544dc;
+	--theme-purple-700: #6033bd;
+	--theme-purple-700-50: rgba(96, 51, 189, 0.5);
+	--theme-purple-900-30: rgba(53, 26, 111, 0.3);
+
+	--theme-black-5: rgba(0, 0, 0, 0.05);
+	--theme-black-8: rgba(0, 0, 0, 0.08);
+	--theme-black-10: rgba(0, 0, 0, 0.1);
+	--theme-black-12: rgba(0, 0, 0, 0.12);
+	--theme-black-15: rgba(0, 0, 0, 0.15);
+	--theme-black-20: rgba(0, 0, 0, 0.2);
+	--theme-black-25: rgba(0, 0, 0, 0.25);
+	--theme-black-30: rgba(0, 0, 0, 0.3);
+	--theme-black-35: rgba(0, 0, 0, 0.35);
+	--theme-black-40: rgba(0, 0, 0, 0.4);
+	--theme-black-50: rgba(0, 0, 0, 0.5);
+	--theme-black-60: rgba(0, 0, 0, 0.6);
+	--theme-black-70: rgba(0, 0, 0, 0.7);
+	--theme-black-80: rgba(0, 0, 0, 0.8);
+	--theme-black-85: rgba(0, 0, 0, 0.85);
+	--theme-black-90: rgba(0, 0, 0, 0.9);
+	--theme-white-5: rgba(255, 255, 255, 0.05);
+	--theme-white-8: rgba(255, 255, 255, 0.08);
+	--theme-white-10: rgba(255, 255, 255, 0.1);
+	--theme-white-12: rgba(255, 255, 255, 0.12);
+	--theme-white-15: rgba(255, 255, 255, 0.15);
+	--theme-white-20: rgba(255, 255, 255, 0.2);
+	--theme-white-25: rgba(255, 255, 255, 0.25);
+	--theme-white-30: rgba(255, 255, 255, 0.3);
+	--theme-white-35: rgba(255, 255, 255, 0.35);
+	--theme-white-40: rgba(255, 255, 255, 0.4);
+	--theme-white-50: rgba(255, 255, 255, 0.5);
+	--theme-white-60: rgba(255, 255, 255, 0.6);
+	--theme-white-70: rgba(255, 255, 255, 0.7);
+	--theme-white-80: rgba(255, 255, 255, 0.8);
+	--theme-white-85: rgba(255, 255, 255, 0.85);
+	--theme-white-90: rgba(255, 255, 255, 0.9);
+	--theme-white-95: rgba(255, 255, 255, 0.95);
+	--theme-black: #000000;
+	--theme-white: #ffffff;
+
+	/* Light mode: high-energy brand on a clean rose-lavender neutral. */
+	--theme-background: #fffafd;
+	--theme-bg: #fffafd;
+	--theme-page-bg: #fffafd;
+	--theme-surface: #fff5fb;
+	--theme-surface-solid: #ffffff;
+	--theme-surface-elevated: #ffffff;
+	--theme-surface-soft: #fdf0f7;
+	--theme-surface-subtle: #f8edf5;
+	--theme-card: rgba(255, 255, 255, 0.82);
+	--theme-card-solid: #ffffff;
+	--theme-panel: rgba(255, 255, 255, 0.92);
+	--theme-panel-solid: #ffffff;
+	--theme-overlay: rgba(17, 0, 12, 0.08);
+
+	--theme-text: #220914;
+	--theme-text-bright: #13050c;
+	--theme-text-primary: #220914;
+	--theme-text-secondary: #5b2949;
+	--theme-text-muted: #8e607a;
+	--theme-text-faint: #ad829a;
+	--theme-heading: #13050c;
+	--theme-body-text: #402036;
+	--theme-input-placeholder: #a16f8b;
+
+	--theme-border: #efd5e5;
+	--theme-border-soft: #f6e5ef;
+	--theme-border-strong: #e0b8d0;
+	--theme-border-accent: rgba(255, 45, 181, 0.24);
+	--theme-border-active: rgba(255, 45, 181, 0.46);
+	--theme-border-focus: rgba(109, 92, 246, 0.7);
+
+	--theme-accent: #d91a9e;
+	--theme-accent-strong: #b80f85;
+	--theme-accent-soft: #ffe4f5;
+	--theme-primary: #d91a9e;
+	--theme-primary-hover: #b80f85;
+	--theme-primary-active: #97106f;
+	--theme-primary-soft: #ffe4f5;
+	--theme-secondary: #7a4ae0;
+	--theme-secondary-hover: #6334bd;
+	--theme-secondary-soft: #eee7ff;
+	--theme-tertiary: #2580ef;
+	--theme-tertiary-hover: #1f63c5;
+	--theme-focus: #6d5cf6;
+	--theme-focus-strong: #4f3ed9;
+
+	--theme-glass-bg: rgba(255, 255, 255, 0.6);
+	--theme-glass-bg-strong: rgba(255, 255, 255, 0.84);
+	--theme-glass-border: rgba(217, 26, 158, 0.16);
+	--theme-glass-border-strong: rgba(109, 92, 246, 0.28);
+	--theme-glass-highlight: rgba(255, 255, 255, 0.76);
+
+	--theme-success: #10d98b;
+	--theme-success-text: #08764e;
+	--theme-warning: #ffb020;
+	--theme-warning-text: #a96508;
+	--theme-danger: #ff4568;
+	--theme-danger-text: #bd2343;
+
+	/* Modern layered shadows. */
+	--theme-shadow-xs: 0 1px 2px rgba(17, 0, 12, 0.05);
+	--theme-shadow-sm: 0 4px 12px rgba(35, 8, 22, 0.07);
+	--theme-shadow-md: 0 10px 28px rgba(38, 8, 24, 0.1), 0 2px 8px rgba(255, 45, 181, 0.05);
+	--theme-shadow-lg: 0 18px 48px rgba(38, 8, 24, 0.12), 0 5px 16px rgba(109, 92, 246, 0.07);
+	--theme-shadow-xl: 0 28px 80px rgba(38, 8, 24, 0.15), 0 8px 24px rgba(109, 92, 246, 0.08);
+	--theme-shadow-2xl: 0 40px 110px rgba(38, 8, 24, 0.18), 0 12px 34px rgba(255, 45, 181, 0.1);
+	--theme-shadow-brand: 0 18px 54px rgba(255, 45, 181, 0.24), 0 4px 16px rgba(139, 92, 246, 0.1);
+	--theme-shadow-focus: 0 0 0 3px rgba(109, 92, 246, 0.24), 0 0 0 1px rgba(255, 45, 181, 0.72);
+	--theme-shadow-glass: 0 20px 60px rgba(38, 8, 24, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+
+	/* Canonical gradients. */
+	--theme-gradient-primary: linear-gradient(90deg, #ff2db5 0%, #8b5cf6 48%, #22d3ee 100%);
+	--theme-gradient-brand: linear-gradient(
+		135deg,
+		#d91a9e 0%,
+		#8b5cf6 48%,
+		#3b82f6 72%,
+		#22d3ee 100%
+	);
+	--theme-gradient-plasma: linear-gradient(
+		135deg,
+		#ff2db5 0%,
+		#8b5cf6 36%,
+		#3b82f6 68%,
+		#22d3ee 100%
+	);
+	--theme-gradient-neon: linear-gradient(
+		90deg,
+		#ff2db5 0%,
+		#ff5dcc 28%,
+		#8b5cf6 52%,
+		#3b82f6 76%,
+		#22d3ee 100%
+	);
+	--theme-gradient-violet: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 100%);
+	--theme-gradient-cyan: linear-gradient(90deg, #3b82f6 0%, #22d3ee 100%);
+	--theme-gradient-soft: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.09) 0%,
+		rgba(139, 92, 246, 0.07) 50%,
+		rgba(34, 211, 238, 0.06) 100%
+	);
+	--theme-gradient-surface: linear-gradient(135deg, #fff8fc 0%, #ffffff 52%, #eefbff 100%);
+	--theme-gradient-success: linear-gradient(90deg, #0db677 0%, #10d98b 100%);
+	--theme-gradient-warning: linear-gradient(90deg, #d88b0f 0%, #ffb020 100%);
+	--theme-gradient-danger: linear-gradient(90deg, #c82447 0%, #ff4568 100%);
+	--theme-radial-plasma: radial-gradient(
+		circle at 80% 15%,
+		rgba(255, 45, 181, 0.12) 0%,
+		rgba(139, 92, 246, 0.05) 30%,
+		transparent 68%
+	);
+	--theme-radial-cyan: radial-gradient(
+		circle at 18% 100%,
+		rgba(34, 211, 238, 0.09) 0%,
+		rgba(59, 130, 246, 0.03) 32%,
+		transparent 64%
+	);
+	--theme-gradient-aurora:
+		radial-gradient(circle at 82% 14%, rgba(255, 45, 181, 0.1) 0%, transparent 28%),
+		radial-gradient(circle at 18% 100%, rgba(34, 211, 238, 0.08) 0%, transparent 34%);
+
+	--theme-chat-accent: #ff2db5;
+	--theme-chat-accent-hover: #eb0f9d;
+	--theme-chat-input: #f7eaf2;
+	--theme-chat-muted: #8e607a;
+	--theme-chat-page-bg: #fffafd;
+	--theme-chat-panel-bg: #ffffff;
+	--theme-chat-right-panel: #ffffff;
+	--theme-chat-subpanel: #fff5fb;
+	--theme-chat-text: #402036;
+	--theme-chat-thread-active: #ffe4f5;
+	--theme-chat-thread-idle: transparent;
+	--theme-chat-tile: #f8edf5;
+	--theme-chat-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+
+	--theme-border-default: var(--theme-border);
+	--theme-text-default: var(--theme-text);
+	--theme-surface-default: var(--theme-surface);
+	--theme-link: var(--theme-accent);
+	--theme-link-hover: var(--theme-accent-strong);
+	--theme-button-primary: var(--theme-primary);
+	--theme-button-primary-hover: var(--theme-primary-hover);
+	--theme-button-primary-text: #ffffff;
+	--theme-button-secondary: var(--theme-secondary);
+	--theme-button-secondary-hover: var(--theme-secondary-hover);
+	--theme-button-secondary-text: #ffffff;
+	--theme-selection-bg: rgba(255, 45, 181, 0.18);
+	--theme-selection-text: #220914;
+
+	--theme-gradient-1: var(--theme-gradient-primary);
+	--theme-gradient-2: var(--theme-gradient-plasma);
+	--theme-gradient-3: var(--theme-gradient-brand);
+	--theme-gradient-4: var(--theme-gradient-neon);
+	--theme-gradient-5: var(--theme-gradient-primary);
+	--theme-gradient-6: var(--theme-gradient-violet);
+	--theme-gradient-7: var(--theme-gradient-surface);
+	--theme-gradient-8: var(--theme-gradient-surface);
+	--theme-gradient-9: var(--theme-gradient-brand);
+	--theme-gradient-10: var(--theme-gradient-plasma);
+	--theme-gradient-11: var(--theme-gradient-soft);
+	--theme-gradient-12: var(--theme-gradient-brand);
+	--theme-gradient-13: var(--theme-gradient-cyan);
+	--theme-gradient-14: var(--theme-gradient-plasma);
+	--theme-gradient-15: var(--theme-gradient-primary);
+	--theme-gradient-16: linear-gradient(135deg, #ffffff 0%, rgba(255, 240, 251, 0.92) 100%);
+	--theme-gradient-17: linear-gradient(135deg, #e9e4ec 0%, #cbc3d0 100%);
+	--theme-gradient-18: var(--theme-gradient-soft);
+	--theme-gradient-19: var(--theme-gradient-soft);
+	--theme-gradient-20: var(--theme-gradient-soft);
+	--theme-gradient-21: var(--theme-gradient-brand);
+	--theme-gradient-22: var(--theme-gradient-soft);
+	--theme-gradient-23: var(--theme-gradient-soft);
+	--theme-gradient-24: linear-gradient(135deg, #fff5fb 0%, #ffffff 100%);
+	--theme-gradient-25: var(--theme-gradient-neon);
+	--theme-gradient-26: var(--theme-gradient-success);
+	--theme-gradient-27: var(--theme-gradient-cyan);
+	--theme-gradient-28: var(--theme-gradient-surface);
+	--theme-gradient-29: linear-gradient(90deg, #7544dc 0%, #6033bd 100%);
+	--theme-gradient-30: var(--theme-gradient-violet);
+	--theme-gradient-31: var(--theme-gradient-success);
+	--theme-gradient-32: var(--theme-gradient-soft);
+	--theme-gradient-33: var(--theme-gradient-soft);
+	--theme-gradient-34: var(--theme-gradient-warning);
+	--theme-gradient-35: var(--theme-gradient-danger);
+	--theme-gradient-36: linear-gradient(
+		0deg,
+		rgba(5, 2, 13, 0.75) 0%,
+		rgba(5, 2, 13, 0.35) 50%,
+		transparent 100%
+	);
+	--theme-gradient-37: var(--theme-gradient-neon);
+	--theme-gradient-38: linear-gradient(90deg, #c80b84 0%, #ff6dcc 50%, #6033bd 100%);
+	--theme-gradient-39: var(--theme-gradient-soft);
+	--theme-gradient-40: linear-gradient(135deg, #fff5fb 0%, #ecfeff 100%);
+	--theme-gradient-41: var(--theme-gradient-plasma);
+	--theme-gradient-42: linear-gradient(90deg, #ff2db5 0%, #6033bd 100%);
+	--theme-gradient-43: linear-gradient(135deg, #ff2db5 0%, #6033bd 100%);
+	--theme-gradient-44: linear-gradient(90deg, #ff2db5 0%, #8b5cf6 50%, #ff6dcc 100%);
+	--theme-gradient-45: linear-gradient(90deg, #c80b84 0%, #ff6dcc 100%);
+	--theme-gradient-46: linear-gradient(90deg, #ff2db5 0%, #7544dc 50%, #ff9cdf 100%);
+	--theme-gradient-47: linear-gradient(135deg, #ff2db5 0%, #ff6dcc 50%, #6033bd 100%);
+	--theme-gradient-48: var(--theme-gradient-soft);
+	--theme-gradient-49: linear-gradient(90deg, #10d98b 0%, #22d3ee 100%);
+	--theme-gradient-50: var(--theme-gradient-neon);
+	--theme-gradient-51: linear-gradient(90deg, #ff6dcc 0%, #ff9cdf 100%);
+	--theme-gradient-52: linear-gradient(90deg, #ff4568 0%, #ffb020 50%, #10d98b 100%);
+	--theme-gradient-53: var(--theme-gradient-soft);
+	--theme-gradient-54: var(--theme-gradient-soft);
+	--theme-gradient-55: var(--theme-gradient-plasma);
+	--theme-gradient-56: linear-gradient(90deg, #ff6dcc 0%, #ffc2ee 100%);
+	--theme-gradient-57: linear-gradient(135deg, #ff2db5 0%, #ff9cdf 50%, #ff6dcc 100%);
+	--theme-gradient-58: var(--theme-gradient-soft);
+	--theme-gradient-59: var(--theme-gradient-soft);
+	--theme-gradient-60: linear-gradient(90deg, #ffe0f7 0%, #fff5fb 100%);
+	--theme-gradient-61: linear-gradient(135deg, #ff9cdf 0%, #ff2db5 50%, #7544dc 100%);
+	--theme-gradient-62: linear-gradient(135deg, #ff6dcc 0%, #8b5cf6 50%, #3b82f6 100%);
+	--theme-gradient-63: var(--theme-gradient-soft);
+	--theme-gradient-64: var(--theme-gradient-soft);
+	--theme-gradient-65: var(--theme-gradient-soft);
+	--theme-gradient-66: linear-gradient(
+		0deg,
+		rgba(5, 2, 13, 0.5) 0%,
+		transparent 50%,
+		transparent 100%
+	);
+	--theme-gradient-67: linear-gradient(135deg, #ff2db5 0%, #22d3ee 100%);
+	--theme-gradient-68: linear-gradient(135deg, #ffe0f7 0%, #fff5fb 50%, #e1dcff 100%);
+	--theme-gradient-69: linear-gradient(135deg, #05020d 0%, #120821 50%, #0d2248 100%);
+	--theme-gradient-70: linear-gradient(
+		0deg,
+		rgba(5, 2, 13, 0.9) 0%,
+		rgba(5, 2, 13, 0.4) 50%,
+		transparent 100%
+	);
+	--theme-gradient-71: linear-gradient(
+		0deg,
+		rgba(5, 2, 13, 0.55) 0%,
+		transparent 50%,
+		transparent 100%
+	);
+	--theme-gradient-72: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.18) 0%,
+		rgba(139, 92, 246, 0.1) 50%,
+		transparent 100%
+	);
+	--theme-gradient-73: linear-gradient(
+		90deg,
+		rgba(255, 109, 204, 0.18) 0%,
+		rgba(255, 156, 223, 0.1) 100%
+	);
+	--theme-gradient-74: linear-gradient(
+		90deg,
+		rgba(168, 139, 255, 0.18) 0%,
+		rgba(162, 197, 255, 0.1) 100%
+	);
+	--theme-gradient-75: var(--theme-gradient-soft);
+	--theme-gradient-76: linear-gradient(
+		180deg,
+		rgba(255, 45, 181, 0.18) 0%,
+		rgba(34, 211, 238, 0.08) 50%,
+		transparent 100%
+	);
+	--theme-gradient-77: linear-gradient(180deg, rgba(255, 245, 251, 0.8) 0%, #ffffff 100%);
+	--theme-gradient-78: linear-gradient(0deg, #ff2db5 0%, #8b5cf6 50%, #22d3ee 100%);
+	--theme-gradient-79: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 100%);
+	--theme-gradient-80: var(--theme-gradient-soft);
+	--theme-gradient-81: var(--theme-gradient-soft);
+	--theme-gradient-82: linear-gradient(180deg, #fff5fb 0%, #ffffff 50%, #ffffff 100%);
+	--theme-gradient-83: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.09) 0%,
+		#ffffff 50%,
+		rgba(34, 211, 238, 0.08) 100%
+	);
+	--theme-gradient-84: linear-gradient(135deg, #ff2db5 0%, #78ecff 100%);
+	--theme-gradient-85: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.15) 0%,
+		rgba(120, 236, 255, 0.15) 100%
+	);
+	--theme-gradient-86: linear-gradient(135deg, #fff5fb 0%, #f3efff 100%);
+	--theme-gradient-87: var(--theme-gradient-neon);
+	--theme-gradient-88: var(--theme-gradient-soft);
+	--theme-gradient-89: linear-gradient(90deg, #ff6dcc 0%, #a88bff 100%);
+	--theme-gradient-90: linear-gradient(135deg, #fff5fb 0%, #f5f2f7 100%);
+	--theme-gradient-91: linear-gradient(90deg, #8b5cf6 0%, #7544dc 100%);
+	--theme-gradient-92: linear-gradient(90deg, #ff4568 0%, #22d3ee 100%);
+	--theme-gradient-93: linear-gradient(90deg, #22d3ee 0%, #10b9d4 100%);
+	--theme-gradient-94: linear-gradient(90deg, #ffb020 0%, #e39a18 100%);
+	--theme-gradient-95: linear-gradient(135deg, #fff5fb 0%, #f3efff 50%, #ffffff 100%);
+	--theme-gradient-96: linear-gradient(270deg, #ffffff 0%, transparent 100%);
+	--theme-gradient-97: linear-gradient(135deg, #e2dde5 0%, #f5f2f7 100%);
+	--theme-gradient-98: linear-gradient(135deg, #ff2db5 0%, #4d279a 100%);
+	--theme-gradient-99: linear-gradient(135deg, #8b5cf6 0%, #a88bff 100%);
+	--theme-gradient-100: linear-gradient(135deg, #6d5cf6 0%, #3b82f6 100%);
+	--theme-gradient-101: linear-gradient(90deg, #ff2db5 0%, #8b5cf6 50%, #3b82f6 100%);
+	--theme-gradient-102: linear-gradient(90deg, #ff9cdf 0%, #ff2db5 100%);
+	--theme-gradient-103: linear-gradient(90deg, #ffb020 0%, #ffb020 100%);
+	--theme-gradient-104: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.1) 0%,
+		rgba(139, 92, 246, 0.05) 100%
+	);
+	--theme-gradient-105: linear-gradient(90deg, #ffe0f7 0%, #f3efff 100%);
+	--theme-gradient-106: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.1) 0%,
+		rgba(139, 92, 246, 0.05) 50%,
+		rgba(34, 211, 238, 0.05) 100%
+	);
+	--theme-gradient-107: linear-gradient(
+		90deg,
+		rgba(34, 211, 238, 0.1) 0%,
+		rgba(59, 130, 246, 0.05) 50%,
+		rgba(139, 92, 246, 0.05) 100%
+	);
+	--theme-gradient-108: linear-gradient(
+		90deg,
+		rgba(139, 92, 246, 0.1) 0%,
+		rgba(59, 130, 246, 0.05) 50%,
+		rgba(255, 45, 181, 0.05) 100%
+	);
+	--theme-gradient-109: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.1) 0%,
+		rgba(139, 92, 246, 0.05) 50%,
+		rgba(34, 211, 238, 0.05) 100%
+	);
+	--theme-gradient-110: linear-gradient(90deg, #a88bff 0%, #8b5cf6 50%, #78ecff 100%);
+	--theme-gradient-111: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.05) 0%,
+		rgba(139, 92, 246, 0.05) 50%,
+		rgba(34, 211, 238, 0.05) 100%
+	);
+	--theme-gradient-112: linear-gradient(135deg, #a88bff 0%, #8b5cf6 50%, #78ecff 100%);
+	--theme-gradient-113: linear-gradient(90deg, #ff2db5 0%, #7544dc 50%, #78ecff 100%);
+	--theme-gradient-hero: var(--theme-gradient-plasma);
+
+	--theme-shadow-1: 0 20px 60px rgba(20, 4, 18, 0.08);
+	--theme-shadow-2: 0 20px 70px rgba(20, 4, 18, 0.08);
+	--theme-shadow-3: 0 20px 60px -30px rgba(255, 45, 181, 0.28);
+	--theme-shadow-4: 0 10px 40px rgba(20, 4, 18, 0.08);
+	--theme-shadow-5: 0 20px 60px rgba(5, 2, 13, 0.4);
+	--theme-shadow-6: 0 30px 80px rgba(20, 4, 18, 0.08);
+	--theme-shadow-7: 0 20px 60px -30px rgba(255, 45, 181, 0.24);
+	--theme-shadow-8: 0 18px 50px -30px rgba(5, 2, 13, 0.35);
+	--theme-shadow-9: 0 20px 70px -35px rgba(5, 2, 13, 0.45);
+	--theme-shadow-10: 0 0 0 1px rgba(255, 45, 181, 0.14);
+	--theme-shadow-11: 0 24px 80px -28px rgba(255, 45, 181, 0.3);
+	--theme-shadow-12: 0 0 0 4px rgba(109, 92, 246, 0.18);
+	--theme-shadow-13: 0 20px 60px -30px rgba(255, 45, 181, 0.28);
+	--theme-shadow-14: inset 0 0 0 1px rgba(187, 176, 196, 0.35);
+	--theme-shadow-15: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+	--theme-shadow-16: 0 24px 90px rgba(5, 2, 13, 0.1);
+	--theme-shadow-17: 0 24px 90px rgba(0, 0, 0, 0.35);
+	--theme-shadow-18: 0 20px 60px -25px rgba(160, 122, 248, 0.28);
+	--theme-shadow-19: 0 20px 60px -30px rgba(59, 130, 246, 0.22);
+	--theme-shadow-20: 0 18px 60px -30px rgba(224, 40, 144, 0.24);
+	--theme-shadow-21: 0 22px 80px -38px rgba(20, 4, 18, 0.35);
+	--theme-shadow-22: 0 12px 40px rgba(5, 2, 13, 0.35);
+	--theme-shadow-23: 0 12px 30px rgba(20, 4, 18, 0.06);
+	--theme-shadow-24: 0 18px 55px rgba(5, 2, 13, 0.4);
+	--theme-shadow-25: 0 18px 45px rgba(20, 4, 18, 0.06);
+	--theme-shadow-26: 0 20px 60px rgba(5, 2, 13, 0.35);
+	--theme-shadow-27: 0 24px 100px rgba(255, 45, 181, 0.08);
+	--theme-shadow-28: 0 20px 80px rgba(139, 92, 246, 0.12);
+	--theme-shadow-29: 0 20px 60px rgba(255, 45, 181, 0.09);
+	--theme-shadow-30: 0 20px 80px rgba(20, 4, 18, 0.08);
+	--theme-shadow-31: 0 20px 80px rgba(5, 2, 13, 0.55);
+	--theme-shadow-32: 0 20px 70px rgba(255, 45, 181, 0.1);
+	--theme-shadow-33: 0 24px 80px rgba(255, 45, 181, 0.1);
+	--theme-shadow-34: 0 0 0 4px rgba(16, 217, 139, 0.15);
+	--theme-shadow-35: 0 20px 60px -30px rgba(255, 45, 181, 0.2);
+	--theme-shadow-36: 0 24px 80px rgba(20, 4, 18, 0.12);
+	--theme-shadow-37: 0 24px 80px rgba(0, 0, 0, 0.35);
+	--theme-shadow-38: 0 20px 45px rgba(255, 45, 181, 0.1);
+	--theme-shadow-39: 0 25px 70px rgba(20, 4, 18, 0.16);
+	--theme-shadow-40: 0 30px 90px rgba(20, 4, 18, 0.22);
+	--theme-shadow-41: inset 3px 0 0 rgba(187, 176, 196, 0.75);
+	--theme-shadow-42: inset 3px 0 0 rgba(255, 255, 255, 0.12);
+	--theme-shadow-43: 0 25px 70px rgba(20, 4, 18, 0.18);
+	--theme-shadow-44: 0 20px 80px -30px rgba(224, 40, 144, 0.28);
+	--theme-shadow-45: 0 30px 120px -50px rgba(255, 45, 181, 0.38);
+	--theme-shadow-46: 0 30px 100px -40px rgba(34, 211, 238, 0.3);
+	--theme-shadow-47: 0 16px 40px rgba(5, 2, 13, 0.14);
+	--theme-shadow-48: 0 20px 50px rgba(5, 2, 13, 0.18);
+	--theme-shadow-49: 0 20px 60px -35px rgba(139, 92, 246, 0.26);
+	--theme-shadow-50: 0 0 32px rgba(255, 45, 181, 0.12);
+	--theme-shadow-51: 0 0 24px rgba(139, 92, 246, 0.09);
+	--theme-shadow-52: 0 0 24px rgba(34, 211, 238, 0.12);
+	--theme-shadow-53: 0 20px 80px rgba(0, 0, 0, 0.35);
+	--theme-shadow-54: 0 20px 80px rgba(34, 211, 238, 0.06);
+	--theme-shadow-55: 0 20px 60px -25px rgba(224, 40, 144, 0.24);
+	--theme-shadow-56: 0 25px 80px rgba(20, 4, 18, 0.12);
+	--theme-shadow-57: 0 20px 80px -30px rgba(255, 109, 204, 0.17);
+	--theme-shadow-58: 0 20px 80px -30px rgba(255, 45, 181, 0.14);
+	--theme-shadow-59: 0 24px 120px rgba(20, 4, 18, 0.1);
+	--theme-shadow-60: 0 12px 60px rgba(255, 45, 181, 0.1);
+	--theme-shadow-61: 0 20px 80px -30px rgba(255, 45, 181, 0.24);
+	--theme-shadow-62: 0 12px 40px rgba(20, 4, 18, 0.08);
+	--theme-shadow-63: 0 24px 80px -35px rgba(139, 92, 246, 0.38);
+	--theme-shadow-64: 0 18px 50px rgba(20, 4, 18, 0.08);
+	--theme-shadow-65: 0 18px 45px rgba(20, 4, 18, 0.08);
+	--theme-shadow-66: 0 24px 70px rgba(20, 4, 18, 0.1);
+	--theme-shadow-67: 0 10px 40px rgba(5, 2, 13, 0.35);
+	--theme-shadow-68: 0 0 0 6px rgba(16, 217, 139, 0.12);
+	--theme-shadow-69: 0 10px 40px rgba(255, 69, 104, 0.08);
+	--theme-shadow-70: 0 10px 40px rgba(255, 45, 181, 0.08);
+	--theme-shadow-71: 0 10px 40px rgba(20, 4, 18, 0.06);
+	--theme-shadow-72: 0 10px 35px rgba(20, 4, 18, 0.08);
+	--theme-shadow-73: 0 20px 60px -30px rgba(20, 4, 18, 0.35);
+	--theme-shadow-74: 0 20px 80px -40px rgba(139, 92, 246, 0.25);
+	--theme-shadow-75: 0 30px 100px -50px rgba(139, 92, 246, 0.35);
+	--theme-shadow-76: 0 20px 70px -30px rgba(59, 130, 246, 0.25);
+	--theme-shadow-77: 0 0 0 1px rgba(16, 217, 139, 0.18), 0 10px 24px rgba(16, 217, 139, 0.12);
+	--theme-shadow-78: 0 0 0 1px rgba(16, 217, 139, 0.14), 0 0 32px rgba(16, 217, 139, 0.16);
+	--theme-shadow-79: 0 0 16px rgba(16, 217, 139, 0.65);
+	--theme-shadow-80: 0 0 18px rgba(16, 217, 139, 0.55);
+	--theme-shadow-81: 0 22px 60px rgba(5, 2, 13, 0.55);
+	--theme-shadow-82: 0 30px 80px rgba(5, 2, 13, 0.65);
+	--theme-shadow-83: 0 0 8px rgba(255, 45, 181, 0.55);
+	--theme-shadow-84: 0 24px 80px -35px rgba(255, 45, 181, 0.28);
+	--theme-shadow-85: 0 0 0 4px rgba(255, 176, 32, 0.15);
+	--theme-shadow-86: 0 0 0 4px rgba(255, 69, 104, 0.15);
+	--theme-shadow-87: 0 14px 40px -16px rgba(255, 45, 181, 0.7);
+	--theme-shadow-88: 0 20px 60px -18px rgba(255, 45, 181, 0.75);
+	--theme-shadow-89: 0 18px 70px -34px rgba(20, 4, 18, 0.4);
+	--theme-shadow-90: 0 18px 70px -36px rgba(20, 4, 18, 0.35);
+	--theme-shadow-91: 0 18px 70px -36px rgba(20, 4, 18, 0.3);
+	--theme-shadow-92: 0 0 12px rgba(57, 217, 155, 0.9);
+	--theme-shadow-93: 0 0 10px rgba(57, 217, 155, 0.9);
+	--theme-shadow-94: 0 0 0 4px rgba(16, 217, 139, 0.12);
+	--theme-shadow-95: 0 30px 80px rgba(5, 2, 13, 0.55);
+	--theme-shadow-96: 0 30px 80px rgba(139, 92, 246, 0.16);
+	--theme-shadow-97: 0 12px 30px rgba(255, 45, 181, 0.14);
+	--theme-shadow-98: 0 30px 120px rgba(5, 2, 13, 0.18);
+	--theme-shadow-99: 0 18px 40px rgba(255, 45, 181, 0.28);
+	--theme-shadow-100: 0 24px 60px rgba(255, 45, 181, 0.3);
+	--theme-shadow-101: 0 0 20px rgba(255, 45, 181, 0.38);
+
+	/* Solaris master semantic aliases (final word on roles) */
+	--theme-brand: #ff7a18;
+	--theme-brand-hover: #e85d04;
+	--theme-accent: #ff7a18;
+	--theme-accent-strong: #d95708;
+	--theme-border: #ead8e4;
+	--theme-border-accent: rgba(255, 79, 163, 0.42);
+	--theme-input-placeholder: #9a8492;
+	--theme-success-text: #15803d;
+	--theme-warning-text: #a85f00;
+	--theme-surface: #fff9f4;
+	--theme-surface-solid: #ffffff;
+	--theme-text: #1a0b18;
+	--theme-text-bright: #140813;
+	--theme-text-faint: #9a8492;
+	--theme-text-muted: #6c5368;
+	--theme-text-secondary: #4f3b4d;
+	--theme-chat-accent: #ff7a18;
+	--theme-chat-input: #f6ebe3;
+	--theme-chat-muted: #8f788f;
+	--theme-chat-page-bg: #fff9f4;
+	--theme-chat-panel-bg: #ffffff;
+	--theme-chat-right-panel: #ffffff;
+	--theme-chat-subpanel: #fffdfb;
+	--theme-chat-text: #3a2940;
+	--theme-chat-thread-active: #fff0df;
+	--theme-chat-thread-idle: transparent;
+	--theme-chat-tile: #f4ebe8;
+
+	--theme-gradient-primary: linear-gradient(90deg, #ff7a18 0%, #ff4fa3 54%, #8b5cf6 100%);
+	--theme-gradient-hero: linear-gradient(135deg, #fff0df 0%, #fff8f5 46%, #f8f5ff 100%);
+	--theme-gradient-solaris: linear-gradient(120deg, #ff7a18 0%, #ff4fa3 52%, #8b5cf6 100%);
+	--theme-gradient-solaris-warm: linear-gradient(120deg, #ff7a18 0%, #ffd166 46%, #ff4fa3 100%);
+	--theme-gradient-solaris-cosmic: linear-gradient(120deg, #ff4fa3 0%, #8b5cf6 100%);
+
+	--theme-shadow-solaris:
+		0 24px 70px -28px rgba(255, 122, 24, 0.34), 0 12px 36px -22px rgba(255, 79, 163, 0.2);
+	--theme-shadow-solaris-glow: 0 0 40px rgba(255, 122, 24, 0.2), 0 0 70px rgba(139, 92, 246, 0.12);
+	--theme-shadow-solaris-card: 0 18px 50px rgba(68, 31, 58, 0.1), 0 2px 10px rgba(68, 31, 58, 0.05);
+}

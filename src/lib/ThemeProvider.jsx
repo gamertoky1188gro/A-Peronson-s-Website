@@ -1,6 +1,12 @@
 import { createContext, useContext, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { applyThemeToDOM, setTheme, syncThemeFromStorage, toggleTheme } from "../store/themeSlice.js";
+import {
+	applyThemeToDOM,
+	setTheme,
+	setThemeName,
+	syncThemeFromStorage,
+	toggleTheme,
+} from "../store/themeSlice.js";
 
 function resolveTheme(mode) {
 	if (mode === "system") {
@@ -13,13 +19,14 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
 	const theme = useSelector((s) => s.theme.theme);
+	const themeName = useSelector((s) => s.theme.themeName);
 	const dispatch = useDispatch();
 	const resolved = useMemo(() => resolveTheme(theme), [theme]);
 
 	useEffect(() => {
-		// Canonical theme name is fixed; modes switch values centrally.
-		document.documentElement.setAttribute("data-theme", "blue");
-	}, []);
+		// Theme personality scope; modes switch values centrally per theme.
+		document.documentElement.setAttribute("data-theme", themeName || "blue");
+	}, [themeName]);
 
 	useEffect(() => {
 		dispatch(syncThemeFromStorage());
@@ -27,7 +34,7 @@ export function ThemeProvider({ children }) {
 
 	useEffect(() => {
 		function handleStorage(e) {
-			if (e.key === "theme") {
+			if (e.key === "theme" || e.key === "themeName") {
 				dispatch(syncThemeFromStorage());
 			}
 		}
@@ -51,16 +58,11 @@ export function ThemeProvider({ children }) {
 			value={{
 				theme: resolved,
 				themeMode: theme,
-				themeName: "blue",
+				themeName: themeName || "blue",
 				resolvedTheme: resolved,
 				setTheme: (t) => dispatch(setTheme(t)),
-				/** Canonical runtime API: setTheme("blue") keeps the blue theme (mode via dark/light/system). */
-				setThemeName: (name) => {
-					if (name && name !== "blue") {
-						return;
-					}
-					document.documentElement.setAttribute("data-theme", "blue");
-				},
+				/** Canonical runtime API: setThemeName("<slug>") — see registry.js. */
+				setThemeName: (name) => dispatch(setThemeName(name)),
 				toggleTheme: () => dispatch(toggleTheme()),
 			}}
 		>

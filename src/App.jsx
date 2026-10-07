@@ -9,6 +9,7 @@ import NavBar from "./components/NavBar.jsx";
 import OfflineBanner from "./components/OfflineBanner.jsx";
 import ScrollProgressBar from "./components/ScrollProgressBar.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import ThemeSwitcher from "./components/ThemeSwitcher.jsx";
 import { ToastProvider } from "./components/ToastContainer.jsx";
 import NeonAtom from "./components/ui/NeonAtom.jsx";
 import { clearSession, getCurrentUser, getToken, verifyAndSyncUser } from "./lib/auth.js";
@@ -140,7 +141,7 @@ function ProtectedRoute({ children, roles }) {
 	const isUnlockPage = location.pathname === "/settings" || location.pathname === "/profile";
 	if (isLocked && !isUnlockPage) {
 		return (
-			<div class="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#0b1220] px-4">
+			<div class="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[var(--theme-custom-0b1220)] px-4">
 				<div class="max-w-md w-full rounded-3xl border border-white/70 bg-white/80 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80">
 					<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
 						<svg
@@ -518,13 +519,13 @@ function AppLayout() {
 		) : (
 			<>
 				{hideChrome ? null : <ScrollProgressBar />}
-				<div class="flex w-full justify-center bg-slate-50 dark:bg-[#0b1220]">
+				<div class="flex w-full justify-center bg-slate-50 dark:bg-[var(--theme-custom-0b1220)]">
 					<div
 						class={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
 						style={{ width: "100%" }}
 					>
 						{hideChrome ? null : <NavBar />}
-						<main class="flex flex-1 min-h-0 flex-col bg-slate-50 dark:bg-[#0b1220] overflow-x-hidden">
+						<main class="flex flex-1 min-h-0 flex-col bg-slate-50 dark:bg-[var(--theme-custom-0b1220)] overflow-x-hidden">
 							<ErrorBoundary>
 								<Suspense
 									fallback={
@@ -685,6 +686,7 @@ function App() {
 				</ErrorBoundary>
 				<ScrollToTop />
 				<OfflineBanner />
+				<ThemeSwitcher />
 			</ToastProvider>
 		</BrowserRouter>
 	);

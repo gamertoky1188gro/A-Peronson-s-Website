@@ -1,5 +1,18 @@
 @import "tailwindcss";
 @import "./theme/blueTheme.css";
+@import "./theme/themes/blue-overlay.css";
+@import "./theme/themes/aurora.css";
+@import "./theme/themes/violet.css";
+@import "./theme/themes/sapphire.css";
+@import "./theme/themes/arctic.css";
+@import "./theme/themes/emerald.css";
+@import "./theme/themes/blurple.css";
+@import "./theme/themes/mono.css";
+@import "./theme/themes/plasma.css";
+@import "./theme/themes/solaris.css";
+@import "./theme/themes/forest.css";
+@import "./theme/themes/crimson.css";
+@import "./theme/themes/tailwind-tokens.css";
 @plugin "@tailwindcss/typography";
 
 /* Self-hosted Inter (variable 300-700, latin). Same-origin + preloaded in
@@ -87,7 +100,11 @@
 		background-image: linear-gradient(90deg, #2563eb 0%, #22d3ee 100%);
 	}
 	.theme-gradient-glass {
-		background-image: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%);
+		background-image: linear-gradient(
+			135deg,
+			rgba(56, 189, 248, 0.12) 0%,
+			rgba(59, 130, 246, 0.08) 100%
+		);
 	}
 	.theme-glow-blue {
 		box-shadow: 0 0 24px rgba(59, 130, 246, 0.25);

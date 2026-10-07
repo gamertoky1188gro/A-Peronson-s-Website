@@ -3173,7 +3173,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 		<div
 			class={cx(
 				bodyTheme,
-				"min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#07111f] dark:text-white",
+				"min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[var(--theme-custom-07111f)] dark:text-white",
 			)}
 		>
 			<div class="absolute inset-0 -z-10 overflow-hidden">

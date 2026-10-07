@@ -1,0 +1,919 @@
+/* ==========================================================================
+ * Cyberpunk Plasma — authored overlay (neon cyberpunk DNA)
+ * Appended AFTER the generated base in src/theme/themes/plasma.css by
+ * scripts/generate-themes.py; values here WIN on conflict.
+ * Pink = primary identity, violet = secondary/AI, blue = data/nav,
+ * cyan = realtime/highlights. Semantic colors stay semantic.
+ *
+ * Submitted draft verified leak-free (no bare :root / .dark selectors).
+ * ========================================================================== */
+
+/* ==========================================================================
+   Cyberpunk Plasma — GarTexHub master theme
+   Neon cyberpunk DNA:
+   plasma pink → ultraviolet violet → electric blue → ion cyan
+
+   Pink      = primary identity
+   Violet    = secondary / AI
+   Blue      = navigation / data
+   Cyan      = realtime / highlights
+   Semantic  = status only
+   ========================================================================== */
+
+[data-theme="plasma"] {
+	color-scheme: light;
+
+	/* ========================================================================
+     PLASMA PINK
+     ======================================================================== */
+
+	--theme-pink-50: #fff0fb;
+	--theme-pink-100: #ffe0f7;
+	--theme-pink-200: #ffc2ee;
+	--theme-pink-300: #ff9cdf;
+	--theme-pink-400: #ff6dcc;
+	--theme-pink-500: #ff2db5;
+	--theme-pink-600: #eb0f9d;
+	--theme-pink-700: #c80b84;
+	--theme-pink-800: #a20b6a;
+	--theme-pink-900: #700a4a;
+	--theme-pink-950: #43072e;
+
+	/* ========================================================================
+     ULTRAVIOLET
+     ======================================================================== */
+
+	--theme-violet-50: #f3efff;
+	--theme-violet-100: #e9e0ff;
+	--theme-violet-200: #d6c8ff;
+	--theme-violet-300: #bdabff;
+	--theme-violet-400: #a88bff;
+	--theme-violet-500: #8b5cf6;
+	--theme-violet-600: #7544dc;
+	--theme-violet-700: #6033bd;
+	--theme-violet-800: #4d279a;
+	--theme-violet-900: #351a6f;
+	--theme-violet-950: #210f4a;
+
+	/* ========================================================================
+     ELECTRIC BLUE
+     ======================================================================== */
+
+	--theme-blue-50: #edf6ff;
+	--theme-blue-100: #dcecff;
+	--theme-blue-200: #c1ddff;
+	--theme-blue-300: #9bc5ff;
+	--theme-blue-400: #6ea7ff;
+	--theme-blue-500: #3b82f6;
+	--theme-blue-600: #2c67db;
+	--theme-blue-700: #2152b7;
+	--theme-blue-800: #1c448f;
+	--theme-blue-900: #18376f;
+	--theme-blue-950: #0d2248;
+
+	/* ========================================================================
+     ION CYAN
+     ======================================================================== */
+
+	--theme-cyan-50: #ecfeff;
+	--theme-cyan-100: #d5fbff;
+	--theme-cyan-200: #aaf5ff;
+	--theme-cyan-300: #78ecff;
+	--theme-cyan-400: #42e3ff;
+	--theme-cyan-500: #22d3ee;
+	--theme-cyan-600: #10b9d4;
+	--theme-cyan-700: #0798b1;
+	--theme-cyan-800: #08788b;
+	--theme-cyan-900: #0a5b6c;
+	--theme-cyan-950: #063b47;
+
+	/* ========================================================================
+     OBSIDIAN / PLASMA NEUTRALS
+     ======================================================================== */
+
+	--theme-slate-50: #f5f2f7;
+	--theme-slate-100: #e9e4ec;
+	--theme-slate-200: #d7cedc;
+	--theme-slate-300: #bbb0c4;
+	--theme-slate-400: #9b8da6;
+	--theme-slate-500: #7b6b87;
+	--theme-slate-600: #62536f;
+	--theme-slate-700: #4d4059;
+	--theme-slate-800: #392e43;
+	--theme-slate-900: #271d31;
+	--theme-slate-950: #170f20;
+
+	/* ========================================================================
+     SEMANTIC BRAND ROLES
+     ======================================================================== */
+
+	--theme-brand: #ff2db5;
+	--theme-brand-hover: #c80b84;
+	--theme-brand-active: #a20b6a;
+
+	--theme-accent: #d91a9e;
+	--theme-accent-strong: #b80f85;
+	--theme-accent-soft: #ffe4f5;
+
+	--theme-primary: #d91a9e;
+	--theme-primary-hover: #b80f85;
+	--theme-primary-active: #97106f;
+	--theme-primary-soft: #ffe4f5;
+
+	--theme-secondary: #7a4ae0;
+	--theme-secondary-hover: #6334bd;
+	--theme-secondary-soft: #eee7ff;
+
+	--theme-tertiary: #2580ef;
+	--theme-tertiary-hover: #1f63c5;
+
+	--theme-focus: #6d5cf6;
+	--theme-focus-strong: #4f3ed9;
+
+	/* ========================================================================
+     LIGHT SURFACES
+     ======================================================================== */
+
+	--theme-background: #fffafd;
+	--theme-bg: #fffafd;
+	--theme-page-bg: #fffafd;
+
+	--theme-surface: #fff5fb;
+	--theme-surface-solid: #ffffff;
+	--theme-surface-elevated: #ffffff;
+	--theme-surface-soft: #fdf0f7;
+	--theme-surface-subtle: #f8edf5;
+
+	/* ========================================================================
+     LIGHT TEXT
+     ======================================================================== */
+
+	--theme-text: #220914;
+	--theme-text-bright: #13050c;
+	--theme-text-primary: #220914;
+	--theme-text-secondary: #5b2949;
+	--theme-text-muted: #8e607a;
+	--theme-text-faint: #ad829a;
+
+	--theme-heading: #13050c;
+	--theme-body-text: #402036;
+	--theme-input-placeholder: #a16f8b;
+
+	/* ========================================================================
+     BORDERS / GLASS
+     ======================================================================== */
+
+	--theme-border: #efd5e5;
+	--theme-border-soft: #f6e5ef;
+	--theme-border-strong: #e0b8d0;
+
+	--theme-border-accent: rgba(255, 45, 181, 0.24);
+	--theme-border-active: rgba(255, 45, 181, 0.46);
+	--theme-border-focus: rgba(109, 92, 246, 0.7);
+
+	--theme-glass-bg: rgba(255, 255, 255, 0.6);
+	--theme-glass-bg-strong: rgba(255, 255, 255, 0.84);
+	--theme-glass-border: rgba(217, 26, 158, 0.16);
+	--theme-glass-border-strong: rgba(109, 92, 246, 0.28);
+	--theme-glass-highlight: rgba(255, 255, 255, 0.76);
+
+	/* ========================================================================
+     STATUS
+     ======================================================================== */
+
+	--theme-success: #10d98b;
+	--theme-success-text: #08764e;
+
+	--theme-warning: #ffb020;
+	--theme-warning-text: #a96508;
+
+	--theme-danger: #ff4568;
+	--theme-danger-text: #bd2343;
+
+	/* ========================================================================
+     HERO / CYBERPUNK GRADIENTS
+     ======================================================================== */
+
+	--theme-gradient-primary: linear-gradient(90deg, #ff2db5 0%, #8b5cf6 48%, #22d3ee 100%);
+
+	--theme-gradient-brand: linear-gradient(
+		135deg,
+		#d91a9e 0%,
+		#8b5cf6 48%,
+		#3b82f6 72%,
+		#22d3ee 100%
+	);
+
+	--theme-gradient-plasma: linear-gradient(
+		135deg,
+		#ff2db5 0%,
+		#8b5cf6 36%,
+		#3b82f6 68%,
+		#22d3ee 100%
+	);
+
+	--theme-gradient-neon: linear-gradient(
+		90deg,
+		#ff2db5 0%,
+		#ff5dcc 28%,
+		#8b5cf6 52%,
+		#3b82f6 76%,
+		#22d3ee 100%
+	);
+
+	--theme-gradient-violet: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 100%);
+
+	--theme-gradient-cyan: linear-gradient(90deg, #3b82f6 0%, #22d3ee 100%);
+
+	--theme-gradient-soft: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.09) 0%,
+		rgba(139, 92, 246, 0.07) 50%,
+		rgba(34, 211, 238, 0.06) 100%
+	);
+
+	--theme-gradient-surface: linear-gradient(135deg, #fff8fc 0%, #ffffff 52%, #eefbff 100%);
+
+	/* ========================================================================
+     SUBTLE CYBERPUNK ATMOSPHERE
+     ======================================================================== */
+
+	--theme-radial-plasma: radial-gradient(
+		circle at 80% 15%,
+		rgba(255, 45, 181, 0.12) 0%,
+		rgba(139, 92, 246, 0.05) 30%,
+		transparent 68%
+	);
+
+	--theme-radial-cyan: radial-gradient(
+		circle at 18% 100%,
+		rgba(34, 211, 238, 0.09) 0%,
+		rgba(59, 130, 246, 0.03) 32%,
+		transparent 64%
+	);
+
+	--theme-gradient-aurora:
+		radial-gradient(circle at 82% 14%, rgba(255, 45, 181, 0.1) 0%, transparent 28%),
+		radial-gradient(circle at 18% 100%, rgba(34, 211, 238, 0.08) 0%, transparent 34%);
+}
+
+/* ==========================================================================
+   CYBERPUNK PLASMA — DARK MODE
+   ========================================================================== */
+
+[data-theme="plasma"][data-mode="dark"],
+.dark[data-theme="plasma"] {
+	color-scheme: dark;
+
+	--theme-background: #05020d;
+	--theme-bg: #05020d;
+	--theme-page-bg: #05020d;
+
+	--theme-surface: rgba(255, 255, 255, 0.045);
+	--theme-surface-solid: #0b0515;
+	--theme-surface-elevated: #140b24;
+	--theme-surface-soft: #10081d;
+	--theme-surface-subtle: #180d2b;
+
+	--theme-card: rgba(20, 11, 36, 0.78);
+	--theme-card-solid: #120821;
+
+	--theme-panel: rgba(11, 5, 21, 0.9);
+	--theme-panel-solid: #0b0515;
+
+	--theme-text: #fff7fd;
+	--theme-text-bright: #ffffff;
+	--theme-text-primary: #fff7fd;
+	--theme-text-secondary: #f0cfe3;
+	--theme-text-muted: #c395ad;
+	--theme-text-faint: #956b86;
+
+	--theme-heading: #ffffff;
+	--theme-body-text: #efd4e4;
+
+	--theme-border: #3a1c4a;
+	--theme-border-soft: #25132f;
+	--theme-border-strong: #522463;
+
+	--theme-border-accent: rgba(255, 45, 181, 0.26);
+
+	--theme-border-active: rgba(139, 92, 246, 0.48);
+
+	--theme-border-focus: rgba(120, 236, 255, 0.72);
+
+	--theme-brand: #ff5dcc;
+	--theme-brand-hover: #ff8de0;
+	--theme-brand-active: #ffb5ea;
+
+	--theme-accent: #ff6dcc;
+	--theme-accent-strong: #ff9cdf;
+
+	--theme-primary: #ff2db5;
+	--theme-primary-hover: #ff6dcc;
+	--theme-primary-active: #ff9cdf;
+
+	--theme-secondary: #8b5cf6;
+	--theme-secondary-hover: #a88bff;
+
+	--theme-tertiary: #22d3ee;
+	--theme-tertiary-hover: #78ecff;
+
+	--theme-focus: #78ecff;
+	--theme-focus-strong: #a88bff;
+
+	--theme-glass-bg: rgba(18, 8, 33, 0.58);
+	--theme-glass-bg-strong: rgba(20, 11, 36, 0.8);
+
+	--theme-glass-border: rgba(255, 93, 204, 0.14);
+
+	--theme-glass-border-strong: rgba(120, 236, 255, 0.24);
+
+	--theme-glass-highlight: rgba(255, 255, 255, 0.05);
+
+	/* Cyberpunk Plasma — dark hero */
+	--theme-gradient-primary: linear-gradient(90deg, #ff2db5 0%, #8b5cf6 48%, #22d3ee 100%);
+
+	--theme-gradient-plasma: linear-gradient(
+		135deg,
+		#ff2db5 0%,
+		#8b5cf6 36%,
+		#3b82f6 68%,
+		#22d3ee 100%
+	);
+
+	--theme-gradient-surface: linear-gradient(135deg, #0b0515 0%, #140b24 52%, #180d2b 100%);
+
+	--theme-gradient-dark: linear-gradient(90deg, #05020d 0%, #120821 100%);
+
+	/* Neon glows are intentionally limited to emphasis. */
+	--theme-glow-pink-sm: 0 0 18px rgba(255, 45, 181, 0.2);
+
+	--theme-glow-pink: 0 0 30px rgba(255, 45, 181, 0.28);
+
+	--theme-glow-pink-lg: 0 0 52px rgba(255, 45, 181, 0.36);
+
+	--theme-glow-violet: 0 0 30px rgba(139, 92, 246, 0.24);
+
+	--theme-glow-cyan: 0 0 30px rgba(34, 211, 238, 0.24);
+
+	/* Chat */
+	--theme-chat-accent: #ff2db5;
+	--theme-chat-accent-hover: #ff6dcc;
+	--theme-chat-input: #1a0c2a;
+	--theme-chat-muted: #c395ad;
+	--theme-chat-page-bg: #05020d;
+	--theme-chat-panel-bg: #0d0618;
+	--theme-chat-right-panel: #0d0618;
+	--theme-chat-subpanel: #140b24;
+	--theme-chat-text: #fff7fd;
+	--theme-chat-thread-active: #32144a;
+	--theme-chat-thread-idle: rgba(5, 2, 13, 0.55);
+	--theme-chat-tile: #1a0c2a;
+
+	--theme-chat-shadow: 0 10px 40px rgba(0, 0, 0, 0.48);
+
+	--theme-gradient-hero: var(--theme-gradient-plasma);
+}
+
+/* ==========================================================================
+   Cyberpunk Plasma — pink alpha-scale extensions (appended from full master)
+   Same [data-theme="plasma"] scope; later declarations win. Values verified
+   identical to the base pink ramp above; these fill the alpha-variant slots.
+   ========================================================================== */
+
+[data-theme="plasma"] {
+	--theme-pink-400-5: rgba(255, 109, 204, 0.05);
+	--theme-pink-400-8: rgba(255, 109, 204, 0.08);
+	--theme-pink-400-10: rgba(255, 109, 204, 0.1);
+	--theme-pink-400-12: rgba(255, 109, 204, 0.12);
+	--theme-pink-400-15: rgba(255, 109, 204, 0.15);
+	--theme-pink-400-16: rgba(255, 109, 204, 0.16);
+	--theme-pink-400-18: rgba(255, 109, 204, 0.18);
+	--theme-pink-400-20: rgba(255, 109, 204, 0.2);
+	--theme-pink-400-22: rgba(255, 109, 204, 0.22);
+	--theme-pink-400-24: rgba(255, 109, 204, 0.24);
+	--theme-pink-400-25: rgba(255, 109, 204, 0.25);
+	--theme-pink-400-28: rgba(255, 109, 204, 0.28);
+	--theme-pink-400-30: rgba(255, 109, 204, 0.3);
+	--theme-pink-400-35: rgba(255, 109, 204, 0.35);
+	--theme-pink-400-40: rgba(255, 109, 204, 0.4);
+	--theme-pink-400-50: rgba(255, 109, 204, 0.5);
+	--theme-pink-400-60: rgba(255, 109, 204, 0.6);
+	--theme-pink-400-70: rgba(255, 109, 204, 0.7);
+	--theme-pink-400-75: rgba(255, 109, 204, 0.75);
+	--theme-pink-400-80: rgba(255, 109, 204, 0.8);
+	--theme-pink-400-85: rgba(255, 109, 204, 0.85);
+	--theme-pink-400-90: rgba(255, 109, 204, 0.9);
+	--theme-pink-500-5: rgba(255, 45, 181, 0.05);
+	--theme-pink-500-8: rgba(255, 45, 181, 0.08);
+	--theme-pink-500-10: rgba(255, 45, 181, 0.1);
+	--theme-pink-500-12: rgba(255, 45, 181, 0.12);
+	--theme-pink-500-15: rgba(255, 45, 181, 0.15);
+	--theme-pink-500-16: rgba(255, 45, 181, 0.16);
+	--theme-pink-500-18: rgba(255, 45, 181, 0.18);
+	--theme-pink-500-20: rgba(255, 45, 181, 0.2);
+	--theme-pink-500-22: rgba(255, 45, 181, 0.22);
+	--theme-pink-500-24: rgba(255, 45, 181, 0.24);
+	--theme-pink-500-25: rgba(255, 45, 181, 0.25);
+	--theme-pink-500-28: rgba(255, 45, 181, 0.28);
+	--theme-pink-500-30: rgba(255, 45, 181, 0.3);
+	--theme-pink-500-35: rgba(255, 45, 181, 0.35);
+	--theme-pink-500-40: rgba(255, 45, 181, 0.4);
+	--theme-pink-500-50: rgba(255, 45, 181, 0.5);
+	--theme-pink-500-60: rgba(255, 45, 181, 0.6);
+	--theme-pink-500-70: rgba(255, 45, 181, 0.7);
+	--theme-pink-500-75: rgba(255, 45, 181, 0.75);
+	--theme-pink-500-80: rgba(255, 45, 181, 0.8);
+	--theme-pink-500-85: rgba(255, 45, 181, 0.85);
+	--theme-pink-500-90: rgba(255, 45, 181, 0.9);
+	--theme-pink-600-5: rgba(235, 15, 157, 0.05);
+	--theme-pink-600-8: rgba(235, 15, 157, 0.08);
+	--theme-pink-600-10: rgba(235, 15, 157, 0.1);
+	--theme-pink-600-12: rgba(235, 15, 157, 0.12);
+	--theme-pink-600-15: rgba(235, 15, 157, 0.15);
+	--theme-pink-600-16: rgba(235, 15, 157, 0.16);
+	--theme-pink-600-18: rgba(235, 15, 157, 0.18);
+	--theme-pink-600-20: rgba(235, 15, 157, 0.2);
+	--theme-pink-600-22: rgba(235, 15, 157, 0.22);
+	--theme-pink-600-24: rgba(235, 15, 157, 0.24);
+	--theme-pink-600-25: rgba(235, 15, 157, 0.25);
+	--theme-pink-600-28: rgba(235, 15, 157, 0.28);
+	--theme-pink-600-30: rgba(235, 15, 157, 0.3);
+	--theme-pink-600-35: rgba(235, 15, 157, 0.35);
+	--theme-pink-600-40: rgba(235, 15, 157, 0.4);
+	--theme-pink-600-50: rgba(235, 15, 157, 0.5);
+	--theme-pink-600-60: rgba(235, 15, 157, 0.6);
+	--theme-pink-600-70: rgba(235, 15, 157, 0.7);
+	--theme-pink-600-75: rgba(235, 15, 157, 0.75);
+	--theme-pink-600-80: rgba(235, 15, 157, 0.8);
+	--theme-pink-600-85: rgba(235, 15, 157, 0.85);
+	--theme-pink-600-90: rgba(235, 15, 157, 0.9);
+	--theme-pink-700-5: rgba(200, 11, 132, 0.05);
+	--theme-pink-700-8: rgba(200, 11, 132, 0.08);
+	--theme-pink-700-10: rgba(200, 11, 132, 0.1);
+	--theme-pink-700-12: rgba(200, 11, 132, 0.12);
+	--theme-pink-700-15: rgba(200, 11, 132, 0.15);
+	--theme-pink-700-16: rgba(200, 11, 132, 0.16);
+	--theme-pink-700-18: rgba(200, 11, 132, 0.18);
+	--theme-pink-700-20: rgba(200, 11, 132, 0.2);
+	--theme-pink-700-22: rgba(200, 11, 132, 0.22);
+	--theme-pink-700-24: rgba(200, 11, 132, 0.24);
+	--theme-pink-700-25: rgba(200, 11, 132, 0.25);
+	--theme-pink-700-28: rgba(200, 11, 132, 0.28);
+	--theme-pink-700-30: rgba(200, 11, 132, 0.3);
+	--theme-pink-700-35: rgba(200, 11, 132, 0.35);
+	--theme-pink-700-40: rgba(200, 11, 132, 0.4);
+	--theme-pink-700-50: rgba(200, 11, 132, 0.5);
+}
+
+/* ==========================================================================
+   Cyberpunk Plasma — dark full-compat block (appended from master paste)
+   Same dark scope; later wins. Adds numbered gradient/dark-gradient compat
+   series in plasma hues. Role values verified identical to the block above.
+   ========================================================================== */
+
+[data-theme="plasma"][data-mode="dark"],
+.dark[data-theme="plasma"] {
+	color-scheme: dark;
+
+	--theme-background: #05020d;
+	--theme-bg: #05020d;
+	--theme-page-bg: #05020d;
+	--theme-surface: rgba(255, 255, 255, 0.045);
+	--theme-surface-solid: #0b0515;
+	--theme-surface-elevated: #140b24;
+	--theme-surface-soft: #10081d;
+	--theme-surface-subtle: #180d2b;
+	--theme-card: rgba(20, 11, 36, 0.78);
+	--theme-card-solid: #120821;
+	--theme-panel: rgba(11, 5, 21, 0.9);
+	--theme-panel-solid: #0b0515;
+	--theme-overlay: rgba(0, 0, 0, 0.72);
+
+	--theme-text: #fff7fd;
+	--theme-text-bright: #ffffff;
+	--theme-text-primary: #fff7fd;
+	--theme-text-secondary: #f0cfe3;
+	--theme-text-muted: #c395ad;
+	--theme-text-faint: #956b86;
+	--theme-heading: #ffffff;
+	--theme-body-text: #efd4e4;
+	--theme-input-placeholder: #8e607a;
+
+	--theme-border: #3a1c4a;
+	--theme-border-soft: #25132f;
+	--theme-border-strong: #522463;
+	--theme-border-accent: rgba(255, 45, 181, 0.26);
+	--theme-border-active: rgba(139, 92, 246, 0.48);
+	--theme-border-focus: rgba(120, 236, 255, 0.72);
+
+	--theme-brand: #ff5dcc;
+	--theme-brand-hover: #ff8de0;
+	--theme-brand-active: #ffb5ea;
+	--theme-accent: #ff6dcc;
+	--theme-accent-strong: #ff9cdf;
+	--theme-accent-soft: rgba(255, 45, 181, 0.13);
+	--theme-primary: #ff2db5;
+	--theme-primary-hover: #ff6dcc;
+	--theme-primary-active: #ff9cdf;
+	--theme-primary-soft: rgba(255, 45, 181, 0.13);
+	--theme-secondary: #8b5cf6;
+	--theme-secondary-hover: #a88bff;
+	--theme-secondary-soft: rgba(139, 92, 246, 0.13);
+	--theme-tertiary: #22d3ee;
+	--theme-tertiary-hover: #78ecff;
+	--theme-focus: #78ecff;
+	--theme-focus-strong: #a88bff;
+
+	--theme-glass-bg: rgba(18, 8, 33, 0.58);
+	--theme-glass-bg-strong: rgba(20, 11, 36, 0.8);
+	--theme-glass-border: rgba(255, 93, 204, 0.14);
+	--theme-glass-border-strong: rgba(120, 236, 255, 0.24);
+	--theme-glass-highlight: rgba(255, 255, 255, 0.05);
+
+	--theme-success-text: #74e8bb;
+	--theme-warning-text: #ffd15c;
+	--theme-danger-text: #ff8ba4;
+
+	--theme-chat-accent: #ff2db5;
+	--theme-chat-accent-hover: #ff6dcc;
+	--theme-chat-input: #1a0c2a;
+	--theme-chat-muted: #c395ad;
+	--theme-chat-page-bg: #05020d;
+	--theme-chat-panel-bg: #0d0618;
+	--theme-chat-right-panel: #0d0618;
+	--theme-chat-subpanel: #140b24;
+	--theme-chat-text: #fff7fd;
+	--theme-chat-thread-active: #32144a;
+	--theme-chat-thread-idle: rgba(5, 2, 13, 0.55);
+	--theme-chat-tile: #1a0c2a;
+	--theme-chat-shadow: 0 10px 40px rgba(0, 0, 0, 0.48);
+
+	--theme-gradient-primary: linear-gradient(90deg, #ff2db5 0%, #8b5cf6 48%, #22d3ee 100%);
+	--theme-gradient-brand: linear-gradient(
+		135deg,
+		#ff2db5 0%,
+		#8b5cf6 44%,
+		#3b82f6 72%,
+		#22d3ee 100%
+	);
+	--theme-gradient-plasma: linear-gradient(
+		135deg,
+		#ff2db5 0%,
+		#8b5cf6 36%,
+		#3b82f6 68%,
+		#22d3ee 100%
+	);
+	--theme-gradient-neon: linear-gradient(
+		90deg,
+		#ff2db5 0%,
+		#ff6dcc 25%,
+		#8b5cf6 50%,
+		#3b82f6 75%,
+		#22d3ee 100%
+	);
+	--theme-gradient-violet: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 100%);
+	--theme-gradient-cyan: linear-gradient(90deg, #3b82f6 0%, #22d3ee 100%);
+	--theme-gradient-soft: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.12) 0%,
+		rgba(139, 92, 246, 0.08) 50%,
+		rgba(34, 211, 238, 0.07) 100%
+	);
+	--theme-gradient-surface: linear-gradient(135deg, #0b0515 0%, #140b24 52%, #180d2b 100%);
+	--theme-gradient-dark: linear-gradient(90deg, #05020d 0%, #120821 100%);
+	--theme-gradient-success: linear-gradient(90deg, #0db677 0%, #10d98b 100%);
+	--theme-gradient-warning: linear-gradient(90deg, #bd7814 0%, #ffb020 100%);
+	--theme-gradient-danger: linear-gradient(90deg, #c82447 0%, #ff4568 100%);
+
+	--theme-radial-plasma: radial-gradient(
+		circle at 80% 15%,
+		rgba(255, 45, 181, 0.16) 0%,
+		rgba(139, 92, 246, 0.06) 30%,
+		transparent 68%
+	);
+	--theme-radial-cyan: radial-gradient(
+		circle at 18% 100%,
+		rgba(34, 211, 238, 0.11) 0%,
+		rgba(59, 130, 246, 0.04) 32%,
+		transparent 64%
+	);
+	--theme-gradient-aurora:
+		radial-gradient(circle at 82% 14%, rgba(255, 45, 181, 0.12) 0%, transparent 28%),
+		radial-gradient(circle at 18% 100%, rgba(34, 211, 238, 0.1) 0%, transparent 34%);
+
+	--theme-glow-pink-sm: 0 0 18px rgba(255, 45, 181, 0.2);
+	--theme-glow-pink: 0 0 30px rgba(255, 45, 181, 0.28);
+	--theme-glow-pink-lg: 0 0 52px rgba(255, 45, 181, 0.36);
+	--theme-glow-violet: 0 0 30px rgba(139, 92, 246, 0.24);
+	--theme-glow-cyan: 0 0 30px rgba(34, 211, 238, 0.24);
+
+	--theme-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+	--theme-shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.3);
+	--theme-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.34), 0 2px 10px rgba(255, 45, 181, 0.05);
+	--theme-shadow-lg: 0 20px 52px rgba(0, 0, 0, 0.42), 0 5px 18px rgba(139, 92, 246, 0.05);
+	--theme-shadow-xl: 0 30px 84px rgba(0, 0, 0, 0.5), 0 8px 26px rgba(34, 211, 238, 0.06);
+	--theme-shadow-2xl: 0 42px 118px rgba(0, 0, 0, 0.58), 0 14px 38px rgba(255, 45, 181, 0.08);
+	--theme-shadow-brand: 0 20px 58px rgba(255, 45, 181, 0.22), 0 4px 18px rgba(139, 92, 246, 0.08);
+	--theme-shadow-focus: 0 0 0 3px rgba(120, 236, 255, 0.24), 0 0 0 1px rgba(255, 45, 181, 0.72);
+	--theme-shadow-glass: 0 22px 64px rgba(0, 0, 0, 0.44), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+	/* Keep numbered gradients available to the existing generator/runtime. */
+	--theme-gradient-1: var(--theme-gradient-primary);
+	--theme-gradient-2: var(--theme-gradient-plasma);
+	--theme-gradient-3: var(--theme-gradient-brand);
+	--theme-gradient-4: var(--theme-gradient-neon);
+	--theme-gradient-5: var(--theme-gradient-primary);
+	--theme-gradient-6: var(--theme-gradient-violet);
+	--theme-gradient-7: var(--theme-gradient-surface);
+	--theme-gradient-8: var(--theme-gradient-surface);
+	--theme-gradient-9: var(--theme-gradient-brand);
+	--theme-gradient-10: var(--theme-gradient-plasma);
+	--theme-gradient-11: var(--theme-gradient-soft);
+	--theme-gradient-12: var(--theme-gradient-brand);
+	--theme-gradient-13: var(--theme-gradient-cyan);
+	--theme-gradient-14: var(--theme-gradient-plasma);
+	--theme-gradient-15: var(--theme-gradient-primary);
+	--theme-gradient-16: linear-gradient(135deg, #ffffff 0%, rgba(255, 240, 251, 0.92) 100%);
+	--theme-gradient-17: linear-gradient(135deg, #e9e4ec 0%, #cbc3d0 100%);
+	--theme-gradient-18: var(--theme-gradient-soft);
+	--theme-gradient-19: var(--theme-gradient-soft);
+	--theme-gradient-20: var(--theme-gradient-soft);
+	--theme-gradient-21: var(--theme-gradient-brand);
+	--theme-gradient-22: var(--theme-gradient-soft);
+	--theme-gradient-23: var(--theme-gradient-soft);
+	--theme-gradient-24: linear-gradient(135deg, #fff5fb 0%, #ffffff 100%);
+	--theme-gradient-25: var(--theme-gradient-neon);
+	--theme-gradient-26: var(--theme-gradient-success);
+	--theme-gradient-27: var(--theme-gradient-cyan);
+	--theme-gradient-28: var(--theme-gradient-surface);
+	--theme-gradient-29: linear-gradient(90deg, #7544dc 0%, #6033bd 100%);
+	--theme-gradient-30: var(--theme-gradient-violet);
+	--theme-gradient-31: var(--theme-gradient-success);
+	--theme-gradient-32: var(--theme-gradient-soft);
+	--theme-gradient-33: var(--theme-gradient-soft);
+	--theme-gradient-34: var(--theme-gradient-warning);
+	--theme-gradient-35: var(--theme-gradient-danger);
+	--theme-gradient-36: linear-gradient(
+		0deg,
+		rgba(5, 2, 13, 0.75) 0%,
+		rgba(5, 2, 13, 0.35) 50%,
+		transparent 100%
+	);
+	--theme-gradient-37: var(--theme-gradient-neon);
+	--theme-gradient-38: linear-gradient(90deg, #c80b84 0%, #ff6dcc 50%, #6033bd 100%);
+	--theme-gradient-39: var(--theme-gradient-soft);
+	--theme-gradient-40: linear-gradient(135deg, #fff5fb 0%, #ecfeff 100%);
+	--theme-gradient-41: var(--theme-gradient-plasma);
+	--theme-gradient-42: linear-gradient(90deg, #ff2db5 0%, #6033bd 100%);
+	--theme-gradient-43: linear-gradient(135deg, #ff2db5 0%, #6033bd 100%);
+	--theme-gradient-44: linear-gradient(90deg, #ff2db5 0%, #8b5cf6 50%, #ff6dcc 100%);
+	--theme-gradient-45: linear-gradient(90deg, #c80b84 0%, #ff6dcc 100%);
+	--theme-gradient-46: linear-gradient(90deg, #ff2db5 0%, #7544dc 50%, #ff9cdf 100%);
+	--theme-gradient-47: linear-gradient(135deg, #ff2db5 0%, #ff6dcc 50%, #6033bd 100%);
+	--theme-gradient-48: var(--theme-gradient-soft);
+	--theme-gradient-49: linear-gradient(90deg, #10d98b 0%, #22d3ee 100%);
+	--theme-gradient-50: var(--theme-gradient-neon);
+	--theme-gradient-51: linear-gradient(90deg, #ff6dcc 0%, #ff9cdf 100%);
+	--theme-gradient-52: linear-gradient(90deg, #ff4568 0%, #ffb020 50%, #10d98b 100%);
+	--theme-gradient-53: var(--theme-gradient-soft);
+	--theme-gradient-54: var(--theme-gradient-soft);
+	--theme-gradient-55: var(--theme-gradient-plasma);
+	--theme-gradient-56: linear-gradient(90deg, #ff6dcc 0%, #ffc2ee 100%);
+	--theme-gradient-57: linear-gradient(135deg, #ff2db5 0%, #ff9cdf 50%, #ff6dcc 100%);
+	--theme-gradient-58: var(--theme-gradient-soft);
+	--theme-gradient-59: var(--theme-gradient-soft);
+	--theme-gradient-60: linear-gradient(90deg, #ffe0f7 0%, #fff5fb 100%);
+	--theme-gradient-61: linear-gradient(135deg, #ff9cdf 0%, #ff2db5 50%, #7544dc 100%);
+	--theme-gradient-62: linear-gradient(135deg, #ff6dcc 0%, #8b5cf6 50%, #3b82f6 100%);
+	--theme-gradient-63: var(--theme-gradient-soft);
+	--theme-gradient-64: var(--theme-gradient-soft);
+	--theme-gradient-65: var(--theme-gradient-soft);
+	--theme-gradient-66: linear-gradient(
+		0deg,
+		rgba(5, 2, 13, 0.5) 0%,
+		transparent 50%,
+		transparent 100%
+	);
+	--theme-gradient-67: linear-gradient(135deg, #ff2db5 0%, #22d3ee 100%);
+	--theme-gradient-68: linear-gradient(135deg, #ffe0f7 0%, #fff5fb 50%, #e1dcff 100%);
+	--theme-gradient-69: linear-gradient(135deg, #05020d 0%, #120821 50%, #0d2248 100%);
+	--theme-gradient-70: linear-gradient(
+		0deg,
+		rgba(5, 2, 13, 0.9) 0%,
+		rgba(5, 2, 13, 0.4) 50%,
+		transparent 100%
+	);
+	--theme-gradient-71: linear-gradient(
+		0deg,
+		rgba(5, 2, 13, 0.55) 0%,
+		transparent 50%,
+		transparent 100%
+	);
+	--theme-gradient-72: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.18) 0%,
+		rgba(139, 92, 246, 0.1) 50%,
+		transparent 100%
+	);
+	--theme-gradient-73: linear-gradient(
+		90deg,
+		rgba(255, 109, 204, 0.18) 0%,
+		rgba(255, 156, 223, 0.1) 100%
+	);
+	--theme-gradient-74: linear-gradient(
+		90deg,
+		rgba(168, 139, 255, 0.18) 0%,
+		rgba(162, 197, 255, 0.1) 100%
+	);
+	--theme-gradient-75: var(--theme-gradient-soft);
+	--theme-gradient-76: linear-gradient(
+		180deg,
+		rgba(255, 45, 181, 0.18) 0%,
+		rgba(34, 211, 238, 0.08) 50%,
+		transparent 100%
+	);
+	--theme-gradient-77: linear-gradient(180deg, rgba(255, 245, 251, 0.8) 0%, #ffffff 100%);
+	--theme-gradient-78: linear-gradient(0deg, #ff2db5 0%, #8b5cf6 50%, #22d3ee 100%);
+	--theme-gradient-79: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 100%);
+	--theme-gradient-80: var(--theme-gradient-soft);
+	--theme-gradient-81: var(--theme-gradient-soft);
+	--theme-gradient-82: linear-gradient(180deg, #fff5fb 0%, #ffffff 50%, #ffffff 100%);
+	--theme-gradient-83: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.09) 0%,
+		#ffffff 50%,
+		rgba(34, 211, 238, 0.08) 100%
+	);
+	--theme-gradient-84: linear-gradient(135deg, #ff2db5 0%, #78ecff 100%);
+	--theme-gradient-85: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.15) 0%,
+		rgba(120, 236, 255, 0.15) 100%
+	);
+	--theme-gradient-86: linear-gradient(135deg, #fff5fb 0%, #f3efff 100%);
+	--theme-gradient-87: var(--theme-gradient-neon);
+	--theme-gradient-88: var(--theme-gradient-soft);
+	--theme-gradient-89: linear-gradient(90deg, #ff6dcc 0%, #a88bff 100%);
+	--theme-gradient-90: linear-gradient(135deg, #fff5fb 0%, #f5f2f7 100%);
+	--theme-gradient-91: linear-gradient(90deg, #8b5cf6 0%, #7544dc 100%);
+	--theme-gradient-92: linear-gradient(90deg, #ff4568 0%, #22d3ee 100%);
+	--theme-gradient-93: linear-gradient(90deg, #22d3ee 0%, #10b9d4 100%);
+	--theme-gradient-94: linear-gradient(90deg, #ffb020 0%, #e39a18 100%);
+	--theme-gradient-95: linear-gradient(135deg, #fff5fb 0%, #f3efff 50%, #ffffff 100%);
+	--theme-gradient-96: linear-gradient(270deg, #ffffff 0%, transparent 100%);
+	--theme-gradient-97: linear-gradient(135deg, #e2dde5 0%, #f5f2f7 100%);
+	--theme-gradient-98: linear-gradient(135deg, #ff2db5 0%, #4d279a 100%);
+	--theme-gradient-99: linear-gradient(135deg, #8b5cf6 0%, #a88bff 100%);
+	--theme-gradient-100: linear-gradient(135deg, #6d5cf6 0%, #3b82f6 100%);
+	--theme-gradient-101: linear-gradient(90deg, #ff2db5 0%, #8b5cf6 50%, #3b82f6 100%);
+	--theme-gradient-102: linear-gradient(90deg, #ff9cdf 0%, #ff2db5 100%);
+	--theme-gradient-103: linear-gradient(90deg, #ffb020 0%, #ffb020 100%);
+	--theme-gradient-104: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.1) 0%,
+		rgba(139, 92, 246, 0.05) 100%
+	);
+	--theme-gradient-105: linear-gradient(90deg, #ffe0f7 0%, #f3efff 100%);
+	--theme-gradient-106: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.1) 0%,
+		rgba(139, 92, 246, 0.05) 50%,
+		rgba(34, 211, 238, 0.05) 100%
+	);
+	--theme-gradient-107: linear-gradient(
+		90deg,
+		rgba(34, 211, 238, 0.1) 0%,
+		rgba(59, 130, 246, 0.05) 50%,
+		rgba(139, 92, 246, 0.05) 100%
+	);
+	--theme-gradient-108: linear-gradient(
+		90deg,
+		rgba(139, 92, 246, 0.1) 0%,
+		rgba(59, 130, 246, 0.05) 50%,
+		rgba(255, 45, 181, 0.05) 100%
+	);
+	--theme-gradient-109: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.1) 0%,
+		rgba(139, 92, 246, 0.05) 50%,
+		rgba(34, 211, 238, 0.05) 100%
+	);
+	--theme-gradient-110: linear-gradient(90deg, #a88bff 0%, #8b5cf6 50%, #78ecff 100%);
+	--theme-gradient-111: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.05) 0%,
+		rgba(139, 92, 246, 0.05) 50%,
+		rgba(34, 211, 238, 0.05) 100%
+	);
+	--theme-gradient-112: linear-gradient(135deg, #a88bff 0%, #8b5cf6 50%, #78ecff 100%);
+	--theme-gradient-113: linear-gradient(90deg, #ff2db5 0%, #7544dc 50%, #78ecff 100%);
+	--theme-gradient-hero: var(--theme-gradient-plasma);
+
+	--theme-gradient-dark-2: linear-gradient(90deg, #05020d 0%, #120821 50%, #05020d 100%);
+	--theme-gradient-dark-3: linear-gradient(
+		90deg,
+		rgba(16, 217, 139, 0.12) 0%,
+		rgba(57, 217, 155, 0.1) 100%
+	);
+	--theme-gradient-dark-4: linear-gradient(90deg, #05020d 0%, #05020d 50%, #120821 100%);
+	--theme-gradient-dark-5: linear-gradient(
+		90deg,
+		#05020d 0%,
+		#05020d 50%,
+		rgba(72, 13, 37, 0.42) 100%
+	);
+	--theme-gradient-dark-6: linear-gradient(90deg, #05020d 0%, #241038 100%);
+	--theme-gradient-dark-7: linear-gradient(90deg, #4d4059 0%, #62536f 100%);
+	--theme-gradient-dark-8: linear-gradient(
+		90deg,
+		rgba(168, 139, 255, 0.08) 0%,
+		rgba(120, 166, 255, 0.07) 50%,
+		rgba(120, 236, 255, 0.07) 100%
+	);
+	--theme-gradient-dark-9: linear-gradient(
+		90deg,
+		rgba(72, 13, 37, 0.45) 0%,
+		rgba(53, 26, 111, 0.35) 50%,
+		rgba(8, 59, 71, 0.35) 100%
+	);
+	--theme-gradient-dark-10: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.12) 0%,
+		rgba(18, 8, 33, 0.2) 100%
+	);
+	--theme-gradient-dark-11: linear-gradient(90deg, rgba(255, 45, 181, 0.1) 0%, #05020d 100%);
+	--theme-gradient-dark-12: linear-gradient(
+		90deg,
+		rgba(72, 13, 37, 0.3) 0%,
+		rgba(5, 2, 13, 0.2) 100%
+	);
+	--theme-gradient-dark-13: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.1) 0%,
+		rgba(34, 211, 238, 0.08) 100%
+	);
+	--theme-gradient-dark-14: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.15) 0%,
+		rgba(139, 92, 246, 0.1) 50%,
+		transparent 100%
+	);
+	--theme-gradient-dark-15: linear-gradient(
+		90deg,
+		rgba(72, 13, 37, 0.58) 0%,
+		#05020d 50%,
+		#05020d 100%
+	);
+	--theme-gradient-dark-16: linear-gradient(
+		90deg,
+		rgba(72, 13, 37, 0.58) 0%,
+		#05020d 50%,
+		#120821 100%
+	);
+	--theme-gradient-dark-17: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.1) 0%,
+		#05020d 50%,
+		rgba(34, 211, 238, 0.08) 100%
+	);
+	--theme-gradient-dark-18: linear-gradient(90deg, #05020d 0%, #05020d 50%, #241038 100%);
+	--theme-gradient-dark-19: linear-gradient(
+		90deg,
+		transparent 0%,
+		transparent 50%,
+		transparent 100%
+	);
+	--theme-gradient-dark-20: linear-gradient(
+		135deg,
+		rgba(255, 45, 181, 0.12) 0%,
+		rgba(139, 92, 246, 0.04) 100%
+	);
+	--theme-gradient-dark-21: linear-gradient(
+		90deg,
+		rgba(255, 45, 181, 0.12) 0%,
+		rgba(255, 45, 181, 0.04) 50%,
+		transparent 100%
+	);
+	--theme-gradient-dark-22: linear-gradient(90deg, #120821 0%, #05020d 100%);
+	--theme-gradient-dark-23: linear-gradient(
+		90deg,
+		rgba(72, 13, 37, 0.48) 0%,
+		rgba(53, 26, 111, 0.28) 50%,
+		#05020d 100%
+	);
+	--theme-gradient-dark-24: linear-gradient(
+		90deg,
+		rgba(72, 13, 37, 0.32) 0%,
+		rgba(53, 26, 111, 0.18) 100%
+	);
+	--theme-gradient-dark-25: linear-gradient(90deg, #05020d 0%, transparent 100%);
+	--theme-gradient-dark-26: linear-gradient(90deg, #3a1c4a 0%, #514754 100%);
+	--theme-gradient-dark-27: linear-gradient(
+		90deg,
+		rgba(168, 139, 255, 0.08) 0%,
+		rgba(110, 167, 255, 0.07) 50%,
+		rgba(120, 236, 255, 0.07) 100%
+	);
+	--theme-gradient-dark: linear-gradient(90deg, #05020d 0%, #120821 100%);
+}

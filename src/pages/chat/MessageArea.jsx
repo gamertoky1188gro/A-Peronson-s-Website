@@ -2,6 +2,7 @@ import { EllipsisVertical, MessageCircle, Phone, Plus, Search, SendHorizontal } 
 import { ThreeDot } from "react-loading-indicators";
 import { Link } from "react-router-dom";
 import JourneyTimeline from "../../components/JourneyTimeline.jsx";
+import LazyImage from "../../components/ui/LazyImage.jsx";
 import UploadProgressBar from "../../components/ui/UploadProgressBar.jsx";
 import { ROUTES } from "../../lib/routes.js";
 import {
@@ -12,7 +13,6 @@ import {
 	getTimezoneAbbr,
 	lockStatusLabel,
 } from "./chatUtils.js";
-import LazyImage from "../../components/ui/LazyImage.jsx";
 
 export default function MessageArea({
 	activeThread,
@@ -63,30 +63,30 @@ export default function MessageArea({
 
 	return (
 		<main
-			className="rounded-[24px] p-0 flex flex-col h-full overflow-hidden shadow-borderless dark:shadow-borderlessDark"
+			class="rounded-[24px] p-0 flex flex-col h-full overflow-hidden shadow-borderless dark:shadow-borderlessDark"
 			style={{ background: theme.panelBg, boxShadow: theme.shadow }}
 		>
 			{activeThread ? (
 				<>
-					<div className="flex items-center justify-between px-6 py-4 shadow-dividerB dark:shadow-dividerBDark">
-						<div className="flex items-center gap-3">
-							<div className="relative">
+					<div class="flex items-center justify-between px-6 py-4 shadow-dividerB dark:shadow-dividerBDark">
+						<div class="flex items-center gap-3">
+							<div class="relative">
 								{activeAvatar ? (
 									<LazyImage
 										src={activeAvatar}
 										alt={activeThreadDisplayName}
 										width={40}
 										height={40}
-										className="h-10 w-10 rounded-full object-cover shadow-sm"
+										class="h-10 w-10 rounded-full object-cover shadow-sm"
 										eager={true}
 									/>
 								) : (
-									<div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
 										{activeThreadInitials}
 									</div>
 								)}
 								<span
-									className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
+									class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
 									style={{
 										background:
 											presenceStatus(activeThread?.senderId) === "online" ? "#22c55e" : "#94a3b8",
@@ -95,34 +95,34 @@ export default function MessageArea({
 								/>
 							</div>
 							<div>
-								<p className="text-sm font-bold tracking-tight">{activeThreadDisplayName}</p>
-								<p className="text-[11px] font-medium text-slate-400">
+								<p class="text-sm font-bold tracking-tight">{activeThreadDisplayName}</p>
+								<p class="text-[11px] font-medium text-slate-400">
 									{presenceStatus(activeThread?.senderId) === "online"
 										? "Online"
 										: formatPresence(presenceLastSeen(activeThread?.senderId))}
 								</p>
 								{lockMeta && !activeThread?.isFriendThread ? (
-									<span className="mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+									<span class="mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
 										{lockStatusLabel(lockMeta, activeThread)}
 									</span>
 								) : null}
 							</div>
 						</div>
-						<div className="flex items-center gap-3">
+						<div class="flex items-center gap-3">
 							<Link
 								to={
 									activeThread?.matchId
 										? `${ROUTES.CONTRACTS}?journey_match_id=${encodeURIComponent(activeThread.matchId)}`
 										: ROUTES.CONTRACTS
 								}
-								className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40"
+								class="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40"
 							>
 								Contract draft
 							</Link>
 							{isLockOwner ? (
 								<button
 									onClick={openGrantModal}
-									className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+									class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
 									title="Grant access to another member"
 								>
 									Grant access
@@ -131,7 +131,7 @@ export default function MessageArea({
 							{isLockOwner || isAdminUser ? (
 								<button
 									onClick={openTransferModal}
-									className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+									class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
 									title="Transfer this conversation to another agent"
 								>
 									Transfer
@@ -139,27 +139,27 @@ export default function MessageArea({
 							) : null}
 							<button
 								onClick={() => startInstantCall(activeThread)}
-								className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
+								class="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
 								title="Start call"
 							>
 								<Phone size={16} />
 							</button>
-							<button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
+							<button class="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
 								<Search size={16} />
 							</button>
-							<button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
+							<button class="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
 								<EllipsisVertical size={16} />
 							</button>
 						</div>
 					</div>
 
-					<div className="px-6 pb-3">
+					<div class="px-6 pb-3">
 						<JourneyTimeline title="Journey Timeline" matchId={activeThread?.matchId || ""} />
 					</div>
 
 					{hasRecordedCall ? null : (
-						<div className="mx-6 mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-							<div className="flex flex-wrap items-center justify-between gap-3">
+						<div class="mx-6 mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+							<div class="flex flex-wrap items-center justify-between gap-3">
 								<span>
 									Video calls are recommended for trust. No recorded call exists yet for this
 									conversation.
@@ -167,7 +167,7 @@ export default function MessageArea({
 								<button
 									type="button"
 									onClick={() => startInstantCall(activeThread)}
-									className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500"
+									class="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500"
 								>
 									Start call
 								</button>
@@ -177,11 +177,11 @@ export default function MessageArea({
 
 					<div
 						data-lenis-prevent={true}
-						className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar"
+						class="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar"
 						style={{ background: isLight ? "#f8fafc" : "transparent" }}
 					>
-						<div className="flex justify-center mb-6">
-							<span className="rounded-full bg-transparent shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">
+						<div class="flex justify-center mb-6">
+							<span class="rounded-full bg-transparent shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">
 								{todayLabel}
 							</span>
 						</div>
@@ -199,39 +199,42 @@ export default function MessageArea({
 									messageTs <= readCutoff;
 								const showReadTick = !isOwn && isRead;
 								return (
-									<div key={message.id} className={`flex${isOwn ? "justify-end" : "justify-start"}`}>
+									<div key={message.id} class={`flex${isOwn ? "justify-end" : "justify-start"}`}>
 										<div
-											className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
+											class={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
 												isOwn
 													? "bg-gtBlue text-white rounded-br-none"
 													: isBot
-														? `${isLight ? "bg-[#EFF6FF] ring-1 ring-[#BFDBFE]" : "bg-[#0B1224] ring-1 ring-white/5"} rounded-bl-none`
-														: `${isLight ? "bg-white ring-1 ring-slate-200/70" : "bg-[#2a2744]"} rounded-bl-none`
+														? `${isLight ? "bg-[var(--theme-blue-50)] ring-1 ring-[var(--theme-blue-200)]" : "bg-[var(--theme-custom-0b1224)] ring-1 ring-white/5"} rounded-bl-none`
+														: `${isLight ? "bg-white ring-1 ring-slate-200/70" : "bg-[var(--theme-custom-2a2744)]"} rounded-bl-none`
 											}`}
 											style={isOwn ? undefined : { color: theme.textPrimary }}
 										>
 											{isBot ? (
-												<div className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-gtBlue">
+												<div class="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-gtBlue">
 													AI Assistant
 												</div>
 											) : null}
 											{renderMessageBody(message, isOwn)}
-<div
-											className={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60${isOwn ? "text-white" : "text-slate-400"}`}
-										>
-											<span>{formatTime(message.timestamp)}{timezoneAbbr ? ` ${timezoneAbbr}` : ""}</span>
+											<div
+												class={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60${isOwn ? "text-white" : "text-slate-400"}`}
+											>
+												<span>
+													{formatTime(message.timestamp)}
+													{timezoneAbbr ? ` ${timezoneAbbr}` : ""}
+												</span>
 												{message.policy_status && message.policy_status !== "delivered" ? (
-													<span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600">
+													<span class="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600">
 														{message.policy_status === "needs_review" ? "Needs review" : "Queued"}
 													</span>
 												) : null}
 												{message.policy_priority ? (
-													<span className="inline-flex items-center rounded-full bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-600">
+													<span class="inline-flex items-center rounded-full bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-600">
 														{message.policy_priority}
 													</span>
 												) : null}
 												{showReadTick ? (
-													<span className="inline-flex items-center rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">
+													<span class="inline-flex items-center rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">
 														✓ Read
 													</span>
 												) : null}
@@ -241,15 +244,15 @@ export default function MessageArea({
 								);
 							})
 						) : (
-							<div className="flex h-full items-center justify-center text-sm font-medium text-slate-400 italic">
+							<div class="flex h-full items-center justify-center text-sm font-medium text-slate-400 italic">
 								No messages yet. Start the conversation!
 							</div>
 						)}
 					</div>
 
-					<div className="p-4 shadow-dividerT dark:shadow-dividerTDark">
+					<div class="p-4 shadow-dividerT dark:shadow-dividerTDark">
 						{isLockRestricted ? (
-							<div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+							<div class="mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
 								<span>
 									Conversation locked by{" "}
 									{lockMeta?.claimed_by_name ||
@@ -261,15 +264,15 @@ export default function MessageArea({
 								<button
 									type="button"
 									onClick={requestAccess}
-									className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
+									class="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
 								>
 									Request access
 								</button>
 							</div>
 						) : null}
 						{prequalNeedsInfo ? (
-							<div className="mb-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-								<div className="flex flex-wrap items-center justify-between gap-2">
+							<div class="mb-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+								<div class="flex flex-wrap items-center justify-between gap-2">
 									<span>
 										AI pre-qual flagged missing info.{" "}
 										{prequal?.missing
@@ -280,26 +283,26 @@ export default function MessageArea({
 										<button
 											type="button"
 											onClick={() => setPrequalOverride(true)}
-											className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
+											class="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
 										>
 											Allow send anyway
 										</button>
 									) : null}
 								</div>
 								{prequalHardBlocked ? (
-									<div className="mt-1 text-[10px] text-amber-800">
+									<div class="mt-1 text-[10px] text-amber-800">
 										Only verified suppliers can override this pre-qualification gate.
 									</div>
 								) : null}
 							</div>
 						) : null}
-						<div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-500">
+						<div class="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-500">
 							<span>AI Suggested Reply</span>
 							<button
 								type="button"
 								onClick={requestAiSuggestion}
 								disabled={aiSuggesting || !activeThread?.matchId}
-								className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
+								class="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
 							>
 								{aiSuggesting ? (
 									<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
@@ -309,14 +312,14 @@ export default function MessageArea({
 							</button>
 						</div>
 						{aiError ? (
-							<div className="mb-2 text-[11px] font-semibold text-rose-600">{aiError}</div>
+							<div class="mb-2 text-[11px] font-semibold text-rose-600">{aiError}</div>
 						) : null}
 						<div
-							className="relative flex items-center gap-2 rounded-[18px] p-1.5"
+							class="relative flex items-center gap-2 rounded-[18px] p-1.5"
 							style={{ background: theme.inputBg }}
 						>
 							<button
-								className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+								class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
 								onClick={() => fileInputRef.current?.click()}
 								disabled={uploading || !canSendMessage}
 							>
@@ -328,7 +331,7 @@ export default function MessageArea({
 							</button>
 							<textarea
 								rows={1}
-								className="flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-5 outline-none placeholder:text-slate-400"
+								class="flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-5 outline-none placeholder:text-slate-400"
 								style={{ color: theme.textPrimary, maxHeight: 140 }}
 								placeholder={
 									canSendMessage
@@ -348,7 +351,7 @@ export default function MessageArea({
 							<input
 								ref={fileInputRef}
 								type="file"
-								className="hidden"
+								class="hidden"
 								onChange={(event) => {
 									const file = event.target.files?.[0];
 									if (file) {
@@ -358,7 +361,7 @@ export default function MessageArea({
 								disabled={!canSendMessage}
 							/>
 							<button
-								className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gtBlue text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
+								class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gtBlue text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
 								onClick={sendMessage}
 								disabled={!canSendMessage}
 							>
@@ -366,29 +369,29 @@ export default function MessageArea({
 							</button>
 						</div>
 						{policyFeedback.reason ? (
-							<p className="mt-2 px-4 text-[11px] font-medium text-rose-500">
+							<p class="mt-2 px-4 text-[11px] font-medium text-rose-500">
 								Blocked: {policyFeedback.reason}
 								{countdownSeconds > 0 ? ` • Retry in ${countdownSeconds}s` : ""}
 							</p>
 						) : null}
 						{uploading && (
-							<div className="px-4 mt-2">
+							<div class="px-4 mt-2">
 								<UploadProgressBar progress={uploadProgress} />
 							</div>
 						)}
 						{uploadStatus || scheduleStatus ? (
-							<p className="mt-2 px-4 text-[11px] font-medium text-gtBlue">
+							<p class="mt-2 px-4 text-[11px] font-medium text-gtBlue">
 								{uploadStatus || scheduleStatus}
 							</p>
 						) : null}
 					</div>
 				</>
 			) : (
-				<div className="flex h-full flex-col items-center justify-center text-slate-400 gap-4">
-					<div className="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center dark:bg-slate-800/30">
-						<MessageCircle size={32} className="opacity-20" />
+				<div class="flex h-full flex-col items-center justify-center text-slate-400 gap-4">
+					<div class="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center dark:bg-slate-800/30">
+						<MessageCircle size={32} class="opacity-20" />
 					</div>
-					<p className="text-sm font-medium">Select a conversation to start chatting</p>
+					<p class="text-sm font-medium">Select a conversation to start chatting</p>
 				</div>
 			)}
 		</main>

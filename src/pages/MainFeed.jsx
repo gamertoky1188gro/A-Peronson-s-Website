@@ -951,7 +951,7 @@ export default function MainFeed() {
 	}
 
 	return (
-		<div class="flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
+		<div class="flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 dark:bg-[var(--theme-custom-0b1220)] dark:text-slate-100">
 			<motion.div
 				style={{ y: reduceMotion ? 0 : bgParallax }}
 				class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)]"

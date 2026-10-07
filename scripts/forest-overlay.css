@@ -1,0 +1,311 @@
+/* ==========================================================================
+ * Forest Glass Master — authored overlay (organic premium marketplace)
+ * Appended AFTER the generated base in src/theme/themes/forest.css by
+ * scripts/generate-themes.py; values here WIN on conflict.
+ * Pine -> emerald -> teal -> cyan. Green = growth/actions, emerald = brand,
+ * teal = secondary/realtime, cyan = cool highlights, amber = premium/warning.
+ *
+ * Submitted draft verified leak-free (no bare :root / .dark selectors).
+ * ========================================================================== */
+
+/* Forest Glass — Master
+ * Organic premium marketplace
+ * Pine -> emerald -> teal -> cyan
+ * Warm amber reserved for premium / warning semantics
+ */
+
+[data-theme="forest"] {
+	color-scheme: light;
+
+	/* ============================================================
+     LEAF GREEN — primary action / growth
+     ============================================================ */
+
+	--theme-green-50: #f0fdf4;
+	--theme-green-100: #dcfce7;
+	--theme-green-200: #bbf7d0;
+	--theme-green-300: #86efac;
+	--theme-green-400: #4ade80;
+	--theme-green-500: #22c55e;
+	--theme-green-600: #16a34a;
+	--theme-green-700: #15803d;
+	--theme-green-800: #166534;
+	--theme-green-900: #14532d;
+	--theme-green-950: #052e16;
+
+	/* ============================================================
+     EMERALD — primary brand / premium marketplace
+     ============================================================ */
+
+	--theme-emerald-50: #ecfdf5;
+	--theme-emerald-100: #d1fae5;
+	--theme-emerald-200: #a7f3d0;
+	--theme-emerald-300: #6ee7b7;
+	--theme-emerald-400: #34d399;
+	--theme-emerald-500: #10b981;
+	--theme-emerald-600: #059669;
+	--theme-emerald-700: #047857;
+	--theme-emerald-800: #065f46;
+	--theme-emerald-900: #064e3b;
+	--theme-emerald-950: #022c22;
+
+	/* ============================================================
+     TEAL — realtime / secondary interaction
+     ============================================================ */
+
+	--theme-teal-50: #f0fdfa;
+	--theme-teal-100: #ccfbf1;
+	--theme-teal-200: #99f6e4;
+	--theme-teal-300: #5eead4;
+	--theme-teal-400: #2dd4bf;
+	--theme-teal-500: #14b8a6;
+	--theme-teal-600: #0d9488;
+	--theme-teal-700: #0f766e;
+	--theme-teal-800: #115e59;
+	--theme-teal-900: #134e4a;
+	--theme-teal-950: #042f2e;
+
+	/* ============================================================
+     CYAN — cool glass / information highlight
+     ============================================================ */
+
+	--theme-cyan-50: #ecfeff;
+	--theme-cyan-100: #cffafe;
+	--theme-cyan-200: #a5f3fc;
+	--theme-cyan-300: #67e8f9;
+	--theme-cyan-400: #22d3ee;
+	--theme-cyan-500: #06b6d4;
+	--theme-cyan-600: #0891b2;
+	--theme-cyan-700: #0e7490;
+	--theme-cyan-800: #155e75;
+	--theme-cyan-900: #164e63;
+	--theme-cyan-950: #083344;
+
+	/* ============================================================
+     LIME — rare vitality highlight
+     ============================================================ */
+
+	--theme-lime-50: #f7fee7;
+	--theme-lime-100: #ecfccb;
+	--theme-lime-200: #d9f99d;
+	--theme-lime-300: #bef264;
+	--theme-lime-400: #a3e635;
+	--theme-lime-500: #84cc16;
+	--theme-lime-600: #65a30d;
+	--theme-lime-700: #4d7c0f;
+	--theme-lime-800: #3f6212;
+	--theme-lime-900: #365314;
+	--theme-lime-950: #1a2e05;
+
+	/* ============================================================
+     AMBER — premium / warning / earthy counterpoint
+     ============================================================ */
+
+	--theme-amber-50: #fffbeb;
+	--theme-amber-100: #fef3c7;
+	--theme-amber-200: #fde68a;
+	--theme-amber-300: #fcd34d;
+	--theme-amber-400: #fbbf24;
+	--theme-amber-500: #f59e0b;
+	--theme-amber-600: #d97706;
+	--theme-amber-700: #b45309;
+	--theme-amber-800: #92400e;
+	--theme-amber-900: #78350f;
+	--theme-amber-950: #451a03;
+
+	/* ============================================================
+     FOREST NEUTRALS
+     ============================================================ */
+
+	--theme-slate-50: #f5faf7;
+	--theme-slate-100: #e7f0ea;
+	--theme-slate-200: #cfddd3;
+	--theme-slate-300: #adbeb2;
+	--theme-slate-400: #829889;
+	--theme-slate-500: #63786a;
+	--theme-slate-600: #4d6254;
+	--theme-slate-700: #3c4f43;
+	--theme-slate-800: #293a31;
+	--theme-slate-900: #18271f;
+	--theme-slate-950: #0b1710;
+
+	/* ============================================================
+     SEMANTIC ROLES
+     ============================================================ */
+
+	--theme-brand: #16a34a;
+	--theme-brand-hover: #15803d;
+
+	--theme-accent: #059669;
+	--theme-accent-strong: #047857;
+
+	--theme-secondary: #0d9488;
+	--theme-tertiary: #22c55e;
+	--theme-focus: #2dd4bf;
+
+	--theme-surface: #f4faf6;
+	--theme-surface-solid: #ffffff;
+
+	--theme-text: #07130d;
+	--theme-text-bright: #07130d;
+	--theme-text-secondary: #2f4337;
+	--theme-text-muted: #617268;
+	--theme-text-faint: #75867c;
+
+	--theme-border: #cfe1d5;
+	--theme-border-accent: rgba(5, 150, 105, 0.28);
+
+	--theme-input-placeholder: #718277;
+
+	--theme-success-text: #166534;
+	--theme-warning-text: #a16207;
+
+	/* ============================================================
+     GLASS MATERIAL
+     ============================================================ */
+
+	--theme-glass-bg: rgba(255, 255, 255, 0.64);
+	--theme-glass-bg-strong: rgba(255, 255, 255, 0.82);
+	--theme-glass-border: rgba(5, 150, 105, 0.16);
+	--theme-glass-highlight: rgba(255, 255, 255, 0.72);
+	--theme-glass-tint: rgba(16, 185, 129, 0.065);
+
+	/* ============================================================
+     SIGNATURE GRADIENTS
+     ============================================================ */
+
+	--theme-gradient-primary: linear-gradient(90deg, #16a34a 0%, #10b981 100%);
+
+	--theme-gradient-brand: linear-gradient(135deg, #15803d 0%, #10b981 52%, #0d9488 100%);
+
+	--theme-gradient-forest: linear-gradient(135deg, #14532d 0%, #059669 55%, #0f766e 100%);
+
+	--theme-gradient-canopy: linear-gradient(135deg, #22c55e 0%, #14b8a6 52%, #06b6d4 100%);
+
+	--theme-gradient-aurora: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #22d3ee 100%);
+
+	--theme-gradient-hero: var(--theme-gradient-forest);
+
+	/* ============================================================
+     PREMIUM GLASS SHADOWS
+     ============================================================ */
+
+	--theme-shadow-1: 0 20px 60px rgba(11, 23, 16, 0.08);
+
+	--theme-shadow-3: 0 20px 60px -30px rgba(5, 150, 105, 0.34);
+
+	--theme-shadow-11: 0 24px 80px -28px rgba(5, 150, 105, 0.38);
+
+	--theme-shadow-12: 0 0 0 4px rgba(45, 212, 191, 0.16);
+
+	--theme-shadow-50: 0 0 32px rgba(16, 185, 129, 0.16);
+
+	--theme-shadow-51: 0 0 24px rgba(20, 184, 166, 0.12);
+
+	--theme-shadow-52: 0 0 24px rgba(34, 211, 238, 0.22);
+
+	--theme-shadow-79: 0 0 16px rgba(16, 185, 129, 0.65);
+
+	--theme-shadow-80: 0 0 18px rgba(45, 212, 191, 0.48);
+}
+
+/* ================================================================
+   DARK FOREST
+   ================================================================ */
+
+[data-theme="forest"][data-mode="dark"],
+.dark[data-theme="forest"] {
+	color-scheme: dark;
+
+	/* --- Primary scales --- */
+
+	--theme-brand: #22c55e;
+	--theme-brand-hover: #4ade80;
+
+	--theme-accent: #34d399;
+	--theme-accent-strong: #10b981;
+
+	--theme-secondary: #2dd4bf;
+	--theme-tertiary: #22d3ee;
+	--theme-focus: #5eead4;
+
+	/* --- Pine/eclipse foundation --- */
+
+	--theme-surface-solid: #06120b;
+	--theme-surface: rgba(255, 255, 255, 0.055);
+
+	--theme-text: #effff5;
+	--theme-text-bright: #f7fff9;
+
+	--theme-text-secondary: #bdd9c8;
+	--theme-text-muted: #8eac9a;
+	--theme-text-faint: #718c7b;
+
+	--theme-border: #1f4933;
+
+	--theme-border-accent: rgba(45, 212, 191, 0.3);
+
+	--theme-input-placeholder: #6f8879;
+
+	/* --- Dark glass --- */
+
+	--theme-glass-bg: rgba(9, 30, 20, 0.58);
+
+	--theme-glass-bg-strong: rgba(13, 38, 25, 0.78);
+
+	--theme-glass-border: rgba(45, 212, 191, 0.16);
+
+	--theme-glass-highlight: rgba(255, 255, 255, 0.08);
+
+	--theme-glass-tint: rgba(16, 185, 129, 0.075);
+
+	/* --- Dark signature gradients --- */
+
+	--theme-gradient-primary: linear-gradient(90deg, #22c55e 0%, #10b981 100%);
+
+	--theme-gradient-brand: linear-gradient(135deg, #16a34a 0%, #10b981 52%, #14b8a6 100%);
+
+	--theme-gradient-forest: linear-gradient(135deg, #052e16 0%, #047857 55%, #115e59 100%);
+
+	--theme-gradient-canopy: linear-gradient(135deg, #22c55e 0%, #14b8a6 52%, #22d3ee 100%);
+
+	--theme-gradient-aurora: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #22d3ee 100%);
+
+	--theme-gradient-hero: var(--theme-gradient-forest);
+
+	/* --- Dark glass shadows --- */
+
+	--theme-shadow-1: 0 20px 60px rgba(0, 0, 0, 0.34);
+
+	--theme-shadow-3: 0 20px 60px -30px rgba(16, 185, 129, 0.4);
+
+	--theme-shadow-11: 0 24px 80px -28px rgba(5, 150, 105, 0.46);
+
+	--theme-shadow-12: 0 0 0 4px rgba(94, 234, 212, 0.16);
+
+	--theme-shadow-50: 0 0 32px rgba(16, 185, 129, 0.18);
+
+	--theme-shadow-51: 0 0 24px rgba(20, 184, 166, 0.13);
+
+	--theme-shadow-52: 0 0 24px rgba(34, 211, 238, 0.2);
+
+	--theme-shadow-79: 0 0 16px rgba(34, 211, 238, 0.58);
+
+	--theme-shadow-80: 0 0 18px rgba(45, 212, 191, 0.52);
+
+	/* --- Chat --- */
+
+	--theme-chat-accent: #34d399;
+	--theme-chat-input: #123021;
+	--theme-chat-muted: #9abba7;
+
+	--theme-chat-page-bg: #06120b;
+	--theme-chat-panel-bg: #0c2116;
+	--theme-chat-right-panel: #0c2116;
+	--theme-chat-subpanel: #0e281a;
+
+	--theme-chat-text: #effff5;
+	--theme-chat-thread-active: #104332;
+	--theme-chat-thread-idle: rgba(6, 18, 11, 0.58);
+	--theme-chat-tile: #123021;
+}

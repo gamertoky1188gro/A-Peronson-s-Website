@@ -57,7 +57,12 @@
     <script>"use strict";
       (() => {
         const root = document.documentElement;
-        root.setAttribute("data-theme", "blue");
+        const VALID = {
+          blue: 1, aurora: 1, violet: 1, sapphire: 1, arctic: 1, emerald: 1,
+          blurple: 1, mono: 1, plasma: 1, solaris: 1, forest: 1, crimson: 1,
+        };
+        const storedName = localStorage.getItem("themeName");
+        root.setAttribute("data-theme", storedName && VALID[storedName] ? storedName : "blue");
         const stored = localStorage.getItem("theme");
         let resolved = "light";
         if (stored === "dark" || stored === "light") {

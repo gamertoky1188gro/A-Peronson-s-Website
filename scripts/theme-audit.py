@@ -222,6 +222,37 @@ print(f"THEME STATES: {stats['states']}")
 print(f"NON-TAILWIND: inline={stats['non_tailwind_inline']} svg={stats['non_tailwind_svg']}")
 print(f"FRAGILE_DYNAMIC: {stats['fragile_dynamic'] or 'none'}")
 print(f"PURPLE_ISLANDS: {len(stats['purple_islands'])} remaining (retained avatar hashes documented in THEME.md)")
+
+# ---- multi-theme parity (independent of scripts/generate-themes.py) ----
+template_names = set()
+try:
+    tpl = json.loads((ROOT / "src" / "theme" / "theme-tokens.json").read_text(encoding="utf-8"))
+    template_names = set(tpl["tokens"].keys())
+except OSError:
+    pass
+reg_text = (ROOT / "src" / "theme" / "themes" / "registry.js").read_text(encoding="utf-8") if (ROOT / "src" / "theme" / "themes" / "registry.js").exists() else ""
+slugs = re.findall(r'slug:\s*"([a-z]+)"', reg_text)
+theme_problems = []
+for slug in slugs:
+    if slug == "blue":
+        continue
+    p = ROOT / "src" / "theme" / "themes" / f"{slug}.css"
+    if not p.exists():
+        theme_problems.append(f"{slug}: file missing")
+        continue
+    css = p.read_text(encoding="utf-8", errors="ignore")
+    if f'[data-theme="{slug}"]' not in css:
+        theme_problems.append(f"{slug}: light scope missing")
+    if f'[data-theme="{slug}"][data-mode="dark"]' not in css:
+        theme_problems.append(f"{slug}: dark scope missing")
+    defined = set(re.findall(r"(--theme-[a-z0-9\-\[\].]+)(?=\s*:)", css))
+    missing = sorted(n for n in template_names if n not in defined)
+    if missing:
+        theme_problems.append(f"{slug}: {len(missing)} tokens missing (e.g. {missing[:3]})")
+print(f"THEMES: registry={len(slugs)} files_ok={len(slugs) - len([t for t in theme_problems if 'file missing' in t])} parity_problems={len(theme_problems)}")
+for tp in theme_problems[:10]:
+    print(f"  - {tp}")
+report["THEMES"] = {"registry": len(slugs), "parity_problems": theme_problems}
 for island in stats["purple_islands"][:20]:
     print(f"  - {island}")
 

@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
+import PaymentProofReviewModal from "../../../components/admin/PaymentProofReviewModal.jsx";
 import { apiRequest, getToken } from "../../../lib/auth.js";
 import { exportEmailsCsv } from "../../AdminPanel.utils.js";
-import PaymentProofReviewModal from "../../../components/admin/PaymentProofReviewModal.jsx";
 
 export function AdminPlatformSection({
 	activeCategory,
@@ -575,38 +575,38 @@ export function AdminPlatformSection({
 	);
 
 	return (
-		<div className="space-y-6">
+		<div class="space-y-6">
 			{/* Block 1 – User Management */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">User Management</p>
-							<p className="text-xs text-slate-500">
+							<p class="text-sm font-bold">User Management</p>
+							<p class="text-xs text-slate-500">
 								Search users and apply role, verification, plan, or trust controls.
 							</p>
 						</div>
-						<div className="flex flex-wrap items-center gap-2">
+						<div class="flex flex-wrap items-center gap-2">
 							<input
 								value={userQuery}
 								onChange={(event) => setUserQuery(event.target.value)}
-								className="w-56 rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
+								class="w-56 rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
 								placeholder="Search name/email/role"
 							/>
 							<button
 								type="button"
 								onClick={() => exportEmailsCsv(users)}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-[#13171E]"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-[var(--theme-custom-13171e)]"
 							>
 								Export CSV
 							</button>
 						</div>
 					</div>
-					<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+					<div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
 						<select
 							value={roleFilter}
 							onChange={(event) => setRoleFilter(event.target.value)}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
 						>
 							<option value="all">All roles</option>
 							<option value="buyer">buyer</option>
@@ -619,7 +619,7 @@ export function AdminPlatformSection({
 						<select
 							value={statusFilter}
 							onChange={(event) => setStatusFilter(event.target.value)}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
 						>
 							<option value="all">All statuses</option>
 							<option value="active">active</option>
@@ -630,7 +630,7 @@ export function AdminPlatformSection({
 						<select
 							value={verificationFilter}
 							onChange={(event) => setVerificationFilter(event.target.value)}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
 						>
 							<option value="all">All verification</option>
 							<option value="verified">verified</option>
@@ -639,7 +639,7 @@ export function AdminPlatformSection({
 						<select
 							value={premiumFilter}
 							onChange={(event) => setPremiumFilter(event.target.value)}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
 						>
 							<option value="all">All plans</option>
 							<option value="premium">premium</option>
@@ -648,7 +648,7 @@ export function AdminPlatformSection({
 						<select
 							value={regionFilter}
 							onChange={(event) => setRegionFilter(event.target.value)}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
 						>
 							{regionOptions.map((region) => (
 								<option key={region} value={region}>
@@ -657,7 +657,7 @@ export function AdminPlatformSection({
 							))}
 						</select>
 					</div>
-					<div className="mt-4 space-y-3">
+					<div class="mt-4 space-y-3">
 						{filteredUsers.slice(0, 20).map((u) => {
 							const draft = userDrafts[u.id] || {};
 							const roleValue = draft.role ?? u.role ?? "buyer";
@@ -675,55 +675,55 @@ export function AdminPlatformSection({
 							return (
 								<div
 									key={u.id}
-									className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs"
+									class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs"
 								>
-									<div className="flex flex-wrap items-center justify-between gap-3">
+									<div class="flex flex-wrap items-center justify-between gap-3">
 										<div>
-											<p className="text-sm font-semibold">
+											<p class="text-sm font-semibold">
 												{u.name || "Unnamed"} ({u.email || "no email"})
 											</p>
-											<p className="text-[11px] text-slate-500">
+											<p class="text-[11px] text-slate-500">
 												Role: {u.role} / Status: {u.status} / Verified: {String(u.verified)} / Plan:{" "}
 												{u.subscription_status || "free"}
 											</p>
-											<p className="text-[11px] text-slate-400">
+											<p class="text-[11px] text-slate-400">
 												Created: {u.created_at ? new Date(u.created_at).toLocaleString() : "--"} |
 												Country: {u.profile?.country || "N/A"}
 												{u.org_owner_id ? ` | Org owner: ${u.org_owner_id}` : ""}
 												{u.member_id ? ` | Agent ID: ${u.member_id}` : ""}
 											</p>
 										</div>
-										<div className="flex flex-wrap items-center gap-2">
+										<div class="flex flex-wrap items-center gap-2">
 											<button
 												type="button"
 												onClick={() => confirmForceLogout(u.id)}
-												className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+												class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 											>
 												Force logout
 											</button>
 											<button
 												type="button"
 												onClick={() => resetPassword(u.id)}
-												className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+												class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 											>
 												Reset password
 											</button>
 											<button
 												type="button"
 												onClick={() => lockMessaging(u.id, 24)}
-												className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+												class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 											>
 												Lock messaging 24h
 											</button>
 										</div>
 									</div>
-									<div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-semibold uppercase text-slate-500">Role</span>
+									<div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+										<label class="flex flex-col gap-1">
+											<span class="text-[10px] font-semibold uppercase text-slate-500">Role</span>
 											<select
 												value={roleValue}
 												onChange={(event) => updateDraft(u.id, "role", event.target.value)}
-												className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+												class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 											>
 												<option value="buyer">buyer</option>
 												<option value="factory">factory</option>
@@ -733,19 +733,19 @@ export function AdminPlatformSection({
 												<option value="owner">owner</option>
 											</select>
 										</label>
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-semibold uppercase text-slate-500">Status</span>
+										<label class="flex flex-col gap-1">
+											<span class="text-[10px] font-semibold uppercase text-slate-500">Status</span>
 											<select
 												value={statusValue}
 												onChange={(event) => updateDraft(u.id, "status", event.target.value)}
-												className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+												class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 											>
 												<option value="active">active</option>
 												<option value="suspended">suspended</option>
 											</select>
 										</label>
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-semibold uppercase text-slate-500">
+										<label class="flex flex-col gap-1">
+											<span class="text-[10px] font-semibold uppercase text-slate-500">
 												Verified
 											</span>
 											<select
@@ -753,27 +753,27 @@ export function AdminPlatformSection({
 												onChange={(event) =>
 													updateDraft(u.id, "verified", event.target.value === "true")
 												}
-												className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+												class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 											>
 												<option value="true">true</option>
 												<option value="false">false</option>
 											</select>
 										</label>
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-semibold uppercase text-slate-500">Plan</span>
+										<label class="flex flex-col gap-1">
+											<span class="text-[10px] font-semibold uppercase text-slate-500">Plan</span>
 											<select
 												value={subValue}
 												onChange={(event) =>
 													updateDraft(u.id, "subscription_status", event.target.value)
 												}
-												className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+												class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 											>
 												<option value="free">free</option>
 												<option value="premium">premium</option>
 											</select>
 										</label>
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-semibold uppercase text-slate-500">
+										<label class="flex flex-col gap-1">
+											<span class="text-[10px] font-semibold uppercase text-slate-500">
 												Strikes
 											</span>
 											<input
@@ -783,36 +783,36 @@ export function AdminPlatformSection({
 												onChange={(event) =>
 													updateDraft(u.id, "policy_strikes", Number(event.target.value))
 												}
-												className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+												class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 											/>
 										</label>
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-semibold uppercase text-slate-500">
+										<label class="flex flex-col gap-1">
+											<span class="text-[10px] font-semibold uppercase text-slate-500">
 												Fraud flags
 											</span>
 											<input
 												value={fraudValue}
 												onChange={(event) => updateDraft(u.id, "fraud_flags", event.target.value)}
-												className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+												class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 												placeholder="flag1, flag2"
 											/>
 										</label>
 									</div>
-									<label className="mt-3 flex flex-col gap-1">
-										<span className="text-[10px] font-semibold uppercase text-slate-500">
+									<label class="mt-3 flex flex-col gap-1">
+										<span class="text-[10px] font-semibold uppercase text-slate-500">
 											Admin notes
 										</span>
 										<textarea
 											rows="2"
 											value={notesValue}
 											onChange={(event) => updateDraft(u.id, "admin_notes", event.target.value)}
-											className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+											class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 											placeholder="Internal notes visible to admins only"
 										/>
 									</label>
-									<div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-semibold uppercase text-slate-500">
+									<div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+										<label class="flex flex-col gap-1">
+											<span class="text-[10px] font-semibold uppercase text-slate-500">
 												MFA setup code
 											</span>
 											<input
@@ -820,12 +820,12 @@ export function AdminPlatformSection({
 												onChange={(event) =>
 													updateDraft(u.id, "mfa_setup_code", event.target.value)
 												}
-												className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+												class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 												placeholder="Per-account MFA setup code"
 											/>
 										</label>
-										<label className="flex flex-col gap-1">
-											<span className="text-[10px] font-semibold uppercase text-slate-500">
+										<label class="flex flex-col gap-1">
+											<span class="text-[10px] font-semibold uppercase text-slate-500">
 												Step-up setup code
 											</span>
 											<input
@@ -833,16 +833,16 @@ export function AdminPlatformSection({
 												onChange={(event) =>
 													updateDraft(u.id, "stepup_setup_code", event.target.value)
 												}
-												className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+												class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 												placeholder="Per-account step-up setup code"
 											/>
 										</label>
 									</div>
-									<div className="mt-3 flex items-center justify-end">
+									<div class="mt-3 flex items-center justify-end">
 										<button
 											type="button"
 											onClick={() => saveUserEdits(u.id)}
-											className="rounded-full bg-slate-900 px-4 py-2 text-[11px] font-semibold text-white hover:bg-slate-800"
+											class="rounded-full bg-slate-900 px-4 py-2 text-[11px] font-semibold text-white hover:bg-slate-800"
 										>
 											Save changes
 										</button>
@@ -851,7 +851,7 @@ export function AdminPlatformSection({
 							);
 						})}
 						{!loading && filteredUsers.length === 0 ? (
-							<p className="text-xs text-slate-500">No users match the filter.</p>
+							<p class="text-xs text-slate-500">No users match the filter.</p>
 						) : null}
 					</div>
 				</div>
@@ -859,22 +859,22 @@ export function AdminPlatformSection({
 
 			{/* Block 2 – Signup, Fraud Review, Strike History, Org Ownership, Wallet, Email Segments, Featured */}
 			{activeCategory === "platform" ? (
-				<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-					<div className="admin-card admin-sweep rounded-3xl p-6">
-						<div className="flex items-center justify-between gap-2">
+				<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
 							<div>
-								<p className="text-sm font-bold">Signup + Email Export</p>
-								<p className="text-xs text-slate-500">Live signup feed with CSV exports.</p>
+								<p class="text-sm font-bold">Signup + Email Export</p>
+								<p class="text-xs text-slate-500">Live signup feed with CSV exports.</p>
 							</div>
 							<button
 								type="button"
 								onClick={() => refreshSignups()}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Refresh
 							</button>
 						</div>
-						<div className="mt-3 flex flex-wrap gap-2">
+						<div class="mt-3 flex flex-wrap gap-2">
 							<button
 								type="button"
 								onClick={() =>
@@ -882,7 +882,7 @@ export function AdminPlatformSection({
 										setError(err.message || "Export failed"),
 									)
 								}
-								className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white"
+								class="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white"
 							>
 								Download email CSV
 							</button>
@@ -893,98 +893,106 @@ export function AdminPlatformSection({
 										(err) => setError(err.message || "Export failed"),
 									)
 								}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Export users CSV
 							</button>
 						</div>
-						<div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
 							{signups.slice(0, 4).map((row) => (
 								<div
 									key={row.id}
-									className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+									class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 								>
 									{row.name || row.email || row.id} · {row.role || "role"} ·{" "}
 									{row.created_at ? new Date(row.created_at).toLocaleDateString() : "--"}
 								</div>
 							))}
 							{signups.length === 0 ? (
-								<div className="text-[11px] text-slate-400">No signups yet.</div>
+								<div class="text-[11px] text-slate-400">No signups yet.</div>
 							) : null}
 						</div>
 					</div>
 
-					<div className="admin-card admin-sweep rounded-3xl p-6">
-						<div className="flex items-center justify-between gap-2">
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
 							<div>
-								<p className="text-sm font-bold">Fraud Review</p>
-								<p className="text-xs text-slate-500">Flagged verification records + duplicates.</p>
+								<p class="text-sm font-bold">Fraud Review</p>
+								<p class="text-xs text-slate-500">Flagged verification records + duplicates.</p>
 							</div>
 							<button
 								type="button"
 								onClick={() => refreshFraudReview()}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Refresh
 							</button>
 						</div>
-						<div className="mt-3 text-[11px] text-slate-500">
+						<div class="mt-3 text-[11px] text-slate-500">
 							Duplicates detected: {fraudReview.duplicates?.length || 0}
 						</div>
-						<div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
 							{fraudReview.items.slice(0, 4).map((row) => (
 								<div
 									key={row.user_id || row.id}
-									className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+									class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 								>
 									{row.company_name || row.user_id} · Flag: {row.fraud_flag ? "Yes" : "No"}
 								</div>
 							))}
 							{fraudReview.items.length === 0 ? (
-								<div className="text-[11px] text-slate-400">No fraud flags.</div>
+								<div class="text-[11px] text-slate-400">No fraud flags.</div>
 							) : null}
 						</div>
 					</div>
 
-					<div className="admin-card admin-sweep rounded-3xl p-6">
-						<div className="flex items-center justify-between gap-2">
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
 							<div>
-								<p className="text-sm font-bold">Duplicate Disputes</p>
-								<p className="text-xs text-slate-500">Users disputing duplicate company flags.</p>
+								<p class="text-sm font-bold">Duplicate Disputes</p>
+								<p class="text-xs text-slate-500">Users disputing duplicate company flags.</p>
 							</div>
 							<button
 								type="button"
 								onClick={() => refreshDuplicateDisputes()}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Refresh
 							</button>
 						</div>
-						<div className="mt-3 text-[11px] text-slate-500">
+						<div class="mt-3 text-[11px] text-slate-500">
 							Pending disputes: {duplicateDisputes.length || 0}
 						</div>
-						<div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
 							{duplicateDisputes.slice(0, 6).map((row) => {
 								const meta = row.meta || {};
 								return (
 									<div
 										key={row.id}
-										className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 space-y-2"
+										class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 space-y-2"
 									>
-										<div className="flex items-center justify-between gap-2">
+										<div class="flex items-center justify-between gap-2">
 											<div>
-												<span className="font-semibold">{meta.applicant_name || meta.applicant_id}</span>
-												<span className="text-slate-400"> disputes flag with company </span>
-												<span className="font-semibold">{meta.company_user_id}</span>
+												<span class="font-semibold">
+													{meta.applicant_name || meta.applicant_id}
+												</span>
+												<span class="text-slate-400"> disputes flag with company </span>
+												<span class="font-semibold">{meta.company_user_id}</span>
 											</div>
-											<span className="text-[10px] text-slate-400">
+											<span class="text-[10px] text-slate-400">
 												{meta.created_at ? new Date(meta.created_at).toLocaleDateString() : "--"}
 											</span>
 										</div>
-										<div className="flex gap-2">
+										<div class="flex gap-2">
 											<button
-												onClick={() => resolveDuplicateDispute(row.id, "approve_applicant", "Dispute resolved: not a duplicate")}
-												className="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-600 hover:bg-emerald-500/20"
+												onClick={() =>
+													resolveDuplicateDispute(
+														row.id,
+														"approve_applicant",
+														"Dispute resolved: not a duplicate",
+													)
+												}
+												class="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-600 hover:bg-emerald-500/20"
 											>
 												Not a duplicate
 											</button>
@@ -995,7 +1003,7 @@ export function AdminPlatformSection({
 														resolveDuplicateDispute(row.id, "confirm_duplicate", reason);
 													}
 												}}
-												className="rounded-lg bg-rose-500/10 px-2 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-500/20"
+												class="rounded-lg bg-rose-500/10 px-2 py-1 text-[10px] font-semibold text-rose-600 hover:bg-rose-500/20"
 											>
 												Confirm duplicate
 											</button>
@@ -1004,118 +1012,118 @@ export function AdminPlatformSection({
 								);
 							})}
 							{duplicateDisputes.length === 0 ? (
-								<div className="text-[11px] text-slate-400">No pending disputes.</div>
+								<div class="text-[11px] text-slate-400">No pending disputes.</div>
 							) : null}
 						</div>
 					</div>
 
-					<div className="admin-card admin-sweep rounded-3xl p-6">
-						<div className="flex items-center justify-between gap-2">
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
 							<div>
-								<p className="text-sm font-bold">Strike History</p>
-								<p className="text-xs text-slate-500">Audit of policy violations & escalations.</p>
+								<p class="text-sm font-bold">Strike History</p>
+								<p class="text-xs text-slate-500">Audit of policy violations & escalations.</p>
 							</div>
 							<button
 								type="button"
 								onClick={() => refreshStrikeHistory()}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Refresh
 							</button>
 						</div>
-						<div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
 							{strikeHistory.slice(0, 4).map((row) => (
 								<div
 									key={row.id}
-									className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+									class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 								>
 									{row.user?.name || row.actor_id} · {row.reason} · Strikes {row.strikes}
 								</div>
 							))}
 							{strikeHistory.length === 0 ? (
-								<div className="text-[11px] text-slate-400">No strikes yet.</div>
+								<div class="text-[11px] text-slate-400">No strikes yet.</div>
 							) : null}
 						</div>
 					</div>
 
-					<div className="admin-card admin-sweep rounded-3xl p-6">
-						<div className="flex items-center justify-between gap-2">
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
 							<div>
-								<p className="text-sm font-bold">Org Ownership</p>
-								<p className="text-xs text-slate-500">Live org registry + staff limits.</p>
+								<p class="text-sm font-bold">Org Ownership</p>
+								<p class="text-xs text-slate-500">Live org registry + staff limits.</p>
 							</div>
 							<button
 								type="button"
 								onClick={() => refreshOrgOwnership()}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Refresh
 							</button>
 						</div>
-						<div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
 							{(orgOwnership.orgs || []).slice(0, 4).map((org) => (
 								<div
 									key={org.org_owner_id}
-									className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+									class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 								>
 									{org.org_name} · Staff {org.staff_count}/{org.staff_limit}
 								</div>
 							))}
 							{(orgOwnership.orgs || []).length === 0 ? (
-								<div className="text-[11px] text-slate-400">No orgs found.</div>
+								<div class="text-[11px] text-slate-400">No orgs found.</div>
 							) : null}
 						</div>
 					</div>
 
-					<div className="admin-card admin-sweep rounded-3xl p-6">
-						<div className="flex items-center justify-between gap-2">
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
 							<div>
-								<p className="text-sm font-bold">Wallet Ledger</p>
-								<p className="text-xs text-slate-500">Unified credits, debits, and refunds.</p>
+								<p class="text-sm font-bold">Wallet Ledger</p>
+								<p class="text-xs text-slate-500">Unified credits, debits, and refunds.</p>
 							</div>
 							<button
 								type="button"
 								onClick={() => refreshWalletLedger()}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Refresh
 							</button>
 						</div>
-						<div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
 							{walletLedger.slice(0, 4).map((row) => (
 								<div
 									key={row.id || row.created_at}
-									className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+									class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 								>
 									{row.entry_type || row.type} · ${row.amount_usd || 0} ·{" "}
 									{row.reason || row.note || "--"}
 								</div>
 							))}
 							{walletLedger.length === 0 ? (
-								<div className="text-[11px] text-slate-400">No ledger entries.</div>
+								<div class="text-[11px] text-slate-400">No ledger entries.</div>
 							) : null}
 						</div>
 					</div>
 
-					<div className="admin-card admin-sweep rounded-3xl p-6">
-						<div className="flex items-center justify-between gap-2">
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
 							<div>
-								<p className="text-sm font-bold">Email Segments</p>
-								<p className="text-xs text-slate-500">Targeted lists with CSV export.</p>
+								<p class="text-sm font-bold">Email Segments</p>
+								<p class="text-xs text-slate-500">Targeted lists with CSV export.</p>
 							</div>
 							<button
 								type="button"
 								onClick={() => refreshCatalog()}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Refresh
 							</button>
 						</div>
-						<div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
 							{(catalog?.emails?.segments || []).slice(0, 4).map((segment) => (
 								<div
 									key={segment.id}
-									className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+									class="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 								>
 									<span>{segment.name || segment.id}</span>
 									<button
@@ -1126,39 +1134,39 @@ export function AdminPlatformSection({
 												`segment_${segment.id}.csv`,
 											).catch((err) => setError(err.message || "Export failed"))
 										}
-										className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+										class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 									>
 										Export
 									</button>
 								</div>
 							))}
 							{(catalog?.emails?.segments || []).length === 0 ? (
-								<div className="text-[11px] text-slate-400">No segments yet.</div>
+								<div class="text-[11px] text-slate-400">No segments yet.</div>
 							) : null}
 						</div>
 					</div>
 
-					<div className="admin-card admin-sweep rounded-3xl p-6">
-						<div className="flex items-center justify-between gap-2">
+					<div class="admin-card admin-sweep rounded-3xl p-6">
+						<div class="flex items-center justify-between gap-2">
 							<div>
-								<p className="text-sm font-bold">Featured Listings</p>
-								<p className="text-xs text-slate-500">Control marketplace highlights.</p>
+								<p class="text-sm font-bold">Featured Listings</p>
+								<p class="text-xs text-slate-500">Control marketplace highlights.</p>
 							</div>
 							<button
 								type="button"
 								onClick={() => refreshCatalog()}
-								className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+								class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 							>
 								Refresh
 							</button>
 						</div>
-						<div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
 							<select
 								value={featuredForm.entity_type}
 								onChange={(event) =>
 									setFeaturedForm((prev) => ({ ...prev, entity_type: event.target.value }))
 								}
-								className="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+								class="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 							>
 								<option value="product">Product</option>
 								<option value="request">Buyer request</option>
@@ -1169,7 +1177,7 @@ export function AdminPlatformSection({
 									setFeaturedForm((prev) => ({ ...prev, entity_id: event.target.value }))
 								}
 								placeholder="Entity ID"
-								className="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+								class="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 							/>
 							<input
 								value={featuredForm.label}
@@ -1177,7 +1185,7 @@ export function AdminPlatformSection({
 									setFeaturedForm((prev) => ({ ...prev, label: event.target.value }))
 								}
 								placeholder="Label (optional)"
-								className="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+								class="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
 							/>
 							<button
 								type="button"
@@ -1186,16 +1194,16 @@ export function AdminPlatformSection({
 									await refreshCatalog();
 									setFeaturedForm((prev) => ({ ...prev, entity_id: "", label: "" }));
 								}}
-								className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
+								class="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
 							>
 								Add featured
 							</button>
 						</div>
-						<div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+						<div class="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
 							{(catalog?.featured?.listings || []).slice(0, 4).map((item) => (
 								<div
 									key={item.id}
-									className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+									class="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 								>
 									<span>
 										{item.title} · {item.entity_type}
@@ -1208,14 +1216,14 @@ export function AdminPlatformSection({
 											});
 											await refreshCatalog();
 										}}
-										className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+										class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
 									>
 										Remove
 									</button>
 								</div>
 							))}
 							{(catalog?.featured?.listings || []).length === 0 ? (
-								<div className="text-[11px] text-slate-400">No featured listings.</div>
+								<div class="text-[11px] text-slate-400">No featured listings.</div>
 							) : null}
 						</div>
 					</div>
@@ -1224,94 +1232,94 @@ export function AdminPlatformSection({
 
 			{/* Block 3 – Verification Queue */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Verification Queue</p>
-							<p className="text-xs text-slate-500">
+							<p class="text-sm font-bold">Verification Queue</p>
+							<p class="text-xs text-slate-500">
 								Review compliance documents, duplicates, and credibility scores.
 							</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshVerificationQueue()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh queue
 						</button>
 					</div>
-					<div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
+					<div class="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
 						{verificationQueue.slice(0, 20).map((row) => (
 							<details
 								key={row.user_id}
-								className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
+								class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
 							>
-								<summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+								<summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
 									<div>
-										<p className="text-sm font-semibold text-slate-900 dark:text-white">
+										<p class="text-sm font-semibold text-slate-900 dark:text-white">
 											{row.user?.name || row.user_id}
 										</p>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-[11px] text-slate-500">
 											{row.user?.email || "no email"} · {row.user?.role || "role"} · Status:{" "}
 											{row.review_status}
 										</p>
 									</div>
-									<div className="flex items-center gap-2">
-										<span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
+									<div class="flex items-center gap-2">
+										<span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
 											Credibility {row.credibility?.score ?? "--"}
 										</span>
 										{row.expiring_soon ? (
-											<span className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700">
+											<span class="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700">
 												Expiring
 											</span>
 										) : null}
 									</div>
 								</summary>
-								<div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
-									<div className="space-y-2">
-										<p className="text-[11px] font-semibold uppercase text-slate-500">
+								<div class="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
+									<div class="space-y-2">
+										<p class="text-[11px] font-semibold uppercase text-slate-500">
 											Required Checklist
 										</p>
-										<div className="flex flex-wrap gap-2">
+										<div class="flex flex-wrap gap-2">
 											{row.required_checklist?.map((item) => (
 												<span
 													key={item.key}
-													className={`rounded-full px-2 py-1 text-[10px] font-semibold${item.submitted ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}
+													class={`rounded-full px-2 py-1 text-[10px] font-semibold${item.submitted ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}
 												>
 													{item.label}
 												</span>
 											))}
 										</div>
 										{row.duplicate_flags?.length > 0 ? (
-											<div className="mt-2 text-[11px] text-rose-600">
+											<div class="mt-2 text-[11px] text-rose-600">
 												Possible duplicates:{" "}
 												{row.duplicate_flags.map((flag) => `${flag.field}`).join(", ")}
 											</div>
 										) : null}
-										<div className="mt-2 text-[11px] text-slate-500">
+										<div class="mt-2 text-[11px] text-slate-500">
 											Subscription remaining: {row.subscription_remaining_days ?? "--"} days
 										</div>
 									</div>
-									<div className="space-y-2">
-										<p className="text-[11px] font-semibold uppercase text-slate-500">Documents</p>
-										<div className="space-y-1">
+									<div class="space-y-2">
+										<p class="text-[11px] font-semibold uppercase text-slate-500">Documents</p>
+										<div class="space-y-1">
 											{row.uploaded_documents?.length > 0 ? (
 												row.uploaded_documents.map((doc) => (
 													<a
 														key={doc.id}
 														href={doc.public_url || "#"}
-														className="block truncate text-[11px] text-indigo-600"
+														class="block truncate text-[11px] text-indigo-600"
 													>
 														{doc.type || "document"} {doc.public_url ? "view" : ""}
 													</a>
 												))
 											) : (
-												<p className="text-[11px] text-slate-400">No uploaded documents.</p>
+												<p class="text-[11px] text-slate-400">No uploaded documents.</p>
 											)}
 										</div>
 									</div>
 								</div>
-								<div className="mt-3 flex flex-wrap items-center gap-2">
+								<div class="mt-3 flex flex-wrap items-center gap-2">
 									<button
 										type="button"
 										onClick={async () => {
@@ -1320,7 +1328,7 @@ export function AdminPlatformSection({
 											});
 											await refreshVerificationQueue();
 										}}
-										className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+										class="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
 									>
 										Approve
 									</button>
@@ -1334,7 +1342,7 @@ export function AdminPlatformSection({
 											});
 											await refreshVerificationQueue();
 										}}
-										className="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white"
+										class="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white"
 									>
 										Reject
 									</button>
@@ -1342,7 +1350,7 @@ export function AdminPlatformSection({
 							</details>
 						))}
 						{verificationQueue.length === 0 ? (
-							<p className="text-xs text-slate-500">No pending verifications.</p>
+							<p class="text-xs text-slate-500">No pending verifications.</p>
 						) : null}
 					</div>
 				</div>
@@ -1350,23 +1358,23 @@ export function AdminPlatformSection({
 
 			{/* Block 4 – Contracts Vault */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Contracts Vault</p>
-							<p className="text-xs text-slate-500">
+							<p class="text-sm font-bold">Contracts Vault</p>
+							<p class="text-xs text-slate-500">
 								Lifecycle, signatures, payment proofs, and disputes.
 							</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshContractsVault()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh contracts
 						</button>
 					</div>
-					<div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
+					<div class="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
 						{contractsVault.slice(0, 12).map((contract) => {
 							const proofs = paymentProofs.filter(
 								(proof) => String(proof.contract_id) === String(contract.id),
@@ -1374,49 +1382,49 @@ export function AdminPlatformSection({
 							return (
 								<details
 									key={contract.id}
-									className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
+									class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
 								>
-									<summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+									<summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
 										<div>
-											<p className="text-sm font-semibold text-slate-900 dark:text-white">
+											<p class="text-sm font-semibold text-slate-900 dark:text-white">
 												{contract.title || "Contract"}
 											</p>
-											<p className="text-[11px] text-slate-500">
+											<p class="text-[11px] text-slate-500">
 												{contract.contract_number || contract.id} ·{" "}
 												{contract.lifecycle_status || contract.status}
 											</p>
 										</div>
-										<div className="flex items-center gap-2 text-[10px]">
-											<span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">
+										<div class="flex items-center gap-2 text-[10px]">
+											<span class="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">
 												Buyer: {contract.buyer_signature_state}
 											</span>
-											<span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">
+											<span class="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">
 												Factory: {contract.factory_signature_state}
 											</span>
 										</div>
 									</summary>
-									<div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
-										<div className="space-y-1 text-[11px]">
+									<div class="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
+										<div class="space-y-1 text-[11px]">
 											<p>Buyer: {contract.buyer_name || contract.buyer_id || "N/A"}</p>
 											<p>Factory: {contract.factory_name || contract.factory_id || "N/A"}</p>
 											<p>Status: {contract.lifecycle_status || "unknown"}</p>
 											{contract.artifact?.pdf_path ? (
-												<a href={contract.artifact.pdf_path} className="text-indigo-600">
+												<a href={contract.artifact.pdf_path} class="text-indigo-600">
 													View artifact
 												</a>
 											) : (
-												<p className="text-slate-400">No artifact generated</p>
+												<p class="text-slate-400">No artifact generated</p>
 											)}
 										</div>
-										<div className="space-y-1 text-[11px]">
-											<p className="text-[10px] font-semibold uppercase text-slate-500">
+										<div class="space-y-1 text-[11px]">
+											<p class="text-[10px] font-semibold uppercase text-slate-500">
 												Payment Proofs
 											</p>
 											{proofs.length > 0 ? (
 												proofs.map((proof) => (
 													<div
 														key={proof.id}
-														className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
+														class="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1"
 													>
 														<span>
 															{proof.type} ? {proof.status} ? {proof.amount || "--"}{" "}
@@ -1428,18 +1436,18 @@ export function AdminPlatformSection({
 														<button
 															type="button"
 															onClick={() => setReviewProof(proof)}
-															className="ml-2 rounded-lg bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-600 hover:bg-sky-500/20 dark:text-sky-400"
+															class="ml-2 rounded-lg bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-600 hover:bg-sky-500/20 dark:text-sky-400"
 														>
 															Review
 														</button>
 													</div>
 												))
 											) : (
-												<p className="text-slate-400">No payment proofs.</p>
+												<p class="text-slate-400">No payment proofs.</p>
 											)}
 										</div>
 									</div>
-									<div className="mt-3 flex flex-wrap items-center gap-2">
+									<div class="mt-3 flex flex-wrap items-center gap-2">
 										<button
 											type="button"
 											onClick={async () => {
@@ -1448,7 +1456,7 @@ export function AdminPlatformSection({
 												});
 												await refreshContractsVault();
 											}}
-											className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white"
+											class="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white"
 										>
 											Lock
 										</button>
@@ -1460,7 +1468,7 @@ export function AdminPlatformSection({
 												});
 												await refreshContractsVault();
 											}}
-											className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+											class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 										>
 											Unlock
 										</button>
@@ -1472,7 +1480,7 @@ export function AdminPlatformSection({
 												});
 												await refreshContractsVault();
 											}}
-											className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+											class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 										>
 											Archive
 										</button>
@@ -1481,7 +1489,7 @@ export function AdminPlatformSection({
 							);
 						})}
 						{contractsVault.length === 0 ? (
-							<p className="text-xs text-slate-500">No contracts available.</p>
+							<p class="text-xs text-slate-500">No contracts available.</p>
 						) : null}
 					</div>
 				</div>
@@ -1489,75 +1497,81 @@ export function AdminPlatformSection({
 
 			{/* Block 5 – Disputes */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Disputes</p>
-							<p className="text-xs text-slate-500">Review and resolve contract disputes.</p>
+							<p class="text-sm font-bold">Disputes</p>
+							<p class="text-xs text-slate-500">Review and resolve contract disputes.</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshDisputes()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh disputes
 						</button>
 					</div>
-					<div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
+					<div class="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
 						{disputes.slice(0, 12).map((dispute) => (
 							<details
 								key={dispute.id}
-								className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
+								class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
 							>
-								<summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+								<summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
 									<div>
-										<p className="text-sm font-semibold text-slate-900 dark:text-white">
+										<p class="text-sm font-semibold text-slate-900 dark:text-white">
 											{dispute.entity_id}
 										</p>
-										<p className="text-[11px] text-slate-500">{dispute.reason}</p>
+										<p class="text-[11px] text-slate-500">{dispute.reason}</p>
 									</div>
-									<div className="flex items-center gap-2">
-										<span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
+									<div class="flex items-center gap-2">
+										<span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
 											{dispute.status}
 										</span>
-										<span className="text-[10px] text-slate-400">
+										<span class="text-[10px] text-slate-400">
 											{dispute.created_at ? new Date(dispute.created_at).toLocaleDateString() : ""}
 										</span>
 									</div>
 								</summary>
-								<div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
-									<p className="text-[11px] font-semibold uppercase text-slate-500">Status History</p>
-									<div className="mt-2 space-y-2">
-										<div className="flex items-start gap-2">
-											<div className="mt-1 h-2 w-2 rounded-full bg-sky-400" />
+								<div class="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
+									<p class="text-[11px] font-semibold uppercase text-slate-500">Status History</p>
+									<div class="mt-2 space-y-2">
+										<div class="flex items-start gap-2">
+											<div class="mt-1 h-2 w-2 rounded-full bg-sky-400" />
 											<div>
-												<p className="text-[11px] font-medium text-slate-900 dark:text-white">Created</p>
-												<p className="text-[10px] text-slate-400">
+												<p class="text-[11px] font-medium text-slate-900 dark:text-white">
+													Created
+												</p>
+												<p class="text-[10px] text-slate-400">
 													{dispute.created_at ? new Date(dispute.created_at).toLocaleString() : "—"}
 												</p>
 												{dispute.actor_name ? (
-													<p className="text-[10px] text-slate-400">By: {dispute.actor_name}</p>
+													<p class="text-[10px] text-slate-400">By: {dispute.actor_name}</p>
 												) : null}
 											</div>
 										</div>
 										{dispute.status === "resolved" ? (
-											<div className="flex items-start gap-2">
-												<div className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
+											<div class="flex items-start gap-2">
+												<div class="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
 												<div>
-													<p className="text-[11px] font-medium text-slate-900 dark:text-white">Resolved</p>
-													<p className="text-[10px] text-slate-400">
-														{dispute.resolved_at ? new Date(dispute.resolved_at).toLocaleString() : "—"}
+													<p class="text-[11px] font-medium text-slate-900 dark:text-white">
+														Resolved
+													</p>
+													<p class="text-[10px] text-slate-400">
+														{dispute.resolved_at
+															? new Date(dispute.resolved_at).toLocaleString()
+															: "—"}
 													</p>
 													{dispute.resolved_by ? (
-														<p className="text-[10px] text-slate-400">By: {dispute.resolved_by}</p>
+														<p class="text-[10px] text-slate-400">By: {dispute.resolved_by}</p>
 													) : null}
 													{dispute.resolution_action ? (
-														<p className="text-[10px] text-slate-400">
+														<p class="text-[10px] text-slate-400">
 															Action: {dispute.resolution_action}
 														</p>
 													) : null}
 													{dispute.resolution_note ? (
-														<p className="mt-1 rounded-lg bg-slate-100 p-2 text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+														<p class="mt-1 rounded-lg bg-slate-100 p-2 text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
 															{dispute.resolution_note}
 														</p>
 													) : null}
@@ -1566,18 +1580,21 @@ export function AdminPlatformSection({
 										) : null}
 									</div>
 									{dispute.status === "open" ? (
-										<div className="mt-4 space-y-2">
-											<p className="text-[11px] font-semibold uppercase text-slate-500">Resolve Dispute</p>
+										<div class="mt-4 space-y-2">
+											<p class="text-[11px] font-semibold uppercase text-slate-500">
+												Resolve Dispute
+											</p>
 											<textarea
 												id={`resolve-note-${dispute.id}`}
 												rows={2}
-												className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none placeholder:text-slate-400 focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+												class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none placeholder:text-slate-400 focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
 												placeholder="Resolution note (optional)..."
 											/>
 											<button
 												type="button"
 												onClick={async () => {
-													const note = document.getElementById(`resolve-note-${dispute.id}`)?.value || "";
+													const note =
+														document.getElementById(`resolve-note-${dispute.id}`)?.value || "";
 													await runInlineAdminAction("dispute.resolve", {
 														report_id: dispute.id,
 														resolution_action: "resolved",
@@ -1585,7 +1602,7 @@ export function AdminPlatformSection({
 													});
 													await refreshDisputes();
 												}}
-												className="rounded-full bg-emerald-600 px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-emerald-700"
+												class="rounded-full bg-emerald-600 px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-emerald-700"
 											>
 												Resolve
 											</button>
@@ -1595,7 +1612,7 @@ export function AdminPlatformSection({
 							</details>
 						))}
 						{disputes.length === 0 ? (
-							<p className="text-xs text-slate-500">No disputes found.</p>
+							<p class="text-xs text-slate-500">No disputes found.</p>
 						) : null}
 					</div>
 				</div>
@@ -1603,37 +1620,37 @@ export function AdminPlatformSection({
 
 			{/* Block 6 – Product Moderation Queue */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Product Moderation Queue</p>
-							<p className="text-xs text-slate-500">Pending review and rejected product listings.</p>
+							<p class="text-sm font-bold">Product Moderation Queue</p>
+							<p class="text-xs text-slate-500">Pending review and rejected product listings.</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshModerationQueues()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh queue
 						</button>
 					</div>
-					<div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Pending Review</p>
-							<div className="mt-2 space-y-2">
+					<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Pending Review</p>
+							<div class="mt-2 space-y-2">
 								{moderationPending.slice(0, 6).map((row) => (
 									<div
 										key={row.id}
-										className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+										class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
 									>
-										<p className="text-sm font-semibold text-slate-900">{row.title || "Product"}</p>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-sm font-semibold text-slate-900">{row.title || "Product"}</p>
+										<p class="text-[11px] text-slate-500">
 											Owner: {row.owner?.name || row.company_id}
 										</p>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-[11px] text-slate-500">
 											{row.content_review_reason || "Pending review"}
 										</p>
-										<div className="mt-2 flex flex-wrap gap-2">
+										<div class="mt-2 flex flex-wrap gap-2">
 											<button
 												type="button"
 												onClick={async () => {
@@ -1648,7 +1665,7 @@ export function AdminPlatformSection({
 													);
 													await refreshModerationQueues();
 												}}
-												className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+												class="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
 											>
 												Approve
 											</button>
@@ -1658,7 +1675,7 @@ export function AdminPlatformSection({
 													setRejectionItem(row);
 													setRejectionModalOpen(true);
 												}}
-												className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+												class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 											>
 												Reject
 											</button>
@@ -1666,26 +1683,26 @@ export function AdminPlatformSection({
 									</div>
 								))}
 								{moderationPending.length > 0 ? null : (
-									<p className="text-[11px] text-slate-500">No pending products.</p>
+									<p class="text-[11px] text-slate-500">No pending products.</p>
 								)}
 							</div>
 						</div>
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Rejected</p>
-							<div className="mt-2 space-y-2">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Rejected</p>
+							<div class="mt-2 space-y-2">
 								{moderationRejected.slice(0, 6).map((row) => (
 									<div
 										key={row.id}
-										className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+										class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
 									>
-										<p className="text-sm font-semibold text-slate-900">{row.title || "Product"}</p>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-sm font-semibold text-slate-900">{row.title || "Product"}</p>
+										<p class="text-[11px] text-slate-500">
 											Owner: {row.owner?.name || row.company_id}
 										</p>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-[11px] text-slate-500">
 											{row.content_review_reason || "Rejected"}
 										</p>
-										<div className="mt-2 flex flex-wrap gap-2">
+										<div class="mt-2 flex flex-wrap gap-2">
 											<button
 												type="button"
 												onClick={async () => {
@@ -1700,7 +1717,7 @@ export function AdminPlatformSection({
 													);
 													await refreshModerationQueues();
 												}}
-												className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+												class="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
 											>
 												Restore
 											</button>
@@ -1708,7 +1725,7 @@ export function AdminPlatformSection({
 									</div>
 								))}
 								{moderationRejected.length > 0 ? null : (
-									<p className="text-[11px] text-slate-500">No rejected products.</p>
+									<p class="text-[11px] text-slate-500">No rejected products.</p>
 								)}
 							</div>
 						</div>
@@ -1718,30 +1735,30 @@ export function AdminPlatformSection({
 
 			{/* Rejection Reason Modal */}
 			{rejectionModalOpen && rejectionItem ? (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-					<div className="mx-4 w-full max-w-md rounded-3xl bg-white p-6 dark:bg-slate-900">
-						<h3 className="mb-4 text-lg font-semibold">Rejection Reason</h3>
+				<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+					<div class="mx-4 w-full max-w-md rounded-3xl bg-white p-6 dark:bg-slate-900">
+						<h3 class="mb-4 text-lg font-semibold">Rejection Reason</h3>
 						<textarea
 							rows={4}
 							placeholder="Enter rejection reason..."
-							className="w-full rounded-xl border px-3 py-2 text-sm"
+							class="w-full rounded-xl border px-3 py-2 text-sm"
 							id="rejectionReasonInput"
 						/>
-						<div className="mt-4 flex justify-end gap-2">
+						<div class="mt-4 flex justify-end gap-2">
 							<button
 								type="button"
 								onClick={() => {
 									const reason = document.getElementById("rejectionReasonInput").value;
 									handleRejectionConfirm(reason);
 								}}
-								className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white"
+								class="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white"
 							>
 								Confirm Reject
 							</button>
 							<button
 								type="button"
 								onClick={handleRejectionModalClose}
-								className="rounded-full bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
+								class="rounded-full bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
 							>
 								Cancel
 							</button>
@@ -1752,48 +1769,48 @@ export function AdminPlatformSection({
 
 			{/* Block 7 – Communication Policy Queue Inspector */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Communication Policy Queue Inspector</p>
-							<p className="text-xs text-slate-500">
+							<p class="text-sm font-bold">Communication Policy Queue Inspector</p>
+							<p class="text-xs text-slate-500">
 								Inspect queued messages, mark false positives, and adjust sender reputation.
 							</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshMessagePolicyOps()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh policy queue
 						</button>
 					</div>
-					<div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 lg:col-span-2">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Queued Items</p>
-							<div className="mt-2 space-y-2">
+					<div class="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 lg:col-span-2">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Queued Items</p>
+							<div class="mt-2 space-y-2">
 								{policyQueueItems.slice(0, 8).map((row) => (
 									<div
 										key={row.id}
-										className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+										class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
 									>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-[11px] text-slate-500">
 											{row.match_id} · {row.sender_id}
 										</p>
-										<p className="text-sm font-semibold text-slate-900">
+										<p class="text-sm font-semibold text-slate-900">
 											{row.queue_priority_label || row.queue_rank} ({row.queue_score})
 										</p>
-										<p className="text-[11px] text-slate-500">Reason: {row.policy_reason}</p>
+										<p class="text-[11px] text-slate-500">Reason: {row.policy_reason}</p>
 									</div>
 								))}
 								{policyQueueItems.length > 0 ? null : (
-									<p className="text-[11px] text-slate-500">No queued policy items.</p>
+									<p class="text-[11px] text-slate-500">No queued policy items.</p>
 								)}
 							</div>
 						</div>
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Metrics</p>
-							<div className="mt-2 space-y-1 text-[11px] text-slate-600">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Metrics</p>
+							<div class="mt-2 space-y-1 text-[11px] text-slate-600">
 								<p>
 									Blocked rate:{" "}
 									{Number(policyMetricsData?.policy_metrics?.blocked_rate || 0).toFixed(4)}
@@ -1811,18 +1828,18 @@ export function AdminPlatformSection({
 									).toFixed(4)}
 								</p>
 							</div>
-							<p className="mt-3 text-[11px] font-semibold uppercase text-slate-500">
+							<p class="mt-3 text-[11px] font-semibold uppercase text-slate-500">
 								Sender reputation adjustment
 							</p>
-							<div className="mt-2 flex flex-col gap-2">
+							<div class="mt-2 flex flex-col gap-2">
 								<input
-									className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+									class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
 									placeholder="Sender ID"
 									value={reputationSenderId}
 									onChange={(e) => setReputationSenderId(e.target.value)}
 								/>
 								<input
-									className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+									class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
 									placeholder="Delta (e.g., -5 or 4)"
 									value={reputationDelta}
 									onChange={(e) => setReputationDelta(e.target.value)}
@@ -1847,24 +1864,24 @@ export function AdminPlatformSection({
 										);
 										await refreshMessagePolicyOps();
 									}}
-									className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white"
+									class="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white"
 								>
 									Apply adjustment
 								</button>
 							</div>
 						</div>
 					</div>
-					<div className="mt-4 rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-						<p className="text-[11px] font-semibold uppercase text-slate-500">
+					<div class="mt-4 rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+						<p class="text-[11px] font-semibold uppercase text-slate-500">
 							False-positive override candidates
 						</p>
-						<div className="mt-2 space-y-2">
+						<div class="mt-2 space-y-2">
 							{policyReviewRows.slice(0, 6).map((row) => (
 								<div
 									key={row.id}
-									className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+									class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
 								>
-									<p className="text-[11px] text-slate-500">
+									<p class="text-[11px] text-slate-500">
 										{row.sender_id} · {row.action} · spam {Number(row.spam_score || 0).toFixed(3)}
 									</p>
 									<button
@@ -1881,14 +1898,14 @@ export function AdminPlatformSection({
 											);
 											await refreshMessagePolicyOps();
 										}}
-										className="mt-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+										class="mt-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
 									>
 										Mark false-positive
 									</button>
 								</div>
 							))}
 							{policyReviewRows.length > 0 ? null : (
-								<p className="text-[11px] text-slate-500">No candidates.</p>
+								<p class="text-[11px] text-slate-500">No candidates.</p>
 							)}
 						</div>
 					</div>
@@ -1897,11 +1914,11 @@ export function AdminPlatformSection({
 
 			{/* Block 8 – Clothing Moderation Rules */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Clothing Moderation Rules</p>
-							<p className="text-xs text-slate-500">
+							<p class="text-sm font-bold">Clothing Moderation Rules</p>
+							<p class="text-xs text-slate-500">
 								Edit moderation terms and neutral reason templates (no halal/haram language).
 							</p>
 						</div>
@@ -1909,7 +1926,7 @@ export function AdminPlatformSection({
 							type="button"
 							onClick={saveClothingRules}
 							disabled={clothingRulesBusy}
-							className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+							class="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
 						>
 							{clothingRulesBusy ? (
 								<ThreeDot variant="bounce" color="#0ea5e9" size="small" text="" textColor="" />
@@ -1918,9 +1935,9 @@ export function AdminPlatformSection({
 							)}
 						</button>
 					</div>
-					<div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 text-xs">
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">
+					<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 text-xs">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">
 								Forbidden Terms (Auto Reject)
 							</p>
 							<textarea
@@ -1933,11 +1950,11 @@ export function AdminPlatformSection({
 									}))
 								}
 								placeholder="One term per line"
-								className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+								class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 							/>
 						</div>
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">
 								Flag Terms (Pending Review)
 							</p>
 							<textarea
@@ -1950,11 +1967,11 @@ export function AdminPlatformSection({
 									}))
 								}
 								placeholder="One term per line"
-								className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+								class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 							/>
 						</div>
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">
 								Allowed Terms (Safe Signal)
 							</p>
 							<textarea
@@ -1967,11 +1984,11 @@ export function AdminPlatformSection({
 									}))
 								}
 								placeholder="One term per line"
-								className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+								class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 							/>
 						</div>
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Context Exceptions</p>
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Context Exceptions</p>
 							<textarea
 								rows={6}
 								value={clothingRulesForm.context_exceptions}
@@ -1982,13 +1999,13 @@ export function AdminPlatformSection({
 									}))
 								}
 								placeholder="e.g., innerwear, lining, undershirt"
-								className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+								class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 							/>
 						</div>
 					</div>
-					<div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Rejected Reason</p>
+					<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Rejected Reason</p>
 							<textarea
 								rows={4}
 								value={clothingRulesForm.reason_rejected}
@@ -1998,11 +2015,11 @@ export function AdminPlatformSection({
 										reason_rejected: e.target.value,
 									}))
 								}
-								className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+								class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 							/>
 						</div>
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">
 								Pending Review Reason
 							</p>
 							<textarea
@@ -2014,11 +2031,11 @@ export function AdminPlatformSection({
 										reason_pending: e.target.value,
 									}))
 								}
-								className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+								class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 							/>
 						</div>
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Fix Guidance</p>
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Fix Guidance</p>
 							<textarea
 								rows={4}
 								value={clothingRulesForm.reason_fix}
@@ -2028,38 +2045,38 @@ export function AdminPlatformSection({
 										reason_fix: e.target.value,
 									}))
 								}
-								className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+								class="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 							/>
 						</div>
 					</div>
 					{clothingRulesError ? (
-						<p className="mt-3 text-xs text-rose-600">{clothingRulesError}</p>
+						<p class="mt-3 text-xs text-rose-600">{clothingRulesError}</p>
 					) : null}
 					{clothingRulesNotice ? (
-						<p className="mt-3 text-xs text-emerald-700">{clothingRulesNotice}</p>
+						<p class="mt-3 text-xs text-emerald-700">{clothingRulesNotice}</p>
 					) : null}
 				</div>
 			) : null}
 
 			{/* Block 9 – Report Queues */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Report Queues</p>
-							<p className="text-xs text-slate-500">
+							<p class="text-sm font-bold">Report Queues</p>
+							<p class="text-xs text-slate-500">
 								System/support, product appeals, and public content reports.
 							</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshReportQueuesLocal()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh reports
 						</button>
 					</div>
-					<div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
+					<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
 						{[
 							{ title: "System & Support", items: systemReports },
 							{ title: "Product Appeals", items: productAppealReports },
@@ -2067,22 +2084,22 @@ export function AdminPlatformSection({
 						].map((group) => (
 							<div
 								key={group.title}
-								className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
+								class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
 							>
-								<p className="text-[11px] font-semibold uppercase text-slate-500">{group.title}</p>
-								<div className="mt-2 space-y-2">
+								<p class="text-[11px] font-semibold uppercase text-slate-500">{group.title}</p>
+								<div class="mt-2 space-y-2">
 									{group.items.slice(0, 6).map((row) => (
 										<div
 											key={row.id}
-											className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+											class="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2"
 										>
-											<p className="text-sm font-semibold text-slate-900">{row.reason || "Report"}</p>
-											<p className="text-[11px] text-slate-500">{row.entity_id}</p>
-											<div className="mt-2">
+											<p class="text-sm font-semibold text-slate-900">{row.reason || "Report"}</p>
+											<p class="text-[11px] text-slate-500">{row.entity_id}</p>
+											<div class="mt-2">
 												<button
 													type="button"
 													onClick={() => resolveReportAdmin(row.id, "reviewed")}
-													className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+													class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 												>
 													Mark reviewed
 												</button>
@@ -2090,7 +2107,7 @@ export function AdminPlatformSection({
 										</div>
 									))}
 									{group.items.length > 0 ? null : (
-										<p className="text-[11px] text-slate-500">No reports.</p>
+										<p class="text-[11px] text-slate-500">No reports.</p>
 									)}
 								</div>
 							</div>
@@ -2101,27 +2118,27 @@ export function AdminPlatformSection({
 
 			{/* Block 10 – Support Queue */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Support Queue</p>
-							<p className="text-xs text-slate-500">Dedicated support tickets with SLA tracking.</p>
+							<p class="text-sm font-bold">Support Queue</p>
+							<p class="text-xs text-slate-500">Dedicated support tickets with SLA tracking.</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshSupportTicketsLocal()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh tickets
 						</button>
 					</div>
-					<div className="mt-4 grid grid-cols-1 gap-3 text-xs text-slate-600 sm:grid-cols-4">
+					<div class="mt-4 grid grid-cols-1 gap-3 text-xs text-slate-600 sm:grid-cols-4">
 						<select
 							value={supportFilters.status}
 							onChange={(event) =>
 								setSupportFilters((prev) => ({ ...prev, status: event.target.value }))
 							}
-							className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+							class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 						>
 							<option value="all">All status</option>
 							<option value="open">Open</option>
@@ -2133,7 +2150,7 @@ export function AdminPlatformSection({
 							onChange={(event) =>
 								setSupportFilters((prev) => ({ ...prev, priority: event.target.value }))
 							}
-							className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+							class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 						>
 							<option value="all">All priority</option>
 							<option value="standard">Standard</option>
@@ -2148,40 +2165,40 @@ export function AdminPlatformSection({
 								setSupportFilters((prev) => ({ ...prev, assigned_to: event.target.value }))
 							}
 							placeholder="Assigned user ID"
-							className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+							class="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
 						/>
 						<button
 							type="button"
 							onClick={() => refreshSupportTicketsLocal()}
-							className="rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
+							class="rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
 						>
 							Apply filters
 						</button>
 					</div>
-					<div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-						{supportLoading ? <p className="text-xs text-slate-500">Loading tickets...</p> : null}
+					<div class="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
+						{supportLoading ? <p class="text-xs text-slate-500">Loading tickets...</p> : null}
 						{!supportLoading && supportTickets.length === 0 ? (
-							<p className="text-xs text-slate-500">No support tickets.</p>
+							<p class="text-xs text-slate-500">No support tickets.</p>
 						) : null}
 						{supportTickets.slice(0, 15).map((ticket) => (
 							<div
 								key={ticket.id}
-								className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
+								class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
 							>
-								<div className="flex flex-wrap items-center justify-between gap-3">
+								<div class="flex flex-wrap items-center justify-between gap-3">
 									<div>
-										<p className="text-sm font-semibold text-slate-900 dark:text-white">
+										<p class="text-sm font-semibold text-slate-900 dark:text-white">
 											{ticket.subject || "Support ticket"}
 										</p>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-[11px] text-slate-500">
 											User: {ticket.user?.name || ticket.user_id} -{" "}
 											{ticket.user?.email || "no email"}
 										</p>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-[11px] text-slate-500">
 											Status: {ticket.status || "open"} - Priority: {ticket.priority || "standard"}
 										</p>
 									</div>
-									<div className="text-[11px] text-slate-500">
+									<div class="text-[11px] text-slate-500">
 										SLA:{" "}
 										{ticket.sla_response_due_at
 											? new Date(ticket.sla_response_due_at).toLocaleString()
@@ -2192,32 +2209,32 @@ export function AdminPlatformSection({
 											: "--"}
 									</div>
 								</div>
-								<div className="mt-3 flex flex-wrap items-center gap-2">
+								<div class="mt-3 flex flex-wrap items-center gap-2">
 									<button
 										type="button"
 										onClick={() => assignSupportTicketAdmin(ticket.id)}
-										className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+										class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 									>
 										Assign
 									</button>
 									<button
 										type="button"
 										onClick={() => updateSupportTicketAdmin(ticket.id, { status: "in_progress" })}
-										className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+										class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 									>
 										Mark in progress
 									</button>
 									<button
 										type="button"
 										onClick={() => updateSupportTicketAdmin(ticket.id, { status: "resolved" })}
-										className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+										class="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
 									>
 										Resolve
 									</button>
 									<button
 										type="button"
 										onClick={() => updateSupportTicketAdmin(ticket.id, { priority: "priority" })}
-										className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+										class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 									>
 										Escalate
 									</button>
@@ -2230,42 +2247,42 @@ export function AdminPlatformSection({
 
 			{/* Block 11 – Partner Requests */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Partner Requests</p>
-							<p className="text-xs text-slate-500">
+							<p class="text-sm font-bold">Partner Requests</p>
+							<p class="text-xs text-slate-500">
 								Force accept/reject/cancel and monitor factory connections.
 							</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshPartnerRequests()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh requests
 						</button>
 					</div>
-					<div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
+					<div class="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
 						{partnerRequests.slice(0, 12).map((request) => (
 							<div
 								key={request.id}
-								className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
+								class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4"
 							>
-								<div className="flex flex-wrap items-center justify-between gap-3">
+								<div class="flex flex-wrap items-center justify-between gap-3">
 									<div>
-										<p className="text-sm font-semibold text-slate-900 dark:text-white">
+										<p class="text-sm font-semibold text-slate-900 dark:text-white">
 											{request.requester_id || request.buyer_id}
 										</p>
-										<p className="text-[11px] text-slate-500">
+										<p class="text-[11px] text-slate-500">
 											Factory: {request.factory_id || request.receiver_id}
 										</p>
 									</div>
-									<span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
+									<span class="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
 										{request.status}
 									</span>
 								</div>
-								<div className="mt-3 flex flex-wrap items-center gap-2">
+								<div class="mt-3 flex flex-wrap items-center gap-2">
 									<button
 										type="button"
 										onClick={async () => {
@@ -2274,7 +2291,7 @@ export function AdminPlatformSection({
 											});
 											await refreshPartnerRequests();
 										}}
-										className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+										class="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
 									>
 										Force accept
 									</button>
@@ -2286,7 +2303,7 @@ export function AdminPlatformSection({
 											});
 											await refreshPartnerRequests();
 										}}
-										className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+										class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 									>
 										Force reject
 									</button>
@@ -2298,7 +2315,7 @@ export function AdminPlatformSection({
 											});
 											await refreshPartnerRequests();
 										}}
-										className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
+										class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
 									>
 										Force cancel
 									</button>
@@ -2306,7 +2323,7 @@ export function AdminPlatformSection({
 							</div>
 						))}
 						{partnerRequests.length === 0 ? (
-							<p className="text-xs text-slate-500">No partner requests.</p>
+							<p class="text-xs text-slate-500">No partner requests.</p>
 						) : null}
 					</div>
 				</div>
@@ -2314,102 +2331,102 @@ export function AdminPlatformSection({
 
 			{/* Block 12 – Platform Master Lists */}
 			{activeCategory === "platform" ? (
-				<div className="admin-card admin-sweep rounded-3xl p-6">
-					<div className="flex flex-wrap items-center justify-between gap-3">
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div>
-							<p className="text-sm font-bold">Platform Master Lists</p>
-							<p className="text-xs text-slate-500">
+							<p class="text-sm font-bold">Platform Master Lists</p>
+							<p class="text-xs text-slate-500">
 								Every remaining platform module with live list/detail previews.
 							</p>
 						</div>
 						<button
 							type="button"
 							onClick={() => refreshCatalog()}
-							className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
 						>
 							Refresh catalog
 						</button>
 					</div>
-					<div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">
+					<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">
 								Org Directory + Staff Limits
 							</p>
-							<div className="mt-2 space-y-2">
+							<div class="mt-2 space-y-2">
 								{(catalog?.orgs?.list || []).slice(0, 4).map((org) => (
-									<div key={org.org_owner_id} className="flex items-center justify-between">
+									<div key={org.org_owner_id} class="flex items-center justify-between">
 										<span>
 											{org.org_name} · {org.role}
 										</span>
-										<span className="font-semibold">
+										<span class="font-semibold">
 											Staff {org.staff_count}/{org.staff_limit}
 										</span>
 									</div>
 								))}
 								{(catalog?.orgs?.staff_list || []).slice(0, 2).map((staff) => (
-									<div key={staff.id} className="text-[11px] text-slate-500">
+									<div key={staff.id} class="text-[11px] text-slate-500">
 										Staff: {staff.name || staff.id} · {staff.role}
 									</div>
 								))}
 								{(catalog?.orgs?.buying_house_staff_ids || []).slice(0, 2).map((row) => (
-									<div key={row.id} className="text-[11px] text-slate-500">
+									<div key={row.id} class="text-[11px] text-slate-500">
 										Buying house staff: {row.staff_id}
 									</div>
 								))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">
 								Verification Compliance
 							</p>
-							<div className="mt-2 space-y-2">
+							<div class="mt-2 space-y-2">
 								{(catalog?.verification?.docs_queue || []).slice(0, 3).map((doc) => (
-									<div key={doc.id} className="flex items-center justify-between">
+									<div key={doc.id} class="flex items-center justify-between">
 										<span>
 											{doc.user_id || doc.owner_id} · {doc.status}
 										</span>
-										<span className="text-[10px] text-slate-500">{doc.type || "doc"}</span>
+										<span class="text-[10px] text-slate-500">{doc.type || "doc"}</span>
 									</div>
 								))}
 								{(catalog?.verification?.badge_audit || []).slice(0, 2).map((entry) => (
-									<div key={entry.id} className="text-[11px] text-slate-500">
+									<div key={entry.id} class="text-[11px] text-slate-500">
 										Badge {entry.action} · {entry.user_id}
 									</div>
 								))}
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Fraud flags: {(catalog?.verification?.fraud_flags || []).length}
 								</div>
 								{(catalog?.verification?.duplicates || []).slice(0, 1).map((dup) => (
-									<div key={`${dup.field}:${dup.value}`} className="text-[11px] text-rose-500">
+									<div key={`${dup.field}:${dup.value}`} class="text-[11px] text-rose-500">
 										Duplicate {dup.field}: {dup.value}
 									</div>
 								))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Finance Ledgers</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Finance Ledgers</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Failed renewals: {(catalog?.finance?.failed_renewals || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									History entries: {(catalog?.finance?.upgrade_history || []).length}
 								</div>
 								{(catalog?.finance?.revenue_summary || []).slice(0, 1).map((row) => (
-									<div key={row.plan} className="text-[11px] text-slate-500">
+									<div key={row.plan} class="text-[11px] text-slate-500">
 										Plan {row.plan}: {row.subscribers} subs
 									</div>
 								))}
 								{(catalog?.finance?.invoices || []).slice(0, 2).map((row) => (
-									<div key={row.id} className="flex items-center justify-between">
+									<div key={row.id} class="flex items-center justify-between">
 										<span>Invoice {row.user_id}</span>
 										<span>${row.amount_usd}</span>
 									</div>
 								))}
 								{(catalog?.finance?.payouts || []).slice(0, 2).map((row) => (
-									<div key={row.id} className="flex items-center justify-between">
+									<div key={row.id} class="flex items-center justify-between">
 										<span>Payout {row.user_id}</span>
 										<span>${row.amount_usd}</span>
 									</div>
@@ -2417,124 +2434,124 @@ export function AdminPlatformSection({
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Wallet + Coupons</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Wallet + Coupons</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Transactions: {(catalog?.wallet?.ledger || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Redemptions: {(catalog?.wallet?.redemptions || []).length}
 								</div>
 								{(catalog?.wallet?.ledger || []).slice(0, 1).map((row) => (
-									<div key={row.id} className="text-[11px] text-slate-500">
+									<div key={row.id} class="text-[11px] text-slate-500">
 										Txn {row.user_id} · ${row.amount_usd}
 									</div>
 								))}
 								{(catalog?.wallet?.redemptions || []).slice(0, 1).map((row) => (
-									<div key={row.id} className="text-[11px] text-slate-500">
+									<div key={row.id} class="text-[11px] text-slate-500">
 										Redeem {row.user_id} · ${row.amount_usd}
 									</div>
 								))}
 								{(catalog?.coupons?.campaigns || []).slice(0, 2).map((row) => (
-									<div key={row.id} className="text-[11px] text-slate-500">
+									<div key={row.id} class="text-[11px] text-slate-500">
 										Campaign {row.name} · {row.status}
 									</div>
 								))}
 								{(couponReport?.campaigns || []).slice(0, 2).map((row) => (
-									<div key={row.campaign} className="text-[11px] text-slate-500">
+									<div key={row.campaign} class="text-[11px] text-slate-500">
 										Perf {row.campaign} · {row.redemption_count} reds · ${row.redeemed_total_usd}
 									</div>
 								))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Partner Network</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Partner Network</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Requests: {(catalog?.partners?.requests || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Connected: {(catalog?.partners?.connected_factories || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Free-tier limit: {catalog?.partners?.free_tier_limit}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Overrides: {(catalog?.partners?.overrides || []).length}
 								</div>
 								{(catalog?.partners?.connected_factories || []).slice(0, 1).map((row) => (
-									<div key={row.id || row.requester_id} className="text-[11px] text-slate-500">
+									<div key={row.id || row.requester_id} class="text-[11px] text-slate-500">
 										Factory: {row.factory_id || row.target_id}
 									</div>
 								))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Requests + Matching</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Requests + Matching</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Requests: {(catalog?.requests?.list || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Matches: {(catalog?.requests?.matches || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Spam filters: {(catalog?.requests?.spam_filters || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Match quality entries: {(catalog?.requests?.match_quality || []).length}
 								</div>
 								{(catalog?.requests?.spam_filters || []).slice(0, 1).map((row) => (
-									<div key={row.id} className="text-[11px] text-slate-500">
+									<div key={row.id} class="text-[11px] text-slate-500">
 										Filter: {row.pattern}
 									</div>
 								))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Contracts + Proofs</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Contracts + Proofs</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Contracts: {(catalog?.contracts?.vault || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Payment proofs: {(catalog?.contracts?.payment_proofs || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Audit entries: {(catalog?.contracts?.audit_trail || []).length}
 								</div>
 								{(catalog?.contracts?.audit_trail || []).slice(0, 1).map((row) => (
-									<div key={row.id} className="text-[11px] text-slate-500">
+									<div key={row.id} class="text-[11px] text-slate-500">
 										Audit {row.action}
 									</div>
 								))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Calls + Moderation</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Calls + Moderation</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Call logs: {(catalog?.calls?.logs || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Escalations: {(catalog?.calls?.escalations || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Violations: {(catalog?.moderation?.violations || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Chat transfers: {(catalog?.moderation?.chat_transfers || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Auto spam flags: {(catalog?.moderation?.auto_spam_flags || []).length}
 								</div>
 								{(catalog?.calls?.logs || []).slice(0, 1).map((row) => (
-									<div key={row.id} className="text-[11px] text-slate-500">
+									<div key={row.id} class="text-[11px] text-slate-500">
 										Call {row.id} · {row.recording_status || "pending"}
 										{row.failure_reason ? ` (${row.failure_reason})` : ""}
 									</div>
@@ -2542,16 +2559,16 @@ export function AdminPlatformSection({
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Content Review</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Content Review</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Video queue: {(catalog?.content?.product_videos || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Docs: {(catalog?.content?.documents || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Flags: {(catalog?.content?.flags || []).length}
 								</div>
 								{(catalog?.content?.documents || [])
@@ -2560,140 +2577,140 @@ export function AdminPlatformSection({
 									)
 									.slice(0, 1)
 									.map((doc) => (
-										<div key={doc.id} className="text-[11px] text-slate-500">
+										<div key={doc.id} class="text-[11px] text-slate-500">
 											Pending doc {doc.id}
 										</div>
 									))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">
 								Support + Notifications
 							</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Tickets: {(catalog?.support?.tickets || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Reports: {(catalog?.support?.reports || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									SLA: {catalog?.support?.sla_targets?.response_minutes || "--"}m /{" "}
 									{catalog?.support?.sla_targets?.resolution_hours || "--"}h
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Templates: {(catalog?.notifications?.templates || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Batch sends: {(catalog?.notifications?.batches || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Monthly triggers: {(catalog?.notifications?.monthly_triggers || []).length}
 								</div>
 								{(catalog?.support?.tickets || []).slice(0, 1).map((ticket) => (
-									<div key={ticket.id} className="text-[11px] text-slate-500">
+									<div key={ticket.id} class="text-[11px] text-slate-500">
 										Ticket {ticket.subject}
 									</div>
 								))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">Analytics + Search</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">Analytics + Search</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Funnel: {catalog?.analytics?.funnel?.signup || 0} →{" "}
 									{catalog?.analytics?.funnel?.deal || 0}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Buying house analytics: {(catalog?.analytics?.buying_house || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Agent performance: {(catalog?.analytics?.agent_performance || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Avg response: {catalog?.analytics?.response_speed?.avg_minutes || 0} min
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Active users (14d): {catalog?.analytics?.active_users?.last_14_days || 0} · Today{" "}
 									{catalog?.analytics?.active_users?.last_day || 0}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Login events (14d): {catalog?.analytics?.login_summary?.total || 0}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Buyer requests (14d): {catalog?.analytics?.buyer_request_summary?.total || 0}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Factory uploads (14d):{" "}
 									{catalog?.analytics?.factory_performance_summary?.total || 0}
 								</div>
 								{(catalog?.analytics?.factory_top || []).slice(0, 1).map((row) => (
-									<div key={row.company_id} className="text-[11px] text-slate-500">
+									<div key={row.company_id} class="text-[11px] text-slate-500">
 										Top factory: {row.company_name} · {row.products}
 									</div>
 								))}
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Search alerts: {(catalog?.search?.alerts || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Abuse records: {(catalog?.search?.usage || []).length}
 								</div>
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">AI + System Settings</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">AI + System Settings</p>
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Knowledge entries: {(catalog?.ai?.knowledge_entries || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									AI audit logs: {(catalog?.ai?.response_audit || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Feature flags: {Object.keys(catalog?.system?.feature_flags || {}).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Integrations: {Object.keys(catalog?.system?.integrations || {}).length}
 								</div>
 								{(catalog?.ai?.summary_logs || []).slice(0, 1).map((log) => (
-									<div key={log.id} className="text-[11px] text-slate-500">
+									<div key={log.id} class="text-[11px] text-slate-500">
 										AI log {log.id}
 									</div>
 								))}
 							</div>
 						</div>
 
-						<div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-							<p className="text-[11px] font-semibold uppercase text-slate-500">
+						<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
+							<p class="text-[11px] font-semibold uppercase text-slate-500">
 								Traffic + Email Segments
 							</p>
-							<div className="mt-2 space-y-2">
-								<div className="text-[11px] text-slate-500">
+							<div class="mt-2 space-y-2">
+								<div class="text-[11px] text-slate-500">
 									Clicks: {catalog?.traffic?.summary?.clicks || 0}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Visits: {catalog?.traffic?.summary?.visits || 0}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Spend: {formatCurrency(catalog?.traffic?.summary?.spend || 0)}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									CPC:{" "}
 									{catalog?.traffic?.summary?.cpc
 										? formatCurrency(catalog.traffic.summary.cpc)
 										: "--"}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Sources: {(catalog?.traffic?.sources || []).length}
 								</div>
-								<div className="text-[11px] text-slate-500">
+								<div class="text-[11px] text-slate-500">
 									Email segments: {(catalog?.emails?.segments || []).length}
 								</div>
 								{(catalog?.emails?.segments || []).slice(0, 1).map((seg) => (
-									<div key={seg.id} className="text-[11px] text-slate-500">
+									<div key={seg.id} class="text-[11px] text-slate-500">
 										Segment: {seg.name}
 									</div>
 								))}

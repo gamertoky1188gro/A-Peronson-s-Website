@@ -1145,7 +1145,7 @@ export default function ChatInterface() {
 						rel="noreferrer"
 						class="block rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-2 dark:bg-black/20"
 					>
-						<div class="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
+						<div class="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[var(--theme-custom-1f2448)] dark:text-[var(--theme-custom-b8bfe8)]">
 							{meta.host}
 						</div>
 						<div class="text-sm font-semibold">{meta.host}</div>
@@ -1525,7 +1525,7 @@ export default function ChatInterface() {
 			/>
 			{callPromptThread ? (
 				<div class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
-					<div class="w-full max-w-sm rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[#14122b] p-6 text-white shadow-2xl">
+					<div class="w-full max-w-sm rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[var(--theme-custom-14122b)] p-6 text-white shadow-2xl">
 						<div class="flex items-center gap-4">
 							{callPromptThread.avatar ? (
 								<LazyImage
@@ -1537,7 +1537,7 @@ export default function ChatInterface() {
 									eager={true}
 								/>
 							) : (
-								<div class="flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2744] text-lg font-bold">
+								<div class="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--theme-custom-2a2744)] text-lg font-bold">
 									{getInitials(formatDisplayName(callPromptThread.name, callPromptThread.senderId))}
 								</div>
 							)}

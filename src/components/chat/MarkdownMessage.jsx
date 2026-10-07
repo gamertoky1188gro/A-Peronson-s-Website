@@ -56,7 +56,7 @@ function MarkdownMessage({ text = "" }) {
 	}
 
 	return (
-		<div className="break-words text-[13px] leading-[1.45] text-inherit">
+		<div class="break-words text-[13px] leading-[1.45] text-inherit">
 			<ReactMarkdown
 				remarkPlugins={[
 					[remarkGfm, { singleTilde: false }],
@@ -80,18 +80,18 @@ function MarkdownMessage({ text = "" }) {
 								href={href}
 								target={external ? "_blank" : props.target}
 								rel={external ? "noreferrer noopener" : props.rel}
-								className={`underline underline-offset-2 ${className}`.trim()}
+								class={`underline underline-offset-2 ${className}`.trim()}
 							/>
 						);
 					},
 					p({ className = "", ...props }) {
-						return <p {...props} className={`my-1 ${className}`.trim()} />;
+						return <p {...props} class={`my-1 ${className}`.trim()} />;
 					},
 					blockquote({ className = "", ...props }) {
 						return (
 							<blockquote
 								{...props}
-								className={[
+								class={[
 									"my-1 pl-3",
 									"shadow-[inset_3px_0_0_rgba(148,163,184,0.75)] dark:shadow-[inset_3px_0_0_rgba(255,255,255,0.12)]",
 									"opacity-95",
@@ -106,8 +106,8 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<pre
 								{...props}
-								className={[
-									"my-1 overflow-x-auto rounded-xl bg-[#0b1020] p-3 text-slate-100",
+								class={[
+									"my-1 overflow-x-auto rounded-xl bg-[var(--theme-custom-0b1020)] p-3 text-slate-100",
 									"dark:bg-black/35",
 									className,
 								]
@@ -121,7 +121,7 @@ function MarkdownMessage({ text = "" }) {
 							return (
 								<code
 									{...props}
-									className={[
+									class={[
 										"rounded bg-slate-900/5 px-1 py-0.5 font-mono text-[0.92em]",
 										"dark:bg-black/35",
 										className,
@@ -132,7 +132,7 @@ function MarkdownMessage({ text = "" }) {
 							);
 						}
 						return (
-							<CodeBlock className={className} {...props}>
+							<CodeBlock class={className} {...props}>
 								{children}
 							</CodeBlock>
 						);
@@ -141,7 +141,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<table
 								{...props}
-								className={`my-2 w-full border-collapse text-[12px] ${className}`.trim()}
+								class={`my-2 w-full border-collapse text-[12px] ${className}`.trim()}
 							/>
 						);
 					},
@@ -149,7 +149,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<th
 								{...props}
-								className={[
+								class={[
 									"bg-slate-900/5 font-bold",
 									"shadow-[inset_0_0_0_1px_rgba(148,163,184,0.35)] dark:bg-white/5 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
 									"px-2 py-1 text-left align-top",
@@ -164,7 +164,7 @@ function MarkdownMessage({ text = "" }) {
 						return (
 							<td
 								{...props}
-								className={[
+								class={[
 									"shadow-[inset_0_0_0_1px_rgba(148,163,184,0.35)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]",
 									"px-2 py-1 align-top",
 									className,
@@ -180,7 +180,7 @@ function MarkdownMessage({ text = "" }) {
 								{...props}
 								width={600}
 								height={400}
-								className={`max-w-full rounded-xl shadow-borderless dark:shadow-borderlessDark ${className}`.trim()}
+								class={`max-w-full rounded-xl shadow-borderless dark:shadow-borderlessDark ${className}`.trim()}
 							/>
 						);
 					},
@@ -192,7 +192,7 @@ function MarkdownMessage({ text = "" }) {
 								checked={Boolean(checked)}
 								disabled={true}
 								readOnly={true}
-								className="mr-2 align-middle accent-gtBlue"
+								class="mr-2 align-middle accent-gtBlue"
 							/>
 						);
 					},
