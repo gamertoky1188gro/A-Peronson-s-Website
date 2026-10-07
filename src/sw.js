@@ -7,7 +7,9 @@
 // - NetworkOnly: /api/*, /ws*, /api/feed/stream (never cached, incl. SSE)
 // - CacheFirst: /assets/* (hashed at build time, capped — lazy route chunks
 //   are cached on first use, never precached, so first visits only fetch
-//   the shell + vendors + current route)
+//   the shell + vendors + current route). A hashed-asset MISS (404/failed)
+//   with nothing cached means the shell is stale (deploy rotated the hashes
+//   out from under it): clients are nudged to update (see noteStaleShell).
 // - StaleWhileRevalidate: fonts (googleapis/gstatic) + icons (svg/png/ico/woff2)
 // - Navigations: cached /index.html served app-shell-first, network revalidates;
 //   network fallback when nothing cached yet. Offline -> cached shell.
@@ -47,15 +49,60 @@ async function cacheFirst(request, cacheName) {
 	const cache = await caches.open(cacheName);
 	const cached = await cache.match(request, { ignoreSearch: false });
 	if (cached) return cached;
-	const response = await fetch(request);
+	let response = null;
+	try {
+		response = await fetch(request);
+	} catch {
+		response = null;
+	}
 	if (response && (response.status === 200 || response.type === "opaque")) {
 		cache.put(request, response.clone()).catch(() => {});
 		// Cap the assets cache so lazy chunks can't grow it unbounded.
 		if (cacheName === ASSETS_CACHE) {
 			eventLoopTrim(cache);
 		}
+		return response;
 	}
-	return response;
+	// Hashed-asset miss with nothing cached: the cached shell references a
+	// deploy that no longer exists on the server. Same failed-request outcome
+	// as before, plus a nudge so the update prompt appears.
+	if (cacheName === ASSETS_CACHE) {
+		noteStaleShell();
+	}
+	return response || Response.error();
+}
+
+// A missing hashed asset means the running shell is older than the live
+// deploy. Throttled: pull the newest SW (updatefound -> waiting -> the
+// existing OfflineBanner prompt) and tell pages, so the user gets a
+// one-tap Refresh instead of a silently broken chunk.
+let lastStaleNote = 0;
+function noteStaleShell() {
+	const now = Date.now();
+	if (now - lastStaleNote < 5 * 60 * 1000) return;
+	lastStaleNote = now;
+	try {
+		self.clients
+			.matchAll({ includeUncontrolled: true })
+			.then((list) =>
+				list.forEach((c) => {
+					try {
+						c.postMessage({ type: "STALE_SHELL" });
+					} catch {
+						/* client gone */
+					}
+				}),
+			)
+			.catch(() => {});
+	} catch {
+		/* clients API unavailable */
+	}
+	try {
+		const p = self.registration && self.registration.update();
+		if (p && typeof p.catch === "function") p.catch(() => {});
+	} catch {
+		/* update check is best-effort */
+	}
 }
 
 // Fire-and-forget trim: keep the newest ~120 entries.
