@@ -98,7 +98,10 @@ export default function ThemeSwitcher() {
 						✕
 					</button>
 				</div>
-				<div class="grid max-h-[60vh] grid-cols-1 gap-2 overflow-y-auto p-4 sm:grid-cols-2">
+				<div
+					data-lenis-prevent
+					class="grid max-h-[60vh] grid-cols-1 gap-2 overflow-y-auto overscroll-contain p-4 sm:grid-cols-2"
+				>
 					{THEMES.map((t) => {
 						const [c1, c2] = SWATCHES[t.slug] || ["#0ea5e9", "#22d3ee"];
 						const active = themeName === t.slug;
