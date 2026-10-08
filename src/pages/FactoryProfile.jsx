@@ -37,6 +37,7 @@ import {
 	Building2,
 	CalendarDays,
 	Camera,
+	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
 	ClipboardList,
@@ -118,11 +119,11 @@ function isBoostActive(boost) {
 function Pill({ children, tone = "default", title }) {
 	const tones = {
 		default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-		success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
-		info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
-		warning: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+		success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+		info: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300",
+		warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
 		premium: "bg-gradient-to-r from-sky-500 to-cyan-500 text-white",
-		danger: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
+		danger: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
 	};
 	return (
 		<span
@@ -137,16 +138,16 @@ function Pill({ children, tone = "default", title }) {
 function Metric({ label, value, helper }) {
 	return (
 		<div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
-			<div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+			<div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
 				{label}
 			</div>
-			<div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+			<div className="mt-1.5 text-sm font-bold text-slate-900 dark:text-white">{value}</div>
 			{helper ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
 		</div>
 	);
 }
 
-function AvatarFallback({ name, imageUrl }) {
+function AvatarFallback({ name, imageUrl, compact = false }) {
 	const initials = (n) => {
 		if (!n) {
 			return "?";
@@ -159,14 +160,39 @@ function AvatarFallback({ name, imageUrl }) {
 			.join("");
 	};
 	return (
-		<div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
-			<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
+		<div className={`relative overflow-hidden border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl ${compact ? "h-12 w-12 rounded-2xl" : "h-24 w-24 rounded-3xl"}`}>
+			<div className={`flex h-full w-full items-center justify-center overflow-hidden bg-slate-100 font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100 ${compact ? "rounded-[0.85rem] text-base" : "rounded-[1.15rem] text-2xl"}`}>
 				{imageUrl ? (
             <LazyImage src={imageUrl} alt={name || "Profile avatar"} width={40} height={40} loading="eager" className="h-full w-full object-cover" />
 				) : (
 					initials(name)
 				)}
 			</div>
+		</div>
+	);
+}
+
+function InfoRow({ label, children }) {
+	return (
+		<div className="flex items-center justify-between gap-3 py-2">
+			<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+				{label}
+			</span>
+			<span className="text-right text-sm font-bold text-slate-900 dark:text-white">{children}</span>
+		</div>
+	);
+}
+
+function EmptyState({ icon: Icon, text, action }) {
+	return (
+		<div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300/70 bg-slate-50/50 px-4 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/20">
+			{Icon ? (
+				<span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500 dark:text-sky-300">
+					<Icon className="h-5 w-5" />
+				</span>
+			) : null}
+			<p className="text-sm text-slate-500 dark:text-slate-400">{text}</p>
+			{action}
 		</div>
 	);
 }
@@ -202,14 +228,14 @@ function SectionTitle({ icon: Icon, title, subtitle, action }) {
 
 function StatCard({ icon: Icon, label, value, caption, action }) {
 	return (
-		<div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50">
+		<div className="h-full rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/50">
 			<div className="flex items-center gap-2 text-sky-600 dark:text-sky-400">
 				{Icon ? <Icon className="h-4 w-4" /> : null}
 				<span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
 					{label}
 				</span>
 			</div>
-			<div className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+			<div className="mt-3 text-lg font-bold text-slate-900 dark:text-white">{value}</div>
 			{caption ? (
 				<div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{caption}</div>
 			) : null}
@@ -616,6 +642,7 @@ export default function FactoryProfile() {
 		score: 5,
 		comment: "",
 	});
+	const [moreActionsOpen, setMoreActionsOpen] = useState(false);
 	const [reviewDeleteId, setReviewDeleteId] = useState(null);
 	const [feedback, setFeedback] = useState(null);
 	const fallbackCover = useFallbackCover(!user?.profile?.cover_image_url);
@@ -673,16 +700,16 @@ export default function FactoryProfile() {
 	return (
 		<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100">
 			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				<div className="mb-5 flex items-center justify-between gap-3">
+				<div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white/70 px-3 py-2 shadow-sm backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/60">
 					<button
 						onClick={() => navigate(-1)}
 						className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300"
 					>
 						<ChevronLeft className="h-4 w-4" /> Back
 					</button>
-					<div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+					<div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs text-slate-500 dark:bg-slate-900/70 dark:text-slate-400">
 						<ShieldCheck className="h-3.5 w-3.5" /> Role:{" "}
-						<span className="font-medium text-slate-700 dark:text-slate-200">{roleLabel}</span>
+						<span className="font-bold text-slate-900 dark:text-white">{roleLabel}</span>
 					</div>
 				</div>
 
@@ -908,9 +935,25 @@ export default function FactoryProfile() {
 															title="About"
 															subtitle="Factory overview and positioning."
 														/>
-														<p className="leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
-															{user?.profile?.about || "No description added yet."}
-														</p>
+														{user?.profile?.about ? (
+															<p className="leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+																{user.profile.about}
+															</p>
+														) : (
+															<EmptyState icon={Eye} text="No description added yet." />
+														)}
+													</SoftCard>
+													<SoftCard>
+														<SectionTitle
+															icon={ShieldCheck}
+															title="Trust & Verification"
+															subtitle="Verification and commercial status."
+														/>
+														<VerificationPanel summary={verification} />
+														<div className="mt-4 grid gap-3 sm:grid-cols-2">
+															<Metric label="Signed contracts" value={certification?.signed_contracts ?? 0} />
+															<Metric label="Premium status" value={isPremium ? "Enabled" : "Standard"} helper={isBoosted ? "Boosted visibility active" : "No active profile boost"} />
+														</div>
 													</SoftCard>
 													{hasBrandKit ? (
 														<SoftCard>
@@ -1044,9 +1087,7 @@ export default function FactoryProfile() {
 															))}
 														</div>
 													) : (
-														<p className="text-sm text-slate-500 dark:text-slate-400">
-															No companies listed yet.
-														</p>
+														<EmptyState icon={Building2} text="No companies listed yet." />
 													)}
 												</SoftCard>
 											</motion.div>
@@ -1068,9 +1109,7 @@ export default function FactoryProfile() {
 														subtitle="Horizontal scroll gallery with fullscreen lightbox"
 													/>
 													{products.length === 0 && !loadingProducts ? (
-														<div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
-															No products found.
-														</div>
+														<EmptyState icon={Boxes} text="No products found." />
 													) : (
 														<HorizontalScrollGallery>
 															{products.map((product) => (
@@ -1203,9 +1242,7 @@ export default function FactoryProfile() {
 														subtitle="Only approved media is public. Pending or restricted media remains hidden unless you are the profile owner or an admin."
 													/>
 													{visibleVideos.length === 0 ? (
-														<div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
-															No public videos available.
-														</div>
+														<EmptyState icon={Video} text="No public videos available." />
 													) : (
 														<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 															{visibleVideos.map((item) => (
@@ -1294,9 +1331,7 @@ export default function FactoryProfile() {
 															))}
 														</div>
 													) : (
-														<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
-															No work history added yet.
-														</div>
+														<EmptyState icon={ClipboardList} text="No work history added yet." />
 													)}
 												</SoftCard>
 											</motion.div>
@@ -1444,9 +1479,7 @@ export default function FactoryProfile() {
 															})}
 														</div>
 													) : (
-														<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
-															No reviews yet.
-														</div>
+														<EmptyState icon={Star} text="No reviews yet." />
 													)}
 												</SoftCard>
 											</motion.div>
@@ -1456,7 +1489,10 @@ export default function FactoryProfile() {
 							)}
 						</SoftCard>
 
-						<CrmSummaryPanel targetId={user.id} />
+						<CrmSummaryPanel
+							targetId={user.id}
+							onContact={currentUser?.id !== user?.id ? contact : undefined}
+						/>
 					</main>
 				</div>
 			</div>
