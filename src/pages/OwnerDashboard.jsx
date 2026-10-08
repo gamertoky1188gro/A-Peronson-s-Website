@@ -329,8 +329,8 @@ export default function OwnerDashboard() {
 	return (
 		<div className={theme === "dark" ? "dark" : ""}>
 			<div
-				style={{ height: "100vh", overflow: "hidden" }}
-				className="flex w-full bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100"
+				style={{ overflow: "hidden" }}
+				className="flex min-h-dvh w-full flex-1 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100"
 			>
 				<aside
 					data-lenis-prevent={true}
@@ -338,7 +338,7 @@ export default function OwnerDashboard() {
 						"fixed inset-y-0 left-0 z-40 w-80 shrink-0 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:relative lg:z-auto lg:translate-x-0 scrollbar-invisible",
 						sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
 					)}
-					style={{ height: "100vh", overflow: "auto" }}
+					style={{ height: "100dvh", overflow: "auto" }}
 				>
 					<div className="flex min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-slate-950/65">
 						<div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-4 dark:border-white/10">

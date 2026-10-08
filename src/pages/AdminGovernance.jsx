@@ -413,7 +413,7 @@ export default function AdminGovernance() {
 	}
 
 	return (
-		<div className={cn("min-h-screen transition-colors", shellClass)}>
+		<div className={cn("min-h-dvh flex-1 transition-colors", shellClass)}>
 			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 				<div className="mb-6 flex flex-col gap-4 rounded-3xl border border-sky-200/70 bg-white/80 p-5 shadow-[0_20px_60px_-25px_rgba(14,116,144,0.45)] backdrop-blur dark:border-white/10 dark:bg-slate-950/40 lg:flex-row lg:items-center lg:justify-between">
 					<div className="flex items-start gap-4">

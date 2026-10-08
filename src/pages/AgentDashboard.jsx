@@ -314,7 +314,7 @@ export default function AgentDashboard() {
 			<div className="mx-auto flex min-h-full max-w-[1600px] flex-col lg:flex-row">
 				<aside
 					data-lenis-prevent={true}
-					className="border-b border-white/20 bg-white/70 p-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/70 lg:sticky lg:top-0 lg:h-screen lg:w-80 lg:overflow-y-auto lg:border-b-0 lg:border-r"
+					className="border-b border-white/20 bg-white/70 p-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/70 lg:sticky lg:top-0 lg:h-dvh lg:w-80 lg:overflow-y-auto lg:border-b-0 lg:border-r"
 				>
 					<div className="flex items-center gap-3 rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-500/10 to-cyan-400/10 p-4 shadow-sm">
 						<div className="flex items-center gap-3">
