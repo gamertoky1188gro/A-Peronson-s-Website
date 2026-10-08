@@ -1,0 +1,112 @@
+/* Per-theme ambient page background (gradient wash).
+ * Imported by src/tailwind.css AFTER all theme files. Each theme sets one
+ * --theme-wash token (two soft radial glows in its signature hues); the
+ * shared body::before rule paints it as a fixed, non-interactive layer.
+ * Base color comes from each theme's own --theme-background role, so both
+ * the flat tone and the wash are unique per theme, light and dark.
+ * Not part of scripts/generate-themes.py (hand-authored, stable API).
+ */
+
+html {
+	background-color: var(--theme-background, #f8fafc);
+}
+
+body::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: auto;
+	pointer-events: none;
+	background-image: var(--theme-wash, none);
+	background-repeat: no-repeat;
+}
+
+/* Content paints above the wash. Position without z-index: no new stacking
+   context, so fixed overlays/modals keep their existing z-order. */
+#root {
+	position: relative;
+}
+
+/* Deep Sky Blue — sky glow over cyan depth. */
+[data-theme="blue"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(14, 165, 233, 0.14), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(59, 130, 246, 0.1), transparent 70%);
+}
+
+/* Midnight Aurora — indigo veil with a cyan horizon. */
+[data-theme="aurora"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(99, 102, 241, 0.14), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(34, 211, 238, 0.1), transparent 70%);
+}
+
+/* Obsidian Violet — ultraviolet crown over indigo depth. */
+[data-theme="violet"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(139, 92, 246, 0.14), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(99, 102, 241, 0.1), transparent 70%);
+}
+
+/* Royal Sapphire — sapphire light over sky depths. */
+[data-theme="sapphire"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(37, 99, 235, 0.14), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(56, 189, 248, 0.1), transparent 70%);
+}
+
+/* Arctic Ocean — glacial cyan with an icy horizon. */
+[data-theme="arctic"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(8, 145, 178, 0.14), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(103, 232, 249, 0.1), transparent 70%);
+}
+
+/* Emerald Noir — emerald canopy over teal depth. */
+[data-theme="emerald"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(16, 185, 129, 0.14), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(20, 184, 166, 0.1), transparent 70%);
+}
+
+/* Blurple Fusion — blurple charge over violet dusk. */
+[data-theme="blurple"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(88, 101, 242, 0.14), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(139, 92, 246, 0.1), transparent 70%);
+}
+
+/* Obsidian Mono — barely-there whisper of blue-gray on graphite. */
+[data-theme="mono"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(120, 149, 174, 0.1), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(115, 115, 115, 0.08), transparent 70%);
+}
+
+/* Cyberpunk Plasma — neon pink storm over ultraviolet. */
+[data-theme="plasma"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(255, 45, 181, 0.12), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(139, 92, 246, 0.12), transparent 70%);
+}
+
+/* Solaris — solar flare over radiant pink dusk. */
+[data-theme="solaris"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(255, 122, 24, 0.12), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(255, 79, 163, 0.1), transparent 70%);
+}
+
+/* Forest Glass — canopy light over pine depth. */
+[data-theme="forest"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(22, 163, 74, 0.14), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(20, 184, 166, 0.1), transparent 70%);
+}
+
+/* Crimson Night — ember glow over violet royalty. */
+[data-theme="crimson"] {
+	--theme-wash:
+		radial-gradient(52rem 32rem at 85% -5%, rgba(225, 29, 72, 0.12), transparent 70%),
+		radial-gradient(48rem 30rem at -10% 100%, rgba(124, 58, 237, 0.12), transparent 70%);
+}

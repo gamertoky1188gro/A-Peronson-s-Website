@@ -325,6 +325,21 @@ describe("twelve-theme system (blue preserved + 11 personalities)", () => {
 		expect(src).toContain("document.body.style.overflow");
 	});
 
+	test("page wash: every theme defines a unique ambient background", () => {
+		const wash = read("src/theme/page-wash.css");
+		expect(read("src/tailwind.css")).toContain("./theme/page-wash.css");
+		const slugs = ["blue", "aurora", "violet", "sapphire", "arctic", "emerald",
+			"blurple", "mono", "plasma", "solaris", "forest", "crimson"];
+		for (const slug of slugs) {
+			expect(wash).toContain(`[data-theme="${slug}"]`);
+		}
+		// App shell lets the wash show through (base color lives on <html>).
+		const app = read("src/App.jsx");
+		const mainLine = app.split("\n").find((l) => l.includes("<main"));
+		expect(mainLine).not.toContain("bg-slate-50");
+		expect(mainLine).toContain("bg-transparent");
+	});
+
 	test("personalities are not blue-swaps: primaries differ per theme", () => {
 		const primaries = new Set();
 		for (const slug of SLUGS) {

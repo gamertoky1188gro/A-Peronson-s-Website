@@ -519,13 +519,13 @@ function AppLayout() {
 		) : (
 			<>
 				{hideChrome ? null : <ScrollProgressBar />}
-				<div class="flex w-full justify-center bg-slate-50 dark:bg-[var(--theme-custom-0b1220)]">
+				<div class="flex w-full justify-center bg-transparent">
 					<div
 						class={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
 						style={{ width: "100%" }}
 					>
 						{hideChrome ? null : <NavBar />}
-						<main class="flex flex-1 min-h-0 flex-col bg-slate-50 dark:bg-[var(--theme-custom-0b1220)] overflow-x-hidden">
+						<main class="flex flex-1 min-h-0 flex-col bg-transparent overflow-x-hidden">
 							<ErrorBoundary>
 								<Suspense
 									fallback={

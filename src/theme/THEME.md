@@ -91,6 +91,7 @@ values can't leak across themes):
 - `solaris` (`scripts/solaris-overlay.css`): orange → radiant pink → ultraviolet master, solar-eclipse dark.
 - `forest` (`scripts/forest-overlay.css`): pine/leaf brand, emerald premium, teal realtime, cyan highlights.
 - `crimson` (`scripts/crimson-overlay.css`): crimson brand, pink expressive, violet AI/premium, midnight-crimson dark.
+- Page wash (`src/theme/page-wash.css`): one `--theme-wash` ambient gradient per theme + `html` base color from the `background → bg → surface-solid` fallback chain (verified unique for all 12 in both modes); App shell `main` is transparent so it shows through.
 
 In all cases the generated base underneath keeps the machine contract (`custom-*`
 twins, alpha variants, numbered gradients/shadows) that components depend

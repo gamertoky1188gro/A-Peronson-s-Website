@@ -12,6 +12,7 @@
 @import "./theme/themes/solaris.css";
 @import "./theme/themes/forest.css";
 @import "./theme/themes/crimson.css";
+@import "./theme/page-wash.css";
 @import "./theme/themes/tailwind-tokens.css";
 @plugin "@tailwindcss/typography";
 
