@@ -216,3 +216,11 @@ body,
 		animation: none;
 	}
 }
+
+/* Per-dashboard global chrome collapse (see usePageChrome). Instant hide; no animation. */
+body.chrome-nav-hidden .global-navbar {
+	display: none;
+}
+body.chrome-footer-hidden .global-footer {
+	display: none;
+}

@@ -502,9 +502,9 @@ function AppLayout() {
 	const location = useLocation();
 	const isImmersiveRoute = location.pathname === "/chat" || location.pathname === "/call";
 	const isAdminRoute = location.pathname.startsWith("/admin");
-	const hideChrome = isImmersiveRoute || isAdminRoute;
+	const hideChrome = isImmersiveRoute;
 	const content =
-		isAdminRoute || isImmersiveRoute ? (
+		isImmersiveRoute ? (
 			<ErrorBoundary>
 				<Suspense
 					fallback={
@@ -524,7 +524,11 @@ function AppLayout() {
 						class={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
 						style={{ width: "100%" }}
 					>
-						{hideChrome ? null : <NavBar />}
+						{hideChrome ? null : (
+							<div className="global-navbar">
+								<NavBar />
+							</div>
+						)}
 						<main class="flex flex-1 min-h-0 flex-col bg-transparent overflow-x-hidden">
 							<ErrorBoundary>
 								<Suspense
@@ -546,7 +550,11 @@ function AppLayout() {
 								</Suspense>
 							</ErrorBoundary>
 						</main>
-						{!hideChrome && location.pathname !== "/feed" ? <Footer /> : null}
+						{!hideChrome && location.pathname !== "/feed" ? (
+							<div className="global-footer">
+								<Footer />
+							</div>
+						) : null}
 						{hideChrome ? null : (
 							<Suspense fallback={null}>
 								<FloatingAssistant />

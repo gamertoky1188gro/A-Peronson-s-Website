@@ -2969,7 +2969,7 @@ export default function AdminPanel() {
 				onDecline={handleSecurityDecline}
 			/>
 			<div
-				class={`admin-shell h-screen w-screen ${themeStyles.shell} ${themeStyles.background} flex overflow-hidden transition-colors`}
+				class={`admin-shell h-screen w-full ${themeStyles.shell} ${themeStyles.background} flex overflow-hidden transition-colors`}
 			>
 				<div class="admin-plasma" />
 				<div class="admin-current" />
