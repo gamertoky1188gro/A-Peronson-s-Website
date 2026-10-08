@@ -24,7 +24,7 @@ import usePageMeta from "../lib/usePageMeta.js";
 function Pill({ children, tone = "default" }) {
 	const tones = {
 		default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-		success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+		success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
 		info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
 		premium: "bg-gradient-to-r from-sky-500 to-cyan-500 text-white",
 	};
