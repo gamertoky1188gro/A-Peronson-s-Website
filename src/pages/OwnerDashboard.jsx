@@ -10,6 +10,7 @@ import { StaggerContainer, StaggerItem } from "../components/StaggerContainer.js
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import ConversionFunnel from "../components/analytics/ConversionFunnel.jsx";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard.js";
+import usePageChrome from "../hooks/usePageChrome.js";
 import { apiRequest, getToken, syncUserFromApi } from "../lib/auth.js";
 import { cn } from "../lib/cn.js";
 import { isRouteValid } from "../lib/routeHealthCheck.js";
@@ -229,6 +230,7 @@ export default function OwnerDashboard() {
 		[setSearchParams],
 	);
 	const { theme, toggleTheme } = useTheme();
+	const { navCollapsed, footerCollapsed, toggleNav, toggleFooter } = usePageChrome("owner");
 
 	const { dashboard, subscription, isEnterprise, loading, error } = useAnalyticsDashboard();
 	const [policy, setPolicy] = useState(null);
@@ -415,6 +417,29 @@ export default function OwnerDashboard() {
 					</div>
 				</aside>
 
+				{(navCollapsed || footerCollapsed) && (
+					<div className="fixed bottom-4 right-4 z-40 flex gap-2">
+						{navCollapsed && (
+							<button
+								type="button"
+								onClick={toggleNav}
+								className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+							>
+								Show nav
+							</button>
+						)}
+						{footerCollapsed && (
+							<button
+								type="button"
+								onClick={toggleFooter}
+								className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+							>
+								Show footer
+							</button>
+						)}
+					</div>
+				)}
+
 				<div
 					data-lenis-prevent={true}
 					className="flex flex-1 flex-col min-h-0"
@@ -447,6 +472,22 @@ export default function OwnerDashboard() {
 										<span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700 dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-300">
 											Blue-Sky Theme
 										</span>
+										<button
+											type="button"
+											onClick={toggleNav}
+											aria-expanded={!navCollapsed}
+											className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300"
+										>
+											{navCollapsed ? "Show nav" : "Hide nav"}
+										</button>
+										<button
+											type="button"
+											onClick={toggleFooter}
+											aria-expanded={!footerCollapsed}
+											className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300"
+										>
+											{footerCollapsed ? "Show footer" : "Hide footer"}
+										</button>
 									</div>
 								</div>
 							</div>
