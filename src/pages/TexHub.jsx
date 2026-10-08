@@ -113,7 +113,7 @@ function SectionTitle({ eyebrow, title, text }) {
 					</span>
 				)}
 			</h2>
-			<p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base">{text}</p>
+			<p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-200 md:text-base">{text}</p>
 		</div>
 	);
 }
@@ -780,10 +780,10 @@ export default function TexHub() {
 							<AnimatedHeroHeading text={heroHeadline} />
 						</motion.h1>
 						<motion.div variants={staggerChildVariants}>
-							<p class="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
+							<p class="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-200 sm:text-lg">
 								{heroSubheadline}
 							</p>
-							<p class="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+							<p class="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-300">
 								{heroShortDescription}
 							</p>
 						</motion.div>
@@ -830,7 +830,7 @@ export default function TexHub() {
 
 						<motion.div
 							variants={staggerChildVariants}
-							class="mt-4 text-xs text-slate-500 dark:text-slate-400"
+							class="mt-4 text-xs text-slate-500 dark:text-slate-300"
 						>
 							<Link to="/pricing">Compare sourcing plans</Link>
 							<span aria-hidden="true"> · </span>
@@ -842,7 +842,7 @@ export default function TexHub() {
 						<motion.div variants={staggerChildVariants} class="mt-8 grid gap-3 sm:grid-cols-3">
 							{buyerStats.map((item) => (
 								<Card key={item.label} class="p-4">
-									<div class="text-sm text-slate-500 dark:text-slate-400">{item.label}</div>
+									<div class="text-sm text-slate-500 dark:text-slate-300">{item.label}</div>
 									<div class="mt-2 text-2xl font-semibold tracking-tight">{item.value}</div>
 								</Card>
 							))}
@@ -925,7 +925,7 @@ export default function TexHub() {
 										<CheckCircle2 class="h-6 w-6" />
 									</div>
 									<h3 class="mt-4 text-lg font-semibold">{card.title}</h3>
-									<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+									<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-200">
 										{card.text}
 									</p>
 								</Card>
@@ -964,7 +964,7 @@ export default function TexHub() {
 												</div>
 											</div>
 											<h3 class="mt-5 text-xl font-semibold">{item.title}</h3>
-											<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+											<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-200">
 												{item.text}
 											</p>
 										</Card>
@@ -988,7 +988,7 @@ export default function TexHub() {
 								<div class="flex items-start justify-between gap-4">
 									<div>
 										<h3 class="text-xl font-semibold">{item.title}</h3>
-										<p class="mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+										<p class="mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-200">
 											{item.text}
 										</p>
 									</div>
@@ -996,7 +996,7 @@ export default function TexHub() {
 										<Layers3 class="h-5 w-5" />
 									</div>
 								</div>
-								<div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+								<div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
 									{item.meta}
 								</div>
 							</Card>
@@ -1087,7 +1087,7 @@ export default function TexHub() {
 							<div class="flex h-full flex-col bg-white p-6 dark:bg-slate-950/70">
 								<div class="flex items-center justify-between">
 									<div>
-										<div class="text-sm font-medium text-slate-500 dark:text-slate-400">
+										<div class="text-sm font-medium text-slate-500 dark:text-slate-300">
 											Unique toggle
 										</div>
 										<div class="mt-1 text-xl font-semibold">
@@ -1117,7 +1117,7 @@ export default function TexHub() {
 									<div class="text-sm font-medium">
 										{mode === "professional" ? "Professional" : "Diverse"}
 									</div>
-									<div class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+									<div class="mt-2 text-sm text-slate-600 dark:text-slate-200">
 										Factory video gallery
 									</div>
 									<div class="mt-4 flex-1 grid grid-cols-3 auto-rows-fr gap-2">
@@ -1152,7 +1152,7 @@ export default function TexHub() {
 								<div class="text-lg font-semibold">Enterprise analytics</div>
 								<BriefcaseBusiness class="h-5 w-5 text-sky-500" />
 							</div>
-							<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+							<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-200">
 								Decision-ready reporting for buying houses — without turning the UI into a
 								spreadsheet.
 							</p>
@@ -1162,7 +1162,7 @@ export default function TexHub() {
 										key={stat.label}
 										class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
 									>
-										<div class="text-xs text-slate-500 dark:text-slate-400">{stat.label}</div>
+										<div class="text-xs text-slate-500 dark:text-slate-300">{stat.label}</div>
 										<div class="mt-2 text-2xl font-semibold">{stat.value}</div>
 									</div>
 								))}
@@ -1174,7 +1174,7 @@ export default function TexHub() {
 								<div class="text-lg font-semibold">Platform features</div>
 								<Users2 class="h-5 w-5 text-sky-500" />
 							</div>
-							<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+							<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-200">
 								Focused only on garments and textiles. Clear categories help the right people find
 								the right partners.
 							</p>
@@ -1249,7 +1249,7 @@ export default function TexHub() {
 						{audience.map((item) => (
 							<Card key={item.title} class="p-6">
 								<h3 class="text-xl font-semibold">{item.title}</h3>
-								<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+								<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-200">
 									<TextColorReveal>{item.text}</TextColorReveal>
 								</p>
 								<div class="mt-5 space-y-3">
@@ -1284,7 +1284,7 @@ export default function TexHub() {
 								>
 									<Card class="p-7">
 										{section.eyebrow ? (
-											<p class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+											<p class="text-xs font-semibold text-slate-500 dark:text-slate-300">
 												{section.eyebrow}
 											</p>
 										) : null}
@@ -1292,12 +1292,12 @@ export default function TexHub() {
 											{section.title}
 										</h3>
 										{section.description ? (
-											<p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+											<p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-200">
 												{section.description}
 											</p>
 										) : null}
 										{Array.isArray(section.bullets) && section.bullets.length > 0 ? (
-											<ul class="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+											<ul class="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-200">
 												{section.bullets.map((bullet) => (
 													<li key={bullet} class="flex items-start gap-2">
 														<span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
