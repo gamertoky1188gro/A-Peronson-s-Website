@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
+import usePageChrome from "../hooks/usePageChrome.js";
 import { apiRequest, getToken } from "../lib/auth.js";
 import { logger } from "../lib/logger.js";
 
@@ -244,6 +245,8 @@ function JsonBlock({ value, minHeight = 160 }) {
  */
 export default function AdminGovernance() {
 	const [darkMode, setDarkMode] = useState(true);
+	const { navCollapsed, footerCollapsed, toggleNav, toggleFooter } =
+		usePageChrome("governance");
 	const [policy, setPolicy] = useState(initialPolicy);
 	const [version, setVersion] = useState(initialVersion);
 	const [simulation, setSimulation] = useState(initialSimulation);
@@ -444,6 +447,12 @@ export default function AdminGovernance() {
 						<Button variant="secondary" onClick={load}>
 							<RefreshCw className="h-4 w-4" />
 							Reload data
+						</Button>
+						<Button variant="secondary" onClick={toggleNav} aria-expanded={!navCollapsed}>
+							{navCollapsed ? "Show nav" : "Hide nav"}
+						</Button>
+						<Button variant="secondary" onClick={toggleFooter} aria-expanded={!footerCollapsed}>
+							{footerCollapsed ? "Show footer" : "Hide footer"}
 						</Button>
 					</div>
 				</div>
@@ -895,6 +904,28 @@ export default function AdminGovernance() {
 					</div>
 				</div>
 			</div>
+			{(navCollapsed || footerCollapsed) && (
+				<div className="fixed bottom-4 right-4 z-40 flex gap-2">
+					{navCollapsed && (
+						<button
+							type="button"
+							onClick={toggleNav}
+							className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+						>
+							Show nav
+						</button>
+					)}
+					{footerCollapsed && (
+						<button
+							type="button"
+							onClick={toggleFooter}
+							className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+						>
+							Show footer
+						</button>
+					)}
+				</div>
+			)}
 		</div>
 	);
 }
