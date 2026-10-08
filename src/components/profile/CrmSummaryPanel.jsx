@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { MessageSquare, PhoneCall, FileText } from "lucide-react";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth.js";
 
 function formatDate(value) {
@@ -29,7 +30,7 @@ function withinRange(iso, range = {}) {
 	return true;
 }
 
-export default function CrmSummaryPanel({ targetId }) {
+export default function CrmSummaryPanel({ targetId, onContact }) {
 	const token = useMemo(() => getToken(), []);
 	const currentUser = useMemo(() => getCurrentUser(), []);
 	const actorRole = String(currentUser?.role || "").toLowerCase();
@@ -121,6 +122,12 @@ export default function CrmSummaryPanel({ targetId }) {
 		setExpandedThreads((prev) => ({ ...prev, [matchId]: !prev[matchId] }));
 	}
 
+	const STAGES = ["Discovered", "Matched", "Contacted", "Closed"];
+	const stageReached = STAGES.map((stage) =>
+		Object.keys(leadStatus).some((k) => String(k).toLowerCase().includes(stage.toLowerCase())),
+	);
+	const currentStage = stageReached.lastIndexOf(true);
+
 	return (
 		<section class="mt-6 w-full min-w-0 rounded-2xl border border-slate-200/70 dark:border-slate-800/80 shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-950 p-5">
 			<div class="flex flex-wrap items-center justify-between gap-3">
@@ -138,8 +145,48 @@ export default function CrmSummaryPanel({ targetId }) {
 				</a>
 			</div>
 
+			<div class="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
+				<p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+					Journey progress
+				</p>
+				<div class="mt-3 flex items-start">
+					{STAGES.map((stage, i) => {
+						const reached = stageReached[i];
+						const isCurrent = i === currentStage;
+						return (
+							<div key={stage} class={`flex items-start ${i < STAGES.length - 1 ? "flex-1" : ""}`}>
+								<div class="flex flex-col items-center gap-1.5">
+									<span
+										class={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
+											reached
+												? "bg-emerald-500 text-white"
+												: "bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+										} ${isCurrent ? "ring-2 ring-emerald-500/40 ring-offset-2 ring-offset-white dark:ring-offset-slate-950" : ""}`}
+									>
+										{reached ? "✓" : i + 1}
+									</span>
+									<span
+										class={`text-[10px] font-semibold ${reached ? "text-slate-700 dark:text-slate-200" : "text-slate-400 dark:text-slate-500"}`}
+									>
+										{stage}
+									</span>
+								</div>
+								{i < STAGES.length - 1 ? (
+									<div class="mx-1 mt-3 h-0.5 flex-1 rounded-full bg-slate-200 dark:bg-slate-800">
+										<div
+											class={`h-full rounded-full ${i < currentStage ? "bg-emerald-500" : "bg-transparent"}`}
+											style={{ width: "100%" }}
+										/>
+									</div>
+								) : null}
+							</div>
+						);
+					})}
+				</div>
+			</div>
+
 			<div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-				<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-3">
+				<div class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-900/40">
 					<p class="text-xs font-semibold text-slate-600 dark:text-slate-300">Lead Status</p>
 					<div class="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
 						{Object.keys(leadStatus).length > 0 ? (
@@ -155,7 +202,7 @@ export default function CrmSummaryPanel({ targetId }) {
 					</div>
 				</div>
 
-				<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-3">
+				<div class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-900/40">
 					<p class="text-xs font-semibold text-slate-600 dark:text-slate-300">Messages</p>
 					<div class="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
 						<div class="flex items-center justify-between">
@@ -174,7 +221,7 @@ export default function CrmSummaryPanel({ targetId }) {
 					</div>
 				</div>
 
-				<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-3">
+				<div class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-900/40">
 					<p class="text-xs font-semibold text-slate-600 dark:text-slate-300">Calls & Contracts</p>
 					<div class="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
 						<div class="flex items-center justify-between">
@@ -199,55 +246,57 @@ export default function CrmSummaryPanel({ targetId }) {
 				</div>
 			</div>
 
-			<div class="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-4">
-				<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-800/60 p-3">
-					<label class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Type</label>
-					<select
-						value={filterType}
-						onChange={(event) => setFilterType(event.target.value)}
-						class="mt-2 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
-					>
-						<option value="all">All</option>
-						<option value="messages">Messages</option>
-						<option value="calls">Calls</option>
-						<option value="contracts">Contracts</option>
-					</select>
-				</div>
+			<div class="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-900/40">
+				<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+					<div>
+						<label class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Type</label>
+						<select
+							value={filterType}
+							onChange={(event) => setFilterType(event.target.value)}
+							class="mt-1.5 w-full rounded-xl border border-slate-200/70 bg-white px-3 py-2 text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+						>
+							<option value="all">All</option>
+							<option value="messages">Messages</option>
+							<option value="calls">Calls</option>
+							<option value="contracts">Contracts</option>
+						</select>
+					</div>
 
-				<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-800/60 p-3">
-					<label class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Match</label>
-					<select
-						value={filterMatch}
-						onChange={(event) => setFilterMatch(event.target.value)}
-						class="mt-2 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
-					>
-						<option value="">All threads</option>
-						{matches.map((match) => (
-							<option key={match} value={match}>
-								{match.slice(0, 18)}...
-							</option>
-						))}
-					</select>
-				</div>
+					<div>
+						<label class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Match</label>
+						<select
+							value={filterMatch}
+							onChange={(event) => setFilterMatch(event.target.value)}
+							class="mt-1.5 w-full rounded-xl border border-slate-200/70 bg-white px-3 py-2 text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+						>
+							<option value="">All threads</option>
+							{matches.map((match) => (
+								<option key={match} value={match}>
+									{match.slice(0, 18)}...
+								</option>
+							))}
+						</select>
+					</div>
 
-				<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-800/60 p-3">
-					<label class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">From</label>
-					<input
-						type="date"
-						value={filterFrom}
-						onChange={(event) => setFilterFrom(event.target.value)}
-						class="mt-2 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
-					/>
-				</div>
+					<div>
+						<label class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">From</label>
+						<input
+							type="date"
+							value={filterFrom}
+							onChange={(event) => setFilterFrom(event.target.value)}
+							class="mt-1.5 w-full rounded-xl border border-slate-200/70 bg-white px-3 py-2 text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+						/>
+					</div>
 
-				<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-800/60 p-3">
-					<label class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">To</label>
-					<input
-						type="date"
-						value={filterTo}
-						onChange={(event) => setFilterTo(event.target.value)}
-						class="mt-2 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
-					/>
+					<div>
+						<label class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">To</label>
+						<input
+							type="date"
+							value={filterTo}
+							onChange={(event) => setFilterTo(event.target.value)}
+							class="mt-1.5 w-full rounded-xl border border-slate-200/70 bg-white px-3 py-2 text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+						/>
+					</div>
 				</div>
 			</div>
 
@@ -259,7 +308,7 @@ export default function CrmSummaryPanel({ targetId }) {
 							filteredThreads.map((thread) => (
 								<div
 									key={thread.match_id}
-									class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-3"
+									class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-900/40"
 								>
 									<div class="flex items-center justify-between">
 										<div class="text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -297,7 +346,21 @@ export default function CrmSummaryPanel({ targetId }) {
 								</div>
 							))
 						) : (
-							<div class="text-xs text-slate-500 dark:text-slate-400">No message history yet.</div>
+							<div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300/70 bg-slate-50/50 px-4 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/20">
+								<span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500 dark:text-sky-300">
+									<MessageSquare className="h-5 w-5" />
+								</span>
+								<p class="text-sm text-slate-500 dark:text-slate-400">No message history yet.</p>
+								{onContact ? (
+									<button
+										type="button"
+										onClick={onContact}
+										className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
+									>
+										<MessageSquare className="h-4 w-4" /> Send First Message
+									</button>
+								) : null}
+							</div>
 						)}
 					</div>
 				</div>
@@ -311,7 +374,7 @@ export default function CrmSummaryPanel({ targetId }) {
 							filteredCalls.map((call) => (
 								<div
 									key={call.id}
-									class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-3 text-xs text-slate-700 dark:text-slate-300"
+									class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-900/40 text-xs text-slate-700 dark:text-slate-300"
 								>
 									<div class="flex items-center justify-between">
 										<span class="font-semibold">{call.title || "Call session"}</span>
@@ -325,7 +388,12 @@ export default function CrmSummaryPanel({ targetId }) {
 								</div>
 							))
 						) : (
-							<div class="text-xs text-slate-500 dark:text-slate-400">No call history yet.</div>
+							<div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300/70 bg-slate-50/50 px-4 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/20">
+								<span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500 dark:text-sky-300">
+									<PhoneCall className="h-5 w-5" />
+								</span>
+								<p class="text-sm text-slate-500 dark:text-slate-400">No call history yet.</p>
+							</div>
 						)}
 					</div>
 				</div>
@@ -341,7 +409,7 @@ export default function CrmSummaryPanel({ targetId }) {
 							filteredContracts.map((contract) => (
 								<div
 									key={contract.id}
-									class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-3 text-xs text-slate-700 dark:text-slate-300"
+									class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-900/40 text-xs text-slate-700 dark:text-slate-300"
 								>
 									<div class="flex items-center justify-between">
 										<span class="font-semibold">
@@ -357,12 +425,17 @@ export default function CrmSummaryPanel({ targetId }) {
 								</div>
 							))
 						) : (
-							<div class="text-xs text-slate-500 dark:text-slate-400">No contracts yet.</div>
+							<div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300/70 bg-slate-50/50 px-4 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/20">
+								<span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500 dark:text-sky-300">
+									<FileText className="h-5 w-5" />
+								</span>
+								<p class="text-sm text-slate-500 dark:text-slate-400">No contracts yet.</p>
+							</div>
 						)}
 					</div>
 
 					{previousOrders.length > 0 ? (
-						<div class="mt-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-800/60 p-3">
+						<div class="mt-3 rounded-2xl border border-slate-200/80 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-900/40">
 							<p class="text-xs font-semibold text-slate-600 dark:text-slate-300">
 								Previous orders (signed contracts)
 							</p>
@@ -370,7 +443,7 @@ export default function CrmSummaryPanel({ targetId }) {
 								{previousOrders.map((order) => (
 									<div
 										key={order.id}
-										class="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+										class="flex items-center justify-between rounded-xl border border-slate-200/70 bg-slate-50/80 px-3 py-2 dark:border-slate-800/80 dark:bg-slate-950/60"
 									>
 										<span class="truncate text-slate-900 dark:text-slate-100">
 											{order.contract_number || order.title || "Contract"}
@@ -387,7 +460,7 @@ export default function CrmSummaryPanel({ targetId }) {
 			) : null}
 
 			{agentOutcomes.length > 0 ? (
-				<div class="mt-4 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 dark:bg-slate-800/60 p-4">
+				<div class="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
 					<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Agent Outcomes</p>
 					<div class="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
 						<div class="grid grid-cols-6 gap-2 text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">
@@ -400,7 +473,7 @@ export default function CrmSummaryPanel({ targetId }) {
 						{agentOutcomes.map((agent) => (
 							<div
 								key={agent.agent_id}
-								class="grid grid-cols-6 gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-white dark:bg-slate-800 px-3 py-2"
+								class="grid grid-cols-6 gap-2 rounded-xl border border-slate-200/70 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950"
 							>
 								<span class="col-span-2 truncate">{agent.name}</span>
 								<span class="text-right">{agent.assigned_leads ?? 0}</span>

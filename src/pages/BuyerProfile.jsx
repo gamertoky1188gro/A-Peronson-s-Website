@@ -10,6 +10,7 @@ import {
 	Building2,
 	CalendarDays,
 	CheckCircle2,
+	ChevronDown,
 	ChevronLeft,
 	CircleDashed,
 	ClipboardList,
@@ -116,11 +117,11 @@ function isBoostActive(boost) {
 function Pill({ children, tone = "default", title }) {
 	const tones = {
 		default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
-		success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
-		info: "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300",
-		warning: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+		success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+		info: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300",
+		warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
 		premium: "bg-gradient-to-r from-sky-500 to-cyan-500 text-white",
-		danger: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
+		danger: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
 	};
 	return (
 		<span
@@ -143,11 +144,36 @@ function Pill({ children, tone = "default", title }) {
 function Metric({ label, value, helper }) {
 	return (
 		<div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
-			<div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+			<div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
 				{label}
 			</div>
-			<div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</div>
+			<div className="mt-1.5 text-sm font-bold text-slate-900 dark:text-white">{value}</div>
 			{helper ? <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helper}</div> : null}
+		</div>
+	);
+}
+
+function InfoRow({ label, children }) {
+	return (
+		<div className="flex items-center justify-between gap-3 py-2">
+			<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+				{label}
+			</span>
+			<span className="text-right text-sm font-bold text-slate-900 dark:text-white">{children}</span>
+		</div>
+	);
+}
+
+function EmptyState({ icon: Icon, text, action }) {
+	return (
+		<div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300/70 bg-slate-50/50 px-4 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/20">
+			{Icon ? (
+				<span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500 dark:text-sky-300">
+					<Icon className="h-5 w-5" />
+				</span>
+			) : null}
+			<p className="text-sm text-slate-500 dark:text-slate-400">{text}</p>
+			{action}
 		</div>
 	);
 }
@@ -159,7 +185,7 @@ function Metric({ label, value, helper }) {
  * @param {string} [props.imageUrl]
  * @returns {JSX.Element}
  */
-function AvatarFallback({ name, imageUrl }) {
+function AvatarFallback({ name, imageUrl, compact = false }) {
 	const initials = (n) => {
 		if (!n) {
 			return "?";
@@ -172,8 +198,8 @@ function AvatarFallback({ name, imageUrl }) {
 			.join("");
 	};
 	return (
-		<div className="relative h-24 w-24 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl">
-			<div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[1.15rem] bg-slate-100 text-2xl font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100">
+		<div className={`relative overflow-hidden border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl ${compact ? "h-12 w-12 rounded-2xl" : "h-24 w-24 rounded-3xl"}`}>
+			<div className={`flex h-full w-full items-center justify-center overflow-hidden bg-slate-100 font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100 ${compact ? "rounded-[0.85rem] text-base" : "rounded-[1.15rem] text-2xl"}`}>
 				{imageUrl ? (
             <LazyImage src={imageUrl} alt={name || "Profile avatar"} width={40} height={40} loading="eager" className="h-full w-full object-cover" />
 				) : (
@@ -278,6 +304,7 @@ export default function BuyerProfile() {
 		score: 5,
 		comment: "",
 	});
+	const [moreActionsOpen, setMoreActionsOpen] = useState(false);
 	const [reviewDeleteId, setReviewDeleteId] = useState(null);
 	const [feedback, setFeedback] = useState(null);
 	const fallbackCover = useFallbackCover(!user?.profile?.cover_image_url);
@@ -681,22 +708,20 @@ export default function BuyerProfile() {
 	return (
 		<div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.16),transparent_28%),linear-gradient(to_bottom,rgba(2,6,23,0.02),rgba(2,6,23,0))] text-slate-900 dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.22),transparent_30%),linear-gradient(to_bottom,rgba(2,6,23,0.95),rgba(2,6,23,1))] dark:text-slate-100">
 			<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-				<div className="mb-5 flex items-center justify-between gap-3">
+				<div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white/70 px-3 py-2 shadow-sm backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/60">
 					<button
 						onClick={() => navigate(-1)}
 						className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:text-sky-300"
 					>
 						<ChevronLeft className="h-4 w-4" /> Back
 					</button>
-					<div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+					<div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs text-slate-500 dark:bg-slate-900/70 dark:text-slate-400">
 						<ShieldCheck className="h-3.5 w-3.5" /> Role:{" "}
-						<span className="font-medium text-slate-700 dark:text-slate-200">{roleLabel}</span>
+						<span className="font-bold text-slate-900 dark:text-white">{roleLabel}</span>
 					</div>
 				</div>
 
-				<div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.55fr_0.85fr]">
-					<div className="w-full space-y-6">
-						<motion.div
+				<motion.div
 							initial={reduceMotion ? false : { opacity: 0, y: 16 }}
 							animate={reduceMotion ? false : { opacity: 1, y: 0 }}
 							transition={{ duration: 0.45 }}
@@ -722,88 +747,123 @@ export default function BuyerProfile() {
 								)}
 								<div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent" />
 								<div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-									<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-										<div className="flex items-end gap-4">
-											<div className="-mb-10 sm:-mb-12">
+									<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+										<div className="flex items-center gap-4">
+											<div className="shrink-0">
 												<AvatarFallback name={displayName} imageUrl={avatarImage} />
 											</div>
-											<div className="pb-1 text-white">
-												<div className="flex flex-wrap items-center gap-2">
-													<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-														{displayName}
-													</h1>
-												<Pill tone="info">{roleLabel}</Pill>
-												{country === "—" ? null : (
-													<Pill tone="info">
-														<MapPin className="h-3.5 w-3.5" /> {country}
-													</Pill>
-												)}
-												{industry ? (
-													<Pill tone="info">
-														<Building2 className="h-3.5 w-3.5" /> {industry}
-													</Pill>
-												) : null}
-												</div>
-												<p className="mt-1 text-sm text-slate-200/90">{organization}</p>
-												<div className="mt-3 flex flex-wrap gap-2">
+											<div className="min-w-0 text-white">
+												<h1 className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">
+													{displayName}
+												</h1>
+												<div className="mt-2 flex flex-wrap items-center gap-2">
 													{badges.map((badge) => (
 														<Pill key={badge.label} tone={badge.tone} title={badge.title}>
 															{badge.label}
 														</Pill>
 													))}
+													<Pill tone="info">{roleLabel}</Pill>
+													{country === "—" ? null : (
+														<Pill tone="info">
+															<MapPin className="h-3.5 w-3.5" /> {country}
+														</Pill>
+													)}
+													{industry ? (
+														<Pill tone="info">
+															<Building2 className="h-3.5 w-3.5" /> {industry}
+														</Pill>
+													) : null}
 												</div>
+												<p className="mt-1 truncate text-sm text-slate-200/90">{organization}</p>
 											</div>
 										</div>
-										<div className="flex flex-wrap items-center gap-2 pb-1">
+										<div className="flex w-full shrink-0 flex-col gap-2 md:w-60">
 											{currentUser?.id !== user?.id ? (
-											<>
-											<button
-												onClick={contact}
-												className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
-											>
-												<Mail className="h-4 w-4" /> Contact
-											</button>
-											<button
-												onClick={follow}
-												className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
-											>
-												<Heart className={`h-4 w-4 ${relationship.following ? "fill-white" : ""}`} />{" "}
-												{relationship.following ? "Following" : "Follow"}
-											</button>
-											<button
-												onClick={connect}
-												className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
-											>
-												<Users className="h-4 w-4" />{" "}
-												{relationship.friend_status === "friends"
-													? "Connected"
-													: relationship.friend_status === "requested"
-														? "Requested"
-														: "Connect"}
-											</button>
-											</> 											) : null}
-											{currentUser?.id === user?.id ? (
+												<>
+													<button
+														onClick={contact}
+														className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
+													>
+														<Mail className="h-4 w-4" /> Contact
+													</button>
+													<button
+														onClick={connect}
+														className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
+													>
+														<Users className="h-4 w-4" />{" "}
+														{relationship.friend_status === "friends"
+															? "Connected"
+															: relationship.friend_status === "requested"
+																? "Requested"
+																: "Connect"}
+													</button>
+													<div className="relative">
+														<button
+															type="button"
+															onClick={() => setMoreActionsOpen((v) => !v)}
+															aria-expanded={moreActionsOpen}
+															className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 backdrop-blur transition hover:bg-white/10"
+														>
+															More actions
+															<ChevronDown
+																className={`h-4 w-4 transition-transform ${moreActionsOpen ? "rotate-180" : ""}`}
+															/>
+														</button>
+														{moreActionsOpen ? (
+															<>
+																<button
+																	type="button"
+																	aria-label="Close menu"
+																	onClick={() => setMoreActionsOpen(false)}
+																	className="fixed inset-0 z-10 cursor-default"
+																/>
+																<div className="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-800 dark:bg-slate-950">
+																	<button
+																		type="button"
+																		onClick={() => {
+																			setMoreActionsOpen(false);
+																			follow();
+																		}}
+																		className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/5"
+																	>
+																		<Heart
+																			className={`h-4 w-4 ${relationship.following ? "fill-current" : ""}`}
+																		/>{" "}
+																		{relationship.following ? "Following" : "Follow"}
+																	</button>
+																	<button
+																		type="button"
+																		onClick={() => {
+																			setMoreActionsOpen(false);
+																			requestRelationship();
+																		}}
+																		className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/5"
+																	>
+																		<Handshake className="h-4 w-4" /> Confirm Business
+																		Relationship
+																	</button>
+																	<button
+																		type="button"
+																		onClick={() => {
+																			setMoreActionsOpen(false);
+																			requestLicense();
+																		}}
+																		className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/5"
+																	>
+																		<ShieldCheck className="h-4 w-4" /> Request License
+																	</button>
+																</div>
+															</>
+														) : null}
+													</div>
+												</>
+											) : (
 												<Link
 													to="/org-settings?tab=profile"
-													className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+													className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5"
 												>
 													Edit profile
 												</Link>
-											) : (
-												<>
-													<button
-														onClick={requestRelationship}
-														className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-100 backdrop-blur transition hover:-translate-y-0.5 hover:bg-emerald-500/30"
-													>
-														<Handshake className="h-4 w-4" /> Confirm Business Relationship
-													</button>
-													<button
-														onClick={requestLicense}
-														className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/20 px-4 py-2 text-sm font-semibold text-amber-100 backdrop-blur transition hover:-translate-y-0.5 hover:bg-amber-500/30"
-													>
-														<ShieldCheck className="h-4 w-4" /> Request License
-													</button>
-												</>
 											)}
 											{feedback ? (
 												<p className="w-full text-center text-xs text-white/80">{feedback}</p>
@@ -813,7 +873,7 @@ export default function BuyerProfile() {
 								</div>
 							</div>
 
-							<div className="grid gap-4 p-5 pt-12 sm:grid-cols-2 lg:grid-cols-4 lg:pt-14">
+							<div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
 								<Metric
 									label="Trust"
 									value={
@@ -852,8 +912,96 @@ export default function BuyerProfile() {
 							</div>
 						</motion.div>
 
-						<SoftCard>
-							<div className="flex flex-wrap gap-2">
+						<div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[0.95fr_2.05fr]">
+							<div className="space-y-6 xl:sticky xl:top-6 xl:self-start">
+								<SoftCard>
+									<div className="flex items-center gap-3">
+										<div className="shrink-0">
+											<AvatarFallback name={displayName} imageUrl={avatarImage} compact={true} />
+										</div>
+										<div className="min-w-0">
+											<div className="truncate text-base font-bold text-slate-900 dark:text-white">
+												{displayName}
+											</div>
+											<div className="mt-1.5 flex flex-wrap gap-1.5">
+												{badges.map((badge) => (
+													<Pill key={badge.label} tone={badge.tone} title={badge.title}>
+														{badge.label}
+													</Pill>
+												))}
+											</div>
+										</div>
+									</div>
+									<div className="mt-4 divide-y divide-slate-200/60 dark:divide-slate-800/60">
+										<InfoRow label="Country">{country === "—" ? "—" : country}</InfoRow>
+										<InfoRow label="Industry">{industry || "—"}</InfoRow>
+										<InfoRow label="Role">
+											<span className="capitalize">{roleLabel}</span>
+										</InfoRow>
+										<InfoRow label="Capacity">
+											{user?.profile?.purchasing_capacity || "—"}
+										</InfoRow>
+									</div>
+									<div className="mt-4 space-y-2">
+										{currentUser?.id !== user?.id ? (
+											<>
+												<button
+													onClick={contact}
+													className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
+												>
+													<Mail className="h-4 w-4" /> Contact
+												</button>
+												<button
+													onClick={connect}
+													className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-sky-300"
+												>
+													<Users className="h-4 w-4" />{" "}
+													{relationship.friend_status === "friends"
+														? "Connected"
+														: relationship.friend_status === "requested"
+															? "Requested"
+															: "Connect"}
+												</button>
+											</>
+										) : (
+											<Link
+												to="/org-settings?tab=profile"
+												className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+											>
+												Edit profile
+											</Link>
+										)}
+									</div>
+								</SoftCard>
+								{certification ? (
+									<SoftCard>
+										<SectionTitle
+											icon={BadgeCheck}
+											title="Order Completion Certification"
+											subtitle="Signed contract record."
+										/>
+										<div className="space-y-3">
+											<div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+												<div>
+													<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+														Status
+													</div>
+													<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+														Certification status
+													</div>
+												</div>
+												<Pill tone={certification.status === "certified" ? "success" : "default"}>
+													{certification.status || "pending"}
+												</Pill>
+											</div>
+											<Metric label="Signed contracts" value={certification.signed_contracts ?? 0} />
+										</div>
+									</SoftCard>
+								) : null}
+							</div>
+							<div className="w-full min-w-0 space-y-6">
+								<SoftCard>
+									<div className="flex flex-wrap gap-2">
 								{["overview", "requests", "work", "reviews"].map((tab) => {
 									const active = activeTab === tab;
 									const label =
@@ -892,9 +1040,13 @@ export default function BuyerProfile() {
 											title="About"
 											subtitle="Buyer profile summary and positioning."
 										/>
-										<p className="text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
-											{user?.profile?.about || "No description added yet."}
-										</p>
+										{user?.profile?.about ? (
+											<p className="text-sm leading-7 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+												{user.profile.about}
+											</p>
+										) : (
+											<EmptyState icon={Eye} text="No description added yet." />
+										)}
 									</SoftCard>
 
 									<div className="grid gap-6 lg:grid-cols-2">
@@ -940,26 +1092,12 @@ export default function BuyerProfile() {
 
 										<SoftCard>
 											<SectionTitle
-												icon={BriefcaseBusiness}
-												title="Trust Indicators"
-												subtitle="Verification and commercial status."
+												icon={ShieldCheck}
+												title="Trust & Verification"
+												subtitle="Verification and commercial status, unified."
 											/>
-											<div className="space-y-3">
-												<div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-													<div>
-														<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-															Verification Panel
-														</div>
-														<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-															Status and credibility snapshot.
-														</div>
-													</div>
-													<Pill
-														tone={certification?.status === "certified" ? "success" : "default"}
-													>
-														{certification?.status || "Unknown"}
-													</Pill>
-												</div>
+											<VerificationPanel summary={verification} />
+											<div className="mt-4 grid gap-3 sm:grid-cols-2">
 												<Metric
 													label="Signed contracts"
 													value={certification?.signed_contracts ?? 0}
@@ -1067,9 +1205,7 @@ export default function BuyerProfile() {
 												))}
 											</div>
 										) : (
-											<p className="text-sm text-slate-500 dark:text-slate-400">
-												No companies listed yet.
-											</p>
+											<EmptyState icon={Building2} text="No companies listed yet." />
 										)}
 									</SoftCard>
 								</motion.div>
@@ -1167,9 +1303,21 @@ export default function BuyerProfile() {
 													</div>
 												) : null}
 												{requests.length > 0 || loadingRequests ? null : (
-													<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
-														No requests found.
-													</div>
+													<EmptyState
+														icon={ClipboardList}
+														text="No requests found."
+														action={
+															!viewerPerms.is_self ? (
+																<button
+																	type="button"
+																	onClick={contact}
+																	className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-400"
+																>
+																	<MessageSquare className="h-4 w-4" /> Send First Message
+																</button>
+															) : null
+														}
+													/>
 												)}
 											</div>
 										) : (
@@ -1243,9 +1391,7 @@ export default function BuyerProfile() {
 												))}
 											</div>
 										) : (
-											<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
-												No work history added yet.
-											</div>
+											<EmptyState icon={BriefcaseBusiness} text="No work history added yet." />
 										)}
 									</SoftCard>
 								</motion.div>
@@ -1392,9 +1538,7 @@ export default function BuyerProfile() {
 												})}
 											</div>
 										) : (
-											<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/20 dark:text-slate-400">
-												No reviews yet.
-											</div>
+											<EmptyState icon={Star} text="No reviews yet." />
 										)}
 									</SoftCard>
 								</motion.div>
@@ -1408,44 +1552,10 @@ export default function BuyerProfile() {
 							requirementId={journeyParams.get("requirement_id") || ""}
 						/>
 
-						<CrmSummaryPanel targetId={user.id} />
-					</div>
-
-					<div className="space-y-6 xl:sticky xl:top-6 xl:h-fit">
-						<SoftCard>
-							<SectionTitle
-								icon={ShieldCheck}
-								title="Verification Panel"
-								subtitle="Shared trust and compliance component."
-							/>
-							<VerificationPanel summary={verification} />
-						</SoftCard>
-
-						{certification ? (
-							<SoftCard>
-								<SectionTitle
-									icon={BadgeCheck}
-									title="Order Completion Certification"
-									subtitle="Signed contract record."
-								/>
-								<div className="space-y-3">
-									<div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-										<div>
-											<div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-												Status
-											</div>
-											<div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-												Certification status
-											</div>
-										</div>
-										<Pill tone={certification.status === "certified" ? "success" : "default"}>
-											{certification.status || "pending"}
-										</Pill>
-									</div>
-									<Metric label="Signed contracts" value={certification.signed_contracts ?? 0} />
-								</div>
-							</SoftCard>
-						) : null}
+						<CrmSummaryPanel
+							targetId={user.id}
+							onContact={currentUser?.id !== user?.id ? contact : undefined}
+						/>
 					</div>
 				</div>
 			</div>
