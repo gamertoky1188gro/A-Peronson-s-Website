@@ -126,12 +126,14 @@ function Pill({ children }) {
 	);
 }
 
-function Card({ className = "", children }) {
+function Card({ class: cls = "", className = "", children }) {
 	return (
 		<motion.div
 			class={
 				"rounded-3xl border border-slate-200/70 bg-white/70 shadow-[0_20px_70px_-30px_rgba(2,132,199,0.35)] backdrop-blur-xl card-gradient-border dark:border-white/10 dark:bg-white/[0.045] dark:shadow-[0_24px_80px_-32px_rgba(0,0,0,0.55)] " +
-				className
+				className +
+				" " +
+				cls
 			}
 			whileHover={{ scale: 1.02, y: -4 }}
 			transition={{ type: "spring", stiffness: 200, damping: 18, mass: 0.5 }}
@@ -154,15 +156,15 @@ function VerifiedBadge({ label = "Verified" }) {
 	);
 }
 
-function BentoMotion({ index, className = "", children }) {
+function BentoMotion({ index, class: cls = "", className = "", children }) {
 	const reduceMotion = useReducedMotion();
 	if (reduceMotion) {
-		return <div class={className}>{children}</div>;
+		return <div class={`${className} ${cls}`}>{children}</div>;
 	}
 
 	return (
 		<motion.div
-			class={className}
+			class={`${className} ${cls}`}
 			initial={{ opacity: 0, y: 20, scale: 0.985 }}
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			transition={{
@@ -176,16 +178,16 @@ function BentoMotion({ index, className = "", children }) {
 	);
 }
 
-function AnimatedHeroHeading({ text, className = "" }) {
+function AnimatedHeroHeading({ text, class: cls = "", className = "" }) {
 	const reduceMotion = useReducedMotion();
 	if (reduceMotion) {
-		return <span class={className}>{text}</span>;
+		return <span class={`${className} ${cls}`}>{text}</span>;
 	}
 
 	const words = String(text).split(" ");
 	let globalIndex = 0;
 	return (
-		<span class={className}>
+		<span class={`${className} ${cls}`}>
 			<span class="sr-only">{text}</span>
 			<span aria-hidden="true">
 				{words.map((word, wordIndex) => {
@@ -221,7 +223,7 @@ function AnimatedHeroHeading({ text, className = "" }) {
 	);
 }
 
-function MagneticLinkButton({ to, className = "", children }) {
+function MagneticLinkButton({ to, class: cls = "", className = "", children }) {
 	const reduceMotion = useReducedMotion();
 	const x = useMotionValue(0);
 	const y = useMotionValue(0);
@@ -256,7 +258,7 @@ function MagneticLinkButton({ to, className = "", children }) {
 	return (
 		<Link to={to} class="inline-flex">
 			<motion.span
-				class={className}
+				class={`${className} ${cls}`}
 				style={{ x: springX, y: springY }}
 				onMouseMove={handleMove}
 				onMouseLeave={handleLeave}
@@ -281,7 +283,7 @@ const SkeletonLine = ({ className = "", size = 24 }) => (
 	/>
 );
 
-function GlassSurface({ className = "", children }) {
+function GlassSurface({ class: cls = "", className = "", children }) {
 	return (
 		<div
 			class={[
@@ -291,6 +293,7 @@ function GlassSurface({ className = "", children }) {
 				"transition duration-300 ease-out will-change-transform",
 				"hover:-translate-y-0.5 hover:shadow-[0_30px_80px_rgba(2,6,23,0.65)]",
 				className,
+				cls,
 			].join(" ")}
 		>
 			{children}

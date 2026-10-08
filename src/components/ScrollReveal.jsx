@@ -6,16 +6,18 @@ const easePremium = [0.16, 1, 0.3, 1];
 ScrollReveal.propTypes = {
 	children: PropTypes.node.isRequired,
 	className: PropTypes.string,
+	class: PropTypes.string,
 	as: PropTypes.string,
 };
 
-export default function ScrollReveal({ children, className = "", as: Tag = "div", ...rest }) {
+export default function ScrollReveal({ children, class: cls = "", className = "", as: Tag = "div", ...rest }) {
 	const reduceMotion = useReducedMotion();
+	const mergedClass = `${className} ${cls}`.trim();
 
 	if (reduceMotion) {
 		const StaticTag = Tag;
 		return (
-			<StaticTag className={className} {...rest}>
+			<StaticTag className={mergedClass} {...rest}>
 				{children}
 			</StaticTag>
 		);
@@ -25,7 +27,7 @@ export default function ScrollReveal({ children, className = "", as: Tag = "div"
 
 	return (
 		<MotionTag
-			className={className}
+			className={mergedClass}
 			initial={{ opacity: 0, y: 24 }}
 			whileInView={{ opacity: 1, y: 0 }}
 			viewport={{ once: true, margin: "-60px" }}
