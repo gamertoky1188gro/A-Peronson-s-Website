@@ -340,6 +340,26 @@ describe("twelve-theme system (blue preserved + 11 personalities)", () => {
 		expect(mainLine).toContain("bg-transparent");
 	});
 
+	test("env background system: dark-scoped worlds for all 12 themes", () => {
+		const env = read("src/theme/env-bg.css");
+		expect(read("src/tailwind.css")).toContain("./theme/env-bg.css");
+		const slugs = ["blue", "aurora", "violet", "sapphire", "arctic", "emerald",
+			"blurple", "mono", "plasma", "solaris", "forest", "crimson"];
+		for (const slug of slugs) {
+			expect(env).toContain(`[data-theme="${slug}"][data-mode="dark"]`);
+			expect(env).toContain(`.dark[data-theme="${slug}"]`);
+		}
+		for (const token of ["--bg-gradient:", "--glass-strong:", "--surface-2:",
+			"--border-strong:", "--glow-1:", "--shadow-deep:"]) {
+			expect(env).toContain(token);
+		}
+		// Opt-in utilities exist and collide with nothing in src.
+		for (const cls of [".glass {", ".glass-strong {", ".surface {",
+			".surface-raised {", ".surface-floating {"]) {
+			expect(env).toContain(cls);
+		}
+	});
+
 	test("personalities are not blue-swaps: primaries differ per theme", () => {
 		const primaries = new Set();
 		for (const slug of SLUGS) {
