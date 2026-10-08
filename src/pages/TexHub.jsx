@@ -130,7 +130,7 @@ function Card({ className = "", children }) {
 	return (
 		<motion.div
 			class={
-				"rounded-3xl border border-slate-200/70 bg-white shadow-[0_20px_70px_-30px_rgba(2,132,199,0.35)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 " +
+				"rounded-3xl border border-slate-200/70 bg-white/70 shadow-[0_20px_70px_-30px_rgba(2,132,199,0.35)] backdrop-blur-xl card-gradient-border dark:border-white/10 dark:bg-white/[0.045] dark:shadow-[0_24px_80px_-32px_rgba(0,0,0,0.55)] " +
 				className
 			}
 			whileHover={{ scale: 1.02, y: -4 }}
@@ -841,9 +841,17 @@ export default function TexHub() {
 
 						<motion.div variants={staggerChildVariants} class="mt-8 grid gap-3 sm:grid-cols-3">
 							{buyerStats.map((item) => (
-								<Card key={item.label} class="p-4">
-									<div class="text-sm text-slate-500 dark:text-slate-300">{item.label}</div>
-									<div class="mt-2 text-2xl font-semibold tracking-tight">{item.value}</div>
+								<Card key={item.label} class="p-5">
+									<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300">
+										<span
+											aria-hidden="true"
+											class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"
+										/>
+										{item.label}
+									</div>
+									<div class="mt-2 text-3xl font-bold tabular-nums tracking-tight">
+										{item.value}
+									</div>
 								</Card>
 							))}
 						</motion.div>
@@ -869,7 +877,7 @@ export default function TexHub() {
 											<Link
 												key={item.label}
 												to={item.href || "/feed"}
-												class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-sky-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-sky-500/30"
+												class="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-sky-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-sky-500/30"
 											>
 												<div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/10">
 													<Icon class="h-5 w-5 text-sky-600 dark:text-sky-200" />
@@ -880,6 +888,7 @@ export default function TexHub() {
 														{item.status}
 													</div>
 												</div>
+												<ArrowRight class="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-sky-500 dark:text-slate-500 dark:group-hover:text-sky-300" />
 											</Link>
 										);
 									})}
@@ -887,20 +896,23 @@ export default function TexHub() {
 
 								<Link
 									to="/search"
-									class="mt-5 block rounded-3xl border border-slate-200 bg-slate-100 p-4 transition hover:border-sky-300 hover:shadow-md dark:border-white/10 dark:bg-white/10 dark:hover:border-sky-500/30"
+									class="group mt-5 block rounded-3xl border border-slate-200 bg-slate-100 p-4 transition hover:border-sky-300 hover:shadow-md dark:border-white/10 dark:bg-white/10 dark:hover:border-sky-500/30"
 								>
 									<div class="flex items-center justify-between">
 										<div class="flex items-center gap-2 text-sm font-medium">
 											<BadgeCheck class="h-4 w-4 text-cyan-600 dark:text-cyan-200" />{" "}
 											{heroFactories.title}
 										</div>
-										<div class="text-xs text-slate-600 dark:text-sky-200/90">
-											{heroFactories.subtitle}
+										<div class="flex items-center gap-2">
+											<div class="text-xs text-slate-600 dark:text-sky-200/90">
+												{heroFactories.subtitle}
+											</div>
+											<ArrowRight class="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-sky-500 dark:text-slate-500 dark:group-hover:text-sky-300" />
 										</div>
 									</div>
 									<div class="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-2 dark:text-sky-200">
 										{heroValueProps.slice(0, 4).map((t) => (
-											<div key={t} class="rounded-2xl bg-slate-50 px-3 py-2 dark:bg-white/5">
+											<div key={t} class="rounded-2xl bg-slate-50 px-3 py-2 transition-colors hover:bg-sky-50 hover:text-sky-700 dark:bg-white/5 dark:hover:bg-sky-400/10 dark:hover:text-sky-200">
 												{t}
 											</div>
 										))}
@@ -985,18 +997,14 @@ export default function TexHub() {
 					<div class="mt-8 grid gap-4 lg:grid-cols-2">
 						{platformFeatures.map((item) => (
 							<Card key={item.title} class="p-6">
-								<div class="flex items-start justify-between gap-4">
-									<div>
-										<h3 class="text-xl font-semibold">{item.title}</h3>
-										<p class="mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-200">
-											{item.text}
-										</p>
-									</div>
-									<div class="rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 p-3 text-white shadow-lg shadow-sky-500/20">
-										<Layers3 class="h-5 w-5" />
-									</div>
+								<div class="mb-4 inline-flex rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 p-3 text-white shadow-lg shadow-sky-500/20">
+									<Layers3 class="h-5 w-5" />
 								</div>
-								<div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+								<h3 class="text-xl font-semibold">{item.title}</h3>
+								<p class="mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-200">
+									{item.text}
+								</p>
+								<div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 transition-colors hover:border-sky-200 hover:bg-sky-50/60 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-sky-400/20 dark:hover:bg-sky-400/5">
 									{item.meta}
 								</div>
 							</Card>
