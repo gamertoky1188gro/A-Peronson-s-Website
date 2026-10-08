@@ -32,6 +32,7 @@ import ScrollReveal from "../components/ScrollReveal.jsx";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import useAnalyticsDashboard from "../hooks/useAnalyticsDashboard.js";
+import usePageChrome from "../hooks/usePageChrome.js";
 import { apiRequest, getToken, syncUserFromApi } from "../lib/auth.js";
 import { cn } from "../lib/cn.js";
 
@@ -127,6 +128,7 @@ export default function AgentDashboard() {
 	const [subIdLabel, setSubIdLabel] = useState("");
 	const [creatingSubId, setCreatingSubId] = useState(false);
 	const [subIdFeedback, setSubIdFeedback] = useState("");
+	const { navCollapsed, footerCollapsed, toggleNav, toggleFooter } = usePageChrome("agent");
 
 	useEffect(() => {
 		if (loading) {
@@ -324,6 +326,25 @@ export default function AgentDashboard() {
 								<h1 className="text-lg font-semibold">Agent Dashboard</h1>
 							</div>
 						</div>
+					</div>
+
+					<div className="mt-3 flex gap-2">
+						<button
+							type="button"
+							onClick={toggleNav}
+							aria-expanded={!navCollapsed}
+							className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
+						>
+							{navCollapsed ? "Show nav" : "Hide nav"}
+						</button>
+						<button
+							type="button"
+							onClick={toggleFooter}
+							aria-expanded={!footerCollapsed}
+							className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
+						>
+							{footerCollapsed ? "Show footer" : "Hide footer"}
+						</button>
 					</div>
 
 					<div className="mt-5 space-y-4">
@@ -814,6 +835,28 @@ export default function AgentDashboard() {
 					</ScrollReveal>
 				</main>
 			</div>
+			{(navCollapsed || footerCollapsed) && (
+				<div className="fixed bottom-4 right-4 z-40 flex gap-2">
+					{navCollapsed && (
+						<button
+							type="button"
+							onClick={toggleNav}
+							className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+						>
+							Show nav
+						</button>
+					)}
+					{footerCollapsed && (
+						<button
+							type="button"
+							onClick={toggleFooter}
+							className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+						>
+							Show footer
+						</button>
+					)}
+				</div>
+			)}
 		</div>
 	);
 }
