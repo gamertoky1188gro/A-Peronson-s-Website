@@ -868,9 +868,9 @@ export default function TexHub() {
 											class="h-6 w-16 shrink-0 text-emerald-500/70 dark:text-emerald-300/60"
 											fill="none"
 											stroke="currentColor"
-											stroke-width="2.5"
-											stroke-linecap="round"
-											stroke-linejoin="round"
+											strokeWidth="2.5"
+											strokeLinecap="round"
+											strokeLinejoin="round"
 										>
 											<polyline
 												points={
