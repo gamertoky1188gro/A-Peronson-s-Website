@@ -884,6 +884,11 @@ export default function NavBar() {
 								/>
 							</div>
 
+							<span
+								aria-hidden="true"
+								className="hidden h-6 w-px bg-slate-900/10 sm:block dark:bg-white/10"
+							/>
+
 							<button
 								onClick={toggleTheme}
 								className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/65 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 dark:bg-slate-950/70 dark:text-white"
@@ -893,6 +898,10 @@ export default function NavBar() {
 								<span className="hidden sm:inline">{dark ? "Light" : "Dark"}</span>
 							</button>
 
+							<span
+								aria-hidden="true"
+								className="hidden h-6 w-px bg-slate-900/10 sm:block dark:bg-white/10"
+							/>
 							{user ? (
 								<button
 									onClick={handleLogout}
