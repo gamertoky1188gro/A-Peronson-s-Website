@@ -840,17 +840,44 @@ export default function TexHub() {
 						</motion.div>
 
 						<motion.div variants={staggerChildVariants} class="mt-8 grid gap-3 sm:grid-cols-3">
-							{buyerStats.map((item) => (
+							{buyerStats.map((item, i) => (
 								<Card key={item.label} class="p-5">
-									<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300">
-										<span
-											aria-hidden="true"
-											class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"
-										/>
-										{item.label}
+									<div class="flex items-center justify-between gap-2">
+										<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300">
+											<span
+												aria-hidden="true"
+												class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"
+											/>
+											{item.label}
+										</div>
+										<span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-300">
+											<span
+												aria-hidden="true"
+												class="h-1 w-1 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-300"
+											/>
+											Live
+										</span>
 									</div>
-									<div class="mt-2 text-3xl font-bold tabular-nums tracking-tight">
-										{item.value}
+									<div class="mt-3 flex items-end justify-between gap-3">
+										<div class="text-3xl font-bold tabular-nums tracking-tight">
+											{item.value}
+										</div>
+										<svg
+											aria-hidden="true"
+											viewBox="0 0 64 24"
+											class="h-6 w-16 shrink-0 text-emerald-500/70 dark:text-emerald-300/60"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										>
+											<polyline
+												points={
+													["2,20 14,16 26,17 38,10 50,12 62,4", "2,18 14,19 26,12 38,13 50,7 62,8", "2,21 14,14 26,15 38,9 50,10 62,5"][i % 3]
+												}
+											/>
+										</svg>
 									</div>
 								</Card>
 							))}
