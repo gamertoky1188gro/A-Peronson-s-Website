@@ -849,7 +849,7 @@ export default function TexHub() {
 										<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300">
 											<span
 												aria-hidden="true"
-												class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]"
+												class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_12px_color-mix(in_srgb,var(--theme-emerald-400)_65%,transparent)]"
 											/>
 											{item.label}
 										</div>
