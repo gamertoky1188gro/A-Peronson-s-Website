@@ -88,6 +88,11 @@ export default function FeedItemCard({
 	const navigate = useNavigate();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const menuRef = useRef(null);
+	const [avatarFailed, setAvatarFailed] = useState(false);
+
+	useEffect(() => {
+		setAvatarFailed(false);
+	}, [item.author?.avatar_url]);
 
 	useEffect(() => {
 		if (!menuOpen) {
@@ -125,13 +130,14 @@ export default function FeedItemCard({
 					<div class="flex items-center gap-3 min-w-0">
 						{profileLink ? (
 							<Link to={profileLink} class="shrink-0">
-								{item.author?.avatar_url ? (
+								{item.author?.avatar_url && !avatarFailed ? (
 									<LazyImage
 										src={item.author.avatar_url}
 										alt={item.author.name || "Author avatar"}
 										width={40}
 										height={40}
 										class="h-10 w-10 rounded-full object-cover"
+										onError={() => setAvatarFailed(true)}
 									/>
 								) : (
 									<div class="h-10 w-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 shrink-0 flex items-center justify-center text-xs font-semibold text-slate-500">
