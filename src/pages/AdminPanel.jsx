@@ -43,6 +43,7 @@ import {
 	useRoleConfig,
 	useUiConfig,
 } from "../hooks/useAdminConfig.js";
+import usePageChrome from "../hooks/usePageChrome.js";
 import { apiRequest, getCurrentUser, getToken, saveSession } from "../lib/auth.js";
 import { secureStorage } from "../lib/secureStorage.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
@@ -777,6 +778,7 @@ export default function AdminPanel() {
 	const { theme, toggleTheme } = useTheme();
 	const [adminDark, setAdminDark] = useState(theme === "dark");
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const { navCollapsed, footerCollapsed, toggleNav, toggleFooter } = usePageChrome("admin");
 
 	const [loading, setLoading] = useState(true);
 	const [pageLoading, setPageLoading] = useState(true);
@@ -3008,6 +3010,24 @@ export default function AdminPanel() {
 										<Crown class="h-3.5 w-3.5" />
 										Admin Matrix
 									</div>
+									<div class="mt-3 flex gap-2">
+										<button
+											type="button"
+											onClick={toggleNav}
+											aria-expanded={navCollapsed ? "false" : "true"}
+											class="rounded-full border border-slate-200/80 px-3 py-1 text-[11px] font-medium dark:border-white/10"
+										>
+											{navCollapsed ? "Show nav" : "Hide nav"}
+										</button>
+										<button
+											type="button"
+											onClick={toggleFooter}
+											aria-expanded={footerCollapsed ? "false" : "true"}
+											class="rounded-full border border-slate-200/80 px-3 py-1 text-[11px] font-medium dark:border-white/10"
+										>
+											{footerCollapsed ? "Show footer" : "Hide footer"}
+										</button>
+									</div>
 								</div>
 							</div>
 
@@ -3515,6 +3535,28 @@ export default function AdminPanel() {
 						</div>
 					</div>
 				</main>
+				{(navCollapsed || footerCollapsed) && (
+					<div class="fixed bottom-4 right-4 z-40 flex gap-2">
+						{navCollapsed && (
+							<button
+								type="button"
+								onClick={toggleNav}
+								class="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+							>
+								Show nav
+							</button>
+						)}
+						{footerCollapsed && (
+							<button
+								type="button"
+								onClick={toggleFooter}
+								class="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+							>
+								Show footer
+							</button>
+						)}
+					</div>
+				)}
 			</div>
 
 			<RejectionReasonModal
