@@ -839,9 +839,9 @@ export default function TexHub() {
 							<Link to="/help">Help center</Link>
 						</motion.div>
 
-						<motion.div variants={staggerChildVariants} class="mt-8 grid gap-3 sm:grid-cols-3">
+						<motion.div variants={staggerChildVariants} class="mt-8 grid gap-4 sm:grid-cols-3">
 							{buyerStats.map((item, i) => (
-								<Card key={item.label} class="p-5">
+								<Card key={item.label} class="p-6">
 									<div class="flex items-center justify-between gap-2">
 										<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300">
 											<span
@@ -859,13 +859,13 @@ export default function TexHub() {
 										</span>
 									</div>
 									<div class="mt-3 flex items-end justify-between gap-3">
-										<div class="text-3xl font-bold tabular-nums tracking-tight">
+										<div class="text-4xl font-bold tabular-nums tracking-tight">
 											{item.value}
 										</div>
 										<svg
 											aria-hidden="true"
 											viewBox="0 0 64 24"
-											class="h-6 w-16 shrink-0 text-emerald-500/70 dark:text-emerald-300/60"
+											class="h-8 w-20 shrink-0 text-emerald-500/70 dark:text-emerald-300/60"
 											fill="none"
 											stroke="currentColor"
 											strokeWidth="2.5"
@@ -959,11 +959,11 @@ export default function TexHub() {
 					<CardStack>
 						<div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 							{whyCards.map((card) => (
-								<Card key={card.title} class="p-6">
-									<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
-										<CheckCircle2 class="h-6 w-6" />
+								<Card key={card.title} class="p-7">
+									<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-300">
+										<CheckCircle2 class="h-7 w-7" />
 									</div>
-									<h3 class="mt-4 text-lg font-semibold">{card.title}</h3>
+									<h3 class="mt-5 text-xl font-semibold">{card.title}</h3>
 									<p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-200">
 										{card.text}
 									</p>
