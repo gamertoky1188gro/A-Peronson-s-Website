@@ -333,15 +333,14 @@ export default function OwnerDashboard() {
 				className="flex min-h-dvh w-full flex-1 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#eef7ff_34%,_#f8fbff_100%)] text-slate-900 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(180deg,_#020617_0%,_#06111f_46%,_#040816_100%)] dark:text-slate-100"
 			>
 				<aside
-					data-lenis-prevent={true}
 					className={cn(
-						"fixed inset-y-0 left-0 z-40 w-80 shrink-0 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:relative lg:z-auto lg:translate-x-0 scrollbar-invisible",
+						"fixed inset-y-0 left-0 z-40 w-80 max-w-[85vw] shrink-0 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:relative lg:z-auto lg:translate-x-0 flex flex-col",
 						sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
 					)}
-					style={{ height: "100dvh", overflow: "auto" }}
+					style={{ height: "100dvh", overflow: "hidden" }}
 				>
-					<div className="flex min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-slate-950/65">
-						<div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-4 dark:border-white/10">
+					<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-slate-950/65">
+						<div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 pb-4 dark:border-white/10">
 							<div className="flex items-center gap-3">
 								<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/20">
 									<SparkIcon className="h-6 w-6" />
@@ -364,7 +363,7 @@ export default function OwnerDashboard() {
 							</button>
 						</div>
 
-						<nav className="mt-4 space-y-1 pr-1">
+						<nav data-lenis-prevent={true} className="mt-4 min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1 scrollbar-invisible">
 							{menuItems.map((item) => (
 								<button
 									key={item.id}
@@ -393,7 +392,7 @@ export default function OwnerDashboard() {
 							))}
 						</nav>
 
-						<div className="mt-4 space-y-3 border-t border-slate-200/70 pt-4 dark:border-white/10">
+						<div className="mt-4 shrink-0 space-y-3 border-t border-slate-200/70 pt-4 dark:border-white/10">
 							<button
 								onClick={toggleTheme}
 								className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
