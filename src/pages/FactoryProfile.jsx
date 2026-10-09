@@ -148,6 +148,10 @@ function Metric({ label, value, helper }) {
 }
 
 function AvatarFallback({ name, imageUrl, compact = false }) {
+	const [imgFailed, setImgFailed] = useState(false);
+	useEffect(() => {
+		setImgFailed(false);
+	}, [imageUrl]);
 	const initials = (n) => {
 		if (!n) {
 			return "?";
@@ -162,8 +166,8 @@ function AvatarFallback({ name, imageUrl, compact = false }) {
 	return (
 		<div className={`relative overflow-hidden border border-white/60 bg-gradient-to-br from-sky-500 via-cyan-400 to-indigo-500 p-[2px] shadow-xl ${compact ? "h-12 w-12 rounded-2xl" : "h-24 w-24 rounded-3xl"}`}>
 			<div className={`flex h-full w-full items-center justify-center overflow-hidden bg-slate-100 font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-100 ${compact ? "rounded-[0.85rem] text-base" : "rounded-[1.15rem] text-2xl"}`}>
-				{imageUrl ? (
-            <LazyImage src={imageUrl} alt={name || "Profile avatar"} width={40} height={40} loading="eager" className="h-full w-full object-cover" />
+				{imageUrl && !imgFailed ? (
+            <LazyImage src={imageUrl} alt={name || "Profile avatar"} width={40} height={40} loading="eager" onError={() => setImgFailed(true)} className="h-full w-full object-cover" />
 				) : (
 					initials(name)
 				)}
