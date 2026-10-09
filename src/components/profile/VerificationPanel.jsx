@@ -84,15 +84,15 @@ export default function VerificationPanel({ summary }) {
 					{(summary?.required_checklist || []).map((row) => (
 						<div
 							key={row.key}
-							class="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10"
+							class="flex items-start justify-between gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10"
 						>
-							<span class="text-xs font-semibold text-slate-800 dark:text-slate-100">
+							<span class="min-w-0 text-xs font-semibold leading-5 text-slate-800 dark:text-slate-100">
 								{row.label}
 							</span>
 							<span
-								class={`text-xs font-bold${row.submitted ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"}`}
+								class={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${row.submitted ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/25 dark:text-emerald-300" : "bg-rose-500/10 text-rose-700 ring-rose-500/25 dark:text-rose-300"}`}
 							>
-								{row.submitted ? "✓" : "Missing"}
+								{row.submitted ? "✓ Submitted" : "● Missing"}
 							</span>
 						</div>
 					))}
