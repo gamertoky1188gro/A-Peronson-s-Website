@@ -334,10 +334,9 @@ export default function OwnerDashboard() {
 			>
 				<aside
 					className={cn(
-						"fixed inset-y-0 left-0 z-40 w-80 max-w-[85vw] shrink-0 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:relative lg:z-auto lg:translate-x-0 flex flex-col",
+						"fixed inset-y-0 left-0 z-40 w-80 max-w-[85vw] shrink-0 border-r border-slate-200/70 bg-white/80 p-4 backdrop-blur-xl transition-transform duration-300 dark:border-white/10 dark:bg-slate-950/75 lg:relative lg:z-auto lg:h-auto lg:translate-x-0 flex flex-col h-dvh overflow-hidden",
 						sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
 					)}
-					style={{ height: "100dvh", overflow: "hidden" }}
 				>
 					<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-slate-950/65">
 						<div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 pb-4 dark:border-white/10">
