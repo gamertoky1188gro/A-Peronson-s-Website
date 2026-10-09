@@ -1667,11 +1667,11 @@ async function computeAvgFirstResponseHours(forUserId = null) {
 
 	const hours = [];
 	for (const match of matches) {
-		const mid = String(match.id || "");
-		const parts = mid.split(":");
-		if (parts.length !== 2) continue;
-		const reqId = parts[0];
-		const factoryId = parts[1];
+		const mid = `${match.requirement_id || ""}:${match.factory_id || ""}`;
+		const parsed = parseMatchId(mid);
+		if (!parsed) continue;
+		const reqId = parsed.requirementId;
+		const factoryId = parsed.supplierId;
 		const req = reqById.get(reqId);
 		if (!req?.created_at) continue;
 
@@ -1702,11 +1702,16 @@ export async function getCoreMetrics(user) {
 	const isBuyingHouse = role === "buying_house";
 
 	if (isBuyingHouse) {
+		const contractDocFilter = {
+			OR: [{ entity_type: "contract" }, { type: { contains: "contract", mode: "insensitive" } }],
+		};
 		const [totalRequests, totalMatches, contracts, ratings, topProducts, avgHours] = await Promise.all([
 			prisma.requirement.count({ where: { buyer_id: userId } }),
 			prisma.requirement.count({ where: { buyer_id: userId, assigned_agent_id: { not: null } } }),
-			prisma.contract.count({ where: { OR: [{ buyer_id: userId }, { factory_id: userId }] } }),
-			prisma.rating.aggregate({ _avg: { score: true }, where: { OR: [{ rater_id: userId }, { target_id: userId }] } }),
+			prisma.document.count({
+				where: { AND: [contractDocFilter, { OR: [{ buyer_id: userId }, { factory_id: userId }] }] },
+			}),
+			prisma.rating.aggregate({ _avg: { score: true }, where: { profile_key: `user:${userId}` } }),
 			prisma.requirement.groupBy({ by: ["category"], where: { buyer_id: userId, category: { not: null } }, _count: true, orderBy: { _count: { category: "desc" } }, take: 5 }),
 			computeAvgFirstResponseHours(userId),
 		]);
@@ -1726,15 +1731,19 @@ export async function getCoreMetrics(user) {
 	}
 
 	if (isOwner) {
-		const [totalBuyerRequests, matchedRequests, contracts, buyers, suppliers, returningBuyers, avgHours] = await Promise.all([
+		const contractDocFilter = {
+			OR: [{ entity_type: "contract" }, { type: { contains: "contract", mode: "insensitive" } }],
+		};
+		const [totalBuyerRequests, matchedRequests, contracts, buyers, suppliers, returningBuyerGroups, avgHours] = await Promise.all([
 			prisma.requirement.count(),
 			prisma.requirement.count({ where: { assigned_agent_id: { not: null } } }),
-			prisma.contract.count(),
+			prisma.document.count({ where: contractDocFilter }),
 			prisma.user.count({ where: { role: "buyer" } }),
 			prisma.user.count({ where: { role: { in: ["factory", "buying_house"] } } }),
-			prisma.user.count({ where: { role: "buyer", requirements: { some: {} } } }),
+			prisma.requirement.groupBy({ by: ["buyer_id"] }),
 			computeAvgFirstResponseHours(null),
 		]);
+		const returningBuyers = returningBuyerGroups.length;
 
 		const matchRate = totalBuyerRequests > 0 ? Math.round((matchedRequests / totalBuyerRequests) * 100) : 0;
 		const ratio = suppliers > 0 ? (buyers / suppliers).toFixed(1) : "--";
