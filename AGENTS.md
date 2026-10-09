@@ -1,5 +1,13 @@
 # AGENTS.md — Problems & Fixes
 
+## 19. Viewport-locked dashboard layout (Owner) + zoom compensation
+
+- **Requirement:** `/owner`, `/contracts`, `/leads`, `/verification` render exactly viewport height (min = max = viewport), zero window scroll; sidebar, content column, and sidebar nav scroll internally.
+- **Gotcha 1 — `lg:[zoom:0.8]` scales viewport units:** `100vh`/`100dvh` compute in device px but render at 80% on lg screens, so any `100dvh`-sized element always leaves a ~20% gap. `125dvh × 0.8 = 100%`, therefore locked shells use `h-dvh overflow-hidden lg:h-[125dvh]` (`src/App.jsx` `isViewportLockedRoute`). Same reason the old `min-h-[125vh]` shell accidentally filled viewports.
+- **Gotcha 2 — the `div.dark` theme wrapper breaks the flex chain:** `OwnerDashboard.jsx` renders `<div class="dark">` between the motion wrapper and the flex root; as a plain block box it sizes by content and kills every `flex-1` below it. It must carry `flex min-h-0 flex-1 flex-col` (`src/App.jsx` motion.div and `<main>` already have their `flex-1 min-h-0` links — verify the full chain when adding wrappers).
+- **Gotcha 3 — NO `{/* */}` comments between JSX props:** esbuild (Vite dev transform) 500s the file. A JSX comment between props blanked `/owner` to a no-shell page until removed.
+- **Fix:** shell lock in `src/App.jsx`, root `flex max-h-full min-h-0 w-full flex-1` + `overflow:hidden`, aside stretches (`lg:h-auto`), content column + nav `flex-1 min-h-0` with `overflow-y:auto`. Verified live via CDP `evaluate_script` rects (shell == viewport, docScrollH == viewport, content/nav internal scroll active).
+
 ## 10. MainFeed infinite re-render loop ("infinite loading")
 
 - **Problem:** Feed page stuck in perpetual loading spinner; console floods with `WebSocket closed before established` from FloatingAssistant (a side effect). Multiple parallel `GET /api/users/me` requests.

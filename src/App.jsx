@@ -503,6 +503,9 @@ function AppLayout() {
 	const isImmersiveRoute = location.pathname === "/chat" || location.pathname === "/call";
 	const isAdminRoute = location.pathname.startsWith("/admin");
 	const hideChrome = isImmersiveRoute;
+	const isViewportLockedRoute = ["/owner", "/contracts", "/leads", "/verification"].includes(
+		location.pathname,
+	);
 	const content =
 		isImmersiveRoute ? (
 			<ErrorBoundary>
@@ -521,7 +524,7 @@ function AppLayout() {
 				{hideChrome ? null : <ScrollProgressBar />}
 				<div class="flex w-full justify-center bg-transparent">
 					<div
-						class={`app-shell flex min-h-[125vh] flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
+						class={`app-shell flex ${isViewportLockedRoute ? "h-dvh overflow-hidden lg:h-[125dvh]" : "min-h-[125vh]"} flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
 						style={{ width: "100%" }}
 					>
 						{hideChrome ? null : (
