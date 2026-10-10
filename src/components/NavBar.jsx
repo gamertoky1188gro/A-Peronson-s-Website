@@ -984,6 +984,7 @@ export default function NavBar() {
 													</div>
 													<div className="space-y-1">
 														{group.items
+															.filter((item) => item.to !== "/org-settings")
 															.map((item) => {
 																const ItemIcon =
 																	{
