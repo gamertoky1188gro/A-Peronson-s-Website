@@ -32,6 +32,7 @@ import { trackClientEvent } from "../lib/events.js";
 import { logger } from "../lib/logger.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
 import { uploadFile } from "../lib/upload.js";
+import { FACTORY_SECTOR_OPTIONS } from "../../shared/config/platformTaxonomy.js";
 
 const EMPTY_FORM = {
 	title: "",
@@ -53,6 +54,28 @@ const EMPTY_FORM = {
 	cover_image_url: "",
 	status: "draft",
 };
+
+/**
+ * Maps a stored free-text industry to a dropdown option value.
+ * Matches option values and labels case-insensitively so legacy entries
+ * like "Garments" resolve to the canonical "garments" option.
+ * Returns { value, isLegacy } — isLegacy is true when the stored text
+ * matches no option and must be preserved verbatim.
+ */
+function resolveIndustryOption(stored) {
+	const raw = String(stored || "").trim();
+	if (!raw) {
+		return { value: "", isLegacy: false };
+	}
+	const lowered = raw.toLowerCase();
+	const match = FACTORY_SECTOR_OPTIONS.find(
+		(opt) => String(opt.value).toLowerCase() === lowered || String(opt.label).toLowerCase() === lowered,
+	);
+	if (match) {
+		return { value: match.value, isLegacy: false };
+	}
+	return { value: raw, isLegacy: true };
+}
 
 function Badge({ children, tone = "blue" }) {
 	const styles = {
@@ -854,13 +877,25 @@ export default function ProductManagement() {
 
 										<div className="mt-4 grid gap-4 md:grid-cols-2">
 											<Field label="Industry" required={true}>
-												<input
-													value={form.industry}
-													onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
-													className={inputCls}
-													placeholder="Garments, Home Textiles..."
-													required={true}
-												/>
+												{(() => {
+													const resolved = resolveIndustryOption(form.industry);
+													return (
+														<select
+															value={resolved.value}
+															onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
+															className={inputCls}
+															required={true}
+														>
+															<option value="">Select industry</option>
+															{FACTORY_SECTOR_OPTIONS.map((opt) => (
+																<option key={opt.value} value={opt.value}>{opt.label}</option>
+															))}
+															{resolved.isLegacy ? (
+																<option value={resolved.value}>{resolved.value}</option>
+															) : null}
+														</select>
+													);
+												})()}
 											</Field>
 											<Field label="Category (e.g. Shirts)" required={true}>
 												<input
@@ -1223,3 +1258,5 @@ export default function ProductManagement() {
 		</div>
 	);
 }
+
+export { resolveIndustryOption };

@@ -135,11 +135,30 @@
 			}
 		},
 		{
-			"includes": ["tests/**/*.{js,ts}"],
+			"includes": ["tests/**/*.{js,jsx,ts}"],
 			"linter": {
 				"rules": {
+					"complexity": {
+						"noExcessiveLinesPerFunction": "off"
+					},
 					"correctness": {
-						"noUndeclaredVariables": "off"
+						"noUndeclaredVariables": "off",
+						"noNodejsModules": "off"
+					},
+					"performance": {
+						"useTopLevelRegex": "off",
+						"noJsxPropsBind": "off"
+					},
+					"security": {
+						"noSecrets": "off"
+					},
+					"style": {
+						"noMagicNumbers": "off",
+						"useGlobalThis": "off"
+					},
+					"suspicious": {
+						"noEmptyBlockStatements": "off",
+						"noSkippedTests": "off"
 					}
 				}
 			}
@@ -152,8 +171,12 @@
 						"noUnusedVariables": "off",
 						"noNodejsModules": "off"
 					},
+					"style": {
+						"noMagicNumbers": "off"
+					},
 					"suspicious": {
-						"noEmptyBlockStatements": "off"
+						"noEmptyBlockStatements": "off",
+						"noConsole": "off"
 					},
 					"performance": {
 						"useTopLevelRegex": "off"
@@ -162,7 +185,7 @@
 			}
 		},
 		{
-			"includes": ["*.html"],
+			"includes": ["*.html", "**/*.html"],
 			"linter": {
 				"rules": {
 					"style": {

@@ -5,6 +5,16 @@ import {
 } from "node:timers";
 import { TextDecoder, TextEncoder } from "node:util";
 
+// Test-environment defaults. server/middleware/auth.js throws at import time
+// when JWT_SECRET is missing, so ensure a deterministic test secret here
+// (setupFilesAfterEach runs before any test file is imported).
+if (!process.env.JWT_SECRET) {
+	process.env.JWT_SECRET = "test-jwt-secret-do-not-use-in-prod";
+}
+if (!process.env.NODE_ENV) {
+	process.env.NODE_ENV = "test";
+}
+
 if (!globalThis.TextEncoder) {
 	globalThis.TextEncoder = TextEncoder;
 }
@@ -25,16 +35,17 @@ if (typeof window !== "undefined" && !window.scrollTo) {
 	window.scrollTo = () => {};
 }
 
-if (!globalThis.fetch) {
-	globalThis.fetch = async (url, options = {}) => {
-		const { method = "GET", headers = {}, body } = options;
-		return {
-			ok: method !== "POST" || !url.includes("fail"),
+if (typeof globalThis.fetch !== "function") {
+	globalThis.fetch = (url, options = {}) => {
+		const { method = "GET" } = options;
+		return Promise.resolve({
+			ok: method !== "POST" || !String(url).includes("fail"),
 			status: 200,
-			json: async () => ({
-				choices: [{ message: { content: "Mock response" } }],
-			}),
-			text: async () => "Mock response",
-		};
+			json: () =>
+				Promise.resolve({
+					choices: [{ message: { content: "Mock response" } }],
+				}),
+			text: () => Promise.resolve("Mock response"),
+		});
 	};
 }

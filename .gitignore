@@ -46,3 +46,11 @@ npmcache/
 
 server/tui/ink/.cache/
 server/tui/ink/app.mjs
+
+# Generated test-report artifacts (NEON TEST LAB)
+reports/
+coverage/
+allure-results/
+allure-report/
+playwright-report/
+

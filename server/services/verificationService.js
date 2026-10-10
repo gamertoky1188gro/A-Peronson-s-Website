@@ -744,7 +744,7 @@ export async function upsertVerification(user, documentsPatch) {
 		buyer_region: buyerRegion,
 	});
 
-	const required = getRequiredFields(user.role, buyerRegion);
+	const required = getVerificationRequirements(user.role, buyerRegion);
 	const missing_required = required.filter((key) => !hasDocument(docs, key));
 	const credibility = buildCredibility(required, docs);
 

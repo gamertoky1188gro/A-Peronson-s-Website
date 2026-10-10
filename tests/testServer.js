@@ -1,4 +1,3 @@
-import bodyParser from "body-parser";
 import express from "express";
 import {
 	postExtractRequirement,
@@ -6,7 +5,7 @@ import {
 } from "../server/controllers/assistantController.js";
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.post("/api/assistant/extract-requirement", postExtractRequirement);
 app.post("/api/assistant/generate-first-response", postGenerateFirstResponse);

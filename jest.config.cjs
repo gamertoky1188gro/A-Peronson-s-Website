@@ -1,6 +1,12 @@
 "use strict";
 module.exports = {
-	testEnvironment: "jsdom",
+	// allure-jest/jsdom wraps jest-environment-jsdom: identical DOM behavior
+	// plus Allure result emission. Results land in reports/allure-results-jest
+	// (gitignored); override the dir per run via ALLURE_RESULTS_DIR.
+	testEnvironment: "allure-jest/jsdom",
+	testEnvironmentOptions: {
+		resultsDir: process.env.ALLURE_RESULTS_DIR || "reports/allure-results-jest",
+	},
 	testMatch: ["**/tests/**/*.test.js", "**/tests/**/*.spec.js"],
 	extensionsToTreatAsEsm: [".jsx"],
 	transform: {

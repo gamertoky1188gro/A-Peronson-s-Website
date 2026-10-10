@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NEON TEST LAB — Application Quality Report</title>
+<link rel="icon" href="data:," />
+<style>
+:root {
+  --bg: #0b0714;
+  --bg2: #120d20;
+  --surface: #1a1230;
+  --purple: #a855f7;
+  --pink: #d946ef;
+  --cyan: #22d3ee;
+  --text: #f8fafc;
+  --muted: #a1a1aa;
+  --green: #34d399;
+  --red: #f87171;
+  --amber: #fbbf24;
+  --border: rgba(168, 85, 247, 0.22);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(900px 420px at 12% -4%, rgba(168, 85, 247, 0.16), transparent 60%),
+    radial-gradient(760px 380px at 88% 8%, rgba(34, 211, 238, 0.1), transparent 60%),
+    linear-gradient(180deg, var(--bg2), var(--bg));
+  min-height: 100vh;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 64px; }
+header.hero {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 30px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.14), rgba(34, 211, 238, 0.07)), var(--surface);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
+}
+h1 {
+  margin: 0 0 6px;
+  font-size: clamp(26px, 4vw, 40px);
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, var(--purple), var(--pink) 55%, var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sub { color: var(--muted); margin: 0; font-size: 15px; }
+.meta { color: var(--muted); font-size: 13px; margin-top: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-top: 24px; }
+.card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: rgba(26, 18, 48, 0.72);
+  backdrop-filter: blur(8px);
+}
+.card h2 { margin: 0 0 4px; font-size: 15px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.big { font-size: 34px; font-weight: 800; margin: 2px 0 6px; }
+.ok { color: var(--green); } .bad { color: var(--red); } .warn { color: var(--amber); }
+.row { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.row b { color: var(--text); font-weight: 600; }
+.missing { border-style: dashed; color: var(--muted); font-size: 14px; }
+.links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+a.btn {
+  display: inline-block;
+  padding: 12px 20px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0b0714;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  border: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+a.btn.ghost {
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+}
+a.btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(168, 85, 247, 0.35); }
+a.btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(168, 85, 247, 0.14); }
+th { color: var(--muted); font-weight: 600; }
+footer { margin-top: 34px; color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) {
+  a.btn { transition: none; }
+  a.btn:hover { transform: none; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>NEON TEST LAB</h1>
+    <p class="sub">Application Quality Report — GarTexHub test suites, real execution data only.</p>
+    <p class="meta" id="meta">Loading run data…</p>
+  </header>
+  <section class="grid" id="cards" aria-live="polite"></section>
+  <nav class="links" aria-label="Generated reports">
+    <a class="btn" href="../allure-report/index.html">Open Allure report</a>
+    <a class="btn ghost" href="../playwright-report/index.html">Playwright HTML report</a>
+    <a class="btn ghost" href="../../coverage/lcov-report/index.html">Coverage report</a>
+  </nav>
+  <section class="card" style="margin-top: 18px" id="layers" hidden>
+    <h2>Tests by layer (Jest)</h2>
+    <div id="layerTable"></div>
+  </section>
+  <footer>
+    Regenerate with <code>npm run test:report</code>. Missing cards mean the underlying
+    artifact was not generated — nothing here is estimated or fabricated.
+  </footer>
+</div>
+<script>
+"use strict";
+function fmt(n) {
+	if (typeof n === "number") {
+		return n.toLocaleString();
+	}
+	return "—";
+}
+function card(title, bodyHtml, statusClass) {
+	const cls = statusClass ? statusClass : "";
+	return `<div class="card"><h2>${title}</h2><div class="${cls}">${bodyHtml}</div></div>`;
+}
+function missingCard(title, note) {
+	return `<div class="card missing"><h2>${title}</h2>${note}</div>`;
+}
+function jestCard(jest) {
+	if (!jest.present) {
+		return missingCard("Jest", jest.note);
+	}
+	const status = jest.failed ? "bad" : "ok";
+	const duration = jest.timeMs === null || jest.timeMs === undefined ? "" : ` · ${Math.round(jest.timeMs / 1000)}s`;
+	return card(
+		"Jest — unit · component · integration",
+		`<div class="big ${status}">${fmt(jest.passed)} / ${fmt(jest.tests)}</div>` +
+			`<div class="row">suites <b>${fmt(jest.suites)}</b> · failed <b>${fmt(jest.failed)}</b> · skipped <b>${fmt(jest.skipped)}</b>${duration}</div>`,
+		"",
+	);
+}
+function playwrightCard(pw) {
+	if (!pw.present) {
+		return missingCard("Playwright", pw.note);
+	}
+	const status = pw.failed ? "bad" : "ok";
+	return card(
+		"Playwright — end-to-end",
+		`<div class="big ${status}">${fmt(pw.passed)} / ${fmt(pw.tests)}</div>` +
+			`<div class="row">failed <b>${fmt(pw.failed)}</b> · flaky <b>${fmt(pw.flaky)}</b> · skipped <b>${fmt(pw.skipped)}</b></div>`,
+		"",
+	);
+}
+function coverageCard(coverage) {
+	if (!coverage.present) {
+		return missingCard("Coverage", coverage.note);
+	}
+	const pct = (v) => (v === null || v === undefined ? "—" : `${v}%`);
+	return card(
+		"Coverage (Jest)",
+		`<div class="big">${pct(coverage.lines)}</div>` +
+			`<div class="row">lines <b>${pct(coverage.lines)}</b> · statements <b>${pct(coverage.statements)}</b> · functions <b>${pct(coverage.functions)}</b> · branches <b>${pct(coverage.branches)}</b></div>`,
+		"",
+	);
+}
+function allureCard(allure) {
+	if (!allure.present) {
+		return missingCard("Allure", allure.note);
+	}
+	const bad = (allure.failed || 0) + (allure.broken || 0);
+	const status = bad ? "bad" : "ok";
+	const name = allure.name ? allure.name : "";
+	const reportStatus = allure.status ? allure.status : "—";
+	return card(
+		"Allure aggregate",
+		`<div class="big ${status}">${fmt(allure.passed)} / ${fmt(allure.total)}</div>` +
+			`<div class="row">${name} · status <b>${reportStatus}</b></div>`,
+		"",
+	);
+}
+function layerTable(layers) {
+	const rows = Object.entries(layers || {})
+		.map(
+			([name, l]) =>
+				`<tr><td>${name}</td><td>${fmt(l.tests)}</td><td>${fmt(l.passed)}</td><td>${fmt(l.failed)}</td></tr>`,
+		)
+		.join("");
+	if (!rows) {
+		return;
+	}
+	document.getElementById("layers").hidden = false;
+	document.getElementById("layerTable").innerHTML =
+		`<table><thead><tr><th>Layer</th><th>Tests</th><th>Passed</th><th>Failed</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function render(data) {
+	document.getElementById("meta").textContent =
+		`Generated ${data.generatedAt} · node ${data.environment.node} · ${data.environment.platform}`;
+	document.getElementById("cards").innerHTML = [
+		jestCard(data.jest),
+		playwrightCard(data.playwright),
+		coverageCard(data.coverage),
+		allureCard(data.allure),
+	].join("");
+	layerTable(data.jest.layers);
+}
+function renderMissing() {
+	document.getElementById("meta").textContent = "No run data yet — run npm run test:report first.";
+	document.getElementById("cards").innerHTML = missingCard(
+		"No data",
+		"data.json not found. Generate a report to populate this hub. If opening via file://, serve the repo root instead (fetch is blocked on file:// in some browsers).",
+	);
+}
+fetch("data.json")
+	.then((r) => {
+		if (!r.ok) {
+			throw new Error("no data");
+		}
+		return r.json();
+	})
+	.then(render)
+	.catch(renderMissing);
+</script>
