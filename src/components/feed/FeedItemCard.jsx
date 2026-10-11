@@ -1,5 +1,4 @@
 import {
-	ArrowUpRight,
 	BadgeCheck,
 	ExternalLink,
 	Flag,
@@ -400,15 +399,6 @@ export default function FeedItemCard({
 						>
 							{expressInterestDisabled ? "Claiming..." : "Express Interest"}
 						</button>
-					) : null}
-
-					{profileLink ? (
-						<Link
-							to={profileLink}
-							class="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 inline-flex items-center gap-2 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
-						>
-							View profile <ArrowUpRight size={14} />
-						</Link>
 					) : null}
 				</div>
 			</footer>
