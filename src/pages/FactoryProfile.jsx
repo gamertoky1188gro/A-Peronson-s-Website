@@ -787,7 +787,7 @@ export default function FactoryProfile() {
 									{currentUser?.id === user?.id ? (
 									<div className="mt-3 flex flex-wrap gap-2">
 										<Link
-											to="/org-settings?tab=profile"
+											to="/settings?tab=profile"
 											className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-sky-500/20 transition hover:-translate-y-0.5"
 										>
 											<Edit3 className="h-4 w-4" /> Edit profile

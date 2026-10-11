@@ -190,10 +190,10 @@
 				},
 				{
 					"id": "2.5",
-					"title": "Org Settings",
-					"description": "Organization settings and profile",
+					"title": "Settings",
+					"description": "Account settings and profile",
 					"isCompleted": true,
-					"link": "/org-settings"
+					"link": "/settings"
 				},
 				{
 					"id": "2.6",

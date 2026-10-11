@@ -23,6 +23,7 @@ export const ROUTES = {
 	FEEDBACK: "/feedback",
 	MEMBER_MANAGEMENT: "/member-management",
 	ORG_SETTINGS: "/org-settings",
+	SETTINGS: "/settings",
 	INSIGHTS: "/insights",
 	OWNER: "/owner",
 	CONTRACTS: "/contracts",

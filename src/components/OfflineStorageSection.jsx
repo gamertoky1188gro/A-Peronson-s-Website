@@ -1,7 +1,7 @@
 // HyperCache Phase 7 — Offline Storage settings section.
 // Device-level controls: storage mode radio, usage bar, download-for-offline
 // pack (feed/profile/product snapshots into Dexie with progress), clear data.
-// Rendered inside OrgSettings (profile tab). No new routes.
+// Rendered inside Settings (profile tab). No new routes.
 
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest, getToken } from "../lib/auth.js";

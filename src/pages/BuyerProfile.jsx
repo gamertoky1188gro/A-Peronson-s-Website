@@ -859,7 +859,7 @@ export default function BuyerProfile() {
 												</>
 											) : (
 												<Link
-													to="/org-settings?tab=profile"
+													to="/settings?tab=profile"
 													className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5"
 												>
 													Edit profile
@@ -965,7 +965,7 @@ export default function BuyerProfile() {
 											</>
 										) : (
 											<Link
-												to="/org-settings?tab=profile"
+												to="/settings?tab=profile"
 												className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5"
 											>
 												Edit profile

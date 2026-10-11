@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Settings as SettingsIcon, Sun } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -241,7 +241,7 @@ const TABS = [
 
 const STANDALONE_TAB_IDS = ["profile", "theme", "security", "notifications", "verification"];
 
-export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
+export default function Settings({ embedded = false, initialTabProp = "" }) {
 	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const tabParamName = embedded ? "settingsTab" : "tab";
@@ -1523,7 +1523,7 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 
 	const bodyTheme = theme === "dark" ? "dark" : "";
 
-	// Lock modal — defined here so it has access to OrgSettings state
+	// Lock modal — defined here so it has access to Settings state
 	const LockModal = () => {
 		if (!lockModalOpen) return null;
 		return (
@@ -3187,18 +3187,17 @@ export default function OrgSettings({ embedded = false, initialTabProp = "" }) {
 				<div class="mb-6 flex flex-col gap-4 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-[0_24px_80px_-35px_rgba(2,132,199,0.6)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 lg:flex-row lg:items-center lg:justify-between">
 					<div class="flex items-center gap-4">
 						<Icon>
-							<span class="text-lg font-black">O</span>
+							<SettingsIcon className="h-5 w-5" />
 						</Icon>
 						<div>
 							<div class="flex flex-wrap items-center gap-2">
 								<h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-									Owner Console
+									Settings
 								</h1>
-								<Badge tone="sky">Premium Dashboard</Badge>
+								<Badge tone="sky">Account</Badge>
 							</div>
 							<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-								Modern control center for automation, verification, branding, security, and team
-								growth.
+								Manage your profile, appearance, security, verification, and notifications.
 							</p>
 						</div>
 					</div>

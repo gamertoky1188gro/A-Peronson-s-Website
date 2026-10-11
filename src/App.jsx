@@ -68,7 +68,7 @@ const ProductManagement = safeLazy(() => import("./pages/ProductManagement.jsx")
 const BuyerRequestManagement = safeLazy(() => import("./pages/BuyerRequestManagement.jsx"));
 const HelpCenter = safeLazy(() => import("./pages/HelpCenter.jsx"));
 const NotificationsCenter = safeLazy(() => import("./pages/NotificationsCenter.jsx"));
-const OrgSettings = safeLazy(() => import("./pages/OrgSettings.jsx"));
+const Settings = safeLazy(() => import("./pages/Settings.jsx"));
 const Insights = safeLazy(() => import("./pages/Insights.jsx"));
 const About = safeLazy(() => import("./pages/About.jsx"));
 const Terms = safeLazy(() => import("./pages/Terms.jsx"));
@@ -99,6 +99,11 @@ const OWNER_ROLES = ["owner", "admin", "buying_house", "factory"];
 const CONTRACT_ROLES = ["owner", "admin", "buying_house", "factory", "buyer"];
 const INSIGHTS_ROLES = ["owner", "admin", "buying_house", "factory", "buyer"];
 const MEMBER_MANAGEMENT_ROLES = ["owner", "admin", "buying_house", "factory"];
+
+function OrgSettingsRedirect() {
+	const location = useLocation();
+	return <Navigate to={`/settings${location.search}`} replace={true} />;
+}
 
 function ProtectedRoute({ children, roles }) {
 	const location = useLocation();
@@ -388,13 +393,14 @@ function AppRoutes() {
 				}
 			/>
 			<Route
-				path="/org-settings"
+				path="/settings"
 				element={
-					<ProtectedRoute roles={OWNER_ROLES}>
-						<OrgSettings />
+					<ProtectedRoute roles={AUTH_ROLES}>
+						<Settings />
 					</ProtectedRoute>
 				}
 			/>
+			<Route path="/org-settings" element={<OrgSettingsRedirect />} />
 			<Route
 				path="/insights"
 				element={

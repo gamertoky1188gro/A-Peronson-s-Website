@@ -81,7 +81,7 @@ const navigationGroups = [
 		label: "Core",
 		icon: LayoutDashboard,
 		items: [
-			{ to: "/org-settings?tab=profile", label: "My Profile" },
+			{ to: "/settings?tab=profile", label: "My Profile" },
 			{ to: "/feed", label: "Feed" },
 			{ to: "/feed/manage", label: "Post Editor" },
 			{ to: "/search", label: "Search" },
@@ -171,7 +171,7 @@ const navigationGroups = [
 				label: "Onboarding",
 				roles: ["buyer", "buying_house", "factory", "owner", "admin", "agent"],
 			},
-			{ to: "/org-settings", label: "Settings" },
+			{ to: "/settings", label: "Settings" },
 		],
 	},
 ];
@@ -984,7 +984,7 @@ export default function NavBar() {
 													</div>
 													<div className="space-y-1">
 														{group.items
-															.filter((item) => item.to !== "/org-settings")
+															.filter((item) => item.to !== "/settings")
 															.map((item) => {
 																const ItemIcon =
 																	{
@@ -1119,7 +1119,7 @@ export default function NavBar() {
 							<div className="flex items-center justify-between border-t border-slate-900/5 px-5 py-4 dark:border-white/10">
 								<div className="flex items-center gap-2">
 									<Link
-										to="/org-settings"
+										to="/settings"
 										aria-label="Settings"
 										className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-medium text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white"
 									>

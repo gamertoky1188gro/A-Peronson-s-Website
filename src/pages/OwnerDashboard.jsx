@@ -17,7 +17,7 @@ import { isRouteValid } from "../lib/routeHealthCheck.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
 import CoreMetricsCards from "../components/analytics/CoreMetricsCards.jsx";
 import ContractVaultPage from "./ContractVault.jsx";
-import OrgSettings from "./OrgSettings.jsx";
+import Settings from "./Settings.jsx";
 import VerificationPage from "./VerificationPage.jsx";
 import MemberManagement from "./MemberManagement.jsx";
 
@@ -201,7 +201,7 @@ const quickActions = [
 	{ label: "Leads", href: "/leads", desc: "CRM pipeline" },
 	{ label: "Messages", href: "/chat", desc: "Chat with buyers" },
 	{ label: "Analytics", href: "/insights", desc: "View data insights" },
-	{ label: "Settings", href: "/org-settings", desc: "Account configuration" },
+	{ label: "Settings", href: "/settings", desc: "Account configuration" },
 ].filter((item) => isRouteValid(item.href));
 
 export default function OwnerDashboard() {
@@ -1189,31 +1189,31 @@ export default function OwnerDashboard() {
 
 						{active === "profile" && !loading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
-								<OrgSettings embedded={true} initialTabProp="profile" />
+								<Settings embedded={true} initialTabProp="profile" />
 							</div>
 						)}
 
 						{active === "settings" && !loading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
-								<OrgSettings embedded={true} initialTabProp="security" />
+								<Settings embedded={true} initialTabProp="security" />
 							</div>
 						)}
 
 						{active === "automation" && !loading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
-								<OrgSettings embedded={true} initialTabProp="general" />
+								<Settings embedded={true} initialTabProp="general" />
 							</div>
 						)}
 
 						{active === "assistant" && !loading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
-								<OrgSettings embedded={true} initialTabProp="assistant_knowledge" />
+								<Settings embedded={true} initialTabProp="assistant_knowledge" />
 							</div>
 						)}
 
 						{active === "branding" && !loading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
-								<OrgSettings embedded={true} initialTabProp="branding" />
+								<Settings embedded={true} initialTabProp="branding" />
 							</div>
 						)}
 
