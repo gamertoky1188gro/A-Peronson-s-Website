@@ -4,7 +4,6 @@ import {
 	ExternalLink,
 	Flag,
 	Link2,
-	MessageCircle,
 	MessageSquareText,
 	MoreHorizontal,
 	Share2,
@@ -401,15 +400,7 @@ export default function FeedItemCard({
 						>
 							{expressInterestDisabled ? "Claiming..." : "Express Interest"}
 						</button>
-					) : (
-						<button
-							type="button"
-							onClick={() => onMessage?.(item)}
-							class="rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-gtBlueHover active:scale-95 inline-flex items-center gap-2"
-						>
-							<MessageCircle size={16} /> Message
-						</button>
-					)}
+					) : null}
 
 					{profileLink ? (
 						<Link
