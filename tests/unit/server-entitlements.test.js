@@ -51,6 +51,17 @@ describe("entitlement service (server/services/entitlementService.js)", () => {
 		expect(err.status).toBe(403);
 	});
 
+	test("owner and admin on premium get team_access_management", async () => {
+		for (const role of ["owner", "admin"]) {
+			const got = await entitlements.getEntitlements({
+				id: `u-${role}`,
+				role,
+				subscription_status: "premium",
+			});
+			expect(got.features.team_access_management).toBe(true);
+		}
+	});
+
 	test("unknown roles get an empty feature map instead of crashing", async () => {
 		const got = await entitlements.getEntitlements({
 			id: "u-x",

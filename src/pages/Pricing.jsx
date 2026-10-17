@@ -87,7 +87,7 @@ const defaultPricing = {
 	},
 	comparisonRows: [
 		["Buyer requests or product posts", "", ""],
-		["Agent IDs / sub-accounts", "Up to 10", "Unlimited"],
+		["Agent IDs / sub-accounts", "Up to 3", "Unlimited"],
 		["Contract Vault storage", "Basic", "Extended"],
 		["Exportable reports", "", ""],
 		["AI auto-reply customization", "", ""],
@@ -125,7 +125,7 @@ const defaultPricing = {
 		"Receive buyer requests",
 		"Chat & call access",
 		"Contract Vault (basic)",
-		"Agent IDs / sub-accounts (limit 10)",
+		"Agent IDs / sub-accounts (limit 3)",
 	],
 	factoryPremium: [
 		"Profile & product boost with increased reach",
@@ -158,7 +158,7 @@ const defaultPricing = {
 		"Partner Network (Buying House only)",
 		"Chat & call access",
 		"Contract Vault (basic)",
-		"Agent IDs / sub-accounts (limit 10)",
+		"Agent IDs / sub-accounts (limit 3)",
 	],
 	housePremium: [
 		"Profile & product boost with increased reach",

@@ -1,17 +1,19 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# NOTE: this hook intentionally does NOT run `biome check --write .`.
+# A repo-wide auto-format rewrites hundreds of unrelated files (it touched 602
+# on the previous run) and then `git add -u` stages all of that churn. Only
+# lint the files that are actually being committed.
+
 echo "Running pre-commit checks..."
 
-echo "1. Running Biome check (lint + format)..."
-npx biome check --write --no-errors-on-unmatched .
+echo "1. Running Biome check on staged files..."
+npx biome check --no-errors-on-unmatched --files-ignore-unknown=true $(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|mjs|cjs|ts|tsx|json|css)$' | tr '\n' ' ')
 if [ $? -ne 0 ]; then
   echo "Biome check failed!"
   exit 1
 fi
-
-# Stage any files Biome auto-fixed
-git add -u
 
 echo "2. Running Tests..."
 npm test 2>&1 | grep -E "(PASS|FAIL|Tests:)"
@@ -26,8 +28,5 @@ if [ $? -ne 0 ]; then
   echo "Build failed!"
   exit 1
 fi
-
-echo "4. Checking for changes..."
-git diff HEAD --stat
 
 echo "Pre-commit checks passed!"

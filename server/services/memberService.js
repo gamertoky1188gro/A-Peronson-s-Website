@@ -5,7 +5,7 @@ import { getAdminConfig } from "./adminConfigService.js";
 import { getPlanForUser } from "./entitlementService.js";
 import { getSubscription } from "./subscriptionService.js";
 
-const DEFAULT_FREE_MEMBER_LIMIT = 10;
+const DEFAULT_FREE_MEMBER_LIMIT = 3;
 
 const VALID_PERMISSIONS = new Set([
 	"view_requests",

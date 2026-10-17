@@ -79,7 +79,7 @@ Functions:
 {
   "members": [...],
   "constraints": {
-    "free_member_limit": 10,
+    "free_member_limit": 3,
     "valid_permissions": [...],
     "permission_conflicts": [...],
     "permission_matrix_sections": [...]

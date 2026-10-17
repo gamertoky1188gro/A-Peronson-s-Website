@@ -3,7 +3,37 @@ import prisma from "../utils/prisma.js";
 import { getAdminConfig } from "./adminConfigService.js";
 import { getSubscription } from "./subscriptionService.js";
 
-const DEFAULT_FREE_MEMBER_LIMIT = 10;
+const DEFAULT_FREE_MEMBER_LIMIT = 3;
+
+// Company-management features are shared by the company-side roles. owner and
+// admin were missing entirely, so a premium owner got an empty feature map and
+// could never pass the team_access_management check.
+const COMPANY_MANAGEMENT_FEATURES = [
+	"profile_boost",
+	"product_boost",
+	"advanced_analytics",
+	"priority_search_ranking",
+	"ai_auto_reply_customization",
+	"dedicated_account_manager",
+	"custom_branding",
+	"enterprise_analytics_dashboard",
+	"unlimited_agents",
+	"buying_pattern_analysis",
+	"order_completion_certification",
+	"dedicated_support",
+	"contract_history_audit",
+	"multi_agent_management",
+	"team_access_management",
+	"request_performance_insights",
+	"buyer_interest_analytics",
+	"agent_performance_analytics",
+	"product_video_capacity",
+	"lead_distribution",
+	"buyer_communication_insights",
+	"buyer_request_priority_access",
+	"buyer_conversion_insights",
+	"unlimited_partner_accept",
+];
 
 const PREMIUM_FEATURES_BY_ROLE = {
 	buyer: [
@@ -20,32 +50,9 @@ const PREMIUM_FEATURES_BY_ROLE = {
 		"profile_boost",
 		"product_boost",
 	],
-	factory: [
-		"profile_boost",
-		"product_boost",
-		"advanced_analytics",
-		"priority_search_ranking",
-		"ai_auto_reply_customization",
-		"dedicated_account_manager",
-		"custom_branding",
-		"enterprise_analytics_dashboard",
-		"unlimited_agents",
-		"buying_pattern_analysis",
-		"order_completion_certification",
-		"dedicated_support",
-		"contract_history_audit",
-		"multi_agent_management",
-		"team_access_management",
-		"request_performance_insights",
-		"buyer_interest_analytics",
-		"agent_performance_analytics",
-		"product_video_capacity",
-		"lead_distribution",
-		"buyer_communication_insights",
-		"buyer_request_priority_access",
-		"buyer_conversion_insights",
-		"unlimited_partner_accept",
-	],
+	factory: COMPANY_MANAGEMENT_FEATURES,
+	owner: COMPANY_MANAGEMENT_FEATURES,
+	admin: COMPANY_MANAGEMENT_FEATURES,
 	agent: [
 		"custom_branding",
 		"dedicated_account_manager",

@@ -24,6 +24,7 @@
 		"db:studio": "prisma studio",
 		"db:migrate:prod": "prisma migrate deploy",
 		"db:backfill:org-operations": "node scripts/db/backfill-org-operations-policies.mjs",
+		"db:backfill:free-agent-limit": "node scripts/db/backfill-free-agent-limit.mjs",
 		"ai:eval": "node scripts/run-ai-extraction-regression.mjs",
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
 		"test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/unit",

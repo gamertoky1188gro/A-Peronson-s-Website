@@ -4,7 +4,7 @@ import { Mosaic } from "react-loading-indicators";
 import AccessDeniedState from "../components/AccessDeniedState.jsx";
 import ScrollReveal from "../components/ScrollReveal.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
-import { apiRequest, getCurrentUser, getToken, hasEntitlement } from "../lib/auth.js";
+import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
 
 const MEMBER_API_BASE = "/org/members";
 
@@ -133,12 +133,16 @@ function ActionButton({ label, onClick, variant = "default" }) {
 
 export default function MemberManagement() {
 	const sessionUser = getCurrentUser();
-	const canTeamAccess = hasEntitlement(sessionUser, "team_access_management");
+	// The permission matrix and per-member permission editing are available on
+	// every plan. The only free-plan restriction is the seat cap (how many
+	// agents a company may create), enforced on the backend. Locking the matrix
+	// behind premium showed a dead control and a misleading "requires FREE" copy.
+	const canTeamAccess = true;
 	const canManageMembers = sessionUser?.capabilities?.members?.manage !== false;
 	const [search, setSearch] = useState("");
 	const [members, setMembers] = useState([]);
 	const [constraints, setConstraints] = useState({
-		free_member_limit: 10,
+		free_member_limit: 3,
 		valid_permissions: [],
 		permission_conflicts: [],
 		permission_matrix_sections: [],
@@ -465,7 +469,7 @@ export default function MemberManagement() {
 						/>
 						<InfoCard
 							title="Team access"
-							value={canTeamAccess ? "Premium permissions enabled" : "Premium permissions locked"}
+							value={canTeamAccess ? "Permissions enabled on all plans" : "Premium permissions locked"}
 						/>
 						<InfoCard
 							title="Members"
@@ -751,9 +755,8 @@ export default function MemberManagement() {
 							</p>
 							{canTeamAccess ? null : (
 								<div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
-									Team/agent access management requires the{" "}
-									<strong>{String(constraints.plan || "current").toUpperCase()}</strong> plan.
-									Upgrade to edit permissions and access controls.
+									Team/agent access management is available for premium users. Upgrade
+									to edit permissions and access controls.
 								</div>
 							)}
 						</div>

@@ -149,3 +149,18 @@
 - **Real data — sidebar footer:** the hardcoded `"3 sources · 2 parsers · 1 live stream"` was replaced by `sidebar.setLiveInfo({sources, parsers, live})` fed from `servers.size`, `parserCount()` (new export in `server/log/parsers.js`), and `client.connected`.
 - **Real data — workers/queue metrics:** `workers`/`workQ` in the status bar/metrics panel were permanently 0. `server.js` now tracks actually-started workers (`markWorker` at the syslog/esign/video/image queue start sites) and every 5s sums live queue depths via new `queueDepth()` exports in `server/services/videoQueue.js`, `imageQueue.js`, `esignRetryService.js`, fed through `logHub.setRuntimeMetrics({workers, workQ})` alongside the existing redis poll.
 - **Snapshot bookmarks:** the WS snapshot now carries the server-side bookmark set and the TUI marks loaded entries `bookmarked` so ★ badges survive a reconnect. Dead code removed in `app.js handleNewEntry`.
+
+## 20. Marketplace identity + free-plan agent rules (Oct 2026)
+
+- **Company, not person, is the public identity.** `normalizeFeedItem` (`src/pages/MainFeed.jsx`) falls back to rolePath `"profile"` so owner/admin/member posts resolve to a real route instead of a dead link; author names prefer `organization_name`/`company_name` over the account name.
+- **`/users/lookup` is public-shaped.** `shapeLookupUser`/`lookupPublicUsers` (`server/services/userService.js`) strip `email`, `username`, and `profile.phone` for strangers; self, platform admin/owner, and same-org members keep them. `capacity` (owner-declared `profile.capacity`, agent count as fallback) is public.
+- **Permission matrix is never premium-locked.** The three `ensureEntitlement("team_access_management")` gates in `server/controllers/memberController.js` were removed; free is bounded only by the 3-seat cap. `canTeamAccess = true` in `src/pages/MemberManagement.jsx`.
+- **Free agent limit is 3** across `memberService.js`, `entitlementService.js`, `adminConfigService.js` (`plan_limits.free.agent_limit`), `MemberManagement.jsx` fallback, `Pricing.jsx` copy, `docs/server/Member.md`. Stored config overrides the default, so run `npm run db:backfill:free-agent-limit` once against any existing DB.
+- **`owner`/`admin` were missing from `PREMIUM_FEATURES_BY_ROLE`.** They now share `COMPANY_MANAGEMENT_FEATURES`; previously a premium owner got an empty feature map and could never pass the entitlement check.
+
+## 21. Repo hygiene traps (learned the hard way)
+
+- **`.husky/pre-commit` used to run `biome check --write .`** across all 753 files, rewrote ~600 of them, then `git add -u` staged the churn. It now lints only staged files. Do not reintroduce a repo-wide `--write`.
+- **`.env` was git-tracked**, so any secret pasted there would be committed. It has been untracked (`git rm --cached .env`); keep secrets in local `.env` only and declare new names in `.env.example`.
+- **Never `git checkout -- .` to undo a bad auto-format** — it reverts your own uncommitted work too. `git stash` first, or restore only the files you did not touch.
+- **Brevo SMTP is IP-locked** (`525 5.7.1 Unauthorized IP address`) and unusable from Render. Use the Brevo HTTP API with `BREVO_API_KEY` instead; verified working (HTTP 201).

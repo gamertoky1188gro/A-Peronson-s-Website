@@ -1,5 +1,4 @@
 import { ACTIONS, authorize } from "../services/authorizationService.js";
-import { ensureEntitlement } from "../services/entitlementService.js";
 import {
 	createMember,
 	deactivateOrRemoveMember,
@@ -42,13 +41,9 @@ export async function createOrgMember(req, res) {
 			requested_seats: 1,
 			seat_cap: seatCap,
 		});
-		if (req.body?.permissions !== undefined || req.body?.permission_matrix !== undefined) {
-			await ensureEntitlement(
-				req.user,
-				"team_access_management",
-				"Premium plan required for team access management.",
-			);
-		}
+		// No entitlement gate on permissions: the seat cap above already limits
+		// how many agents a free company can create, so gating the permission
+		// matrix only produced a dead control on the free plan.
 		const member = await createMember(orgOwnerIdFromUser(req.user), req.body || {});
 		return res.status(201).json({ member });
 	} catch (error) {
@@ -100,13 +95,6 @@ export async function putOrgMember(req, res) {
 			org_id: orgOwnerIdFromUser(req.user),
 			member_id: req.params.memberId,
 		});
-		if (req.body?.permissions !== undefined || req.body?.permission_matrix !== undefined) {
-			await ensureEntitlement(
-				req.user,
-				"team_access_management",
-				"Premium plan required for team access management.",
-			);
-		}
 		const member = await updateMember(
 			orgOwnerIdFromUser(req.user),
 			req.params.memberId,
@@ -130,11 +118,6 @@ export async function patchMemberPermissions(req, res) {
 			org_id: orgOwnerIdFromUser(req.user),
 			member_id: req.params.memberId,
 		});
-		await ensureEntitlement(
-			req.user,
-			"team_access_management",
-			"Premium plan required for team access management.",
-		);
 		const member = await updateMemberPermissions(
 			orgOwnerIdFromUser(req.user),
 			req.params.memberId,

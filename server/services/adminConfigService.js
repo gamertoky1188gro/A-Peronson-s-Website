@@ -14,7 +14,7 @@ const DEFAULT_CONFIG = {
 			request_limit: 3,
 			product_limit: 20,
 			video_limit: 2,
-			agent_limit: 10,
+			agent_limit: 3,
 		},
 		premium: {
 			partner_limit: 50,
