@@ -19,7 +19,7 @@ import {
 	isUserBlocked,
 	listEarlyVerifiedFactories,
 	listUsers,
-	listUsersByIds,
+	lookupPublicUsers,
 	searchUsers,
 	selfLockAccount,
 	selfUnlockAccount,
@@ -90,7 +90,7 @@ export async function searchUsersController(req, res) {
 
 export async function lookupUsers(req, res) {
 	const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
-	return res.status(200).json({ users: await listUsersByIds(ids) });
+	return res.status(200).json(await lookupPublicUsers(req.user, ids));
 }
 
 export async function listEarlyVerifiedFactoriesController(req, res) {

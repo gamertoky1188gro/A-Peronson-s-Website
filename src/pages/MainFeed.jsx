@@ -151,6 +151,8 @@ function normalizeFeedItem(raw) {
 		raw.author?.role ||
 		raw.company_role ||
 		(isBuyerRequest ? "buyer" : isUserFeedPost ? "member" : "factory");
+	// Fallback "profile" keeps owner/admin/member/agent posts on a real route
+	// instead of an empty rolePath that rendered as a dead link (404).
 	const rolePath =
 		raw.author?.rolePath ||
 		(accountType === "buying_house"
@@ -159,7 +161,7 @@ function normalizeFeedItem(raw) {
 				? "buyer"
 				: accountType === "factory"
 					? "factory"
-					: "");
+					: "profile");
 
 	return {
 		id: raw.id,
@@ -167,9 +169,10 @@ function normalizeFeedItem(raw) {
 		author: {
 			id: authorId,
 			name:
-				raw.author?.name ||
+				raw.author?.company_name ||
 				raw.company_name ||
 				raw.organization_name ||
+				raw.author?.name ||
 				raw.org ||
 				raw.name ||
 				"Unknown",
@@ -520,15 +523,13 @@ export default function MainFeed() {
 			if (!token) return;
 
 			try {
-				const role = user?.role || "";
 				let feedType = activeType;
 
+				// "All" must reach the backend as "all": getCombinedFeed already
+				// mixes requests + products + posts, and narrowing by role here
+				// made the All tab look empty.
 				if (activeType === "All") {
-					if (role === "buyer") {
-						feedType = "products";
-					} else if (role === "factory" || role === "buying_house") {
-						feedType = "requests";
-					}
+					feedType = "all";
 				} else if (activeType === "Buyer Requests") {
 					feedType = "requests";
 				} else if (activeType === "Company Products") {

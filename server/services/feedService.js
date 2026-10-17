@@ -696,7 +696,20 @@ export async function getCombinedFeed({
 			...item,
 			author: {
 				id: authorId,
-				name: author?.name || item.company_name || item.organization_name || item.name || "Unknown",
+				// Company name first: the feed is a marketplace surface, never a
+				// directory of personal accounts.
+				name:
+					author?.profile?.organization_name ||
+					item.company_name ||
+					item.organization_name ||
+					author?.name ||
+					item.name ||
+					"Unknown",
+				company_name:
+					author?.profile?.organization_name ||
+					item.company_name ||
+					item.organization_name ||
+					"",
 				verified: Boolean(author?.verified),
 				role: String(author?.role || ""),
 				avatar_url:
@@ -891,7 +904,14 @@ export async function getShareablePost(entityType, entityId) {
 		entityType: feedType,
 		author: {
 			id: authorId,
-			name: author?.name || raw.company_name || raw.organization_name || raw.name || "Unknown",
+			name:
+				profile?.organization_name ||
+				author?.name ||
+				raw.company_name ||
+				raw.organization_name ||
+				raw.name ||
+				"Unknown",
+			company_name: profile?.organization_name || raw.company_name || raw.organization_name || "",
 			verified: Boolean(author?.verified),
 			role: String(author?.role || ""),
 			avatar_url:

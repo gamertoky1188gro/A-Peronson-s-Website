@@ -178,6 +178,67 @@ export async function listUsersByIds(ids = []) {
 	return users.map(cleanUser);
 }
 
+// Marketplace rule: a company is identified by its company name. The personal
+// account name stays internal (owner + own agents only).
+export function companyDisplayName(user = {}) {
+	const org = String(user?.profile?.organization_name || user?.company_name || "").trim();
+	if (org) {
+		return org;
+	}
+	const name = String(user?.name || "").trim();
+	return name || "Unknown";
+}
+
+function isSameOrg(a = {}, b = {}) {
+	const aOwner = String(a?.org_owner_id || "");
+	const bOwner = String(b?.org_owner_id || "");
+	return (aOwner !== "" && aOwner === String(b?.id || "")) ||
+		(bOwner !== "" && bOwner === String(a?.id || ""));
+}
+
+// Strangers get the public company card only. Contact details are withheld
+// unless the viewer is the owner, a platform admin, or part of the same org.
+export function shapeLookupUser(viewer = {}, target = {}) {
+	const cleaned = cleanUser(target);
+	const displayName = companyDisplayName(target);
+	const isSelf = String(viewer?.id || "") !== "" && String(viewer.id) === String(target.id);
+	const isPlatform = ["admin", "owner"].includes(viewer?.role);
+	if (isSelf || isPlatform || isSameOrg(viewer, target)) {
+		return { ...cleaned, name: displayName };
+	}
+	const { email: _email, username: _username, ...rest } = cleaned;
+	const { phone: _phone, ...profile } = rest.profile || {};
+	return { ...rest, name: displayName, profile };
+}
+
+export async function lookupPublicUsers(viewer = {}, ids = []) {
+	const users = await listUsersByIds(ids);
+	const shaped = await Promise.all(
+		users.map(async (u) => {
+			const out = shapeLookupUser(viewer, u);
+			if (u.role !== "agent") {
+				// Capacity is a company claim (how many employees work there),
+				// not agent bookkeeping. Owner-declared value wins.
+				const declared = Number(u?.profile?.capacity || 0);
+				out.capacity =
+					Number.isFinite(declared) && declared > 0
+						? declared
+						: await prisma.user
+								.count({
+									where: {
+										role: "agent",
+										org_owner_id: u.id,
+										status: { not: "removed" },
+									},
+								})
+								.catch(() => 0);
+			}
+			return out;
+		}),
+	);
+	return { users: shaped };
+}
+
 export async function listEarlyVerifiedFactories({ days = 30, limit = 20 } = {}) {
 	const cutoff = new Date(Date.now() - Number(days || 30) * 24 * 60 * 60 * 1000);
 	const rows = await prisma.user.findMany({

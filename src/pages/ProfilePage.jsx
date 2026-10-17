@@ -321,19 +321,17 @@ export default function ProfilePage() {
 										Trust & Compliance
 									</h3>
 									<div className="mt-2 divide-y divide-slate-200/60 dark:divide-slate-800/60">
-										<InfoRow label="Status">
-											<span className="inline-flex items-center gap-1.5">
-												{target.verified ? (
+										{target.verified ? (
+											<InfoRow label="Status">
+												<span className="inline-flex items-center gap-1.5">
 													<BadgeCheck className="h-4 w-4 text-emerald-500" />
-												) : (
-													<Shield className="h-4 w-4 text-slate-400" />
-												)}
-												{target.verified ? "Verified" : "Unverified"}
-											</span>
-										</InfoRow>
-										<InfoRow label="Identity">
-											{target.verified ? "Verified account" : "Unverified account"}
-										</InfoRow>
+													Verified
+												</span>
+											</InfoRow>
+										) : null}
+										{target.verified ? (
+											<InfoRow label="Identity">Verified account</InfoRow>
+										) : null}
 									</div>
 								</SoftCard>
 								<SoftCard>
@@ -355,6 +353,11 @@ export default function ProfilePage() {
 										<div className="mt-2 divide-y divide-slate-200/60 dark:divide-slate-800/60">
 											{industry ? <InfoRow label="Industry">{industry}</InfoRow> : null}
 											{country ? <InfoRow label="Country">{country}</InfoRow> : null}
+											{Number.isFinite(Number(target.capacity)) && Number(target.capacity) > 0 ? (
+												<InfoRow label="Capacity">
+													{Number(target.capacity).toLocaleString()} employees
+												</InfoRow>
+											) : null}
 											{showEmail && email ? <InfoRow label="Email">{email}</InfoRow> : null}
 										</div>
 									</SoftCard>
@@ -453,19 +456,17 @@ export default function ProfilePage() {
 										Verification & Docs
 									</h3>
 									<div className="mt-2 divide-y divide-slate-200/60 dark:divide-slate-800/60">
-										<InfoRow label="Status">
-											<span className="inline-flex items-center gap-1.5">
-												{target.verified ? (
+										{target.verified ? (
+											<InfoRow label="Status">
+												<span className="inline-flex items-center gap-1.5">
 													<BadgeCheck className="h-4 w-4 text-emerald-500" />
-												) : (
-													<Shield className="h-4 w-4 text-slate-400" />
-												)}
-												{target.verified ? "Verified" : "Unverified"}
-											</span>
-										</InfoRow>
-										<InfoRow label="Identity">
-											{target.verified ? "Verified account" : "Unverified account"}
-										</InfoRow>
+													Verified
+												</span>
+											</InfoRow>
+										) : null}
+										{target.verified ? (
+											<InfoRow label="Identity">Verified account</InfoRow>
+										) : null}
 									</div>
 									<div className="mt-4 rounded-2xl border border-dashed border-slate-300/70 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
 										No verification documents shared yet.
@@ -501,17 +502,15 @@ export default function ProfilePage() {
 										{displayRole}
 									</span>
 								</div>
-								{target.verified === undefined ? null : (
+								{target.verified ? (
 									<div className="flex items-center justify-between text-sm">
 										<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</span>
-										<span
-											className={`inline-flex items-center gap-1 font-bold ${target.verified ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"}`}
-										>
-											{target.verified ? <BadgeCheck className="h-3.5 w-3.5" /> : null}
-											{target.verified ? "Verified" : "Unverified"}
+										<span className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
+											<BadgeCheck className="h-3.5 w-3.5" />
+											Verified
 										</span>
 									</div>
-								)}
+								) : null}
 								<div className="flex items-center justify-between text-sm">
 									<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Joined</span>
 									<span className="font-bold text-slate-900 dark:text-white">{joinedYear}</span>
