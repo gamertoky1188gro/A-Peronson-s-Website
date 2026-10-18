@@ -50,7 +50,10 @@ export function resolveWithinUploads(relPath) {
 	return abs;
 }
 
-function toPublicPath(absPath) {
+// Exported so the authorization resolver can rebuild the canonical public path
+// from an already-resolved absolute path. Duplicating the uploads-root
+// derivation here would let the two disagree about what a path names.
+export function toPublicPath(absPath) {
 	const rel = path.relative(uploadsRoot(), absPath);
 	return `/uploads/${rel.split(path.sep).join("/")}`;
 }

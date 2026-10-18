@@ -1,6 +1,5 @@
 import express, { Router } from "express";
 import multer from "multer";
-import path from "node:path";
 import {
 	approveDocumentCtrl,
 	createContractDraft,
@@ -8,8 +7,8 @@ import {
 	createContractSignSession,
 	getContractAudit,
 	getContracts,
-	getDocumentViewStats,
 	getDocuments,
+	getDocumentViewStats,
 	logDocumentView,
 	patchContractArtifact,
 	patchContractSignatures,
@@ -18,7 +17,7 @@ import {
 	removeDocument,
 	uploadDocument,
 } from "../controllers/documentController.js";
-import { requireAuth } from "../middleware/auth.js";
+import { allowRoles, requireAuth } from "../middleware/auth.js";
 
 const ALLOWED_DOC_MIMES = new Set([
 	"image/jpeg",
@@ -39,7 +38,6 @@ const upload = multer({
 	storage: multer.memoryStorage(),
 	limits: { fileSize: 250 * 1024 * 1024 },
 	fileFilter: (_req, file, cb) => {
-		const ext = path.extname(file.originalname || "").toLowerCase();
 		const mime = String(file.mimetype || "").toLowerCase();
 		if (ALLOWED_DOC_MIMES.has(mime) || mime.startsWith("image/") || mime.startsWith("video/")) {
 			cb(null, true);
@@ -51,7 +49,10 @@ const upload = multer({
 const router = Router();
 
 router.post("/", requireAuth, upload.single("file"), uploadDocument);
-router.post("/url", requireAuth, registerDocumentUrl);
+// Registering an external URL lets the caller choose which existing file a
+// Document row points at. That makes `uploaded_by` a forgeable claim rather
+// than evidence of ownership, so only privileged actors may mint such rows.
+router.post("/url", requireAuth, allowRoles("owner", "admin"), registerDocumentUrl);
 
 router.post("/contracts/draft", requireAuth, createContractDraft);
 router.post("/contracts/:contractId/sign-session", requireAuth, createContractSignSession);

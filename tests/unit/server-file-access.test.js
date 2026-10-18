@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { jest } from "@jest/globals";
 
 const documentFindMany = jest.fn();
@@ -12,7 +14,6 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 		callSession: { findMany: callSessionFindMany },
 	},
 }));
-
 jest.unstable_mockModule("../../server/services/messageService.js", () => ({
 	listFriendMatchIdsForUser,
 }));
@@ -25,31 +26,48 @@ const ADMIN = { id: "admin1", role: "admin" };
 const BUYER = { id: "buyer1", role: "buyer" };
 const FACTORY = { id: "factory1", role: "factory" };
 const STRANGER = { id: "nobody", role: "buyer" };
+const CONTRACT_PDF = "/uploads/contracts/a.pdf";
 
 // uploadsService.js stores `entity_id` as the bare filename when it backfills a
 // chat attachment or call recording document, so the fixtures mirror that.
-function chatDoc(filename) {
-	return { id: "d1", entity_type: "chat_attachment", entity_id: filename };
-}
-
-function chatMessage(matchId, senderId, filename) {
-	return {
-		match_id: matchId,
-		sender_id: senderId,
-		attachment: { name: filename, url: `/uploads/chat/${filename}` },
-	};
-}
-
-function callDoc(filename) {
-	return { id: "d1", entity_type: "call_recording", entity_id: filename };
-}
+const chatDoc = (filename) => ({ id: "d1", entity_type: "chat_attachment", entity_id: filename });
+const callDoc = (filename) => ({ id: "d1", entity_type: "call_recording", entity_id: filename });
+const chatMessage = (matchId, senderId, filename) => ({
+	match_id: matchId,
+	sender_id: senderId,
+	attachment: { name: filename, url: `/uploads/chat/${filename}` },
+});
+const contractRow = (over = {}) => ({
+	id: "d1",
+	entity_type: "contract",
+	buyer_id: "buyer1",
+	factory_id: "factory1",
+	uploaded_by: "u9",
+	file_path: CONTRACT_PDF,
+	...over,
+});
+// A row an attacker minted through POST /documents/url: uploaded_by is their own
+// id and file_path points at someone else's bytes.
+const forgedRow = (over = {}) => ({
+	id: "d-forged",
+	uploaded_by: "nobody",
+	buyer_id: "",
+	factory_id: "",
+	file_path: CONTRACT_PDF,
+	...over,
+});
+const callSession = (participantIds, filename) => ({
+	participant_ids: participantIds,
+	created_by: "x",
+	recording_url: `/uploads/calls/${filename}`,
+});
 
 beforeEach(() => {
 	documentFindMany.mockReset();
 	messageFindMany.mockReset();
 	callSessionFindMany.mockReset();
 	listFriendMatchIdsForUser.mockReset();
-	listFriendMatchIdsForUser.mockResolvedValue(new Set());
+	listFriendMatchIdsForUser.mockResolvedValue([]);
 });
 
 describe("file access authorization (server/services/fileAccessService.js)", () => {
@@ -61,41 +79,19 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 	});
 
 	test("allows the contract buyer", async () => {
-		const doc = {
-			id: "d1",
-			entity_type: "contract",
-			buyer_id: "buyer1",
-			factory_id: "factory1",
-			uploaded_by: "u9",
-		};
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+		expect(await canUserAccessDocument(BUYER, contractRow())).toBe(true);
 	});
 
 	test("allows the contract factory", async () => {
-		const doc = {
-			id: "d1",
-			entity_type: "contract",
-			buyer_id: "buyer1",
-			factory_id: "factory1",
-			uploaded_by: "u9",
-		};
-		expect(await canUserAccessDocument(FACTORY, doc)).toBe(true);
+		expect(await canUserAccessDocument(FACTORY, contractRow())).toBe(true);
 	});
 
 	test("allows an owner or admin over any document", async () => {
-		const doc = { id: "d1", entity_type: "contract", buyer_id: "buyer1", uploaded_by: "u9" };
-		expect(await canUserAccessDocument(ADMIN, doc)).toBe(true);
+		expect(await canUserAccessDocument(ADMIN, { id: "d1", entity_type: "contract" })).toBe(true);
 	});
 
 	test("denies an unrelated user the contract", async () => {
-		const doc = {
-			id: "d1",
-			entity_type: "contract",
-			buyer_id: "buyer1",
-			factory_id: "factory1",
-			uploaded_by: "u9",
-		};
-		expect(await canUserAccessDocument(STRANGER, doc)).toBe(false);
+		expect(await canUserAccessDocument(STRANGER, contractRow())).toBe(false);
 	});
 
 	test("denies a system-owned orphan contract to everyone but an admin", async () => {
@@ -105,81 +101,89 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 	});
 
 	test("allows a chat sender", async () => {
-		const doc = chatDoc("secret.png");
 		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "buyer1", "secret.png")]);
-		listFriendMatchIdsForUser.mockResolvedValue(new Set(["friend:aaa:bbb"]));
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+		listFriendMatchIdsForUser.mockResolvedValue(["friend:aaa:bbb"]);
+		expect(await canUserAccessDocument(BUYER, chatDoc("secret.png"))).toBe(true);
 	});
 
 	test("allows a chat participant who is not the sender", async () => {
-		const doc = chatDoc("secret.png");
+		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "factory1", "secret.png")]);
+		listFriendMatchIdsForUser.mockResolvedValue(["friend:aaa:bbb"]);
+		expect(await canUserAccessDocument(BUYER, chatDoc("secret.png"))).toBe(true);
+	});
+
+	// listFriendMatchIdsForUser returns an array at runtime, not the Set the
+	// original brief assumed; .has() on it would 500 every chat request.
+	test("accepts a friend-match id list returned as a Set", async () => {
 		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "factory1", "secret.png")]);
 		listFriendMatchIdsForUser.mockResolvedValue(new Set(["friend:aaa:bbb"]));
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+		expect(await canUserAccessDocument(BUYER, chatDoc("secret.png"))).toBe(true);
 	});
 
 	test("denies a third party to a chat attachment", async () => {
-		const doc = chatDoc("secret.png");
 		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "factory1", "secret.png")]);
-		listFriendMatchIdsForUser.mockResolvedValue(new Set(["friend:zzz:yyy"]));
-		expect(await canUserAccessDocument(STRANGER, doc)).toBe(false);
+		listFriendMatchIdsForUser.mockResolvedValue(["friend:zzz:yyy"]);
+		expect(await canUserAccessDocument(STRANGER, chatDoc("secret.png"))).toBe(false);
 	});
 
 	test("denies a chat attachment when no message claims the file", async () => {
-		const doc = chatDoc("secret.png");
 		messageFindMany.mockResolvedValue([]);
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+		expect(await canUserAccessDocument(BUYER, chatDoc("secret.png"))).toBe(false);
 	});
 
-	// The brief's version returned true here: it asked only "is the user party
-	// to any message that has an attachment", which cannot tell one
-	// conversation's file from another's. Membership alone must not carry over.
-	test("denies a chat attachment from a conversation the user is not part of", async () => {
-		const doc = chatDoc("other.png");
-		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "factory1", "mine.png")]);
-		listFriendMatchIdsForUser.mockResolvedValue(new Set(["friend:aaa:bbb"]));
-		expect(await canUserAccessDocument(STRANGER, doc)).toBe(false);
-	});
-
-	// messageService.listFriendMatchIdsForUser returns an array at runtime, not
-	// the Set the brief assumed. Calling .has() on it would throw a TypeError
-	// and turn every chat authorization into a 500.
-	test("accepts a friend-match id list returned as an array", async () => {
-		const doc = chatDoc("secret.png");
-		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "factory1", "secret.png")]);
+	// The thread the caller genuinely belongs to carries a *different* file; the
+	// requested one exists only in a thread they are not part of. Membership must
+	// not carry the grant across threads. `mine` is an array, as the real
+	// service returns, not the Set the original brief assumed.
+	test("denies a member of thread X a file that only exists in thread Y", async () => {
+		messageFindMany.mockResolvedValue([
+			chatMessage("friend:aaa:bbb", "factory1", "mine.png"),
+			chatMessage("friend:zzz:yyy", "factory1", "secret.png"),
+		]);
 		listFriendMatchIdsForUser.mockResolvedValue(["friend:aaa:bbb"]);
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+		expect(await canUserAccessDocument(BUYER, chatDoc("secret.png"))).toBe(false);
 	});
 
 	test("denies a chat attachment with no resolvable filename", async () => {
-		const doc = { id: "d1", entity_type: "chat_attachment" };
 		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "buyer1", "secret.png")]);
-		listFriendMatchIdsForUser.mockResolvedValue(new Set(["friend:aaa:bbb"]));
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+		listFriendMatchIdsForUser.mockResolvedValue(["friend:aaa:bbb"]);
+		expect(await canUserAccessDocument(BUYER, { id: "d1", entity_type: "chat_attachment" })).toBe(
+			false,
+		);
+	});
+
+	// Unbounded per-request scans of `messages` are a DoS lever, so the caller's
+	// own threads must be part of the SQL predicate, not a JS filter applied to
+	// every attachment-bearing row.
+	test("constrains the chat message query to the caller's own threads", async () => {
+		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "factory1", "secret.png")]);
+		listFriendMatchIdsForUser.mockResolvedValue(["friend:aaa:bbb"]);
+		await canUserAccessDocument(BUYER, chatDoc("secret.png"));
+		expect(messageFindMany).toHaveBeenCalledTimes(1);
+		expect(messageFindMany.mock.calls[0][0].where.OR).toEqual([
+			{ sender_id: "buyer1" },
+			{ match_id: { in: ["friend:aaa:bbb"] } },
+		]);
 	});
 
 	test("allows a call recording participant", async () => {
-		const doc = callDoc("rec-1.webm");
-		callSessionFindMany.mockResolvedValue([
-			{
-				participant_ids: ["buyer1"],
-				created_by: "x",
-				recording_url: "/uploads/calls/rec-1.webm",
-			},
-		]);
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+		callSessionFindMany.mockResolvedValue([callSession(["buyer1"], "rec-1.webm")]);
+		expect(await canUserAccessDocument(BUYER, callDoc("rec-1.webm"))).toBe(true);
 	});
 
 	test("denies a call recording from a session the user is not part of", async () => {
-		const doc = callDoc("rec-2.webm");
-		callSessionFindMany.mockResolvedValue([
-			{
-				participant_ids: ["buyer1"],
-				created_by: "x",
-				recording_url: "/uploads/calls/rec-1.webm",
-			},
-		]);
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+		callSessionFindMany.mockResolvedValue([callSession(["buyer1"], "rec-1.webm")]);
+		expect(await canUserAccessDocument(BUYER, callDoc("rec-2.webm"))).toBe(false);
+	});
+
+	// Same DoS argument as chat: the row set must be narrowed in SQL.
+	test("constrains the call query to the recorded filename", async () => {
+		callSessionFindMany.mockResolvedValue([callSession(["buyer1"], "rec-1.webm")]);
+		await canUserAccessDocument(BUYER, callDoc("rec-1.webm"));
+		expect(callSessionFindMany).toHaveBeenCalledTimes(1);
+		expect(callSessionFindMany.mock.calls[0][0].where).toEqual({
+			recording_url: { contains: "rec-1.webm" },
+		});
 	});
 
 	test("denies an unknown entity type to a non-admin", async () => {
@@ -187,14 +191,27 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
 	});
 
-	test("allows an unknown entity type to its uploader", async () => {
+	// `uploaded_by` is self-asserted by anyone who can reach POST /documents/url,
+	// so it is not evidence that the caller owns these bytes. Every gated prefix
+	// has its own branch above; an unrecognised type has no basis to grant.
+	test("denies an unknown entity type to its own claimed uploader", async () => {
 		const doc = { id: "d1", entity_type: "mystery", uploaded_by: "buyer1" };
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+	});
+
+	// A real contract always names its parties, so a row whose only claim is a
+	// self-asserted `uploaded_by` cannot be one and must not inherit
+	// canAccessContract's trust in that field.
+	test("denies a party-less contract row to its claimed uploader", async () => {
+		const doc = forgedRow({ entity_type: "contract", uploaded_by: "buyer1" });
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
 	});
 
 	test("refuses to sign a public path", async () => {
-		const res = await authorizeFilePath(BUYER, "/uploads/feed/x.png");
-		expect(res).toEqual({ ok: false, reason: "not_gated" });
+		expect(await authorizeFilePath(BUYER, "/uploads/feed/x.png")).toEqual({
+			ok: false,
+			reason: "not_gated",
+		});
 	});
 
 	test("reports a path that escapes the uploads root", async () => {
@@ -209,31 +226,77 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 	});
 
 	test("reports forbidden when the caller owns no part of the document", async () => {
-		documentFindMany.mockResolvedValue([
-			{
-				id: "d1",
-				entity_type: "contract",
-				buyer_id: "buyer1",
-				factory_id: "factory1",
-				uploaded_by: "u9",
-			},
-		]);
-		const res = await authorizeFilePath(STRANGER, "/uploads/contracts/a.pdf");
+		documentFindMany.mockResolvedValue([contractRow()]);
+		const res = await authorizeFilePath(STRANGER, CONTRACT_PDF);
 		expect(res).toEqual({ ok: false, reason: "forbidden" });
 	});
 
 	test("authorizes an owned contract end to end", async () => {
-		documentFindMany.mockResolvedValue([
-			{
-				id: "d1",
-				entity_type: "contract",
-				buyer_id: "buyer1",
-				factory_id: "factory1",
-				uploaded_by: "u9",
-			},
-		]);
-		const res = await authorizeFilePath(BUYER, "/uploads/contracts/a.pdf");
+		documentFindMany.mockResolvedValue([contractRow()]);
+		const res = await authorizeFilePath(BUYER, CONTRACT_PDF);
 		expect(res.ok).toBe(true);
 		expect(res.doc.id).toBe("d1");
+	});
+
+	// The primary use case: a contract PDF lives in artifact.pdf_path and never
+	// in Document.file_path, so a file_path-only lookup denies the real buyer.
+	test("authorizes a contract resolved through artifact.pdf_path", async () => {
+		const pdfPath = "/uploads/contracts/CN-1-v1.pdf";
+		documentFindMany.mockResolvedValue([
+			contractRow({ id: "d3", file_path: null, artifact: { pdf_path: pdfPath } }),
+		]);
+		const res = await authorizeFilePath(BUYER, pdfPath);
+		expect(res.ok).toBe(true);
+		expect(res.doc.id).toBe("d3");
+	});
+
+	// The lookup key must come from the resolved absolute path, so a request that
+	// differs from the stored string only in path shape still resolves.
+	test("resolves the lookup key from the resolved path, not the raw request", async () => {
+		documentFindMany.mockResolvedValue([contractRow()]);
+		const res = await authorizeFilePath(BUYER, "/uploads/contracts/./a.pdf");
+		expect(res.ok).toBe(true);
+		expect(res.doc.id).toBe("d1");
+	});
+
+	// The forged-row attack: the attacker registers a Document pointing at a
+	// victim's gated file, then requests it.
+	test("denies a forged document row the attacker registered for a gated file", async () => {
+		documentFindMany.mockResolvedValue([
+			forgedRow({ entity_type: "mystery", file_path: "/uploads/chat/victim.png" }),
+		]);
+		const res = await authorizeFilePath(STRANGER, "/uploads/chat/victim.png");
+		expect(res).toEqual({ ok: false, reason: "forbidden" });
+	});
+
+	test("denies a forged contract row the attacker registered for a gated file", async () => {
+		documentFindMany.mockResolvedValue([forgedRow({ entity_type: "contract" })]);
+		const res = await authorizeFilePath(STRANGER, CONTRACT_PDF);
+		expect(res).toEqual({ ok: false, reason: "forbidden" });
+	});
+
+	// A legitimate contract keeps working even when a forged row shares its path:
+	// any-grant is load-bearing now that contract PDFs legitimately have a system
+	// backfill row alongside the real contract row.
+	test("still authorizes the true owner when a forged row shares the path", async () => {
+		documentFindMany.mockResolvedValue([forgedRow({ entity_type: "mystery" }), contractRow()]);
+		const res = await authorizeFilePath(BUYER, CONTRACT_PDF);
+		expect(res.ok).toBe(true);
+		expect(res.doc.id).toBe("d1");
+	});
+});
+
+describe("external document registration route (server/routes/documentRoutes.js)", () => {
+	// Read as source rather than imported: the route graph pulls in the whole
+	// controller chain and a Prisma client, which this unit suite must not load.
+	const source = fs.readFileSync(
+		path.join(process.cwd(), "server", "routes", "documentRoutes.js"),
+		"utf8",
+	);
+
+	test("POST /url requires a privileged role", () => {
+		const line = source.split("\n").find((l) => l.includes('router.post("/url"'));
+		expect(line).toBeDefined();
+		expect(line).toMatch(/allowRoles\(\s*"(owner|admin)"/);
 	});
 });
