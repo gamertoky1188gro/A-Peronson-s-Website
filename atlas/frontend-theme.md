@@ -1,0 +1,29 @@
+# frontend-theme
+
+- **Parent**: (none — top-level module under `src/`)
+- **Purpose**: 12-theme runtime palette system. Generated CSS custom properties drive Tailwind v4 `@theme` so every component re-skins at runtime with no component edits; adds per-theme ambient background wash, glass surfaces, and a theme switcher with a hidden hotkey.
+- **Key Files**: `src/theme/blueTheme.css` (source of truth, 838 tokens), `src/theme/theme-tokens.json`, `src/theme/blueTheme.ts`, `src/theme/themeParser.js` (audit-only), `src/theme/page-wash.css`, `src/theme/env-bg.css`, `src/theme/THEME.md`, `src/theme/themes/registry.js`, `src/theme/themes/tailwind-tokens.css`, `src/theme/themes/tokens.json`, `src/lib/ThemeProvider.jsx`, `src/store/themeSlice.js`, `src/lib/themeHotkey.js`, `src/components/ThemeSwitcher.jsx`, `src/tailwind.css`
+- **Dependencies**: (none)
+- **Dependents**: frontend-app, frontend-store, frontend-components, frontend-pages
+- **Exposes**: `ThemeProvider`, `useTheme()` → `{ theme, themeMode, themeName, resolvedTheme, setTheme, setThemeName, toggleTheme }`; `applyThemeToDOM()`, `setThemeNameBySlug()`, `setCanonicalTheme()`; `DEFAULT_THEME = "blue"`, `THEMES`, `VALID_THEMES`; `.glass`, `.glass-strong`, `.surface`, `.surface-raised`, `.surface-floating`.
+
+## Data Flow
+1. **Author** `scripts/theme_specs.py` → **generate** `scripts/generate-themes.py` (nearest-point family/shade lookup re-emitting blue's token *names* with theme *values*; `--check` = parity mode) → emits `src/theme/themes/<slug>.css` (base + dark + authored overlay + `.theme-gradient-*`/`.theme-glow-*` helpers), `tokens.json`, `themes.ts`, `registry.js`, `tailwind-tokens.css`. Generated files carry a "do not hand-edit" header.
+2. `src/tailwind.css` `@import`s in cascade order: `tailwindcss` → `blueTheme.css` → `themes/blue-overlay.css` → 11 personality CSS files → `page-wash.css` → `env-bg.css` → `themes/tailwind-tokens.css` → `@plugin "@tailwindcss/typography"`.
+3. `tailwind-tokens.css` holds one `@theme {}` block mapping ~120 `--color-<family>-<shade>` → `var(--theme-…)`, so `bg-sky-500` / `dark:bg-slate-950` / `shadow-sky-500/20` re-skin with zero JS. `tailwind.css` `@theme` adds semantic tokens (`--color-theme-bg-deepest|surface|primary|text|border|accent|success|warning|danger|info`) + `--shadow-borderless*`/`--shadow-divider*`; `@custom-variant dark (&:where(.dark, .dark *))` makes `dark:` class-driven, not media-driven.
+4. **Runtime**: `index.html` pre-paint script (lines 64-73) reads localStorage `"theme"` / `"themeName"` and sets `data-theme` + `data-mode` before first paint (no FOUC). `ThemeProvider.jsx` sets `data-theme`; `themeSlice.applyThemeToDOM()` sets `data-mode`, `.dark`, and `<meta name="theme-color">`. Custom properties re-resolve — no styled-component re-render.
+5. `ThemeSwitcher.jsx` (mounted once in `App.jsx`) lists `THEMES` in a `max-h-[60vh]` `overflow-y-auto` grid with `data-lenis-prevent`; swatches are a local cosmetic `SWATCHES` map. Hidden hotkey: type the word `themes` within `THEME_HOTKEY_WINDOW_MS = 3600` (`themeHotkey.js`, case-insensitive sliding buffer, ignores repeat/modifiers/multi-char keys).
+
+## Internal Structure
+- **Themes (12, default `blue`)**: blue "Deep Sky Blue / Cyan Glass", aurora, violet, sapphire, arctic, emerald, blurple, mono, plasma, solaris, forest, crimson.
+- **Blue is special-cased** — there is no `themes/blue.css`; blue = hand-authored `blueTheme.css` + generated `themes/blue-overlay.css`.
+- **Token groups (838 identical names across all themes)**: Tailwind color-scale twins (`--theme-<family>-<shade>` + 23 alpha pct variants across 21 families) · literal-color twins (`--theme-custom-<hex>[-alpha]`) · brand · text (5 levels) · surface/border/accent · chat roles (12) · gradients (`primary`, `hero`, `<2..112>`, `dark`, `dark-<2..27>`) · shadows `<1..101>` · chart colors · glow/radial. Overlay-only extras add true scales `50…950`, `--theme-white/-black`, `--theme-primary*`, `--theme-radial-*`, `--theme-glow-*`, `--theme-shadow-{xs..focus}`, `--theme-chart-*`.
+- **`page-wash.css`** — hand-authored, all modes. `body::before` fixed `pointer-events:none` layer painting `var(--theme-wash)`; 12 per-theme blocks of two soft `radial-gradient` glows (signature hue top-right ~0.12 alpha, second hue bottom-left ~0.10).
+- **`env-bg.css`** — hand-authored, **dark-scoped only**. "One world per theme": `--bg-0/1/2`, `--surface-0/1/2`, `--glass`, `--glass-strong`, `--glass-hover`, `--border-soft/-strong`, `--shadow-color/deep`, `--glow-1/2/3`, `--bg-gradient`. Consumers: `[data-mode="dark"] body` (fixed bg, `background-attachment:fixed`), `.app-shell` (top sheen), and opt-in `.glass` (blur 18px/saturate 135%) / `.glass-strong` (blur 24px/saturate 145%) / `.surface*` utilities. No component was modified — utilities are opt-in; light mode keeps only the page wash.
+- **`src/color palettes css/`** — ~130 `*_color_palettes.css` files + `index.css` aggregator. **Reference-only audit artifacts**: no generator script, never imported, excluded by `theme-audit.py` and `migrate-literals.py`. Each defines `:root --color-*` vars, so a global import would pollute the namespace with nothing consuming it.
+
+## Gotchas
+- `THEME.md` references `tests/unit/themeRegression.test.js` and `themeTokens.test.js` — **neither exists**. Only theme test is `tests/unit/frontend-theme-hotkey.test.js`.
+- `THEME_CHARTS` (`themes/themes.ts`, 12 × 8-color arrays) is generated and exported but has **no importer** in `src/`.
+- `theme-tokens.json` and `themes/tokens.json` are tool-time artifacts (no `src/` import); `themes/tokens.json` stores `tokens` as a count and `overlay` as a `Length` string.
+- `--theme-background` is defined in each theme's overlay but **not** in `blueTheme.css`, so blue falls back to `#f8fafc` via `var(--theme-background, #f8fafc)`.
