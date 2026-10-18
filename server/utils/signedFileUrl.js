@@ -15,11 +15,22 @@ function readSecret() {
 	return String(raw);
 }
 
+// The user id is folded into the signature, so it has to be one stable string:
+// callers hand us a number straight from the db while verification reads it back
+// off the query string. Returns null when the id is absent or blank.
+function normalizeUserId(userId) {
+	if (userId === null || userId === undefined) return null;
+	const uid = String(userId).trim();
+	return uid ? uid : null;
+}
+
 export function isGatedPath(relPath) {
-	// The public url carries a leading "/uploads/" segment but callers also pass
-	// bare upload-relative paths ("chat/b.png"), so strip the root segment too.
-	// Without this, "/uploads/contracts/a.pdf" would classify on "uploads".
+	// Lower-cased on purpose: the filesystem is case-insensitive, so
+	// "/uploads/Contracts/a.pdf" names the same file as "/uploads/contracts/a.pdf".
+	// Not matching a variant here means "not gated", i.e. served publicly, so
+	// over-matching is the safe direction.
 	const first = String(relPath || "")
+		.toLowerCase()
 		.replace(/^\/+/, "")
 		.replace(/^uploads(?:\/|$)/, "")
 		.split("/")[0];
@@ -33,7 +44,9 @@ export function resolveWithinUploads(relPath) {
 		.replace(/^\/+/, "");
 	if (!rel) return null;
 	const abs = path.resolve(root, rel);
-	if (abs !== root && !abs.startsWith(root + path.sep)) return null;
+	// Strictly below the root. "." and aliases like "contracts/.." resolve back
+	// onto the root itself, which is a directory and must never be signable.
+	if (!abs.startsWith(root + path.sep)) return null;
 	return abs;
 }
 
@@ -43,7 +56,11 @@ function toPublicPath(absPath) {
 }
 
 function canonical(absPath, userId, exp) {
-	return `${absPath}\n${userId}\n${exp}`;
+	// JSON array rather than "\n"-joining: a posix filename or an id may itself
+	// contain a newline, which would let two different triples produce the same
+	// signed string. This form must stay byte-identical to what verifySignedFile
+	// computes.
+	return JSON.stringify([absPath, userId, exp]);
 }
 
 export function signFileUrl({ relPath, userId, ttlMs = DEFAULT_TTL_MS }) {
@@ -51,19 +68,29 @@ export function signFileUrl({ relPath, userId, ttlMs = DEFAULT_TTL_MS }) {
 	if (!secret) {
 		throw new Error("UPLOADS_SIGNING_SECRET is not configured");
 	}
+	const uid = normalizeUserId(userId);
+	if (!uid) {
+		throw new Error("userId is required to sign a file url");
+	}
+	// "Short-lived" is the premise of this file, so an unbounded ttl is refused
+	// rather than silently honoured. MEDIA_TTL_MS is the ceiling.
+	const ttl = Number(ttlMs);
+	if (!Number.isFinite(ttl) || ttl < 0 || ttl > MEDIA_TTL_MS) {
+		throw new Error(`ttlMs must be a finite number between 0 and ${MEDIA_TTL_MS}`);
+	}
 	const abs = resolveWithinUploads(relPath);
 	if (!abs) {
 		throw new Error("Path is outside the uploads root");
 	}
-	const exp = Date.now() + ttlMs;
+	const exp = Date.now() + ttl;
 	const sig = crypto
 		.createHmac("sha256", secret)
-		.update(canonical(abs, userId, exp))
+		.update(canonical(abs, uid, exp))
 		.digest("hex");
 	const query = new URLSearchParams({
 		path: toPublicPath(abs),
 		exp: String(exp),
-		uid: String(userId),
+		uid,
 		sig,
 	});
 	return `/api/files/content?${query.toString()}`;
@@ -73,16 +100,21 @@ export function verifySignedFile({ relPath, userId, exp, sig }) {
 	const secret = readSecret();
 	if (!secret) return { ok: false, reason: "not_configured" };
 
+	// Ahead of the HMAC on purpose: an absent id means the caller is not
+	// authenticated, which should fail loudly rather than as a bad signature.
+	const uid = normalizeUserId(userId);
+	if (!uid) return { ok: false, reason: "bad_user" };
+
 	const abs = resolveWithinUploads(relPath);
 	if (!abs) return { ok: false, reason: "outside_root" };
 
 	const expNum = Number(exp);
 	if (!Number.isFinite(expNum)) return { ok: false, reason: "bad_exp" };
-	if (Date.now() > expNum) return { ok: false, reason: "expired" };
+	if (Date.now() >= expNum) return { ok: false, reason: "expired" };
 
 	const expected = crypto
 		.createHmac("sha256", secret)
-		.update(canonical(abs, userId, expNum))
+		.update(canonical(abs, uid, expNum))
 		.digest();
 	const given = Buffer.from(String(sig || ""), "hex");
 	if (given.length !== expected.length || !crypto.timingSafeEqual(expected, given)) {
