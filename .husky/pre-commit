@@ -9,10 +9,16 @@
 echo "Running pre-commit checks..."
 
 echo "1. Running Biome check on staged files..."
-npx biome check --no-errors-on-unmatched --files-ignore-unknown=true $(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|mjs|cjs|ts|tsx|json|css)$' | tr '\n' ' ')
-if [ $? -ne 0 ]; then
-  echo "Biome check failed!"
-  exit 1
+BIOME_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|mjs|cjs|ts|tsx|json|css)$' | tr '\n' ' ')
+if [ -z "$BIOME_FILES" ]; then
+  echo "No staged files matching the Biome extension filter; skipping Biome."
+else
+  # shellcheck disable=SC2086
+  npx biome check --no-errors-on-unmatched --files-ignore-unknown=true $BIOME_FILES
+  if [ $? -ne 0 ]; then
+    echo "Biome check failed!"
+    exit 1
+  fi
 fi
 
 echo "2. Running Tests..."
