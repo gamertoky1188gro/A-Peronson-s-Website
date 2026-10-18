@@ -54,3 +54,5 @@ allure-results/
 allure-report/
 playwright-report/
 
+
+.superpowers/

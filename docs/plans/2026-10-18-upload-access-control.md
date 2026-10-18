@@ -649,7 +649,7 @@ export async function authorizeFilePath(user, relPath) {
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `npm run test:unit -- tests/unit/server-file-access.test.js`
-Expected: PASS — 13 tests.
+Expected: PASS — 15 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -678,47 +678,117 @@ orphans are reachable only by an admin."
 
 - [ ] **Step 1: Write the failing test**
 
-Create `tests/integration/file-access-http.test.js`:
+Create `tests/integration/file-access-http.test.js`. This test must import the **real**
+router so it fails if the real handlers regress. The static-mount denial is not
+reachable through the router and is verified by curl in the Verification section.
 
 ```javascript
 import express from "express";
 import request from "supertest";
-import { Router } from "express";
-import { signFileUrl } from "../../server/utils/signedFileUrl.js";
+import { jest } from "@jest/globals";
 
-const SECRET = "integration-secret";
+const authorizeFilePath = jest.fn();
+const signFileUrl = jest.fn();
+const verifySignedFile = jest.fn();
+const sendFile = jest.fn();
 
-function buildApp({ user = { id: "buyer1", role: "buyer" }, authorized = true } = {}) {
-	const fileRouter = Router();
-	// Mirror the real handlers without pulling in Prisma.
-	const signHandler = (req, res) => res.json({ ok: true });
-	fileRouter.post("/sign", signHandler);
+jest.unstable_mockModule("../../server/services/fileAccessService.js", () => ({
+	authorizeFilePath,
+}));
+jest.unstable_mockModule("../../server/utils/signedFileUrl.js", () => ({
+	GATED_PREFIXES: ["chat", "contracts", "calls", "search"],
+	MEDIA_TTL_MS: 900000,
+	signFileUrl,
+	verifySignedFile,
+}));
+
+const fileAccessRoutes = (await import("../../server/routes/fileAccessRoutes.js")).default;
+
+const USER = { id: "buyer1", role: "buyer" };
+const APP = express();
+
+APP.use(express.json());
+APP.post(
+	"/api/files/probe-auth",
+	(req, res, next) => {
+		req.user = USER;
+		return next();
+	},
+	fileAccessRoutes,
+);
+
+function buildApp() {
 	const app = express();
 	app.use(express.json());
-	app.use("/api/files", fileRouter);
-	app.use("/uploads", (req, res) => res.status(404).json({ error: "Not found" }));
+	app.use((req, _res, next) => {
+		req.user = USER;
+		next();
+	});
+	app.use("/api/files", fileAccessRoutes);
 	return app;
 }
 
-beforeAll(() => {
-	process.env.UPLOADS_SIGNING_SECRET = SECRET;
+beforeEach(() => {
+	authorizeFilePath.mockReset();
+	signFileUrl.mockReset();
+	verifySignedFile.mockReset();
+	sendFile.mockReset();
 });
 
-describe("file access routes", () => {
-	test("sign endpoint is reachable", async () => {
-		const res = await request(buildApp()).post("/api/files/sign").send({ paths: [] }).expect(200);
-		expect(res.body.ok).toBe(true);
+describe("file access routes (real router)", () => {
+	test("mints a signed url for an authorized path", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: true, doc: { id: "d1" } });
+		signFileUrl.mockReturnValue("/api/files/content?path=x&exp=1&uid=buyer1&sig=abc");
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.send({ paths: ["/uploads/contracts/a.pdf"] })
+			.expect(200);
+		expect(res.body.signed["/uploads/contracts/a.pdf"].url).toContain("sig=abc");
+		expect(signFileUrl).toHaveBeenCalledWith(
+			expect.objectContaining({ userId: "buyer1" }),
+		);
 	});
 
-	test("signed url shape round-trips through the parser", () => {
-		const url = signFileUrl({ relPath: "/uploads/contracts/a.pdf", userId: "buyer1" });
-		const q = new URL(url, "http://x").searchParams;
-		expect(q.get("path")).toBe("/uploads/contracts/a.pdf");
-		expect(q.get("uid")).toBe("buyer1");
+	test("uses the longer media ttl only for call recordings", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: true, doc: { id: "d1" } });
+		signFileUrl.mockReturnValue("/api/files/content?x=1");
+		await request(buildApp())
+			.post("/api/files/sign")
+			.send({ paths: ["/uploads/calls/r.mp4"] })
+			.expect(200);
+		expect(signFileUrl).toHaveBeenCalledWith(
+			expect.objectContaining({ ttlMs: 900000 }),
+		);
 	});
 
-	test("static mount no longer serves gated paths", async () => {
-		await request(buildApp()).get("/uploads/contracts/a.pdf").expect(404);
+	test("maps a forbidden verdict to 403 instead of minting", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: false, reason: "forbidden" });
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.send({ paths: ["/uploads/contracts/a.pdf"] })
+			.expect(200);
+		expect(res.body.signed["/uploads/contracts/a.pdf"]).toMatchObject({
+			error: "forbidden",
+			status: 403,
+		});
+		expect(signFileUrl).not.toHaveBeenCalled();
+	});
+
+	test("maps a not_found verdict to 404", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: false, reason: "not_found" });
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.send({ paths: ["/uploads/contracts/a.pdf"] })
+			.expect(200);
+		expect(res.body.signed["/uploads/contracts/a.pdf"].status).toBe(404);
+	});
+
+	test("rejects an invalid signature on the content route", async () => {
+		verifySignedFile.mockReturnValue({ ok: false, reason: "bad_signature" });
+		await request(buildApp())
+			.get("/api/files/content")
+			.query({ path: "/uploads/contracts/a.pdf", exp: 1, uid: "buyer1", sig: "x" })
+			.expect(403);
 	});
 });
 ```
@@ -839,7 +909,11 @@ app.use("/api/files", fileAccessRoutes);
 - [ ] **Step 5: Run the test to verify it passes**
 
 Run: `npm run test:integration -- tests/integration/file-access-http.test.js`
-Expected: PASS — 3 tests.
+Expected: PASS — 5 tests.
+
+The static-mount denial is **not** covered by this file: it lives in `server.js`,
+not the router. Verify it with the curl check in the Verification section, which
+expects **404** for `/uploads/contracts/<known-file>`.
 
 - [ ] **Step 6: Flag unclaimed private files in the admin listing**
 
@@ -1066,57 +1140,61 @@ Four branches return `{ ok: true }` after writing only a database row: `logged_d
 
 - [ ] **Step 1: Write the failing test**
 
+`sendEmail` takes **no `config` argument** — the signature is
+`sendEmail({ to, subject, text, html, source })` and it resolves config internally
+via `getEmailConfig()`. The test must therefore stub that source, not pass `config`.
+
 Create `tests/unit/server-email-delivery.test.js`:
 
 ```javascript
 import { jest } from "@jest/globals";
 
-const logEmailToDb = jest.fn(async () => {});
+let enabled = false;
+let provider = "smtp";
+
+jest.unstable_mockModule("../../server/services/adminConfigService.js", () => ({
+	getConfig: jest.fn(async () => ({ enabled, provider, from_name: "GarTexHub" })),
+}));
+
 const logInfo = jest.fn();
 const logWarn = jest.fn();
-
-jest.unstable_mockModule("../../server/utils/logger.js", async (orig) => {
-	const actual = await orig();
-	return { ...actual, logInfo, logWarn, logError: jest.fn() };
-});
+jest.unstable_mockModule("../../server/utils/logger.js", () => ({
+	logInfo,
+	logWarn,
+	logError: jest.fn(),
+	logDebug: jest.fn(),
+	logSuccess: jest.fn(),
+	logCritical: jest.fn(),
+}));
 
 const { sendEmail } = await import("../../server/services/emailService.js");
 
 beforeEach(() => {
-	logEmailToDb.mockClear();
+	enabled = false;
+	provider = "smtp";
 	logInfo.mockClear();
 	logWarn.mockClear();
 });
 
 describe("emailService delivery status", () => {
 	test("does not report success when email is disabled", async () => {
-		const res = await sendEmail({
-			to: ["a@b.co"],
-			subject: "s",
-			text: "t",
-			config: { enabled: false },
-		});
+		enabled = false;
+		const res = await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
 		expect(res).toEqual({ ok: false, status: "logged_disabled" });
 	});
 
 	test("does not report success when smtp is unconfigured", async () => {
-		const res = await sendEmail({
-			to: ["a@b.co"],
-			subject: "s",
-			text: "t",
-			config: { enabled: true, provider: "smtp" },
-		});
+		enabled = true;
+		provider = "smtp";
+		const res = await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
 		expect(res.ok).toBe(false);
 		expect(res.status).toMatch(/^logged_no_/);
 	});
 
 	test("does not report success for an unsupported provider", async () => {
-		const res = await sendEmail({
-			to: ["a@b.co"],
-			subject: "s",
-			text: "t",
-			config: { enabled: true, provider: "carrier-pigeon" },
-		});
+		enabled = true;
+		provider = "carrier-pigeon";
+		const res = await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
 		expect(res).toEqual({ ok: false, status: "logged_unsupported" });
 	});
 
@@ -1132,11 +1210,14 @@ describe("emailService delivery status", () => {
 Run: `npm run test:unit -- tests/unit/server-email-delivery.test.js`
 Expected: FAIL — the log-only branches currently return `ok: true`.
 
-- [ ] **Step 3: Inspect the current signature**
+- [ ] **Step 3: Add `logWarn` to the logger import**
 
-Run: `grep -n "export async function sendEmail" -A 12 server/services/emailService.js`
+`emailService.js` currently imports only `{ logError, logInfo }`. Change line 1 of the
+import block to:
 
-Note the real parameter name for the resolved config. The test above assumes `config`; if the function resolves config internally, drop the `config` key from the test call and instead mock the config lookup. Do not change the production signature.
+```javascript
+import { logError, logInfo, logWarn } from "../utils/logger.js";
+```
 
 - [ ] **Step 4: Flip all four branches**
 
