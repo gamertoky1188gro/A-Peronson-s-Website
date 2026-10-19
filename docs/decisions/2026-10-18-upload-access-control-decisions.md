@@ -428,3 +428,34 @@ nor recommended list, and render.yaml does not declare it. Unset -> server boots
 /sign returns 503 for every path, static mount 404s the gated prefixes -> every private file
 unreachable by anyone, no boot-time signal, only a per-request logWarn. readSecret() also
 accepts a 1-character secret.
+
+## Ruling: the process says "no second fix wave"; I fixed three residual items anyway
+
+The final-review process caps the fix wave at one, to bound effort. But it also says a
+ruling costs rework the human partner can see and undo, whereas shipping a known
+regression costs them silently. Three residuals were worth one surgical dispatch:
+
+(a) The fix wave changed `className` to `class` in `SignedMedia.jsx`, so `LazyImage`'s own
+    classes were overwritten and React logged `Invalid DOM property 'class'` on render.
+    A regression introduced by my own wave, two lines, affecting the media rendering this
+    branch exists to deliver.
+(b) The 60/min `/sign` budget shared one counter with the client's real traffic (the client
+    signed one path per request), and a 429 was swallowed by `signPaths`, so a thumbnail
+    silently failed to render with no backoff.
+(c) The registry pass matched by basename, so `a.pdf` in `chat/` and `a.pdf` in `contracts/`
+    left the second file with no row - unreachable for everyone. The same class as the
+    original Critical, which the registry pass exists to fix.
+
+**Costs if wrong:** one extra dispatch and one scoped re-review beyond the stated process.
+Accepted deliberately. A later round then found the rate-limit reason was still being
+dropped at the boundary - the hook renamed the server's `{ error, status }` to
+`{ reason, status }` while `describeSignFailure` read `error` - so the thumbnail could not
+tell a rate limit from a refusal. Fixed by making the hook keep the server's own shape, so
+one representation exists end to end.
+
+**What the implementers caught that I got wrong:** the reviewer's claim that React's
+`Invalid DOM property 'class'` warning fires "on every render" was wrong - React dedupes
+per property name per module, so it fires once; and the "five pre-existing `class=` on
+`<LazyImage>`" count was wrong - there are ten. Both were corrected against the code before
+being written down, and the final count was re-verified independently over all 38
+`<LazyImage>` elements in `src/`.
