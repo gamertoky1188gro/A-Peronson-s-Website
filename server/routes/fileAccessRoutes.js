@@ -3,10 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
+import { createRateLimiter } from "../middleware/rateLimiter.js";
 import { authorizeFilePath } from "../services/fileAccessService.js";
 import { logWarn } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
 import {
+	DEFAULT_TTL_MS,
+	isGatedPath,
 	MEDIA_TTL_MS,
 	resolveWithinUploads,
 	signFileUrl,
@@ -22,6 +25,18 @@ const router = Router();
 // single request fan out into thousands of queries.
 const MAX_PATHS_PER_REQUEST = 50;
 
+// /sign is also an amplification lever on its own: a chat path costs a scan of
+// the caller's friend threads inside the authorization resolver, and a request
+// body of 50 paths multiplies that. Bounded per USER, not per address: the
+// callers are authenticated, so the user id is the only key that means
+// anything (and many users share one NAT address).
+const signLimiter = createRateLimiter({
+	windowMs: 60_000,
+	max: 60,
+	prefix: "files-sign",
+	keyResolver: (req) => req.user?.id,
+});
+
 const CALL_RECORDING_PREFIX = "/uploads/calls/";
 
 // Maps an authorizeFilePath verdict onto the status the client should see for
@@ -35,7 +50,7 @@ const REASON_STATUS = {
 	forbidden: 403,
 };
 
-router.post("/sign", requireAuth, async (req, res) => {
+router.post("/sign", requireAuth, signLimiter, async (req, res) => {
 	const paths = Array.isArray(req.body?.paths)
 		? req.body.paths.slice(0, MAX_PATHS_PER_REQUEST)
 		: [];
@@ -47,11 +62,19 @@ router.post("/sign", requireAuth, async (req, res) => {
 
 	for (const raw of paths) {
 		const relPath = String(raw);
+		// The server decides, not the client. A gated path is private: its url
+		// is a bearer credential, so it must never be handed to a third party
+		// (the Office viewer fetches and retains what it is given). The client
+		// used to keep its own copy of the gated-prefix list, and a prefix
+		// added to the server without updating that copy leaked a private
+		// document to Microsoft through a one-line omission nothing detected.
+		const thirdPartySafe = !isGatedPath(relPath);
 		const verdict = await authorizeFilePath(req.user, relPath);
 		if (!verdict.ok) {
 			signed[relPath] = {
 				error: verdict.reason,
 				status: REASON_STATUS[verdict.reason] || 403,
+				thirdPartySafe,
 			};
 			continue;
 		}
@@ -61,12 +84,19 @@ router.post("/sign", requireAuth, async (req, res) => {
 			// "/uploads/./calls/r.mp4" is recognised as the recording it is.
 			const resolved = resolveWithinUploads(relPath);
 			const publicPath = resolved ? toPublicPath(resolved) : relPath;
+			const ttlMs = publicPath.startsWith(CALL_RECORDING_PREFIX) ? MEDIA_TTL_MS : DEFAULT_TTL_MS;
 			signed[relPath] = {
 				url: signFileUrl({
 					relPath,
 					userId: req.user.id,
-					ttlMs: publicPath.startsWith(CALL_RECORDING_PREFIX) ? MEDIA_TTL_MS : undefined,
+					ttlMs,
 				}),
+				// The ttl is returned rather than mirrored in the client: a
+				// client-side copy of DEFAULT_TTL_MS drifts the moment the
+				// server changes it, and a stale refresh interval outlives the
+				// signature it was meant to renew.
+				ttlMs,
+				thirdPartySafe,
 			};
 		} catch (error) {
 			// signFileUrl throws on an unusable path, a blank user id, a missing
@@ -75,7 +105,7 @@ router.post("/sign", requireAuth, async (req, res) => {
 			// path — surfaced as 503 so the client can tell a misconfiguration from
 			// a permission problem.
 			logWarn("file sign refused", { relPath, reason: error.message });
-			signed[relPath] = { error: "not_configured", status: 503 };
+			signed[relPath] = { error: "not_configured", status: 503, thirdPartySafe };
 		}
 	}
 

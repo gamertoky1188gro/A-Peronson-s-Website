@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { signOne } from "../lib/signedFile.js";
+import { signOneWithTtl } from "../lib/signedFile.js";
 
 /**
  * Signs a gated asset path and returns "" until the server hands back a url.
@@ -11,18 +11,22 @@ import { signOne } from "../lib/signedFile.js";
  * contract artifacts, call recordings).
  *
  * @param {string} url - Asset path, relative or absolute. Falsy disables signing.
- * @param {{ refreshMs?: number }} [options] - `refreshMs` re-signs on an
+ * @param {{ refreshMs?: number | null }} [options] - `refreshMs` re-signs on an
  *   interval so a surface the user leaves open past the signature's ttl keeps
- *   working. Pass 0 (the default) for short-lived decorative thumbnails: every
- *   refresh swaps the element's src, which visibly reloads an <img> and restarts
- *   a <video>, so it is only worth paying for on interactive surfaces.
+ *   working. `null` (the default) means "half the lifetime the SERVER gave the
+ *   signature" — the server is the authority on how long a signature lasts, and
+ *   a client-side copy of that number drifts the moment the server changes it.
+ *   Pass 0 for short-lived decorative thumbnails: every refresh swaps the
+ *   element's src, which visibly reloads an <img> and restarts a <video>, so it
+ *   is only worth paying for on interactive surfaces.
  * @returns {string} The signed url, or "" while pending and after a refusal.
  */
-export function useSignedSrc(url, { refreshMs = 0 } = {}) {
+export function useSignedSrc(url, { refreshMs = null } = {}) {
 	const [signedSrc, setSignedSrc] = useState("");
 
 	useEffect(() => {
 		let alive = true;
+		let timer = null;
 
 		// Always clear first, on every url change and not only when the url goes
 		// empty: a new asset invalidates the previous signature, and a stale url
@@ -36,20 +40,35 @@ export function useSignedSrc(url, { refreshMs = 0 } = {}) {
 			};
 		}
 
+		const clearTimer = () => {
+			if (timer) {
+				clearInterval(timer);
+				timer = null;
+			}
+		};
+
 		const sign = async () => {
-			const next = await signOne(url);
-			if (alive) {
-				setSignedSrc(next || "");
+			const signed = await signOneWithTtl(url);
+			if (!alive) {
+				return;
+			}
+			setSignedSrc(signed?.url || "");
+			clearTimer();
+			// The interval is half the signature's own lifetime, so the refresh
+			// always lands before the signature expires — and it follows the
+			// server when the server changes the lifetime.
+			const interval = refreshMs === null ? Math.floor((signed?.ttlMs || 0) / 2) : refreshMs;
+			if (interval > 0) {
+				timer = setInterval(sign, interval);
 			}
 		};
 
 		void sign();
 		// The timer lives inside this effect, so a refresh swaps the url without
 		// clearing it first — only a genuinely new asset blanks the element.
-		const timer = refreshMs > 0 ? setInterval(sign, refreshMs) : null;
 		return () => {
 			alive = false;
-			if (timer) clearInterval(timer);
+			clearTimer();
 		};
 	}, [url, refreshMs]);
 

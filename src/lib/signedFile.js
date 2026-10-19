@@ -16,52 +16,32 @@ import { apiRequest, getToken } from "./auth.js";
 //      one-shot ahead of a fetch (signOne), or in an effect keyed on the
 //      attachment (signAndAssign / useSignedSrc).
 //   2. Normalise first. Callers hold absolute urls whenever VITE_API_URL is set,
-//      but isGatedPath only strips a leading "uploads/", so an absolute url
-//      arrives as the first segment "http:" and is reported not_gated. Every
-//      entry point therefore reduces to a pathname before it is sent.
+//      but the server's path helpers only strip a leading "uploads/", so an
+//      absolute url arrives as the first segment "http:" and is reported
+//      not_gated. Every entry point therefore reduces to a pathname before it
+//      is sent.
 //   3. Fail closed. A refused path, a network error, a 503 from an unconfigured
 //      signing secret — all of them mean there is no url to use, and the helpers
 //      return false / null rather than handing back the unsigned path. Nothing
 //      here ever falls back to the raw path, because that fallback is the leak
 //      the server-side gate exists to prevent.
+//
+// There is deliberately NO client-side copy of the server's gated-prefix list.
+// The client used to keep one, to decide whether a document could be handed to
+// the Office viewer — a live signature is a credential, so a private document
+// must never reach view.officeapps.live.com. A second copy of that list is a
+// drift hazard with a third-party consequence: a prefix added to the server
+// without updating the copy left the embed unsuppressed and handed a private
+// document's signed url to Microsoft, which fetches and retains it. The server
+// now answers the question instead (thirdPartySafe on every /sign entry), and
+// the client asks. The same goes for the signature lifetime: the server
+// returns the ttl it actually used, instead of the client mirroring a
+// constant that drifts the moment the server changes it.
 
 // server/routes/fileAccessRoutes.js slices the body to MAX_PATHS_PER_REQUEST.
 // Matching the cap here keeps the client from sending a request the server
 // would silently answer for a prefix of the list.
 const MAX_PATHS_PER_SIGN = 50;
-
-// Mirrors DEFAULT_TTL_MS in server/utils/signedFileUrl.js. Only used to decide
-// when a long-lived surface should re-sign; the server remains the authority.
-export const SIGNED_URL_TTL_MS = 5 * 60 * 1000;
-export const SIGNED_URL_REFRESH_MS = Math.floor(SIGNED_URL_TTL_MS / 2);
-
-// Mirrors GATED_PREFIXES in server/utils/signedFileUrl.js. Used to decide
-// whether a url may be handed to a third-party viewer — a live signature is a
-// credential, so a gated document never goes to view.officeapps.live.com.
-const GATED_PREFIXES = ["chat", "contracts", "calls", "search"];
-
-/**
- * Client mirror of the server's isGatedPath.
- *
- * @param {string} path - Any url shape: relative, absolute, or bare.
- * @returns {boolean} True when the path sits under a gated uploads prefix.
- */
-export function isGatedAssetPath(path) {
-	const raw = String(path || "").trim();
-	if (!raw) return false;
-	let relPath = raw;
-	try {
-		relPath = new URL(raw, window.location.origin).pathname;
-	} catch {
-		// Not parseable as a url — fall through and treat it as a bare path.
-	}
-	const first = relPath
-		.toLowerCase()
-		.replace(/^\/+/, "")
-		.replace(/^uploads(?:\/|$)/, "")
-		.split("/")[0];
-	return GATED_PREFIXES.includes(first);
-}
 
 /**
  * Reduces any url shape to the pathname the server keys its verdict on.
@@ -84,9 +64,12 @@ export function toSignablePath(path) {
  * Asks the server to mint signed urls for a batch of private paths.
  *
  * @param {string[]} [paths] - Public paths, absolute or relative.
- * @returns {Promise<Record<string, { url?: string, error?: string, status?: number }>>}
+ * @returns {Promise<Record<string, { url?: string, error?: string, status?: number, ttlMs?: number, thirdPartySafe?: boolean }>>}
  *   Keyed by the NORMALISED path that was sent. A refused path has
- *   `error`/`status` and no `url`. Returns `{}` when the request fails outright.
+ *   `error`/`status` and no `url`. Every entry carries `thirdPartySafe`
+ *   (false for a gated path) and a signed one carries `ttlMs`, the lifetime
+ *   the server actually gave the signature. Returns `{}` when the request
+ *   fails outright.
  */
 export async function signPaths(paths) {
 	// Normalise before sending: the response is keyed by the string we send, so
@@ -112,6 +95,29 @@ export async function signPaths(paths) {
 }
 
 /**
+ * Asks the server whether a document may be handed to a third party.
+ *
+ * The Office viewer (view.officeapps.live.com) fetches whatever url it is
+ * given and retains it, so a private document must never reach it. Whether a
+ * path is private is the SERVER's answer: it owns the gated-prefix list, and
+ * a client-side copy of it drifts — a prefix added to the server without
+ * updating the copy leaves the embed unsuppressed and hands a private
+ * document's signed url to a third party.
+ *
+ * Fails closed: anything the server does not explicitly clear is not safe.
+ *
+ * @param {string} path - Public path, relative or absolute.
+ * @returns {Promise<boolean>} True only when the server says the path is not
+ *   gated.
+ */
+export async function isThirdPartySafe(path) {
+	const normalised = toSignablePath(path);
+	if (!normalised) return false;
+	const result = await signPaths([normalised]);
+	return result[normalised]?.thirdPartySafe === true;
+}
+
+/**
  * Signs one path and returns the url.
  *
  * The one-shot counterpart to signAndOpen/signAndAssign, for callers that need
@@ -126,6 +132,27 @@ export async function signOne(path) {
 	if (!normalised) return null;
 	const result = await signPaths([normalised]);
 	return result[normalised]?.url || null;
+}
+
+/**
+ * Signs one path and returns the url and the lifetime the server gave it.
+ *
+ * The ttl is the server's, not a client-side mirror: a mirrored constant
+ * drifts the moment the server changes it, and a stale refresh interval
+ * outlives the signature it was meant to renew.
+ *
+ * @param {string} path - Public path to sign, relative or absolute.
+ * @returns {Promise<{ url: string, ttlMs: number } | null>} The signed url
+ *   and its lifetime, or null when refused.
+ */
+export async function signOneWithTtl(path) {
+	const normalised = toSignablePath(path);
+	if (!normalised) return null;
+	const result = await signPaths([normalised]);
+	const entry = result[normalised];
+	if (!entry?.url) return null;
+	const ttlMs = Number(entry.ttlMs);
+	return { url: entry.url, ttlMs: Number.isFinite(ttlMs) && ttlMs > 0 ? ttlMs : 0 };
 }
 
 /**

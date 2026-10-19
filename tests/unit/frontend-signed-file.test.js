@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { jest } from "@jest/globals";
 import { renderHook, waitFor } from "@testing-library/react";
 
@@ -7,8 +9,15 @@ const getToken = jest.fn(() => "test-token");
 // link time with "does not provide an export named 'getToken'".
 jest.unstable_mockModule("../../src/lib/auth.js", () => ({ apiRequest, getToken }));
 
-const { isGatedAssetPath, signAndAssign, signAndDownload, signAndOpen, signOne, signPaths } =
-	await import("../../src/lib/signedFile.js");
+const {
+	isThirdPartySafe,
+	signAndAssign,
+	signAndDownload,
+	signAndOpen,
+	signOne,
+	signOneWithTtl,
+	signPaths,
+} = await import("../../src/lib/signedFile.js");
 // Imported dynamically for the same reason: it reaches the mocked auth module
 // through signedFile.js, so it must be linked after the mock is registered.
 const { useSignedSrc } = await import("../../src/hooks/useSignedSrc.js");
@@ -54,8 +63,9 @@ describe("signed file helper (src/lib/signedFile.js)", () => {
 
 	test("normalises an absolute url to its pathname before signing", async () => {
 		// With VITE_API_URL set, toAbsoluteAssetUrl() hands us an absolute url.
-		// isGatedPath only strips a leading "uploads/", so an absolute url used to
-		// arrive as the first segment "http:" and be reported not_gated.
+		// The server's path helpers only strip a leading "uploads/", so an
+		// absolute url used to arrive as the first segment "http:" and be
+		// reported not_gated.
 		apiRequest.mockResolvedValue({ signed: {} });
 		await signPaths(["https://api.example.com/uploads/chat/a.png"]);
 		expect(apiRequest).toHaveBeenCalledWith(
@@ -174,21 +184,93 @@ describe("signed file helper (src/lib/signedFile.js)", () => {
 		expect(capture.clicks).toEqual([]);
 		expect(document.querySelectorAll("a")).toHaveLength(0);
 	});
+});
 
-	test("isGatedAssetPath mirrors the server's gated prefixes", () => {
-		expect(isGatedAssetPath("/uploads/chat/a.png")).toBe(true);
-		expect(isGatedAssetPath("/uploads/contracts/a.pdf")).toBe(true);
-		expect(isGatedAssetPath("/uploads/calls/r.mp4")).toBe(true);
-		expect(isGatedAssetPath("/uploads/search/q.png")).toBe(true);
-		expect(isGatedAssetPath("uploads/chat/a.png")).toBe(true);
-		expect(isGatedAssetPath("/uploads/Chat/A.PNG")).toBe(true);
-		expect(isGatedAssetPath("https://api.example.com/uploads/chat/a.png")).toBe(true);
+describe("the third-party decision (src/lib/signedFile.js)", () => {
+	// The Office viewer fetches and retains whatever url it is given, so a
+	// private document must never reach it. Whether a path is private is the
+	// SERVER's answer: the client used to keep its own copy of the gated-prefix
+	// list, and a prefix added to the server without updating that copy left the
+	// embed unsuppressed and handed a private document to Microsoft.
+	test("reports the server's answer for a public path", async () => {
+		apiRequest.mockResolvedValue({
+			signed: { "/uploads/feed/poster.png": { error: "not_gated", thirdPartySafe: true } },
+		});
+		expect(await isThirdPartySafe("/uploads/feed/poster.png")).toBe(true);
+	});
 
-		expect(isGatedAssetPath("/uploads/feed/c.png")).toBe(false);
-		expect(isGatedAssetPath("/uploads/profile/p.jpg")).toBe(false);
-		expect(isGatedAssetPath("https://cdn.example.com/logo.png")).toBe(false);
-		expect(isGatedAssetPath("")).toBe(false);
-		expect(isGatedAssetPath(null)).toBe(false);
+	test("reports the server's answer for a private path", async () => {
+		apiRequest.mockResolvedValue({
+			signed: { "/uploads/contracts/a.pdf": { error: "not_gated", thirdPartySafe: false } },
+		});
+		expect(await isThirdPartySafe("/uploads/contracts/a.pdf")).toBe(false);
+	});
+
+	// Fails closed: an answer that is missing, or a request that fails, is not
+	// permission to hand a document to a third party.
+	test("is false when the server does not answer", async () => {
+		apiRequest.mockResolvedValue({ signed: {} });
+		expect(await isThirdPartySafe("/uploads/contracts/a.pdf")).toBe(false);
+	});
+
+	test("is false when the request fails outright", async () => {
+		apiRequest.mockRejectedValue(new Error("offline"));
+		expect(await isThirdPartySafe("/uploads/contracts/a.pdf")).toBe(false);
+	});
+
+	test("is false for an empty path", async () => {
+		expect(await isThirdPartySafe("")).toBe(false);
+		expect(await isThirdPartySafe(null)).toBe(false);
+		expect(apiRequest).not.toHaveBeenCalled();
+	});
+
+	// The mirror itself. A second copy of the gated-prefix list in the client is
+	// the defect: nothing detects it when the server changes, and the
+	// consequence is a private document handed to a third party.
+	test("the client keeps no copy of the server's gated-prefix list", () => {
+		const source = fs.readFileSync(path.join(process.cwd(), "src", "lib", "signedFile.js"), "utf8");
+		expect(source).not.toMatch(/GATED_PREFIXES/);
+		for (const prefix of ["chat", "contracts", "calls", "search"]) {
+			expect(source).not.toMatch(new RegExp(`"${prefix}"`));
+		}
+	});
+
+	// The same drift, in the other direction: the ttl used to be mirrored as a
+	// client-side constant. The server returns the lifetime it actually used.
+	test("the client keeps no copy of the server's signature lifetime", () => {
+		const source = fs.readFileSync(path.join(process.cwd(), "src", "lib", "signedFile.js"), "utf8");
+		expect(source).not.toMatch(/SIGNED_URL_TTL_MS/);
+		expect(source).not.toMatch(/SIGNED_URL_REFRESH_MS/);
+	});
+
+	// The modal is the surface that hands a url to the Office viewer, so it is
+	// the one that has to ask the server rather than decide for itself.
+	test("the preview modal asks the server instead of deciding locally", () => {
+		const source = fs.readFileSync(
+			path.join(process.cwd(), "src", "components", "chat", "AttachmentPreviewModal.jsx"),
+			"utf8",
+		);
+		expect(source).toMatch(/isThirdPartySafe/);
+		expect(source).not.toMatch(/isGatedAssetPath/);
+	});
+});
+
+describe("the signature lifetime (src/lib/signedFile.js)", () => {
+	test("signOneWithTtl returns the url and the server's ttl", async () => {
+		apiRequest.mockResolvedValue({
+			signed: { "/uploads/calls/r.webm": { url: "/api/files/content?m=1", ttlMs: 900_000 } },
+		});
+		expect(await signOneWithTtl("/uploads/calls/r.webm")).toEqual({
+			url: "/api/files/content?m=1",
+			ttlMs: 900_000,
+		});
+	});
+
+	test("signOneWithTtl returns null when the path is refused", async () => {
+		apiRequest.mockResolvedValue({
+			signed: { "/uploads/contracts/a.pdf": { error: "forbidden" } },
+		});
+		expect(await signOneWithTtl("/uploads/contracts/a.pdf")).toBeNull();
 	});
 });
 
@@ -232,6 +314,29 @@ describe("useSignedSrc (src/hooks/useSignedSrc.js)", () => {
 		renderHook(() => useSignedSrc("/uploads/chat/a.png", { refreshMs: 5 }));
 		await waitFor(() => expect(apiRequest).toHaveBeenCalledTimes(1));
 		await waitFor(() => expect(apiRequest.mock.calls.length).toBeGreaterThan(1));
+	});
+
+	// The refresh interval follows the SERVER's lifetime, not a client-side
+	// constant: half of the ttl the server actually handed out.
+	test("re-signs at half the lifetime the server reported", async () => {
+		apiRequest.mockResolvedValue({
+			signed: { "/uploads/chat/a.png": { url: "/api/files/content?h=1", ttlMs: 20 } },
+		});
+		renderHook(() => useSignedSrc("/uploads/chat/a.png"));
+		await waitFor(() => expect(apiRequest).toHaveBeenCalledTimes(1));
+		await waitFor(() => expect(apiRequest.mock.calls.length).toBeGreaterThan(1));
+	});
+
+	// A decorative thumbnail must not re-sign: every refresh swaps the
+	// element's src, which visibly reloads an <img> and restarts a <video>.
+	test("does not re-sign when the caller asks for no refresh", async () => {
+		apiRequest.mockResolvedValue({
+			signed: { "/uploads/chat/a.png": { url: "/api/files/content?h=1", ttlMs: 20 } },
+		});
+		renderHook(() => useSignedSrc("/uploads/chat/a.png", { refreshMs: 0 }));
+		await waitFor(() => expect(apiRequest).toHaveBeenCalledTimes(1));
+		await new Promise((resolve) => setTimeout(resolve, 60));
+		expect(apiRequest).toHaveBeenCalledTimes(1);
 	});
 
 	test("does not sign when the url is empty", async () => {

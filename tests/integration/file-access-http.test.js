@@ -4,6 +4,11 @@ import path from "node:path";
 import { jest } from "@jest/globals";
 import express from "express";
 import request from "supertest";
+// Imported before the mock below is registered, so these are the REAL
+// implementations: the route must classify gated paths with the server's own
+// isGatedPath, and a copy of that list in this file would drift exactly like
+// the client-side mirror did.
+import { DEFAULT_TTL_MS, GATED_PREFIXES, isGatedPath } from "../../server/utils/signedFileUrl.js";
 
 // Exercises the REAL router so a regression in a handler fails here rather than
 // in production. Only the two Task-2/3 collaborators are replaced; the
@@ -30,8 +35,10 @@ jest.unstable_mockModule("../../server/services/fileAccessService.js", () => ({
 	authorizeFilePath,
 }));
 jest.unstable_mockModule("../../server/utils/signedFileUrl.js", () => ({
-	GATED_PREFIXES: ["chat", "contracts", "calls", "search"],
+	GATED_PREFIXES,
+	DEFAULT_TTL_MS,
 	MEDIA_TTL_MS: 900_000,
+	isGatedPath,
 	// Mirrors the real path helpers instead of collapsing them to constants, so
 	// the route is still exercised through the canonical-path logic it relies on.
 	resolveWithinUploads: (relPath) =>
@@ -117,7 +124,7 @@ describe("file access routes (real router)", () => {
 			.set(AUTH)
 			.send({ paths: ["/uploads/contracts/a.pdf"] })
 			.expect(200);
-		expect(signFileUrl).toHaveBeenCalledWith(expect.objectContaining({ ttlMs: undefined }));
+		expect(signFileUrl).toHaveBeenCalledWith(expect.objectContaining({ ttlMs: DEFAULT_TTL_MS }));
 	});
 
 	test("does not let a caller-supplied key reach Object.prototype", async () => {
@@ -132,6 +139,8 @@ describe("file access routes (real router)", () => {
 			.expect(200);
 		expect(Object.keys(res.body.signed)).toEqual(["__proto__"]);
 		expect(res.body.signed["__proto__"]).toMatchObject({ error: "not_gated", status: 400 });
+		// The server answers the third-party question for every path it sees.
+		expect(res.body.signed["__proto__"].thirdPartySafe).toBe(true);
 		expect(Object.getPrototypeOf(res.body.signed)).toBe(Object.prototype);
 	});
 
@@ -248,6 +257,101 @@ describe("file access content route (real router)", () => {
 				data: expect.objectContaining({ document_id: "real-1", viewer_id: "buyer1" }),
 			}),
 		);
+	});
+});
+
+describe("the /sign response contract (real router)", () => {
+	test("a gated path is never safe to hand to a third party", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: true, doc: { id: "d1" } });
+		signFileUrl.mockReturnValue("/api/files/content?x=1");
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.set(AUTH)
+			.send({ paths: ["/uploads/contracts/a.pdf"] })
+			.expect(200);
+		expect(res.body.signed["/uploads/contracts/a.pdf"].thirdPartySafe).toBe(false);
+	});
+
+	test("a public path is safe to hand to a third party", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: false, reason: "not_gated" });
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.set(AUTH)
+			.send({ paths: ["/uploads/feed/poster.png"] })
+			.expect(200);
+		expect(res.body.signed["/uploads/feed/poster.png"].thirdPartySafe).toBe(true);
+	});
+
+	test("a refused path still carries the third-party decision", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: false, reason: "forbidden" });
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.set(AUTH)
+			.send({ paths: ["/uploads/chat/a.png"] })
+			.expect(200);
+		expect(res.body.signed["/uploads/chat/a.png"]).toMatchObject({
+			error: "forbidden",
+			thirdPartySafe: false,
+		});
+	});
+
+	// The client used to mirror the lifetime as a constant, which drifts the
+	// moment the server changes it. The server returns what it actually used.
+	test("the response carries the lifetime the server used", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: true, doc: { id: "d1" } });
+		signFileUrl.mockReturnValue("/api/files/content?x=1");
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.set(AUTH)
+			.send({ paths: ["/uploads/contracts/a.pdf"] })
+			.expect(200);
+		expect(res.body.signed["/uploads/contracts/a.pdf"].ttlMs).toBe(DEFAULT_TTL_MS);
+
+		const media = await request(buildApp())
+			.post("/api/files/sign")
+			.set(AUTH)
+			.send({ paths: ["/uploads/calls/r.mp4"] })
+			.expect(200);
+		expect(media.body.signed["/uploads/calls/r.mp4"].ttlMs).toBe(900_000);
+	});
+});
+
+describe("the /sign rate limit (real router)", () => {
+	// /sign is an amplification lever: every path in the body costs a database
+	// round trip, and a chat path costs a scan of the caller's friend threads.
+	// Bounded per USER, not per address - the callers are authenticated, and
+	// many users share one NAT address.
+	//
+	// A distinct user id, so this test owns its bucket in the shared in-memory
+	// store.
+	const RATE_USER = { id: "rate-limited-user", role: "buyer" };
+	const RATE_AUTH = { Authorization: `Bearer ${signToken({ ...RATE_USER, email: "rate@x.com" })}` };
+
+	test("answers 429 once a user has spent the /sign budget", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: true, doc: { id: "d1" } });
+		signFileUrl.mockReturnValue("/api/files/content?x=1");
+		for (let index = 0; index < 60; index += 1) {
+			await request(buildApp())
+				.post("/api/files/sign")
+				.set(RATE_AUTH)
+				.send({ paths: ["/uploads/contracts/a.pdf"] })
+				.expect(200);
+		}
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.set(RATE_AUTH)
+			.send({ paths: ["/uploads/contracts/a.pdf"] });
+		expect(res.status).toBe(429);
+	});
+
+	test("another user is not affected by that user's budget", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: true, doc: { id: "d1" } });
+		signFileUrl.mockReturnValue("/api/files/content?x=1");
+		const res = await request(buildApp())
+			.post("/api/files/sign")
+			.set(AUTH)
+			.send({ paths: ["/uploads/contracts/a.pdf"] });
+		expect(res.status).toBe(200);
 	});
 });
 

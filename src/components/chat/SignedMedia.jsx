@@ -11,11 +11,14 @@ import LazyImage from "../ui/LazyImage.jsx";
  * refusal simply shows nothing rather than a broken image pointing at bytes the
  * client is not allowed to read.
  *
- * Both default to refreshMs 0 — see useSignedSrc for why.
+ * Both pass refreshMs 0 — see useSignedSrc for why. The default (half the
+ * server's signature lifetime) is right for an interactive surface the user
+ * leaves open, and wrong for a thumbnail: every refresh swaps the element's
+ * src, which visibly reloads an <img> and restarts a <video>.
  */
 
 export function SignedImage({ src, alt, width, height, className = "", eager = false }) {
-	const signedSrc = useSignedSrc(src);
+	const signedSrc = useSignedSrc(src, { refreshMs: 0 });
 	if (!signedSrc) return null;
 	return (
 		<LazyImage
@@ -23,7 +26,7 @@ export function SignedImage({ src, alt, width, height, className = "", eager = f
 			alt={alt}
 			width={width}
 			height={height}
-			className={className}
+			class={className}
 			eager={eager}
 		/>
 	);
@@ -39,7 +42,7 @@ export function SignedVideo({
 	preload = "metadata",
 	onError = null,
 }) {
-	const signedSrc = useSignedSrc(src);
+	const signedSrc = useSignedSrc(src, { refreshMs: 0 });
 	if (!signedSrc) return null;
 	return (
 		<video
@@ -49,7 +52,7 @@ export function SignedVideo({
 			muted={muted}
 			playsInline={playsInline}
 			preload={preload}
-			className={className}
+			class={className}
 			onError={onError}
 		/>
 	);

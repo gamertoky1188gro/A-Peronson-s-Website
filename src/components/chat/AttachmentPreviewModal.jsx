@@ -4,12 +4,7 @@ import Prism from "prismjs";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Atom } from "react-loading-indicators";
 import { useSignedSrc } from "../../hooks/useSignedSrc.js";
-import {
-	isGatedAssetPath,
-	SIGNED_URL_REFRESH_MS,
-	signAndOpen,
-	signOne,
-} from "../../lib/signedFile.js";
+import { isThirdPartySafe, signAndDownload, signAndOpen, signOne } from "../../lib/signedFile.js";
 import LazyImage from "../ui/LazyImage.jsx";
 import MarkdownMessage from "./MarkdownMessage.jsx";
 
@@ -337,6 +332,17 @@ function classifyAttachment(file) {
 		return MARKDOWN_EXTS.has(ext) ? "markdown" : "text";
 	}
 	return "file";
+}
+
+// A file name the browser will accept as a download name: no path separators
+// and no characters that would change where the file lands. Mirrors the helper
+// in FileAttachmentCard.
+function safeDownloadName(name = "") {
+	const cleaned = String(name || "").trim();
+	if (!cleaned) {
+		return;
+	}
+	return cleaned.replace(/[\\/:?"<>|]+/g, "_");
 }
 
 function downloadAttachmentMetadata(file) {
@@ -724,12 +730,33 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 	});
 	// The only url allowed to reach an <img>/<video>/<iframe> src. It stays ""
 	// until the server hands back a signature, and stays "" if it refuses, so an
-	// unsigned private path is never rendered. Refreshes at ttl/2 because this
+	// unsigned private path is never rendered. It re-signs on the schedule the
+	// server itself dictates (half the signature's lifetime), because this
 	// modal can sit open far longer than one signature lasts.
-	const signedSrc = useSignedSrc(open ? file?.url || "" : "", {
-		refreshMs: SIGNED_URL_REFRESH_MS,
-	});
+	const signedSrc = useSignedSrc(open ? file?.url || "" : "");
+	// Whether this document may be handed to the Office viewer. The server
+	// answers that, because it owns the gated-prefix list; a client-side copy
+	// of the list drifts, and a private document's signed url reaching
+	// view.officeapps.live.com is a third party fetching and retaining it.
+	// null = not answered yet, false = not safe (the default until the server
+	// says otherwise), true = safe. The embed is suppressed unless it is true.
+	const [thirdPartySafe, setThirdPartySafe] = useState(null);
 
+	useEffect(() => {
+		if (!(open && file?.url)) {
+			setThirdPartySafe(null);
+			return;
+		}
+		let alive = true;
+		void isThirdPartySafe(file.url).then((safe) => {
+			if (alive) {
+				setThirdPartySafe(safe === true);
+			}
+		});
+		return () => {
+			alive = false;
+		};
+	}, [open, file?.url]);
 	useEffect(() => {
 		if (!open) {
 			return;
@@ -1215,11 +1242,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 	const absoluteFileUrl = asAbsoluteUrl(file.url);
 	// A signed url is a bearer credential with a five-minute life, and the Office
 	// viewer is a third party: pointing it at a gated document lets Microsoft
-	// fetch and retain a private file. So the embed is suppressed outright for
-	// gated paths and only ever built from the plain url of a public document.
-	const officeIsGated = isGatedAssetPath(file.url);
+	// fetch and retain a private file. So the embed is suppressed unless the
+	// SERVER says the path is not gated, and only ever built from the plain url
+	// of a public document.
 	const officeEmbed =
-		(kind === "office" || kind === "presentation") && !officeIsGated
+		(kind === "office" || kind === "presentation") && thirdPartySafe
 			? officeViewerEmbedUrl(file.url)
 			: "";
 	const officeIsPrivate = (() => {
@@ -1278,7 +1305,12 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 						<button
 							type="button"
 							onClick={() => {
-								void signAndOpen(file.url);
+								// signAndDownload, not signAndOpen: window.open renders the
+								// document inline in a new tab, it does not save it. A
+								// download needs the synthesised anchor that
+								// signAndDownload clicks, because a signed url cannot carry
+								// a download attribute.
+								void signAndDownload(file.url, safeDownloadName(file.name));
 							}}
 							class="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/20"
 							title="Download"
@@ -1301,7 +1333,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					{kind === "image" ? (
 						<div class="flex justify-center">
 							<LazyImage
-								src={signedSrc || null}
+								src={signedSrc || undefined}
 								alt={file.name || "Preview"}
 								width={800}
 								height={600}
@@ -1377,11 +1409,10 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 									or download the file.
 								</div>
 							) : null}
-							{officeIsGated ? (
+							{thirdPartySafe === false ? (
 								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
-									This document is private, so it is not handed to the Microsoft Office viewer. Use
-									"Open in new tab" below instead — that link is signed for you alone and expires
-									within five minutes.
+									This document is not handed to the Microsoft Office viewer. Use "Open in new tab"
+									below instead — that link is signed for you alone and expires within five minutes.
 								</div>
 							) : null}
 							{!officeIsPrivate && officeEmbed ? (
