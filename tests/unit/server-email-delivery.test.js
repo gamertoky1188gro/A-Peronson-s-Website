@@ -125,6 +125,10 @@ describe("emailService delivery status", () => {
 		provider = "carrier-pigeon";
 		const res = await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
 		expect(res).toEqual({ ok: false, status: "logged_unsupported" });
+		expect(logWarn).toHaveBeenCalledWith(
+			"email_logged_unsupported",
+			expect.objectContaining({ to: ["a@b.co"] }),
+		);
 	});
 
 	test("still refuses to send with no recipients", async () => {

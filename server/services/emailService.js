@@ -151,6 +151,7 @@ export async function sendEmail({ to, subject, text, html, source }) {
 			status: "logged_unsupported",
 			source,
 		});
+		logWarn("email_logged_unsupported", { to: recipients, subject: payload.subject });
 		return { ok: false, status: "logged_unsupported" };
 	}
 
