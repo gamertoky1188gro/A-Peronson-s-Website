@@ -96,11 +96,11 @@ import { startSyslogServer } from "./services/syslogServer.js";
 import { revokeExpiredVerifications } from "./services/verificationService.js";
 import { recordWorkflowEvent } from "./services/workflowLifecycleService.js";
 import { closeDatabaseConnection, ensureDatabaseConnection, startDbHeartbeat } from "./utils/db.js";
+import { createGatedStaticGuard } from "./utils/gatedStaticGuard.js";
 import { logError, logInfo, logWarn } from "./utils/logger.js";
 import { consumePendingInvites, enqueuePendingInvites } from "./utils/pendingInvites.js";
 import prisma from "./utils/prisma.js";
 import { closeRedis, initRedis } from "./utils/redis.js";
-import { isGatedPath } from "./utils/signedFileUrl.js";
 
 const REQUIRED_ENV_VARS = ["DATABASE_URL", "JWT_SECRET"];
 const RECOMMENDED_ENV_VARS = [
@@ -307,16 +307,12 @@ app.use(
 app.use("/api/files", fileAccessRoutes);
 
 // Private namespaces (chat, contracts, calls, search) are reachable only through
-// the signature-checked /api/files/content route. Denying them at the static
-// mount means a mount-ordering mistake upstream cannot silently reopen them:
-// express.static has no opinion about who is asking, so the guard has to sit
-// immediately in front of it and answer 404 rather than falling through.
-app.use("/uploads", (req, res, next) => {
-	if (isGatedPath(req.path)) {
-		return res.status(404).json({ error: "Not found" });
-	}
-	return next();
-});
+// the signature-checked /api/files/content route. The guard sits immediately in
+// front of express.static, which has no opinion about who is asking, and answers
+// 404 rather than falling through — so a future mount rearrangement cannot
+// silently reopen them. See server/utils/gatedStaticGuard.js for why the
+// classification has to decode and normalize before deciding.
+app.use("/uploads", createGatedStaticGuard({ root: uploadsRoot }));
 app.use("/uploads", express.static(uploadsRoot));
 
 const distRoot = path.join(process.cwd(), "dist");

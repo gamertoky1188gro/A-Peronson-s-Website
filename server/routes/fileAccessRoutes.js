@@ -39,7 +39,11 @@ router.post("/sign", requireAuth, async (req, res) => {
 	const paths = Array.isArray(req.body?.paths)
 		? req.body.paths.slice(0, MAX_PATHS_PER_REQUEST)
 		: [];
-	const signed = {};
+	// Null prototype on purpose: the keys are caller-supplied, and `paths:
+	// ["__proto__"]` against a plain object goes through the inherited __proto__
+	// setter instead of creating a key, so the entry silently vanishes from the
+	// response. Object.create(null) has no such setter to inherit.
+	const signed = Object.create(null);
 
 	for (const raw of paths) {
 		const relPath = String(raw);
@@ -117,7 +121,20 @@ router.get("/content", async (req, res) => {
 		await recordContractView(toPublicPath(realPath), String(uid), req.ip);
 	}
 
-	return res.sendFile(realPath);
+	// These are private bytes behind a short-lived signature. Express's
+	// sendFile default is `Cache-Control: public, max-age=0` plus ETag and
+	// Last-Modified, which lets an intermediary cache a contract PDF or a call
+	// recording and hand it to the next caller. cacheControl:false drops Express's
+	// own header so the private one below is the only directive present.
+	// These are private bytes behind a short-lived signature. Express's
+	// sendFile default is `Cache-Control: public, max-age=0` plus ETag and
+	// Last-Modified, which lets an intermediary cache a contract PDF or a call
+	// recording and hand it to the next caller. cacheControl:false drops Express's
+	// own header so the private one below is the only directive present.
+	return res.sendFile(realPath, {
+		cacheControl: false,
+		headers: { "Cache-Control": "private, no-store" },
+	});
 });
 
 // Audit-only side effect: authorization already succeeded above, so a failure
@@ -132,20 +149,27 @@ async function recordContractView(publicPath, viewerId, viewerIp) {
 					{ artifact: { path: ["pdf_path"], equals: publicPath } },
 				],
 			},
-			select: { id: true },
+			select: { id: true, uploaded_by: true },
 		});
-		for (const doc of docs) {
-			await prisma.documentView.create({
-				data: {
-					// DocumentView.id has no database default, so the write must
-					// supply one or Prisma rejects the create outright.
-					id: crypto.randomUUID(),
-					document_id: doc.id,
-					viewer_id: viewerId || null,
-					viewer_ip: viewerIp || null,
-				},
-			});
+		// Several rows can anchor one path — a real contract plus the `system`
+		// backfill the uploads scanner writes — so this is one human view and must
+		// be one row. Prefer the real contract: attributing the view to the
+		// scanner's row would put the viewer in the audit trail of a document the
+		// scanner does not own.
+		const doc = docs.find((row) => String(row.uploaded_by ?? "") !== "system") ?? docs[0];
+		if (!doc) {
+			return;
 		}
+		await prisma.documentView.create({
+			data: {
+				// DocumentView.id has no database default, so the write must supply
+				// one or Prisma rejects the create outright.
+				id: crypto.randomUUID(),
+				document_id: doc.id,
+				viewer_id: viewerId || null,
+				viewer_ip: viewerIp || null,
+			},
+		});
 	} catch (error) {
 		logWarn("document view record failed", { publicPath, reason: error.message });
 	}
