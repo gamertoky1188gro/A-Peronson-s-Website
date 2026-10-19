@@ -5,13 +5,14 @@ import { jest } from "@jest/globals";
 const documentFindMany = jest.fn();
 const messageFindMany = jest.fn();
 const callSessionFindMany = jest.fn();
+const callSessionFindUnique = jest.fn();
 const listFriendMatchIdsForUser = jest.fn(async () => new Set());
 
 jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 	default: {
 		document: { findMany: documentFindMany },
 		message: { findMany: messageFindMany },
-		callSession: { findMany: callSessionFindMany },
+		callSession: { findMany: callSessionFindMany, findUnique: callSessionFindUnique },
 	},
 }));
 jest.unstable_mockModule("../../server/services/messageService.js", () => ({
@@ -28,10 +29,17 @@ const FACTORY = { id: "factory1", role: "factory" };
 const STRANGER = { id: "nobody", role: "buyer" };
 const CONTRACT_PDF = "/uploads/contracts/a.pdf";
 
-// uploadsService.js stores `entity_id` as the bare filename when it backfills a
-// chat attachment or call recording document, so the fixtures mirror that.
-const chatDoc = (filename) => ({ id: "d1", entity_type: "chat_attachment", entity_id: filename });
-const callDoc = (filename) => ({ id: "d1", entity_type: "call_recording", entity_id: filename });
+// A chat attachment row written at upload time (privateDocumentService) carries
+// the public path in file_path and the file name in entity_id. The fixtures
+// below cover both shapes: the write-time one, and the older rows that only
+// carry entity_id.
+const chatDoc = (filename) => ({
+	id: "d1",
+	entity_type: "chat_attachment",
+	entity_id: filename,
+	file_path: `/uploads/chat/${filename}`,
+	uploaded_by: "u9",
+});
 const chatMessage = (matchId, senderId, filename) => ({
 	match_id: matchId,
 	sender_id: senderId,
@@ -62,10 +70,32 @@ const callSession = (participantIds, filename) => ({
 	recording_url: `/uploads/calls/${filename}`,
 });
 
+// A call recording row written at upload time carries the OWNING call id in
+// entity_id and the public path in file_path.
+const callDoc = (filename) => ({
+	id: "d1",
+	entity_type: "call_recording",
+	entity_id: "call-1",
+	file_path: `/uploads/calls/${filename}`,
+	uploaded_by: "buyer1",
+});
+// A search image row: written at upload time, owned by the uploader.
+const searchDoc = (filename) => ({
+	id: "d1",
+	entity_type: "search_image",
+	entity_id: filename,
+	file_path: `/uploads/search/${filename}`,
+	uploaded_by: "buyer1",
+});
+
 beforeEach(() => {
 	documentFindMany.mockReset();
 	messageFindMany.mockReset();
 	callSessionFindMany.mockReset();
+	callSessionFindUnique.mockReset();
+	// The old recording_url implementation read this; an empty list makes a
+	// regression fail on the assertion instead of on a TypeError.
+	callSessionFindMany.mockResolvedValue([]);
 	listFriendMatchIdsForUser.mockReset();
 	listFriendMatchIdsForUser.mockResolvedValue([]);
 });
@@ -166,24 +196,117 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 		]);
 	});
 
+	// The uploader always reaches their own attachment, even when the message
+	// that carried it is no longer in the table. The row is written by the
+	// upload handler, so `uploaded_by` is a fact here and not a self-assertion:
+	// the only other writer of that column is POST /documents/url, which is
+	// restricted to owner/admin and is authorised by the admin branch anyway.
+	test("allows the uploader of a chat attachment without a message", async () => {
+		messageFindMany.mockResolvedValue([]);
+		const doc = { ...chatDoc("mine.png"), uploaded_by: "buyer1" };
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+		expect(messageFindMany).not.toHaveBeenCalled();
+	});
+
+	// --- call recordings ----------------------------------------------------
+	//
+	// The anchor is the OWNING call session, named by entity_id. recording_url
+	// is caller-supplied (PATCH /api/calls/:callId/recording stores any string
+	// the caller sends) and markRecording only asks whether the caller is a
+	// participant of their own session, so a url can never be the anchor.
 	test("allows a call recording participant", async () => {
-		callSessionFindMany.mockResolvedValue([callSession(["buyer1"], "rec-1.webm")]);
+		callSessionFindUnique.mockResolvedValue(callSession(["buyer1"], "rec-1.webm"));
 		expect(await canUserAccessDocument(BUYER, callDoc("rec-1.webm"))).toBe(true);
 	});
 
 	test("denies a call recording from a session the user is not part of", async () => {
-		callSessionFindMany.mockResolvedValue([callSession(["buyer1"], "rec-1.webm")]);
-		expect(await canUserAccessDocument(BUYER, callDoc("rec-2.webm"))).toBe(false);
+		callSessionFindUnique.mockResolvedValue(callSession(["someone-else"], "rec-1.webm"));
+		expect(await canUserAccessDocument(BUYER, callDoc("rec-1.webm"))).toBe(false);
 	});
 
-	// Same DoS argument as chat: the row set must be narrowed in SQL.
-	test("constrains the call query to the recorded filename", async () => {
-		callSessionFindMany.mockResolvedValue([callSession(["buyer1"], "rec-1.webm")]);
-		await canUserAccessDocument(BUYER, callDoc("rec-1.webm"));
-		expect(callSessionFindMany).toHaveBeenCalledTimes(1);
-		expect(callSessionFindMany.mock.calls[0][0].where).toEqual({
-			recording_url: { contains: "rec-1.webm" },
+	// The C3 exploit. The attacker is a participant of their own session and
+	// points that session's recording_url at the victim's recording. Under the
+	// recording_url implementation they are then "a participant of a session
+	// whose recording is that file", and the victim's recording opens. The row
+	// names the OWNING session and the attacker is not on it.
+	test("denies a recording to a caller who only pointed their own session at it", async () => {
+		// The attacker's own session, carrying the victim's file name.
+		callSessionFindMany.mockResolvedValue([
+			{
+				participant_ids: ["attacker"],
+				created_by: "attacker",
+				recording_url: "/uploads/calls/victim.webm",
+			},
+		]);
+		// The session that actually owns the file.
+		callSessionFindUnique.mockResolvedValue({
+			participant_ids: ["victim"],
+			created_by: "victim",
+			recording_url: "/uploads/calls/victim.webm",
 		});
+		const doc = {
+			id: "d1",
+			entity_type: "call_recording",
+			entity_id: "victim-call",
+			file_path: "/uploads/calls/victim.webm",
+			uploaded_by: "victim",
+		};
+		expect(await canUserAccessDocument({ id: "attacker", role: "buyer" }, doc)).toBe(false);
+	});
+
+	// A row with no owning call id anchors nothing. The uploads backfill used to
+	// write entity_id as the file name, and a file name is not a call.
+	test("denies a call recording row that names no call session", async () => {
+		const doc = {
+			id: "d1",
+			entity_type: "call_recording",
+			entity_id: "rec-1.webm",
+			file_path: "/uploads/calls/rec-1.webm",
+			uploaded_by: "system",
+		};
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+	});
+
+	// The anchor is the owning session, so the lookup is a primary-key read and
+	// not a scan of every session whose recording_url mentions the file.
+	test("resolves the owning call session by id, not by recording_url", async () => {
+		callSessionFindUnique.mockResolvedValue(callSession(["buyer1"], "rec-1.webm"));
+		await canUserAccessDocument(BUYER, callDoc("rec-1.webm"));
+		expect(callSessionFindUnique).toHaveBeenCalledTimes(1);
+		expect(callSessionFindUnique.mock.calls[0][0].where).toEqual({ id: "call-1" });
+		expect(callSessionFindMany).not.toHaveBeenCalled();
+	});
+
+	// --- search images ------------------------------------------------------
+	//
+	// /uploads/search is a gated prefix, so a search image needs a row of its
+	// own. The "uploads" entity type the scanner used to write lands in the
+	// default branch, which denies every non-admin.
+	test("allows the uploader of a search image", async () => {
+		expect(await canUserAccessDocument(BUYER, searchDoc("q.png"))).toBe(true);
+	});
+
+	test("denies a search image to anyone but the uploader", async () => {
+		expect(await canUserAccessDocument(STRANGER, searchDoc("q.png"))).toBe(false);
+	});
+
+	// The type may only authorise the prefix it was minted for.
+	test("denies a search image row that points outside the search folder", async () => {
+		const doc = { ...searchDoc("victim.png"), file_path: "/uploads/chat/victim.png" };
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+	});
+
+	// The scanner's "uploads" type is still a hard deny for a non-admin: it
+	// carries no ownership fact, so nothing grants on it.
+	test("denies the scanner's uploads entity type to a non-admin", async () => {
+		const doc = {
+			id: "d1",
+			entity_type: "uploads",
+			entity_id: "q.png",
+			file_path: "/uploads/search/q.png",
+			uploaded_by: "buyer1",
+		};
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
 	});
 
 	test("denies an unknown entity type to a non-admin", async () => {
@@ -192,7 +315,7 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 	});
 
 	// `uploaded_by` is self-asserted by anyone who can reach POST /documents/url,
-	// so it is not evidence that the caller owns these bytes. Every gated prefix
+	// so it is not evidence that this caller owns these bytes. Every gated prefix
 	// has its own branch above; an unrecognised type has no basis to grant.
 	test("denies an unknown entity type to its own claimed uploader", async () => {
 		const doc = { id: "d1", entity_type: "mystery", uploaded_by: "buyer1" };
@@ -347,6 +470,54 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 		const res = await authorizeFilePath(BUYER, CONTRACT_PDF);
 		expect(res.ok).toBe(true);
 		expect(res.doc.id).toBe("d1");
+	});
+
+	// --- the write-time registry -------------------------------------------
+	//
+	// A chat attachment is only reachable because the upload handler wrote a
+	// Document row for it. Without that row, authorizeFilePath answers
+	// "not_found" and the attachment is unreadable by everyone — the uploader
+	// included — which is what the AI-moderation backfill left behind in the
+	// deployed configuration.
+	test("authorizes a chat attachment through its write-time row", async () => {
+		documentFindMany.mockResolvedValue([chatDoc("secret.png")]);
+		messageFindMany.mockResolvedValue([chatMessage("friend:aaa:bbb", "buyer1", "secret.png")]);
+		listFriendMatchIdsForUser.mockResolvedValue(["friend:aaa:bbb"]);
+		const res = await authorizeFilePath(BUYER, "/uploads/chat/secret.png");
+		expect(res.ok).toBe(true);
+		expect(res.doc.id).toBe("d1");
+	});
+
+	test("authorizes a search image through its write-time row", async () => {
+		documentFindMany.mockResolvedValue([searchDoc("q.png")]);
+		const res = await authorizeFilePath(BUYER, "/uploads/search/q.png");
+		expect(res.ok).toBe(true);
+	});
+
+	// --- the /sign amplification lever -------------------------------------
+	//
+	// listFriendMatchIdsForUser scans every friend message on the platform. It
+	// is user-scoped and constant within a request, so a /sign call with many
+	// chat paths must fetch it once, not once per path.
+	test("fetches the friend match ids once per request, not once per document", async () => {
+		documentFindMany.mockResolvedValue([chatDoc("a.png"), chatDoc("b.png"), chatDoc("c.png")]);
+		messageFindMany.mockResolvedValue([]);
+		listFriendMatchIdsForUser.mockResolvedValue(["friend:aaa:bbb"]);
+		await authorizeFilePath(BUYER, "/uploads/chat/a.png");
+		expect(listFriendMatchIdsForUser).toHaveBeenCalledTimes(1);
+	});
+
+	// The `IN` list is built from the caller's own threads, but it still has to
+	// be bounded: every entry is a value Postgres has to parse and plan for.
+	test("caps the friend match id list used in the IN clause", async () => {
+		const many = Array.from({ length: 1500 }, (_value, index) => `friend:${index}:x`);
+		documentFindMany.mockResolvedValue([chatDoc("a.png")]);
+		messageFindMany.mockResolvedValue([]);
+		listFriendMatchIdsForUser.mockResolvedValue(many);
+		await canUserAccessDocument(BUYER, chatDoc("a.png"));
+		const inList = messageFindMany.mock.calls[0][0].where.OR[1].match_id.in;
+		expect(inList.length).toBeLessThanOrEqual(1000);
+		expect(inList.length).toBeGreaterThan(0);
 	});
 });
 

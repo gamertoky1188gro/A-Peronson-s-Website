@@ -1,4 +1,5 @@
 import path from "node:path";
+import { logWarn } from "../utils/logger.js";
 import { canAccessContract, isOwnerOrAdmin } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
 import { isGatedPath, resolveWithinUploads, toPublicPath } from "../utils/signedFileUrl.js";
@@ -6,6 +7,14 @@ import { listFriendMatchIdsForUser } from "./messageService.js";
 
 // Strips "?v=2" style suffixes before the filename tail is compared.
 const URL_QUERY_SPLIT = /[?#]/;
+
+// The `IN` list of friend match ids is built from the caller's own threads, so
+// it is bounded by how many conversations the caller has — but "unbounded" is
+// still a lever that scales with the platform, and every entry is a value
+// Postgres has to parse and plan for. Capped: a caller past the cap keeps
+// access to their own uploads (the uploader grant below) and to the first
+// MAX_FRIEND_MATCH_IDS threads, and the truncation is logged, not silent.
+const MAX_FRIEND_MATCH_IDS = 1000;
 
 function text(value) {
 	return String(value ?? "").trim();
@@ -17,12 +26,21 @@ function idList(value) {
 	return [];
 }
 
-// uploadsService writes `entity_id: item.name` when it backfills chat
-// attachments and call recordings, so the bare filename is the normal shape; a
-// full stored path is accepted too. Anything unresolvable denies.
+// The file name a document row points at.
+//
+// The write-time rows (privateDocumentService) store the public path in
+// file_path and the file name in entity_id, so both carry the same tail. The
+// stored path is preferred: it is the thing authorizeFilePath already matched
+// the request against, so it cannot name a different file than the one being
+// served. entity_id is the fallback for rows that predate the write-time
+// registry.
 function docFilename(doc) {
-	const name = text(doc?.entity_id).split("/").pop() || "";
-	return name ? name.toLowerCase() : "";
+	const fromPath = text(doc?.file_path).split("/").pop() || "";
+	if (fromPath) {
+		return fromPath.toLowerCase();
+	}
+	const fromEntity = text(doc?.entity_id).split("/").pop() || "";
+	return fromEntity ? fromEntity.toLowerCase() : "";
 }
 
 // Attachment is a Json column. messageService posts {name, url, mime_type,
@@ -114,18 +132,44 @@ function rowAnchorsPath(doc, key) {
 	return text(doc?.file_path).toLowerCase() === target || artifactPdfPath(doc) === target;
 }
 
-async function canAccessChatAttachment(user, doc) {
+// The caller's friend match ids, fetched at most once per request.
+//
+// listFriendMatchIdsForUser scans every friend message on the platform, so
+// calling it once per document turns a /sign call with 50 chat paths into 50
+// platform-wide scans. It is user-scoped and constant within a request, so it
+// is hoisted into the request context and shared.
+async function friendMatchIdsFor(user, context) {
+	if (!context) {
+		return toIdSet(await listFriendMatchIdsForUser(user.id));
+	}
+	if (!context.friendMatchIds) {
+		context.friendMatchIds = Promise.resolve(listFriendMatchIdsForUser(user.id)).then(toIdSet);
+	}
+	return context.friendMatchIds;
+}
+
+async function canAccessChatAttachment(user, doc, context) {
 	const filename = docFilename(doc);
 	if (!filename) return false;
 
-	const mine = toIdSet(await listFriendMatchIdsForUser(user.id));
+	const mine = await friendMatchIdsFor(user, context);
+	const all = [...mine];
+	let threadIds = all;
+	if (all.length > MAX_FRIEND_MATCH_IDS) {
+		threadIds = all.slice(0, MAX_FRIEND_MATCH_IDS);
+		logWarn("friend match id list truncated for chat authorization", {
+			user_id: text(user.id),
+			total: all.length,
+			cap: MAX_FRIEND_MATCH_IDS,
+		});
+	}
 	// Both filters belong in SQL. `match_id` and `sender_id` are indexed, so this
 	// avoids scanning every attachment-bearing message on the platform on each
 	// authorization request.
 	const messages = await prisma.message.findMany({
 		where: {
 			attachment: { not: null },
-			OR: [{ sender_id: text(user.id) }, { match_id: { in: [...mine] } }],
+			OR: [{ sender_id: text(user.id) }, { match_id: { in: threadIds } }],
 		},
 		select: { match_id: true, sender_id: true, attachment: true },
 	});
@@ -142,29 +186,45 @@ async function canAccessChatAttachment(user, doc) {
 	});
 }
 
+// The call recording is authorized against the session that OWNS it.
+//
+// It used to be authorized against `recording_url`: the route found every
+// CallSession whose recording_url mentioned the file name and asked whether
+// the caller was a participant of one of those sessions. But recording_url is
+// caller-supplied — PATCH /api/calls/:callId/recording is requireAuth-only
+// and stores whatever string the caller sends — and markRecording only
+// requires the caller to be a participant of their own session. So a caller
+// could point their own session at any recording path and then be "a
+// participant of a session whose recording is that file".
+//
+// entity_id carries the call id the recording was uploaded for (written by the
+// upload handler, which has already checked participation), and that session's
+// participant list is the fact the caller has to be on. A caller-writable url
+// is never consulted.
 async function canAccessCallRecording(user, doc) {
-	const filename = docFilename(doc);
-	if (!filename) return false;
+	const callId = text(doc?.entity_id);
+	if (!callId) return false;
 
-	// recording_url is a plain column, so the filename narrows the row set in SQL.
-	// participant_ids is Json, which has no portable array_contains, so that half
-	// of the test stays in JS — over what is now a handful of rows rather than the
-	// whole table.
-	const calls = await prisma.callSession.findMany({
-		where: { recording_url: { contains: filename } },
-		select: { participant_ids: true, created_by: true, recording_url: true },
+	const call = await prisma.callSession.findUnique({
+		where: { id: callId },
+		select: { participant_ids: true, created_by: true },
 	});
+	if (!call) return false;
 
-	// Same reasoning as chat: taking part in one call must not confer access to an
-	// unrelated recording.
-	return calls.some((call) => {
-		const recording = text(call.recording_url).split("/").pop()?.toLowerCase();
-		if (recording !== filename) {
-			return false;
-		}
-		const participants = idList(call.participant_ids);
-		return matchesId(call.created_by, user.id) || participants.includes(text(user.id));
-	});
+	const participants = idList(call.participant_ids);
+	return matchesId(call.created_by, user.id) || participants.includes(text(user.id));
+}
+
+// A search image belongs to whoever uploaded it.
+//
+// The upload route is authenticated (POST /api/search/image is requireAuth), so
+// the uploader is a real party to the file and the row can carry it. The image
+// is the requester's own query input; nobody else has a claim on it.
+function canAccessSearchImage(user, doc) {
+	if (!matchesId(doc?.uploaded_by, user.id)) return false;
+	// The type may only ever authorise the prefix it was minted for, so a row
+	// of this type cannot be pointed at another folder's bytes.
+	return text(doc?.file_path).toLowerCase().startsWith("/uploads/search/");
 }
 
 export function isAdminRole(user) {
@@ -173,7 +233,7 @@ export function isAdminRole(user) {
 	return isOwnerOrAdmin(user);
 }
 
-export async function canUserAccessDocument(user, doc) {
+export async function canUserAccessDocument(user, doc, context) {
 	if (!(user && doc)) return false;
 	if (isAdminRole(user)) return true;
 	if (!text(user.id)) return false;
@@ -194,10 +254,20 @@ export async function canUserAccessDocument(user, doc) {
 			);
 
 		case "chat_attachment":
-			return canAccessChatAttachment(user, doc);
+			// The uploader always reaches their own attachment. `uploaded_by` is
+			// written by the upload handler (privateDocumentService) and, for the
+			// rows that predate it, by the uploads backfill as "system" — only
+			// POST /documents/url can assert it for itself, and that route is
+			// restricted to owner/admin, who are authorised by the admin branch
+			// above anyway.
+			if (matchesId(doc.uploaded_by, user.id)) return true;
+			return canAccessChatAttachment(user, doc, context);
 
 		case "call_recording":
 			return canAccessCallRecording(user, doc);
+
+		case "search_image":
+			return canAccessSearchImage(user, doc);
 
 		default:
 			// Unknown type. `uploaded_by` is self-asserted by anyone who can reach
@@ -251,7 +321,12 @@ export async function authorizeFilePath(user, relPath) {
 	// Several rows can legitimately share one path — a real contract row plus the
 	// `system` backfill row the uploads scanner writes. Any-grant is what keeps the
 	// true owner working in that case, so it must not become every-grant.
-	const grants = await Promise.all(docs.map((doc) => canUserAccessDocument(user, doc)));
+	//
+	// The context is shared by every row in this request: the friend-match id
+	// list is user-scoped and constant within a request, so it is fetched once
+	// here rather than once per document.
+	const context = { friendMatchIds: null };
+	const grants = await Promise.all(docs.map((doc) => canUserAccessDocument(user, doc, context)));
 	const granted = grants.indexOf(true);
 	if (granted === -1) {
 		return { ok: false, reason: "forbidden" };

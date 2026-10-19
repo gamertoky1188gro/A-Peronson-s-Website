@@ -1,7 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { maybeGenerateBotReply } from "../services/chatbotService.js";
-import { sanitizeSvgFile } from "../utils/svgSanitizer.js";
 import {
 	adjustSenderReputation,
 	getCommunicationPolicyConfig,
@@ -25,9 +24,11 @@ import {
 	rejectMessageRequest,
 	tieredInbox,
 } from "../services/messageService.js";
+import { PRIVATE_ENTITY_TYPE, recordPrivateUpload } from "../services/privateDocumentService.js";
 import { isVideoFile } from "../services/videoProcessor.js";
 import { addToQueue } from "../services/videoQueue.js";
 import prisma from "../utils/prisma.js";
+import { sanitizeSvgFile } from "../utils/svgSanitizer.js";
 
 export async function sendMessage(req, res) {
 	const allowed = await canAccessMatch(req.params.matchId, req.user.id);
@@ -175,6 +176,18 @@ export async function uploadMessageAttachment(req, res) {
 				source_label: req.body?.source_label,
 			},
 		);
+
+		// The Document row is the authorization key for /uploads/chat: without it
+		// authorizeFilePath answers "not_found" and the attachment is unreadable
+		// by everyone, the uploader included. It is written here, at write time,
+		// because the uploader and the thread are known here and nowhere else.
+		await recordPrivateUpload({
+			entityType: PRIVATE_ENTITY_TYPE.CHAT_ATTACHMENT,
+			entityId: path.posix.basename(publicUrl),
+			filePath: publicUrl,
+			uploadedBy: req.user.id,
+			type: messageType,
+		});
 
 		let botReply = null;
 		try {

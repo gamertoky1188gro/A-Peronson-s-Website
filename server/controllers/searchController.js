@@ -3,6 +3,7 @@ import path from "node:path";
 import multer from "multer";
 import { isImageFile } from "../services/imageProcessor.js";
 import { addImageToQueue } from "../services/imageQueue.js";
+import { PRIVATE_ENTITY_TYPE, recordPrivateUpload } from "../services/privateDocumentService.js";
 import { handleControllerError } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
 
@@ -71,7 +72,7 @@ const upload = multer({
 const singleUpload = upload.single("file");
 
 export function uploadSearchImage(req, res) {
-	singleUpload(req, res, (err) => {
+	singleUpload(req, res, async (err) => {
 		if (err) {
 			return res.status(400).json({ error: err.message });
 		}
@@ -79,6 +80,23 @@ export function uploadSearchImage(req, res) {
 			return res.status(400).json({ error: "No image file provided" });
 		}
 		const fileUrl = `/uploads/search/${req.file.filename}`;
+
+		// The Document row is the authorization key for /uploads/search. The
+		// upload route is authenticated, so the uploader is a real party to the
+		// file and the row can carry it: the image is readable by the person who
+		// uploaded it and by nobody else. Written at write time, because the
+		// uploader is known here and nowhere else.
+		//
+		// Awaited, not fired and forgotten: the client renders the returned url
+		// straight away, and a row that lands a moment later would make that
+		// first request fail with "not_found".
+		await recordPrivateUpload({
+			entityType: PRIVATE_ENTITY_TYPE.SEARCH_IMAGE,
+			entityId: req.file.filename,
+			filePath: fileUrl,
+			uploadedBy: req.user?.id,
+			type: "image",
+		});
 
 		const fullPath = req.file.path ? path.resolve(req.file.path) : null;
 		if (fullPath && isImageFile(req.file.mimetype, req.file.originalname)) {
@@ -556,11 +574,13 @@ export async function searchSuggestions(req, res) {
 export async function exportSearchResults(req, res) {
 	try {
 		const { query = "", filters = {}, category = "all", type = "all" } = req.body;
-		let { ids } = req.body;
+		const { ids } = req.body;
 
 		// If specific IDs provided, fetch those items directly
 		if (Array.isArray(ids) && ids.length > 0) {
-			const productIds = ids.filter((i) => i.startsWith("prod:")).map((i) => i.replace("prod:", ""));
+			const productIds = ids
+				.filter((i) => i.startsWith("prod:"))
+				.map((i) => i.replace("prod:", ""));
 			const reqIds = ids.filter((i) => i.startsWith("req:")).map((i) => i.replace("req:", ""));
 			const [products, requirements] = await Promise.all([
 				productIds.length > 0
@@ -570,21 +590,22 @@ export async function exportSearchResults(req, res) {
 					? prisma.requirement.findMany({ where: { id: { in: reqIds } }, take: 50 })
 					: Promise.resolve([]),
 			]);
-			const rows = [
-				...sanitizeProducts(products),
-				...sanitizeRequirements(requirements),
-			];
+			const rows = [...sanitizeProducts(products), ...sanitizeRequirements(requirements)];
 			return res.json({ rows, count: rows.length, source: "ids" });
 		}
 
 		// Otherwise search based on filters
-		const q = String(query || "").trim().toLowerCase();
+		const q = String(query || "")
+			.trim()
+			.toLowerCase();
 		const qFilter = q
-			? { OR: [
-					{ title: { contains: q, mode: "insensitive" } },
-					{ category: { contains: q, mode: "insensitive" } },
-					{ material: { contains: q, mode: "insensitive" } },
-				]}
+			? {
+					OR: [
+						{ title: { contains: q, mode: "insensitive" } },
+						{ category: { contains: q, mode: "insensitive" } },
+						{ material: { contains: q, mode: "insensitive" } },
+					],
+				}
 			: {};
 
 		const hasProductFilter = type === "all" || type === "companies";
@@ -603,10 +624,7 @@ export async function exportSearchResults(req, res) {
 					: Promise.resolve([]),
 		]);
 
-		const rows = [
-			...sanitizeProducts(products),
-			...sanitizeRequirements(requirements),
-		];
+		const rows = [...sanitizeProducts(products), ...sanitizeRequirements(requirements)];
 
 		return res.json({ rows, count: rows.length, source: "search" });
 	} catch (error) {
@@ -626,13 +644,19 @@ function sanitizeProducts(products = []) {
 		moq: String(p.moq || ""),
 		price_range: p.price_range || "",
 		currency: p.currency || "USD",
-		certifications: Array.isArray(p.certifications) ? p.certifications.join(", ") : String(p.certifications || ""),
-		rating: p.rating_avg != null ? Number(p.rating_avg).toFixed(1) : "",
+		certifications: Array.isArray(p.certifications)
+			? p.certifications.join(", ")
+			: String(p.certifications || ""),
+		rating: p.rating_avg == null ? "" : Number(p.rating_avg).toFixed(1),
 		verified_status: p.verified ? "Verified" : "Unverified",
 		response_time: p.response_time || "",
 		min_lead_time: p.min_lead_time || "",
-		languages_spoken: Array.isArray(p.languages_spoken) ? p.languages_spoken.join(", ") : String(p.languages_spoken || ""),
-		export_ports: Array.isArray(p.exportPort) ? p.exportPort.join(", ") : String(p.exportPort || ""),
+		languages_spoken: Array.isArray(p.languages_spoken)
+			? p.languages_spoken.join(", ")
+			: String(p.languages_spoken || ""),
+		export_ports: Array.isArray(p.exportPort)
+			? p.exportPort.join(", ")
+			: String(p.exportPort || ""),
 		year_established: p.year_established || "",
 		team_size: p.team_size || "",
 		created_at: p.created_at ? new Date(p.created_at).toISOString().split("T")[0] : "",
@@ -651,7 +675,9 @@ function sanitizeRequirements(requirements = []) {
 		quantity: String(r.quantity || r.moq || ""),
 		price_range: r.price_range || "",
 		currency: r.currency || "USD",
-		certifications: Array.isArray(r.certifications) ? r.certifications.join(", ") : String(r.certifications || ""),
+		certifications: Array.isArray(r.certifications)
+			? r.certifications.join(", ")
+			: String(r.certifications || ""),
 		rating: "",
 		verified_status: r.verified ? "Verified" : "Unverified",
 		response_time: r.response_time || "",
@@ -661,4 +687,3 @@ function sanitizeRequirements(requirements = []) {
 		created_at: r.created_at ? new Date(r.created_at).toISOString().split("T")[0] : "",
 	}));
 }
-

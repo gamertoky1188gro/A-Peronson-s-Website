@@ -14,6 +14,7 @@ import {
 import { buildFriendMatchId, isFriendConnected } from "../services/friendService.js";
 import { isImageFile } from "../services/imageProcessor.js";
 import { addImageToQueue } from "../services/imageQueue.js";
+import { PRIVATE_ENTITY_TYPE, recordPrivateUpload } from "../services/privateDocumentService.js";
 import { findUserById } from "../services/userService.js";
 import { isVideoFile } from "../services/videoProcessor.js";
 import { addToQueue } from "../services/videoQueue.js";
@@ -207,6 +208,20 @@ export async function uploadRecordingFile(req, res) {
 			error: "recording_url is required when recording_status is available",
 		});
 	}
+
+	// The Document row is the authorization key for /uploads/calls, and it is
+	// the only place the OWNING call session can be recorded: recording_url is
+	// caller-supplied (PATCH /api/calls/:callId/recording accepts any string),
+	// so it can never be the anchor. entity_id carries the call id the file was
+	// uploaded for, and fileAccessService authorizes against that session's
+	// participants.
+	await recordPrivateUpload({
+		entityType: PRIVATE_ENTITY_TYPE.CALL_RECORDING,
+		entityId: String(callId),
+		filePath: publicUrl,
+		uploadedBy: req.user.id,
+		type: "video",
+	});
 
 	if (isVideoFile(file.mimetype, file.originalname)) {
 		const fullPath = String(file.path || "");

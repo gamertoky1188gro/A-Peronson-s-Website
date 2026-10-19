@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { logError, logInfo } from "../utils/logger.js";
@@ -192,6 +193,104 @@ function enqueueScan(fullPath, docId) {
 	}
 }
 
+// The folders the scanner walks, and the entity type a row for a file in that
+// folder carries.
+//
+// "search" is here because /uploads/search is a gated prefix: without a row a
+// search image is unreachable by everyone, including the person who uploaded
+// it. A row adopted from disk carries uploaded_by "system", so it authorises
+// only an admin — the write-time row (privateDocumentService) is the one that
+// carries the real uploader.
+const SCAN_SUBFOLDERS = ["profile", "feed", "chat", "calls", "contracts", "search", ""];
+
+const SUBFOLDER_ENTITY_TYPES = {
+	feed: "feed_media",
+	profile: "profile_pic",
+	chat: "chat_attachment",
+	calls: "call_recording",
+	contracts: "contract",
+	search: "search_image",
+};
+
+function entityTypeForFolder(subfolder) {
+	return SUBFOLDER_ENTITY_TYPES[subfolder] || "uploads";
+}
+
+function baseNameOf(filePath) {
+	return String(filePath || "")
+		.split("/")
+		.pop()
+		.toLowerCase();
+}
+
+/**
+ * Creates a Document row for every file on disk that does not have one.
+ *
+ * Row creation is NOT part of the AI-moderation feature. The moderation scan
+ * is gated behind AI_HARAM_ANALYTICS_ENABLED, which is false in the deployed
+ * configuration, and it only ever covered image/video — so gating row creation
+ * on it left every chat attachment, every call recording and every search
+ * image without the row the authorization model keys on. Such a file is not
+ * public: authorizeFilePath answers "not_found" and nobody, including its
+ * uploader, can read it.
+ *
+ * This pass runs regardless of the moderation flag. It creates rows for every
+ * file type, not just media.
+ *
+ * The rows it creates are "system" rows: they record that the bytes exist and
+ * where they live, but they carry no ownership fact, so they authorise only an
+ * admin. Ownership-bearing rows are written at upload time.
+ */
+export async function ensureDocumentRowsForExistingFiles({ root = UPLOADS_ROOT } = {}) {
+	let created = 0;
+	try {
+		const rows = await prisma.document.findMany({
+			where: { file_path: { not: null } },
+			select: { file_path: true },
+		});
+		// Matched on the file name, the way the previous scanner matched
+		// (`file_path endsWith <name>`), so a row written with a different
+		// spelling of the same path still counts as "known".
+		const known = new Set(rows.map((row) => baseNameOf(row.file_path)));
+
+		for (const subfolder of SCAN_SUBFOLDERS) {
+			const scanPath = subfolder ? path.join(root, subfolder) : root;
+			const items = await fs.readdir(scanPath, { withFileTypes: true }).catch(() => []);
+			for (const item of items) {
+				if (item.isDirectory()) {
+					continue;
+				}
+				if (known.has(item.name.toLowerCase())) {
+					continue;
+				}
+				const publicUrl = `/uploads${subfolder ? `/${subfolder}` : ""}/${item.name}`;
+				try {
+					await prisma.document.create({
+						data: {
+							id: crypto.randomUUID(),
+							uploaded_by: "system",
+							entity_type: entityTypeForFolder(subfolder),
+							entity_id: item.name,
+							file_path: publicUrl,
+							type: getFileType(item.name),
+						},
+					});
+					known.add(item.name.toLowerCase());
+					created += 1;
+				} catch (err) {
+					logError("AI Moderation row creation failed", new Error(`${publicUrl}: ${err.message}`));
+				}
+			}
+		}
+		if (created > 0) {
+			logInfo("Uploads registry: created Document rows for untracked files", { created });
+		}
+	} catch (err) {
+		logError("Uploads registry scan error", err);
+	}
+	return created;
+}
+
 export async function scanAndAnalyzeExistingFiles() {
 	if (!isAIAnalyticsEnabled()) {
 		logInfo("AI Moderation skipping scan — AI_HARAM_ANALYTICS_ENABLED is false");
@@ -200,7 +299,7 @@ export async function scanAndAnalyzeExistingFiles() {
 	logInfo("AI Moderation scanning existing uploads for unanalyzed media...");
 	try {
 		const basePath = UPLOADS_ROOT;
-		const subfolders = ["profile", "feed", "chat", "calls", "contracts", ""];
+		const subfolders = SCAN_SUBFOLDERS;
 
 		for (const subfolder of subfolders) {
 			const scanPath = subfolder ? path.join(basePath, subfolder) : basePath;
@@ -233,18 +332,7 @@ export async function scanAndAnalyzeExistingFiles() {
 					} else {
 						const docId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 						const publicUrl = `/uploads${subfolder ? `/${subfolder}` : ""}/${item.name}`;
-						const entityType =
-							subfolder === "feed"
-								? "feed_media"
-								: subfolder === "profile"
-									? "profile_pic"
-									: subfolder === "chat"
-										? "chat_attachment"
-										: subfolder === "calls"
-											? "call_recording"
-											: subfolder === "contracts"
-												? "contract"
-												: "uploads";
+						const entityType = entityTypeForFolder(subfolder);
 
 						const created = await prisma.document.create({
 							data: {

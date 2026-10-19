@@ -1289,8 +1289,16 @@ async function start() {
 	import("./services/aiModerationService.js")
 		.then(({ ensureVenv, isAIAnalyticsEnabled }) => {
 			import("./services/uploadsService.js")
-				.then(({ scanAndAnalyzeExistingFiles }) => {
-					setTimeout(() => {
+				.then(({ ensureDocumentRowsForExistingFiles, scanAndAnalyzeExistingFiles }) => {
+					setTimeout(async () => {
+						// The registry pass is not part of the AI-moderation feature:
+						// a file with no Document row is unreachable, whatever the
+						// moderation flag says. It therefore runs first and always.
+						try {
+							await ensureDocumentRowsForExistingFiles();
+						} catch (err) {
+							logError("ensureDocumentRowsForExistingFiles failed", err);
+						}
 						if (!isAIAnalyticsEnabled()) {
 							logInfo(
 								"AI Moderation disabled via AI_HARAM_ANALYTICS_ENABLED — skipping venv setup and scan",
