@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
 import { SignedImage, SignedVideo } from "../../components/chat/SignedMedia.jsx";
+import LazyImage from "../../components/ui/LazyImage.jsx";
 import { getInitials, isVideoMessage, toAbsoluteAssetUrl, truncateId } from "./chatUtils.js";
 
 export default function RightPanel({
