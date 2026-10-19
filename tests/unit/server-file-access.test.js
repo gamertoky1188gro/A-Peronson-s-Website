@@ -199,11 +199,58 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
 	});
 
-	// A real contract always names its parties, so a row whose only claim is a
-	// self-asserted `uploaded_by` cannot be one and must not inherit
-	// canAccessContract's trust in that field.
+	// createDraftContract skips the rating check when either party is blank
+	// (documentService.js:621) and persists "" for both (documentService.js:640),
+	// so a blank-party contract is real. Its creator must still reach its PDF.
+	test("allows a blank-party contract to the manager who created it", async () => {
+		const doc = forgedRow({
+			entity_type: "contract",
+			uploaded_by: "buyer1",
+			contract_number: "CN-7",
+		});
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+	});
+
+	// The other side of the discriminator: a forged /url row carries a real
+	// attacker id in uploaded_by but neither marker, because
+	// registerExternalDocument writes neither contract_number nor artifact and
+	// registerDocumentUrl cannot inject them. It must stay denied.
 	test("denies a party-less contract row to its claimed uploader", async () => {
 		const doc = forgedRow({ entity_type: "contract", uploaded_by: "buyer1" });
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+	});
+
+	// A generated artifact is the second marker. sanitizeString returns "" for a
+	// non-string input, so a contract_number posted as a JSON number lands blank
+	// while still going through the contract flow.
+	test("allows a blank-party contract with a generated artifact to its creator", async () => {
+		const doc = forgedRow({
+			entity_type: "contract",
+			uploaded_by: "buyer1",
+			artifact: { pdf_path: CONTRACT_PDF, status: "generated" },
+		});
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
+	});
+
+	// A blank-party contract belongs to its creator and nobody else.
+	test("denies a blank-party contract to an unrelated user", async () => {
+		const doc = forgedRow({
+			entity_type: "contract",
+			uploaded_by: "buyer1",
+			contract_number: "CN-7",
+		});
+		expect(await canUserAccessDocument(STRANGER, doc)).toBe(false);
+	});
+
+	// The uploaded_by fallback is scoped to entity_type "contract". It must not
+	// leak into the default branch, which stays a hard deny.
+	test("denies an unknown entity type even when it carries a contract number", async () => {
+		const doc = {
+			id: "d1",
+			entity_type: "mystery",
+			uploaded_by: "buyer1",
+			contract_number: "CN-7",
+		};
 		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
 	});
 
@@ -248,6 +295,21 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 		const res = await authorizeFilePath(BUYER, pdfPath);
 		expect(res.ok).toBe(true);
 		expect(res.doc.id).toBe("d3");
+	});
+
+	// The contract arm must be an equality Postgres can evaluate. Reading every
+	// contract row plus its JSON blob on each request is the same whole-table
+	// DoS lever the chat query had.
+	test("narrows the contract lookup to artifact.pdf_path in SQL", async () => {
+		documentFindMany.mockResolvedValue([]);
+		await authorizeFilePath(BUYER, CONTRACT_PDF);
+		expect(documentFindMany).toHaveBeenCalledTimes(1);
+		const or = documentFindMany.mock.calls[0][0].where.OR;
+		expect(or).toEqual([
+			{ file_path: { contains: "a.pdf" } },
+			{ artifact: { path: ["pdf_path"], equals: CONTRACT_PDF } },
+		]);
+		expect(JSON.stringify(or)).not.toContain("entity_type");
 	});
 
 	// The lookup key must come from the resolved absolute path, so a request that

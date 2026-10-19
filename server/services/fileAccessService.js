@@ -65,6 +65,37 @@ function hasPartyClaim(doc) {
 	return text(doc?.buyer_id) !== "" || text(doc?.factory_id) !== "";
 }
 
+// The discriminator between a row the contract flow minted and a row an attacker
+// minted through POST /documents/url.
+//
+// createDraftContract assigns `payload.contract_number || "CN-${Date.now()}"`
+// (documentService.js:636), so the contract flow guarantees a non-empty value
+// from a server-generated default rather than from caller input.
+// registerExternalDocument never writes the field, registerDocumentUrl only
+// forwards entity_type / entity_id / url / type, so no caller can inject it, and
+// no update path writes it afterwards — the admin contract patch only touches
+// is_draft. That makes it stable provenance that a pre-existing forged row cannot
+// retroactively acquire.
+//
+// Rejected alternatives, for the record:
+//   title       — also always non-empty, but it is free-form caller text and is
+//                 editable later, so it is a weaker identity signal.
+//   is_draft    — mutated by the signature and artifact patches and by the admin
+//                 contract update; a status flag, not an identity marker.
+//   lifecycle_status — derived rather than always stored (listContracts computes
+//                 it on read at documentService.js:728), so it can be null.
+//
+// artifact is included as a second marker rather than the only one, because
+// sanitizeString returns "" for a non-string input: a caller posting
+// contract_number as a JSON number yields a blank contract_number while still
+// taking the contract flow. artifact is written only by createDraftContract and
+// the artifact patch, so it is unforgeable through POST /documents/url for the
+// same reason contract_number is.
+function hasContractProvenance(doc) {
+	if (text(doc?.contract_number) !== "") return true;
+	return doc?.artifact != null && typeof doc.artifact === "object";
+}
+
 // Contract PDFs are referenced through artifact.pdf_path, never through
 // Document.file_path, so both have to be consulted to resolve one.
 function artifactPdfPath(doc) {
@@ -146,7 +177,18 @@ export async function canUserAccessDocument(user, doc) {
 
 	switch (doc.entity_type) {
 		case "contract":
-			return hasPartyClaim(doc) && canAccessContract(user, doc);
+			// canAccessContract trusts `uploaded_by`, which any caller of
+			// POST /documents/url could self-assert against an arbitrary
+			// file_path. So the row must also be structurally a contract: either it
+			// names a party, or it carries a contract identity and the caller is
+			// its uploader. The second clause is what keeps a blank-party draft
+			// reachable for the manager who created it — createDraftContract skips
+			// the rating check when either party is blank and persists "" for both —
+			// without re-opening the forged-row hole.
+			return (
+				canAccessContract(user, doc) &&
+				(hasPartyClaim(doc) || (matchesId(doc.uploaded_by, user.id) && hasContractProvenance(doc)))
+			);
 
 		case "chat_attachment":
 			return canAccessChatAttachment(user, doc);
@@ -181,13 +223,17 @@ export async function authorizeFilePath(user, relPath) {
 
 	// file_path can never be trusted as an authorization anchor on its own — it is
 	// caller-supplied through POST /documents/url — so candidates are collected
-	// here and re-checked by rowAnchorsPath before any grant. The artifact arm
-	// covers contract PDFs, which live only in artifact.pdf_path.
+	// here and re-checked by rowAnchorsPath before any grant. Both arms are
+	// equalities Postgres evaluates on the column: the second uses Prisma's JSON
+	// path filter (already used at productController.js:814) because contract PDFs
+	// live only in artifact.pdf_path. The previous `{ artifact: { not: null } }`
+	// shape pulled every contract row and its JSON blob on each request, which is
+	// the same whole-table lever the chat query had.
 	const candidates = await prisma.document.findMany({
 		where: {
 			OR: [
 				{ file_path: { contains: basename } },
-				{ entity_type: "contract", artifact: { not: null } },
+				{ artifact: { path: ["pdf_path"], equals: key } },
 			],
 		},
 	});
