@@ -11,8 +11,8 @@ import {
 	VolumeX,
 } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
-import { getInitials, isVideoMessage, toAbsoluteAssetUrl, truncateId } from "./chatUtils.js";
 import LazyImage from "../../components/ui/LazyImage.jsx";
+import { getInitials, isVideoMessage, toAbsoluteAssetUrl, truncateId } from "./chatUtils.js";
 
 export default function RightPanel({
 	activeThread,
@@ -143,7 +143,9 @@ export default function RightPanel({
 							</button>
 						</div>
 						{aiNegotiationError ? (
-							<div className="mt-2 text-[10px] font-semibold text-rose-600">{aiNegotiationError}</div>
+							<div className="mt-2 text-[10px] font-semibold text-rose-600">
+								{aiNegotiationError}
+							</div>
 						) : null}
 						{aiNegotiation?.guidance ? (
 							<>
@@ -165,23 +167,35 @@ export default function RightPanel({
 
 					<div className="mb-8 grid grid-cols-4 gap-3">
 						{[
-							{ icon: Flag, title: "Report", roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"] },
-							{ icon: Lock, title: "Block", roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"] },
-							{ icon: Info, title: "Info", roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"] },
+							{
+								icon: Flag,
+								title: "Report",
+								roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"],
+							},
+							{
+								icon: Lock,
+								title: "Block",
+								roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"],
+							},
+							{
+								icon: Info,
+								title: "Info",
+								roles: ["buyer", "factory", "buying_house", "agent", "owner", "admin"],
+							},
 							{ icon: VolumeX, title: "Mute", roles: ["owner", "admin"] },
 						]
 							.filter((action) => action.roles.includes(userRole))
 							.map((action, i) => (
-							<button
-								key={i}
-								className="flex flex-col items-center gap-1.5 transition-opacity hover:opacity-70"
-								title={action.title}
-							>
-								<div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-transparent text-slate-400 dark:text-slate-500">
-									<action.icon size={16} strokeWidth={2} />
-								</div>
-							</button>
-						))}
+								<button
+									key={i}
+									className="flex flex-col items-center gap-1.5 transition-opacity hover:opacity-70"
+									title={action.title}
+								>
+									<div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-transparent text-slate-400 dark:text-slate-500">
+										<action.icon size={16} strokeWidth={2} />
+									</div>
+								</button>
+							))}
 					</div>
 
 					<div className="space-y-4">
@@ -319,7 +333,9 @@ export default function RightPanel({
 																background: isLight ? "#f1f5f9" : "rgba(255,255,255,0.03)",
 															}}
 														>
-															<p className="line-clamp-2 leading-relaxed opacity-80">{item.message}</p>
+															<p className="line-clamp-2 leading-relaxed opacity-80">
+																{item.message}
+															</p>
 														</div>
 													))
 												) : (
