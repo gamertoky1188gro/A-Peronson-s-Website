@@ -553,4 +553,33 @@ describe("external document registration route (server/routes/documentRoutes.js)
 		expect(line).toBeDefined();
 		expect(line).toMatch(/allowRoles\(\s*"(owner|admin)"/);
 	});
+
+	// The role restriction is an API change, so it has to be written down
+	// somewhere a reader will find it - and it has to STAY written down. A
+	// revert of the docs alone would be as invisible as a revert of the code.
+	test("the role restriction is recorded in the spec, the plan and AGENTS.md", () => {
+		const documents = {
+			"design spec": fs.readFileSync(
+				path.join(
+					process.cwd(),
+					"docs",
+					"superpowers",
+					"specs",
+					"2026-10-18-upload-access-control-design.md",
+				),
+				"utf8",
+			),
+			plan: fs.readFileSync(
+				path.join(process.cwd(), "docs", "plans", "2026-10-18-upload-access-control.md"),
+				"utf8",
+			),
+			"AGENTS.md": fs.readFileSync(path.join(process.cwd(), "AGENTS.md"), "utf8"),
+		};
+		for (const [name, text] of Object.entries(documents)) {
+			expect({
+				name,
+				mentions: /documents\/url/.test(text) && /allowRoles/.test(text),
+			}).toEqual({ name, mentions: true });
+		}
+	});
 });

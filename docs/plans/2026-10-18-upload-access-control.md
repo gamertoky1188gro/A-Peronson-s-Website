@@ -1309,3 +1309,49 @@ Manual checks against a running server:
 ## Rollout
 
 Single PR, no schema change, no migration, no backfill job. Old unsigned URLs for gated prefixes stop working on deploy, which is intended: those URLs were the vulnerability.
+
+The operational details (the 208 orphan contract PDFs that are admin-only until claimed,
+the chat files the registry pass adopts, the deploy step that can break: the signing
+secret) are in `docs/rollout/2026-10-18-upload-access-control-rollout.md`.
+
+---
+
+## Addendum - the final review fix wave (2026-10-18)
+
+The whole-branch review returned "With fixes". The fix wave's own report is at
+`docs/decisions/2026-10-18-upload-access-control-final-fix-report.md`, and the decision
+ledger is at `docs/decisions/2026-10-18-upload-access-control-decisions.md`.
+
+### Task 3 addendum - `POST /api/documents/url` is owner/admin only
+
+**This is an API change that was not in the original plan or spec.** It is recorded
+here and in the design spec (§6.4a) and in `AGENTS.md`.
+
+| Before | After |
+|---|---|
+| `router.post("/url", requireAuth, registerDocumentUrl)` | `router.post("/url", requireAuth, allowRoles("owner","admin"), registerDocumentUrl)` |
+
+**Why:** `ensureAllowedUrl` accepts any `/uploads/...` path, so this route was the
+forgery vector - a caller could register a `Document` row pointing at another user's
+gated bytes and assert `uploaded_by` for it. The authorization resolver had to distrust
+`uploaded_by` for exactly that reason.
+
+**What it breaks:** an external client calling the route as a non-privileged
+authenticated user. Nothing in this repository calls it.
+
+**How it is held:** `tests/unit/server-file-access.test.js` asserts the role
+restriction on the route, so widening it is a deliberate edit to a test.
+
+### Other changes in the fix wave (not in the original plan)
+
+| Finding | Change | Where |
+|---|---|---|
+| C1 | `Document` rows are written at upload time; the registry pass that adopts files already on disk no longer depends on `AI_HARAM_ANALYTICS_ENABLED` and covers every file type | `server/services/privateDocumentService.js`, `server/services/uploadsService.js` |
+| C2 | `search/` is modelled, not un-gated: a `search_image` row, authorized on the uploader | `server/controllers/searchController.js`, `server/services/fileAccessService.js` |
+| C3 | a call recording is authorized against the session that owns it, named by `entity_id` - never against the caller-supplied `recording_url` | `server/services/fileAccessService.js` |
+| I1 | `UPLOADS_SIGNING_SECRET` is required at boot, declared in `render.yaml`, and refused below 32 characters | `server/utils/envValidation.js`, `render.yaml` |
+| I3 | the friend-match id list is fetched once per request, capped, and `/sign` is rate limited per user | `server/services/fileAccessService.js`, `server/routes/fileAccessRoutes.js` |
+| I5 | the client no longer keeps a copy of the gated-prefix list or of the signature lifetime; the server answers both | `server/routes/fileAccessRoutes.js`, `src/lib/signedFile.js` |
+| I6 | the gated-static suite imports the server's list and checks the uploads tree against it | `tests/integration/gated-static.test.js` |
+| I7 | the `file_path` lookup and its JS re-check agree (both case-sensitive) | `server/services/fileAccessService.js` |
+| I8 | the pre-commit test gate reads npm's exit status, so it can fail | `.husky/pre-commit`, `scripts/verify-precommit-gate.sh` |
