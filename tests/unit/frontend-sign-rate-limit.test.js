@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { renderHook, waitFor } from "@testing-library/react";
+import { render, renderHook, screen, waitFor } from "@testing-library/react";
 
 /**
  * The client's side of the /sign budget (src/lib/signedFile.js).
@@ -31,6 +31,10 @@ jest.unstable_mockModule("../../src/lib/auth.js", () => ({ apiRequest, getToken 
 const { SIGN_RATE_LIMITED, describeSignFailure, signEntry, signOne, signRateLimitWaitMs } =
 	await import("../../src/lib/signedFile.js");
 const { useSignedSrcState } = await import("../../src/hooks/useSignedSrc.js");
+// The real hook, the real component: the point of these tests is the WHOLE
+// chain from the server's answer to the words on the screen, because the
+// defect lived at the seam between them.
+const { SignedImage } = await import("../../src/components/chat/SignedMedia.jsx");
 
 /** An error shaped like the one apiRequest throws for a non-2xx response. */
 function rateLimitError() {
@@ -122,7 +126,56 @@ describe("the signed-src hook (src/hooks/useSignedSrc.js)", () => {
 		// The url stays empty - the fail-closed value - but the REASON is
 		// reported, which is what was missing.
 		await waitFor(() => expect(result.current.error).not.toBeNull(), { timeout: 5000 });
-		expect(result.current.error.reason).toBe(SIGN_RATE_LIMITED);
+		// The failure is reported in the SERVER'S OWN SHAPE, so a surface can
+		// hand it to describeSignFailure unchanged. It used to be renamed to
+		// `reason`, which is a dropped reason: describeSignFailure reads
+		// `error`, so a rate limit read as the generic "could not be loaded".
+		expect(result.current.error).toMatchObject({ error: SIGN_RATE_LIMITED, status: 429 });
 		expect(result.current.src).toBe("");
+	});
+
+	test("a failure with no reported reason is still a failure", async () => {
+		// The request failed outright: signEntry resolves null, and the surface
+		// must still say something rather than render a hole.
+		apiRequest.mockRejectedValue(new Error("network down"));
+
+		const { result } = renderHook(() => useSignedSrcState("/uploads/chat/a.png"));
+
+		await waitFor(() => expect(result.current.error).not.toBeNull(), { timeout: 5000 });
+		expect(result.current.error).toMatchObject({ error: null, status: null });
+		expect(result.current.src).toBe("");
+	});
+});
+
+describe("the thumbnail placeholder (src/components/chat/SignedMedia.jsx)", () => {
+	test("a rate-limited sign says the server is rate limiting", async () => {
+		apiRequest.mockRejectedValue(rateLimitError());
+
+		render(<SignedImage src="/uploads/chat/a.png" alt="Shared image" />);
+
+		// The placeholder is the ONLY thing the user can read here, so it has
+		// to name the reason. It used to say the generic "could not be
+		// loaded", because the hook renamed the server's `error` to `reason`
+		// and describeSignFailure reads `error`.
+		await waitFor(() => expect(screen.getByRole("status")).toBeInTheDocument(), { timeout: 5000 });
+		expect(screen.getByRole("status")).toHaveTextContent(/rate limiting/i);
+	});
+
+	test("a refused sign says the file is not accessible, and says something DIFFERENT", async () => {
+		apiRequest.mockResolvedValue({
+			signed: { "/uploads/chat/a.png": { error: "forbidden", status: 403 } },
+		});
+
+		render(<SignedImage src="/uploads/chat/a.png" alt="Shared image" />);
+
+		await waitFor(() => expect(screen.getByRole("status")).toBeInTheDocument(), { timeout: 5000 });
+		expect(screen.getByRole("status")).toHaveTextContent(/access/i);
+
+		// Distinguishable: a refusal is not a rate limit, and the two must not
+		// read as the same sentence.
+		const refusalMessage = screen.getByRole("status").textContent;
+		const rateLimitMessage = describeSignFailure({ error: SIGN_RATE_LIMITED, status: 429 });
+		expect(refusalMessage).not.toBe(rateLimitMessage);
+		expect(refusalMessage).not.toMatch(/rate limiting/i);
 	});
 });

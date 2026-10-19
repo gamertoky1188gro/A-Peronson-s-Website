@@ -245,8 +245,16 @@ async function flushPendingSigns() {
 /**
  * A human-readable reason for a sign failure.
  *
- * @param {{ error?: string, status?: number } | null} [entry] - The server's
- *   entry for the path, or null when the request failed outright.
+ * This is the ONE place a sign failure is understood. Every surface hands it
+ * the server's own entry — `{ error, status }` — which is also the shape
+ * useSignedSrcState reports, so there is a single representation of a failure
+ * and a single place that maps it onto words. A surface that invents its own
+ * field name for the reason (the hook used to call it `reason`) drops the
+ * reason on the floor: `error` is undefined, and a rate limit reads as the
+ * generic "could not be loaded".
+ *
+ * @param {{ error?: string | null, status?: number | null } | null} [entry] -
+ *   The server's entry for the path, or null when the request failed outright.
  * @returns {string} A message the user can act on.
  */
 export function describeSignFailure(entry) {

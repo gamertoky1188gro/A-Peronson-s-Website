@@ -26,8 +26,8 @@ import LazyImage from "../ui/LazyImage.jsx";
 /**
  * The placeholder a failed sign renders in place of the media.
  *
- * @param {{ reason: string, status: number | null }} error - The failure the
- *   hook reported.
+ * @param {{ error: string | null, status: number | null }} error - The failure
+ *   the hook reported, in the server's own `{ error, status }` shape.
  * @param {string} [className] - The caller's classes, so the placeholder
  *   occupies the same box the media would have.
  */

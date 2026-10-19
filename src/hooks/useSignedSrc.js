@@ -22,6 +22,15 @@ const MAX_RATE_LIMIT_RETRIES = 3;
  * the user is left looking at a hole where a file should be. A rate-limited
  * sign in particular used to be indistinguishable from a refused one.
  *
+ * The failure is reported in the SERVER'S OWN SHAPE — `{ error, status }`,
+ * the same object signEntry resolves with — and NOT renamed on the way out.
+ * It used to be reshaped to `{ reason, status }`, and describeSignFailure
+ * reads `error`, so the reason was dropped at the boundary: the thumbnail
+ * showed the generic "could not be loaded" for a rate limit and for a
+ * refusal alike, which is the very confusion the failure half exists to
+ * remove. One representation, understood in one place (describeSignFailure),
+ * so a surface can hand the failure straight to it.
+ *
  * @param {string} url - Asset path, relative or absolute. Falsy disables signing.
  * @param {{ refreshMs?: number | null }} [options] - `refreshMs` re-signs on an
  *   interval so a surface the user leaves open past the signature's ttl keeps
@@ -31,9 +40,14 @@ const MAX_RATE_LIMIT_RETRIES = 3;
  *   Pass 0 for short-lived decorative thumbnails: every refresh swaps the
  *   element's src, which visibly reloads an <img> and restarts a <video>, so it
  *   is only worth paying for on interactive surfaces.
- * @returns {{ src: string, error: { reason: string, status: number | null } | null }}
+ * @returns {{ src: string, error: { error: string | null, status: number | null } | null }}
  *   The signed url ("" until the server hands one back) and the reason the
- *   sign failed, or null while it is pending or after it succeeded.
+ *   sign failed, or null while it is pending or after it succeeded. The
+ *   failure carries the server's own `{ error, status }` shape, so it can be
+ *   passed to describeSignFailure unchanged. `error` is null when the sign
+ *   failed for a reason the server did not report (a network error, a
+ *   response with no entry for the path): the failure is known, the reason is
+ *   not.
  */
 export function useSignedSrcState(url, { refreshMs = null } = {}) {
 	const [state, setState] = useState({ src: "", error: null });
@@ -80,12 +94,18 @@ export function useSignedSrcState(url, { refreshMs = null } = {}) {
 				// backed off, and one more attempt after the cooldown is what
 				// turns a blank thumbnail into a picture. A refusal is not, so
 				// it is reported and left alone.
-				const error = { reason: entry?.error || "unavailable", status: entry?.status ?? null };
+				//
+				// The failure is reported in the SERVER'S SHAPE ({ error,
+				// status }), not renamed. describeSignFailure reads `error`, and
+				// a renamed field is a dropped reason: the thumbnail used to
+				// say "could not be loaded" for a rate limit and for a refusal
+				// alike.
+				const error = { error: entry?.error ?? null, status: entry?.status ?? null };
 				setState({ src: "", error });
 				// The retries are BOUNDED. A server that keeps answering 429
 				// would otherwise be polled forever by every thumbnail on the
 				// screen, which is the load the limiter is trying to shed.
-				if (error.reason === SIGN_RATE_LIMITED && rateLimitRetries < MAX_RATE_LIMIT_RETRIES) {
+				if (error.error === SIGN_RATE_LIMITED && rateLimitRetries < MAX_RATE_LIMIT_RETRIES) {
 					rateLimitRetries += 1;
 					clearRetry();
 					retryTimer = setTimeout(() => {
