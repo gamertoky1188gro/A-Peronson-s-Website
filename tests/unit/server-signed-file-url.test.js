@@ -3,12 +3,16 @@ import {
 	GATED_PREFIXES,
 	isGatedPath,
 	MEDIA_TTL_MS,
+	MIN_SIGNING_SECRET_LENGTH,
 	resolveWithinUploads,
 	signFileUrl,
 	verifySignedFile,
 } from "../../server/utils/signedFileUrl.js";
 
-const SECRET = "test-signing-secret-value";
+// 32 characters is the floor the server enforces on the signing key, so the
+// fixture has to clear it: a secret this module accepted but the server
+// refused would make every test here prove the wrong thing.
+const SECRET = "test-signing-secret-value-0123456789";
 const ORIGINAL_SECRET = process.env.UPLOADS_SIGNING_SECRET;
 
 // Freezes Date.now for the duration of `fn` so ttl arithmetic is exact instead of
@@ -247,6 +251,37 @@ describe("signed file urls (server/utils/signedFileUrl.js)", () => {
 				sig: "x",
 			}),
 		).toEqual({ ok: false, reason: "not_configured" });
+	});
+
+	// A one-character secret used to sign and verify just as happily as a real
+	// one. It is the only thing standing between a signed url and anybody who
+	// can guess the key, so it has to be refused.
+	test("fails closed when the secret is shorter than the minimum length", () => {
+		process.env.UPLOADS_SIGNING_SECRET = "a".repeat(MIN_SIGNING_SECRET_LENGTH - 1);
+		expect(() => signFileUrl({ relPath: "/uploads/contracts/a.pdf", userId: "u1" })).toThrow(
+			/at least 32 characters/,
+		);
+		expect(
+			verifySignedFile({
+				relPath: "/uploads/contracts/a.pdf",
+				userId: "u1",
+				exp: Date.now() + 1000,
+				sig: "x",
+			}),
+		).toEqual({ ok: false, reason: "not_configured" });
+	});
+
+	test("signs with a secret at exactly the minimum length", () => {
+		process.env.UPLOADS_SIGNING_SECRET = "b".repeat(MIN_SIGNING_SECRET_LENGTH);
+		const url = signFileUrl({ relPath: "/uploads/contracts/a.pdf", userId: "u1" });
+		const q = new URL(url, "http://x").searchParams;
+		const res = verifySignedFile({
+			relPath: q.get("path"),
+			userId: q.get("uid"),
+			exp: q.get("exp"),
+			sig: q.get("sig"),
+		});
+		expect(res.ok).toBe(true);
 	});
 
 	test("honours the media ttl for large files", () => {

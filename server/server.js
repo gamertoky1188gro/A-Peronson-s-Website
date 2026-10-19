@@ -96,13 +96,13 @@ import { startSyslogServer } from "./services/syslogServer.js";
 import { revokeExpiredVerifications } from "./services/verificationService.js";
 import { recordWorkflowEvent } from "./services/workflowLifecycleService.js";
 import { closeDatabaseConnection, ensureDatabaseConnection, startDbHeartbeat } from "./utils/db.js";
+import { findMissingEnvVars } from "./utils/envValidation.js";
 import { createGatedStaticGuard } from "./utils/gatedStaticGuard.js";
 import { logError, logInfo, logWarn } from "./utils/logger.js";
 import { consumePendingInvites, enqueuePendingInvites } from "./utils/pendingInvites.js";
 import prisma from "./utils/prisma.js";
 import { closeRedis, initRedis } from "./utils/redis.js";
 
-const REQUIRED_ENV_VARS = ["DATABASE_URL", "JWT_SECRET"];
 const RECOMMENDED_ENV_VARS = [
 	"REDIS_URL",
 	"ADMIN_EMAIL",
@@ -113,7 +113,7 @@ const RECOMMENDED_ENV_VARS = [
 ];
 
 function validateRequiredEnvVars() {
-	const missing = REQUIRED_ENV_VARS.filter((name) => !process.env[name]);
+	const missing = findMissingEnvVars();
 	if (missing.length > 0) {
 		logError("Missing required environment variables", {
 			missing: missing.join(", "),

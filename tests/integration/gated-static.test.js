@@ -4,6 +4,7 @@ import path from "node:path";
 import express from "express";
 import request from "supertest";
 import { createGatedStaticGuard } from "../../server/utils/gatedStaticGuard.js";
+import { GATED_PREFIXES } from "../../server/utils/signedFileUrl.js";
 
 // This is the control that makes private files private. It lives in server.js,
 // which has no test harness, so an untested version of it is indistinguishable
@@ -11,7 +12,12 @@ import { createGatedStaticGuard } from "../../server/utils/gatedStaticGuard.js";
 // percent-encoding bypass shipped once already. The fixture tree below is built
 // in a temp directory, never in the real uploads root.
 
-const GATED = ["chat", "contracts", "calls", "search"];
+// The gated prefixes are IMPORTED, not re-declared. A local copy of the list
+// makes this suite test its own idea of what is private: a fifth gated prefix
+// added to the server would leave this file green while the static mount
+// published the new folder. The directory-coverage test at the bottom of this
+// file is the other half of that guarantee.
+const GATED = GATED_PREFIXES;
 const PRIVATE = "PRIVATE-BYTES";
 const PUBLIC = "PUBLIC-BYTES";
 
@@ -202,6 +208,77 @@ describe("gated static guard", () => {
 			expect(bodyText(res)).not.toContain("OUTSIDE-THE-ROOT");
 		},
 	);
+});
+
+// --- the uploads tree is covered --------------------------------------------
+//
+// The denylist is the right shape for this tree (root-level CMS assets are
+// public and unlisted, so a subdirectory allow-list would 404 the site logo),
+// but a denylist has one failure mode: a NEW folder is public until somebody
+// adds it to GATED_PREFIXES, and nothing detects that. These two tests are the
+// detector.
+//
+// The first one reads the code: every folder the server writes uploads into
+// has to be gated or explicitly public. The second one reads the tree: every
+// directory that actually exists under server/uploads has to be gated or
+// explicitly public. Together they cover a folder that is added to the code
+// and a folder that is added to the disk.
+const ALLOWED_PUBLIC_FOLDERS = ["feed", "profile"];
+
+function uploadsFoldersWrittenByServer() {
+	const serverDir = path.join(process.cwd(), "server");
+	const folders = new Set();
+	const walk = (dir) => {
+		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name);
+			if (entry.isDirectory()) {
+				walk(full);
+				continue;
+			}
+			if (!entry.name.endsWith(".js")) continue;
+			const source = fs.readFileSync(full, "utf8");
+			// The shape the upload destinations are written in:
+			// path.join(process.cwd(), "server", "uploads", "<folder>").
+			for (const match of source.matchAll(/"server",\s*"uploads",\s*"([a-z0-9_-]+)"/gi)) {
+				folders.add(match[1].toLowerCase());
+			}
+		}
+	};
+	walk(serverDir);
+	return [...folders];
+}
+
+describe("gated prefix coverage", () => {
+	test("every folder the server writes uploads into is gated or explicitly public", () => {
+		const folders = uploadsFoldersWrittenByServer();
+		expect(folders.length).toBeGreaterThan(0);
+		for (const folder of folders) {
+			expect({
+				folder,
+				known: GATED_PREFIXES.includes(folder) || ALLOWED_PUBLIC_FOLDERS.includes(folder),
+			}).toEqual({ folder, known: true });
+		}
+	});
+
+	test("every directory under server/uploads is gated or explicitly public", () => {
+		const uploadsRoot = path.join(process.cwd(), "server", "uploads");
+		// A fresh clone has no uploads directory at all (it is untracked), and
+		// then there is nothing to cover.
+		if (!fs.existsSync(uploadsRoot)) {
+			expect(true).toBe(true);
+			return;
+		}
+		const directories = fs
+			.readdirSync(uploadsRoot, { withFileTypes: true })
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => entry.name.toLowerCase());
+		for (const directory of directories) {
+			expect({
+				directory,
+				known: GATED_PREFIXES.includes(directory) || ALLOWED_PUBLIC_FOLDERS.includes(directory),
+			}).toEqual({ directory, known: true });
+		}
+	});
 });
 
 async function plantEscapeLink() {

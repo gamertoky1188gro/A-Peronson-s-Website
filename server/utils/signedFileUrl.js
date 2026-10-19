@@ -12,10 +12,18 @@ export function uploadsRoot() {
 	return path.resolve(process.cwd(), "server", "uploads");
 }
 
+// The signing key has to be long enough to be a key. A one-character secret
+// signs and verifies just as happily as a real one, which is exactly why it
+// must be refused: the secret is the only thing standing between a signed url
+// and anybody who can guess the key.
+export const MIN_SIGNING_SECRET_LENGTH = 32;
+
 function readSecret() {
 	const raw = process.env.UPLOADS_SIGNING_SECRET;
 	if (!(raw && String(raw).trim())) return null;
-	return String(raw);
+	const secret = String(raw);
+	if (secret.length < MIN_SIGNING_SECRET_LENGTH) return null;
+	return secret;
 }
 
 // The user id is folded into the signature, so it has to be one stable string:
@@ -72,7 +80,13 @@ function canonical(absPath, userId, exp) {
 export function signFileUrl({ relPath, userId, ttlMs = DEFAULT_TTL_MS }) {
 	const secret = readSecret();
 	if (!secret) {
-		throw new Error("UPLOADS_SIGNING_SECRET is not configured");
+		// Two different misconfigurations, two different messages: an unset
+		// secret and a secret that is too short to be a key.
+		throw new Error(
+			process.env.UPLOADS_SIGNING_SECRET
+				? `UPLOADS_SIGNING_SECRET must be at least ${MIN_SIGNING_SECRET_LENGTH} characters`
+				: "UPLOADS_SIGNING_SECRET is not configured",
+		);
 	}
 	const uid = normalizeUserId(userId);
 	if (!uid) {

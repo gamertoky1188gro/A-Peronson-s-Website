@@ -64,6 +64,11 @@ services:
         value: "http://localhost:10000"
       - key: JWT_SECRET
         value: "82628ef86a274006726585d8c88c0d02fb1b3ffdfc4c74b3ebd65fb27acfb022"
+      # HMAC key behind every signed private-file url. The server refuses to
+      # boot without it (it is in REQUIRED_ENV_VARS) and refuses one shorter
+      # than 32 characters, so it must be declared here.
+      - key: UPLOADS_SIGNING_SECRET
+        generateValue: true
       - key: JWT_ISSUER
         value: "gartexhub-api"
       - key: JWT_AUDIENCE
