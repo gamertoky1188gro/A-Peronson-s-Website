@@ -211,25 +211,27 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
 	});
 
-	// The other side of the discriminator: a forged /url row carries a real
-	// attacker id in uploaded_by but neither marker, because
-	// registerExternalDocument writes neither contract_number nor artifact and
-	// registerDocumentUrl cannot inject them. It must stay denied.
+	// The laundering path. A row forged through /url before that route was
+	// role-restricted has uploaded_by = the attacker, blank parties and a null
+	// contract_number. PATCH /contracts/:id/artifact and /signatures are guarded
+	// only by canModifyContract, which trusts uploaded_by, and both write an
+	// artifact — so if provenance trusted `artifact`, the attacker could mint
+	// that marker after the fact and grant themselves the victim's PDF.
+	test("denies a forged contract row laundered with an artifact", async () => {
+		const doc = forgedRow({
+			entity_type: "contract",
+			contract_number: null,
+			artifact: { pdf_path: CONTRACT_PDF, status: "generated", version: 1 },
+		});
+		expect(await canUserAccessDocument(STRANGER, doc)).toBe(false);
+	});
+
+	// A forged /url row carries a real attacker id in uploaded_by but no
+	// contract_number, because registerExternalDocument never writes one and
+	// registerDocumentUrl cannot inject it. It must stay denied.
 	test("denies a party-less contract row to its claimed uploader", async () => {
 		const doc = forgedRow({ entity_type: "contract", uploaded_by: "buyer1" });
 		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
-	});
-
-	// A generated artifact is the second marker. sanitizeString returns "" for a
-	// non-string input, so a contract_number posted as a JSON number lands blank
-	// while still going through the contract flow.
-	test("allows a blank-party contract with a generated artifact to its creator", async () => {
-		const doc = forgedRow({
-			entity_type: "contract",
-			uploaded_by: "buyer1",
-			artifact: { pdf_path: CONTRACT_PDF, status: "generated" },
-		});
-		expect(await canUserAccessDocument(BUYER, doc)).toBe(true);
 	});
 
 	// A blank-party contract belongs to its creator and nobody else.

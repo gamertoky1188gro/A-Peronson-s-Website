@@ -85,15 +85,18 @@ function hasPartyClaim(doc) {
 //   lifecycle_status — derived rather than always stored (listContracts computes
 //                 it on read at documentService.js:728), so it can be null.
 //
-// artifact is included as a second marker rather than the only one, because
-// sanitizeString returns "" for a non-string input: a caller posting
-// contract_number as a JSON number yields a blank contract_number while still
-// taking the contract flow. artifact is written only by createDraftContract and
-// the artifact patch, so it is unforgeable through POST /documents/url for the
-// same reason contract_number is.
+// artifact was briefly a second marker here, on the grounds that
+// registerExternalDocument never writes it. That was wrong: it is caller-reachable
+// after the fact. PATCH /contracts/:id/artifact and PATCH /contracts/:id/signatures
+// are requireAuth-only and guarded solely by canModifyContract, which trusts
+// uploaded_by, and both write `artifact` — updateContractArtifact does so
+// unconditionally (documentService.js:928) and updateContractSignatures even
+// generates a real one on double-signature (:812). A row forged through /url before
+// that route was role-restricted could therefore mint the marker after creation and
+// grant itself the victim's PDF. A marker is only provenance if nothing can write
+// it, and artifact can be written. contract_number can be written by nothing.
 function hasContractProvenance(doc) {
-	if (text(doc?.contract_number) !== "") return true;
-	return doc?.artifact != null && typeof doc.artifact === "object";
+	return text(doc?.contract_number) !== "";
 }
 
 // Contract PDFs are referenced through artifact.pdf_path, never through
