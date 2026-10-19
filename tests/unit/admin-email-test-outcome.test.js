@@ -235,6 +235,24 @@ describe("describeEmailTestOutcome (src/pages/AdminPanel.helpers.js)", () => {
 			status: "sent",
 		});
 	});
+
+	// The envelope grew a `status` on the outer object. Reading that as a
+	// delivery result would tell the operator a mail went out when the action
+	// envelope knows nothing about mail.
+	test("a status on the outer envelope is not a delivery result", () => {
+		expect(readEmailDeliveryResult({ ok: true, status: "sent" })).toBeNull();
+		expect(readEmailDeliveryResult({ ok: true, result: { ok: true, status: "sent" } })).toBeNull();
+	});
+
+	// A flattened body is accepted only when it is explicitly flagged, so that
+	// no shape of the envelope can be read as one by accident.
+	test("a flattened body is accepted only when it is explicitly flagged", () => {
+		expect(readEmailDeliveryResult({ ok: true, status: "sent" })).toBeNull();
+		expect(readEmailDeliveryResult({ delivery: { ok: true, status: "sent" } })).toEqual({
+			ok: true,
+			status: "sent",
+		});
+	});
 });
 
 // --- AdminPanel.jsx wiring guard -------------------------------------------

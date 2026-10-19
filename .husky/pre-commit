@@ -22,9 +22,26 @@ else
 fi
 
 echo "2. Running Tests..."
-npm test 2>&1 | grep -E "(PASS|FAIL|Tests:)"
-if [ $? -ne 0 ]; then
+# npm's OWN exit status is the gate.
+#
+# The previous form was `npm test 2>&1 | grep -E "(PASS|FAIL|Tests:)"` followed
+# by `if [ $? -ne 0 ]`, which reads GREP's exit status, not npm's. A red suite
+# still prints FAIL and a Tests: line, so grep exits 0 and the gate passed: the
+# one automated defence against "shipped green while asserting nothing" could
+# not fail.
+#
+# `set -o pipefail` is not the fix here: husky runs this file with `sh -e`, and
+# /bin/sh is dash on Debian, where pipefail does not exist. Capturing npm's
+# exit code is portable and reads the right status.
+#
+# The output is captured rather than piped so a failure can print the whole
+# suite output, not just the grep summary.
+TEST_STATUS=0
+TEST_OUTPUT=$(npm test 2>&1) || TEST_STATUS=$?
+echo "$TEST_OUTPUT" | grep -E "(PASS|FAIL|Tests:)" || true
+if [ "$TEST_STATUS" -ne 0 ]; then
   echo "Tests failed!"
+  echo "$TEST_OUTPUT"
   exit 1
 fi
 

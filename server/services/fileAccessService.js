@@ -119,17 +119,35 @@ function hasContractProvenance(doc) {
 
 // Contract PDFs are referenced through artifact.pdf_path, never through
 // Document.file_path, so both have to be consulted to resolve one.
+//
+// The stored path is compared EXACTLY. The SQL arms are case-sensitive
+// (a `contains` LIKE and an `equals`), so the JS re-check has to be too — the
+// two have to agree, or one of them is dead code.
+//
+// The alternative, `mode: "insensitive"` on the file_path arm, was rejected on
+// purpose: the row that matches is not the row that names the file that is
+// served. The route serves the path the REQUEST asked for, and a row for
+// "/uploads/chat/SECRET.png" would authorize a request for
+// "/uploads/chat/secret.png" — a different file on a case-sensitive
+// filesystem, which is what the server runs on. That is a cross-file grant,
+// and it is a worse defect than the spurious 404 it fixes: the client always
+// asks for the exact path the server gave it, so the case-insensitive lookup
+// buys nothing in practice.
 function artifactPdfPath(doc) {
 	const raw = doc?.artifact?.pdf_path;
-	return typeof raw === "string" ? text(raw).toLowerCase() : "";
+	return typeof raw === "string" ? text(raw) : "";
 }
 
 // Does this row actually anchor the requested file? file_path is caller-supplied
 // through POST /documents/url, so a row that merely *claims* the path proves
 // nothing — the row must be one the server itself wrote for these bytes.
+//
+// The comparison is case-sensitive, matching the SQL arms exactly. See
+// artifactPdfPath above for why the case-insensitive alternative was rejected:
+// a row that differs only in case names a DIFFERENT file on the filesystem the
+// server runs on, and the route serves the requested path, not the row's.
 function rowAnchorsPath(doc, key) {
-	const target = key.toLowerCase();
-	return text(doc?.file_path).toLowerCase() === target || artifactPdfPath(doc) === target;
+	return text(doc?.file_path) === key || artifactPdfPath(doc) === key;
 }
 
 // The caller's friend match ids, fetched at most once per request.

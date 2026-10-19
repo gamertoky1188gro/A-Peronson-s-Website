@@ -969,15 +969,21 @@ export const ACTION_GROUPS = [
  * The endpoint answers with `{ ok, action_id, result: { ok, result } }`: the outer
  * `ok` only says the admin action itself ran, and the inner `result` is the
  * sendEmail() outcome `{ ok, status }`. The email truth therefore lives at
- * `response.result.result`. A flattened body is accepted too, but only when it
- * carries a delivery `status`, so the admin action envelope is never mistaken
- * for a delivery result.
+ * `response.result.result`.
+ *
+ * A flattened body is accepted only when it says so: `{ delivery: { ok, status } }`.
+ * The flag is the point. The previous version also accepted `response.result`
+ * and `response` itself whenever they carried a `status`, which meant that a
+ * future change to the envelope — one that put a `status` on the outer object —
+ * would be read as a delivery result, and the panel would claim a send that
+ * never happened. The admin action envelope carries no `delivery` key, so
+ * nothing it grows can be mistaken for one.
  *
  * @param {Object} response The parsed /admin/actions response body.
  * @returns {{ok: boolean, status: string}|null} The delivery outcome, or null when unknown.
  */
 export function readEmailDeliveryResult(response) {
-	const candidates = [response?.result?.result, response?.result, response];
+	const candidates = [response?.result?.result, response?.delivery];
 	for (const candidate of candidates) {
 		if (
 			candidate &&

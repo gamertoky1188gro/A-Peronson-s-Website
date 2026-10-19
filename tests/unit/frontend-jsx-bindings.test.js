@@ -121,13 +121,21 @@ function readSource(relative) {
 /**
  * Capitalised JSX element names with no *lexical* binding anywhere in scope.
  *
- * `{ noGlobals: true }` matters. Plain `scope.hasBinding(name)` also returns
- * true for anything the runtime provides, so `<Map />`, `<Set />`, `<Error />`,
- * `<Promise />`, `<Math />`, `<JSON />` and 19 other globals came back as
- * "bound" and escaped. Measured over 39 probed names: 25 escaped, 14 were
- * flagged, and every name that escapes is a plausible typo target — a deleted
- * import called `Map` is exactly as broken as one called `LazyImage`.
- * Asserted by "flags a JSX name that resolves only to a runtime global".
+ * The narrowing is `getBinding`, not `hasBinding`, and the reason is not the
+ * `{ noGlobals: true }` argument: `Scope#getBinding(name)` takes ONE
+ * parameter and ignores the second one. The narrowing works because
+ * `getBinding` never consults the runtime's globals - it walks the lexical
+ * scopes only - so a name the runtime provides comes back *unbound* and is
+ * reported. `scope.hasBinding(name)` does consult the globals, so with
+ * hasBinding alone `<Map />`, `<Error />`, `<Promise />`, `<Math />` and 23
+ * other globals came back "bound" and escaped.
+ *
+ * Measured over the 32 capitalised globals in GLOBAL_PROBE_NAMES: with
+ * getBinding, 32 are flagged and 0 escape; with hasBinding alone, 5 are
+ * flagged and 27 escape. Every name that escapes is a plausible typo target -
+ * a deleted import called `Map` is exactly as broken as one called
+ * `LazyImage`. Asserted by "flags a JSX name that resolves only to a runtime
+ * global" and by "measures the global-name escape rate".
  *
  * The cost of the narrowing is caveat 2/3 in the header: names that exist only
  * at runtime are now reported instead of silently accepted. That is the right
@@ -151,6 +159,83 @@ function findUnboundJsxNames(src) {
 	return [...missing];
 }
 
+/**
+ * The capitalised runtime globals the guard is probed against.
+ *
+ * Pinned so the numbers in the docblock above are reproducible: the test
+ * "measures the global-name escape rate" measures exactly this list. Lowercase
+ * globals are excluded on purpose - the guard only reports capitalised names,
+ * so a lowercase global is out of scope for it.
+ */
+const GLOBAL_PROBE_NAMES = [
+	"Map",
+	"Set",
+	"WeakMap",
+	"WeakSet",
+	"Error",
+	"TypeError",
+	"Promise",
+	"Symbol",
+	"Array",
+	"Object",
+	"Number",
+	"String",
+	"Boolean",
+	"Math",
+	"JSON",
+	"Atomics",
+	"Proxy",
+	"Reflect",
+	"Date",
+	"RegExp",
+	"Function",
+	"BigInt",
+	"Intl",
+	"ArrayBuffer",
+	"DataView",
+	"URL",
+	"URLSearchParams",
+	"TextEncoder",
+	"TextDecoder",
+	"AbortController",
+	"NaN",
+	"Infinity",
+];
+
+/**
+ * The same scan, using hasBinding instead of getBinding.
+ *
+ * This is the instrument for the mechanism claim: it is what the guard would
+ * report if it used hasBinding, and the difference between the two scanners
+ * is exactly why the globals are caught.
+ */
+function findUnboundJsxNamesWithHasBinding(src) {
+	const missing = new Set();
+	traverse(parseJsx(src), {
+		JSXOpeningElement(nodePath) {
+			let root = nodePath.node.name;
+			while (root && root.type === "JSXMemberExpression") root = root.object;
+			if (!root || root.type !== "JSXIdentifier") return;
+			const name = root.name;
+			if (!/^[A-Z]/.test(name)) return;
+			if (!nodePath.scope.hasBinding(name)) missing.add(name);
+		},
+	});
+	return [...missing];
+}
+
+/** A source with one JSX element per probed global name. */
+function globalProbeSource(names) {
+	return [
+		"export function Panel() {",
+		"\treturn (",
+		"\t\t<div>",
+		...names.map((name) => `\t\t\t<${name} />`),
+		"\t\t</div>",
+		"\t);",
+		"}",
+	].join("\n");
+}
 function countJsxElements(src) {
 	let count = 0;
 	traverse(parseJsx(src), {
@@ -331,8 +416,10 @@ describe("JSX elements resolve to a binding (signed-url surfaces)", () => {
 	});
 
 	// Header caveat 1, asserted rather than asserted-in-prose: a global resolves
-	// through scope.hasBinding(), so without { noGlobals: true } every one of
-	// these came back clean. 25 of 39 probed names escaped that way.
+	// through scope.hasBinding(), so with hasBinding every one of these came
+	// back clean. 27 of the 32 capitalised names in GLOBAL_PROBE_NAMES escape
+	// that way - measured by "hasBinding alone would let the runtime globals
+	// through".
 	test("flags a JSX name that resolves only to a runtime global", () => {
 		const src = [
 			"export function Panel() {",
@@ -347,6 +434,28 @@ describe("JSX elements resolve to a binding (signed-url surfaces)", () => {
 			"}",
 		].join("\n");
 		expect(findUnboundJsxNames(src)).toEqual(["Map", "Error", "Promise", "Math"]);
+	});
+
+	// The measurement in the docblock, reproduced from a pinned list. The
+	// numbers quoted there are these numbers, and they are the reason the
+	// docblock quotes them at all.
+	test("measures the global-name escape rate", () => {
+		expect(GLOBAL_PROBE_NAMES).toHaveLength(32);
+		const src = globalProbeSource(GLOBAL_PROBE_NAMES);
+		const flagged = findUnboundJsxNames(src);
+		expect(flagged).toHaveLength(32);
+		expect(GLOBAL_PROBE_NAMES.filter((name) => !flagged.includes(name))).toEqual([]);
+	});
+
+	// The mechanism, measured rather than asserted in prose: getBinding never
+	// consults the runtime's globals, so every global comes back unbound, while
+	// hasBinding consults them and reports them as bound. The guard uses
+	// getBinding, and that is the whole reason the globals are caught.
+	test("hasBinding alone would let the runtime globals through", () => {
+		const src = globalProbeSource(GLOBAL_PROBE_NAMES);
+		const flagged = findUnboundJsxNamesWithHasBinding(src);
+		expect(flagged).toHaveLength(5);
+		expect(GLOBAL_PROBE_NAMES.filter((name) => !flagged.includes(name))).toHaveLength(27);
 	});
 
 	// Header caveat 1 again, from the other direction: the same unbound name is

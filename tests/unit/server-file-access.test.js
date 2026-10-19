@@ -397,6 +397,25 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 		expect(res).toEqual({ ok: false, reason: "not_found" });
 	});
 
+	// The SQL arms are case-sensitive, so the JS re-check has to be too — the
+	// two have to agree, or one of them is dead code. A case-insensitive SQL
+	// match would let a row for "/uploads/chat/SECRET.png" authorize a request
+	// for "/uploads/chat/secret.png": a DIFFERENT file on the case-sensitive
+	// filesystem the server runs on, and the route serves the requested path.
+	test("a row that differs only in case does not anchor the request", async () => {
+		documentFindMany.mockResolvedValue([
+			contractRow({ id: "d3", file_path: "/uploads/contracts/A.pdf" }),
+		]);
+		const res = await authorizeFilePath(BUYER, "/uploads/contracts/a.pdf");
+		expect(res).toEqual({ ok: false, reason: "not_found" });
+	});
+
+	test("the exact stored spelling resolves", async () => {
+		documentFindMany.mockResolvedValue([contractRow()]);
+		const res = await authorizeFilePath(BUYER, "/uploads/contracts/a.pdf");
+		expect(res.ok).toBe(true);
+	});
+
 	test("reports forbidden when the caller owns no part of the document", async () => {
 		documentFindMany.mockResolvedValue([contractRow()]);
 		const res = await authorizeFilePath(STRANGER, CONTRACT_PDF);
