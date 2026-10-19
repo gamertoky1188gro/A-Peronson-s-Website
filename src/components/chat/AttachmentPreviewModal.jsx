@@ -3,7 +3,13 @@ import { Download, File, X } from "lucide-react";
 import Prism from "prismjs";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Atom } from "react-loading-indicators";
-import { signAndAssign, signAndOpen } from "../../lib/signedFile.js";
+import { useSignedSrc } from "../../hooks/useSignedSrc.js";
+import {
+	isGatedAssetPath,
+	SIGNED_URL_REFRESH_MS,
+	signAndOpen,
+	signOne,
+} from "../../lib/signedFile.js";
 import LazyImage from "../ui/LazyImage.jsx";
 import MarkdownMessage from "./MarkdownMessage.jsx";
 
@@ -718,8 +724,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 	});
 	// The only url allowed to reach an <img>/<video>/<iframe> src. It stays ""
 	// until the server hands back a signature, and stays "" if it refuses, so an
-	// unsigned private path is never rendered.
-	const [signedSrc, setSignedSrc] = useState("");
+	// unsigned private path is never rendered. Refreshes at ttl/2 because this
+	// modal can sit open far longer than one signature lasts.
+	const signedSrc = useSignedSrc(open ? file?.url || "" : "", {
+		refreshMs: SIGNED_URL_REFRESH_MS,
+	});
 
 	useEffect(() => {
 		if (!open) {
@@ -739,29 +748,10 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		setVideoError(false);
 	}, []);
 
-	// Sign once per (modal, attachment) so every inline preview below renders a
-	// url the server will accept. Deliberately NOT re-signed on every render:
-	// the signature is valid for minutes, and the effect is re-keyed whenever the
-	// attachment changes so a stale url cannot outlive its file. The download and
-	// "open in new tab" actions never read this state at all: they sign in the
-	// click handler, so the signature is minted when it is spent rather than
-	// minutes earlier.
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		setSignedSrc("");
-		if (!(open && file?.url)) {
-			return;
-		}
-		let alive = true;
-		void signAndAssign(file.url, (signed) => {
-			if (alive) {
-				setSignedSrc(signed);
-			}
-		});
-		return () => {
-			alive = false;
-		};
-	}, [open, file?.url]);
+	// Removed: the hook above now owns signing for this modal, including the
+	// re-sign on the refresh interval. The download and "open in new tab"
+	// actions still sign in their click handlers, so nothing here is spent on an
+	// action that may not happen for another hour.
 
 	useEffect(() => {
 		if (
@@ -783,7 +773,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		async function load() {
 			setTextState({ loading: true, error: "", content: "" });
 			try {
-				const response = await fetch(file.url, { signal: controller.signal });
+				const signed = await signOne(file.url);
+				if (!signed) {
+					throw new Error("This file is not available to you.");
+				}
+				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load preview (${response.status})`);
 				}
@@ -960,7 +954,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 				rows: [],
 			});
 			try {
-				const response = await fetch(file.url, { signal: controller.signal });
+				const signed = await signOne(file.url);
+				if (!signed) {
+					throw new Error("This file is not available to you.");
+				}
+				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load spreadsheet (${response.status})`);
 				}
@@ -1040,7 +1038,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		async function loadRtf() {
 			setRtfState({ loading: true, error: "", html: "", meta: null });
 			try {
-				const response = await fetch(file.url, { signal: controller.signal });
+				const signed = await signOne(file.url);
+				if (!signed) {
+					throw new Error("This file is not available to you.");
+				}
+				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load RTF (${response.status})`);
 				}
@@ -1149,7 +1151,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		async function loadPdf() {
 			setPdfState({ loading: true, error: "", blobUrl: "" });
 			try {
-				const response = await fetch(file.url, { signal: controller.signal });
+				const signed = await signOne(file.url);
+				if (!signed) {
+					throw new Error("This file is not available to you.");
+				}
+				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load PDF (${response.status})`);
 				}
@@ -1207,11 +1213,15 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 	// private" notice both need to know the host. Never used as an href, a src
 	// or a fetch target; those all go through signedSrc or a click-time sign.
 	const absoluteFileUrl = asAbsoluteUrl(file.url);
-	// Built from the *signed* url so the office viewer receives a link that still
-	// works, and so the raw private path is not handed to a third party. Empty
-	// until signing completes, which already suppresses the iframe below.
+	// A signed url is a bearer credential with a five-minute life, and the Office
+	// viewer is a third party: pointing it at a gated document lets Microsoft
+	// fetch and retain a private file. So the embed is suppressed outright for
+	// gated paths and only ever built from the plain url of a public document.
+	const officeIsGated = isGatedAssetPath(file.url);
 	const officeEmbed =
-		kind === "office" || kind === "presentation" ? officeViewerEmbedUrl(signedSrc) : "";
+		(kind === "office" || kind === "presentation") && !officeIsGated
+			? officeViewerEmbedUrl(file.url)
+			: "";
 	const officeIsPrivate = (() => {
 		if (kind !== "office" && kind !== "presentation") {
 			return false;
@@ -1365,6 +1375,13 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 									Microsoft Office Web Viewer needs a publicly reachable URL. Your file URL looks
 									local/private ({absoluteFileUrl}). Please use Cloudflare Tunnel / a public domain,
 									or download the file.
+								</div>
+							) : null}
+							{officeIsGated ? (
+								<div class="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-yellow-500/10 p-4 text-sm text-yellow-100">
+									This document is private, so it is not handed to the Microsoft Office viewer. Use
+									"Open in new tab" below instead — that link is signed for you alone and expires
+									within five minutes.
 								</div>
 							) : null}
 							{!officeIsPrivate && officeEmbed ? (

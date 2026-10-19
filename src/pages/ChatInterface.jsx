@@ -32,6 +32,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import AttachmentPreviewModal from "../components/chat/AttachmentPreviewModal.jsx";
 import FileAttachmentCard from "../components/chat/FileAttachmentCard.jsx";
 import MarkdownMessage from "../components/chat/MarkdownMessage.jsx";
+import { SignedImage, SignedVideo } from "../components/chat/SignedMedia.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { useSecureUser } from "../hooks/useSecureUser.js";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth.js";
@@ -1055,12 +1056,12 @@ export default function ChatInterface() {
 						class="block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left transition-opacity hover:opacity-95"
 						title="View image"
 					>
-						<LazyImage
-							src={attachmentUrl}
+						<SignedImage
+							src={message?.attachment?.url || ""}
 							alt={message?.attachment?.name || "Shared image"}
 							width={600}
 							height={400}
-							class="max-h-64 w-full object-cover"
+							className="max-h-64 w-full object-cover"
 						/>
 					</button>
 					<button
@@ -1089,12 +1090,12 @@ export default function ChatInterface() {
 						class="relative block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left"
 						title="View video"
 					>
-						<video
-							src={attachmentUrl}
+						<SignedVideo
+							src={message?.attachment?.url || ""}
 							muted={true}
 							playsInline={true}
 							preload="metadata"
-							class="max-h-64 w-full object-cover"
+							className="max-h-64 w-full object-cover"
 						/>
 						<div class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
 							<div class="rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white">

@@ -1471,15 +1471,28 @@ export default function ContractVaultPage({ embedded = false }) {
 												<span className="text-slate-700 dark:text-slate-300">
 													{call.title || call.id || `Call ${idx + 1}`}
 												</span>
+												{/*
+													/uploads/calls/ is a gated prefix, so the recording path must never sit
+													in an href. Signing happens on the click because the signature is
+													short-lived; one minted at render time has expired by the time anyone
+													presses Listen.
+												*/}
 												{call.recording_url && (
-													<a
-														href={call.recording_url}
-														target="_blank"
-														rel="noopener noreferrer"
+													<button
+														type="button"
+														onClick={() => {
+															void signAndOpen(call.recording_url).then((opened) => {
+																if (!opened) {
+																	logger.warn("Failed to open call recording", {
+																		url: call.recording_url,
+																	});
+																}
+															});
+														}}
 														className="text-sky-600 hover:underline dark:text-sky-400"
 													>
 														Listen
-													</a>
+													</button>
 												)}
 											</li>
 										))}

@@ -8,33 +8,94 @@ import { apiRequest, getToken } from "./auth.js";
 // requireAuth so an <img>, an <iframe> and a new tab can all reach it without
 // attaching an Authorization header.
 //
-// Two consequences shape everything below:
+// Three consequences shape everything below:
 //
 //   1. Sign immediately before you navigate or render. A url captured at mount
 //      and reused across renders has already expired by the time anyone clicks.
-//      Callers therefore sign in the click handler (signAndOpen) or in an effect
-//      keyed on the attachment (signAndAssign).
-//   2. Fail closed. A refused path, a network error, a 503 from an unconfigured
-//      signing secret — all of them mean there is no url to use, and the helper
-//      returns false rather than handing back the unsigned path. Nothing here
-//      ever falls back to the raw path, because that fallback is the leak the
-//      server-side gate exists to prevent.
+//      Callers sign in the click handler (signAndOpen / signAndDownload), in a
+//      one-shot ahead of a fetch (signOne), or in an effect keyed on the
+//      attachment (signAndAssign / useSignedSrc).
+//   2. Normalise first. Callers hold absolute urls whenever VITE_API_URL is set,
+//      but isGatedPath only strips a leading "uploads/", so an absolute url
+//      arrives as the first segment "http:" and is reported not_gated. Every
+//      entry point therefore reduces to a pathname before it is sent.
+//   3. Fail closed. A refused path, a network error, a 503 from an unconfigured
+//      signing secret — all of them mean there is no url to use, and the helpers
+//      return false / null rather than handing back the unsigned path. Nothing
+//      here ever falls back to the raw path, because that fallback is the leak
+//      the server-side gate exists to prevent.
 
 // server/routes/fileAccessRoutes.js slices the body to MAX_PATHS_PER_REQUEST.
 // Matching the cap here keeps the client from sending a request the server
 // would silently answer for a prefix of the list.
 const MAX_PATHS_PER_SIGN = 50;
 
+// Mirrors DEFAULT_TTL_MS in server/utils/signedFileUrl.js. Only used to decide
+// when a long-lived surface should re-sign; the server remains the authority.
+export const SIGNED_URL_TTL_MS = 5 * 60 * 1000;
+export const SIGNED_URL_REFRESH_MS = Math.floor(SIGNED_URL_TTL_MS / 2);
+
+// Mirrors GATED_PREFIXES in server/utils/signedFileUrl.js. Used to decide
+// whether a url may be handed to a third-party viewer — a live signature is a
+// credential, so a gated document never goes to view.officeapps.live.com.
+const GATED_PREFIXES = ["chat", "contracts", "calls", "search"];
+
+/**
+ * Client mirror of the server's isGatedPath.
+ *
+ * @param {string} path - Any url shape: relative, absolute, or bare.
+ * @returns {boolean} True when the path sits under a gated uploads prefix.
+ */
+export function isGatedAssetPath(path) {
+	const raw = String(path || "").trim();
+	if (!raw) return false;
+	let relPath = raw;
+	try {
+		relPath = new URL(raw, window.location.origin).pathname;
+	} catch {
+		// Not parseable as a url — fall through and treat it as a bare path.
+	}
+	const first = relPath
+		.toLowerCase()
+		.replace(/^\/+/, "")
+		.replace(/^uploads(?:\/|$)/, "")
+		.split("/")[0];
+	return GATED_PREFIXES.includes(first);
+}
+
+/**
+ * Reduces any url shape to the pathname the server keys its verdict on.
+ *
+ * @param {string} path - Relative "/uploads/chat/a.png" or absolute
+ *   "https://host/uploads/chat/a.png"; both reduce to "/uploads/chat/a.png".
+ * @returns {string} The pathname, or "" when nothing usable can be derived.
+ */
+export function toSignablePath(path) {
+	const raw = String(path || "");
+	if (!raw) return "";
+	try {
+		return new URL(raw, window.location.origin).pathname;
+	} catch {
+		return raw;
+	}
+}
+
 /**
  * Asks the server to mint signed urls for a batch of private paths.
  *
- * @param {string[]} [paths] - Public paths, e.g. "/uploads/contracts/a.pdf".
+ * @param {string[]} [paths] - Public paths, absolute or relative.
  * @returns {Promise<Record<string, { url?: string, error?: string, status?: number }>>}
- *   Keyed by the path string that was sent. A refused path has `error`/`status`
- *   and no `url`. Returns `{}` when the request fails outright.
+ *   Keyed by the NORMALISED path that was sent. A refused path has
+ *   `error`/`status` and no `url`. Returns `{}` when the request fails outright.
  */
 export async function signPaths(paths) {
-	const list = (paths || []).filter(Boolean).slice(0, MAX_PATHS_PER_SIGN);
+	// Normalise before sending: the response is keyed by the string we send, so
+	// every caller must look its own entry up by the normalised form too.
+	const list = (paths || [])
+		.filter(Boolean)
+		.map((path) => toSignablePath(path))
+		.filter(Boolean)
+		.slice(0, MAX_PATHS_PER_SIGN);
 	if (list.length === 0) return {};
 	try {
 		const data = await apiRequest("/files/sign", {
@@ -45,21 +106,36 @@ export async function signPaths(paths) {
 		return data?.signed || {};
 	} catch {
 		// A sign failure is not exceptional enough to surface on its own: the
-		// callers below already translate `false` into their own error path.
+		// callers below already translate a miss into their own error path.
 		return {};
 	}
 }
 
 /**
+ * Signs one path and returns the url.
+ *
+ * The one-shot counterpart to signAndOpen/signAndAssign, for callers that need
+ * the url itself rather than a side effect — a fetch of a preview, a pdf.js
+ * document, a library that takes a url and not an element.
+ *
+ * @param {string} path - Public path to sign, relative or absolute.
+ * @returns {Promise<string | null>} The signed url, or null when refused.
+ */
+export async function signOne(path) {
+	const normalised = toSignablePath(path);
+	if (!normalised) return null;
+	const result = await signPaths([normalised]);
+	return result[normalised]?.url || null;
+}
+
+/**
  * Signs one path and opens it in a new tab.
  *
- * @param {string} path - Public path to sign.
+ * @param {string} path - Public path to sign, relative or absolute.
  * @returns {Promise<boolean>} True only when a url was returned *and* opened.
  */
 export async function signAndOpen(path) {
-	if (!path) return false;
-	const result = await signPaths([path]);
-	const url = result[path]?.url;
+	const url = await signOne(path);
 	if (!url) return false;
 	window.open(url, "_blank");
 	return true;
@@ -73,15 +149,40 @@ export async function signAndOpen(path) {
  * render `signedUrl || null` — an empty state keeps the unsigned path out of
  * the DOM while the request is in flight and if it fails.
  *
- * @param {string} path - Public path to sign.
+ * @param {string} path - Public path to sign, relative or absolute.
  * @param {(url: string) => void} setter - Receives the signed url.
  * @returns {Promise<boolean>} True when the setter was called.
  */
 export async function signAndAssign(path, setter) {
-	if (!path || typeof setter !== "function") return false;
-	const result = await signPaths([path]);
-	const url = result[path]?.url;
+	if (typeof setter !== "function") return false;
+	const url = await signOne(path);
 	if (!url) return false;
 	setter(url);
+	return true;
+}
+
+/**
+ * Signs one path and downloads it under a caller-chosen filename.
+ *
+ * window.open cannot carry a `download` attribute, so "Save as..." needs a
+ * synthesised anchor. The signed url is put in the anchor's href at the moment
+ * of the click, never before, so the unsigned path never reaches the DOM.
+ *
+ * @param {string} path - Public path to sign, relative or absolute.
+ * @param {string} [filename] - Suggested download filename.
+ * @returns {Promise<boolean>} True only when a url was returned *and* clicked.
+ */
+export async function signAndDownload(path, filename = "") {
+	const url = await signOne(path);
+	if (!url) return false;
+	const anchor = document.createElement("a");
+	anchor.href = url;
+	anchor.rel = "noopener noreferrer";
+	if (filename) {
+		anchor.download = filename;
+	}
+	document.body.appendChild(anchor);
+	anchor.click();
+	anchor.remove();
 	return true;
 }

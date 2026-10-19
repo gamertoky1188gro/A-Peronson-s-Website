@@ -1,7 +1,7 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { Atom } from "react-loading-indicators";
 import { logger } from "../../lib/logger.js";
-import { signAndOpen } from "../../lib/signedFile.js";
+import { signAndDownload, signOne } from "../../lib/signedFile.js";
 import LazyImage from "../ui/LazyImage.jsx";
 
 const TEXT_EXTS = new Set([
@@ -43,12 +43,19 @@ function safeExt(value = "") {
 	return match ? match[1].toLowerCase() : "";
 }
 
+function safeDownloadName(name = "") {
+	const cleaned = String(name || "").trim();
+	if (!cleaned) {
+		return;
+	}
+	return cleaned.replace(/[\\/:??"<>|]+/g, "_");
+}
+
 function formatBytes(bytes) {
 	const value = Number(bytes);
 	if (!Number.isFinite(value) || value <= 0) {
 		return "";
 	}
-
 	const units = ["B", "kB", "MB", "GB", "TB"];
 	const base = 1024;
 
@@ -174,8 +181,14 @@ function FileAttachmentCard({
 					GlobalWorkerOptions.workerSrc = workerSrc;
 				}
 
+				// Sign first: pdf.js fetches the bytes itself and cannot carry an
+				// Authorization header, so it needs a signed url like any other sink.
+				const signed = await signOne(url);
+				if (!signed) {
+					throw new Error("This file is not available to you.");
+				}
 				const loadingTask = getDocument({
-					url,
+					url: signed,
 					// Be CSP-friendly: avoid `eval` where possible.
 					isEvalSupported: false,
 					// Reduce memory overhead for small thumbnails.
@@ -270,7 +283,11 @@ function FileAttachmentCard({
 		async function loadTextSnippet() {
 			setTextPreview({ loading: true, error: "", snippet: "" });
 			try {
-				const response = await fetch(url, { signal: controller.signal });
+				const signed = await signOne(url);
+				if (!signed) {
+					throw new Error("This file is not available to you.");
+				}
+				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load preview (${response.status})`);
 				}
@@ -451,9 +468,9 @@ function FileAttachmentCard({
 					type="button"
 					disabled={!url}
 					onClick={() => {
-						void signAndOpen(url).then((opened) => {
-							if (!opened) {
-								logger.warn("[FileAttachmentCard] sign-and-open refused", { url });
+						void signAndDownload(url, safeDownloadName(name)).then((saved) => {
+							if (!saved) {
+								logger.warn("[FileAttachmentCard] sign-and-download refused", { url });
 							}
 						});
 					}}

@@ -11,7 +11,7 @@ import {
 	VolumeX,
 } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
-import LazyImage from "../../components/ui/LazyImage.jsx";
+import { SignedImage, SignedVideo } from "../../components/chat/SignedMedia.jsx";
 import { getInitials, isVideoMessage, toAbsoluteAssetUrl, truncateId } from "./chatUtils.js";
 
 export default function RightPanel({
@@ -291,8 +291,8 @@ export default function RightPanel({
 															>
 																{isVideo ? (
 																	<>
-																		<video
-																			src={url}
+																		<SignedVideo
+																			src={item.attachment?.url || ""}
 																			muted={true}
 																			playsInline={true}
 																			preload="metadata"
@@ -305,8 +305,8 @@ export default function RightPanel({
 																		</div>
 																	</>
 																) : (
-																	<LazyImage
-																		src={url}
+																	<SignedImage
+																		src={item.attachment?.url || ""}
 																		alt="Shared media"
 																		width={80}
 																		height={80}
