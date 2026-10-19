@@ -126,11 +126,6 @@ router.get("/content", async (req, res) => {
 	// Last-Modified, which lets an intermediary cache a contract PDF or a call
 	// recording and hand it to the next caller. cacheControl:false drops Express's
 	// own header so the private one below is the only directive present.
-	// These are private bytes behind a short-lived signature. Express's
-	// sendFile default is `Cache-Control: public, max-age=0` plus ETag and
-	// Last-Modified, which lets an intermediary cache a contract PDF or a call
-	// recording and hand it to the next caller. cacheControl:false drops Express's
-	// own header so the private one below is the only directive present.
 	return res.sendFile(realPath, {
 		cacheControl: false,
 		headers: { "Cache-Control": "private, no-store" },
