@@ -962,3 +962,62 @@ export const ACTION_GROUPS = [
 		],
 	},
 ];
+
+/**
+ * Reads the email delivery outcome out of an /admin/actions response body.
+ *
+ * The endpoint answers with `{ ok, action_id, result: { ok, result } }`: the outer
+ * `ok` only says the admin action itself ran, and the inner `result` is the
+ * sendEmail() outcome `{ ok, status }`. The email truth therefore lives at
+ * `response.result.result`. A flattened body is accepted too, but only when it
+ * carries a delivery `status`, so the admin action envelope is never mistaken
+ * for a delivery result.
+ *
+ * @param {Object} response The parsed /admin/actions response body.
+ * @returns {{ok: boolean, status: string}|null} The delivery outcome, or null when unknown.
+ */
+export function readEmailDeliveryResult(response) {
+	const candidates = [response?.result?.result, response?.result, response];
+	for (const candidate of candidates) {
+		if (
+			candidate &&
+			typeof candidate === "object" &&
+			typeof candidate.status === "string" &&
+			candidate.status
+		) {
+			return { ok: candidate.ok === true, status: candidate.status };
+		}
+	}
+	return null;
+}
+
+/**
+ * Turns an email.test_send response into the notice/error the operator sees.
+ *
+ * A log-only delivery (email disabled, provider unconfigured, unsupported
+ * provider) must never be reported as sent: sendEmail() returns ok:false for
+ * every one of those branches, and that flag is what this reads. An unknown
+ * outcome is reported as not delivered rather than optimistically as sent.
+ *
+ * @param {Object} response The parsed /admin/actions response body.
+ * @returns {{delivered: boolean, status: string, notice: string, error: string}} The outcome.
+ */
+export function describeEmailTestOutcome(response) {
+	const delivery = readEmailDeliveryResult(response);
+	if (delivery?.ok) {
+		const detail = delivery.status === "sent" ? "" : ` (${delivery.status})`;
+		return {
+			delivered: true,
+			status: delivery.status,
+			notice: `Test email sent${detail}.`,
+			error: "",
+		};
+	}
+	const status = delivery?.status ?? "unknown";
+	return {
+		delivered: false,
+		status,
+		notice: "",
+		error: `Test email not delivered (${status}). Check the email provider settings and the email log.`,
+	};
+}

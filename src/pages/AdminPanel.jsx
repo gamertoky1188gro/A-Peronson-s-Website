@@ -111,6 +111,7 @@ const {
 	listToTextarea,
 	textareaToList,
 	ACTION_GROUPS,
+	describeEmailTestOutcome,
 } = Helpers;
 
 function SkeletonChart({ height = 320 }) {
@@ -2289,8 +2290,9 @@ export default function AdminPanel() {
 					to: emailConfig.test_recipient,
 				},
 			});
-			const status = result?.result?.status || "queued";
-			setEmailConfigNotice(`Test email sent (${status}).`);
+			const outcome = describeEmailTestOutcome(result);
+			setEmailConfigNotice(outcome.notice);
+			setEmailConfigError(outcome.error);
 		} catch (err) {
 			setEmailConfigError(err.message || "Unable to send test email.");
 		}
