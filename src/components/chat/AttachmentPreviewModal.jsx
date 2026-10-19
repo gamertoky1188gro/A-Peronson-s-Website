@@ -3,8 +3,14 @@ import { Download, File, X } from "lucide-react";
 import Prism from "prismjs";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Atom } from "react-loading-indicators";
-import { useSignedSrc } from "../../hooks/useSignedSrc.js";
-import { isThirdPartySafe, signAndDownload, signAndOpen, signOne } from "../../lib/signedFile.js";
+import { useSignedSrcState } from "../../hooks/useSignedSrc.js";
+import {
+	describeSignFailure,
+	isThirdPartySafe,
+	signAndDownloadWithReason,
+	signAndOpen,
+	signEntry,
+} from "../../lib/signedFile.js";
 import LazyImage from "../ui/LazyImage.jsx";
 import MarkdownMessage from "./MarkdownMessage.jsx";
 
@@ -723,6 +729,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		meta: null,
 	});
 	const [videoError, setVideoError] = useState(false);
+	const [actionError, setActionError] = useState("");
 	const [pdfState, setPdfState] = useState({
 		loading: false,
 		error: "",
@@ -733,7 +740,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 	// unsigned private path is never rendered. It re-signs on the schedule the
 	// server itself dictates (half the signature's lifetime), because this
 	// modal can sit open far longer than one signature lasts.
-	const signedSrc = useSignedSrc(open ? file?.url || "" : "");
+	// The error half matters as much as the url half: a sign that failed
+	// because the server is rate limiting the caller will not resolve on its
+	// own, and a preview that silently does not appear is a preview the user
+	// cannot act on.
+	const { src: signedSrc, error: signError } = useSignedSrcState(open ? file?.url || "" : "");
 	// Whether this document may be handed to the Office viewer. The server
 	// answers that, because it owns the gated-prefix list; a client-side copy
 	// of the list drifts, and a private document's signed url reaching
@@ -800,10 +811,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		async function load() {
 			setTextState({ loading: true, error: "", content: "" });
 			try {
-				const signed = await signOne(file.url);
-				if (!signed) {
-					throw new Error("This file is not available to you.");
+				const entry = await signEntry(file.url);
+				if (!entry?.url) {
+					throw new Error(describeSignFailure(entry));
 				}
+				const signed = entry.url;
 				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load preview (${response.status})`);
@@ -981,10 +993,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 				rows: [],
 			});
 			try {
-				const signed = await signOne(file.url);
-				if (!signed) {
-					throw new Error("This file is not available to you.");
+				const entry = await signEntry(file.url);
+				if (!entry?.url) {
+					throw new Error(describeSignFailure(entry));
 				}
+				const signed = entry.url;
 				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load spreadsheet (${response.status})`);
@@ -1065,10 +1078,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		async function loadRtf() {
 			setRtfState({ loading: true, error: "", html: "", meta: null });
 			try {
-				const signed = await signOne(file.url);
-				if (!signed) {
-					throw new Error("This file is not available to you.");
+				const entry = await signEntry(file.url);
+				if (!entry?.url) {
+					throw new Error(describeSignFailure(entry));
 				}
+				const signed = entry.url;
 				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load RTF (${response.status})`);
@@ -1178,10 +1192,11 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		async function loadPdf() {
 			setPdfState({ loading: true, error: "", blobUrl: "" });
 			try {
-				const signed = await signOne(file.url);
-				if (!signed) {
-					throw new Error("This file is not available to you.");
+				const entry = await signEntry(file.url);
+				if (!entry?.url) {
+					throw new Error(describeSignFailure(entry));
 				}
+				const signed = entry.url;
 				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load PDF (${response.status})`);
@@ -1310,7 +1325,15 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								// download needs the synthesised anchor that
 								// signAndDownload clicks, because a signed url cannot carry
 								// a download attribute.
-								void signAndDownload(file.url, safeDownloadName(file.name));
+								//
+								// The reason-aware form is used so a download that could
+								// not start says so. A rate-limited download and a
+								// refused one used to be the same silence.
+								void signAndDownloadWithReason(file.url, safeDownloadName(file.name)).then(
+									(outcome) => {
+										setActionError(outcome.ok ? "" : outcome.error);
+									},
+								);
 							}}
 							class="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/20"
 							title="Download"
@@ -1330,6 +1353,18 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 				</div>
 
 				<div data-lenis-prevent={true} class="max-h-[75vh] overflow-auto p-4">
+					{signError ? (
+						<div class="rounded-xl bg-yellow-500/10 p-4 text-sm text-yellow-100" role="status">
+							{describeSignFailure(signError)}
+						</div>
+					) : null}
+
+					{actionError ? (
+						<div class="rounded-xl bg-red-500/10 p-4 text-sm text-red-200" role="status">
+							{actionError}
+						</div>
+					) : null}
+
 					{kind === "image" ? (
 						<div class="flex justify-center">
 							<LazyImage

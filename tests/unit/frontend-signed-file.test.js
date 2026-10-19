@@ -257,12 +257,16 @@ describe("the third-party decision (src/lib/signedFile.js)", () => {
 	// "Download" has to download. window.open renders the document in a new
 	// tab; a download needs the synthesised anchor that signAndDownload clicks,
 	// because a signed url cannot carry a download attribute.
+	//
+	// The reason-aware form is the one the modal uses: a download that could
+	// not start has to say why, and a rate-limited download is not the same
+	// failure as a refused one.
 	test("the preview modal downloads instead of opening a tab", () => {
 		const source = fs.readFileSync(
 			path.join(process.cwd(), "src", "components", "chat", "AttachmentPreviewModal.jsx"),
 			"utf8",
 		);
-		expect(source).toMatch(/signAndDownload\(file\.url/);
+		expect(source).toMatch(/signAndDownloadWithReason\(file\.url/);
 		// The preview <img> must not be rendered with a null src: React omits the
 		// attribute for null, and the browser may then re-request the current
 		// document. The <video> path already used undefined; the image has to
@@ -328,7 +332,11 @@ describe("useSignedSrc (src/hooks/useSignedSrc.js)", () => {
 		apiRequest.mockResolvedValue({
 			signed: { "/uploads/chat/a.png": { url: "/api/files/content?h=1" } },
 		});
-		renderHook(() => useSignedSrc("/uploads/chat/a.png", { refreshMs: 5 }));
+		// The interval is wide on purpose: the assertion below is that the
+		// FIRST sign happened before any refresh, and the sign is now queued
+		// with the other paths of the same turn, so the first observation of
+		// it is one poll of waitFor away.
+		renderHook(() => useSignedSrc("/uploads/chat/a.png", { refreshMs: 500 }));
 		await waitFor(() => expect(apiRequest).toHaveBeenCalledTimes(1));
 		await waitFor(() => expect(apiRequest.mock.calls.length).toBeGreaterThan(1));
 	});
@@ -337,7 +345,7 @@ describe("useSignedSrc (src/hooks/useSignedSrc.js)", () => {
 	// constant: half of the ttl the server actually handed out.
 	test("re-signs at half the lifetime the server reported", async () => {
 		apiRequest.mockResolvedValue({
-			signed: { "/uploads/chat/a.png": { url: "/api/files/content?h=1", ttlMs: 20 } },
+			signed: { "/uploads/chat/a.png": { url: "/api/files/content?h=1", ttlMs: 1000 } },
 		});
 		renderHook(() => useSignedSrc("/uploads/chat/a.png"));
 		await waitFor(() => expect(apiRequest).toHaveBeenCalledTimes(1));

@@ -63,6 +63,9 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({ default: prism
 
 const { signToken } = await import("../../server/middleware/auth.js");
 const fileAccessRoutes = (await import("../../server/routes/fileAccessRoutes.js")).default;
+const { SIGN_REQUEST_BUDGET, SIGN_PATH_BUDGET } = await import(
+	"../../server/routes/fileAccessRoutes.js"
+);
 
 const USER = { id: "buyer1", role: "buyer" };
 const AUTH = { Authorization: `Bearer ${signToken({ ...USER, email: "buyer1@x.com" })}` };
@@ -322,24 +325,65 @@ describe("the /sign rate limit (real router)", () => {
 	// Bounded per USER, not per address - the callers are authenticated, and
 	// many users share one NAT address.
 	//
+	// Two budgets, because there are two different things to bound: the number
+	// of REQUESTS the caller may make, and the number of PATHS those requests
+	// may carry. The path budget is the one that bounds the work.
+	//
 	// A distinct user id, so this test owns its bucket in the shared in-memory
 	// store.
 	const RATE_USER = { id: "rate-limited-user", role: "buyer" };
 	const RATE_AUTH = { Authorization: `Bearer ${signToken({ ...RATE_USER, email: "rate@x.com" })}` };
+	// A second user, for the path budget: the request budget and the path
+	// budget are separate counters, and the path test must not spend the
+	// request budget of the test above.
+	const PATH_USER = { id: "path-budget-user", role: "buyer" };
+	const PATH_AUTH = {
+		Authorization: `Bearer ${signToken({ ...PATH_USER, email: "paths@x.com" })}`,
+	};
 
-	test("answers 429 once a user has spent the /sign budget", async () => {
+	test("answers 429 once a user has spent the /sign REQUEST budget", async () => {
 		authorizeFilePath.mockResolvedValue({ ok: true, doc: { id: "d1" } });
 		signFileUrl.mockReturnValue("/api/files/content?x=1");
-		for (let index = 0; index < 60; index += 1) {
-			await request(buildApp())
+		// One agent for the whole loop: a fresh supertest request spins up a
+		// fresh server every time, and the budget is three hundred requests.
+		const agent = request.agent(buildApp());
+		for (let index = 0; index < SIGN_REQUEST_BUDGET; index += 1) {
+			await agent
 				.post("/api/files/sign")
 				.set(RATE_AUTH)
 				.send({ paths: ["/uploads/contracts/a.pdf"] })
 				.expect(200);
 		}
-		const res = await request(buildApp())
+		const res = await agent
 			.post("/api/files/sign")
 			.set(RATE_AUTH)
+			.send({ paths: ["/uploads/contracts/a.pdf"] });
+		expect(res.status).toBe(429);
+	});
+
+	// The request budget alone is not the work budget: a request may carry up
+	// to 50 paths, and every path costs a database round trip inside the
+	// authorization resolver. The path budget is what actually bounds the
+	// server's work, and it is what keeps the headroom above from being paid
+	// for in load.
+	test("answers 429 once a user has spent the /sign PATH budget", async () => {
+		authorizeFilePath.mockResolvedValue({ ok: true, doc: { id: "d1" } });
+		signFileUrl.mockReturnValue("/api/files/content?x=1");
+		const app = buildApp();
+		const pathsPerRequest = 50;
+		const requests = SIGN_PATH_BUDGET / pathsPerRequest;
+		for (let index = 0; index < requests; index += 1) {
+			await request(app)
+				.post("/api/files/sign")
+				.set(PATH_AUTH)
+				.send({ paths: Array.from({ length: pathsPerRequest }, () => "/uploads/contracts/a.pdf") })
+				.expect(200);
+		}
+		// The path budget is spent; the REQUEST budget is not (30 requests out
+		// of 300), so this 429 can only be the path budget.
+		const res = await request(app)
+			.post("/api/files/sign")
+			.set(PATH_AUTH)
 			.send({ paths: ["/uploads/contracts/a.pdf"] });
 		expect(res.status).toBe(429);
 	});

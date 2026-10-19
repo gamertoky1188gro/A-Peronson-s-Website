@@ -58,6 +58,16 @@ function createdRow(fileName) {
 	return call ? call[0].data : null;
 }
 
+// The row for one exact public path. The basename helper above cannot tell
+// two files with the same name in two directories apart, which is the whole
+// point of the collision tests below.
+function createdRowAt(publicUrl) {
+	const call = documentCreate.mock.calls.find(
+		(callArgs) => callArgs[0]?.data?.file_path === publicUrl,
+	);
+	return call ? call[0].data : null;
+}
+
 describe("uploads registry (server/services/uploadsService.js)", () => {
 	test("creates a row for a file that has none, whatever the moderation flag says", async () => {
 		// The flag is the whole point: the moderation scan is off in the deployed
@@ -133,5 +143,52 @@ describe("uploads registry (server/services/uploadsService.js)", () => {
 		expect(documentFindMany).toHaveBeenCalledTimes(1);
 		expect(createdRow("1700000000001-photo.png")).toBeNull();
 		expect(createdRow("1700000000000-notes.txt")).not.toBeNull();
+	});
+
+	// A row written with a different SPELLING of the same path still counts as
+	// known. The key is the normalised path, not the raw string.
+	test("recognises a row written with a different spelling of the same path", async () => {
+		documentFindMany.mockResolvedValue([{ file_path: "/uploads/./chat/1700000000001-photo.png" }]);
+		await ensureDocumentRowsForExistingFiles({ root });
+		expect(createdRowAt("/uploads/chat/1700000000001-photo.png")).toBeNull();
+	});
+});
+
+// The same name in two directories is two files.
+//
+// The registry pass used to match on the BASENAME, so the second file was
+// never adopted and never got a Document row. A file with no row is not
+// public, it is UNREACHABLE: authorizeFilePath answers "not_found" and nobody
+// — not even the parties entitled to the file — can read it. So a name
+// collision silently locked a real file away, which is the same defect class
+// as the missing-row bug this pass exists to fix.
+describe("uploads registry: a name that collides across directories", () => {
+	const COLLIDE = "1700000000009-collide.pdf";
+
+	test("adopts the file in each directory under its OWN path", async () => {
+		fs.writeFileSync(path.join(root, "chat", COLLIDE), "pdf");
+		fs.writeFileSync(path.join(root, "contracts", COLLIDE), "pdf");
+
+		await ensureDocumentRowsForExistingFiles({ root });
+
+		expect(createdRowAt(`/uploads/chat/${COLLIDE}`)).toMatchObject({
+			entity_type: "chat_attachment",
+			file_path: `/uploads/chat/${COLLIDE}`,
+		});
+		expect(createdRowAt(`/uploads/contracts/${COLLIDE}`)).toMatchObject({
+			entity_type: "contract",
+			file_path: `/uploads/contracts/${COLLIDE}`,
+		});
+	});
+
+	test("a row for one directory does not suppress the same name in another", async () => {
+		// The sharpest form: the chat file is already registered, and the
+		// contracts file with the same name still has to be adopted.
+		documentFindMany.mockResolvedValue([{ file_path: `/uploads/chat/${COLLIDE}` }]);
+		fs.writeFileSync(path.join(root, "contracts", COLLIDE), "pdf");
+
+		await ensureDocumentRowsForExistingFiles({ root });
+
+		expect(createdRowAt(`/uploads/contracts/${COLLIDE}`)).not.toBeNull();
 	});
 });

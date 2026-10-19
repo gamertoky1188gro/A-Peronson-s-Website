@@ -2,6 +2,11 @@ import { getRedisClient, isRedisConnected } from "../utils/redis.js";
 
 // ---------- memory store ----------
 const ipHits = new Map();
+// The unit budgets keep their own map: they are keyed by a DIFFERENT thing
+// (a counter of paths, not a counter of requests), and sharing one map with
+// the request limiters would let a request and a path spend each other's
+// budget.
+const unitHits = new Map();
 let memoryCleanupStarted = false;
 
 function ensureMemoryCleanup() {
@@ -17,6 +22,14 @@ function ensureMemoryCleanup() {
 				ipHits.delete(ip);
 			} else {
 				ipHits.set(ip, recent);
+			}
+		}
+		for (const [key, entries] of unitHits) {
+			const recent = entries.filter((entry) => entry.at > cutoff);
+			if (recent.length === 0) {
+				unitHits.delete(key);
+			} else {
+				unitHits.set(key, recent);
 			}
 		}
 	}, 300_000);
@@ -113,6 +126,83 @@ function createRedisLimiter(windowMs, max, prefix, keyResolver) {
 			.catch(() => {
 				next();
 			});
+	};
+}
+
+// ---------- unit budget ----------
+//
+// A request counter bounds how often a caller may ASK. It does not bound how
+// much the server does per ask: /sign accepts up to 50 paths, and every path
+// costs a database round trip inside the authorization resolver. So the sign
+// route carries two budgets — one on requests, one on the paths those
+// requests carry — and the PATH budget is the one that bounds the work.
+//
+// The two are separate on purpose. Giving a real client room (it signs one
+// path per request, and spends another request per preview modal it opens)
+// means raising the request cap, and a raised request cap multiplies the work
+// by the same factor unless the paths are counted too.
+//
+// Fail closed: over budget is a refusal, never an allow-through.
+export function createUnitBudget({
+	windowMs = 60_000,
+	max = 1000,
+	store = "memory",
+	prefix = "units",
+	keyResolver = null,
+} = {}) {
+	if (store === "redis") {
+		return createRedisUnitBudget(windowMs, max, prefix, keyResolver);
+	}
+	return createMemoryUnitBudget(windowMs, max, prefix, keyResolver);
+}
+
+function createMemoryUnitBudget(windowMs, max, prefix, keyResolver) {
+	ensureMemoryCleanup();
+
+	return (req, units = 1) => {
+		const key = `${prefix}:${limiterKey(req, keyResolver)}`;
+		const now = Date.now();
+		const windowStart = now - windowMs;
+
+		const entries = (unitHits.get(key) || []).filter((entry) => entry.at > windowStart);
+		const spent = entries.reduce((total, entry) => total + entry.units, 0);
+		if (spent + units > max) {
+			// The spent units stay on the books: a refused request still spent
+			// the caller's attention, and forgetting it would let a caller keep
+			// probing past the budget one request at a time.
+			unitHits.set(key, entries);
+			return false;
+		}
+		entries.push({ at: now, units });
+		unitHits.set(key, entries);
+		return true;
+	};
+}
+
+function createRedisUnitBudget(windowMs, max, prefix, keyResolver) {
+	const windowSeconds = Math.ceil(windowMs / 1000);
+	const fallback = createMemoryUnitBudget(windowMs, max, prefix, keyResolver);
+
+	return async (req, units = 1) => {
+		if (!isRedisConnected()) {
+			return fallback(req, units);
+		}
+		const client = getRedisClient();
+		if (typeof client?.incrBy !== "function") {
+			return fallback(req, units);
+		}
+		const key = `ratelimit:${prefix}:${limiterKey(req, keyResolver)}`;
+		try {
+			const count = await client.incrBy(key, units);
+			if (count <= units) {
+				await client.expire(key, windowSeconds);
+			}
+			return count <= max;
+		} catch {
+			// A redis hiccup must not open the budget: the in-process counter
+			// is the same accounting the non-redis path does.
+			return fallback(req, units);
+		}
 	};
 }
 

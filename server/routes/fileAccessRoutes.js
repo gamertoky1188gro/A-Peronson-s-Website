@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { createRateLimiter } from "../middleware/rateLimiter.js";
+import { createRateLimiter, createUnitBudget } from "../middleware/rateLimiter.js";
 import { authorizeFilePath } from "../services/fileAccessService.js";
 import { logWarn } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
@@ -30,10 +30,38 @@ const MAX_PATHS_PER_REQUEST = 50;
 // body of 50 paths multiplies that. Bounded per USER, not per address: the
 // callers are authenticated, so the user id is the only key that means
 // anything (and many users share one NAT address).
+//
+// Two budgets, because there are two different things to bound:
+//
+//   requests — how often the caller may ask. It was 60 a minute, which the
+//     real client pattern outgrew: it signs ONE PATH PER REQUEST, so a chat
+//     thread with fifty images is fifty requests, and every preview modal
+//     spends another one asking whether the document may be handed to a third
+//     party. 300 a minute is five requests a second sustained, which no
+//     human produces and which leaves a stale, non-batching bundle working.
+//
+//   paths — how many paths those requests may carry. THIS is the one that
+//     bounds the work: every path costs a database round trip inside the
+//     authorization resolver, and a request may carry up to 50 of them.
+//     1500 paths a minute is HALF the work the old 60-request cap allowed
+//     (60 x 50 = 3000), so the headroom above is paid for in requests, not in
+//     server load.
+//
+// Both fail closed: over budget is a 429, never an allow-through.
+export const SIGN_REQUEST_BUDGET = 300;
+export const SIGN_PATH_BUDGET = 1500;
+
 const signLimiter = createRateLimiter({
 	windowMs: 60_000,
-	max: 60,
+	max: SIGN_REQUEST_BUDGET,
 	prefix: "files-sign",
+	keyResolver: (req) => req.user?.id,
+});
+
+const signPathBudget = createUnitBudget({
+	windowMs: 60_000,
+	max: SIGN_PATH_BUDGET,
+	prefix: "files-sign-paths",
 	keyResolver: (req) => req.user?.id,
 });
 
@@ -54,6 +82,16 @@ router.post("/sign", requireAuth, signLimiter, async (req, res) => {
 	const paths = Array.isArray(req.body?.paths)
 		? req.body.paths.slice(0, MAX_PATHS_PER_REQUEST)
 		: [];
+
+	// The path budget, spent before any work is scheduled. A request that
+	// would push the caller past their path allowance is refused whole: half
+	// a batch would be worse than none, because the caller cannot tell which
+	// half it got.
+	const withinPathBudget = await signPathBudget(req, paths.length);
+	if (!withinPathBudget) {
+		return res.status(429).json({ error: "Too many requests, please try again later." });
+	}
+
 	// Null prototype on purpose: the keys are caller-supplied, and `paths:
 	// ["__proto__"]` against a plain object goes through the inherited __proto__
 	// setter instead of creating a key, so the entry silently vanishes from the

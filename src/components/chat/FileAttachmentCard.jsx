@@ -1,7 +1,7 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { Atom } from "react-loading-indicators";
 import { logger } from "../../lib/logger.js";
-import { signAndDownload, signOne } from "../../lib/signedFile.js";
+import { describeSignFailure, signAndDownload, signEntry } from "../../lib/signedFile.js";
 import LazyImage from "../ui/LazyImage.jsx";
 
 const TEXT_EXTS = new Set([
@@ -183,10 +183,11 @@ function FileAttachmentCard({
 
 				// Sign first: pdf.js fetches the bytes itself and cannot carry an
 				// Authorization header, so it needs a signed url like any other sink.
-				const signed = await signOne(url);
-				if (!signed) {
-					throw new Error("This file is not available to you.");
+				const entry = await signEntry(url);
+				if (!entry?.url) {
+					throw new Error(describeSignFailure(entry));
 				}
+				const signed = entry.url;
 				const loadingTask = getDocument({
 					url: signed,
 					// Be CSP-friendly: avoid `eval` where possible.
@@ -283,10 +284,11 @@ function FileAttachmentCard({
 		async function loadTextSnippet() {
 			setTextPreview({ loading: true, error: "", snippet: "" });
 			try {
-				const signed = await signOne(url);
-				if (!signed) {
-					throw new Error("This file is not available to you.");
+				const entry = await signEntry(url);
+				if (!entry?.url) {
+					throw new Error(describeSignFailure(entry));
 				}
+				const signed = entry.url;
 				const response = await fetch(signed, { signal: controller.signal });
 				if (!response.ok) {
 					throw new Error(`Unable to load preview (${response.status})`);

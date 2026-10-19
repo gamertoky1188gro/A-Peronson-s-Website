@@ -1,5 +1,22 @@
 # AGENTS.md — Problems & Fixes
 
+## 24. The signed-file gate had three residual holes (Owner)
+
+- **Problem (a) — the media lost its fade.** The fix wave changed `className={className}` to `class={className}` in `src/components/chat/SignedMedia.jsx`. React 19 accepts `class` on a DOM element, so the `<video>` kept working, but `LazyImage` reads `className` and spreads everything else onto the `<img>`, so `class` fell through `...rest` and landed on the `<img>` as a **second** class attribute, replacing the `transition-opacity duration-200 opacity-0/100` classes LazyImage sets. The fade was gone and React logged "Invalid DOM property `class`" for every `<img>`.
+- **Problem (b) — the `/sign` budget was too tight, and a 429 was silent.** The client signed **one path per request**, so a chat thread with fifty images was fifty requests against a 60/minute per-user budget, and every preview modal spent another one asking whether a document may be handed to a third party. Worse, `signPaths` caught every failure and returned `{}`, so a rate-limited sign and a refused sign were indistinguishable: the thumbnail or the download simply did not appear, with nothing on screen to say why.
+- **Problem (c) — a name collision left a file unreachable.** The registry pass that adopts files already on disk (`ensureDocumentRowsForExistingFiles`, `server/services/uploadsService.js`) matched by **basename**, so `a.pdf` in `chat/` and `a.pdf` in `contracts/` meant the second file never got a row — and a file with no row is unreachable for everyone (item 23).
+- **Fix:**
+  - (a) `className` restored in `SignedMedia.jsx`.
+  - (b) The client **batches** sign requests (`signEntry` in `src/lib/signedFile.js`): everything asked for in the same turn goes in one request, chunked at the server's own 50-path cap. A 429 is reported as `SIGN_RATE_LIMITED` instead of being swallowed, the client backs off for a second before its next request, and the surfaces say so. The server's request budget went to 300/minute and a **path budget** (1500 paths/minute) was added, so the headroom is paid for in requests and not in server load.
+  - (c) The registry now keys files by their **normalised public path**, not their name.
+- **Gotchas:**
+  - **The path budget is the one that bounds the work.** A request may carry 50 paths and every path costs a database round trip inside the authorization resolver, so a request cap alone does not bound the server's load: 300 requests x 50 paths is 15,000 authorizations a minute. `createUnitBudget` (`server/middleware/rateLimiter.js`) counts paths separately for that reason, and 1500 paths a minute is half the work the old 60-request cap allowed.
+  - **Both budgets fail closed.** Over budget is a 429, never an allow-through, and the client never falls back to the raw path.
+  - **The client's sign requests are queued on a microtask**, so a sign is one microtask later than it used to be. Anything that asserts "exactly one request so far" has to allow for that (`tests/unit/frontend-signed-file.test.js`).
+  - **`useSignedSrcState` is the form that reports a failure**; `useSignedSrc` still returns a string and cannot tell a pending sign from a failed one. A surface that shows nothing on failure has to use the state form, or the failure is invisible again.
+  - **The registry's key is the full path.** A file adopted under a basename that belongs to another directory is unreachable for everyone — the same failure mode as a missing row.
+  - **Five pre-existing `class=` on `<LazyImage>` remain** (`AttachmentPreviewModal.jsx`, `AdminPanel.jsx`, `ChatInterface.jsx`, `Settings.jsx` x2). They are the same defect as (a) but predate the fix wave; they cost the fade, not the layout. Left alone on purpose.
+
 ## 23. The upload access control's authorization key was never created (Owner)
 
 - **Problem:** the whole branch keyed file authorization on a `Document` row, but the only producer of those rows for `chat/`, `calls/` and `search/` was the AI-moderation backfill — and that is disabled in the deployed configuration (`AI_HARAM_ANALYTICS_ENABLED=false` in `render.yaml` and `.env`) and only ever covered image/video. A chat `.pdf`/`.txt`/`.html` never got a row regardless. `authorizeFilePath` answers `not_found` for a path no row anchors (`fileAccessService.js`), so every chat attachment, every call recording and every search image was unreadable by *everyone*, the uploader included. The static mount 404s the gated prefixes, so there was no fallback.

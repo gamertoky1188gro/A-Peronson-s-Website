@@ -216,11 +216,31 @@ function entityTypeForFolder(subfolder) {
 	return SUBFOLDER_ENTITY_TYPES[subfolder] || "uploads";
 }
 
-function baseNameOf(filePath) {
-	return String(filePath || "")
-		.split("/")
-		.pop()
-		.toLowerCase();
+/**
+ * The key a file on disk is known by.
+ *
+ * It used to be the BASENAME. That is wrong: "a.pdf" in chat/ and "a.pdf" in
+ * contracts/ are two different files, and matching on the name meant the
+ * second one never got a row of its own. A file with no Document row is not
+ * public, it is UNREACHABLE — authorizeFilePath answers "not_found" and
+ * nobody, including the parties entitled to the file, can read it. So a name
+ * collision silently locked a real file away, which is the same defect class
+ * as the missing-row bug this pass exists to fix.
+ *
+ * The key is the full public path, normalised, so a row written with a
+ * different spelling of the same path still counts as "known" while a
+ * different path never does.
+ *
+ * @param {string} publicPath - A public path, e.g. "/uploads/chat/a.pdf".
+ * @returns {string} The normalised key, or "" when there is nothing to key.
+ */
+function knownKeyOf(publicPath) {
+	const raw = String(publicPath || "").trim();
+	if (!raw) return "";
+	const withLeadingSlash = raw.startsWith("/") ? raw : `/${raw}`;
+	// path.posix.normalize collapses "." and ".." segments; the lower case
+	// matches the case-insensitive filesystem the uploads tree lives on.
+	return path.posix.normalize(withLeadingSlash).replace(/\/+$/, "").toLowerCase();
 }
 
 /**
@@ -248,10 +268,12 @@ export async function ensureDocumentRowsForExistingFiles({ root = UPLOADS_ROOT }
 			where: { file_path: { not: null } },
 			select: { file_path: true },
 		});
-		// Matched on the file name, the way the previous scanner matched
-		// (`file_path endsWith <name>`), so a row written with a different
-		// spelling of the same path still counts as "known".
-		const known = new Set(rows.map((row) => baseNameOf(row.file_path)));
+		// Matched on the FULL PATH, not on the file name. The name alone
+		// cannot tell two files apart: the same name in two directories is two
+		// files, and the second one would never get a row — and a file with no
+		// row is unreachable for everyone. A different spelling of the same
+		// path still counts as "known", because the key is normalised.
+		const known = new Set(rows.map((row) => knownKeyOf(row.file_path)));
 
 		for (const subfolder of SCAN_SUBFOLDERS) {
 			const scanPath = subfolder ? path.join(root, subfolder) : root;
@@ -260,10 +282,11 @@ export async function ensureDocumentRowsForExistingFiles({ root = UPLOADS_ROOT }
 				if (item.isDirectory()) {
 					continue;
 				}
-				if (known.has(item.name.toLowerCase())) {
+				const publicUrl = `/uploads${subfolder ? `/${subfolder}` : ""}/${item.name}`;
+				const key = knownKeyOf(publicUrl);
+				if (known.has(key)) {
 					continue;
 				}
-				const publicUrl = `/uploads${subfolder ? `/${subfolder}` : ""}/${item.name}`;
 				try {
 					await prisma.document.create({
 						data: {
@@ -275,7 +298,7 @@ export async function ensureDocumentRowsForExistingFiles({ root = UPLOADS_ROOT }
 							type: getFileType(item.name),
 						},
 					});
-					known.add(item.name.toLowerCase());
+					known.add(key);
 					created += 1;
 				} catch (err) {
 					logError("AI Moderation row creation failed", new Error(`${publicUrl}: ${err.message}`));

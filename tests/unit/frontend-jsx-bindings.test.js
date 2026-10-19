@@ -99,9 +99,9 @@ const GUARDED = [
 const EXPECTED_JSX_ELEMENTS = {
 	"src/pages/chat/RightPanel.jsx": 63,
 	"src/pages/ChatInterface.jsx": 55,
-	"src/components/chat/AttachmentPreviewModal.jsx": 98,
+	"src/components/chat/AttachmentPreviewModal.jsx": 100,
 	"src/components/chat/FileAttachmentCard.jsx": 20,
-	"src/components/chat/SignedMedia.jsx": 2,
+	"src/components/chat/SignedMedia.jsx": 5,
 };
 
 const traverse = _traverse.default ?? _traverse;
