@@ -253,6 +253,23 @@ describe("the third-party decision (src/lib/signedFile.js)", () => {
 		expect(source).toMatch(/isThirdPartySafe/);
 		expect(source).not.toMatch(/isGatedAssetPath/);
 	});
+
+	// "Download" has to download. window.open renders the document in a new
+	// tab; a download needs the synthesised anchor that signAndDownload clicks,
+	// because a signed url cannot carry a download attribute.
+	test("the preview modal downloads instead of opening a tab", () => {
+		const source = fs.readFileSync(
+			path.join(process.cwd(), "src", "components", "chat", "AttachmentPreviewModal.jsx"),
+			"utf8",
+		);
+		expect(source).toMatch(/signAndDownload\(file\.url/);
+		// The preview <img> must not be rendered with a null src: React omits the
+		// attribute for null, and the browser may then re-request the current
+		// document. The <video> path already used undefined; the image has to
+		// match.
+		expect(source).not.toMatch(/src=\{signedSrc \|\| null\}/);
+		expect(source).toMatch(/src=\{signedSrc \|\| undefined\}/);
+	});
 });
 
 describe("the signature lifetime (src/lib/signedFile.js)", () => {
