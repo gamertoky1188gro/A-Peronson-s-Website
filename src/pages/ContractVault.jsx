@@ -27,8 +27,9 @@ import CardStack from "../components/CardStack.jsx";
 import ScrollReveal from "../components/ScrollReveal.jsx";
 import { StaggerContainer, StaggerItem } from "../components/StaggerContainer.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
-import { API_BASE, apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth.js";
+import { apiRequest, getCurrentUser, getToken, syncUserFromApi } from "../lib/auth.js";
 import { logger } from "../lib/logger.js";
+import { signAndOpen } from "../lib/signedFile.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
 import { uploadFile } from "../lib/upload.js";
 
@@ -664,10 +665,17 @@ export default function ContractVaultPage({ embedded = false }) {
 		}, "Failed to create session");
 	};
 
-	const handleDownloadPdf = () => {
+	// The artifact path is private, so it can only be reached through a signed
+	// url. Signing happens here rather than at render time because the signature
+	// is short-lived: a url captured when the vault mounts has expired by the
+	// time anyone clicks Download.
+	const handleDownloadPdf = async () => {
 		const pdfPath = contract?.raw?.artifact?.pdf_path;
-		if (pdfPath) {
-			window.open(`${API_BASE}${pdfPath}`, "_blank");
+		if (!pdfPath) return;
+		const ok = await signAndOpen(pdfPath);
+		if (!ok) {
+			logger.warn("Failed to open contract pdf", { pdfPath });
+			setFeedback("Could not open the contract PDF.");
 		}
 	};
 

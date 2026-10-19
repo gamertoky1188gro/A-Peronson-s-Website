@@ -1,6 +1,7 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { Atom } from "react-loading-indicators";
 import { logger } from "../../lib/logger.js";
+import { signAndOpen } from "../../lib/signedFile.js";
 import LazyImage from "../ui/LazyImage.jsx";
 
 const TEXT_EXTS = new Set([
@@ -40,14 +41,6 @@ function safeExt(value = "") {
 	const tail = cleaned.split("/").pop() || cleaned;
 	const match = tail.match(/\.([a-z0-9]+)$/i);
 	return match ? match[1].toLowerCase() : "";
-}
-
-function safeDownloadName(name = "") {
-	const cleaned = String(name || "").trim();
-	if (!cleaned) {
-		return;
-	}
-	return cleaned.replace(/[\\/:??"<>|]+/g, "_");
 }
 
 function formatBytes(bytes) {
@@ -370,8 +363,6 @@ function FileAttachmentCard({
 	const buttonTone =
 		isLight && !isOwn ? "text-slate-700 hover:bg-slate-100" : "text-white/90 hover:bg-white/10";
 
-	const downloadName = safeDownloadName(name);
-
 	return (
 		<div
 			className={`w-full overflow-hidden rounded-2xl shadow-borderless dark:shadow-borderlessDark${containerTone}`}
@@ -452,13 +443,24 @@ function FileAttachmentCard({
 				>
 					Open
 				</button>
-				<a
-					href={url}
-					download={downloadName}
-					className={`px-3 py-2 text-center text-[12px] font-semibold transition-colors${buttonTone}shadow-dividerL dark:shadow-dividerLDark`}
+				{/* The attachment path is private, so it must never sit in an href.
+					Signing is deferred to the click because the signature is
+					short-lived: one minted at render time has expired by the time
+					anyone clicks. */}
+				<button
+					type="button"
+					disabled={!url}
+					onClick={() => {
+						void signAndOpen(url).then((opened) => {
+							if (!opened) {
+								logger.warn("[FileAttachmentCard] sign-and-open refused", { url });
+							}
+						});
+					}}
+					className={`px-3 py-2 text-center text-[12px] font-semibold transition-colors${buttonTone}shadow-dividerL dark:shadow-dividerLDark disabled:opacity-50`}
 				>
 					Save as...
-				</a>
+				</button>
 			</div>
 		</div>
 	);

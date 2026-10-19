@@ -3,6 +3,7 @@ import { Download, File, X } from "lucide-react";
 import Prism from "prismjs";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Atom } from "react-loading-indicators";
+import { signAndAssign, signAndOpen } from "../../lib/signedFile.js";
 import LazyImage from "../ui/LazyImage.jsx";
 import MarkdownMessage from "./MarkdownMessage.jsx";
 
@@ -330,14 +331,6 @@ function classifyAttachment(file) {
 		return MARKDOWN_EXTS.has(ext) ? "markdown" : "text";
 	}
 	return "file";
-}
-
-function safeDownloadName(name = "") {
-	const cleaned = String(name || "").trim();
-	if (!cleaned) {
-		return;
-	}
-	return cleaned.replace(/[\\/:??"<>|]+/g, "_");
 }
 
 function downloadAttachmentMetadata(file) {
@@ -723,6 +716,10 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		error: "",
 		blobUrl: "",
 	});
+	// The only url allowed to reach an <img>/<video>/<iframe> src. It stays ""
+	// until the server hands back a signature, and stays "" if it refuses, so an
+	// unsigned private path is never rendered.
+	const [signedSrc, setSignedSrc] = useState("");
 
 	useEffect(() => {
 		if (!open) {
@@ -741,6 +738,30 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setVideoError(false);
 	}, []);
+
+	// Sign once per (modal, attachment) so every inline preview below renders a
+	// url the server will accept. Deliberately NOT re-signed on every render:
+	// the signature is valid for minutes, and the effect is re-keyed whenever the
+	// attachment changes so a stale url cannot outlive its file. The download and
+	// "open in new tab" actions never read this state at all: they sign in the
+	// click handler, so the signature is minted when it is spent rather than
+	// minutes earlier.
+	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		setSignedSrc("");
+		if (!(open && file?.url)) {
+			return;
+		}
+		let alive = true;
+		void signAndAssign(file.url, (signed) => {
+			if (alive) {
+				setSignedSrc(signed);
+			}
+		});
+		return () => {
+			alive = false;
+		};
+	}, [open, file?.url]);
 
 	useEffect(() => {
 		if (
@@ -1180,12 +1201,17 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 		return null;
 	}
 
-	const downloadName = safeDownloadName(file.name);
 	const title = String(file.name || "Attachment");
 	const subtitle = String(file.mimeType || file.mime_type || "").trim();
+	// Diagnostic only - the private-hostname check below and the "your url is
+	// private" notice both need to know the host. Never used as an href, a src
+	// or a fetch target; those all go through signedSrc or a click-time sign.
 	const absoluteFileUrl = asAbsoluteUrl(file.url);
+	// Built from the *signed* url so the office viewer receives a link that still
+	// works, and so the raw private path is not handed to a third party. Empty
+	// until signing completes, which already suppresses the iframe below.
 	const officeEmbed =
-		kind === "office" || kind === "presentation" ? officeViewerEmbedUrl(file.url) : "";
+		kind === "office" || kind === "presentation" ? officeViewerEmbedUrl(signedSrc) : "";
 	const officeIsPrivate = (() => {
 		if (kind !== "office" && kind !== "presentation") {
 			return false;
@@ -1239,17 +1265,17 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 							<Download size={14} />
 							<span class="hidden sm:inline">Download</span>
 						</button>
-						<a
-							href={file.url}
-							download={downloadName}
-							target="_blank"
-							rel="noreferrer"
+						<button
+							type="button"
+							onClick={() => {
+								void signAndOpen(file.url);
+							}}
 							class="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/20"
 							title="Download"
 						>
 							<Download size={14} />
 							<span class="hidden sm:inline">Download</span>
-						</a>
+						</button>
 						<button
 							type="button"
 							onClick={() => onClose?.()}
@@ -1265,7 +1291,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 					{kind === "image" ? (
 						<div class="flex justify-center">
 							<LazyImage
-								src={file.url}
+								src={signedSrc || null}
 								alt={file.name || "Preview"}
 								width={800}
 								height={600}
@@ -1283,7 +1309,7 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 								</div>
 							) : (
 								<video
-									src={file.url}
+									src={signedSrc || undefined}
 									controls={true}
 									autoPlay={true}
 									playsInline={true}
@@ -1311,23 +1337,24 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 									{pdfState.error}
 								</div>
 							) : null}
-							{pdfState.loading || pdfState.error ? null : (
+							{pdfState.loading || pdfState.error || !pdfState.blobUrl ? null : (
 								<div class="h-[70vh] overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white/5">
 									<iframe
-										src={pdfState.blobUrl || file.url}
+										src={pdfState.blobUrl}
 										title={file.name || "PDF Preview"}
 										class="h-full w-full"
 									/>
 								</div>
 							)}
-							<a
-								href={file.url}
-								target="_blank"
-								rel="noreferrer"
+							<button
+								type="button"
+								onClick={() => {
+									void signAndOpen(file.url);
+								}}
 								class="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
 							>
 								Open in new tab
-							</a>
+							</button>
 						</div>
 					) : null}
 
@@ -1349,14 +1376,15 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 									/>
 								</div>
 							) : null}
-							<a
-								href={officeIsPrivate ? absoluteFileUrl : officeEmbed || absoluteFileUrl}
-								target="_blank"
-								rel="noreferrer"
+							<button
+								type="button"
+								onClick={() => {
+									void signAndOpen(file.url);
+								}}
 								class="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
 							>
 								Open in new tab
-							</a>
+							</button>
 						</div>
 					) : null}
 
@@ -1492,14 +1520,15 @@ function AttachmentPreviewModal({ open = false, attachment = null, onClose = nul
 									/>
 								</div>
 							)}
-							<a
-								href={absoluteFileUrl}
-								target="_blank"
-								rel="noreferrer"
+							<button
+								type="button"
+								onClick={() => {
+									void signAndOpen(file.url);
+								}}
 								class="inline-flex text-xs font-semibold text-blue-200 underline underline-offset-2 hover:text-blue-100"
 							>
 								Open file URL in new tab
-							</a>
+							</button>
 						</div>
 					) : null}
 
