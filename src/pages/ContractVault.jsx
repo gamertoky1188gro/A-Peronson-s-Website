@@ -175,7 +175,10 @@ function Step({ label, active, done, last }) {
 				</div>
 				{last ? null : (
 					<div
-						className={cn("mt-2 h-10 w-px", done ? "bg-sky-400/80" : "bg-slate-200 dark:bg-white/10")}
+						className={cn(
+							"mt-2 h-10 w-px",
+							done ? "bg-sky-400/80" : "bg-slate-200 dark:bg-white/10",
+						)}
 					/>
 				)}
 			</div>
@@ -259,7 +262,9 @@ function DetailPanel({ icon, title, body }) {
 function StatusCard({ label, status }) {
 	return (
 		<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-			<div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
+			<div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+				{label}
+			</div>
 			<div className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
 				<Pill tone="green">{status}</Pill>
 			</div>
@@ -847,7 +852,9 @@ export default function ContractVaultPage({ embedded = false }) {
 	if (!contract) {
 		if (embedded) {
 			return (
-				<div className="text-center py-12 text-slate-500 dark:text-slate-400">No contracts found.</div>
+				<div className="text-center py-12 text-slate-500 dark:text-slate-400">
+					No contracts found.
+				</div>
 			);
 		}
 		return (
@@ -870,7 +877,9 @@ export default function ContractVaultPage({ embedded = false }) {
 						<icons.vault className="h-5 w-5" />
 						Vault
 					</div>
-					<h1 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">Contract Vault</h1>
+					<h1 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
+						Contract Vault
+					</h1>
 					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 						Draft → Sign → PDF artifact → Lock → Archive
 					</p>
@@ -960,7 +969,9 @@ export default function ContractVaultPage({ embedded = false }) {
 							>
 								<div className="flex items-start justify-between gap-3">
 									<div>
-										<div className="text-sm font-semibold text-slate-900 dark:text-white">{c.id}</div>
+										<div className="text-sm font-semibold text-slate-900 dark:text-white">
+											{c.id}
+										</div>
 										<div className="mt-1 flex items-center gap-2">
 											<Pill tone="green">{c.status}</Pill>
 											<span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -968,7 +979,9 @@ export default function ContractVaultPage({ embedded = false }) {
 											</span>
 										</div>
 									</div>
-									<div className="text-right text-xs text-slate-500 dark:text-slate-400">{c.date}</div>
+									<div className="text-right text-xs text-slate-500 dark:text-slate-400">
+										{c.date}
+									</div>
 								</div>
 								<div className="mt-3 text-sm text-slate-600 dark:text-slate-300">
 									Buyer: {c.buyer} · Factory: {c.factory}
@@ -1210,77 +1223,77 @@ export default function ContractVaultPage({ embedded = false }) {
 										<label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
 											Proof type
 										</label>
-									<select
-										value={paymentForm.type}
-										onChange={(e) => {
-											setPaymentForm((p) => ({
-												...p,
-												type: e.target.value,
-											}));
-											setPaymentTypeLoading(true);
-										}}
-										className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
-									>
-										<option value="bank_transfer">Bank transfer</option>
-										<option value="lc">Letter of credit (LC)</option>
-									</select>
-									{paymentForm.type === "lc" && (
-										<div className="grid gap-3 sm:grid-cols-2">
-											<div>
-												<label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-													LC Type
-												</label>
-												<select
-													value={paymentForm.lc_type}
-													onChange={(e) =>
-														setPaymentForm((p) => ({
-															...p,
-															lc_type: e.target.value,
-														}))
-													}
-													className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
-												>
-													<option value="">Select type</option>
-													<option value="sight">Sight</option>
-													<option value="usance">Usance</option>
-												</select>
-											</div>
-											{paymentForm.lc_type === "usance" && (
+										<select
+											value={paymentForm.type}
+											onChange={(e) => {
+												setPaymentForm((p) => ({
+													...p,
+													type: e.target.value,
+												}));
+												setPaymentTypeLoading(true);
+											}}
+											className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
+										>
+											<option value="bank_transfer">Bank transfer</option>
+											<option value="lc">Letter of credit (LC)</option>
+										</select>
+										{paymentForm.type === "lc" && (
+											<div className="grid gap-3 sm:grid-cols-2">
 												<div>
 													<label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-														Usance Days
+														LC Type
 													</label>
-													<input
-														type="number"
-														min="1"
-														max="360"
-														value={paymentForm.usance_days}
-														placeholder="e.g. 30, 60, 90"
+													<select
+														value={paymentForm.lc_type}
 														onChange={(e) =>
 															setPaymentForm((p) => ({
 																...p,
-																usance_days: e.target.value,
+																lc_type: e.target.value,
 															}))
 														}
 														className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
-													/>
+													>
+														<option value="">Select type</option>
+														<option value="sight">Sight</option>
+														<option value="usance">Usance</option>
+													</select>
 												</div>
-											)}
-										</div>
-									)}
-									{paymentTypeLoading ? (
-										<div className="flex items-center justify-center gap-1 py-2">
-											{["🌸", "🌼", "🌺", "🌷", "🌸"].map((emoji, i) => (
-												<span
-													key={i}
-													className="inline-block animate-bounce text-lg"
-													style={{ animationDelay: `${i * 100}ms` }}
-												>
-													{emoji}
-												</span>
-											))}
-										</div>
-									) : null}
+												{paymentForm.lc_type === "usance" && (
+													<div>
+														<label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+															Usance Days
+														</label>
+														<input
+															type="number"
+															min="1"
+															max="360"
+															value={paymentForm.usance_days}
+															placeholder="e.g. 30, 60, 90"
+															onChange={(e) =>
+																setPaymentForm((p) => ({
+																	...p,
+																	usance_days: e.target.value,
+																}))
+															}
+															className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-white/10 dark:bg-slate-950"
+														/>
+													</div>
+												)}
+											</div>
+										)}
+										{paymentTypeLoading ? (
+											<div className="flex items-center justify-center gap-1 py-2">
+												{["🌸", "🌼", "🌺", "🌷", "🌸"].map((emoji, i) => (
+													<span
+														key={i}
+														className="inline-block animate-bounce text-lg"
+														style={{ animationDelay: `${i * 100}ms` }}
+													>
+														{emoji}
+													</span>
+												))}
+											</div>
+										) : null}
 										<Input
 											label="Transaction reference"
 											value={paymentForm.transaction_reference}
@@ -1364,41 +1377,43 @@ export default function ContractVaultPage({ embedded = false }) {
 									>
 										Submit proof
 									</button>
-								{paymentProofs.length > 0 ? (
-									<div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-white/10 dark:bg-slate-950">
-										{paymentProofs.map((proof, idx) => (
-											<div
-												key={proof.id || idx}
-												className="flex items-center justify-between gap-3 py-2 text-slate-700 dark:text-slate-300"
-											>
-												<div className="min-w-0">
-													<span className="font-medium">
-														{proof.type || proof.transaction_reference || `Proof ${idx + 1}`}
-													</span>
-													{proof.created_at || proof.submitted_at ? (
-														<div className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
-															{new Date(proof.created_at || proof.submitted_at).toLocaleDateString("en-US", {
-																year: "numeric",
-																month: "short",
-																day: "numeric",
-															})}
-														</div>
-													) : null}
-												</div>
-												<Pill
-													tone={
-														proof.status === "accepted"
-															? "green"
-															: proof.status === "rejected"
-																? "red"
-																: "amber"
-													}
+									{paymentProofs.length > 0 ? (
+										<div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-white/10 dark:bg-slate-950">
+											{paymentProofs.map((proof, idx) => (
+												<div
+													key={proof.id || idx}
+													className="flex items-center justify-between gap-3 py-2 text-slate-700 dark:text-slate-300"
 												>
-													{proof.status || "pending"}
-												</Pill>
-											</div>
-										))}
-									</div>
+													<div className="min-w-0">
+														<span className="font-medium">
+															{proof.type || proof.transaction_reference || `Proof ${idx + 1}`}
+														</span>
+														{proof.created_at || proof.submitted_at ? (
+															<div className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+																{new Date(
+																	proof.created_at || proof.submitted_at,
+																).toLocaleDateString("en-US", {
+																	year: "numeric",
+																	month: "short",
+																	day: "numeric",
+																})}
+															</div>
+														) : null}
+													</div>
+													<Pill
+														tone={
+															proof.status === "accepted"
+																? "green"
+																: proof.status === "rejected"
+																	? "red"
+																	: "amber"
+														}
+													>
+														{proof.status || "pending"}
+													</Pill>
+												</div>
+											))}
+										</div>
 									) : (
 										<div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 dark:border-white/10 dark:bg-slate-950 dark:text-slate-400">
 											No proofs submitted yet.
@@ -1433,7 +1448,9 @@ export default function ContractVaultPage({ embedded = false }) {
 						>
 							<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
 								<div className="flex items-center justify-between text-sm">
-									<span className="font-medium text-slate-900 dark:text-white">Call recordings</span>
+									<span className="font-medium text-slate-900 dark:text-white">
+										Call recordings
+									</span>
 									<icons.phone className="h-4 w-4 text-sky-500" />
 								</div>
 								{calls.length > 0 ? (
@@ -1588,8 +1605,12 @@ export default function ContractVaultPage({ embedded = false }) {
 			<div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-slate-950">
 				<div className="flex items-center justify-between mb-6">
 					<div>
-						<h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Contract</h2>
-						<p className="text-sm text-slate-500 dark:text-slate-400">Fill in the details below to start a new contract</p>
+						<h2 className="text-xl font-bold text-slate-900 dark:text-white">
+							Create New Contract
+						</h2>
+						<p className="text-sm text-slate-500 dark:text-slate-400">
+							Fill in the details below to start a new contract
+						</p>
 					</div>
 					<button
 						onClick={() => setShowCreateForm(false)}
