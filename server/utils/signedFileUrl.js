@@ -5,7 +5,10 @@ export const GATED_PREFIXES = ["chat", "contracts", "calls", "search"];
 export const DEFAULT_TTL_MS = 5 * 60 * 1000;
 export const MEDIA_TTL_MS = 15 * 60 * 1000;
 
-function uploadsRoot() {
+// Exported so consumers that must touch the filesystem itself — the /content
+// route re-checking realpath containment, for instance — agree with the signing
+// core about where the uploads root is, instead of re-deriving it and drifting.
+export function uploadsRoot() {
 	return path.resolve(process.cwd(), "server", "uploads");
 }
 

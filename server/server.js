@@ -38,6 +38,7 @@ import documentRoutes from "./routes/documentRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import exportRoutes from "./routes/exportRoutes.js";
 import feedRoutes from "./routes/feedRoutes.js";
+import fileAccessRoutes from "./routes/fileAccessRoutes.js";
 import geoRoutes from "./routes/geoRoutes.js";
 import industryRoutes from "./routes/industryRoutes.js";
 import infraRoutes from "./routes/infraRoutes.js";
@@ -99,6 +100,7 @@ import { logError, logInfo, logWarn } from "./utils/logger.js";
 import { consumePendingInvites, enqueuePendingInvites } from "./utils/pendingInvites.js";
 import prisma from "./utils/prisma.js";
 import { closeRedis, initRedis } from "./utils/redis.js";
+import { isGatedPath } from "./utils/signedFileUrl.js";
 
 const REQUIRED_ENV_VARS = ["DATABASE_URL", "JWT_SECRET"];
 const RECOMMENDED_ENV_VARS = [
@@ -294,6 +296,27 @@ if (!fs.existsSync(profileUploadsRoot)) {
 	fs.mkdirSync(profileUploadsRoot, { recursive: true });
 }
 
+// Signed-file access is registered ahead of the static mount so that no later
+// rearrangement can interpose something that serves /uploads directly. Its own
+// requestLogger instance is registered here too because the shared one for
+// /api/* is installed further down, below this block.
+app.use(
+	"/api/files",
+	requestLogger({ timeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 45_000) }),
+);
+app.use("/api/files", fileAccessRoutes);
+
+// Private namespaces (chat, contracts, calls, search) are reachable only through
+// the signature-checked /api/files/content route. Denying them at the static
+// mount means a mount-ordering mistake upstream cannot silently reopen them:
+// express.static has no opinion about who is asking, so the guard has to sit
+// immediately in front of it and answer 404 rather than falling through.
+app.use("/uploads", (req, res, next) => {
+	if (isGatedPath(req.path)) {
+		return res.status(404).json({ error: "Not found" });
+	}
+	return next();
+});
 app.use("/uploads", express.static(uploadsRoot));
 
 const distRoot = path.join(process.cwd(), "dist");

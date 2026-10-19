@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { logError, logInfo } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
+import { GATED_PREFIXES } from "../utils/signedFileUrl.js";
 import { analyzeBufferWithAI, isAIAnalyticsEnabled } from "./aiModerationService.js";
 
 const UPLOADS_ROOT = path.join(process.cwd(), "server", "uploads");
@@ -615,7 +616,69 @@ export async function getUploadsListing(folderFilter = "all") {
 
 	allFiles.sort((a, b) => new Date(b.modified) - new Date(a.modified));
 
+	await flagUnclaimedPrivateFiles(allFiles);
+
 	return { files: allFiles, total: allFiles.length };
+}
+
+// scanFolder emits `path` relative to UPLOADS_ROOT ("/contracts/a.pdf"), not a
+// `folder` field, so the top-level segment is read back out of it. Lower-cased
+// because the filesystem is case-insensitive and GATED_PREFIXES is matched the
+// same way by isGatedPath.
+function topFolderOf(file) {
+	return String(file?.path || "")
+		.toLowerCase()
+		.replace(/^\/+/, "")
+		.split("/")[0];
+}
+
+// The private prefixes are now unreachable without a signed url, which is the
+// point — but it also means a file nothing links to becomes invisible rather
+// than merely locked. Marking the orphans lets an admin find and claim them
+// instead of assuming they no longer exist.
+//
+// Three anchors count as "claimed", matching how fileAccessService resolves
+// ownership: Document.file_path (what the folder scanner writes), Document.entity_id
+// (the bare filename it also writes), and artifact.pdf_path (where a real
+// contract names its PDF — fileAccessService is explicit that this is often the
+// only anchor there is).
+async function flagUnclaimedPrivateFiles(allFiles) {
+	const privateFiles = allFiles.filter((file) => GATED_PREFIXES.includes(topFolderOf(file)));
+	if (!privateFiles.length) {
+		return;
+	}
+
+	// One pass over the table rather than a query per file: the listing already
+	// scans the whole uploads tree, and N+1 lookups would make an admin page that
+	// lists hundreds of files unusable.
+	let ownedNames = new Set();
+	try {
+		const rows = await prisma.document.findMany({
+			where: { OR: [{ file_path: { not: null } }, { entity_id: { not: null } }] },
+			select: { file_path: true, entity_id: true, artifact: true },
+		});
+		ownedNames = new Set();
+		for (const row of rows || []) {
+			for (const anchor of [row.file_path, row.entity_id, row.artifact?.pdf_path]) {
+				const tail = String(anchor ?? "")
+					.split(/[\\/]/)
+					.pop()
+					.toLowerCase();
+				if (tail) {
+					ownedNames.add(tail);
+				}
+			}
+		}
+	} catch (err) {
+		// Advisory only. Access control does not depend on this flag, so a
+		// database hiccup must not take the admin listing down with it.
+		logError("uploads listing ownership lookup failed", err);
+		return;
+	}
+
+	for (const file of privateFiles) {
+		file.unclaimed = !ownedNames.has(String(file.filename || "").toLowerCase());
+	}
 }
 
 export async function deleteUploadFile(filePath) {
