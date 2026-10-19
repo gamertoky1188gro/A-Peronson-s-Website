@@ -11,7 +11,8 @@ import _traverse from "@babel/traverse";
  * deleted the LazyImage import in the same edit, but a third call site — the
  * activeAvatar in the thread header — still used it. Nothing caught it:
  *
- *   - Biome's noUndeclaredVariables is off in this repo, so `biome check` passed.
+ *   - Biome's noUndeclaredVariables is effectively inert here (it cannot resolve
+ *     a JSX element name against an import), so `biome check` passed.
  *   - No test renders RightPanel.
  *   - Rollup treats an unresolved *identifier* as a global and does not even
  *     warn; the build printed "built" and exited 0 with the bug present.
@@ -20,20 +21,60 @@ import _traverse from "@babel/traverse";
  * Rendering these components is not an option: RightPanel alone needs a large
  * mock surface, which is not proportionate to a one-line fix. So this asserts
  * statically, by parsing.
+ *
+ * ---------------------------------------------------------------------------
+ * WHAT THIS DOES NOT CATCH  (every behavioural bullet below is asserted by a
+ * test, so a change in behaviour breaks the suite instead of silently
+ * outrunning this comment)
+ * ---------------------------------------------------------------------------
+ *
+ * 1. Identifiers used OUTSIDE a JSX tag. The scan only ever looks at
+ *    JSXOpeningElement names. The incident was a missing binding on a JSX tag,
+ *    which this does catch; the same mistake in an expression body — a bare
+ *    `LazyImage` passed to a function, assigned to a variable — is invisible to
+ *    it. That is half the failure class the guard is named after, and it is
+ *    not covered. Asserted by "ignores identifiers used outside a JSX tag".
+ *
+ * 2. Bindings that exist at runtime but not in the lexical scope: a component
+ *    installed onto `globalThis`, one created by `eval`, or a name produced by
+ *    a macro. Those are reported as unbound — false positives, not false
+ *    negatives. Asserted by "reports a name bound only inside a narrower scope".
+ *
+ * 3. A `require` performed inside a block (`if (x) { const A = require(...) }`)
+ *    binds `A` in that block only, so a JSX use outside the block is reported.
+ *    Same test as (2). A *conditional require at module top level* is fine and
+ *    is not reported — only block-scoped ones are.
+ *
+ * 4. Files with no JSX at all, which cannot be inspected by a JSX-element
+ *    guard. `src/hooks/useSignedSrc.js` (a hook) and `src/lib/signedFile.js`
+ *    are therefore NOT in GUARDED below. An earlier revision listed
+ *    useSignedSrc.js and had its probe test pass on a file where no probe was
+ *    ever injected — a green test for work that never happened, which is the
+ *    precise failure this guard exists to prevent.
+ *
+ * 5. Anything outside the five guarded files. The repo-wide
+ *    `noUndeclaredVariables` / tsconfig migration remains deferred.
+ *
+ * HISTORY — why this parses instead of pattern-matching source text. The first
+ * version blanked comments *and* strings with a regex before scanning for
+ * `<Name`; an apostrophe in JSX text ("This can't be loaded") shifted the
+ * string-pairing parity and blanked every later JSX tag. Measured on the
+ * guarded files that destroyed 11 of 18 tags in ChatInterface and *all* of
+ * them in AttachmentPreviewModal and FileAttachmentCard — so the guard passed
+ * those three vacuously while a real unbound element sat in them. Parsing has
+ * no such failure mode.
  */
 
 // ESM repo: __dirname does not exist here, so derive the root from this file.
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 /**
- * The signed-URL surfaces: everything this feature renders a gated path through.
+ * The signed-URL surfaces that contain JSX: everything this feature renders a
+ * gated path through.
  *
- * NOTE on scope: `src/hooks/useSignedSrc.js` is a hook and contains no JSX at
- * all, so a JSX-element guard is structurally inapplicable to it — it is listed
- * for completeness and its zero-element count is asserted explicitly below, so
- * the file is visibly uncovered rather than quietly passing. `src/lib/
- * signedFile.js` is likewise not guarded here; it has no JSX and exports no
- * components.
+ * Every entry must appear in EXPECTED_JSX_ELEMENTS below with its real, pinned
+ * element count. If a file is added here without a count, its count test fails
+ * loudly on `toBe(undefined)` rather than passing vacuously.
  */
 const GUARDED = [
 	"src/pages/chat/RightPanel.jsx",
@@ -41,8 +82,27 @@ const GUARDED = [
 	"src/components/chat/AttachmentPreviewModal.jsx",
 	"src/components/chat/FileAttachmentCard.jsx",
 	"src/components/chat/SignedMedia.jsx",
-	"src/hooks/useSignedSrc.js",
 ];
+
+/**
+ * Real element counts, measured with countJsxElements() and pinned.
+ *
+ * These are the guard's anti-vacuity anchor. The previous revision asserted
+ * `toBeGreaterThanOrEqual(0)`, which is true of every number, so a scanner that
+ * had stopped finding JSX in a file — the round-2 failure mode, where three of
+ * six files had *zero* surviving tags — passed that test. Pinning the count
+ * means a regression in what the scanner can see fails here, loudly.
+ *
+ * Bump these when the file legitimately gains or loses an element; a mismatch
+ * is the signal, not noise.
+ */
+const EXPECTED_JSX_ELEMENTS = {
+	"src/pages/chat/RightPanel.jsx": 63,
+	"src/pages/ChatInterface.jsx": 55,
+	"src/components/chat/AttachmentPreviewModal.jsx": 98,
+	"src/components/chat/FileAttachmentCard.jsx": 20,
+	"src/components/chat/SignedMedia.jsx": 2,
+};
 
 const traverse = _traverse.default ?? _traverse;
 
@@ -54,17 +114,24 @@ function parseJsx(src) {
 	});
 }
 
+function readSource(relative) {
+	return fs.readFileSync(path.join(ROOT, relative), "utf8");
+}
+
 /**
- * Capitalised JSX element names with no binding anywhere in scope.
+ * Capitalised JSX element names with no *lexical* binding anywhere in scope.
  *
- * Uses the AST rather than pattern-matching source text. The first version of
- * this guard blanked comments *and* strings with a regex before scanning for
- * `<Name`; an apostrophe in JSX text ("This can't be loaded") shifted the
- * string-pairing parity and blanked every later JSX tag. Measured on these six
- * files that destroyed 11 of 18 tags in ChatInterface and *all* of them in
- * AttachmentPreviewModal and FileAttachmentCard — the guard passed those three
- * vacuously while a real unbound element sat in them. Parsing has no such
- * failure mode.
+ * `{ noGlobals: true }` matters. Plain `scope.hasBinding(name)` also returns
+ * true for anything the runtime provides, so `<Map />`, `<Set />`, `<Error />`,
+ * `<Promise />`, `<Math />`, `<JSON />` and 19 other globals came back as
+ * "bound" and escaped. Measured over 39 probed names: 25 escaped, 14 were
+ * flagged, and every name that escapes is a plausible typo target — a deleted
+ * import called `Map` is exactly as broken as one called `LazyImage`.
+ * Asserted by "flags a JSX name that resolves only to a runtime global".
+ *
+ * The cost of the narrowing is caveat 2/3 in the header: names that exist only
+ * at runtime are now reported instead of silently accepted. That is the right
+ * direction to fail for a guard whose entire job is a loud ReferenceError.
  */
 function findUnboundJsxNames(src) {
 	const missing = new Set();
@@ -78,7 +145,7 @@ function findUnboundJsxNames(src) {
 			// Intrinsic elements (div, span, input...) are lowercase by
 			// convention and are never variable references.
 			if (!/^[A-Z]/.test(name)) return;
-			if (!nodePath.scope.hasBinding(name)) missing.add(name);
+			if (!nodePath.scope.getBinding(name, { noGlobals: true })) missing.add(name);
 		},
 	});
 	return [...missing];
@@ -94,50 +161,117 @@ function countJsxElements(src) {
 	return count;
 }
 
+/** "Icons.Star" for a member expression, "LazyImage" for a plain name. */
+function jsxNameToString(node) {
+	if (node.type === "JSXIdentifier") return node.name;
+	if (node.type === "JSXMemberExpression") {
+		const object = jsxNameToString(node.object);
+		const property = jsxNameToString(node.property);
+		return object && property ? `${object}.${property}` : null;
+	}
+	return null;
+}
+
 /**
- * Plants `<ZzzUnboundProbe />` inside real JSX in the source.
+ * Plants a distinct unbound probe at EVERY JSX position in the source.
  *
- * Guided by the AST so the result always parses — injecting at a blind line
- * boundary lands inside expressions often enough to make the test flaky.
- * Two shapes have to be handled: an element with children (the probe becomes
- * its first child) and a self-closing element (which is opened up so the probe
- * has somewhere legal to go).
+ * One probe per element, named ZzzUnboundProbe0..N, each with its own name, so
+ * a single scan of the mutated file must return all N of them. That is
+ * stronger than injecting one at a time: a scanner that visited only the first
+ * element, or skipped any single position, returns a shorter list and fails.
+ * The previous revision injected exactly one probe per file while its test
+ * title claimed "at any position"; one-at-a-time over all positions cost 29 s
+ * of wall clock, and the batch form proves the same property for 5 parses.
+ *
+ * Guided by the AST so every mutation is syntactically valid. Two shapes exist:
+ * an element with a closing tag gets the probe as its first child, and a
+ * self-closing element (`<X />`, which Babel models as
+ * JSXElement{openingElement, selfClosing: true} — there is no
+ * JSXSelfClosingElement node) is opened up so the probe has somewhere legal to
+ * go. Edits are applied back-to-front so earlier offsets stay valid.
  */
-function injectProbe(src) {
+function injectProbes(src) {
 	const elements = [];
 	traverse(parseJsx(src), {
 		JSXElement(nodePath) {
 			elements.push(nodePath.node);
 		},
 	});
-	if (elements.length === 0) return null;
 
-	const container = elements.find((element) => (element.children || []).length > 0);
-	if (container) {
-		const at = container.openingElement.end;
-		return `${src.slice(0, at)}<ZzzUnboundProbe />${src.slice(at)}`;
-	}
+	const edits = [];
+	const names = [];
+	elements.forEach((element, index) => {
+		const opening = element.openingElement;
+		const tag = jsxNameToString(opening.name);
+		if (tag === null) return;
+		const name = `ZzzUnboundProbe${index}`;
+		names.push(name);
+		if (opening.selfClosing) {
+			edits.push({
+				start: element.end - 2, // drop the trailing "/>"
+				end: element.end,
+				text: `><${name} /></${tag}>`,
+			});
+			return;
+		}
+		edits.push({ start: opening.end, end: opening.end, text: `<${name} />` });
+	});
 
-	// Every element self-closes (SignedMedia.jsx is like this), so the probe has
-	// no parent to live in. Open the first one and nest it.
-	// Babel models `<X />` as JSXElement{openingElement: JSXOpeningElement,
-	// selfClosing: true} — there is no JSXSelfClosingElement node in its AST.
-	const target = elements[0];
-	const opening = target.openingElement;
-	const name = opening.name;
-	if (name.type !== "JSXIdentifier") return null;
-	if (opening.selfClosing) {
-		const head = src.slice(0, target.end - 2); // drop the trailing "/>"
-		const tail = src.slice(target.end);
-		return `${head}><ZzzUnboundProbe /></${name.name}>${tail}`;
+	let mutated = src;
+	for (const edit of edits.sort((a, b) => b.start - a.start)) {
+		mutated = mutated.slice(0, edit.start) + edit.text + mutated.slice(edit.end);
 	}
-	const at = opening.end;
-	return `${src.slice(0, at)}<ZzzUnboundProbe />${src.slice(at)}`;
+	return { names, src: mutated };
 }
+
+/**
+ * A synthetic file with every JSX shape the injector has to survive:
+ *   0 <div>   container with children      -> probe becomes the first child
+ *   1 <Card/> self-closing, plain name      -> opened up, probe nested
+ *   2 <span>  container with children      -> probe becomes the first child
+ *   3 <Icons.Star/>  self-closing, member  -> opened up, probe nested
+ *   4 <p></p>  closing tag, no children    -> probe becomes the only child
+ * The answer is known by hand (5 elements), so the two instruments below are
+ * pinned independently of the real files — a per-file test that weakens its own
+ * assertion cannot quietly un-guard the instrument that feeds it.
+ */
+const INSTRUMENT_SOURCE = [
+	'import Card from "./Card.jsx";',
+	'import * as Icons from "./icons.jsx";',
+	"export function Panel({ url }) {",
+	"\treturn (",
+	"\t\t<div>",
+	"\t\t\t<Card src={url} />",
+	"\t\t\t<span>",
+	"\t\t\t\t<Icons.Star />",
+	"\t\t\t</span>",
+	"\t\t\t<p></p>",
+	"\t\t</div>",
+	"\t);",
+	"}",
+].join("\n");
 
 describe("JSX elements resolve to a binding (signed-url surfaces)", () => {
 	// The scanner is the guard, so the guard is tested. Without these, a
 	// silently broken scanner would make the real assertions vacuous.
+	test("counts every JSX element, whatever its shape", () => {
+		expect(countJsxElements(INSTRUMENT_SOURCE)).toBe(5);
+	});
+
+	test("plants one distinct probe at every JSX position", () => {
+		const { names, src: mutated } = injectProbes(INSTRUMENT_SOURCE);
+		expect(names).toEqual([
+			"ZzzUnboundProbe0",
+			"ZzzUnboundProbe1",
+			"ZzzUnboundProbe2",
+			"ZzzUnboundProbe3",
+			"ZzzUnboundProbe4",
+		]);
+		// One probe per element, and every one of them is findable.
+		expect(countJsxElements(mutated)).toBe(10);
+		expect(findUnboundJsxNames(mutated).sort()).toEqual([...names].sort());
+	});
+
 	test("flags a JSX name that is never bound", () => {
 		const src = [
 			'import Button from "./Button.jsx";',
@@ -153,9 +287,10 @@ describe("JSX elements resolve to a binding (signed-url surfaces)", () => {
 		expect(findUnboundJsxNames(src)).toEqual(["LazyImage"]);
 	});
 
-	// Regression guard for the blanking failure above. The old implementation
-	// returned [] here: the apostrophe in "can't" flipped string pairing, so the
-	// probe that follows was itself blanked before it was ever scanned.
+	// Regression guard for the blanking failure in the header. The regex
+	// implementation returned [] here: the apostrophe in "can't" flipped string
+	// pairing, so the probe that follows was itself blanked before it was ever
+	// scanned.
 	test("finds an unbound element after an apostrophe in JSX text", () => {
 		const src = [
 			'import Card from "./Card.jsx";',
@@ -195,34 +330,83 @@ describe("JSX elements resolve to a binding (signed-url surfaces)", () => {
 		expect(findUnboundJsxNames(src)).toEqual([]);
 	});
 
-	// The real-surface proof: an unbound element planted inside actual JSX is
-	// found in every guarded file that has JSX.
-	test.each(GUARDED)("%s finds an unbound element injected into its JSX", (relative) => {
-		const src = fs.readFileSync(path.join(ROOT, relative), "utf8");
-		const mutated = injectProbe(src);
-		if (mutated === null) {
-			// No JSX at all: nothing for a JSX guard to see. Asserted explicitly
-			// below rather than passing quietly.
-			expect(countJsxElements(src)).toBe(0);
-			return;
-		}
-		expect(findUnboundJsxNames(mutated)).toContain("ZzzUnboundProbe");
+	// Header caveat 1, asserted rather than asserted-in-prose: a global resolves
+	// through scope.hasBinding(), so without { noGlobals: true } every one of
+	// these came back clean. 25 of 39 probed names escaped that way.
+	test("flags a JSX name that resolves only to a runtime global", () => {
+		const src = [
+			"export function Panel() {",
+			"\treturn (",
+			"\t\t<div>",
+			"\t\t\t<Map />",
+			"\t\t\t<Error />",
+			"\t\t\t<Promise />",
+			"\t\t\t<Math />",
+			"\t\t</div>",
+			"\t);",
+			"}",
+		].join("\n");
+		expect(findUnboundJsxNames(src)).toEqual(["Map", "Error", "Promise", "Math"]);
 	});
 
-	// Makes the "no JSX" case visible instead of implicit.
-	test.each(GUARDED)("%s reports its JSX element count", (relative) => {
-		const src = fs.readFileSync(path.join(ROOT, relative), "utf8");
-		const hasJsx = countJsxElements(src);
-		expect(hasJsx).toBeGreaterThanOrEqual(0);
-		if (hasJsx === 0) {
-			// Only useSignedSrc.js should land here. If a new file joins the list
-			// with no JSX, the docblock needs updating too.
-			expect(relative).toBe("src/hooks/useSignedSrc.js");
-		}
+	// Header caveat 1 again, from the other direction: the same unbound name is
+	// missed in an expression and caught as a tag, in one source. This is the
+	// honest limit of the guard — a bare `LazyImage` in an expression body, the
+	// other half of the original incident, is NOT found.
+	test("ignores identifiers used outside a JSX tag", () => {
+		const src = [
+			"export function Panel({ url }) {",
+			"\tconst node = LazyImage;",
+			"\tconst alsoMissing = SignedVideo;",
+			"\treturn (",
+			"\t\t<div>",
+			"\t\t\t<LazyImage />",
+			"\t\t\t{String(node)}",
+			"\t\t\t{String(alsoMissing)}",
+			"\t\t</div>",
+			"\t);",
+			"}",
+		].join("\n");
+		expect(findUnboundJsxNames(src)).toEqual(["LazyImage"]);
+	});
+
+	// Header caveats 2 and 3: names that exist at runtime or only inside a
+	// block are reported as unbound. False positives, pinned so that the
+	// narrowing in findUnboundJsxNames cannot silently acquire new ones.
+	test("reports a name bound only inside a narrower scope", () => {
+		const src = [
+			"if (globalThis.__ALLOW__) {",
+			'\tconst LazyImage = require("./LazyImage.jsx").default;',
+			"\treturn <div><LazyImage /></div>;",
+			"}",
+			"globalThis.Widget = function Widget() {",
+			"\treturn null;",
+			"};",
+			"export function Panel() {",
+			"\treturn <div><LazyImage /><Widget /></div>;",
+			"}",
+		].join("\n");
+		expect(findUnboundJsxNames(src)).toEqual(["LazyImage", "Widget"]);
+	});
+
+	// The real-surface proof: a probe is planted at every JSX position in the
+	// real file and every one of them must come back. probes.length is asserted
+	// against the pinned element count, so a file whose JSX stopped being seen
+	// fails here instead of "detecting" zero probes successfully.
+	test.each(GUARDED)("%s detects an unbound element injected at every JSX position", (relative) => {
+		const { names, src: mutated } = injectProbes(readSource(relative));
+		expect(names.length).toBe(EXPECTED_JSX_ELEMENTS[relative]);
+		expect(names.length).toBeGreaterThan(0);
+		expect(findUnboundJsxNames(mutated).sort()).toEqual([...names].sort());
+	});
+
+	// Pinning the counts is what makes the tests above non-vacuous: if the
+	// scanner cannot see the JSX any more, the count changes and this fails.
+	test.each(GUARDED)("%s has the pinned JSX element count", (relative) => {
+		expect(countJsxElements(readSource(relative))).toBe(EXPECTED_JSX_ELEMENTS[relative]);
 	});
 
 	test.each(GUARDED)("%s has no unbound JSX element", (relative) => {
-		const src = fs.readFileSync(path.join(ROOT, relative), "utf8");
-		expect(findUnboundJsxNames(src)).toEqual([]);
+		expect(findUnboundJsxNames(readSource(relative))).toEqual([]);
 	});
 });
