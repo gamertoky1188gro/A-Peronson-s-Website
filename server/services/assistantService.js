@@ -5,6 +5,7 @@ import net from "node:net";
 import path from "node:path";
 import { GoogleGenAI } from "@google/genai";
 import { OpenCode } from "@opencode/client";
+import { waitForAssistantTurn } from "./opencodeTurns.js";
 
 async function findFreePort(startPort = 4096, maxAttempts = 100) {
 	for (let port = startPort; port < startPort + maxAttempts; port++) {
@@ -998,72 +999,31 @@ function formatSessionId(userId) {
 }
 
 /**
- * Map a v2 assistant content part onto the part shape the rest of this file
- * already understands (v1 used `parts`, v2 uses `content`).
- */
-function mapAssistantPart(part) {
-	if (part.type === "text" || part.type === "reasoning") {
-		return { type: part.type, text: part.text || "" };
-	}
-	if (part.type === "tool") {
-		const failed = part.state?.status === "error";
-		return {
-			type: failed ? "tool-result" : "tool-call",
-			toolName: part.name || part.tool || "unknown",
-			args: part.state?.input || {},
-			result: part.state?.content || part.state?.error || null,
-		};
-	}
-	return { type: part.type };
-}
-
-/**
  * Send a prompt and wait for the assistant turn to finish.
  *
- * On the v2 API `session.prompt` is asynchronous: it returns as soon as the
- * user message is queued. The reply has to be polled for. A turn is finished
- * when the last assistant message carries a `finish` that is not
- * `tool-calls`, or when the session reports itself idle.
+ * The turn is tracked by `waitForAssistantTurn`, which is shared with the
+ * investigation runtime. It knows the two traps of the v2 message list: the
+ * list is ordered NEWEST FIRST, so the last element is the message that
+ * OPENED the session rather than the one that answered the question, and a
+ * tool call's state changes without the content array changing size. Reading
+ * the list here directly is what made a second turn answer with the first
+ * turn's reply.
  */
 async function promptOpencodeSession({
 	client,
 	sessionID,
 	text,
-	timeoutMs = 120000,
+	timeoutMs = 120_000,
 	onText = null,
 }) {
-	await client.session.prompt({ sessionID, text });
-
-	const deadline = Date.now() + timeoutMs;
-	let parts = [];
-	let emitted = "";
-
-	while (Date.now() < deadline) {
-		await new Promise((resolve) => setTimeout(resolve, 700));
-		let messages = [];
-		try {
-			const listed = await client.message.list({ sessionID });
-			messages = listed?.data || [];
-		} catch {
-			continue;
-		}
-		const assistants = messages.filter((message) => message.type === "assistant");
-		const last = assistants[assistants.length - 1];
-		parts = (last?.content || []).map(mapAssistantPart);
-
-		const fullText = parts
-			.filter((part) => part.type === "text")
-			.map((part) => part.text || "")
-			.join("\n");
-		if (onText && fullText.length > emitted.length) {
-			onText(fullText.slice(emitted.length), fullText);
-			emitted = fullText;
-		}
-
-		if (last?.finish && last.finish !== "tool-calls") break;
-	}
-
-	return { parts, text: emitted };
+	const turn = await waitForAssistantTurn({
+		client,
+		sessionID,
+		text,
+		timeoutMs,
+		onText,
+	});
+	return { parts: turn.parts, text: turn.text };
 }
 
 function isOpencodeBinaryAvailable() {
@@ -1341,7 +1301,6 @@ export async function getOpencodeSessionMessages(userId) {
 	}
 
 	const baseUrl = `http://localhost:${port}`;
-	const sessionIdKey = formatSessionId(userId);
 
 	let actualSessionId = null;
 	if (userId) {
@@ -1349,8 +1308,14 @@ export async function getOpencodeSessionMessages(userId) {
 		actualSessionId = meta?.sessionId || null;
 	}
 
+	// The v2 server generates session ids, so the synthetic `session-<userId>`
+	// key is not a session the server knows about. Ask for a real session
+	// instead of addressing one that does not exist.
 	if (!actualSessionId) {
-		actualSessionId = sessionIdKey;
+		actualSessionId = await createUserOpencodeSession(userId);
+	}
+	if (!actualSessionId) {
+		return [];
 	}
 
 	try {
@@ -1429,7 +1394,6 @@ export async function deleteOpencodeSession(userId) {
 	}
 
 	const baseUrl = `http://localhost:${port}`;
-	const sessionIdKey = formatSessionId(userId);
 
 	let actualSessionId = null;
 	if (userId) {
@@ -1437,8 +1401,14 @@ export async function deleteOpencodeSession(userId) {
 		actualSessionId = meta?.sessionId || null;
 	}
 
+	// The v2 server generates session ids, so the synthetic `session-<userId>`
+	// key is not a session the server knows about. Ask for a real session
+	// instead of addressing one that does not exist.
 	if (!actualSessionId) {
-		actualSessionId = sessionIdKey;
+		actualSessionId = await createUserOpencodeSession(userId);
+	}
+	if (!actualSessionId) {
+		return false;
 	}
 
 	try {

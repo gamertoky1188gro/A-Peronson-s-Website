@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { OpenCode } from "@opencode/client";
 import { logInfo, logWarn } from "../../utils/logger.js";
+import { formatToolError, waitForAssistantTurn } from "../opencodeTurns.js";
 import { parseModelChain } from "./modelChain.js";
 
 const PORT_RANGE_START = 4200;
@@ -16,6 +17,51 @@ const STABLE_POLLS_TO_SETTLE = 20;
 const POWERSHELL_SHIM_TARGET = /& "([^"]*opencode\.exe)"/;
 const CMD_SHIM_TARGET = /"?%~dp0\\?([^"]*?opencode\.exe)"?/i;
 const V2_VERSION = /v2\.\d+/i;
+
+/**
+ * The repository root, resolved ONCE at startup and never taken from a
+ * request. The runtime is allowed to look at exactly one directory - the
+ * repository - and a caller that names another one is refused.
+ */
+export const REPOSITORY_ROOT = resolveRepositoryRoot(process.cwd());
+
+function resolveRepositoryRoot(start) {
+	let current = path.resolve(start);
+	for (;;) {
+		const manifest = path.join(current, "package.json");
+		if (fs.existsSync(manifest)) {
+			try {
+				const pkg = JSON.parse(fs.readFileSync(manifest, "utf8"));
+				if (pkg.name === "gartexhub") return fs.realpathSync(current);
+			} catch {
+				// unreadable manifest: keep walking up
+			}
+		}
+		const parent = path.dirname(current);
+		if (parent === current) {
+			throw new Error("Could not resolve the GarTexHub repository root from the working directory");
+		}
+		current = parent;
+	}
+}
+
+/**
+ * Refuse a directory that is not the canonical repository root.
+ *
+ * The runtime is a read-only investigator over ONE tree. A path that is
+ * outside the repository - a home directory, a temporary directory, a symlink
+ * that points out of the tree - is out of scope and is refused rather than
+ * quietly narrowed.
+ */
+export function assertRepositoryRoot(directory) {
+	const resolved = fs.realpathSync(path.resolve(String(directory || "")));
+	if (resolved !== REPOSITORY_ROOT) {
+		throw new Error(
+			`Refusing to use a directory outside the repository root: ${resolved} (expected ${REPOSITORY_ROOT})`,
+		);
+	}
+	return resolved;
+}
 
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -68,6 +114,11 @@ function isV2Binary(binary) {
 function resolveBinary() {
 	const explicit = process.env.OPENCODE_BIN;
 	if (explicit && fs.existsSync(explicit)) {
+		if (!isV2Binary(explicit)) {
+			throw new Error(
+				`OPENCODE_BIN does not point at an opencode v2 binary: ${explicit}. The v1 API is not compatible with this runtime.`,
+			);
+		}
 		return { command: explicit, shell: false };
 	}
 
@@ -90,15 +141,12 @@ function resolveBinary() {
 		}
 	}
 
-	// PATH fallback. `node_modules/.bin/opencode` is the v1 package and would
-	// shadow the global v2 CLI under an npm script, so it is only used when
-	// nothing better turned up.
-	const fallback = process.platform === "win32" ? "opencode.cmd" : "opencode";
-	logWarn("investigation runtime binary not verified as opencode v2", {
-		fallback,
-		setOpencodeBin: "set OPENCODE_BIN to the opencode v2 executable",
-	});
-	return { command: fallback, shell: true };
+	// Fail fast. Spawning an UNVERIFIED binary means the v1 API, which answers
+	// the v2 routes with the SPA's HTML, and the failure then surfaces as an
+	// opaque error from a later call. Say what is wrong instead.
+	throw new Error(
+		"No opencode v2 binary found. Install the opencode CLI (v2) or set OPENCODE_BIN to its executable. The v1 CLI is not compatible with this runtime.",
+	);
 }
 
 function findFreePort(start, attempts) {
@@ -128,12 +176,16 @@ export async function startInvestigationRuntime({
 	config,
 	password,
 	port,
-	env = {},
 	readyTimeoutMs = 180_000,
 }) {
+	// The working directory is the repository, and only the repository.
+	const workingDirectory = assertRepositoryRoot(cwd);
+
 	const chosenPort =
 		port || (await findFreePort(PORT_RANGE_START, PORT_RANGE_END - PORT_RANGE_START + 1));
-	if (!chosenPort) throw new Error("No free port for the investigation runtime");
+	if (!chosenPort) {
+		throw new Error("No free port for the investigation runtime");
+	}
 
 	// The runtime gets its OWN config directory. The developer's global
 	// opencode config normally declares MCP servers (and plugins, and skills);
@@ -149,7 +201,7 @@ export async function startInvestigationRuntime({
 		binary.command,
 		["serve", "--port", String(chosenPort), "--hostname", "127.0.0.1"],
 		{
-			cwd,
+			cwd: workingDirectory,
 			stdio: ["ignore", "pipe", "pipe"],
 			shell: binary.shell,
 			windowsHide: true,
@@ -160,7 +212,6 @@ export async function startInvestigationRuntime({
 				OPENCODE_LOG_LEVEL: "ERROR",
 				OPENCODE_CONFIG_DIR: isolatedConfigDir,
 				OPENCODE_CONFIG_PROJECT_DISABLE: "1",
-				...env,
 			},
 		},
 	);
@@ -247,145 +298,53 @@ export async function startInvestigationRuntime({
 }
 
 export async function createInvestigationSession({ client, title, model, directory }) {
+	// The session may only ever point at the repository.
+	const location = assertRepositoryRoot(directory);
 	const created = await client.session.create({
 		title,
 		model: { id: model.id, providerID: model.providerID },
-		location: { directory },
+		location: { directory: location },
 	});
 	const id = created?.data?.id || created?.id;
 	if (!id) throw new Error("Could not create an investigation session");
 	return id;
 }
 
-function collectMessages(listed) {
-	const messages = listed?.data || listed || [];
-	return Array.isArray(messages) ? messages : [];
-}
-
-/**
- * The v2 tool error payload is a structured object, not a string. `String()`
- * on it yields "[object Object]", which hides the reason a call was refused.
- */
-function formatToolError(error) {
-	if (!error) return;
-	if (typeof error === "string") return error;
-	const message = error.data?.message || error.message || error.name;
-	const detail = message ? String(message) : JSON.stringify(error);
-	return detail.slice(0, 400);
-}
-
 /**
  * Send one prompt and wait for the assistant turn to settle.
  *
- * `session.prompt` is asynchronous on the v2 API: it returns as soon as the
- * user message is queued. The assistant turn has to be polled for.
- *
- * Two things about the v2 message list are easy to get wrong:
- *  - It is ordered NEWEST FIRST. The oldest assistant message of a turn is the
- *    one that opened it, not the one that answered it.
- *  - A tool call's state moves streaming -> running -> completed without the
- *    content array changing size, so "the content stopped growing" is not a
- *    settle signal. The turn is over when the newest assistant message carries
- *    a `finish` that is not `tool-calls`, or when nothing has changed for a
- *    while and no tool is still running.
+ * The turn itself is tracked by `waitForAssistantTurn`, which is shared with
+ * the assistant service so both read the v2 message list the same way. That
+ * module knows the two traps of the v2 list: it is ordered NEWEST FIRST, and
+ * a tool call's state changes without the content array changing size.
  */
 export async function runAgentPrompt({ client, sessionID, text, timeoutMs = 180_000 }) {
-	let seen = new Set();
+	let turn;
 	try {
-		seen = new Set(
-			collectMessages(await client.message.list({ sessionID }))
-				.map((message) => message.id)
-				.filter(Boolean),
-		);
-	} catch {
-		seen = new Set();
-	}
-
-	try {
-		await client.session.prompt({ sessionID, text });
+		turn = await waitForAssistantTurn({
+			client,
+			sessionID,
+			text,
+			timeoutMs,
+			pollIntervalMs: POLL_INTERVAL_MS,
+			stablePollsToSettle: STABLE_POLLS_TO_SETTLE,
+		});
 	} catch (error) {
 		return { text: "", toolCalls: [], error: error?.message || String(error) };
 	}
 
-	const deadline = Date.now() + timeoutMs;
-	let toolCalls = [];
-	let texts = [];
-	let agent = null;
-	let stablePolls = 0;
-	let signature = "";
-
-	while (Date.now() < deadline) {
-		await sleep(POLL_INTERVAL_MS);
-		let fresh = [];
-		try {
-			fresh = collectMessages(await client.message.list({ sessionID })).filter(
-				(message) => !seen.has(message.id),
-			);
-		} catch {
-			continue;
-		}
-
-		// `fresh` is newest first; reverse it so the text reads chronologically.
-		const assistants = fresh.filter((message) => message.type === "assistant").reverse();
-		const newest = assistants[assistants.length - 1];
-		const allContent = assistants.flatMap((message) => message.content || []);
-
-		toolCalls = allContent
-			.filter((part) => part.type === "tool")
-			.map((part) => ({
-				tool: part.tool || part.name || "unknown",
-				status: part.state?.status || "unknown",
-				error: part.state?.error ? formatToolError(part.state.error) : undefined,
-			}));
-		texts = allContent.filter((part) => part.type === "text").map((part) => part.text || "");
-
-		if (newest?.agent) agent = newest.agent;
-
-		if (process.env.INVESTIGATION_DEBUG) {
-			console.log(
-				"DEBUG turn state",
-				JSON.stringify({
-					fresh: fresh.map((message) => ({
-						type: message.type,
-						finish: message.finish,
-						outcome: message.outcome,
-						agent: message.agent,
-						content: (message.content || []).map((part) => ({
-							type: part.type,
-							text: part.text,
-							status: part.state?.status,
-						})),
-					})),
-					newestFinish: newest?.finish,
-				}),
-			);
-		}
-
-		const nextSignature = JSON.stringify([
-			assistants.length,
-			allContent.length,
-			toolCalls.map((call) => `${call.tool}:${call.status}`),
-		]);
-		if (nextSignature === signature) stablePolls += 1;
-		else {
-			signature = nextSignature;
-			stablePolls = 0;
-		}
-
-		const finished = Boolean(newest?.finish) && newest.finish !== "tool-calls";
-		const idle = fresh.some((message) => message.type === "idle");
-		const stillRunning = toolCalls.some(
-			(call) => call.status === "running" || call.status === "streaming",
-		);
-		if (finished) break;
-		if (idle && stablePolls >= 2) break;
-		if (stablePolls >= STABLE_POLLS_TO_SETTLE && !stillRunning) break;
-	}
+	const toolCalls = turn.content
+		.filter((part) => part.type === "tool")
+		.map((part) => ({
+			tool: part.tool || part.name || "unknown",
+			status: part.state?.status || "unknown",
+			error: part.state?.error ? formatToolError(part.state.error) : undefined,
+		}));
 
 	return {
-		text: texts.join("\n"),
+		text: turn.text,
 		toolCalls,
-		agent,
+		agent: turn.newest?.agent || null,
 	};
 }
 

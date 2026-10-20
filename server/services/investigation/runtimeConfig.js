@@ -76,3 +76,64 @@ export function buildInvestigationConfig({ mcpTools = [] } = {}) {
 
 export const ALWAYS_DENIED_TOOL_NAMES = ALWAYS_DENIED_TOOLS;
 export const ALWAYS_DISABLED_MCP_PATTERNS = ALWAYS_DISABLED_MCP_TOOLS;
+
+/**
+ * Does a permission pattern match a value? `*` matches everything, and `*`
+ * inside a pattern matches any run of characters.
+ */
+function matchesPattern(pattern, value) {
+	if (pattern === "*") return true;
+	const escaped = String(pattern)
+		.replace(/[.+^${}()|[\]\\]/g, "\\$&")
+		.replace(/\*/g, ".*");
+	return new RegExp(`^${escaped}$`).test(String(value));
+}
+
+/**
+ * Resolve the EFFECT opencode would apply to one tool action on one resource.
+ *
+ * opencode's own rule is "last matching rule wins", and it normalises the
+ * singular `permission` object into an ordered rule list: the catch-all `*`
+ * rule first, then the rules of the named action, in the order they were
+ * written. This mirrors that, so the same answer can be reached from the
+ * config the runtime is about to send and from the rule list the server
+ * resolved from it.
+ *
+ * Accepts either shape:
+ *  - the object form  `{ "*": "deny", read: { "*": "allow", "*.env": "deny" } }`
+ *  - the array form   `[{ action, resource, effect }]`
+ */
+export function resolveEffectivePermission(permission, action, resource = "*") {
+	const rules = [];
+
+	if (Array.isArray(permission)) {
+		for (const rule of permission) {
+			rules.push({
+				action: rule?.action ?? "*",
+				resource: rule?.resource ?? "*",
+				effect: rule?.effect,
+			});
+		}
+	} else if (permission && typeof permission === "object") {
+		const wildcard = permission["*"];
+		if (typeof wildcard === "string") {
+			rules.push({ action: "*", resource: "*", effect: wildcard });
+		}
+		const specific = permission[action];
+		if (typeof specific === "string") {
+			rules.push({ action, resource: "*", effect: specific });
+		} else if (specific && typeof specific === "object") {
+			for (const [pattern, effect] of Object.entries(specific)) {
+				rules.push({ action, resource: pattern, effect });
+			}
+		}
+	}
+
+	let effect = null;
+	for (const rule of rules) {
+		if (!matchesPattern(rule.action, action)) continue;
+		if (!matchesPattern(rule.resource, resource)) continue;
+		effect = rule.effect;
+	}
+	return effect;
+}

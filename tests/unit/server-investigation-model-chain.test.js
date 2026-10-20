@@ -33,4 +33,26 @@ describe("investigation model chain (server/services/investigation/modelChain.js
 		expect(parseModelChain("")).toEqual(DEFAULT_MODEL_CHAIN);
 		expect(parseModelChain(undefined)).toEqual(DEFAULT_MODEL_CHAIN);
 	});
+
+	test("refuses a provider that is not the free opencode tier", () => {
+		const chain = parseModelChain("anthropic/claude-sonnet-4-5, opencode/beam-free");
+		expect(chain.map((m) => m.id)).toEqual(["beam-free"]);
+		expect(chain.every((m) => m.providerID === "opencode")).toBe(true);
+	});
+
+	test("refuses a paid model on the opencode provider", () => {
+		const chain = parseModelChain("opencode/claude-opus-4-5, opencode/beam-free");
+		expect(chain.map((m) => m.id)).toEqual(["beam-free"]);
+	});
+
+	test("falls back to the default chain when every entry is refused", () => {
+		expect(parseModelChain("anthropic/claude-sonnet-4-5")).toEqual(DEFAULT_MODEL_CHAIN);
+	});
+
+	test("keeps only free models, whatever the provider prefix says", () => {
+		const chain = parseModelChain(
+			"anthropic/claude-sonnet-4-5,opencode/deepseek-v4.1-flash-free,opencode/paid-model",
+		);
+		expect(chain).toEqual([{ id: "deepseek-v4.1-flash-free", providerID: "opencode" }]);
+	});
 });
