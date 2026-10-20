@@ -1698,3 +1698,93 @@ model Order {
   @@index([order_type, status])
   @@map("orders")
 }
+
+// --- support investigation cases --------------------------------------------
+//
+// A support case is the PARENT of a ticket: the thread a client opens, the
+// evidence attached to it, and the investigations run against it.
+//
+// The evidence files themselves live in the gated /uploads/support prefix and
+// are anchored by a Document row with entity_type "support_case" (see
+// privateDocumentService.recordPrivateUpload and the support_case branch in
+// fileAccessService.canUserAccessDocument). A file with no such row is
+// unreachable, which is the fail-closed direction.
+
+model SupportCase {
+  id                  String    @id
+  user_id             String
+  status              String    @default("collecting")
+  subject             String?
+  summary             String?
+  ticket_id           String?
+  escalated           Boolean   @default(false)
+  report_status       String?
+  report_delivered_at DateTime?
+  retain              Boolean   @default(false)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now())
+
+  messages      SupportCaseMessage[]
+  investigations SupportInvestigation[]
+  attachments   SupportCaseAttachment[]
+
+  @@index([user_id, created_at])
+  @@index([status, created_at])
+  @@map("support_cases")
+}
+
+model SupportCaseMessage {
+  id         String   @id
+  case_id    String
+  role       String
+  kind       String   @default("answer")
+  content    String
+  agent      String?
+  sequence   Int      @default(0)
+  created_at DateTime @default(now())
+
+  case SupportCase @relation(fields: [case_id], references: [id], onDelete: Cascade)
+
+  @@index([case_id, sequence])
+  @@map("support_case_messages")
+}
+
+model SupportInvestigation {
+  id           String    @id
+  case_id      String
+  role         String
+  status       String    @default("queued")
+  attempt      Int       @default(0)
+  model_id     String?
+  prompt       String?
+  report       String?
+  findings     Json?
+  evidence     Json?
+  tool_log     Json?
+  error        String?
+  started_at   DateTime?
+  completed_at DateTime?
+  created_at   DateTime  @default(now())
+
+  case SupportCase @relation(fields: [case_id], references: [id], onDelete: Cascade)
+
+  @@index([case_id, role])
+  @@index([status])
+  @@map("support_investigations")
+}
+
+model SupportCaseAttachment {
+  id          String   @id
+  case_id     String
+  document_id String?
+  file_path   String
+  mime_type   String?
+  byte_size   Int?
+  uploaded_by String
+  created_at  DateTime @default(now())
+
+  case SupportCase @relation(fields: [case_id], references: [id], onDelete: Cascade)
+
+  @@index([case_id])
+  @@map("support_case_attachments")
+}

@@ -6,6 +6,7 @@ import {
 	deleteDocument,
 	getDocumentViewCount,
 	getDocumentViews,
+	isSupportEvidenceEntityType,
 	listContractAudit,
 	listContracts,
 	listDocuments,
@@ -13,6 +14,7 @@ import {
 	registerExternalDocument,
 	rejectDocument,
 	saveDocumentMetadata,
+	saveSupportEvidence,
 	updateContractArtifact,
 	updateContractSignatures,
 } from "../services/documentService.js";
@@ -35,13 +37,26 @@ export async function uploadDocument(req, res) {
 	try {
 		const entityType = req.body?.entity_type || "verification";
 		const entityId = req.body?.entity_id || req.user.id;
-		const doc = await saveDocumentMetadata(
-			req.user.id,
-			entityType,
-			entityId,
-			req.body?.type || "other",
-			req.file,
-		);
+		const type = req.body?.type || "other";
+
+		// Support evidence is private: it belongs in the gated /uploads/support
+		// namespace, with the Document row that anchors it written at upload
+		// time. The old path wrote it into the root of server/uploads, which the
+		// static mount serves unauthenticated — a client's support screenshot
+		// was world-readable.
+		//
+		// Every other document type (verification documents, payment proofs,
+		// feed media, product media) stays on saveDocumentMetadata, which
+		// writes to the public root on purpose.
+		if (isSupportEvidenceEntityType(entityType)) {
+			const doc = await saveSupportEvidence(req.user.id, entityId, type, req.file);
+			// No media queue for evidence. The image/video pipeline rewrites the
+			// file in place, and an attachment that is evidence must stay
+			// exactly as it was uploaded.
+			return res.status(201).json(doc);
+		}
+
+		const doc = await saveDocumentMetadata(req.user.id, entityType, entityId, type, req.file);
 
 		const filePath = doc.file_path ? path.join(process.cwd(), doc.file_path) : null;
 		if (filePath && isVideoFile(req.file.mimetype, req.file.originalname)) {
@@ -79,7 +94,9 @@ export async function registerDocumentUrl(req, res) {
 export async function getDocuments(req, res) {
 	const entityType = req.query.entity_type || "verification";
 	const entityId = req.query.entity_id || req.user.id;
-	const docs = await listDocuments(entityType, entityId);
+	// The actor is what the service scopes by: a support case's evidence is
+	// listed only to whoever attached it and to an owner/admin.
+	const docs = await listDocuments(entityType, entityId, req.user);
 	return res.json(docs);
 }
 

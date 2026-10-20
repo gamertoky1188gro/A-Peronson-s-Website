@@ -287,12 +287,25 @@ export async function canUserAccessDocument(user, doc, context) {
 		case "search_image":
 			return canAccessSearchImage(user, doc);
 
+		case "support_case":
+			// A support case's evidence belongs to whoever attached it, and to
+			// the staff who answer the case. The uploader grant is the same
+			// shape as the chat attachment's: `uploaded_by` is written by the
+			// upload handler, and the only other writer of that column
+			// (POST /documents/url) is restricted to owner/admin, who are
+			// authorised by the admin branch above anyway.
+			//
+			// A case is anchored on the CASE id (entity_id), not on the file
+			// name: the case is the fact the file belongs to, and the file name
+			// is not.
+			return matchesId(doc.uploaded_by, user.id) || isAdminRole(user);
+
 		default:
 			// Unknown type. `uploaded_by` is self-asserted by anyone who can reach
 			// POST /documents/url, so it is not evidence that this caller owns these
-			// bytes. Every gated prefix (chat, contracts, calls, search) is a private
-			// namespace with its own branch above, so an unrecognised type has no
-			// legitimate basis to grant. Deny, and let an admin read it.
+			// bytes. Every gated prefix (chat, contracts, calls, search, support)
+			// is a private namespace with its own branch above, so an unrecognised
+			// type has no legitimate basis to grant. Deny, and let an admin read it.
 			return false;
 	}
 }

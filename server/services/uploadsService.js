@@ -16,6 +16,7 @@ const FOLDER_CONFIG = {
 	feed: { label: "Feed", folder: "feed" },
 	calls: { label: "Calls", folder: "calls" },
 	contracts: { label: "Contracts", folder: "contracts" },
+	support: { label: "Support Evidence", folder: "support" },
 };
 
 const IMAGE_EXTS = new Set([
@@ -201,7 +202,11 @@ function enqueueScan(fullPath, docId) {
 // it. A row adopted from disk carries uploaded_by "system", so it authorises
 // only an admin — the write-time row (privateDocumentService) is the one that
 // carries the real uploader.
-const SCAN_SUBFOLDERS = ["profile", "feed", "chat", "calls", "contracts", "search", ""];
+//
+// "support" is here for the same reason: a support case's evidence is private,
+// and a row adopted from disk authorises an admin only. The write-time row
+// (entity_type "support_case") is the one that carries the uploader.
+const SCAN_SUBFOLDERS = ["profile", "feed", "chat", "calls", "contracts", "search", "support", ""];
 
 const SUBFOLDER_ENTITY_TYPES = {
 	feed: "feed_media",
@@ -210,6 +215,7 @@ const SUBFOLDER_ENTITY_TYPES = {
 	calls: "call_recording",
 	contracts: "contract",
 	search: "search_image",
+	support: "support_case",
 };
 
 function entityTypeForFolder(subfolder) {
@@ -657,6 +663,7 @@ function getFolderCategory(relativePath) {
 		feed: "feed",
 		calls: "calls",
 		contracts: "contracts",
+		support: "support",
 	};
 	return catMap[subfolder] || "other";
 }

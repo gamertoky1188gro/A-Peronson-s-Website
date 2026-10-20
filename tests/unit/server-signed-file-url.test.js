@@ -38,9 +38,11 @@ afterAll(() => {
 
 describe("signed file urls (server/utils/signedFileUrl.js)", () => {
 	test("classifies gated and public prefixes", () => {
-		expect(GATED_PREFIXES).toEqual(["chat", "contracts", "calls", "search"]);
+		expect(GATED_PREFIXES).toEqual(["chat", "contracts", "calls", "search", "support"]);
 		expect(isGatedPath("/uploads/contracts/a.pdf")).toBe(true);
 		expect(isGatedPath("chat/b.png")).toBe(true);
+		// A support case's evidence is private too.
+		expect(isGatedPath("/uploads/support/shot.png")).toBe(true);
 		expect(isGatedPath("/uploads/feed/c.png")).toBe(false);
 		expect(isGatedPath("/uploads/profile/d.png")).toBe(false);
 	});

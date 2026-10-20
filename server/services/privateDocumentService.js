@@ -19,6 +19,7 @@ export const PRIVATE_ENTITY_TYPE = {
 	CHAT_ATTACHMENT: "chat_attachment",
 	CALL_RECORDING: "call_recording",
 	SEARCH_IMAGE: "search_image",
+	SUPPORT_CASE: "support_case",
 };
 
 function text(value) {
@@ -31,10 +32,14 @@ function text(value) {
  * @param {Object} params
  * @param {string} params.entityType One of PRIVATE_ENTITY_TYPE.
  * @param {string} params.entityId The fact the authorization anchors on: the
- *   file name for a chat attachment, the owning call id for a recording.
+ *   file name for a chat attachment, the owning call id for a recording, the
+ *   owning case id for a support attachment.
  * @param {string} params.filePath The public path, e.g. "/uploads/chat/x.png".
  * @param {string} params.uploadedBy The id of the user who uploaded it.
  * @param {string} [params.type] The media type, for the admin listing.
+ * @param {Object} [params.moderation] Optional moderation columns for the
+ *   admin review queue: { moderation_status, moderation_flags }. Absent for
+ *   the three callers that have no moderation step.
  * @returns {Promise<Object|null>} The created row, or null when it could not
  *   be written.
  */
@@ -44,6 +49,7 @@ export async function recordPrivateUpload({
 	filePath,
 	uploadedBy,
 	type = "other",
+	moderation = null,
 }) {
 	const entity = text(entityType);
 	const id = text(entityId);
@@ -69,6 +75,12 @@ export async function recordPrivateUpload({
 				entity_id: id,
 				file_path: file,
 				type: text(type) || "other",
+				...(moderation
+					? {
+							moderation_status: text(moderation.moderation_status) || null,
+							moderation_flags: moderation.moderation_flags ?? null,
+						}
+					: {}),
 			},
 		});
 	} catch (error) {

@@ -1,7 +1,11 @@
 import crypto from "node:crypto";
 import path from "node:path";
 
-export const GATED_PREFIXES = ["chat", "contracts", "calls", "search"];
+// "support" is the fourth private namespace: a support case's evidence
+// (screenshots, logs, exports) is the client's own material and is read only
+// by whoever uploaded it and by an owner/admin. It is gated for the same
+// reason the other three are — the file is unreachable without a signed url.
+export const GATED_PREFIXES = ["chat", "contracts", "calls", "search", "support"];
 export const DEFAULT_TTL_MS = 5 * 60 * 1000;
 export const MEDIA_TTL_MS = 15 * 60 * 1000;
 

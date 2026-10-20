@@ -87,6 +87,16 @@ const searchDoc = (filename) => ({
 	file_path: `/uploads/search/${filename}`,
 	uploaded_by: "buyer1",
 });
+// A support case attachment row: written at upload time, anchored on the
+// CASE id (entity_id) and owned by whoever attached it.
+const supportDoc = (over = {}) => ({
+	id: "d1",
+	entity_type: "support_case",
+	entity_id: "case-1",
+	file_path: "/uploads/support/1700000000000-shot.png",
+	uploaded_by: "buyer1",
+	...over,
+});
 
 beforeEach(() => {
 	documentFindMany.mockReset();
@@ -307,6 +317,33 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 			uploaded_by: "buyer1",
 		};
 		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+	});
+
+	// --- support evidence ---------------------------------------------------
+	//
+	// A support case's evidence is the client's own material, in the gated
+	// /uploads/support namespace. It is anchored on the CASE id and owned by
+	// whoever attached it; the staff who answer the case are owner/admin.
+	test("allows the uploader of a support attachment", async () => {
+		expect(await canUserAccessDocument(BUYER, supportDoc())).toBe(true);
+	});
+
+	test("denies a support attachment to anyone but the uploader", async () => {
+		expect(await canUserAccessDocument(STRANGER, supportDoc())).toBe(false);
+	});
+
+	test("allows an owner over a support attachment", async () => {
+		expect(await canUserAccessDocument(ADMIN, supportDoc())).toBe(true);
+		expect(await canUserAccessDocument({ id: "o1", role: "owner" }, supportDoc())).toBe(true);
+	});
+
+	// A "system" row — the one the uploads registry writes for a file it
+	// adopts from disk — carries no ownership fact, so it authorises an
+	// admin and nobody else. Exactly like the other private namespaces.
+	test("denies a system-owned support attachment to everyone but an admin", async () => {
+		const doc = supportDoc({ uploaded_by: "system" });
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+		expect(await canUserAccessDocument(ADMIN, doc)).toBe(true);
 	});
 
 	test("denies an unknown entity type to a non-admin", async () => {

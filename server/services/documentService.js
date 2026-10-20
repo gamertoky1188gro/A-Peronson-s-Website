@@ -11,12 +11,13 @@ import {
 } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
 import { getPublicDocuments } from "../utils/privacy.js";
-import { sanitizeString } from "../utils/validators.js";
 import { sanitizeSvgBuffer } from "../utils/svgSanitizer.js";
+import { sanitizeString } from "../utils/validators.js";
 import { hasCompletedCallBetweenUsers } from "./callSessionService.js";
 import { ensureCertificationForContract } from "./certificationService.js";
 import { trackEvent } from "./eventTrackingService.js";
 import { markLeadConvertedFromContract } from "./leadService.js";
+import { PRIVATE_ENTITY_TYPE, recordPrivateUpload } from "./privateDocumentService.js";
 import { hasPendingRatingForCounterparty } from "./ratingsService.js";
 import { recordWorkflowEvent } from "./workflowLifecycleService.js";
 
@@ -443,13 +444,114 @@ export function renderContractPdfBuffer(contract) {
 	return buildSimpleContractPdf(contract);
 }
 
+// --- support evidence -------------------------------------------------------
+//
+// A support case's evidence is a private namespace, like chat attachments and
+// call recordings. The evidence file itself is a client-supplied artefact
+// (a screenshot of the bug, an export of the failing request), and it used to
+// be written into the ROOT of server/uploads — which the static mount serves
+// unauthenticated. A client's support screenshot was world-readable.
+//
+// It now lands in the gated /uploads/support prefix, and the Document row
+// that anchors it — the key authorizeFilePath resolves against — is written
+// at upload time, where the uploader and the owning case are known.
+//
+// The other document paths (verification documents, payment proofs, feed
+// media, product media) legitimately land in the public root and keep using
+// saveDocumentMetadata.
+
+// The entity type the authorization resolver has a branch for. A row with any
+// other type is a hard deny, so the write path normalises to this one.
+export const SUPPORT_EVIDENCE_ENTITY_TYPE = PRIVATE_ENTITY_TYPE.SUPPORT_CASE;
+
+// The type the live client sends. FeedbackPage.jsx and SupportReports.jsx
+// both post entity_type "support_ticket" with the ticket id, and the rows
+// they produced carry that value. Both spellings are support evidence, so
+// both are routed into the gated namespace and both are ownership-checked
+// when they are listed.
+const SUPPORT_EVIDENCE_REQUEST_TYPES = new Set(["support_case", "support_ticket"]);
+
+export function isSupportEvidenceEntityType(entityType) {
+	return SUPPORT_EVIDENCE_REQUEST_TYPES.has(
+		String(entityType || "")
+			.trim()
+			.toLowerCase(),
+	);
+}
+
+// The public path of a support evidence file. This is the shape the
+// authorization resolver expects: "/uploads/<prefix>/<name>", forward
+// slashes, exactly what toPublicPath() produces for the file on disk.
+function supportEvidencePublicPath(name) {
+	return `/uploads/support/${name}`;
+}
+
+/**
+ * Writes one piece of support evidence into the gated support namespace.
+ *
+ * @param {string} uploadedBy The id of the user who attached it.
+ * @param {string} caseId The case the evidence belongs to. For the support
+ *   portal this is the case id; the legacy feedback client sends the ticket
+ *   id it was given.
+ * @param {string} type The media type, for the admin listing.
+ * @param {Object} file The multer file.
+ * @returns {Promise<Object>} The Document row that anchors the file.
+ */
+export async function saveSupportEvidence(uploadedBy, caseId, type, file) {
+	ensureAllowed(file);
+	const moderation = getMediaModerationResult(file);
+	const safeName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+	const supportDir = path.join(process.cwd(), "server", "uploads", "support");
+	await fs.mkdir(supportDir, { recursive: true });
+	const targetPath = path.join(supportDir, safeName);
+
+	let fileBuffer = file.buffer;
+	if (
+		file.mimetype === "image/svg+xml" ||
+		path.extname(file.originalname).toLowerCase() === ".svg"
+	) {
+		const { content } = sanitizeSvgBuffer(file.buffer);
+		fileBuffer = content;
+	}
+	await fs.writeFile(targetPath, fileBuffer);
+
+	const filePath = supportEvidencePublicPath(safeName);
+	// The row is the authorization key. It is written here, at write time,
+	// because the uploader is known here and nowhere else: a backfill can
+	// only ever write a "system" row, which authorises an admin and nobody
+	// else.
+	const row = await recordPrivateUpload({
+		entityType: SUPPORT_EVIDENCE_ENTITY_TYPE,
+		entityId: caseId,
+		filePath,
+		uploadedBy,
+		type: type || "other",
+		moderation,
+	});
+
+	return {
+		...(row || {}),
+		uploaded_by: uploadedBy,
+		entity_type: SUPPORT_EVIDENCE_ENTITY_TYPE,
+		entity_id: caseId,
+		file_path: filePath,
+		type: type || "other",
+		moderation_status: moderation.moderation_status,
+		moderation_flags: moderation.flags,
+		created_at: new Date(),
+	};
+}
+
 export async function saveDocumentMetadata(ownerId, entityType, entityId, type, file) {
 	ensureAllowed(file);
 	const moderation = getMediaModerationResult(file);
 	const safeName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
 	const targetPath = path.join(process.cwd(), "server", "uploads", safeName);
 	let fileBuffer = file.buffer;
-	if (file.mimetype === "image/svg+xml" || path.extname(file.originalname).toLowerCase() === ".svg") {
+	if (
+		file.mimetype === "image/svg+xml" ||
+		path.extname(file.originalname).toLowerCase() === ".svg"
+	) {
 		const { content } = sanitizeSvgBuffer(file.buffer);
 		fileBuffer = content;
 	}
@@ -551,10 +653,35 @@ export async function registerExternalDocument(ownerId, entityType, entityId, ty
 	return doc;
 }
 
-export async function listDocuments(entityType, entityId) {
-	return prisma.document.findMany({
+// The evidence of a support case is the client's own material, so it is not
+// listed to whoever learns the case id: only the person who attached it, and
+// an owner/admin, see it. This used to be an unfiltered listing, which meant
+// any authenticated user who learned a ticket id could enumerate that
+// ticket's attachments.
+//
+// The other entity types keep the previous behaviour. Their rows are public
+// media or verification documents that the app lists by their own entity id,
+// and narrowing them is a different change with a different blast radius.
+//
+// The actor is required for the support namespace: no actor means no grant,
+// so a caller that forgets to pass one gets an empty collection rather than
+// an unscoped one.
+export async function listDocuments(entityType, entityId, actor) {
+	const docs = await prisma.document.findMany({
 		where: { entity_type: entityType, entity_id: entityId },
 	});
+	if (!isSupportEvidenceEntityType(entityType)) {
+		return docs;
+	}
+	return docs.filter((doc) => canListSupportEvidence(actor, doc));
+}
+
+function canListSupportEvidence(actor, doc) {
+	if (!actor) return false;
+	if (isOwnerOrAdmin(actor)) return true;
+	const actorId = String(actor.id ?? "").trim();
+	if (!actorId) return false;
+	return String(doc?.uploaded_by ?? "").trim() === actorId;
 }
 
 export async function deleteDocument(docId, actor) {
@@ -765,7 +892,10 @@ export async function updateContractSignatures(contractId, patch, actor) {
 	}
 
 	if (existing.buyer_id && existing.factory_id) {
-		const callCompleted = await hasCompletedCallBetweenUsers(existing.buyer_id, existing.factory_id);
+		const callCompleted = await hasCompletedCallBetweenUsers(
+			existing.buyer_id,
+			existing.factory_id,
+		);
 		if (!callCompleted) {
 			const err = new Error(
 				"A completed video call between buyer and factory is required before signing a contract.",
