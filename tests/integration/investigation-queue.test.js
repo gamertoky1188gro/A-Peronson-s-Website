@@ -11,6 +11,7 @@
  * written per role, and the promise that the runtime is stopped whatever
  * happens.
  */
+import path from "node:path";
 import { jest } from "@jest/globals";
 
 // --- the database ------------------------------------------------------------
@@ -117,14 +118,17 @@ const listAvailableModels = jest.fn(async () => [
 const runAgentPrompt = jest.fn(async ({ text }) => ({ text, toolCalls: [], error: undefined }));
 
 jest.unstable_mockModule("../../server/services/investigation/opencodeRuntime.js", () => ({
-	REPOSITORY_ROOT: "C:\\repo",
+	// The REAL repository root: the pipeline verifies that a finding's cited
+	// evidence file resolves inside the repository before the finding keeps
+	// its confidence, so a fake root would demote every finding.
+	REPOSITORY_ROOT: path.resolve(process.cwd()),
 	startInvestigationRuntime,
 	createInvestigationSession,
 	listAvailableModels,
 	runAgentPrompt,
 }));
 
-const { enqueueInvestigation, queueDepth } = await import(
+const { enqueueInvestigation, queueCapacity, queueDepth } = await import(
 	"../../server/services/investigationQueue.js"
 );
 
@@ -157,7 +161,10 @@ function defaultAnswer({ text }) {
 				{
 					confidence: "confirmed",
 					detail: `finding from ${role}`,
-					evidence: [{ file: "server/feed.js", lines: "10-20", commit: "abc1234" }],
+					// The cited file has to EXIST: the pipeline verifies that
+					// an evidence file resolves inside the repository before
+					// the finding keeps its confidence.
+					evidence: [{ file: "server/server.js", lines: "10-20", commit: "abc1234" }],
 				},
 			],
 			[],
@@ -237,6 +244,112 @@ beforeEach(() => {
 	runAgentPrompt.mockImplementation(defaultAnswer);
 });
 
+// The queue is BOUNDED. Concurrency is 2, but the backlog was not: a client
+// that opened a thousand cases filled the queue with a thousand jobs, each of
+// which would hold a spawned runtime, write five rows and mail every owner
+// when it eventually ran.
+describe("the queue's bound", () => {
+	const savedLimit = process.env.INVESTIGATION_QUEUE_MAX_DEPTH;
+	const savedConcurrency = process.env.INVESTIGATION_CONCURRENCY;
+
+	afterEach(() => {
+		if (savedLimit === undefined) {
+			delete process.env.INVESTIGATION_QUEUE_MAX_DEPTH;
+		} else {
+			process.env.INVESTIGATION_QUEUE_MAX_DEPTH = savedLimit;
+		}
+		if (savedConcurrency === undefined) {
+			delete process.env.INVESTIGATION_CONCURRENCY;
+		} else {
+			process.env.INVESTIGATION_CONCURRENCY = savedConcurrency;
+		}
+	});
+
+	test("the queue reports its depth and its limit", () => {
+		const capacity = queueCapacity();
+
+		expect(typeof capacity.depth).toBe("number");
+		expect(typeof capacity.limit).toBe("number");
+		expect(capacity.accepting).toBe(true);
+	});
+
+	test("the queue refuses the work when the backlog is over the limit", async () => {
+		process.env.INVESTIGATION_QUEUE_MAX_DEPTH = "1";
+		process.env.INVESTIGATION_CONCURRENCY = "1";
+
+		// The first job never finishes, so the queue stays occupied.
+		let release;
+		const gate = new Promise((resolve) => {
+			release = resolve;
+		});
+		runAgentPrompt.mockImplementation(async () => {
+			await gate;
+			return { text: agentReply([]), toolCalls: [] };
+		});
+
+		try {
+			await enqueueInvestigation(CASE_ID);
+			expect(queueDepth()).toBe(1);
+
+			await expect(enqueueInvestigation("case-2")).rejects.toThrow(/queue is full/i);
+		} finally {
+			release();
+		}
+		await waitForDrain();
+	});
+
+	test("the refusal is a 429, so the caller can be told to try again", async () => {
+		process.env.INVESTIGATION_QUEUE_MAX_DEPTH = "1";
+		process.env.INVESTIGATION_CONCURRENCY = "1";
+
+		let release;
+		const gate = new Promise((resolve) => {
+			release = resolve;
+		});
+		runAgentPrompt.mockImplementation(async () => {
+			await gate;
+			return { text: agentReply([]), toolCalls: [] };
+		});
+
+		try {
+			await enqueueInvestigation(CASE_ID);
+			const error = await enqueueInvestigation("case-2").catch((caught) => caught);
+
+			expect(error?.status).toBe(429);
+			expect(String(error?.message)).toMatch(/try again shortly/i);
+		} finally {
+			release();
+		}
+		await waitForDrain();
+	});
+
+	test("a refused job leaves no queued rows behind", async () => {
+		process.env.INVESTIGATION_QUEUE_MAX_DEPTH = "1";
+		process.env.INVESTIGATION_CONCURRENCY = "1";
+
+		let release;
+		const gate = new Promise((resolve) => {
+			release = resolve;
+		});
+		runAgentPrompt.mockImplementation(async () => {
+			await gate;
+			return { text: agentReply([]), toolCalls: [] };
+		});
+
+		try {
+			await enqueueInvestigation(CASE_ID);
+			const before = rows.length;
+			await enqueueInvestigation("case-2").catch(() => {});
+
+			expect(rows).toHaveLength(before);
+			expect(rows.some((row) => row.case_id === "case-2")).toBe(false);
+		} finally {
+			release();
+		}
+		await waitForDrain();
+	});
+});
+
 describe("the investigation queue", () => {
 	test("queues one row per role and drains to zero when the run is over", async () => {
 		await enqueueInvestigation(CASE_ID);
@@ -311,7 +424,7 @@ describe("the investigation queue", () => {
 		expect(verifyCall).toBeDefined();
 		expect(verifyCall[0].text).toContain("finding from lead");
 		expect(verifyCall[0].text).toContain("finding from research");
-		expect(verifyCall[0].text).toContain("server/feed.js");
+		expect(verifyCall[0].text).toContain("server/server.js");
 	});
 
 	test("a refuted finding is downgraded in the final set and in its own row", async () => {
@@ -324,7 +437,7 @@ describe("the investigation queue", () => {
 						{
 							confidence: "speculative",
 							detail: "finding from lead",
-							evidence: [{ file: "server/feed.js", lines: "99-100" }],
+							evidence: [{ file: "server/server.js", lines: "99-100" }],
 						},
 					]),
 					toolCalls: [],
@@ -539,6 +652,43 @@ describe("the end of the investigation", () => {
 		// The mail carried the very same report.
 		expect(deliverReport).toHaveBeenCalledTimes(1);
 		expect(deliverReport.mock.calls[0][0].report).toBe(report);
+	});
+
+	// The report is built from what the investigators read in the repository,
+	// and the repository holds credentials. The report is redacted BEFORE it
+	// is written down, so the database never holds the raw value either.
+	test("the report is redacted before it is persisted and mailed", async () => {
+		const SECRET = "postgresql://investigator:hunter2@db.internal.example:5432/gartexhub";
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			return {
+				text: agentReply([
+					{
+						confidence: "confirmed",
+						detail: `finding from ${roleOf(text)}`,
+						evidence: [{ file: "server/server.js", lines: "10-20" }],
+					},
+				]),
+				toolCalls: [],
+			};
+		});
+
+		// The agent quotes the deployment file's connection string in its
+		// summary.
+		seedCase(CASE_ID, { summary: `The connection string is ${SECRET}` });
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const report = rowFor("verify").report;
+		expect(report).not.toContain(SECRET);
+		expect(report).not.toContain("hunter2");
+		expect(report).toContain("[redacted]");
+
+		// The mail carried the redacted report too.
+		expect(String(deliverReport.mock.calls[0][0].report)).not.toContain("hunter2");
 	});
 
 	// The verify row holds the accumulated set of findings, and each

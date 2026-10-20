@@ -43,6 +43,11 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 			"*": "allow",
 			"*.env": "deny",
 			"*.env.*": "deny",
+			// The `**/` forms deny the file at ANY depth. opencode matches
+			// these patterns as globs and a glob's `*` does not cross a `/`,
+			// so `*.env` alone would leave a `server/.env` readable.
+			"**/.env": "deny",
+			"**/.env.*": "deny",
 			"*.env.example": "allow",
 		});
 		expect(permission.glob).toBe("allow");
@@ -135,6 +140,22 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 			expect(resolveEffectivePermission(permission, "read", "*.env")).toBe("deny");
 			expect(resolveEffectivePermission(permission, "read", "*.env.local")).toBe("deny");
 			expect(resolveEffectivePermission(permission, "read", "*.env.production")).toBe("deny");
+		});
+
+		// The `**/` patterns are what deny the file at a DEPTH. opencode
+		// matches them as globs, and a glob's `*` does not cross a `/`, so
+		// `*.env` denies the root `.env` only and a `server/.env` would be
+		// readable without them.
+		test("denies reading a .env at a depth", () => {
+			for (const resource of [
+				"server/.env",
+				"server/.env.local",
+				"server/services/.env",
+				"server/services/.env.production",
+				"src/.env",
+			]) {
+				expect(resolveEffectivePermission(permission, "read", resource)).toBe("deny");
+			}
 		});
 
 		test("still allows the committed example file", () => {

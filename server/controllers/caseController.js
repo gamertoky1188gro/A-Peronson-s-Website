@@ -6,14 +6,15 @@ import path from "node:path";
 // that cannot announce a status change.
 // biome-ignore lint/performance/noNamespaceImport: the namespace import is deliberate
 import * as realtime from "../realtime/realtimeBus.js";
-// The namespace is read at call time, so the controller keeps working whether
-// or not the service's canReadCase / countClientMessages exports have landed.
+// The service owns the ownership rule and the client-message count. They are
+// read through the namespace so a checkout without the service export still
+// fails loudly at the call site rather than silently counting something else.
 // biome-ignore lint/performance/noNamespaceImport: the namespace import is deliberate
 import * as caseService from "../services/caseService.js";
 import { isSupportEvidenceEntityType } from "../services/documentService.js";
 import { authorizeFilePath } from "../services/fileAccessService.js";
 import { logError, logInfo, logWarn } from "../utils/logger.js";
-import { handleControllerError, isOwnerOrAdmin } from "../utils/permissions.js";
+import { handleControllerError } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
 import { resolveWithinUploads, uploadsRoot } from "../utils/signedFileUrl.js";
 import { sanitizeString } from "../utils/validators.js";
@@ -50,7 +51,7 @@ const MAX_MIME_TYPE_LENGTH = 120;
 const MAX_CLIENT_MESSAGE_SUMMARY_LENGTH = 600;
 
 // The evidence namespace. Support evidence is uploaded through
-// POST /api/documents/upload with entity_type "support_case" and entity_id
+// POST /api/documents with entity_type "support_case" and entity_id
 // <caseId>, and it lands in the gated /uploads/support prefix. Nothing else
 // can be attached to a case: a chat file or a contract PDF is anchored by a
 // different Document row and a different authorization rule.
@@ -86,52 +87,47 @@ const CASE_STREAM_EVENT_TYPES = Object.freeze(
 // starts with a colon.
 const CASE_STREAM_KEEPALIVE_MS = 30_000;
 
+// The statuses of a case that is still OPEN - it has not been investigated
+// and it has not finished. A case that is `completed` or `failed` is closed
+// and does not count against the cap.
+const OPEN_CASE_STATUSES = ["collecting", "investigating", "reporting"];
+
+// How many cases one user may have open at once.
+//
+// A case is a thing that costs work: an investigation, five database rows, an
+// email to every owner and admin and a staff notification. One client that
+// opens a thousand cases would put a thousand of those in flight, so the
+// number of OPEN cases is capped. `SUPPORT_MAX_OPEN_CASES` overrides the
+// default.
+const DEFAULT_MAX_OPEN_CASES = 10;
+
 /**
- * May this caller read this case?
+ * The open-case cap for one user.
  *
- * `canReadCase` is the service-level helper Workstream 1 added to
- * `caseService.js` (contracts.md §2). The local branch below is the SAME rule
- * written out — the case's own owner, or an owner/admin role — and is used
- * only while that export is absent, so this controller keeps working in the
- * window where the two halves of the workstream have not been merged yet. It
- * is dead code the moment the service export lands.
- *
- * @param {Object} user The authenticated caller.
- * @param {Object|null} caseRow The case row, or null.
- * @returns {boolean}
+ * @returns {number}
  */
-function canReadCase(user, caseRow) {
-	if (!caseRow) {
-		return false;
+function maxOpenCases() {
+	const raw = Number.parseInt(process.env.SUPPORT_MAX_OPEN_CASES ?? "", 10);
+	if (!Number.isFinite(raw) || raw < 1) {
+		return DEFAULT_MAX_OPEN_CASES;
 	}
-	if (typeof caseService.canReadCase === "function") {
-		return Boolean(caseService.canReadCase(user, caseRow));
-	}
-	if (!user?.id) {
-		return false;
-	}
-	if (String(caseRow.user_id) === String(user.id)) {
-		return true;
-	}
-	return isOwnerOrAdmin(user);
+	return raw;
 }
 
 /**
- * How many client messages has this case collected?
+ * The error the queue-full refusal is reported as.
  *
- * Same arrangement as canReadCase: the service owns the count, the local
- * branch counts the message list the controller has already read.
+ * The status is 429 because the caller's request is not wrong: the work is
+ * simply not being accepted right now, and the same request will be accepted
+ * once the backlog has drained.
  *
- * @param {string} caseId
- * @param {Array<Object>} [messages] The case's messages, oldest first.
- * @returns {Promise<number>}
+ * @returns {Error}
  */
-async function countClientMessages(caseId, messages) {
-	if (typeof caseService.countClientMessages === "function") {
-		const counted = Number(await caseService.countClientMessages(caseId));
-		return Number.isFinite(counted) ? counted : 0;
-	}
-	return (messages || []).filter((message) => message?.role === "client").length;
+function investigationQueueFullError() {
+	const error = new Error("The investigation queue is full - try again shortly.");
+	error.status = 429;
+	error.code = "INVESTIGATION_QUEUE_FULL";
+	return error;
 }
 
 /**
@@ -261,6 +257,48 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 }
 
 /**
+ * The investigation queue, loaded on demand.
+ *
+ * @returns {Promise<Object|null>} The queue module, or null when it is absent.
+ */
+async function loadInvestigationQueue() {
+	try {
+		return await import("../services/investigationQueue.js");
+	} catch (error) {
+		logWarn("investigation queue module is not available", {
+			reason: error?.message || String(error),
+		});
+		return null;
+	}
+}
+
+/**
+ * Refuse the work when the queue is already full.
+ *
+ * The check runs BEFORE the case is moved to `investigating`, so a refused
+ * case is left exactly where it was: still `collecting`, still readable, and
+ * still waiting for the client to try again. The queue refuses the job
+ * itself as well - this is the check that keeps the refusal from reaching
+ * the database at all.
+ *
+ * @returns {Promise<void>} Rejects with a 429-shaped error when the queue is full.
+ */
+async function assertQueueHasRoom() {
+	const queue = await loadInvestigationQueue();
+	if (typeof queue?.queueCapacity !== "function") {
+		return;
+	}
+	const capacity = queue.queueCapacity();
+	if (capacity?.accepting === false) {
+		logWarn("investigation queue is full", {
+			depth: capacity.depth,
+			limit: capacity.limit,
+		});
+		throw investigationQueueFullError();
+	}
+}
+
+/**
  * Hands the case to the investigation queue.
  *
  * The queue belongs to the investigation workstream, so it is loaded lazily
@@ -269,6 +307,10 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
  * `investigating`, the failure is logged, and the admin console can re-run
  * the investigation. Silently leaving the case in `collecting` would throw
  * the client's answer away.
+ *
+ * A refusal because the queue is FULL is a different thing: the work was
+ * not accepted at all, so the error travels to the caller and the case is
+ * put back where it was.
  *
  * @param {string} caseId
  * @returns {Promise<boolean>} True when the job was handed over.
@@ -283,6 +325,9 @@ async function enqueueInvestigation(caseId) {
 		return true;
 	} catch (error) {
 		logError("case investigation enqueue failed", { caseId, reason: error.message });
+		if (Number(error?.status) === 429) {
+			throw error;
+		}
 		return false;
 	}
 }
@@ -299,6 +344,11 @@ async function enqueueInvestigation(caseId) {
  * @returns {Promise<Object>} The updated case row.
  */
 async function startInvestigation(caseRow, messages) {
+	// The queue is asked BEFORE anything is written: a case that cannot be
+	// investigated must not be moved to `investigating`, because from there
+	// the client believes the work is under way.
+	await assertQueueHasRoom();
+
 	const summary = buildCaseSummary(caseRow, messages);
 	const updated = await prisma.supportCase.update({
 		where: { id: caseRow.id },
@@ -316,7 +366,27 @@ async function startInvestigation(caseRow, messages) {
 		status: "investigating",
 		summary,
 	});
-	await enqueueInvestigation(caseRow.id);
+	try {
+		await enqueueInvestigation(caseRow.id);
+	} catch (error) {
+		if (Number(error?.status) === 429) {
+			// The job was refused: the case was never investigated, so it goes
+			// back to where it was rather than sitting in `investigating` with
+			// nothing running behind it.
+			await prisma.supportCase
+				.update({
+					where: { id: caseRow.id },
+					data: { status: "collecting", updated_at: new Date() },
+				})
+				.catch((restoreError) => {
+					logWarn("case could not be put back to collecting", {
+						caseId: caseRow.id,
+						reason: restoreError?.message || String(restoreError),
+					});
+				});
+		}
+		throw error;
+	}
 	logInfo("case investigation started", { caseId: caseRow.id, summary });
 	return updated;
 }
@@ -489,6 +559,20 @@ async function removeEvidence(attachments) {
  */
 export async function createCaseController(req, res) {
 	try {
+		// The open-case cap. A client that opened cases without a limit would
+		// fill the investigation queue with work nobody asked for, and every
+		// one of those jobs spawns a runtime and mails every owner.
+		const openCases = await prisma.supportCase.count({
+			where: { user_id: req.user.id, status: { in: OPEN_CASE_STATUSES } },
+		});
+		const limit = maxOpenCases();
+		if (Number(openCases) >= limit) {
+			return res.status(429).json({
+				error: `You already have ${limit} open support cases. Close one before opening another.`,
+				code: "SUPPORT_CASE_LIMIT",
+			});
+		}
+
 		const subject = sanitizeString(String(req.body?.subject || ""), MAX_SUBJECT_LENGTH);
 		const created = await caseService.createCase({ userId: req.user.id, subject });
 		logInfo("support case opened", { caseId: created?.id, userId: req.user.id });
@@ -531,7 +615,7 @@ export async function getCaseController(req, res) {
 		if (!found) {
 			return res.status(404).json({ error: "Case not found" });
 		}
-		if (!canReadCase(req.user, found)) {
+		if (!caseService.canReadCase(req.user, found)) {
 			return res.status(403).json({ error: "Forbidden" });
 		}
 
@@ -563,7 +647,7 @@ export async function postCaseMessageController(req, res) {
 		if (!found) {
 			return res.status(404).json({ error: "Case not found" });
 		}
-		if (!canReadCase(req.user, found)) {
+		if (!caseService.canReadCase(req.user, found)) {
 			return res.status(403).json({ error: "Forbidden" });
 		}
 
@@ -592,7 +676,7 @@ export async function postCaseMessageController(req, res) {
 
 		const after = await caseService.getCaseWithMessages(caseId);
 		const thread = after?.messages || [];
-		const rounds = await countClientMessages(caseId, thread);
+		const rounds = await caseService.countClientMessages(caseId);
 		const confirmed = CONFIRMED_STATUSES.has(String(found.status || ""));
 		// contracts.md §3: ready is "the client confirmed the summary, OR
 		// MAX_CLARIFICATION_ROUNDS client messages have been sent".
@@ -661,7 +745,7 @@ export async function confirmCaseController(req, res) {
 		if (!found) {
 			return res.status(404).json({ error: "Case not found" });
 		}
-		if (!canReadCase(req.user, found)) {
+		if (!caseService.canReadCase(req.user, found)) {
 			return res.status(403).json({ error: "Forbidden" });
 		}
 
@@ -718,7 +802,7 @@ export async function streamCaseController(req, res) {
 		}
 		// The stream is the case's own thread. A stranger gets the same 403
 		// the read route gives them, not a silent empty stream.
-		if (!canReadCase(req.user, found)) {
+		if (!caseService.canReadCase(req.user, found)) {
 			return res.status(403).json({ error: "Forbidden" });
 		}
 	} catch (error) {
@@ -771,8 +855,14 @@ export async function streamCaseController(req, res) {
 			}
 			send(type, payload);
 		};
-		handlers.set(type, handler);
-		realtime.realtimeBus.on(type, handler);
+		// The bus channel is the CASE's channel, not the bare type: the
+		// report payload is the whole report, and it belongs to one case.
+		const channel =
+			typeof realtime.caseEventChannel === "function"
+				? realtime.caseEventChannel(type, caseId)
+				: type;
+		handlers.set(type, { channel, handler });
+		realtime.realtimeBus.on(channel, handler);
 	}
 
 	const keepalive = setInterval(() => {
@@ -788,8 +878,8 @@ export async function streamCaseController(req, res) {
 		}
 		closed = true;
 		clearInterval(keepalive);
-		for (const [type, handler] of handlers) {
-			realtime.realtimeBus.off(type, handler);
+		for (const { channel, handler } of handlers.values()) {
+			realtime.realtimeBus.off(channel, handler);
 		}
 	};
 
@@ -816,7 +906,7 @@ export async function deleteCaseController(req, res) {
 		if (!found) {
 			return res.status(404).json({ error: "Case not found" });
 		}
-		if (!canReadCase(req.user, found)) {
+		if (!caseService.canReadCase(req.user, found)) {
 			return res.status(403).json({ error: "Forbidden" });
 		}
 

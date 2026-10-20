@@ -112,8 +112,10 @@ URL that the server hands to a caller it has authorized.
 
 The same file also stops resolving through the authorization resolver before the
 script has run: the `support_case` branch now requires the row's `file_path` to start
-with `/uploads/support/`, so a legacy row is denied to everybody (administrators
-included, via the resolver) until the row is re-pointed. **That is the intended
+with `/uploads/support/`, so a legacy row is denied to every caller who is not an
+administrator until the row is re-pointed. (Administrators are NOT denied: the
+resolver short-circuits an owner/admin to `true` before the `entity_type` switch is
+reached, so the staff keep access to the legacy bytes.) **That is the intended
 direction** — fail closed — but it does mean the two steps have to happen in this
 order or the evidence is unreadable in between.
 

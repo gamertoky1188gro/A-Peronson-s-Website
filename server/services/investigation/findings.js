@@ -371,6 +371,67 @@ export function demoteUnsubstantiated(findings) {
 }
 
 /**
+ * Demote every finding that cites a file that does not resolve.
+ *
+ * The empty-evidence demotion above is not enough on its own. A finding that
+ * cites `{ file: "does-not-exist.js" }` HAS evidence, so it keeps the
+ * confidence the agent gave it - and the report's "Confirmed findings"
+ * section then reads stronger than the finding is. Such a finding can also
+ * trip the escalation classifier, which is a security outcome decided by a
+ * path that was never opened.
+ *
+ * So the cited file has to RESOLVE inside the repository before the finding
+ * is allowed to keep its confidence. A finding that cites a file which does
+ * not resolve is demoted to `speculative` and carries the unresolvable
+ * references in `unverified_references`, so the report can say WHY it was
+ * demoted instead of leaving the reader to guess.
+ *
+ * The two demotions of contracts.md §5 - refuted, and empty evidence - are
+ * untouched: this is a third one, and it only ever weakens a claim.
+ *
+ * The resolver is injected, so this module stays free of the filesystem and
+ * the test can drive it with a list of known paths.
+ *
+ * @param {unknown} findings The findings, in any of the accepted shapes.
+ * @param {{ isResolvable?: (file: string) => boolean }} [options]
+ * @returns {object[]} The findings, demoted where the evidence does not resolve.
+ */
+export function demoteUnverifiedReferences(findings, { isResolvable } = {}) {
+	const list = extractFindingsList(findings);
+	if (typeof isResolvable !== "function") {
+		return list.map((finding) => finding);
+	}
+
+	return list.map((finding) => {
+		if (!isPlainObject(finding)) {
+			return finding;
+		}
+		const evidence = Array.isArray(finding.evidence) ? finding.evidence : [];
+		const files = [];
+		for (const entry of evidence) {
+			const file = typeof entry === "string" ? entry : isPlainObject(entry) ? entry.file : null;
+			const value = typeof file === "string" ? file.trim() : "";
+			if (value && !files.includes(value)) {
+				files.push(value);
+			}
+		}
+		if (files.length === 0) {
+			return { ...finding, evidence: [...evidence] };
+		}
+		const unverified = files.filter((file) => !isResolvable(file));
+		if (unverified.length === 0) {
+			return { ...finding, evidence: [...evidence] };
+		}
+		return {
+			...finding,
+			confidence: DEFAULT_CONFIDENCE,
+			evidence: [...evidence],
+			unverified_references: unverified,
+		};
+	});
+}
+
+/**
  * Parse the JSON an agent replied with.
  *
  * A fenced ```json block wins; otherwise the first balanced top-level object

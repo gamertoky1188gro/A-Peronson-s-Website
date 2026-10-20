@@ -43,6 +43,8 @@
  */
 
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { logError, logInfo, logWarn } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
 import { getCaseWithMessages } from "./caseService.js";
@@ -54,6 +56,7 @@ import {
 } from "./investigation/agents.js";
 import {
 	demoteUnsubstantiated,
+	demoteUnverifiedReferences,
 	normalizeFindings,
 	parseAgentJson,
 } from "./investigation/findings.js";
@@ -65,6 +68,7 @@ import {
 	runAgentPrompt,
 	startInvestigationRuntime,
 } from "./investigation/opencodeRuntime.js";
+import { redactReportSecrets } from "./investigation/redaction.js";
 import { buildReport } from "./investigation/report.js";
 import { buildInvestigationConfig } from "./investigation/runtimeConfig.js";
 
@@ -100,6 +104,21 @@ const TERMINAL_SOURCE_STATUSES = new Set(["collecting", "investigating", "report
 /** The roles that investigate, in the order they run. */
 const SPECIALIST_ROLES = AGENT_ROLES.filter((role) => role !== VERIFY_ROLE);
 
+/**
+ * How many investigations may be WAITING when nothing says otherwise.
+ *
+ * The concurrency limit bounds how many run at once; it does not bound how
+ * many are queued. Without a bound on the backlog, a client that opens a
+ * thousand cases fills the queue with a thousand jobs, each of which will
+ * hold a spawned runtime, five database rows and an email to every owner and
+ * admin when it eventually runs. The queue refuses the work instead, and the
+ * caller is told to try again shortly.
+ */
+const DEFAULT_MAX_QUEUE_DEPTH = 20;
+
+/** The ceiling on the configured queue depth. */
+const MAX_QUEUE_DEPTH_CEILING = 200;
+
 /** How many random bytes the runtime password is minted from. */
 const PASSWORD_BYTES = 32;
 
@@ -120,6 +139,35 @@ export function queueDepth() {
 }
 
 /**
+ * How deep the queue may get before it refuses new work.
+ *
+ * `INVESTIGATION_QUEUE_MAX_DEPTH` overrides the default. A value that is not
+ * a positive integer falls back to the default, and a value above the ceiling
+ * is clamped.
+ *
+ * @returns {number}
+ */
+export function maxQueueDepth() {
+	const raw = Number.parseInt(process.env.INVESTIGATION_QUEUE_MAX_DEPTH ?? "", 10);
+	if (!Number.isFinite(raw) || raw < 1) {
+		return DEFAULT_MAX_QUEUE_DEPTH;
+	}
+	return Math.min(raw, MAX_QUEUE_DEPTH_CEILING);
+}
+
+/**
+ * The queue's state, for a caller that has to decide whether to hand a job
+ * over.
+ *
+ * @returns {{depth: number, limit: number, accepting: boolean}}
+ */
+export function queueCapacity() {
+	const limit = maxQueueDepth();
+	const depth = QUEUE.length;
+	return { depth, limit, accepting: depth < limit };
+}
+
+/**
  * Queue an investigation for a support case.
  *
  * The promise resolves when the job has been ACCEPTED: the five
@@ -133,6 +181,11 @@ export function queueDepth() {
  * role, and a caller that must not run two investigations at once has to
  * guard the call itself.
  *
+ * The queue is BOUNDED. When the backlog is at the limit the call is refused
+ * with a 429-shaped error rather than accepted blindly: an unbounded queue is
+ * a queue of work that will never be read, and every job in it will spawn a
+ * runtime and mail every owner when it eventually runs.
+ *
  * @param {string} caseId The support case to investigate.
  * @returns {Promise<void>}
  */
@@ -140,6 +193,21 @@ export async function enqueueInvestigation(caseId) {
 	const id = typeof caseId === "string" ? caseId.trim() : "";
 	if (!id) {
 		throw new Error("enqueueInvestigation requires a support case id");
+	}
+
+	// The refusal happens BEFORE the rows are created: a refused job must not
+	// leave five `queued` rows behind that no worker will ever pick up.
+	const capacity = queueCapacity();
+	if (!capacity.accepting) {
+		const error = new Error("The investigation queue is full - try again shortly.");
+		error.status = 429;
+		error.code = "INVESTIGATION_QUEUE_FULL";
+		logWarn("investigation queue is full", {
+			caseId: id,
+			depth: capacity.depth,
+			limit: capacity.limit,
+		});
+		throw error;
 	}
 
 	const rows = await createQueuedRows(id);
@@ -472,7 +540,10 @@ async function runRole({ runtime, model, role, prompt, row, caseId, sessionIDs }
 			return { role, status: "failed", findings: [], limitations: [], summary: "", error };
 		}
 
-		const findings = demoteUnsubstantiated(normalizeFindings(parsed.value));
+		const findings = demoteUnverifiedReferences(
+			demoteUnsubstantiated(normalizeFindings(parsed.value)),
+			{ isResolvable: resolvesInsideRepository },
+		);
 		const limitations = toStringList(parsed.value?.limitations);
 		const summary = typeof parsed.value?.summary === "string" ? parsed.value.summary : "";
 
@@ -601,6 +672,47 @@ function buildDescription(caseRow, messages) {
 	return description.length > MAX_DESCRIPTION_CHARS
 		? description.slice(0, MAX_DESCRIPTION_CHARS)
 		: description;
+}
+
+/**
+ * Does the cited evidence file resolve to a file inside the repository?
+ *
+ * A finding that cites a path that was never opened - or that points outside
+ * the tree - is an unverified reference, not evidence, and it may not keep
+ * the confidence the agent gave it. The check is deliberately narrow: the
+ * path has to resolve to a real FILE under the canonical repository root.
+ *
+ * A path that carries a line range (`server/server.js:120`) is accepted when
+ * the path without the range resolves, because that is how an agent writes
+ * a reference when it puts the line in the file field.
+ *
+ * @param {string} file The cited path.
+ * @returns {boolean}
+ */
+export function resolvesInsideRepository(file) {
+	const reference = String(file || "").trim();
+	if (!reference) {
+		return false;
+	}
+	const candidates = [reference, reference.replace(/:\d+(?:-\d+)?$/, "")];
+	for (const candidate of candidates) {
+		const relative = candidate.replace(/\\/g, "/").trim();
+		if (!relative) {
+			continue;
+		}
+		const resolved = path.resolve(REPOSITORY_ROOT, relative);
+		if (resolved !== REPOSITORY_ROOT && !resolved.startsWith(`${REPOSITORY_ROOT}${path.sep}`)) {
+			continue;
+		}
+		try {
+			if (fs.statSync(resolved).isFile()) {
+				return true;
+			}
+		} catch {
+			// not a file, or not readable
+		}
+	}
+	return false;
 }
 
 /**
@@ -791,10 +903,15 @@ async function finalizeInvestigation({ caseId, rows }) {
 	} catch (error) {
 		logError("investigation report build failed", error);
 	}
-	await persistReport(rows, report);
+	// The report is redacted BEFORE it is written down. The investigators can
+	// read the whole repository, and the repository holds credentials: a
+	// report that quotes one would put it into the database, and from there
+	// into the owner's inbox and the client's browser.
+	const safeReport = redactReportSecrets(report);
+	await persistReport(rows, safeReport);
 
 	await escalate(caseId, finalFindings(investigations));
-	await deliver(caseRow, report);
+	await deliver(caseRow, safeReport);
 	await setTerminalStatus(caseId, "completed");
 }
 

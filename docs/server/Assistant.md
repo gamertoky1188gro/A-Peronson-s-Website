@@ -26,13 +26,18 @@ router.post("/ask", requireAuth, askAssistant);
 - **Route definition:** `server/routes/assistantRoutes.js:20`
 
 ```js
-router.post("/ask-public", askAssistantPublic);
+router.post("/ask-public", requireAuth, askAssistantPublic);
 ```
 
 - **Middleware stack (in order):**
-  - _none detected_
+  - `requireAuth`
 - **Handler:** `askAssistantPublic`
 - **Controller file:** `—`
+
+> The route is named "public" but it is **not** open: it is behind
+> `requireAuth`. It used to accept an unauthenticated caller, which reached
+> a guest session on a write-capable agent - one session per call, owned by
+> nobody. It now uses the caller's own session.
 
 ### POST `/api/assistant/extract-requirement`
 

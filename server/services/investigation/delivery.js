@@ -20,6 +20,7 @@ import prisma from "../../utils/prisma.js";
 import { escapeHtml, sanitizeString } from "../../utils/validators.js";
 import { sendEmail } from "../emailService.js";
 import { createNotification } from "../notificationService.js";
+import { redactReportSecrets } from "./redaction.js";
 
 // emailService truncates the plain-text body with sanitizeString(text, 2000),
 // so the body is a short summary plus a link - never the report itself. The
@@ -60,6 +61,11 @@ const NOTIFICATION_TYPE = "support_case_escalated";
 // The two recorded delivery states. There is no third one.
 const STATUS_SENT = "sent";
 const STATUS_FAILED = "failed";
+
+// A base url with no scheme is not a url a mail client can open: it is a
+// relative path. Render's `fromService: { property: host }` produces exactly
+// that - a bare hostname - so the scheme is added back.
+const SCHEME_RE = /^https?:\/\//i;
 
 const OWNER_ADMIN_ROLES = ["owner", "admin"];
 
@@ -522,6 +528,14 @@ async function notifyStaffOfEscalation({ caseId, category, detail, triggerCount,
  * merely logged (`{ ok: false, status: "logged_no_gmail" }`) records
  * "failed" - never "sent".
  *
+ * The report is REDACTED before it is used: the investigators can read the
+ * repository, and the repository holds credentials, so a report that quotes
+ * one would carry it into the database, the inbox and the client's browser.
+ *
+ * The report event is fired either way, carrying the delivery verdict: the
+ * report body is a shared artefact and the delivery verdict is a separate
+ * fact, and the client has to learn both.
+ *
  * @param {Object} params
  * @param {Object} params.caseRow The SupportCase row.
  * @param {string} params.report The Markdown report.
@@ -534,8 +548,13 @@ export async function deliverReport({ caseRow, report } = {}) {
 		return { ok: false, status: STATUS_FAILED, error: "case_row_required" };
 	}
 
+	// The report is redacted BEFORE anything reads it. The investigators can
+	// read the whole repository, and the repository holds credentials, so a
+	// report that quotes one would carry it into the database, into the
+	// owner's inbox and into the client's browser.
+	const safeReport = redactReportSecrets(String(report || ""));
 	const link = buildCaseReportLink(caseId);
-	const summary = buildSummary({ caseRow, report });
+	const summary = redactReportSecrets(buildSummary({ caseRow, report: safeReport }));
 	const text = buildPlainText({ caseRow, summary, link });
 	const html = buildHtml({ caseRow, summary, link });
 
@@ -544,6 +563,15 @@ export async function deliverReport({ caseRow, report } = {}) {
 	const errors = [outcome.error, persisted.ok ? null : `status_not_recorded: ${persisted.error}`]
 		.filter(Boolean)
 		.join("; ");
+
+	// The report event is fired BEFORE the success check, and it carries the
+	// delivery verdict either way. The report body is a shared artefact: the
+	// client is waiting for it, and a mail provider that is down does not
+	// make the report stop existing. Emitting it only on the success path
+	// left the client waiting forever for a report the server had already
+	// written down.
+	const reportStatus = outcome.ok ? STATUS_SENT : STATUS_FAILED;
+	await emitReportReady(caseId, safeReport, reportStatus);
 
 	if (!outcome.ok) {
 		logWarn("support_report_delivery_failed", {
@@ -567,7 +595,6 @@ export async function deliverReport({ caseRow, report } = {}) {
 		report_status: STATUS_SENT,
 		body_length: text.length,
 	});
-	await emitReportReady(caseId, String(report || ""), STATUS_SENT);
 	return { ok: true, status: STATUS_SENT };
 }
 
@@ -639,18 +666,51 @@ export async function escalateIfNeeded(caseId, findings) {
  * and the link opens nothing. The local port is the last resort, and it is
  * right in development and wrong everywhere else.
  *
+ * `RENDER_EXTERNAL_URL` comes FIRST because it is the value Render itself
+ * sets, with the scheme, and because the `APP_BASE_URL` that render.yaml
+ * derives from `fromService: { property: host }` is a bare hostname. A
+ * schemeless value is repaired below, but a value Render set is a better
+ * value than one Render derived.
+ *
  * @returns {string}
  */
 function baseUrl() {
-	for (const candidate of [process.env.APP_BASE_URL, process.env.PUBLIC_APP_URL, process.env.RENDER_EXTERNAL_URL]) {
-		const value = String(candidate || "")
-			.trim()
-			.replace(TRAILING_SLASH_RE, "");
+	for (const candidate of [
+		process.env.RENDER_EXTERNAL_URL,
+		process.env.APP_BASE_URL,
+		process.env.PUBLIC_APP_URL,
+	]) {
+		const value = normalizeBaseUrl(candidate);
 		if (value) {
 			return value;
 		}
 	}
 	return `http://localhost:${process.env.PORT || DEFAULT_PORT}`;
+}
+
+/**
+ * One base url candidate, made usable.
+ *
+ * A value with no scheme is a hostname, and a hostname is only an address
+ * once it says how to reach it: `gartexhub.onrender.com` opens nothing in a
+ * mail client, `https://gartexhub.onrender.com` opens the console. The
+ * scheme that is added is `https`, because a public deployment that is
+ * reachable at all is reachable over TLS.
+ *
+ * @param {unknown} candidate
+ * @returns {string} The normalised url, or "" when there is none.
+ */
+function normalizeBaseUrl(candidate) {
+	const value = String(candidate || "")
+		.trim()
+		.replace(TRAILING_SLASH_RE, "");
+	if (!value) {
+		return "";
+	}
+	if (SCHEME_RE.test(value)) {
+		return value;
+	}
+	return `https://${value}`;
 }
 
 /**

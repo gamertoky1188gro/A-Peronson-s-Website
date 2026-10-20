@@ -238,10 +238,14 @@ function normalizeFinding(raw) {
 	const evidence = asEvidenceList(raw.evidence).map(normalizeEvidenceEntry).filter(Boolean);
 	const recorded = normalizeConfidence(raw.confidence);
 	const confidence = evidence.length === 0 ? DEFAULT_CONFIDENCE : recorded;
+	const unverifiedReferences = asArray(raw.unverified_references)
+		.map((value) => singleLine(value))
+		.filter(Boolean);
 	return {
 		confidence,
 		recordedConfidence: recorded,
 		demoted: evidence.length === 0 && recorded !== DEFAULT_CONFIDENCE,
+		unverifiedReferences,
 		detail,
 		evidence,
 	};
@@ -408,7 +412,11 @@ function renderRunFindings(run) {
 	}
 	const lines = [`**Findings (${run.findings.length})**`, ""];
 	for (const finding of run.findings) {
-		const marker = finding.demoted ? " (demoted to speculative: no evidence reference)" : "";
+		const marker = finding.demoted
+			? " (demoted to speculative: no evidence reference)"
+			: finding.unverifiedReferences.length > 0
+				? ` (demoted to speculative: cited evidence does not resolve - ${finding.unverifiedReferences.join(", ")})`
+				: "";
 		lines.push(`- ${finding.confidence} - ${finding.detail}${marker}`);
 	}
 	lines.push("");
@@ -461,6 +469,11 @@ function renderFindingBlock(finding, source) {
 	if (finding.demoted) {
 		lines.push(
 			"- **Note:** recorded as confirmed or probable but carries no evidence reference, so it is reported as speculative",
+		);
+	}
+	if (finding.unverifiedReferences.length > 0) {
+		lines.push(
+			`- **Note:** recorded as ${finding.recordedConfidence} but cites evidence that does not resolve inside the repository (${finding.unverifiedReferences.join(", ")}), so it is reported as speculative - an unverified reference`,
 		);
 	}
 	lines.push(...renderDetailBullet(finding.detail));
@@ -638,7 +651,7 @@ function renderInvestigationsSection(runs) {
 function renderFindingsSection(grouped, runs) {
 	const lines = ["## 5. Findings", ""];
 	lines.push(
-		"_Every finding is grouped by confidence: **confirmed**, **probable**, or **speculative**. A finding without an evidence reference is reported as speculative; the pipeline has no path that promotes an unevidenced claim._",
+		"_Every finding is grouped by confidence: **confirmed**, **probable**, or **speculative**. A finding without an evidence reference is reported as speculative, and so is one whose cited evidence file does not resolve inside the repository; the pipeline has no path that promotes an unevidenced claim._",
 		"",
 	);
 	for (const level of CONFIDENCE_LEVELS) {

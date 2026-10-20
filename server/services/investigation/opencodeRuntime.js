@@ -7,9 +7,10 @@ import { OpenCode } from "@opencode/client";
 import { logInfo, logWarn } from "../../utils/logger.js";
 import { formatToolError, waitForAssistantTurn } from "../opencodeTurns.js";
 import { parseModelChain } from "./modelChain.js";
+import { buildInvestigationConfig } from "./runtimeConfig.js";
 
-const PORT_RANGE_START = 4200;
-const PORT_RANGE_END = 4299;
+export const PORT_RANGE_START = 4200;
+export const PORT_RANGE_END = 4299;
 const SERVER_USER = "opencode";
 const POLL_INTERVAL_MS = 1200;
 const STABLE_POLLS_TO_SETTLE = 20;
@@ -171,6 +172,105 @@ function findFreePort(start, attempts) {
 	});
 }
 
+/**
+ * Resolve the real opencode executable.
+ *
+ * Exported so that every process that spawns an opencode server resolves the
+ * same binary: on Windows the `opencode` on PATH is a pnpm shim, and
+ * `spawn("opencode")` without a shell raises ENOENT.
+ *
+ * @returns {{command: string, shell: boolean}}
+ */
+export function resolveOpencodeBinary() {
+	return resolveBinary();
+}
+
+/**
+ * Create the isolated config directory the server is spawned with.
+ *
+ * The developer's global opencode config normally declares MCP servers (and
+ * plugins, and skills); inheriting them would hand the agent ambient
+ * capabilities that the restrictive config cannot take away. A fresh
+ * temporary directory holds nothing, so nothing is inherited.
+ *
+ * @param {string} [prefix] The temporary directory prefix.
+ * @returns {string} The absolute path of the new directory.
+ */
+export function createIsolatedConfigDir(prefix = "opencode-investigation-config-") {
+	return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+}
+
+/**
+ * The environment an isolated opencode server is spawned with.
+ *
+ * The three keys that carry the isolation:
+ *
+ *  - `OPENCODE_CONFIG_DIR` - the server reads its configuration from a fresh
+ *    temporary directory, so the operator's global config (and its MCP
+ *    servers) is not in scope at all;
+ *  - `OPENCODE_CONFIG_PROJECT_DISABLE` - a stray `opencode.json` in the
+ *    repository cannot widen the rules;
+ *  - `OPENCODE_CONFIG_CONTENT` - the restrictive configuration itself.
+ *
+ * @param {Object} params
+ * @param {Object} params.config The configuration the server runs with.
+ * @param {string} params.password The server's basic-auth password.
+ * @param {string} params.configDir The isolated configuration directory.
+ * @param {Object} [params.baseEnv] The environment to build on.
+ * @returns {Object} The environment for the spawned process.
+ */
+export function buildIsolatedRuntimeEnv({
+	config,
+	password,
+	configDir,
+	baseEnv = process.env,
+} = {}) {
+	return {
+		...baseEnv,
+		OPENCODE_SERVER_PASSWORD: password,
+		OPENCODE_CONFIG_CONTENT: JSON.stringify(config),
+		OPENCODE_LOG_LEVEL: "ERROR",
+		OPENCODE_CONFIG_DIR: configDir,
+		OPENCODE_CONFIG_PROJECT_DISABLE: "1",
+	};
+}
+
+/**
+ * The environment the ASSISTANT's opencode server is spawned with.
+ *
+ * The assistant reads the codebase to answer platform questions, so it runs
+ * with the same read-only configuration the investigation runtime uses: it
+ * may read, search and list, and it may not write, run commands or delegate
+ * to a subagent. It gets its OWN isolated configuration directory, so it does
+ * not inherit the operator's global opencode config either.
+ *
+ * @param {Object} params
+ * @param {string} params.password The server's basic-auth password.
+ * @param {string} params.configDir The isolated configuration directory.
+ * @param {Object} [params.baseEnv] The environment to build on.
+ * @returns {Object} The environment for the spawned process.
+ */
+export function buildAssistantRuntimeEnv({ password, configDir, baseEnv = process.env } = {}) {
+	return buildIsolatedRuntimeEnv({
+		config: buildInvestigationConfig(),
+		password,
+		configDir,
+		baseEnv,
+	});
+}
+
+/**
+ * A free port from the runtime's dedicated range.
+ *
+ * The range excludes 4096-4116, so the portal can never attach to an
+ * interactive TUI's server.
+ *
+ * @returns {Promise<number|null>} The port, or null when the range is full.
+ */
+export async function findFreeRuntimePort() {
+	return findFreePort(PORT_RANGE_START, PORT_RANGE_END - PORT_RANGE_START + 1);
+}
+
 export async function startInvestigationRuntime({
 	cwd,
 	config,
@@ -181,8 +281,7 @@ export async function startInvestigationRuntime({
 	// The working directory is the repository, and only the repository.
 	const workingDirectory = assertRepositoryRoot(cwd);
 
-	const chosenPort =
-		port || (await findFreePort(PORT_RANGE_START, PORT_RANGE_END - PORT_RANGE_START + 1));
+	const chosenPort = port || (await findFreeRuntimePort());
 	if (!chosenPort) {
 		throw new Error("No free port for the investigation runtime");
 	}
@@ -192,9 +291,7 @@ export async function startInvestigationRuntime({
 	// inheriting them would hand the investigator ambient capabilities that the
 	// restrictive config cannot take away. `OPENCODE_CONFIG_PROJECT_DISABLE`
 	// stops a stray `opencode.json` in the repository from widening the rules.
-	const isolatedConfigDir = fs.mkdtempSync(
-		path.join(os.tmpdir(), "opencode-investigation-config-"),
-	);
+	const isolatedConfigDir = createIsolatedConfigDir();
 
 	const binary = resolveBinary();
 	const child = spawn(
@@ -205,14 +302,11 @@ export async function startInvestigationRuntime({
 			stdio: ["ignore", "pipe", "pipe"],
 			shell: binary.shell,
 			windowsHide: true,
-			env: {
-				...process.env,
-				OPENCODE_SERVER_PASSWORD: password,
-				OPENCODE_CONFIG_CONTENT: JSON.stringify(config),
-				OPENCODE_LOG_LEVEL: "ERROR",
-				OPENCODE_CONFIG_DIR: isolatedConfigDir,
-				OPENCODE_CONFIG_PROJECT_DISABLE: "1",
-			},
+			env: buildIsolatedRuntimeEnv({
+				config,
+				password,
+				configDir: isolatedConfigDir,
+			}),
 		},
 	);
 

@@ -1,5 +1,6 @@
 import {
 	demoteUnsubstantiated,
+	demoteUnverifiedReferences,
 	normalizeFindings,
 	parseAgentJson,
 } from "../../server/services/investigation/findings.js";
@@ -215,6 +216,104 @@ describe("investigation findings (server/services/investigation/findings.js)", (
 			expect(demoted).toHaveLength(2);
 			expect(demoted[0].confidence).toBe("speculative");
 			expect(demoted[1].confidence).toBe("confirmed");
+		});
+	});
+
+	// A finding that cites a file which does not exist HAS evidence, so the
+	// empty-evidence demotion does not touch it - and the report's
+	// "Confirmed findings" section then reads stronger than the finding is.
+	// The cited file has to resolve before the finding keeps its confidence.
+	describe("demoteUnverifiedReferences", () => {
+		const KNOWN = new Set(["server/server.js", "src/pages/MainFeed.jsx"]);
+
+		function isResolvable(file) {
+			return KNOWN.has(String(file || "").trim());
+		}
+
+		test("a finding whose cited file resolves keeps its confidence", () => {
+			const demoted = demoteUnverifiedReferences(
+				[{ confidence: "confirmed", detail: "x", evidence: [{ file: "server/server.js" }] }],
+				{ isResolvable },
+			);
+
+			expect(demoted[0].confidence).toBe("confirmed");
+			expect(demoted[0].unverified_references).toBeUndefined();
+		});
+
+		test("a finding whose cited file does not resolve is demoted", () => {
+			const demoted = demoteUnverifiedReferences(
+				[{ confidence: "confirmed", detail: "x", evidence: [{ file: "does-not-exist.js" }] }],
+				{ isResolvable },
+			);
+
+			expect(demoted[0].confidence).toBe("speculative");
+		});
+
+		test("the unresolvable reference is named", () => {
+			const demoted = demoteUnverifiedReferences(
+				[{ confidence: "confirmed", detail: "x", evidence: [{ file: "does-not-exist.js" }] }],
+				{ isResolvable },
+			);
+
+			expect(demoted[0].unverified_references).toEqual(["does-not-exist.js"]);
+		});
+
+		test("one unresolvable reference demotes the whole finding", () => {
+			const demoted = demoteUnverifiedReferences(
+				[
+					{
+						confidence: "confirmed",
+						detail: "x",
+						evidence: [{ file: "server/server.js" }, { file: "nope.js" }],
+					},
+				],
+				{ isResolvable },
+			);
+
+			expect(demoted[0].confidence).toBe("speculative");
+			expect(demoted[0].unverified_references).toEqual(["nope.js"]);
+		});
+
+		test("a finding with no evidence at all is left to the other demotion", () => {
+			const demoted = demoteUnverifiedReferences(
+				[{ confidence: "confirmed", detail: "x", evidence: [] }],
+				{ isResolvable },
+			);
+
+			expect(demoted[0].confidence).toBe("confirmed");
+			expect(demoted[0].unverified_references).toBeUndefined();
+		});
+
+		test("a finding whose evidence is a url is left alone", () => {
+			const demoted = demoteUnverifiedReferences(
+				[
+					{
+						confidence: "confirmed",
+						detail: "x",
+						evidence: [{ url: "https://example.test/issue/1" }],
+					},
+				],
+				{ isResolvable },
+			);
+
+			expect(demoted[0].confidence).toBe("confirmed");
+		});
+
+		test("without a resolver nothing is demoted", () => {
+			const demoted = demoteUnverifiedReferences([
+				{ confidence: "confirmed", detail: "x", evidence: [{ file: "does-not-exist.js" }] },
+			]);
+
+			expect(demoted[0].confidence).toBe("confirmed");
+		});
+
+		test("the detail is not touched, so the verifier can still match it", () => {
+			const demoted = demoteUnverifiedReferences(
+				[{ confidence: "confirmed", detail: "the exact claim", evidence: [{ file: "nope.js" }] }],
+				{ isResolvable },
+			);
+
+			expect(demoted[0].detail).toBe("the exact claim");
 		});
 	});
 });

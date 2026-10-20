@@ -17,9 +17,9 @@ realtimeBus.setMaxListeners(100);
 //
 // The five event types are fixed by contracts.md §4 and are the wire format
 // the client (Task 7) subscribes to over SSE. They are published here as
-// their own names - `realtimeBus.on(CASE_EVENTS.message, ...)` - so a
-// listener can subscribe to exactly the events it cares about instead of
-// filtering one channel by type.
+// their own names - on a channel per case - so a listener can subscribe to
+// exactly the events it cares about instead of filtering one channel by
+// type.
 //
 // The payload keys per type are also fixed by that section:
 //
@@ -33,6 +33,17 @@ realtimeBus.setMaxListeners(100);
 // `support.case.message` event - whose own payload is just the message row -
 // still tells a listener which case it belongs to. The envelope is a
 // superset of the keys above; it never removes one.
+//
+// The events are published on a PER-CASE CHANNEL, not on the bare type
+// string. The `support.case.report` payload is the whole Markdown report,
+// and a report is a case's own business: published on a process-global
+// channel, every listener on that channel - today or in future - receives
+// every case's report body. The channel name is `<type>:<caseId>`, so a
+// listener has to ask for one case's events on purpose.
+//
+// The channel name is INTERNAL. The five type strings are the wire format
+// (contracts.md §4) and they do not change: the SSE handler still writes
+// `event: support.case.report`.
 export const CASE_EVENTS = {
 	message: "support.case.message",
 	status: "support.case.status",
@@ -40,6 +51,17 @@ export const CASE_EVENTS = {
 	finding: "support.case.finding",
 	report: "support.case.report",
 };
+
+/**
+ * The bus channel one case's events are published on.
+ *
+ * @param {string} type One of the five `CASE_EVENTS` type strings.
+ * @param {string} caseId The case the events belong to.
+ * @returns {string} The channel name.
+ */
+export function caseEventChannel(type, caseId) {
+	return `${String(type)}:${String(caseId)}`;
+}
 
 /**
  * Publishes one support-case event on the realtime bus.
@@ -60,7 +82,7 @@ export function emitCaseEvent(caseId, type, payload) {
 	// The case id in the envelope always wins over one inside the payload:
 	// a listener routes on it, and a payload that disagreed with the emitter
 	// would send the event to the wrong case.
-	realtimeBus.emit(String(type), { ...body, caseId: String(caseId) });
+	realtimeBus.emit(caseEventChannel(type, caseId), { ...body, caseId: String(caseId) });
 }
 
 export function emitNotificationCreated(userId, notification) {

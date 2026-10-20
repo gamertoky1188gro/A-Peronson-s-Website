@@ -52,8 +52,11 @@ export async function askAssistantPublic(req, res) {
 	const question = req.body?.question || "";
 	logInfo("Assistant /ask-public request received", {
 		question_chars: String(question).length,
+		user_id: req.user?.id || null,
 	});
-	const result = await assistantReply("public_ws", question);
+	// The caller's own session, never a guest one: a session that belongs to
+	// nobody is a session anybody can drive.
+	const result = await assistantReply("public_ws", question, req.user?.id || null);
 	return res.json(result);
 }
 

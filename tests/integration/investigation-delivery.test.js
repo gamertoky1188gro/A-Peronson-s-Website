@@ -41,6 +41,8 @@ jest.unstable_mockModule("../../server/services/emailService.js", () => ({
 // workstream and may not exist yet; the delivery module must not be blocked
 // on it. The notification service is deliberately NOT mocked, so the
 // in-app escalation notification travels the real path down to prisma.
+const emitCaseEvent = jest.fn();
+
 jest.unstable_mockModule("../../server/realtime/realtimeBus.js", () => ({
 	REALTIME_EVENTS: {},
 	realtimeBus: { on: jest.fn(), emit: jest.fn(), off: jest.fn(), removeAllListeners: jest.fn() },
@@ -50,7 +52,7 @@ jest.unstable_mockModule("../../server/realtime/realtimeBus.js", () => ({
 	emitFeedPostUpdated: jest.fn(),
 	emitFeedPostDeleted: jest.fn(),
 	emitSyncInvalidated: jest.fn(),
-	emitCaseEvent: jest.fn(),
+	emitCaseEvent,
 }));
 
 const supportCaseUpdate = jest.fn(async (args) => ({
@@ -86,7 +88,7 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 	},
 }));
 
-const { deliverReport, escalateIfNeeded } = await import(
+const { buildCaseReportLink, deliverReport, escalateIfNeeded } = await import(
 	"../../server/services/investigation/delivery.js"
 );
 
@@ -269,6 +271,8 @@ function emailRecipients() {
 const savedEnv = {
 	ADMIN_OWNER_EMAILS: process.env.ADMIN_OWNER_EMAILS,
 	APP_BASE_URL: process.env.APP_BASE_URL,
+	PUBLIC_APP_URL: process.env.PUBLIC_APP_URL,
+	RENDER_EXTERNAL_URL: process.env.RENDER_EXTERNAL_URL,
 };
 
 beforeAll(() => {
@@ -288,8 +292,31 @@ afterAll(() => {
 	}
 });
 
+/**
+ * Set the base-url environment variables for one assertion.
+ *
+ * @param {Object} values
+ */
+function withBaseUrlEnv(values) {
+	for (const [key, value] of Object.entries(savedEnv)) {
+		if (value === undefined) {
+			delete process.env[key];
+		} else {
+			process.env[key] = value;
+		}
+	}
+	for (const [key, value] of Object.entries(values)) {
+		if (value === undefined) {
+			delete process.env[key];
+		} else {
+			process.env[key] = value;
+		}
+	}
+}
+
 beforeEach(() => {
 	sendEmail.mockReset();
+	emitCaseEvent.mockReset();
 	supportCaseUpdate.mockClear();
 	supportCaseUpdateMany.mockClear();
 	supportCaseUpsert.mockClear();
@@ -483,5 +510,132 @@ describe("escalateIfNeeded — what must not escalate", () => {
 
 		expect(escalated).toBe(false);
 		expect(escalatedWrites()).not.toContain(true);
+	});
+});
+
+// The emailed link is the only way the owner reaches the report from their
+// inbox. Render's `fromService: { property: host }` produces a bare
+// hostname, and a bare hostname is a relative path as far as a mail client is
+// concerned: the link opens nothing.
+describe("the report link (buildCaseReportLink)", () => {
+	afterEach(() => {
+		withBaseUrlEnv({ APP_BASE_URL: savedEnv.APP_BASE_URL });
+	});
+
+	test("the link carries the case id", () => {
+		withBaseUrlEnv({ APP_BASE_URL: "https://app.example.test" });
+
+		const link = buildCaseReportLink("case-42");
+
+		expect(link).toContain("/admin?case=case-42");
+	});
+
+	test("a bare hostname gets a scheme", () => {
+		withBaseUrlEnv({ APP_BASE_URL: "gartexhub.onrender.com" });
+
+		const link = buildCaseReportLink("case-42");
+
+		expect(link.startsWith("http://") || link.startsWith("https://")).toBe(true);
+		expect(link).toBe("https://gartexhub.onrender.com/admin?case=case-42");
+	});
+
+	test("Render's own external url wins over the schemeless one", () => {
+		withBaseUrlEnv({
+			RENDER_EXTERNAL_URL: "https://gartexhub.onrender.com",
+			APP_BASE_URL: "gartexhub.onrender.com",
+		});
+
+		const link = buildCaseReportLink("case-42");
+
+		expect(link).toBe("https://gartexhub.onrender.com/admin?case=case-42");
+	});
+
+	test("a base url with a scheme is left alone", () => {
+		withBaseUrlEnv({ APP_BASE_URL: "http://localhost:4000" });
+
+		const link = buildCaseReportLink("case-42");
+
+		expect(link).toBe("http://localhost:4000/admin?case=case-42");
+	});
+
+	test("the link is absolute even when only the bare hostname is configured", () => {
+		withBaseUrlEnv({
+			RENDER_EXTERNAL_URL: undefined,
+			APP_BASE_URL: "gartexhub.onrender.com",
+			PUBLIC_APP_URL: undefined,
+		});
+
+		const link = buildCaseReportLink("case-42");
+
+		expect(link.startsWith("http://") || link.startsWith("https://")).toBe(true);
+	});
+});
+
+// The report event is the client's only signal that the report is ready. It
+// used to be emitted only on the success path, so with the mail provider
+// down the client waited forever for a report the server had already
+// written down.
+describe("the report event", () => {
+	test("the event is fired with the report when the mail goes out", async () => {
+		sendEmail.mockResolvedValue({ ok: true, status: "sent" });
+
+		await deliverReport({ caseRow: CASE_ROW, report: REPORT });
+
+		expect(emitCaseEvent).toHaveBeenCalledTimes(1);
+		expect(emitCaseEvent.mock.calls[0][0]).toBe("case-42");
+		expect(emitCaseEvent.mock.calls[0][1]).toBe("support.case.report");
+		expect(emitCaseEvent.mock.calls[0][2].reportStatus).toBe("sent");
+	});
+
+	test("the event is fired even when the mail did not go out", async () => {
+		sendEmail.mockResolvedValue({ ok: false, status: "logged_no_smtp" });
+
+		await deliverReport({ caseRow: CASE_ROW, report: REPORT });
+
+		expect(emitCaseEvent).toHaveBeenCalledTimes(1);
+		expect(emitCaseEvent.mock.calls[0][2].reportStatus).toBe("failed");
+		expect(emitCaseEvent.mock.calls[0][2].report).toContain("Support investigation report");
+	});
+});
+
+// The report is built from what the investigators read in the repository, and
+// the repository holds credentials. The report is redacted before it is
+// emailed or pushed to the client.
+describe("the redacted report", () => {
+	const SECRET_REPORT = [
+		"# Support investigation report",
+		"",
+		"Case: case-42",
+		"",
+		"The deployment file carries the connection string",
+		"postgresql://investigator:hunter2@db.internal.example:5432/gartexhub",
+		"and the signing secret",
+		"JWT_SECRET=3f8a1c9e7b2d4a6f8e0c1b3d5a7f9e1c3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a",
+		"",
+		"## 5. Findings",
+		"",
+		"The payment route has no timeout.",
+	].join("\n");
+
+	test("the secret does not reach the client", async () => {
+		sendEmail.mockResolvedValue({ ok: true, status: "sent" });
+
+		await deliverReport({ caseRow: CASE_ROW, report: SECRET_REPORT });
+
+		const emitted = String(emitCaseEvent.mock.calls[0]?.[2]?.report || "");
+		expect(emitted).not.toContain("hunter2");
+		expect(emitted).not.toContain(
+			"3f8a1c9e7b2d4a6f8e0c1b3d5a7f9e1c3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a",
+		);
+		expect(emitted).toContain("The payment route has no timeout.");
+	});
+
+	test("the secret does not reach the mailbox", async () => {
+		sendEmail.mockResolvedValue({ ok: true, status: "sent" });
+
+		await deliverReport({ caseRow: CASE_ROW, report: SECRET_REPORT });
+
+		const text = String(sendEmail.mock.calls[0][0]?.text || "");
+		expect(text).not.toContain("hunter2");
 	});
 });

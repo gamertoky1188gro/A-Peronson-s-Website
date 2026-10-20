@@ -37,8 +37,17 @@ export function buildInvestigationConfig({ mcpTools = [] } = {}) {
 		"*": "deny",
 		read: {
 			"*": "allow",
+			// The `.env` denies come in TWO shapes, because opencode matches
+			// these patterns as GLOBS and a glob's `*` does not cross a `/`.
+			// `*.env` therefore denies `.env` in the root only, and a
+			// `server/.env` would slip through it. The `**/` forms deny the
+			// file at any depth.
 			"*.env": "deny",
 			"*.env.*": "deny",
+			"**/.env": "deny",
+			"**/.env.*": "deny",
+			// The example file is a template, not a secret, and it is allowed
+			// LAST so that it wins over the denies above.
 			"*.env.example": "allow",
 		},
 		glob: "allow",

@@ -1,33 +1,11 @@
-import { execSync, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
-import net from "node:net";
 import path from "node:path";
 import { GoogleGenAI } from "@google/genai";
 import { OpenCode } from "@opencode/client";
-import { waitForAssistantTurn } from "./opencodeTurns.js";
-
-async function findFreePort(startPort = 4096, maxAttempts = 100) {
-	for (let port = startPort; port < startPort + maxAttempts; port++) {
-		const isFree = await new Promise((resolve) => {
-			const server = net.createServer();
-			server.once("error", () => resolve(false));
-			server.once("listening", () => {
-				server.close();
-				resolve(true);
-			});
-			server.listen(port);
-		});
-		if (isFree) {
-			logInfo("Found free port for opencode", { port });
-			return port;
-		}
-	}
-	return startPort;
-}
-
 import { updateLocalJson } from "../utils/localStore.js";
-import { logError, logInfo } from "../utils/logger.js";
+import { logError, logInfo, logWarn } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
 import {
 	deleteSessionMeta,
@@ -36,6 +14,14 @@ import {
 	saveSessionMeta,
 } from "../utils/sessionStore.js";
 import { sanitizeString, unescapeHtml } from "../utils/validators.js";
+import {
+	buildAssistantRuntimeEnv,
+	createIsolatedConfigDir,
+	findFreeRuntimePort,
+	REPOSITORY_ROOT,
+	resolveOpencodeBinary,
+} from "./investigation/opencodeRuntime.js";
+import { waitForAssistantTurn } from "./opencodeTurns.js";
 
 const _KNOWLEDGE_MODEL = "assistantKnowledge";
 const KNOWLEDGE_TYPES = {
@@ -1026,127 +1012,162 @@ async function promptOpencodeSession({
 	return { parts: turn.parts, text: turn.text };
 }
 
-function isOpencodeBinaryAvailable() {
+/**
+ * Remove the isolated configuration directory.
+ *
+ * The directory holds nothing but the configuration the server was given, and
+ * the server is gone, so the directory is just litter.
+ *
+ * @param {string|null} configDir
+ */
+function removeAssistantConfigDir(configDir) {
+	if (!configDir) {
+		return;
+	}
 	try {
-		execSync("which opencode", { stdio: "ignore" });
-		return true;
+		fs.rmSync(configDir, { recursive: true, force: true });
 	} catch {
-		try {
-			execSync("where opencode", { stdio: "ignore" });
-			return true;
-		} catch {
-			return false;
-		}
+		// best effort
 	}
 }
 
+/**
+ * The assistant's opencode server.
+ *
+ * The server is spawned with the SAME isolation the investigation runtime
+ * uses, and that is the whole point of this function:
+ *
+ *  - its OWN configuration directory, so the operator's global opencode
+ *    config - and every MCP server that config declares - is not in scope;
+ *  - `OPENCODE_CONFIG_PROJECT_DISABLE`, so a stray `opencode.json` in the
+ *    repository cannot widen the rules;
+ *  - a read-only configuration: the assistant may read, search and list, and
+ *    it may not write, run commands or delegate to a subagent.
+ *
+ * The server this process started is also the ONLY server it talks to. A
+ * server somebody else started - the operator's own opencode, for instance -
+ * runs with the operator's configuration, MCP servers and all, and its
+ * sessions carry no permission restriction at all.
+ *
+ * @returns {Promise<number|null>} The port, or null when there is no server.
+ */
 async function ensureOpencodeServer() {
 	if (process.env.OPENCODE_ENABLED === "false") {
 		return null;
 	}
 	const cfg = aiConfig.opencode;
-	const defaultPort = Number.parseInt(cfg.baseUrl.split(":").pop(), 10) || 4096;
-
-	if (!isOpencodeBinaryAvailable()) {
-		logError("opencode binary not found in PATH — cannot start local server");
+	if (!(cfg.baseUrl && cfg.modelID)) {
 		return null;
 	}
 
-	for (let port = defaultPort; port < defaultPort + 20; port++) {
-		logInfo("Checking for opencode server", { port });
-		const isRunning = await checkOpencodeRunning(port);
-		if (isRunning) {
-			opencodePort = port;
-			logInfo("Connected to existing opencode server", { port });
-			return opencodePort;
-		}
+	// Our own server, already running: reuse it. Its isolation is ours.
+	if (_opencodeServer && opencodePort) {
+		return opencodePort;
 	}
 
-	for (let port = defaultPort; port < defaultPort + 20; port++) {
-		const isFree = await findFreePort(port, 1);
-		if (!isFree) {
-			continue;
+	let binary = null;
+	try {
+		binary = resolveOpencodeBinary();
+	} catch (error) {
+		logError("opencode binary is not usable", { message: error?.message || String(error) });
+		return null;
+	}
+
+	const port = await findFreeRuntimePort();
+	if (!port) {
+		logError("No free port for the assistant opencode server");
+		return null;
+	}
+
+	try {
+		logInfo("Starting the isolated opencode server...", { port });
+
+		if (!opencodeServerPassword) {
+			opencodeServerPassword = crypto.randomBytes(24).toString("hex");
 		}
 
-		try {
-			logInfo("Starting opencode server...", { port });
+		// The isolation. The configuration is the read-only one the
+		// investigation runtime uses, so the assistant cannot write, run
+		// commands or hand a denied action to a subagent.
+		const configDir = createIsolatedConfigDir("opencode-assistant-config-");
+		const env = buildAssistantRuntimeEnv({
+			password: opencodeServerPassword,
+			configDir,
+		});
 
-			if (!opencodeServerPassword) {
-				opencodeServerPassword = crypto.randomBytes(24).toString("hex");
+		const child = spawn(
+			binary.command,
+			["serve", "--port", String(port), "--hostname", "127.0.0.1"],
+			{
+				cwd: REPOSITORY_ROOT,
+				stdio: ["ignore", "pipe", "pipe"],
+				shell: binary.shell,
+				windowsHide: true,
+				env,
+			},
+		);
+
+		let spawnError = null;
+		child.on("error", (err) => {
+			spawnError = err;
+			logError("Opencode spawn error", { port, error: err.message });
+		});
+
+		child.stderr.on("data", (d) => {
+			logError("Opencode server stderr", { data: d.toString() });
+		});
+		child.stdout.on("data", (d) => {
+			logInfo("Opencode server stdout", { data: d.toString() });
+		});
+		child.on("exit", (code) => {
+			logError("Opencode server process exited", { code, port });
+			if (opencodePort === port) {
+				opencodePort = null;
 			}
+			if (_opencodeServer === child) {
+				_opencodeServer = null;
+			}
+			removeAssistantConfigDir(configDir);
+		});
 
-			const child = spawn(
-				"opencode",
-				["serve", "--port", String(port), "--hostname", "127.0.0.1"],
-				{
-					stdio: ["ignore", "pipe", "pipe"],
-					env: {
-						...process.env,
-						OPENCODE_LOG_LEVEL: "DEBUG",
-						OPENCODE_SERVER_PASSWORD: opencodeServerPassword,
-					},
-				},
-			);
-
-			let spawnError = null;
-			child.on("error", (err) => {
-				spawnError = err;
-				logError("Opencode spawn error", { port, error: err.message });
-			});
-
-			child.stderr.on("data", (d) => {
-				logError("Opencode server stderr", { data: d.toString() });
-			});
-			child.stdout.on("data", (d) => {
-				logInfo("Opencode server stdout", { data: d.toString() });
-			});
-			child.on("exit", (code) => {
-				logError("Opencode server process exited", { code, port });
-				if (opencodePort === port) {
-					opencodePort = null;
+		// Poll until healthy, spawn error, or timeout
+		const started = await new Promise((resolve) => {
+			const deadline = Date.now() + 20_000;
+			const poll = () => {
+				if (spawnError) {
+					return resolve(false);
 				}
-			});
-
-			// Poll until healthy, spawn error, or timeout
-			const started = await new Promise((resolve) => {
-				const deadline = Date.now() + 20_000;
-				const poll = () => {
-					if (spawnError) {
-						return resolve(false);
+				if (Date.now() > deadline) {
+					return resolve(false);
+				}
+				checkOpencodeRunning(port).then((ok) => {
+					if (ok) {
+						return resolve(true);
 					}
-					if (Date.now() > deadline) {
-						return resolve(false);
-					}
-					checkOpencodeRunning(port).then((ok) => {
-						if (ok) {
-							return resolve(true);
-						}
-						setTimeout(poll, 500);
-					});
-				};
-				poll();
-			});
+					setTimeout(poll, 500);
+				});
+			};
+			poll();
+		});
 
-			if (!started) {
-				child.kill();
-				logError("Opencode server failed to start within timeout", { port });
-				continue;
-			}
-
-			_opencodeServer = child;
-			opencodePort = port;
-			logInfo("Opencode server started", { port });
-			return opencodePort;
-		} catch (error) {
-			logError("Failed to start opencode on port", {
-				port,
-				error: error.message,
-			});
+		if (!started) {
+			child.kill();
+			removeAssistantConfigDir(configDir);
+			logError("Opencode server failed to start within timeout", { port });
+			return null;
 		}
-	}
 
-	logError("Could not find or start opencode server");
-	return null;
+		_opencodeServer = child;
+		opencodePort = port;
+		logInfo("Opencode server started", { port, configDir });
+		return opencodePort;
+	} catch (error) {
+		logError("Failed to start opencode on port", {
+			port,
+			error: error.message,
+		});
+		return null;
+	}
 }
 
 export async function initOpencodeServer() {
@@ -1448,8 +1469,14 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 		actualSessionId = await createUserOpencodeSession(userId);
 	}
 
+	// There is NO guest session. A session that belongs to nobody is a
+	// session anybody can drive, and the route that used to create one for
+	// an unauthenticated caller is behind requireAuth now. A caller with no
+	// session of their own gets no answer from this provider rather than a
+	// session of their own making.
 	if (!actualSessionId) {
-		actualSessionId = await createUserOpencodeSession(null);
+		logWarn("Opencode call has no session to use", { userId: userId || null });
+		return null;
 	}
 
 	logInfo("Calling Opencode", {
@@ -2019,9 +2046,9 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 	if (!sessionId && userId) {
 		sessionId = await createUserOpencodeSession(userId);
 	}
-	if (!sessionId) {
-		sessionId = await createUserOpencodeSession(null);
-	}
+	// There is NO guest session. A session that belongs to nobody is a
+	// session anybody can drive, and the caller of this function is already
+	// refused when it has no identity of its own.
 	if (!sessionId) {
 		return onComplete(null, "Could not create AI session");
 	}

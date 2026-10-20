@@ -973,6 +973,28 @@ describe("the staff actions on a case", () => {
 		expect(row.status).toBe("investigating");
 	});
 
+	// The previous run's DELIVERY status is cleared with the re-run. A failed
+	// re-run would otherwise leave the case reading "sent" next to a failed
+	// status, and the admin console would show a report that was never
+	// delivered as one that was.
+	test("a re-run clears the previous run's delivery status", async () => {
+		const before = state.cases.find((candidate) => candidate.id === CASE_B);
+		expect(before.report_status).toBe("ready");
+		expect(before.report_delivered_at).toBeTruthy();
+
+		const res = await request(buildApp())
+			.post(`/api/admin/support/cases/${CASE_B}/rerun`)
+			.set(AUTH.admin)
+			.send({});
+
+		expect(res.status).toBe(200);
+
+		const row = state.cases.find((candidate) => candidate.id === CASE_B);
+		expect(row.status).toBe("investigating");
+		expect(row.report_status).toBeNull();
+		expect(row.report_delivered_at).toBeNull();
+	});
+
 	test("a client cannot re-run a case - 403, and nothing is queued", async () => {
 		const res = await request(buildApp())
 			.post(`/api/admin/support/cases/${CASE_B}/rerun`)

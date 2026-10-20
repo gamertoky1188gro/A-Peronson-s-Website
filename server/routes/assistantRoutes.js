@@ -21,7 +21,12 @@ import { allowRoles, requireAuth } from "../middleware/auth.js";
 const router = Router();
 
 router.post("/ask", requireAuth, askAssistant);
-router.post("/ask-public", askAssistantPublic);
+// The "public" assistant is still behind requireAuth. It used to be open to
+// anybody, and an unauthenticated caller reached a guest session on a
+// write-capable agent: one session per call, with no owner and no
+// restriction. The assistant answers platform questions, and answering them
+// does not need an anonymous caller.
+router.post("/ask-public", requireAuth, askAssistantPublic);
 router.get("/session-messages", requireAuth, getSessionMessages);
 router.delete("/session", requireAuth, deleteSession);
 router.post("/extract-requirement", requireAuth, postExtractRequirement);

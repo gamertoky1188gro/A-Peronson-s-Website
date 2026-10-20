@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { jest } from "@jest/globals";
 import express from "express";
 import request from "supertest";
+import { resetRateLimitCounters } from "../../server/middleware/rateLimiter.js";
 
 // The intake path is offline and deterministic in a test.
 //
@@ -185,15 +186,21 @@ const queueModuleExists = fs.existsSync(
 	fileURLToPath(new URL("../../server/services/investigationQueue.js", import.meta.url)),
 );
 const enqueueInvestigation = jest.fn(async () => {});
+// The queue's capacity, so a test can make the queue look full. The queue
+// refuses the job itself when the backlog is over the limit; the controller
+// asks first, so the refusal reaches the client as a 429 instead of a case
+// that sits in `investigating` with nothing running behind it.
+let queueCapacityResult = { depth: 0, limit: 20, accepting: true };
 if (queueModuleExists) {
 	jest.unstable_mockModule(QUEUE_MODULE_PATH, () => ({
 		enqueueInvestigation,
 		queueDepth: () => 0,
+		queueCapacity: () => queueCapacityResult,
 	}));
 }
 
 const { signToken } = await import("../../server/middleware/auth.js");
-const { realtimeBus, CASE_EVENTS, emitCaseEvent } = await import(
+const { realtimeBus, CASE_EVENTS, caseEventChannel, emitCaseEvent } = await import(
 	"../../server/realtime/realtimeBus.js"
 );
 const {
@@ -346,6 +353,11 @@ beforeEach(() => {
 	state.investigations.length = 0;
 	state.documents.length = 0;
 	enqueueInvestigation.mockClear();
+	queueCapacityResult = { depth: 0, limit: 20, accepting: true };
+	// The rate limiter counts in module state, so every test starts with an
+	// empty budget. Otherwise the first test that spends the budget decides
+	// what every later test sees.
+	resetRateLimitCounters();
 });
 
 afterAll(() => {
@@ -523,13 +535,127 @@ describe("support case API (real router, real controller)", () => {
 	});
 });
 
+// --- the cost of a case ------------------------------------------------------
+//
+// A case is not a cheap request. It can spawn an opencode process, write
+// five database rows, mail every owner and admin and raise a staff
+// notification. The case API used to be `requireAuth` and nothing else, so
+// one client could open cases without limit and fill the investigation
+// queue with work nobody asked for.
+describe("the cost of a case", () => {
+	test("the write routes are rate limited per user", async () => {
+		const created = await createCase();
+
+		let refused = null;
+		// The write budget is 30 a minute. The limiter counts the CALLER, so
+		// the requests below are all the same user.
+		for (let attempt = 0; attempt < 60; attempt += 1) {
+			// biome-ignore lint: the requests are deliberately sequential
+			const res = await postMessage(created.id, `Answer number ${attempt}`);
+			if (res.status === 429) {
+				refused = res;
+				break;
+			}
+		}
+
+		expect(refused).not.toBeNull();
+		expect(refused.status).toBe(429);
+		expect(typeof refused.body.error).toBe("string");
+	});
+
+	test("the rate limit is counted per user, not per address", async () => {
+		const created = await createCase();
+
+		let refused = null;
+		for (let attempt = 0; attempt < 60; attempt += 1) {
+			// biome-ignore lint: the requests are deliberately sequential
+			const res = await postMessage(created.id, "Answer", AUTH.owner);
+			if (res.status === 429) {
+				refused = res;
+				break;
+			}
+		}
+		expect(refused).not.toBeNull();
+
+		// The other user is not affected by the owner's budget.
+		const other = await request(buildApp()).get("/api/support/cases").set(AUTH.stranger);
+		expect(other.status).toBe(200);
+	});
+
+	test("a full investigation queue is refused with a clear 429", async () => {
+		const created = await createCase();
+		queueCapacityResult = { depth: 20, limit: 20, accepting: false };
+
+		const confirmed = await request(buildApp())
+			.post(`/api/support/cases/${created.id}/confirm`)
+			.set(AUTH.owner);
+
+		expect(confirmed.status).toBe(429);
+		expect(String(confirmed.body.error)).toMatch(/queue is full/i);
+		expect(String(confirmed.body.error)).toMatch(/try again shortly/i);
+	});
+
+	test("a refused case is left where it was", async () => {
+		const created = await createCase();
+		queueCapacityResult = { depth: 20, limit: 20, accepting: false };
+
+		await request(buildApp())
+			.post(`/api/support/cases/${created.id}/confirm`)
+			.set(AUTH.owner)
+			.expect(429);
+
+		const row = state.cases.find((candidate) => candidate.id === created.id);
+		expect(row.status).toBe("collecting");
+		expect(enqueueInvestigation).not.toHaveBeenCalled();
+	});
+
+	test("one user cannot open more cases than the cap allows", async () => {
+		for (let index = 0; index < 10; index += 1) {
+			// biome-ignore lint: the cases are deliberately sequential
+			const res = await request(buildApp())
+				.post("/api/support/cases")
+				.set(AUTH.owner)
+				.send({ subject: `Case ${index}` });
+			expectSuccess(res);
+		}
+
+		const refused = await request(buildApp())
+			.post("/api/support/cases")
+			.set(AUTH.owner)
+			.send({ subject: "One too many" });
+
+		expect(refused.status).toBe(429);
+		expect(String(refused.body.error)).toMatch(/open support cases/i);
+	});
+
+	test("a closed case does not count against the cap", async () => {
+		for (let index = 0; index < 10; index += 1) {
+			// biome-ignore lint: the cases are deliberately sequential
+			await request(buildApp())
+				.post("/api/support/cases")
+				.set(AUTH.owner)
+				.send({ subject: `Case ${index}` });
+		}
+		// One of them is finished, so it is not open any more.
+		state.cases[0].status = "completed";
+
+		const res = await request(buildApp())
+			.post("/api/support/cases")
+			.set(AUTH.owner)
+			.send({ subject: "Now there is room" });
+
+		expectSuccess(res);
+	});
+});
+
 // --- the contract in contracts.md §4 ---------------------------------------
 describe("case events on the realtime bus", () => {
 	test("a posted message produces a support.case.message event", async () => {
 		const created = await createCase();
 		const events = [];
 		const listener = (payload) => events.push(payload);
-		realtimeBus.on(CASE_EVENTS.message, listener);
+		const channel = caseEventChannel(CASE_EVENTS.message, created.id);
+		realtimeBus.on(channel, listener);
 
 		try {
 			const posted = await postMessage(created.id, "The upload button does nothing");
@@ -545,7 +671,7 @@ describe("case events on the realtime bus", () => {
 				content: "The upload button does nothing",
 			});
 		} finally {
-			realtimeBus.off(CASE_EVENTS.message, listener);
+			realtimeBus.off(channel, listener);
 		}
 	});
 
@@ -553,7 +679,8 @@ describe("case events on the realtime bus", () => {
 		const created = await createCase();
 		const events = [];
 		const listener = (payload) => events.push(payload);
-		realtimeBus.on(CASE_EVENTS.status, listener);
+		const channel = caseEventChannel(CASE_EVENTS.status, created.id);
+		realtimeBus.on(channel, listener);
 
 		try {
 			await request(buildApp())
@@ -565,7 +692,7 @@ describe("case events on the realtime bus", () => {
 			expect(mine.at(-1)).toMatchObject({ status: "investigating" });
 			expect(typeof mine.at(-1).summary).toBe("string");
 		} finally {
-			realtimeBus.off(CASE_EVENTS.status, listener);
+			realtimeBus.off(channel, listener);
 		}
 	});
 
@@ -573,8 +700,9 @@ describe("case events on the realtime bus", () => {
 		const seen = [];
 		const listeners = Object.entries(CASE_EVENTS).map(([key, type]) => {
 			const listener = (payload) => seen.push({ key, type, payload });
-			realtimeBus.on(type, listener);
-			return { type, listener };
+			const channel = caseEventChannel(type, "case-1");
+			realtimeBus.on(channel, listener);
+			return { channel, listener };
 		});
 
 		try {
@@ -600,22 +728,59 @@ describe("case events on the realtime bus", () => {
 			expect(seen[3].payload.finding).toEqual({ detail: "x" });
 			expect(seen[4].payload).toMatchObject({ report: "# report", reportStatus: "ready" });
 		} finally {
-			for (const { type, listener } of listeners) {
-				realtimeBus.off(type, listener);
+			for (const { channel, listener } of listeners) {
+				realtimeBus.off(channel, listener);
 			}
+		}
+	});
+
+	// The report payload is the whole Markdown report. Published on a
+	// process-global channel, every listener on that channel - today or in
+	// future - receives every case's report body. It is published on the
+	// case's own channel instead.
+	test("a report event does not reach a listener on the bare event type", () => {
+		const seen = [];
+		const listener = (payload) => seen.push(payload);
+		realtimeBus.on(CASE_EVENTS.report, listener);
+
+		try {
+			emitCaseEvent("case-1", CASE_EVENTS.report, { report: "# secret report" });
+			emitCaseEvent("case-2", CASE_EVENTS.report, { report: "# another report" });
+
+			expect(seen).toHaveLength(0);
+		} finally {
+			realtimeBus.off(CASE_EVENTS.report, listener);
+		}
+	});
+
+	test("a report event reaches a listener on that case's channel", () => {
+		const seen = [];
+		const listener = (payload) => seen.push(payload);
+		const channel = caseEventChannel(CASE_EVENTS.report, "case-1");
+		realtimeBus.on(channel, listener);
+
+		try {
+			emitCaseEvent("case-1", CASE_EVENTS.report, { report: "# secret report" });
+			emitCaseEvent("case-2", CASE_EVENTS.report, { report: "# another report" });
+
+			expect(seen).toHaveLength(1);
+			expect(seen[0].report).toBe("# secret report");
+		} finally {
+			realtimeBus.off(channel, listener);
 		}
 	});
 
 	test("emitCaseEvent ignores a missing case or type", () => {
 		const seen = [];
 		const listener = (payload) => seen.push(payload);
-		realtimeBus.on(CASE_EVENTS.message, listener);
+		const channel = caseEventChannel(CASE_EVENTS.message, "case-1");
+		realtimeBus.on(channel, listener);
 		try {
 			emitCaseEvent("", CASE_EVENTS.message, { message: { id: "m1" } });
 			emitCaseEvent("case-1", "", { message: { id: "m1" } });
 			expect(seen).toHaveLength(0);
 		} finally {
-			realtimeBus.off(CASE_EVENTS.message, listener);
+			realtimeBus.off(channel, listener);
 		}
 	});
 });
@@ -706,13 +871,14 @@ describe("the case event stream", () => {
 	// that ever streamed would keep the process alive.
 	test("the stream stops listening when the client hangs up", async () => {
 		const created = await createCase();
-		const before = realtimeBus.listenerCount(CASE_EVENTS.message);
+		const channel = caseEventChannel(CASE_EVENTS.message, created.id);
+		const before = realtimeBus.listenerCount(channel);
 		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
-		expect(realtimeBus.listenerCount(CASE_EVENTS.message)).toBe(before + 1);
+		expect(realtimeBus.listenerCount(channel)).toBe(before + 1);
 
 		stream.close();
 		await new Promise((resolve) => setTimeout(resolve, 50));
-		expect(realtimeBus.listenerCount(CASE_EVENTS.message)).toBe(before);
+		expect(realtimeBus.listenerCount(channel)).toBe(before);
 	});
 });
 

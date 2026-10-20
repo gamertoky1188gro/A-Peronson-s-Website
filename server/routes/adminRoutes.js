@@ -243,9 +243,14 @@ async function rerunSupportCaseHandler(req, res) {
 	// A re-run starts the case over. The queue only moves a case that is
 	// `investigating`, so a case that already finished is put back into that
 	// state before the new run is created.
+	//
+	// The previous run's DELIVERY status is cleared with it. A failed re-run
+	// would otherwise leave the case reading "sent" next to a `failed`
+	// status, and the admin console would show a report that was never
+	// delivered as one that was.
 	await prisma.supportCase.update({
 		where: { id: caseId },
-		data: { status: "investigating" },
+		data: { status: "investigating", report_status: null, report_delivered_at: null },
 	});
 	await enqueue(caseId);
 	return res.json({ ok: true, case_id: caseId, queued: true });

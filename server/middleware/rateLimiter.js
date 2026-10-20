@@ -212,7 +212,6 @@ const authLimiter = createRateLimiter({
 	max: 20,
 	prefix: "auth",
 });
-
 const passkeyLimiter = createRateLimiter({
 	windowMs: 15 * 60 * 1000,
 	max: 10,
@@ -232,3 +231,18 @@ const generalLimiter = createRateLimiter({
 });
 
 export { adminLimiter, authLimiter, generalLimiter, passkeyLimiter };
+
+/**
+ * Forget every counted hit.
+ *
+ * The counters live in module state, so a suite that exercises a limiter has
+ * to be able to start from an empty budget - otherwise the first test that
+ * spends the budget decides what every later test sees. The same shape as
+ * `resetClarificationProvider` in the case conversation service.
+ *
+ * @returns {void}
+ */
+export function resetRateLimitCounters() {
+	ipHits.clear();
+	unitHits.clear();
+}
