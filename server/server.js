@@ -26,6 +26,7 @@ import assistantRoutes from "./routes/assistantRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import boostRoutes from "./routes/boostRoutes.js";
 import callSessionRoutes from "./routes/callSessionRoutes.js";
+import caseRoutes from "./routes/caseRoutes.js";
 import certificationRoutes from "./routes/certificationRoutes.js";
 import chatbotRoutes from "./routes/chatbotRoutes.js";
 import conversationRoutes from "./routes/conversationRoutes.js";
@@ -411,6 +412,9 @@ app.use("/api/geo", geoRoutes);
 app.use("/api/industry", industryRoutes);
 app.use("/api/payment-proofs", paymentProofRoutes);
 app.use("/api/coupons", couponRoutes);
+// The support-case API (contracts.md §3). It is mounted BEFORE the general
+// `/api/support` router so the more specific prefix is matched first.
+app.use("/api/support/cases", caseRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/certifications", certificationRoutes);

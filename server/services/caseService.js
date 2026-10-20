@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { CASE_EVENTS, emitCaseEvent } from "../realtime/realtimeBus.js";
 import { isOwnerOrAdmin } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
 
@@ -76,7 +77,7 @@ export async function createCase({ userId, subject }) {
  * @returns {Promise<Object>} The created message row.
  */
 export async function appendCaseMessage({ caseId, role, kind = "answer", content, agent = null }) {
-	return prisma.$transaction(async (tx) => {
+	const created = await prisma.$transaction(async (tx) => {
 		const last = await tx.supportCaseMessage.findFirst({
 			where: { case_id: caseId },
 			orderBy: { sequence: "desc" },
@@ -94,6 +95,17 @@ export async function appendCaseMessage({ caseId, role, kind = "answer", content
 			},
 		});
 	});
+
+	// Announced only after the transaction committed. An event for a message
+	// that was rolled back would put a row on the wire that no reader can
+	// find, and a listener that re-reads the case would see a shorter thread
+	// than the event claims.
+	//
+	// This is the single funnel every message goes through - the client's
+	// turns, the assistant's questions, the notices - so `support.case.message`
+	// cannot be forgotten by one of the callers.
+	emitCaseEvent(caseId, CASE_EVENTS.message, { message: created });
+	return created;
 }
 
 /**
