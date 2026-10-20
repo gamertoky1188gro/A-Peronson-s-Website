@@ -38,7 +38,7 @@ import { sanitizeString } from "../utils/validators.js";
 // and the investigation is enqueued.
 
 // Exported so the cap is testable from the outside, not just asserted here.
-export const MAX_CLARIFICATION_ROUNDS = 6;
+export const MAX_CLARIFICATION_ROUNDS = caseService.MAX_CLARIFICATION_ROUNDS;
 
 const MAX_SUBJECT_LENGTH = 200;
 const MAX_MESSAGE_LENGTH = 4000;

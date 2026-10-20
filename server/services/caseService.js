@@ -18,6 +18,10 @@ const DEFAULT_STATUS = "collecting";
 // these and only these: the assistant's own questions, the system notices and
 // the staff replies are not the client thinking again.
 const CLIENT_ROLE = "client";
+// Legacy rows were written with role "user" before the schema was fixed. A row stored
+// that way still counts toward the clarification round cap, otherwise the cap would
+// silently never fire for those cases.
+const LEGACY_CLIENT_ROLE = "user";
 
 function text(value) {
 	return String(value ?? "").trim();
@@ -212,7 +216,7 @@ export function canReadCase(user, caseRow) {
  */
 export async function countClientMessages(caseId) {
 	const count = await prisma.supportCaseMessage.count({
-		where: { case_id: caseId, role: CLIENT_ROLE },
+		where: { case_id: caseId, role: { in: [CLIENT_ROLE, LEGACY_CLIENT_ROLE] } },
 	});
 	return Number(count) || 0;
 }

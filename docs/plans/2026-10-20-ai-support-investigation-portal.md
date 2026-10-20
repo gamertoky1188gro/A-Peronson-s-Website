@@ -1442,3 +1442,17 @@ Manual checks against a running server:
    to the repository.**
 5. The attachment URL, fetched without a signature, returns 404. Fetched with a
    signature by another user, it returns 403.
+
+## Batch 1 ownership matrix (additive, supersedes the earlier list)
+
+| Workstream | Owned files |
+|---|---|
+| **WS1** (Task 3) | `server/routes/caseRoutes.js`, `server/controllers/caseController.js`, `server/services/caseService.js` (additive only), `server/realtime/realtimeBus.js` (additive only), `server/services/caseConversationService.js`, `server/server.js` (**sole owner**), `tests/integration/support-case-api.test.js`, `tests/unit/server-case-ownership.test.js` |
+| **WS2** (Tasks 4+5) | `server/services/investigation/agents.js`, `server/services/investigation/findings.js`, `server/services/investigationQueue.js`, `tests/unit/server-investigation-agents.test.js`, `tests/unit/server-investigation-verify.test.js`, `tests/unit/server-investigation-findings.test.js`, `tests/integration/investigation-queue.test.js` |
+| **WS3** (Task 6) | `server/services/investigation/report.js`, `server/services/investigation/delivery.js`, `tests/unit/server-investigation-report.test.js`, `tests/integration/investigation-delivery.test.js` |
+| **WS4** (Task 7) | `src/lib/caseRealtime.js`, `src/hooks/useSupportCase.js`, `src/pages/SupportReports.jsx`, `tests/unit/frontend-support-case.test.js` |
+| **WS5** (Task 8) | `server/workers/caseRetentionWorker.js`, `server/routes/adminRoutes.js`, `src/pages/admin/sections/AdminPlatformSection.jsx`, `tests/unit/server-case-retention.test.js`, `tests/integration/support-case-isolation.test.js` |
+
+**No owner in Batch 1 (frozen):** `prisma/schema.prisma`, `package.json`,
+`src/App.jsx`, `.husky/pre-commit`, `src/lib/auth.js`, `server/utils/logger.js`,
+`server/utils/validators.js`.

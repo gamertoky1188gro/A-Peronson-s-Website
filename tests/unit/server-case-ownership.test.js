@@ -86,10 +86,13 @@ describe("canReadCase", () => {
 });
 
 describe("countClientMessages", () => {
-	test("counts only the client's own messages", async () => {
+	// A row written before the schema was fixed carries role "user" instead of
+	// "client". Those rows still count toward the clarification round cap,
+	// otherwise the cap would silently never fire for those cases.
+	test("counts the client's own messages, including legacy 'user' rows", async () => {
 		await countClientMessages("case-1");
 		expect(messageCount).toHaveBeenCalledWith({
-			where: { case_id: "case-1", role: "client" },
+			where: { case_id: "case-1", role: { in: ["client", "user"] } },
 		});
 	});
 
