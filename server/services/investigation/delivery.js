@@ -642,7 +642,7 @@ export async function escalateIfNeeded(caseId, findings) {
  * @returns {string}
  */
 function baseUrl() {
-	for (const candidate of [process.env.APP_BASE_URL, process.env.PUBLIC_APP_URL]) {
+	for (const candidate of [process.env.APP_BASE_URL, process.env.PUBLIC_APP_URL, process.env.RENDER_EXTERNAL_URL]) {
 		const value = String(candidate || "")
 			.trim()
 			.replace(TRAILING_SLASH_RE, "");

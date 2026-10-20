@@ -143,11 +143,19 @@ function normalizeFinding(entry) {
 	if (!isPlainObject(entry)) {
 		return null;
 	}
-	return {
+	const finding = {
 		confidence: coerceConfidence(entry.confidence),
 		detail: coerceDetail(entry.detail),
 		evidence: normalizeEvidence(entry.evidence),
 	};
+	// `category` is OPTIONAL in the finding shape (contracts.md 5). It is what
+	// escalation classifies on when the agent supplies it, so it has to survive
+	// normalisation - otherwise escalation can only ever guess from the text.
+	const category = coerceDetail(entry.category);
+	if (category) {
+		finding.category = category;
+	}
+	return finding;
 }
 
 /**

@@ -167,7 +167,9 @@ export function applyVerification(candidateFindings, verification) {
 		}
 		const confidence =
 			isRefuted || evidence.length === 0 ? "speculative" : coerceConfidence(candidate?.confidence);
-		return { confidence, detail, evidence };
+		// Only `confidence` is rewritten. Every other key the agent sent survives -
+		// in particular the OPTIONAL `category` that escalation classifies on.
+		return { ...candidate, confidence, detail, evidence };
 	});
 
 	return { findings, refuted };

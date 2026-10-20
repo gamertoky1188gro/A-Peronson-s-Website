@@ -14,6 +14,14 @@ services:
         value: production
       - key: PORT
         value: "10000"
+      # The public base URL of THIS service, used to build the link in the
+      # investigation report email. Without it the emailed link falls back to
+      # localhost and the owner's "open the case" link is dead on arrival.
+      - key: APP_BASE_URL
+        fromService:
+          type: web
+          name: gartexhub
+          property: host
       - key: DATABASE_URL
         value: "postgresql://avnadmin:AVNS_WWLEH0jf7S331y7y7R8@gartexhub-shakibul0715-aec3.a.aivencloud.com:17598/defaultdb?sslmode=require&connection_limit=3"
       - key: PGSSLMODE
