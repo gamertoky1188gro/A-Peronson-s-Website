@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { isOwnerOrAdmin } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
 
 // A support case is the PARENT of a ticket: the thread a client opens, the
@@ -12,9 +13,25 @@ import prisma from "../utils/prisma.js";
 
 const DEFAULT_STATUS = "collecting";
 
+// The role a message carries when the client wrote it. The round cap counts
+// these and only these: the assistant's own questions, the system notices and
+// the staff replies are not the client thinking again.
+const CLIENT_ROLE = "client";
+
 function text(value) {
 	return String(value ?? "").trim();
 }
+
+// How many client messages the client may send before the case is
+// investigated without an explicit confirmation.
+//
+// The cap is what stops a clarification loop from running forever: past six
+// client turns the assistant stops asking and the case is handed to the
+// investigators with whatever was collected. It lives here — next to the
+// message counter that measures it — so that the service that reads the
+// transcript and the controller that computes `ready` cannot disagree about
+// the number. WS1-A re-exports it from the controller for the API surface.
+export const MAX_CLARIFICATION_ROUNDS = 6;
 
 /**
  * Opens a case for a user.
@@ -129,4 +146,54 @@ export async function deleteCase(caseId) {
 	const attachments = await prisma.supportCaseAttachment.findMany({ where: { case_id: caseId } });
 	await prisma.supportCase.delete({ where: { id: caseId } });
 	return attachments;
+}
+
+/**
+ * Decides whether a user may read a case.
+ *
+ * A case is the client's: their problem, their evidence, their transcript.
+ * Nobody else reads it — a stranger gets `false` and the controller turns that
+ * into a 403, not a 404 (a 404 would hide the fact that the case exists,
+ * and the contract asks for a 403).
+ *
+ * Staff are the exception: an owner or an admin can read any case, because
+ * they are the ones who answer for the platform when a client is stuck. The
+ * role check is delegated to `isOwnerOrAdmin` in server/utils/permissions.js
+ * — the same helper the rest of the server uses — so the role list is
+ * defined once and cannot drift from the rest of the codebase.
+ *
+ * @param {Object|null} [user] The caller.
+ * @param {Object|null} [caseRow] The case, or null when there is none.
+ * @returns {boolean} True when the caller may read the case.
+ */
+export function canReadCase(user, caseRow) {
+	// A case that does not exist is readable by nobody, staff included.
+	if (!caseRow) {
+		return false;
+	}
+	if (isOwnerOrAdmin(user)) {
+		return true;
+	}
+	const userId = user?.id;
+	if (!userId) {
+		return false;
+	}
+	return caseRow.user_id === userId;
+}
+
+/**
+ * Counts the messages the client has sent in a case.
+ *
+ * This is the number the clarification round cap is measured against: it is
+ * the count of the client's own turns, so a case whose six turns are spent is
+ * ready for investigation even when the client never confirmed the summary.
+ *
+ * @param {string} caseId
+ * @returns {Promise<number>} How many client messages the case holds.
+ */
+export async function countClientMessages(caseId) {
+	const count = await prisma.supportCaseMessage.count({
+		where: { case_id: caseId, role: CLIENT_ROLE },
+	});
+	return Number(count) || 0;
 }
