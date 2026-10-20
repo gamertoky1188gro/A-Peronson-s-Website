@@ -224,6 +224,12 @@ async function escalateSupportCaseHandler(req, res) {
  * it must report "not available" rather than take the whole admin router down
  * with a failed import.
  *
+ * The queue is BOUNDED, so it can refuse the work with a 429. A refusal is
+ * not an error the admin can do anything about - it is "come back in a
+ * minute" - and it must not leave the case claiming that an investigation is
+ * running when none was started. So the case is put back the way it was
+ * before the refusal, and the refusal is reported as the 429 it is.
+ *
  * @param {Object} req
  * @param {Object} res
  */
@@ -252,8 +258,49 @@ async function rerunSupportCaseHandler(req, res) {
 		where: { id: caseId },
 		data: { status: "investigating", report_status: null, report_delivered_at: null },
 	});
-	await enqueue(caseId);
+	try {
+		await enqueue(caseId);
+	} catch (error) {
+		// The run never started, so the case must not say that it did. It is
+		// put back exactly the way it was - status, delivery status and
+		// delivery timestamp.
+		await restoreCaseAfterRefusal(caseId, existing);
+		const status = Number(error?.status);
+		if (status === 429) {
+			return res.status(429).json({
+				error: "The investigation queue is full - try again shortly.",
+				code: "INVESTIGATION_QUEUE_FULL",
+			});
+		}
+		throw error;
+	}
 	return res.json({ ok: true, case_id: caseId, queued: true });
+}
+
+/**
+ * Put a case back the way it was, after the queue refused the run.
+ *
+ * A failure here must not hide the refusal that caused it, so it is
+ * swallowed: the caller is already returning the refusal.
+ *
+ * @param {string} caseId
+ * @param {Object} previous The case row as it was before the re-run.
+ * @returns {Promise<boolean>}
+ */
+async function restoreCaseAfterRefusal(caseId, previous) {
+	try {
+		await prisma.supportCase.update({
+			where: { id: caseId },
+			data: {
+				status: previous?.status ?? "collecting",
+				report_status: previous?.report_status ?? null,
+				report_delivered_at: previous?.report_delivered_at ?? null,
+			},
+		});
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 /**

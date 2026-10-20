@@ -1005,6 +1005,57 @@ describe("the staff actions on a case", () => {
 		expect(enqueueInvestigation).not.toHaveBeenCalled();
 	});
 
+	// The investigation queue is BOUNDED, so it can refuse the work with a
+	// 429. The refusal has to reach the admin as a 429, and it must not
+	// leave the case claiming that an investigation is running when none was
+	// started.
+	test("a re-run the queue refuses is a 429, and the case is put back", async () => {
+		const before = state.cases.find((candidate) => candidate.id === CASE_B);
+		expect(before.status).toBe("reporting");
+		expect(before.report_status).toBe("ready");
+
+		enqueueInvestigation.mockRejectedValueOnce(
+			Object.assign(new Error("The investigation queue is full - try again shortly."), {
+				status: 429,
+				code: "INVESTIGATION_QUEUE_FULL",
+			}),
+		);
+
+		const res = await request(buildApp())
+			.post(`/api/admin/support/cases/${CASE_B}/rerun`)
+			.set(AUTH.admin)
+			.send({});
+
+		expect(res.status).toBe(429);
+		expect(res.body.error).toMatch(/queue is full/i);
+
+		// The case does not claim that a run is happening: it is exactly the
+		// way it was before the re-run was refused.
+		const row = state.cases.find((candidate) => candidate.id === CASE_B);
+		expect(row.status).toBe("reporting");
+		expect(row.report_status).toBe("ready");
+		expect(row.report_delivered_at).toBe(before.report_delivered_at);
+	});
+
+	// The refusal is reported, not swallowed into a 500, and the admin is
+	// not left with a case that says "investigating" and nothing running.
+	test("a re-run the queue refuses does not leave the case investigating", async () => {
+		enqueueInvestigation.mockRejectedValueOnce(
+			Object.assign(new Error("The investigation queue is full - try again shortly."), {
+				status: 429,
+			}),
+		);
+
+		const res = await request(buildApp())
+			.post(`/api/admin/support/cases/${CASE_B}/rerun`)
+			.set(AUTH.admin)
+			.send({});
+
+		expect(res.status).toBe(429);
+		const row = state.cases.find((candidate) => candidate.id === CASE_B);
+		expect(row.status).not.toBe("investigating");
+	});
+
 	// The investigation queue belongs to another workstream and may not be in
 	// the tree. The route has to say so - 503 - instead of pretending it
 	// queued a run that will never happen.

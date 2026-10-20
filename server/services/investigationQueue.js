@@ -68,7 +68,7 @@ import {
 	runAgentPrompt,
 	startInvestigationRuntime,
 } from "./investigation/opencodeRuntime.js";
-import { redactReportSecrets } from "./investigation/redaction.js";
+import { redactFindingsSecrets, redactReportSecrets } from "./investigation/redaction.js";
 import { buildReport } from "./investigation/report.js";
 import { buildInvestigationConfig } from "./investigation/runtimeConfig.js";
 
@@ -92,6 +92,9 @@ const MAX_CONVERSATION_MESSAGES = 20;
 
 /** The role that runs last and tries to refute the other roles' findings. */
 const VERIFY_ROLE = "verify";
+
+/** An evidence reference that is a URL rather than a path on disk. */
+const URL_REFERENCE_RE = /^https?:\/\//i;
 
 /**
  * The statuses a case may hold when the investigation ends.
@@ -466,11 +469,16 @@ async function runVerification({
 	// The verify row is the final row: it holds the whole set of findings
 	// with the verification applied, so the report builder has one place to
 	// read the outcome from.
+	//
+	// The findings themselves are already redacted: they are the
+	// specialists' findings, which were redacted when they were recorded.
+	// The verifier's OWN summary and limitations are its own prose, so they
+	// are redacted here.
 	await updateRow(findRow(rows, VERIFY_ROLE), {
 		findings: {
-			summary: outcome.status === "complete" ? outcome.summary : "",
+			summary: outcome.status === "complete" ? redactReportSecrets(outcome.summary) : "",
 			findings: applied.findings,
-			limitations: outcome.status === "complete" ? outcome.limitations : [],
+			limitations: outcome.status === "complete" ? redactFindingsSecrets(outcome.limitations) : [],
 		},
 	});
 
@@ -540,12 +548,24 @@ async function runRole({ runtime, model, role, prompt, row, caseId, sessionIDs }
 			return { role, status: "failed", findings: [], limitations: [], summary: "", error };
 		}
 
-		const findings = demoteUnverifiedReferences(
-			demoteUnsubstantiated(normalizeFindings(parsed.value)),
-			{ isResolvable: resolvesInsideRepository },
+		// The demotions run FIRST, on what the agent actually said: the
+		// resolver has to see the cited path, not the redacted text.
+		//
+		// Then the redaction runs, and it runs on the WHOLE payload - the
+		// detail, the evidence references, the summary and the limitations.
+		// The report is not the only consumer of a finding: the raw findings
+		// are stored on the row and pushed to the client over SSE, and the
+		// client renders `finding.detail` as it stands. A redacted report
+		// with an un-redacted finding is a secret with a lid on one end.
+		const findings = redactFindingsSecrets(
+			demoteUnverifiedReferences(demoteUnsubstantiated(normalizeFindings(parsed.value)), {
+				isResolvable: resolvesInsideRepository,
+			}),
 		);
-		const limitations = toStringList(parsed.value?.limitations);
-		const summary = typeof parsed.value?.summary === "string" ? parsed.value.summary : "";
+		const limitations = redactFindingsSecrets(toStringList(parsed.value?.limitations));
+		const summary = redactReportSecrets(
+			typeof parsed.value?.summary === "string" ? parsed.value.summary : "",
+		);
 
 		await finishRow(row, {
 			status: "complete",
@@ -686,6 +706,12 @@ function buildDescription(caseRow, messages) {
  * the path without the range resolves, because that is how an agent writes
  * a reference when it puts the line in the file field.
  *
+ * A URL is a legitimate reference and is NOT demoted for not being a file:
+ * the demotion is a claim that the reference does not resolve, and a URL
+ * resolves by being a URL - it is verified by the reference existing in the
+ * report, not by a filesystem lookup. Only a filesystem path that does not
+ * exist is demoted.
+ *
  * @param {string} file The cited path.
  * @returns {boolean}
  */
@@ -693,6 +719,9 @@ export function resolvesInsideRepository(file) {
 	const reference = String(file || "").trim();
 	if (!reference) {
 		return false;
+	}
+	if (URL_REFERENCE_RE.test(reference)) {
+		return true;
 	}
 	const candidates = [reference, reference.replace(/:\d+(?:-\d+)?$/, "")];
 	for (const candidate of candidates) {

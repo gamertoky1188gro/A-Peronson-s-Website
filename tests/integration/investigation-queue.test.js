@@ -132,6 +132,12 @@ const { enqueueInvestigation, queueCapacity, queueDepth } = await import(
 	"../../server/services/investigationQueue.js"
 );
 
+// The realtime bus the queue publishes its findings on. The queue looks the
+// emitter up through the module namespace at call time, so the test can
+// subscribe to the same channel the client does and see exactly what went
+// onto the wire.
+const { realtimeBus } = await import("../../server/realtime/realtimeBus.js");
+
 // --- helpers ----------------------------------------------------------------
 
 const CASE_ID = "case-1";
@@ -748,5 +754,215 @@ describe("the end of the investigation", () => {
 		await waitForDrain();
 
 		expect(queueDepth()).toBe(0);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The findings are redacted before they are stored and before they are
+// emitted.
+//
+// The report is not the only consumer of what the investigator said. The
+// raw findings are written to the `SupportInvestigation` row and pushed to
+// the client over SSE as `support.case.finding`, and the client renders
+// `finding.detail` and the evidence references AS THEY STAND. So a redacted
+// report with an un-redacted finding is a secret with a lid on one end.
+//
+// The database and the event stream are two different consumers of the same
+// payload, so both are covered here: redacting only one of them is not a
+// fix.
+// ---------------------------------------------------------------------------
+describe("the findings are redacted before they are stored and emitted", () => {
+	const FAKE_DATABASE_URL = "postgresql://investigator:hunter2@db.internal.example:5432/gartexhub";
+	const FAKE_JWT_SECRET = "3f8a1c9e7b2d4a6f8e0c1b3d5a7f9e1c3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a";
+
+	/** Every finding event the run published. */
+	function collectFindingEvents() {
+		const events = [];
+		const channel = `support.case.finding:${CASE_ID}`;
+		const listener = (payload) => events.push(payload);
+		realtimeBus.on(channel, listener);
+		return {
+			events,
+			stop: () => realtimeBus.off(channel, listener),
+		};
+	}
+
+	test("an agent answer that quotes a secret leaves no secret in the database", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			return {
+				text: agentReply(
+					[
+						{
+							confidence: "confirmed",
+							detail: `the deployment file holds ${FAKE_DATABASE_URL} and JWT_SECRET=${FAKE_JWT_SECRET}`,
+							evidence: [
+								{ file: "server/server.js", lines: "10-20", commit: "abc1234" },
+								{ url: `https://api.example.com/v1?JWT_SECRET=${FAKE_JWT_SECRET}` },
+							],
+						},
+					],
+					[],
+					`the summary quotes ${FAKE_DATABASE_URL}`,
+				),
+				toolCalls: [],
+			};
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		for (const role of ["lead", "code", "repo", "research", "verify"]) {
+			const stored = JSON.stringify(rowFor(role).findings);
+			expect(stored).not.toContain(FAKE_DATABASE_URL);
+			expect(stored).not.toContain("hunter2");
+			expect(stored).not.toContain(FAKE_JWT_SECRET);
+		}
+
+		// The non-secret surrounding text survives: the finding is still a
+		// finding, and it still says what it found.
+		const finding = rowFor("lead").findings.findings[0];
+		expect(finding.detail).toContain("the deployment file holds");
+		expect(finding.detail).toContain("[redacted]");
+		expect(finding.evidence[0].file).toBe("server/server.js");
+		expect(finding.evidence[0].lines).toBe("10-20");
+	});
+
+	test("an agent answer that quotes a secret leaves no secret on the event stream", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			return {
+				text: agentReply(
+					[
+						{
+							confidence: "confirmed",
+							detail: `the deployment file holds ${FAKE_DATABASE_URL} and JWT_SECRET=${FAKE_JWT_SECRET}`,
+							evidence: [{ url: `https://api.example.com/v1?JWT_SECRET=${FAKE_JWT_SECRET}` }],
+						},
+					],
+					[],
+					"a summary",
+				),
+				toolCalls: [],
+			};
+		});
+
+		const collector = collectFindingEvents();
+		try {
+			await enqueueInvestigation(CASE_ID);
+			await waitForDrain();
+		} finally {
+			collector.stop();
+		}
+
+		expect(collector.events.length).toBeGreaterThan(0);
+		for (const event of collector.events) {
+			expect(event.type).toBeUndefined();
+			const payload = JSON.stringify(event);
+			expect(payload).not.toContain(FAKE_DATABASE_URL);
+			expect(payload).not.toContain("hunter2");
+			expect(payload).not.toContain(FAKE_JWT_SECRET);
+			expect(payload).toContain("the deployment file holds");
+		}
+	});
+
+	// The escalation reads the final findings and puts the detail into an
+	// in-app notification, so it is a third consumer of the same payload.
+	test("the escalation does not carry the secret either", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			return {
+				text: agentReply(
+					[
+						{
+							confidence: "confirmed",
+							detail: `hardcoded password: hunter2 in the deployment file`,
+							evidence: [{ file: "server/server.js" }],
+						},
+					],
+					[],
+					"a summary",
+				),
+				toolCalls: [],
+			};
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		expect(escalateIfNeeded).toHaveBeenCalledTimes(1);
+		const [, findings] = escalateIfNeeded.mock.calls[0];
+		expect(JSON.stringify(findings)).not.toContain("hunter2");
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The evidence resolver.
+//
+// A URL is a legitimate reference: the demotion is a claim that the
+// reference does not resolve, and a URL resolves by being a URL. Only a
+// filesystem path that does not exist is demoted.
+// ---------------------------------------------------------------------------
+describe("the evidence resolver", () => {
+	test("a finding whose only evidence is a URL is not demoted", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			return {
+				text: agentReply([
+					{
+						confidence: "confirmed",
+						detail: "the vendor documents the behaviour",
+						evidence: [{ file: "https://docs.example.com/feed" }],
+					},
+				]),
+				toolCalls: [],
+			};
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const finding = rowFor("verify").findings.findings.find(
+			(entry) => entry.detail === "the vendor documents the behaviour",
+		);
+		expect(finding).toBeDefined();
+		expect(finding.confidence).toBe("confirmed");
+		expect(finding.unverified_references).toBeUndefined();
+	});
+
+	test("a finding whose only evidence is a path that does not exist is still demoted", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			return {
+				text: agentReply([
+					{
+						confidence: "confirmed",
+						detail: "a claim about a file that is not there",
+						evidence: [{ file: "server/there-is-no-such-file.js" }],
+					},
+				]),
+				toolCalls: [],
+			};
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const finding = rowFor("verify").findings.findings.find(
+			(entry) => entry.detail === "a claim about a file that is not there",
+		);
+		expect(finding).toBeDefined();
+		expect(finding.confidence).toBe("speculative");
+		expect(finding.unverified_references).toContain("server/there-is-no-such-file.js");
 	});
 });

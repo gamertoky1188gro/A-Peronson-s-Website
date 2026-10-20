@@ -1,5 +1,7 @@
 import {
 	REDACTION_MARKER,
+	redactFindingSecrets,
+	redactFindingsSecrets,
 	redactReportSecrets,
 } from "../../server/services/investigation/redaction.js";
 
@@ -177,5 +179,223 @@ describe("report redaction (server/services/investigation/redaction.js)", () => 
 		const twice = redactReportSecrets(once);
 
 		expect(twice).toBe(once);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The shapes that used to slip through.
+//
+// The report is not the only thing an investigator's answer reaches: the raw
+// findings are stored on the row and pushed to the client over SSE, and the
+// client renders them as they stand. So the redactor has to recognise the
+// shapes a secret actually takes, not only the ones the deployment file
+// happens to use.
+//
+// Every one of these was confirmed against the shipped module: the input
+// came back with the secret still in it.
+// ---------------------------------------------------------------------------
+describe("the secret shapes that used to slip through", () => {
+	// The cause of the first two: `ASSIGNMENT_RE` reads `https:` as
+	// `name = value` and swallows the rest of the URL, so the secret behind
+	// the `?` was never seen as an assignment at all.
+	test("a secret inside a URL query string does not survive", () => {
+		const redacted = redactReportSecrets(
+			"the callback is https://api.example.com/v1?JWT_SECRET=shortvalue",
+		);
+
+		expect(redacted).not.toContain("shortvalue");
+		expect(redacted).toContain(REDACTION_MARKER);
+		// The URL itself survives: only the secret parameter loses its value.
+		expect(redacted).toContain("https://api.example.com/v1");
+		expect(redacted).toContain("JWT_SECRET=");
+	});
+
+	test("a secret inside a URL query string survives the URL's own name=value text", () => {
+		const redacted = redactReportSecrets("see https://x.io/cb?ADMIN_MFA_CODE=123456 for the code");
+
+		expect(redacted).not.toContain("123456");
+		expect(redacted).toContain(REDACTION_MARKER);
+		expect(redacted).toContain("https://x.io/cb");
+		expect(redacted).toContain("for the code");
+	});
+
+	test("the other parameters of a query string survive", () => {
+		const redacted = redactReportSecrets("https://x.io/cb?page=2&token=abc123&sort=asc");
+
+		expect(redacted).not.toContain("abc123");
+		expect(redacted).toContain("page=2");
+		expect(redacted).toContain("sort=asc");
+	});
+
+	test("an AWS-style access key id does not survive", () => {
+		const redacted = redactReportSecrets(
+			"the access key id is AKIAIOSFODNN7EXAMPLE in the deploy script",
+		);
+
+		expect(redacted).not.toContain("AKIAIOSFODNN7EXAMPLE");
+		expect(redacted).toContain(REDACTION_MARKER);
+		expect(redacted).toContain("the access key id is");
+		expect(redacted).toContain("in the deploy script");
+	});
+
+	test("a lower-case secret name does not survive", () => {
+		const redacted = redactReportSecrets("the deployment says password: hunter2 for the db");
+
+		expect(redacted).not.toContain("hunter2");
+		expect(redacted).toContain(REDACTION_MARKER);
+		expect(redacted).toContain("password:");
+		expect(redacted).toContain("for the db");
+	});
+
+	test("a lower-case api_key does not survive", () => {
+		const redacted = redactReportSecrets("api_key: abc123def456");
+
+		expect(redacted).not.toContain("abc123def456");
+		expect(redacted).toContain(REDACTION_MARKER);
+	});
+
+	test("a GitHub-style token does not survive", () => {
+		const redacted = redactReportSecrets(
+			'const token = "ghp_16C7e42F292c6912E7710c838347Ae178B4a"',
+		);
+
+		expect(redacted).not.toContain("ghp_16C7e42F292c6912E7710c838347Ae178B4a");
+		expect(redacted).toContain(REDACTION_MARKER);
+		expect(redacted).toContain("const token");
+	});
+
+	test("a GitHub-style token survives no name at all", () => {
+		const redacted = redactReportSecrets(
+			"the agent pasted ghp_16C7e42F292c6912E7710c838347Ae178B4a into the summary",
+		);
+
+		expect(redacted).not.toContain("ghp_16C7e42F292c6912E7710c838347Ae178B4a");
+		expect(redacted).toContain("into the summary");
+	});
+
+	// The name and its value separated by a line break are still one
+	// assignment: the whitespace between them is whitespace, whatever shape
+	// it has.
+	test("a secret split across a line break does not survive", () => {
+		const redacted = redactReportSecrets('JWT_SECRET\n= "s3cr3t-value"');
+
+		expect(redacted).not.toContain("s3cr3t-value");
+		expect(redacted).toContain(REDACTION_MARKER);
+	});
+
+	test("the redaction of the new shapes is idempotent too", () => {
+		const inputs = [
+			"https://api.example.com/v1?JWT_SECRET=shortvalue",
+			"see https://x.io/cb?ADMIN_MFA_CODE=123456 for the code",
+			"the access key id is AKIAIOSFODNN7EXAMPLE in the deploy script",
+			"the deployment says password: hunter2 for the db",
+			'const token = "ghp_16C7e42F292c6912E7710c838347Ae178B4a"',
+		];
+
+		for (const input of inputs) {
+			const once = redactReportSecrets(input);
+			expect(redactReportSecrets(once)).toBe(once);
+		}
+	});
+
+	// A commit hash is evidence, not a secret, and the new rules must not
+	// start eating it.
+	test("the commit hash still survives", () => {
+		const commit = "abc1234def5678901234567890abcdef12345678";
+		const redacted = redactReportSecrets(`the change landed in ${commit}`);
+
+		expect(redacted).toContain(commit);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The findings payload.
+//
+// The report is redacted, but the report is not the only consumer of what
+// the investigator said: the raw findings are stored on the row and pushed
+// to the client over SSE, and the client renders `finding.detail` and the
+// evidence references as they stand. So the FINDINGS are redacted too, on
+// the way into the database and on the way onto the bus.
+// ---------------------------------------------------------------------------
+describe("the findings payload", () => {
+	const PAYLOAD_DATABASE_URL =
+		"postgresql://investigator:hunter2@db.internal.example:5432/gartexhub";
+	const PAYLOAD_JWT_SECRET = "3f8a1c9e7b2d4a6f8e0c1b3d5a7f9e1c3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a";
+
+	const PAYLOAD = {
+		summary: `the deployment file holds ${PAYLOAD_DATABASE_URL}`,
+		findings: [
+			{
+				confidence: "confirmed",
+				detail: `the connection string is ${PAYLOAD_DATABASE_URL} and the signing secret is JWT_SECRET=${PAYLOAD_JWT_SECRET}`,
+				evidence: [
+					{ file: "server/server.js", lines: "10-20", commit: "abc1234" },
+					{ url: `https://api.example.com/v1?JWT_SECRET=${PAYLOAD_JWT_SECRET}` },
+				],
+			},
+		],
+		limitations: ["the value was password: hunter2"],
+	};
+
+	test("a finding's detail does not carry the secret", () => {
+		const redacted = redactFindingsSecrets(PAYLOAD);
+
+		expect(redacted.findings[0].detail).not.toContain(PAYLOAD_DATABASE_URL);
+		expect(redacted.findings[0].detail).not.toContain("hunter2");
+		expect(redacted.findings[0].detail).not.toContain(PAYLOAD_JWT_SECRET);
+		// The surrounding text survives.
+		expect(redacted.findings[0].detail).toContain("the connection string is");
+		expect(redacted.findings[0].detail).toContain("and the signing secret is");
+	});
+
+	test("an evidence reference does not carry the secret", () => {
+		const redacted = redactFindingsSecrets(PAYLOAD);
+
+		const url = redacted.findings[0].evidence[1].url;
+		expect(url).not.toContain(PAYLOAD_JWT_SECRET);
+		expect(url).toContain(REDACTION_MARKER);
+		// The reference itself survives: it is the evidence.
+		expect(url).toContain("https://api.example.com/v1");
+		expect(redacted.findings[0].evidence[0].file).toBe("server/server.js");
+		expect(redacted.findings[0].evidence[0].lines).toBe("10-20");
+	});
+
+	test("the summary and the limitations do not carry the secret", () => {
+		const redacted = redactFindingsSecrets(PAYLOAD);
+
+		expect(redacted.summary).not.toContain(PAYLOAD_DATABASE_URL);
+		expect(redacted.summary).toContain("the deployment file holds");
+		expect(redacted.limitations[0]).not.toContain("hunter2");
+	});
+
+	test("the confidence and the category survive", () => {
+		const redacted = redactFindingsSecrets({
+			confidence: "confirmed",
+			detail: "the connection string is postgresql://u:p@h/db",
+			category: "security",
+			evidence: [],
+		});
+
+		expect(redacted.confidence).toBe("confirmed");
+		expect(redacted.category).toBe("security");
+		expect(redacted.evidence).toEqual([]);
+	});
+
+	test("the input is not mutated", () => {
+		const original = JSON.stringify(PAYLOAD);
+		redactFindingsSecrets(PAYLOAD);
+
+		expect(JSON.stringify(PAYLOAD)).toBe(original);
+	});
+
+	test("one finding can be redacted on its own", () => {
+		const redacted = redactFindingSecrets({
+			confidence: "confirmed",
+			detail: "the connection string is postgresql://u:p@h/db",
+			evidence: [{ file: "server/server.js" }],
+		});
+
+		expect(redacted.detail).not.toContain("postgresql://u:p@h/db");
+		expect(redacted.evidence[0].file).toBe("server/server.js");
 	});
 });
