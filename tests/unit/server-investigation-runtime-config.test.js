@@ -72,7 +72,7 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 	// CONFIG, so a regression in the permission set fails an ordinary commit
 	// instead of waiting for a night-time run of the spike.
 	describe("the resolved permission set", () => {
-		const { permission } = buildInvestigationConfig();
+		const { permission, agents } = buildInvestigationConfig();
 
 		test("denies every mutating tool", () => {
 			for (const action of ["edit", "write", "patch", "bash", "shell", "task", "subagent"]) {
@@ -114,6 +114,56 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 
 		test("denies a tool that is not named at all", () => {
 			expect(resolveEffectivePermission(permission, "some_unknown_tool", "*")).toBe("deny");
+		});
+
+		// The agent's own permission block is resolved AFTER the global one, so
+		// it has the last word. Widening it - "write": "allow", or a read rule
+		// that re-opens "*.env" - would hand the investigator a capability the
+		// global map denies, and the global map alone would not notice.
+		test("the investigator's own permission set grants nothing the global set denies", () => {
+			const agentPermission = agents.investigator.permission;
+
+			for (const action of [
+				"edit",
+				"write",
+				"patch",
+				"bash",
+				"shell",
+				"task",
+				"subagent",
+				"webfetch",
+				"websearch",
+				"external_directory",
+			]) {
+				// The global map denies it ...
+				expect(resolveEffectivePermission(permission, action, "*")).toBe("deny");
+				// ... and the agent's own block must not hand it back.
+				expect(resolveEffectivePermission([permission, agentPermission], action, "*")).toBe("deny");
+			}
+		});
+
+		test("the investigator's own permission set does not re-open a denied read", () => {
+			const agentPermission = agents.investigator.permission;
+			for (const resource of [".env", "*.env", "*.env.local"]) {
+				expect(resolveEffectivePermission(permission, "read", resource)).toBe("deny");
+				expect(resolveEffectivePermission([permission, agentPermission], "read", resource)).toBe(
+					"deny",
+				);
+			}
+		});
+
+		test("the investigator's own permission set grants nothing at all", () => {
+			const agentPermission = agents.investigator.permission;
+			for (const action of ["read", "glob", "grep", "list"]) {
+				// The global map allows these, and the agent's block must not
+				// turn one of them off (that would be a narrowing, which is
+				// safe, but the block is meant to only ever take permissions
+				// away).
+				expect(resolveEffectivePermission(permission, action, "*")).toBe("allow");
+			}
+			for (const [action, value] of Object.entries(agentPermission)) {
+				expect(value).not.toBe("allow");
+			}
 		});
 	});
 });

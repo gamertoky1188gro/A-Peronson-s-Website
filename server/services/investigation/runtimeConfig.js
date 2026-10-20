@@ -102,33 +102,14 @@ function matchesPattern(pattern, value) {
  * Accepts either shape:
  *  - the object form  `{ "*": "deny", read: { "*": "allow", "*.env": "deny" } }`
  *  - the array form   `[{ action, resource, effect }]`
+ *
+ * An ARRAY OF SOURCES is also accepted, and is how the agent's own permission
+ * block is composed with the global one: `[{...global}, {...agent}]`. The
+ * later source wins, exactly as it does on the server, where the agent's
+ * rules are resolved after the global ones.
  */
 export function resolveEffectivePermission(permission, action, resource = "*") {
-	const rules = [];
-
-	if (Array.isArray(permission)) {
-		for (const rule of permission) {
-			rules.push({
-				action: rule?.action ?? "*",
-				resource: rule?.resource ?? "*",
-				effect: rule?.effect,
-			});
-		}
-	} else if (permission && typeof permission === "object") {
-		const wildcard = permission["*"];
-		if (typeof wildcard === "string") {
-			rules.push({ action: "*", resource: "*", effect: wildcard });
-		}
-		const specific = permission[action];
-		if (typeof specific === "string") {
-			rules.push({ action, resource: "*", effect: specific });
-		} else if (specific && typeof specific === "object") {
-			for (const [pattern, effect] of Object.entries(specific)) {
-				rules.push({ action, resource: pattern, effect });
-			}
-		}
-	}
-
+	const rules = normalizePermissionSources(permission);
 	let effect = null;
 	for (const rule of rules) {
 		if (!matchesPattern(rule.action, action)) continue;
@@ -136,4 +117,46 @@ export function resolveEffectivePermission(permission, action, resource = "*") {
 		effect = rule.effect;
 	}
 	return effect;
+}
+
+/**
+ * Turn a permission source (or a list of them) into the ordered rule list
+ * opencode would resolve.
+ */
+function normalizePermissionSources(permission) {
+	if (!permission) return [];
+
+	if (Array.isArray(permission)) {
+		// A rule list, or a list of permission sources.
+		const isRuleList =
+			permission.length > 0 &&
+			permission.every((entry) => entry && typeof entry === "object" && "effect" in entry);
+		if (isRuleList) {
+			return permission.map((rule) => ({
+				action: rule.action ?? "*",
+				resource: rule.resource ?? "*",
+				effect: rule.effect,
+			}));
+		}
+		return permission.flatMap((source) => normalizePermissionSources(source));
+	}
+
+	if (typeof permission !== "object") return [];
+
+	const rules = [];
+	const wildcard = permission["*"];
+	if (typeof wildcard === "string") {
+		rules.push({ action: "*", resource: "*", effect: wildcard });
+	}
+	for (const [action, value] of Object.entries(permission)) {
+		if (action === "*") continue;
+		if (typeof value === "string") {
+			rules.push({ action, resource: "*", effect: value });
+		} else if (value && typeof value === "object") {
+			for (const [pattern, effect] of Object.entries(value)) {
+				rules.push({ action, resource: pattern, effect });
+			}
+		}
+	}
+	return rules;
 }
