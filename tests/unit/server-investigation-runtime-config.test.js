@@ -3,6 +3,31 @@ import {
 	resolveEffectivePermission,
 } from "../../server/services/investigation/runtimeConfig.js";
 
+/**
+ * Every effect string in a permission block, at any depth.
+ *
+ * A permission block is a map of action -> effect, where the effect is either
+ * a string ("allow" / "deny" / "ask") or a nested map of resource pattern ->
+ * effect. The nested map is a resource-scoped rule set, and its leaves are
+ * effects exactly like the top-level values are.
+ *
+ * This walker is written here, in the test, and NOT taken from the module
+ * under test: a walker that only descended one level would find no "allow" in
+ * a nested rule set and wave it through.
+ */
+function leafEffects(value, found = []) {
+	if (typeof value === "string") {
+		found.push(value);
+		return found;
+	}
+	if (value && typeof value === "object") {
+		for (const nested of Object.values(value)) {
+			leafEffects(nested, found);
+		}
+	}
+	return found;
+}
+
 describe("investigation runtime config (server/services/investigation/runtimeConfig.js)", () => {
 	test("uses the singular 'permission' key in object syntax", () => {
 		const config = buildInvestigationConfig();
@@ -60,11 +85,15 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 	});
 
 	test("ships an investigator agent that also denies edit and bash", () => {
-		const { agents } = buildInvestigationConfig();
+		const { permission, agents } = buildInvestigationConfig();
 		expect(agents.investigator.mode).toBe("primary");
-		expect(agents.investigator.permission.edit).toBe("deny");
-		expect(agents.investigator.permission.bash).toBe("deny");
-		expect(agents.investigator.permission.task).toBe("deny");
+		// Composed, not shape-based: a nested `edit: { "*.txt": "deny" }` is a
+		// NARROWING and must not be rejected for not being the string "deny".
+		for (const action of ["edit", "bash", "task"]) {
+			expect(
+				resolveEffectivePermission([permission, agents.investigator.permission], action, "*"),
+			).toBe("deny");
+		}
 		expect(buildInvestigationConfig().default_agent).toBe("investigator");
 	});
 
@@ -120,50 +149,146 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 		// it has the last word. Widening it - "write": "allow", or a read rule
 		// that re-opens "*.env" - would hand the investigator a capability the
 		// global map denies, and the global map alone would not notice.
-		test("the investigator's own permission set grants nothing the global set denies", () => {
-			const agentPermission = agents.investigator.permission;
+		//
+		// The assertions below are made against the COMPOSED effective
+		// permission, not against the shape of the config object. A shape check
+		// only sees the top level: `edit: { "*.txt": "allow" }` is an object, so
+		// a top-level "is it the string allow" test waves it through, and the
+		// server would grant `edit` for every .txt file.
+		//
+		// Every expected value below is a literal in this file. Nothing is
+		// imported from the module under test except the resolver, so the
+		// assertions cannot be satisfied by the module and the test agreeing
+		// with each other.
+		const MUTATING_ACTIONS = [
+			"edit",
+			"write",
+			"patch",
+			"multi_edit",
+			"bash",
+			"shell",
+			"task",
+			"subagent",
+			"webfetch",
+			"websearch",
+			"external_directory",
+			"question",
+			"doom_loop",
+		];
 
-			for (const action of [
-				"edit",
-				"write",
-				"patch",
-				"bash",
-				"shell",
-				"task",
-				"subagent",
-				"webfetch",
-				"websearch",
-				"external_directory",
-			]) {
-				// The global map denies it ...
-				expect(resolveEffectivePermission(permission, action, "*")).toBe("deny");
-				// ... and the agent's own block must not hand it back.
-				expect(resolveEffectivePermission([permission, agentPermission], action, "*")).toBe("deny");
+		// A sweep, not just "*": a resource-scoped rule in the agent block only
+		// bites on the resources it names.
+		const RESOURCE_SWEEP = [
+			"*",
+			"*.txt",
+			"*.sh",
+			"*.js",
+			"*.jsx",
+			"*.ts",
+			"*.tsx",
+			"*.md",
+			"*.pdf",
+			"*.csv",
+			"*.json",
+			".env",
+			"*.env",
+			"*.env.local",
+			"*.env.production",
+			"server/server.js",
+			"src/App.jsx",
+			"package.json",
+		];
+
+		const SENSITIVE_RESOURCES = [".env", "*.env", "*.env.local", "*.env.production"];
+
+		/**
+		 * THE GATE. An agent permission block is acceptable only if it is
+		 * restrictive. Three rules, each asserted on its own so a failure says
+		 * WHICH rule was broken:
+		 *
+		 *  1. it contains no "allow" at any depth - a nested object is a
+		 *     resource-scoped rule set and its leaves are effects too;
+		 *  2. composed with the global map, every mutating action is still
+		 *     denied on every swept resource;
+		 *  3. composed with the global map, a denied read is not re-opened.
+		 *
+		 * Rule 3 is deliberately "not allow" and not "deny" verbatim: an "ask"
+		 * is not a grant, so a legitimate narrowing is not rejected.
+		 */
+		function expectNoAllowAtAnyDepth(agentPermission) {
+			expect(leafEffects(agentPermission)).not.toContain("allow");
+		}
+
+		function expectMutatingActionsStillDenied(agentPermission) {
+			for (const action of MUTATING_ACTIONS) {
+				for (const resource of RESOURCE_SWEEP) {
+					expect(resolveEffectivePermission([permission, agentPermission], action, resource)).toBe(
+						"deny",
+					);
+				}
+			}
+		}
+
+		function expectDeniedReadsNotWidened(agentPermission) {
+			for (const resource of SENSITIVE_RESOURCES) {
+				expect(
+					resolveEffectivePermission([permission, agentPermission], "read", resource),
+				).not.toBe("allow");
+			}
+		}
+
+		test("the investigator's own permission set contains no allow at any depth", () => {
+			expectNoAllowAtAnyDepth(agents.investigator.permission);
+		});
+
+		test("the investigator's own permission set does not widen a denied action", () => {
+			expectMutatingActionsStillDenied(agents.investigator.permission);
+		});
+
+		test("the investigator's own permission set does not widen a denied read", () => {
+			expectDeniedReadsNotWidened(agents.investigator.permission);
+		});
+
+		test("the global map denies every mutating action on every swept resource", () => {
+			for (const action of MUTATING_ACTIONS) {
+				for (const resource of RESOURCE_SWEEP) {
+					expect(resolveEffectivePermission(permission, action, resource)).toBe("deny");
+				}
 			}
 		});
 
-		test("the investigator's own permission set does not re-open a denied read", () => {
-			const agentPermission = agents.investigator.permission;
-			for (const resource of [".env", "*.env", "*.env.local"]) {
+		test("the global map denies reading .env and everything that looks like one", () => {
+			for (const resource of SENSITIVE_RESOURCES) {
 				expect(resolveEffectivePermission(permission, "read", resource)).toBe("deny");
-				expect(resolveEffectivePermission([permission, agentPermission], "read", resource)).toBe(
-					"deny",
-				);
 			}
 		});
 
-		test("the investigator's own permission set grants nothing at all", () => {
-			const agentPermission = agents.investigator.permission;
+		test("the global map allows exactly the read-only tools", () => {
 			for (const action of ["read", "glob", "grep", "list"]) {
-				// The global map allows these, and the agent's block must not
-				// turn one of them off (that would be a narrowing, which is
-				// safe, but the block is meant to only ever take permissions
-				// away).
-				expect(resolveEffectivePermission(permission, action, "*")).toBe("allow");
+				expect(resolveEffectivePermission(permission, action, "server/server.js")).toBe("allow");
 			}
-			for (const [action, value] of Object.entries(agentPermission)) {
-				expect(value).not.toBe("allow");
-			}
+		});
+
+		test("an 'ask' entry is a narrowing and does not trip the gate", () => {
+			// The same three rules, applied to a block that ASKS instead of
+			// granting. The base is a literal on purpose: this test is about the
+			// GATE's rules, and it must not be affected by a change to the
+			// shipped config.
+			const asking = {
+				edit: "deny",
+				bash: "deny",
+				webfetch: "deny",
+				task: "deny",
+				read: "ask",
+			};
+			expectNoAllowAtAnyDepth(asking);
+			expectMutatingActionsStillDenied(asking);
+			expectDeniedReadsNotWidened(asking);
+
+			const askingGlobally = { ...asking, read: { "*": "ask" } };
+			expectNoAllowAtAnyDepth(askingGlobally);
+			expectMutatingActionsStillDenied(askingGlobally);
+			expectDeniedReadsNotWidened(askingGlobally);
 		});
 	});
 });
