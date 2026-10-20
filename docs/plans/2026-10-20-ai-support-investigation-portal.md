@@ -476,6 +476,37 @@ export { parseModelChain };
 
 Create `tests/integration/investigation-readonly.test.js`. This test runs a **live** server with the real config and is the feature's release gate.
 
+**It must be opt-in.** The pre-commit hook runs the whole Jest suite on every commit, and
+this test makes up to 7 live model calls - if it ran by default, every commit in the
+plan would take 25+ minutes. Gate it on an environment variable and give it its own
+npm script:
+
+```javascript
+const RUN_SPIKE = process.env.INVESTIGATION_SPIKE === "1";
+const describeSpike = RUN_SPIKE ? describe : describe.skip;
+```
+
+Use `describeSpike` for the suite below. Add to `package.json`:
+
+```json
+"test:spike": "cross-env INVESTIGATION_SPIKE=1 node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/integration/investigation-readonly.test.js"
+```
+
+If `cross-env` is not already a dependency, use the platform-neutral form instead so the
+script works on Linux CI too:
+
+```json
+"test:spike": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/integration/investigation-readonly.test.js"
+```
+
+and set the variable inside the test file from an existing CI signal, or run it locally as
+`INVESTIGATION_SPIKE=1 npm test -- tests/integration/investigation-readonly.test.js`
+(PowerShell: `$env:INVESTIGATION_SPIKE=1; npm test -- tests/integration/investigation-readonly.test.js`).
+
+**The gate is still real:** Task 1 does not exit until the suite has been run with the
+variable set and all seven assertions pass. The skip only keeps the ordinary commit hook
+fast.
+
 ```javascript
 import fs from "node:fs";
 import path from "node:path";
@@ -524,7 +555,7 @@ afterAll(async () => {
 	if (runtime) await runtime.stop();
 });
 
-describe("read-only investigation runtime (spike gate)", () => {
+describeSpike("read-only investigation runtime (spike gate)", () => {
 	test("cannot create a file", async () => {
 		const result = await runAgentPrompt({
 			client: runtime.client,
