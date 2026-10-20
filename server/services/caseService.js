@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import { CASE_EVENTS, emitCaseEvent } from "../realtime/realtimeBus.js";
+import { isOwnerOrAdmin } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
 
 // A support case is the PARENT of a ticket: the thread a client opens, the
@@ -12,9 +14,25 @@ import prisma from "../utils/prisma.js";
 
 const DEFAULT_STATUS = "collecting";
 
+// The role a message carries when the client wrote it. The round cap counts
+// these and only these: the assistant's own questions, the system notices and
+// the staff replies are not the client thinking again.
+const CLIENT_ROLE = "client";
+
 function text(value) {
 	return String(value ?? "").trim();
 }
+
+// How many client messages the client may send before the case is
+// investigated without an explicit confirmation.
+//
+// The cap is what stops a clarification loop from running forever: past six
+// client turns the assistant stops asking and the case is handed to the
+// investigators with whatever was collected. It lives here — next to the
+// message counter that measures it — so that the service that reads the
+// transcript and the controller that computes `ready` cannot disagree about
+// the number. WS1-A re-exports it from the controller for the API surface.
+export const MAX_CLARIFICATION_ROUNDS = 6;
 
 /**
  * Opens a case for a user.
@@ -59,7 +77,7 @@ export async function createCase({ userId, subject }) {
  * @returns {Promise<Object>} The created message row.
  */
 export async function appendCaseMessage({ caseId, role, kind = "answer", content, agent = null }) {
-	return prisma.$transaction(async (tx) => {
+	const created = await prisma.$transaction(async (tx) => {
 		const last = await tx.supportCaseMessage.findFirst({
 			where: { case_id: caseId },
 			orderBy: { sequence: "desc" },
@@ -77,6 +95,17 @@ export async function appendCaseMessage({ caseId, role, kind = "answer", content
 			},
 		});
 	});
+
+	// Announced only after the transaction committed. An event for a message
+	// that was rolled back would put a row on the wire that no reader can
+	// find, and a listener that re-reads the case would see a shorter thread
+	// than the event claims.
+	//
+	// This is the single funnel every message goes through - the client's
+	// turns, the assistant's questions, the notices - so `support.case.message`
+	// cannot be forgotten by one of the callers.
+	emitCaseEvent(caseId, CASE_EVENTS.message, { message: created });
+	return created;
 }
 
 /**
@@ -129,4 +158,61 @@ export async function deleteCase(caseId) {
 	const attachments = await prisma.supportCaseAttachment.findMany({ where: { case_id: caseId } });
 	await prisma.supportCase.delete({ where: { id: caseId } });
 	return attachments;
+}
+
+/**
+ * Decides whether a user may read a case.
+ *
+ * A case is the client's: their problem, their evidence, their transcript.
+ * Nobody else reads it — a stranger gets `false` and the controller turns that
+ * into a 403, not a 404 (a 404 would hide the fact that the case exists,
+ * and the contract asks for a 403).
+ *
+ * Staff are the exception: an owner or an admin can read any case, because
+ * they are the ones who answer for the platform when a client is stuck. The
+ * role check is delegated to `isOwnerOrAdmin` in server/utils/permissions.js
+ * — the same helper the rest of the server uses — so the role list is
+ * defined once and cannot drift from the rest of the codebase.
+ *
+ * @param {Object|null} [user] The caller.
+ * @param {Object|null} [caseRow] The case, or null when there is none.
+ * @returns {boolean} True when the caller may read the case.
+ */
+export function canReadCase(user, caseRow) {
+	// A case that does not exist is readable by nobody, staff included.
+	if (!caseRow) {
+		return false;
+	}
+	if (isOwnerOrAdmin(user)) {
+		return true;
+	}
+	const userId = user?.id;
+	const ownerId = caseRow.user_id;
+	if (userId === undefined || userId === null || userId === "") {
+		return false;
+	}
+	if (ownerId === undefined || ownerId === null) {
+		return false;
+	}
+	// The ids are strings on both sides (the case row and the signed token),
+	// but they are compared as text so that a caller whose token carries the
+	// id in another primitive type is not locked out of their own case.
+	return String(ownerId) === String(userId);
+}
+
+/**
+ * Counts the messages the client has sent in a case.
+ *
+ * This is the number the clarification round cap is measured against: it is
+ * the count of the client's own turns, so a case whose six turns are spent is
+ * ready for investigation even when the client never confirmed the summary.
+ *
+ * @param {string} caseId
+ * @returns {Promise<number>} How many client messages the case holds.
+ */
+export async function countClientMessages(caseId) {
+	const count = await prisma.supportCaseMessage.count({
+		where: { case_id: caseId, role: CLIENT_ROLE },
+	});
+	return Number(count) || 0;
 }
