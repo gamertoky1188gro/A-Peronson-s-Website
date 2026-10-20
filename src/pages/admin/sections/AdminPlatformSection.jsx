@@ -1,8 +1,55 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import PaymentProofReviewModal from "../../../components/admin/PaymentProofReviewModal.jsx";
 import { apiRequest, getToken } from "../../../lib/auth.js";
 import { exportEmailsCsv } from "../../AdminPanel.utils.js";
+
+// The support investigation cases (Task 8). The findings carry one of three
+// confidences and nothing else, so the badge colour is looked up rather than
+// derived - a confidence the contract does not name still has to render.
+const SUPPORT_CASE_CONFIDENCE_CLASS = {
+	confirmed: "bg-emerald-600 text-white",
+	probable: "bg-amber-500 text-white",
+	speculative: "bg-slate-600 text-white",
+};
+
+/**
+ * The report of a case: the verify run holds the final one, but a report
+ * written on any other run is better than none.
+ *
+ * @param {Array} investigations
+ * @returns {string}
+ */
+function pickSupportCaseReport(investigations) {
+	const rows = Array.isArray(investigations) ? investigations : [];
+	const verify = rows.find((row) => row?.role === "verify" && String(row?.report || "").trim());
+	const other = rows.find((row) => String(row?.report || "").trim());
+	return String(verify?.report || other?.report || "");
+}
+
+/**
+ * Every tool call of every run of a case, in the order the runs happened.
+ *
+ * @param {Array} investigations
+ * @returns {Array}
+ */
+function collectSupportCaseToolLog(investigations) {
+	const rows = Array.isArray(investigations) ? investigations : [];
+	const entries = [];
+	for (const row of rows) {
+		const log = Array.isArray(row?.tool_log) ? row.tool_log : [];
+		for (const call of log) {
+			entries.push({
+				key: `${row?.role || "agent"}-${call?.tool || "tool"}-${call?.status || "unknown"}-${entries.length}`,
+				role: String(row?.role || "agent"),
+				tool: String(call?.tool || "unknown"),
+				status: String(call?.status || "unknown"),
+				error: String(call?.error || ""),
+			});
+		}
+	}
+	return entries;
+}
 
 export function AdminPlatformSection({
 	activeCategory,
@@ -123,6 +170,15 @@ export function AdminPlatformSection({
 	const [rejectionItem, setRejectionItem] = useState(null);
 	const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
 	const [reviewProof, setReviewProof] = useState(null);
+	const [supportCases, setSupportCases] = useState([]);
+	const [supportCasesLoading, setSupportCasesLoading] = useState(false);
+	const [supportCaseSelectedId, setSupportCaseSelectedId] = useState("");
+	const [supportCaseDetail, setSupportCaseDetail] = useState(null);
+	const [supportCaseDetailLoading, setSupportCaseDetailLoading] = useState(false);
+	const [supportCaseNotice, setSupportCaseNotice] = useState("");
+	const [supportCaseNote, setSupportCaseNote] = useState("");
+	const [supportCaseBusy, setSupportCaseBusy] = useState(false);
+	const supportCasesLoadedRef = useRef(false);
 
 	const setSystemReportsSafe = setSystemReports || setSystemReportsLocal;
 	const setProductAppealReportsSafe = setProductAppealReports || setProductAppealReportsLocal;
@@ -427,6 +483,114 @@ export function AdminPlatformSection({
 			setSupportLoading(false);
 		}
 	}, [buildAdminHeaders, setError, setSupportTickets, supportFilters]);
+
+	// The support investigation cases (Task 8). They are a staff view of the
+	// same rows the client writes, so the admin reads them through the admin
+	// routes: /admin/support/cases and /admin/support/cases/:caseId.
+
+	const refreshSupportCases = useCallback(async () => {
+		const token = getToken();
+		if (!token) {
+			return;
+		}
+		setSupportCasesLoading(true);
+		const headers = buildAdminHeaders();
+		try {
+			const data = await apiRequest("/admin/support/cases", { token, headers });
+			setSupportCases(Array.isArray(data?.cases) ? data.cases : []);
+		} catch (err) {
+			setSupportCases([]);
+			setError(err.message || "Failed to load support cases");
+		} finally {
+			setSupportCasesLoading(false);
+		}
+	}, [buildAdminHeaders, setError]);
+
+	const openSupportCase = useCallback(
+		async (caseId) => {
+			const token = getToken();
+			if (!(token && caseId)) {
+				return;
+			}
+			setSupportCaseSelectedId(caseId);
+			setSupportCaseDetailLoading(true);
+			setSupportCaseNotice("");
+			const headers = buildAdminHeaders();
+			try {
+				const data = await apiRequest(`/admin/support/cases/${encodeURIComponent(caseId)}`, {
+					token,
+					headers,
+				});
+				setSupportCaseDetail({
+					case: data?.case || null,
+					messages: Array.isArray(data?.messages) ? data.messages : [],
+					investigations: Array.isArray(data?.investigations) ? data.investigations : [],
+				});
+			} catch (err) {
+				setSupportCaseDetail(null);
+				setError(err.message || "Failed to load the support case");
+			} finally {
+				setSupportCaseDetailLoading(false);
+			}
+		},
+		[buildAdminHeaders, setError],
+	);
+
+	const runSupportCaseAction = useCallback(
+		async (caseId, action, body) => {
+			const token = getToken();
+			if (!(token && caseId)) {
+				return;
+			}
+			setSupportCaseBusy(true);
+			setSupportCaseNotice("");
+			const headers = buildAdminHeaders({ stepUp: true });
+			try {
+				await apiRequest(`/admin/support/cases/${encodeURIComponent(caseId)}/${action}`, {
+					method: "POST",
+					token,
+					headers,
+					body,
+				});
+				setSupportCaseNotice(
+					action === "escalate"
+						? "The case is escalated."
+						: "A new investigation has been queued for the case.",
+				);
+				setSupportCaseNote("");
+				await openSupportCase(caseId);
+				await refreshSupportCases();
+			} catch (err) {
+				setError(err.message || "The support case action failed");
+			} finally {
+				setSupportCaseBusy(false);
+			}
+		},
+		[buildAdminHeaders, openSupportCase, refreshSupportCases, setError],
+	);
+
+	// The case list loads once, when the platform section is first shown.
+	// The guard keeps it to one request: a re-render must not ask again.
+	useEffect(() => {
+		if (activeCategory !== "platform") {
+			return;
+		}
+		if (supportCasesLoadedRef.current) {
+			return;
+		}
+		supportCasesLoadedRef.current = true;
+		refreshSupportCases();
+	}, [activeCategory, refreshSupportCases]);
+
+	const supportCaseToolLog = useMemo(
+		() => collectSupportCaseToolLog(supportCaseDetail?.investigations),
+		[supportCaseDetail],
+	);
+
+	const supportCaseReport = useMemo(
+		() => pickSupportCaseReport(supportCaseDetail?.investigations),
+		[supportCaseDetail],
+	);
 
 	async function refreshSignups() {
 		const token = getToken();
@@ -2241,6 +2405,250 @@ export function AdminPlatformSection({
 								</div>
 							</div>
 						))}
+					</div>
+				</div>
+			) : null}
+
+			{/* Block 10b – Support Cases */}
+			{activeCategory === "platform" ? (
+				<div class="admin-card admin-sweep rounded-3xl p-6">
+					<div class="flex flex-wrap items-center justify-between gap-3">
+						<div>
+							<p class="text-sm font-bold">Support Cases</p>
+							<p class="text-xs text-slate-500">
+								Investigation portal cases: the conversation, the findings per agent, the tool log
+								and the report.
+							</p>
+						</div>
+						<button
+							type="button"
+							onClick={() => refreshSupportCases()}
+							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+						>
+							Refresh cases
+						</button>
+					</div>
+					<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+						<div class="space-y-2">
+							{supportCasesLoading ? <p class="text-xs text-slate-500">Loading cases...</p> : null}
+							{!supportCasesLoading && supportCases.length === 0 ? (
+								<p class="text-xs text-slate-500">No support cases.</p>
+							) : null}
+							{supportCases.map((item) => (
+								<button
+									key={item.id}
+									type="button"
+									onClick={() => openSupportCase(item.id)}
+									class={`block w-full rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3 text-left text-xs ${
+										supportCaseSelectedId === item.id ? "ring-1 ring-emerald-500" : ""
+									}`}
+								>
+									<p class="font-semibold text-slate-900 dark:text-white">
+										{item.subject || "Support case"}
+									</p>
+									<p class="text-[11px] text-slate-500">
+										{String(item.id || "").slice(0, 8)} · {item.status || "collecting"}
+										{item.escalated ? " · escalated" : ""}
+										{item.retain ? " · retained" : ""}
+									</p>
+									<p class="text-[11px] text-slate-500">
+										{item.updated_at ? new Date(item.updated_at).toLocaleString() : "--"}
+									</p>
+								</button>
+							))}
+						</div>
+						<div class="space-y-3">
+							{supportCaseBusy ? <p class="text-xs text-slate-500">Working...</p> : null}
+							{supportCaseNotice ? (
+								<p class="rounded-2xl bg-emerald-500/10 p-3 text-[11px] text-emerald-600 dark:text-emerald-300">
+									{supportCaseNotice}
+								</p>
+							) : null}
+							{supportCaseDetailLoading ? (
+								<p class="text-xs text-slate-500">Loading the case...</p>
+							) : null}
+							{supportCaseDetailLoading || supportCaseDetail ? null : (
+								<p class="text-xs text-slate-500">Select a case to review it.</p>
+							)}
+							{supportCaseDetail ? (
+								<>
+									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+										<p class="text-sm font-semibold text-slate-900 dark:text-white">
+											{supportCaseDetail.case?.subject || "Support case"}
+										</p>
+										<p class="text-[11px] text-slate-500">
+											Case: {supportCaseDetail.case?.id} · Status:{" "}
+											{supportCaseDetail.case?.status || "collecting"} · Ticket:{" "}
+											{supportCaseDetail.case?.ticket_id || "--"}
+										</p>
+										<p class="text-[11px] text-slate-500">
+											Owner: {supportCaseDetail.case?.user_id || "--"} · Report:{" "}
+											{supportCaseDetail.case?.report_status || "--"}
+											{supportCaseDetail.case?.escalated ? " · escalated" : ""}
+											{supportCaseDetail.case?.retain ? " · retained" : ""}
+										</p>
+										{supportCaseDetail.case?.summary ? (
+											<p class="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
+												{supportCaseDetail.case.summary}
+											</p>
+										) : null}
+										<div class="mt-3 flex flex-wrap items-center gap-2">
+											<button
+												type="button"
+												disabled={supportCaseBusy}
+												onClick={() =>
+													runSupportCaseAction(supportCaseDetail.case?.id, "rerun", {})
+												}
+												class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600 disabled:opacity-50"
+											>
+												Re-run investigation
+											</button>
+											<button
+												type="button"
+												disabled={supportCaseBusy || supportCaseDetail.case?.escalated}
+												onClick={() =>
+													runSupportCaseAction(supportCaseDetail.case?.id, "escalate", {
+														reason: supportCaseNote,
+													})
+												}
+												class="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
+											>
+												Escalate
+											</button>
+											<input
+												value={supportCaseNote}
+												onChange={(event) => setSupportCaseNote(event.target.value)}
+												placeholder="Escalation note (optional)"
+												class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] dark:bg-slate-950"
+											/>
+										</div>
+									</div>
+
+									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+										<p class="text-[11px] font-semibold uppercase text-slate-500">Conversation</p>
+										<div class="mt-2 space-y-2">
+											{supportCaseDetail.messages.length === 0 ? (
+												<p class="text-[11px] text-slate-500">No messages.</p>
+											) : null}
+											{supportCaseDetail.messages.map((message) => (
+												<div key={message.id} class="rounded-xl border border-slate-500/20 p-3">
+													<p class="text-[11px] text-slate-500">
+														#{message.sequence} · {message.role}
+														{message.kind ? ` · ${message.kind}` : ""}
+														{message.agent ? ` · ${message.agent}` : ""}
+													</p>
+													{/* The stored content is HTML-escaped by the server, so it is
+													    rendered as TEXT and never as markup. */}
+													<p class="mt-1 text-xs text-slate-700 dark:text-slate-200">
+														{message.content}
+													</p>
+												</div>
+											))}
+										</div>
+									</div>
+
+									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+										<p class="text-[11px] font-semibold uppercase text-slate-500">
+											Findings by agent
+										</p>
+										<div class="mt-2 space-y-3">
+											{supportCaseDetail.investigations.length === 0 ? (
+												<p class="text-[11px] text-slate-500">No investigation has run yet.</p>
+											) : null}
+											{supportCaseDetail.investigations.map((investigation) => {
+												const findings = Array.isArray(investigation?.findings?.findings)
+													? investigation.findings.findings
+													: [];
+												const limitations = Array.isArray(investigation?.findings?.limitations)
+													? investigation.findings.limitations
+													: [];
+												return (
+													<div
+														key={investigation.id}
+														class="rounded-xl border border-slate-500/20 p-3"
+													>
+														<p class="text-[11px] text-slate-500">
+															{investigation.role} · {investigation.status} · attempt{" "}
+															{investigation.attempt}
+															{investigation.model_id ? ` · ${investigation.model_id}` : ""}
+														</p>
+														{investigation.error ? (
+															<p class="mt-1 text-[11px] text-rose-500">{investigation.error}</p>
+														) : null}
+														{investigation.findings?.summary ? (
+															<p class="mt-1 text-xs text-slate-700 dark:text-slate-200">
+																{investigation.findings.summary}
+															</p>
+														) : null}
+														{findings.map((finding) => (
+															<div
+																key={`${investigation.id}-${finding.confidence}-${finding.detail}`}
+																class="mt-2"
+															>
+																<span
+																	class={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+																		SUPPORT_CASE_CONFIDENCE_CLASS[finding.confidence] ||
+																		SUPPORT_CASE_CONFIDENCE_CLASS.speculative
+																	}`}
+																>
+																	{finding.confidence}
+																</span>
+																<p class="mt-1 text-xs text-slate-700 dark:text-slate-200">
+																	{finding.detail}
+																</p>
+																{Array.isArray(finding.evidence) && finding.evidence.length > 0 ? (
+																	<ul class="mt-1 list-disc pl-4 text-[11px] text-slate-500">
+																		{finding.evidence.map((entry) => (
+																			<li key={`${entry.file}-${entry.lines}-${entry.commit}`}>
+																				{entry.file}
+																				{entry.lines ? `:${entry.lines}` : ""}
+																				{entry.commit ? ` @ ${entry.commit}` : ""}
+																				{entry.url ? ` · ${entry.url}` : ""}
+																			</li>
+																		))}
+																	</ul>
+																) : null}
+															</div>
+														))}
+														{limitations.length > 0 ? (
+															<p class="mt-2 text-[11px] text-slate-500">
+																Limitations: {limitations.join(" · ")}
+															</p>
+														) : null}
+													</div>
+												);
+											})}
+										</div>
+									</div>
+
+									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+										<p class="text-[11px] font-semibold uppercase text-slate-500">Tool log</p>
+										<div class="mt-2 space-y-1">
+											{supportCaseToolLog.length === 0 ? (
+												<p class="text-[11px] text-slate-500">No tool call was recorded.</p>
+											) : null}
+											{supportCaseToolLog.map((entry) => (
+												<p key={entry.key} class="text-[11px] text-slate-500">
+													{entry.role} · {entry.tool} · {entry.status}
+													{entry.error ? ` · ${entry.error}` : ""}
+												</p>
+											))}
+										</div>
+									</div>
+
+									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
+										<p class="text-[11px] font-semibold uppercase text-slate-500">Report</p>
+										{supportCaseReport ? (
+											<pre class="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">
+												{supportCaseReport}
+											</pre>
+										) : (
+											<p class="mt-2 text-[11px] text-slate-500">No report has been written yet.</p>
+										)}
+									</div>
+								</>
+							) : null}
+						</div>
 					</div>
 				</div>
 			) : null}
