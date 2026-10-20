@@ -104,10 +104,166 @@ import { requireAdminSecurity } from "../middleware/adminSecurity.js";
 import { requireAdminStepUp } from "../middleware/adminStepUp.js";
 import { requireAuth } from "../middleware/auth.js";
 import { adminLimiter } from "../middleware/rateLimiter.js";
+import { appendCaseMessage, getCaseWithMessages, listCasesAdmin } from "../services/caseService.js";
+import prisma from "../utils/prisma.js";
+import { sanitizeString } from "../utils/validators.js";
 
 const router = Router();
 
 router.use(adminLimiter);
+
+// ---------------------------------------------------------------------------
+// Support investigation cases.
+//
+// The client-facing case API lives in server/routes/caseRoutes.js. These are
+// the staff views of the SAME rows: an owner/admin reads a case, its
+// conversation and its investigations. The guard chain is the one every other
+// admin route in this file uses - the caller must be an authenticated
+// owner/admin, and the request is written to the admin audit log.
+// ---------------------------------------------------------------------------
+
+/** The characters kept from a case id. */
+const SUPPORT_CASE_ID_MAX = 120;
+
+/** The characters kept from an escalation note. */
+const SUPPORT_CASE_NOTE_MAX = 500;
+
+/**
+ * The investigation queue, loaded on demand.
+ *
+ * The specifier is kept out of the `import()` call on purpose: the queue
+ * belongs to the investigation workstream and is not in every checkout, and a
+ * static import of a missing module would take the whole admin router down.
+ */
+const INVESTIGATION_QUEUE_MODULE = "../services/investigationQueue.js";
+
+/**
+ * Lists every support case, most recently touched first.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+async function listSupportCasesHandler(_req, res) {
+	const cases = await listCasesAdmin();
+	return res.json({ cases: Array.isArray(cases) ? cases : [] });
+}
+
+/**
+ * One support case: the row, the conversation, and the investigations.
+ *
+ * The `case` key is the SupportCase row on its own - the messages are
+ * returned next to it, not inside it, so a client can tell the row from its
+ * conversation.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+async function getSupportCaseHandler(req, res) {
+	const caseId = sanitizeString(String(req.params.caseId || ""), SUPPORT_CASE_ID_MAX);
+	if (!caseId) {
+		return res.status(400).json({ error: "caseId is required" });
+	}
+	const found = await getCaseWithMessages(caseId);
+	if (!found) {
+		return res.status(404).json({ error: "Support case not found" });
+	}
+	const { messages, ...caseRow } = found;
+	const investigations = await prisma.supportInvestigation.findMany({
+		where: { case_id: caseId },
+		orderBy: { created_at: "asc" },
+	});
+	return res.json({
+		case: caseRow,
+		messages: Array.isArray(messages) ? messages : [],
+		investigations: Array.isArray(investigations) ? investigations : [],
+	});
+}
+
+/**
+ * Flags a case as escalated and records who did it in the conversation.
+ *
+ * The note is optional; the message is written either way, because an
+ * escalation nobody can trace is not an escalation.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+async function escalateSupportCaseHandler(req, res) {
+	const caseId = sanitizeString(String(req.params.caseId || ""), SUPPORT_CASE_ID_MAX);
+	if (!caseId) {
+		return res.status(400).json({ error: "caseId is required" });
+	}
+	const existing = await prisma.supportCase.findUnique({ where: { id: caseId } });
+	if (!existing) {
+		return res.status(404).json({ error: "Support case not found" });
+	}
+	const note = sanitizeString(String(req.body?.reason || ""), SUPPORT_CASE_NOTE_MAX);
+	const agent = sanitizeString(
+		String(req.user?.name || req.user?.email || req.user?.id || "admin"),
+		SUPPORT_CASE_ID_MAX,
+	);
+	const updated = await prisma.supportCase.update({
+		where: { id: caseId },
+		data: { escalated: true },
+	});
+	await appendCaseMessage({
+		caseId,
+		role: "admin",
+		kind: "notice",
+		content: note || "Escalated by an administrator.",
+		agent,
+	});
+	return res.json({ ok: true, case: updated });
+}
+
+/**
+ * Queues a fresh investigation for a case.
+ *
+ * The queue is looked up through the module namespace instead of a static
+ * import: it belongs to the investigation workstream, and a checkout without
+ * it must report "not available" rather than take the whole admin router down
+ * with a failed import.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+async function rerunSupportCaseHandler(req, res) {
+	const caseId = sanitizeString(String(req.params.caseId || ""), SUPPORT_CASE_ID_MAX);
+	if (!caseId) {
+		return res.status(400).json({ error: "caseId is required" });
+	}
+	const existing = await prisma.supportCase.findUnique({ where: { id: caseId } });
+	if (!existing) {
+		return res.status(404).json({ error: "Support case not found" });
+	}
+	const enqueue = await loadInvestigationEnqueuer();
+	if (!enqueue) {
+		return res.status(503).json({ error: "The investigation runtime is not available." });
+	}
+	// A re-run starts the case over. The queue only moves a case that is
+	// `investigating`, so a case that already finished is put back into that
+	// state before the new run is created.
+	await prisma.supportCase.update({
+		where: { id: caseId },
+		data: { status: "investigating" },
+	});
+	await enqueue(caseId);
+	return res.json({ ok: true, case_id: caseId, queued: true });
+}
+
+/**
+ * The investigation queue's enqueue function, or null when it is not there.
+ *
+ * @returns {Promise<Function|null>}
+ */
+async function loadInvestigationEnqueuer() {
+	try {
+		const queue = await import(INVESTIGATION_QUEUE_MODULE);
+		return typeof queue.enqueueInvestigation === "function" ? queue.enqueueInvestigation : null;
+	} catch {
+		return null;
+	}
+}
 
 router.get("/users", requireAuth, requireAdminSecurity, adminAuditLogger(), usersAudit);
 router.get(
@@ -240,6 +396,36 @@ router.patch(
 	requireAdminStepUp,
 	adminAuditLogger(),
 	updateSupportTicket,
+);
+router.get(
+	"/support/cases",
+	requireAuth,
+	requireAdminSecurity,
+	adminAuditLogger(),
+	listSupportCasesHandler,
+);
+router.get(
+	"/support/cases/:caseId",
+	requireAuth,
+	requireAdminSecurity,
+	adminAuditLogger(),
+	getSupportCaseHandler,
+);
+router.post(
+	"/support/cases/:caseId/escalate",
+	requireAuth,
+	requireAdminSecurity,
+	requireAdminStepUp,
+	adminAuditLogger(),
+	escalateSupportCaseHandler,
+);
+router.post(
+	"/support/cases/:caseId/rerun",
+	requireAuth,
+	requireAdminSecurity,
+	requireAdminStepUp,
+	adminAuditLogger(),
+	rerunSupportCaseHandler,
 );
 router.post(
 	"/account-manager/assign",
