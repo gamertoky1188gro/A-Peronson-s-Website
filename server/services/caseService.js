@@ -175,10 +175,17 @@ export function canReadCase(user, caseRow) {
 		return true;
 	}
 	const userId = user?.id;
-	if (!userId) {
+	const ownerId = caseRow.user_id;
+	if (userId === undefined || userId === null || userId === "") {
 		return false;
 	}
-	return caseRow.user_id === userId;
+	if (ownerId === undefined || ownerId === null) {
+		return false;
+	}
+	// The ids are strings on both sides (the case row and the signed token),
+	// but they are compared as text so that a caller whose token carries the
+	// id in another primitive type is not locked out of their own case.
+	return String(ownerId) === String(userId);
 }
 
 /**

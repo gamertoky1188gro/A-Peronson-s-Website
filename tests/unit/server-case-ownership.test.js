@@ -68,6 +68,21 @@ describe("canReadCase", () => {
 		expect(canReadCase(undefined, caseRow)).toBe(false);
 		expect(canReadCase({}, caseRow)).toBe(false);
 	});
+
+	// The id in the signed token and the id on the row are both text, but the
+	// comparison is made as text so a token that carries the id in another
+	// primitive type still matches its own case.
+	test("matches the owner when the id arrives in another primitive type", () => {
+		expect(canReadCase({ id: 42, role: "client" }, { user_id: "42" })).toBe(true);
+		expect(canReadCase({ id: "42", role: "client" }, { user_id: 42 })).toBe(true);
+	});
+
+	// A row with no owner is nobody's case, and the empty string is not an
+	// id that a token could carry.
+	test("is false for a case with no owner", () => {
+		expect(canReadCase({ id: "", role: "client" }, { user_id: "" })).toBe(false);
+		expect(canReadCase({ id: "client-1", role: "client" }, { user_id: null })).toBe(false);
+	});
 });
 
 describe("countClientMessages", () => {
