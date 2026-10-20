@@ -1,0 +1,867 @@
+/**
+ * The investigation queue.
+ *
+ * One support case is one job. The job starts a read-only opencode runtime,
+ * gives every agent role its OWN session, runs the prompts, and writes one
+ * `SupportInvestigation` row per role. The `verify` role runs LAST, over the
+ * findings the specialists produced, and its verdict is applied to them.
+ *
+ * Three invariants are the point of this file:
+ *
+ *  - ONE SESSION PER ROLE. The model's own `task` delegation is denied by the
+ *    runtime configuration precisely because it is a privilege-escalation path
+ *    (contracts.md §6), so the queue never uses it. Each role gets its own
+ *    session and the queue itself is the only thing that fans out.
+ *
+ *  - A PER-RUN RANDOM PASSWORD. The runtime listens on 127.0.0.1 and is
+ *    authenticated with HTTP basic auth. The password is minted per run from
+ *    the CSPRNG: never a constant, never reused between runs, never logged.
+ *
+ *  - THE RUNTIME IS ALWAYS STOPPED. The `finally` block removes the sessions
+ *    and stops the runtime, whether the run succeeded, failed to parse, or
+ *    threw on the way.
+ *
+ * The depth is the number of investigations that have been enqueued and have
+ * not finished yet - waiting plus running. The media queues report the
+ * waiting count only, but a media job takes seconds and an investigation
+ * takes minutes: a waiting-only depth would report zero while two
+ * investigations were each holding a spawned runtime.
+ *
+ * What lands in the database, and who reads it:
+ *
+ *  - The four specialist rows (`lead`, `code`, `repo`, `research`) hold the
+ *    findings that role produced, with the confidence each finding carries
+ *    AFTER the verification pass was applied.
+ *  - The `verify` row holds the FINAL set of findings - every specialist
+ *    finding, with the verification applied - together with the verifier's
+ *    own summary and limitations. The report builder (Task 6) reads the
+ *    verify row for the final set and the specialist rows for the per-agent
+ *    log.
+ *  - A role whose reply could not be parsed is recorded as `failed`, with
+ *    the raw answer in `error`, and contributes NO findings. A failed parse
+ *    never becomes an empty-but-successful result.
+ */
+
+import crypto from "node:crypto";
+import { logError, logInfo, logWarn } from "../utils/logger.js";
+import prisma from "../utils/prisma.js";
+import { getCaseWithMessages } from "./caseService.js";
+import {
+	AGENT_ROLES,
+	applyVerification,
+	buildAgentPrompt,
+	buildVerifyPrompt,
+} from "./investigation/agents.js";
+import {
+	demoteUnsubstantiated,
+	normalizeFindings,
+	parseAgentJson,
+} from "./investigation/findings.js";
+import { parseModelChain } from "./investigation/modelChain.js";
+import {
+	createInvestigationSession,
+	listAvailableModels,
+	REPOSITORY_ROOT,
+	runAgentPrompt,
+	startInvestigationRuntime,
+} from "./investigation/opencodeRuntime.js";
+import { buildInvestigationConfig } from "./investigation/runtimeConfig.js";
+
+/** How many investigations may run at once when nothing says otherwise. */
+const DEFAULT_CONCURRENCY = 2;
+
+/** The ceiling on `INVESTIGATION_CONCURRENCY`. Each slot holds a runtime. */
+const MAX_CONCURRENCY = 16;
+
+/** How long one agent turn may take. */
+const AGENT_TIMEOUT_MS = 180_000;
+
+/** How much of a failed answer is kept in `error` for inspection. */
+const MAX_ERROR_CHARS = 4000;
+
+/** The ceiling on the description handed to an agent. */
+const MAX_DESCRIPTION_CHARS = 12_000;
+
+/** How many of the most recent case messages make it into the description. */
+const MAX_CONVERSATION_MESSAGES = 20;
+
+/** The role that runs last and tries to refute the other roles' findings. */
+const VERIFY_ROLE = "verify";
+
+/** The roles that investigate, in the order they run. */
+const SPECIALIST_ROLES = AGENT_ROLES.filter((role) => role !== VERIFY_ROLE);
+
+/** How many random bytes the runtime password is minted from. */
+const PASSWORD_BYTES = 32;
+
+/** Every job that has been enqueued and has not finished yet. */
+const QUEUE = [];
+
+/** How many of the queued jobs are running right now. */
+let runningCount = 0;
+
+/**
+ * The number of investigations that have been enqueued and have not finished
+ * yet: waiting plus running.
+ *
+ * @returns {number}
+ */
+export function queueDepth() {
+	return QUEUE.length;
+}
+
+/**
+ * Queue an investigation for a support case.
+ *
+ * The promise resolves when the job has been ACCEPTED: the five
+ * `SupportInvestigation` rows exist with `status: "queued"` and the job is on
+ * the queue. The investigation itself continues in the background, because it
+ * holds a spawned runtime for minutes and an HTTP caller must not wait for
+ * it.
+ *
+ * The queue does not deduplicate. Every call is a distinct run: a re-run
+ * creates a new set of rows with a higher `attempt` for the same case and
+ * role, and a caller that must not run two investigations at once has to
+ * guard the call itself.
+ *
+ * @param {string} caseId The support case to investigate.
+ * @returns {Promise<void>}
+ */
+export async function enqueueInvestigation(caseId) {
+	const id = typeof caseId === "string" ? caseId.trim() : "";
+	if (!id) {
+		throw new Error("enqueueInvestigation requires a support case id");
+	}
+
+	const rows = await createQueuedRows(id);
+
+	QUEUE.push({ caseId: id, rows, started: false });
+	logInfo("investigation queued", { caseId: id, depth: QUEUE.length, roles: rows.length });
+
+	dispatch();
+}
+
+/**
+ * Start jobs until the concurrency limit is reached.
+ */
+function dispatch() {
+	while (runningCount < concurrencyLimit()) {
+		const job = QUEUE.find((entry) => !entry.started);
+		if (!job) {
+			return;
+		}
+		job.started = true;
+		runningCount += 1;
+		runInvestigation(job)
+			.catch((error) => {
+				logError("investigation job crashed", error);
+			})
+			.finally(() => {
+				runningCount -= 1;
+				const index = QUEUE.indexOf(job);
+				if (index !== -1) {
+					QUEUE.splice(index, 1);
+				}
+				logInfo("investigation job finished", { caseId: job.caseId, depth: QUEUE.length });
+				dispatch();
+			});
+	}
+}
+
+/**
+ * How many investigations may run at once.
+ *
+ * `INVESTIGATION_CONCURRENCY` overrides the default of 2. A value that is
+ * not a positive integer falls back to the default, and a value above the
+ * ceiling is clamped - each slot holds a spawned `opencode serve` process, so
+ * the number is a resource limit and not a tuning preference.
+ */
+function concurrencyLimit() {
+	const raw = Number.parseInt(process.env.INVESTIGATION_CONCURRENCY ?? "", 10);
+	if (!Number.isFinite(raw) || raw < 1) {
+		return DEFAULT_CONCURRENCY;
+	}
+	return Math.min(raw, MAX_CONCURRENCY);
+}
+
+/**
+ * Create the `queued` row of every role.
+ *
+ * The rows are created BEFORE the job starts, so a caller that returns from
+ * `enqueueInvestigation` can already show the case as queued. `attempt` counts
+ * the runs of the same case and role, so a re-run is distinguishable from the
+ * run it repeats.
+ */
+async function createQueuedRows(caseId) {
+	const attempts = await readPreviousAttempts(caseId);
+	const rows = [];
+
+	for (const role of AGENT_ROLES) {
+		const id = crypto.randomUUID();
+		const attempt = (attempts.get(role) || 0) + 1;
+		try {
+			await prisma.supportInvestigation.create({
+				data: {
+					id,
+					case_id: caseId,
+					role,
+					status: "queued",
+					attempt,
+				},
+			});
+		} catch (error) {
+			throw new Error(
+				`Could not queue an investigation for case ${caseId}: ${error?.message || String(error)}`,
+			);
+		}
+		rows.push({ role, id, attempt });
+	}
+
+	return rows;
+}
+
+/**
+ * The highest attempt number already recorded for each role of a case.
+ */
+async function readPreviousAttempts(caseId) {
+	const attempts = new Map();
+	try {
+		const existing = await prisma.supportInvestigation.findMany({
+			where: { case_id: caseId },
+			select: { role: true, attempt: true },
+		});
+		for (const row of existing || []) {
+			const attempt = Number.isFinite(row?.attempt) ? row.attempt : 0;
+			if (attempt > (attempts.get(row.role) || 0)) {
+				attempts.set(row.role, attempt);
+			}
+		}
+	} catch (error) {
+		logWarn("investigation queue could not read the previous attempts", {
+			caseId,
+			error: error?.message || String(error),
+		});
+	}
+	return attempts;
+}
+
+/**
+ * Run one investigation: the runtime, the four specialists, the verifier.
+ */
+async function runInvestigation(job) {
+	const { caseId, rows } = job;
+	const finished = new Set();
+	let runtime = null;
+	const sessionIDs = [];
+
+	try {
+		const context = await loadCaseContext(caseId);
+		if (!context) {
+			await failRows(rows, finished, "The support case was not found.");
+			await advanceCaseStatus(caseId, "failed");
+			return;
+		}
+
+		runtime = await startInvestigationRuntime({
+			cwd: REPOSITORY_ROOT,
+			config: buildInvestigationConfig(),
+			password: mintRuntimePassword(),
+		});
+
+		const model = await pickModel(runtime.client);
+		if (!model) {
+			await failRows(rows, finished, "No free investigation model is available on the runtime.");
+			await advanceCaseStatus(caseId, "failed");
+			return;
+		}
+
+		const outcomes = new Map();
+		let accumulated = [];
+
+		for (const role of SPECIALIST_ROLES) {
+			const prompt = buildAgentPrompt(role, {
+				description: context.description,
+				evidence: context.evidence,
+			});
+			const outcome = await runRole({
+				runtime,
+				model,
+				role,
+				prompt,
+				row: findRow(rows, role),
+				caseId,
+				sessionIDs,
+			});
+			outcomes.set(role, outcome);
+			finished.add(role);
+			if (outcome.status === "complete") {
+				accumulated = accumulated.concat(outcome.findings);
+			}
+		}
+
+		await runVerification({
+			runtime,
+			model,
+			caseId,
+			context,
+			candidates: accumulated,
+			outcomes,
+			rows,
+			finished,
+			sessionIDs,
+		});
+
+		// The investigation is over: the case waits for its report now. The
+		// update only moves a case that is still `investigating`, so the queue
+		// can never undo a state the case has already left.
+		await advanceCaseStatus(caseId, "reporting");
+	} catch (error) {
+		logError("investigation failed", error);
+		await failRows(rows, finished, error?.message || String(error));
+		await advanceCaseStatus(caseId, "failed");
+	} finally {
+		await removeSessions(runtime, sessionIDs);
+		await stopRuntime(runtime);
+	}
+}
+
+/**
+ * Run the verify role LAST, over the findings the specialists produced, and
+ * apply its verdict to them.
+ */
+async function runVerification({
+	runtime,
+	model,
+	caseId,
+	context,
+	candidates,
+	outcomes,
+	rows,
+	finished,
+	sessionIDs,
+}) {
+	const prompt = buildVerifyPrompt({
+		description: context.description,
+		candidateFindings: candidates,
+	});
+
+	const outcome = await runRole({
+		runtime,
+		model,
+		role: VERIFY_ROLE,
+		prompt,
+		row: findRow(rows, VERIFY_ROLE),
+		caseId,
+		sessionIDs,
+	});
+	finished.add(VERIFY_ROLE);
+
+	// The verdict is built from what the verifier actually said. A refuted
+	// candidate comes back as a finding whose detail is the candidate's exact
+	// detail; an unsupported candidate comes back as its exact detail in one
+	// `limitations` entry.
+	const verdict = buildVerdict(outcome, candidates);
+	const applied = applyVerification(candidates, verdict);
+
+	// Every specialist row carries the confidence its finding ends up with,
+	// so a refuted claim is not left behind as "confirmed" in the row it came
+	// from.
+	for (const role of SPECIALIST_ROLES) {
+		const specialist = outcomes.get(role);
+		if (!specialist || specialist.status !== "complete") {
+			continue;
+		}
+		const adjusted = applyVerification(specialist.findings, verdict).findings;
+		await updateRow(findRow(rows, role), {
+			findings: {
+				summary: specialist.summary,
+				findings: adjusted,
+				limitations: specialist.limitations,
+			},
+		});
+	}
+
+	// The verify row is the final row: it holds the whole set of findings
+	// with the verification applied, so the report builder has one place to
+	// read the outcome from.
+	await updateRow(findRow(rows, VERIFY_ROLE), {
+		findings: {
+			summary: outcome.status === "complete" ? outcome.summary : "",
+			findings: applied.findings,
+			limitations: outcome.status === "complete" ? outcome.limitations : [],
+		},
+	});
+
+	logInfo("investigation verified", {
+		caseId,
+		candidates: candidates.length,
+		refuted: applied.refuted.length,
+	});
+}
+
+/**
+ * Run one role: its own session, its own prompt, its own row.
+ *
+ * @returns {Promise<{role: string, status: string, findings: object[], limitations: string[], summary: string, error?: string}>}
+ */
+async function runRole({ runtime, model, role, prompt, row, caseId, sessionIDs }) {
+	if (!row) {
+		return { role, status: "failed", findings: [], limitations: [], summary: "", error: "no row" };
+	}
+
+	await updateRow(row, {
+		status: "running",
+		attempt: row.attempt,
+		model_id: model.id,
+		prompt,
+		started_at: new Date(),
+	});
+	await emitProgress(caseId, role, "running");
+
+	let toolCalls = [];
+
+	try {
+		const sessionID = await createInvestigationSession({
+			client: runtime.client,
+			title: `investigation ${role} ${caseId}`,
+			model,
+			directory: REPOSITORY_ROOT,
+		});
+		sessionIDs.push(sessionID);
+
+		const result = await runAgentPrompt({
+			client: runtime.client,
+			sessionID,
+			text: prompt,
+			timeoutMs: AGENT_TIMEOUT_MS,
+		});
+		toolCalls = normalizeToolCalls(result?.toolCalls);
+		const rawText = typeof result?.text === "string" ? result.text : "";
+
+		if (result?.error) {
+			const error = truncate(result.error, MAX_ERROR_CHARS);
+			await finishRow(row, { status: "failed", error, tool_log: toolCalls });
+			await emitProgress(caseId, role, "failed", error);
+			return { role, status: "failed", findings: [], limitations: [], summary: "", error };
+		}
+
+		const parsed = parseAgentJson(rawText);
+		if (!parsed.ok) {
+			// The raw answer is kept so the failure can be inspected, and NO
+			// findings are recorded from a reply that could not be parsed.
+			const error = truncate(
+				`The agent did not answer with JSON (${parsed.reason}). Raw answer: ${rawText}`,
+				MAX_ERROR_CHARS,
+			);
+			await finishRow(row, { status: "failed", error, tool_log: toolCalls });
+			await emitProgress(caseId, role, "failed", error);
+			return { role, status: "failed", findings: [], limitations: [], summary: "", error };
+		}
+
+		const findings = demoteUnsubstantiated(normalizeFindings(parsed.value));
+		const limitations = toStringList(parsed.value?.limitations);
+		const summary = typeof parsed.value?.summary === "string" ? parsed.value.summary : "";
+
+		await finishRow(row, {
+			status: "complete",
+			findings: { summary, findings, limitations },
+			evidence: buildEvidence(findings, toolCalls),
+			tool_log: toolCalls,
+		});
+
+		for (const finding of findings) {
+			await emitFinding(caseId, role, finding);
+		}
+		await emitProgress(caseId, role, "complete");
+
+		return { role, status: "complete", findings, limitations, summary };
+	} catch (error) {
+		const message = truncate(error?.message || String(error), MAX_ERROR_CHARS);
+		await finishRow(row, { status: "failed", error: message, tool_log: toolCalls });
+		await emitProgress(caseId, role, "failed", message);
+		return { role, status: "failed", findings: [], limitations: [], summary: "", error: message };
+	}
+}
+
+/**
+ * Build the verifier's verdict out of what it said.
+ *
+ * A refuted candidate comes back as a finding whose `detail` is the
+ * candidate's exact `detail`; an unsupported candidate comes back as its exact
+ * `detail` string in one `limitations` entry.
+ */
+function buildVerdict(outcome, candidates) {
+	const refuted = [];
+	const unsupported = [];
+
+	if (outcome?.status === "complete") {
+		for (const finding of outcome.findings) {
+			const detail = normalizeDetail(finding?.detail);
+			if (!detail) {
+				continue;
+			}
+			if (matchesCandidate(detail, candidates) && !refuted.includes(detail)) {
+				refuted.push(detail);
+			}
+		}
+		for (const limitation of outcome.limitations) {
+			const detail = normalizeDetail(limitation);
+			if (!detail) {
+				continue;
+			}
+			if (matchesCandidate(detail, candidates) && !unsupported.includes(detail)) {
+				unsupported.push(detail);
+			}
+		}
+	}
+
+	return { refuted, unsupported };
+}
+
+/**
+ * Is this detail one of the candidates' details?
+ */
+function matchesCandidate(detail, candidates) {
+	return candidates.some((candidate) => normalizeDetail(candidate?.detail) === detail);
+}
+
+/**
+ * Read the case and turn it into the context the agents are given.
+ */
+async function loadCaseContext(caseId) {
+	const caseRow = await getCaseWithMessages(caseId);
+	if (!caseRow) {
+		return null;
+	}
+
+	let attachments = [];
+	try {
+		attachments =
+			(await prisma.supportCaseAttachment.findMany({ where: { case_id: caseId } })) || [];
+	} catch (error) {
+		logWarn("investigation queue could not read the case attachments", {
+			caseId,
+			error: error?.message || String(error),
+		});
+	}
+
+	const messages = Array.isArray(caseRow.messages) ? caseRow.messages : [];
+
+	return {
+		description: buildDescription(caseRow, messages),
+		evidence: buildEvidenceList(caseRow, attachments),
+	};
+}
+
+/**
+ * The description handed to every agent: the subject, the summary the client
+ * confirmed, and the conversation.
+ */
+function buildDescription(caseRow, messages) {
+	const parts = [];
+
+	const subject = typeof caseRow.subject === "string" ? caseRow.subject.trim() : "";
+	if (subject) {
+		parts.push(`Subject: ${subject}`);
+	}
+
+	const summary = typeof caseRow.summary === "string" ? caseRow.summary.trim() : "";
+	if (summary) {
+		parts.push(`Confirmed summary:\n${summary}`);
+	}
+
+	const recent = messages.slice(-MAX_CONVERSATION_MESSAGES);
+	if (recent.length > 0) {
+		const lines = recent.map((message) => {
+			const who = typeof message?.role === "string" ? message.role : "unknown";
+			const content = typeof message?.content === "string" ? message.content.trim() : "";
+			return content ? `[${who}] ${content}` : "";
+		});
+		const conversation = lines.filter(Boolean).join("\n");
+		if (conversation) {
+			parts.push(`Conversation:\n${conversation}`);
+		}
+	}
+
+	const description = parts.join("\n\n");
+	return description.length > MAX_DESCRIPTION_CHARS
+		? description.slice(0, MAX_DESCRIPTION_CHARS)
+		: description;
+}
+
+/**
+ * The evidence handed to every agent: what the client attached, and the
+ * ticket the case belongs to.
+ */
+function buildEvidenceList(caseRow, attachments) {
+	const evidence = [];
+
+	const ticket = typeof caseRow.ticket_id === "string" ? caseRow.ticket_id.trim() : "";
+	if (ticket) {
+		evidence.push(`Ticket: ${ticket}`);
+	}
+
+	for (const attachment of attachments || []) {
+		const filePath = typeof attachment?.file_path === "string" ? attachment.file_path.trim() : "";
+		if (!filePath) {
+			continue;
+		}
+		const mime = typeof attachment?.mime_type === "string" ? attachment.mime_type.trim() : "";
+		evidence.push(mime ? `${filePath} (${mime})` : filePath);
+	}
+
+	return evidence;
+}
+
+/**
+ * The `evidence` column of a row: the files and commits the findings cite,
+ * and the tool calls that failed.
+ *
+ * `queries` stays empty: the runtime reports a tool call as
+ * `{tool, status, error?}` and carries no query text, so there is nothing to
+ * record without inventing it.
+ */
+function buildEvidence(findings, toolCalls) {
+	const files = [];
+	const commits = [];
+	const failures = [];
+
+	for (const finding of findings || []) {
+		for (const entry of finding?.evidence || []) {
+			if (typeof entry?.file === "string" && entry.file && !files.includes(entry.file)) {
+				files.push(entry.file);
+			}
+			if (typeof entry?.commit === "string" && entry.commit && !commits.includes(entry.commit)) {
+				commits.push(entry.commit);
+			}
+		}
+	}
+
+	for (const call of toolCalls || []) {
+		if (call?.status === "error" && call.error) {
+			failures.push(`${call.tool}: ${call.error}`);
+		}
+	}
+
+	return { files, commits, queries: [], failures };
+}
+
+/**
+ * The tool log of a row: exactly `{ tool, status, error? }` per call.
+ */
+function normalizeToolCalls(toolCalls) {
+	if (!Array.isArray(toolCalls)) {
+		return [];
+	}
+	return toolCalls.map((call) => {
+		const entry = {
+			tool: typeof call?.tool === "string" ? call.tool : "unknown",
+			status: typeof call?.status === "string" ? call.status : "unknown",
+		};
+		if (typeof call?.error === "string" && call.error) {
+			entry.error = call.error;
+		}
+		return entry;
+	});
+}
+
+/**
+ * Pick the first model of the chain the runtime actually offers.
+ *
+ * The chain holds free models only (see investigation/modelChain.js), so the
+ * portal never spends somebody else's money on an investigation.
+ */
+async function pickModel(client) {
+	const available = await listAvailableModels(client);
+	const chain = parseModelChain(process.env.OPENCODE_INVESTIGATION_MODELS);
+	return (
+		chain.find((candidate) =>
+			(available || []).some(
+				(model) => model?.id === candidate.id && model?.providerID === candidate.providerID,
+			),
+		) || null
+	);
+}
+
+/**
+ * Mint the password of one runtime run.
+ *
+ * It is random, it is different for every run, and it exists only for the
+ * lifetime of the runtime process.
+ */
+function mintRuntimePassword() {
+	return crypto.randomBytes(PASSWORD_BYTES).toString("hex");
+}
+
+/**
+ * Find the row of one role.
+ */
+function findRow(rows, role) {
+	return (rows || []).find((row) => row.role === role) || null;
+}
+
+/**
+ * Update one row, ignoring a row that is not there.
+ */
+async function updateRow(row, data) {
+	if (!row?.id) {
+		return;
+	}
+	try {
+		await prisma.supportInvestigation.update({ where: { id: row.id }, data });
+	} catch (error) {
+		logWarn("investigation queue could not update a row", {
+			role: row.role,
+			error: error?.message || String(error),
+		});
+	}
+}
+
+/**
+ * Update one row and stamp the end of its run.
+ */
+async function finishRow(row, data) {
+	await updateRow(row, { ...data, completed_at: new Date() });
+}
+
+/**
+ * Record the failure of every role that has not finished.
+ */
+async function failRows(rows, finished, message) {
+	for (const row of rows || []) {
+		if (finished.has(row.role)) {
+			continue;
+		}
+		await finishRow(row, { status: "failed", error: truncate(message, MAX_ERROR_CHARS) });
+	}
+}
+
+/**
+ * Move the case on, but only forwards.
+ *
+ * The update is conditional on the case still being `investigating`, so the
+ * queue can never move a case back to a state it has already left.
+ */
+async function advanceCaseStatus(caseId, status) {
+	try {
+		const result = await prisma.supportCase.updateMany({
+			where: { id: caseId, status: "investigating" },
+			data: { status },
+		});
+		if (result?.count) {
+			await emitCaseStatus(caseId, status);
+		}
+	} catch (error) {
+		logWarn("investigation queue could not advance the case status", {
+			caseId,
+			status,
+			error: error?.message || String(error),
+		});
+	}
+}
+
+/**
+ * Remove the sessions the run created.
+ *
+ * They are removed before the runtime is stopped: after the stop there is no
+ * server left to answer the request.
+ */
+async function removeSessions(runtime, sessionIDs) {
+	if (!runtime?.client) {
+		return;
+	}
+	for (const sessionID of sessionIDs || []) {
+		try {
+			await runtime.client.session.remove({ sessionID });
+		} catch (error) {
+			logWarn("investigation queue could not remove a session", {
+				sessionID,
+				error: error?.message || String(error),
+			});
+		}
+	}
+}
+
+/**
+ * Stop the runtime. It holds a spawned process and a port.
+ */
+async function stopRuntime(runtime) {
+	if (!runtime) {
+		return;
+	}
+	try {
+		await runtime.stop();
+	} catch (error) {
+		logWarn("investigation queue could not stop the runtime", {
+			error: error?.message || String(error),
+		});
+	}
+}
+
+/**
+ * The case event emitter, if the realtime bus has one.
+ *
+ * `emitCaseEvent` belongs to the case API workstream, and it may not exist
+ * yet when this module runs, so it is looked up through the module namespace
+ * instead of a static import: a missing export is not a reason for the whole
+ * investigation to fail.
+ */
+async function getCaseEventEmitter() {
+	try {
+		const module = await import("../realtime/realtimeBus.js");
+		return typeof module.emitCaseEvent === "function" ? module.emitCaseEvent : null;
+	} catch {
+		return null;
+	}
+}
+
+async function emitCaseEvent(type, payload) {
+	const emitter = await getCaseEventEmitter();
+	if (!emitter) {
+		return;
+	}
+	try {
+		emitter(payload.caseId, type, payload);
+	} catch (error) {
+		logWarn("investigation queue could not emit a case event", {
+			type,
+			error: error?.message || String(error),
+		});
+	}
+}
+
+function emitProgress(caseId, role, status, detail) {
+	return emitCaseEvent("support.case.progress", { caseId, role, status, detail });
+}
+
+function emitFinding(caseId, role, finding) {
+	return emitCaseEvent("support.case.finding", { caseId, role, finding });
+}
+
+function emitCaseStatus(caseId, status) {
+	return emitCaseEvent("support.case.status", { caseId, status });
+}
+
+/**
+ * Trim a string without touching its content.
+ *
+ * `sanitizeString` (server/utils/validators.js) escapes HTML, which would
+ * corrupt the raw agent answer the `error` column exists to keep readable.
+ */
+function truncate(value, max) {
+	const text = typeof value === "string" ? value : String(value ?? "");
+	return text.length > max ? text.slice(0, max) : text;
+}
+
+function toStringList(value) {
+	if (!Array.isArray(value)) {
+		return [];
+	}
+	return value
+		.filter((entry) => typeof entry === "string" && entry.trim())
+		.map((entry) => entry.trim());
+}
+
+function normalizeDetail(value) {
+	return typeof value === "string" ? value.trim() : "";
+}
