@@ -17,6 +17,12 @@ const attachmentFindMany = jest.fn(async () => []);
 const transaction = jest.fn(async (fn) =>
 	fn({
 		supportCaseMessage: { findFirst: messageFindFirst, create: messageCreate },
+		// deleteCase runs its read and its delete inside ONE transaction, so
+		// the transaction's client has to carry the models it touches. Without
+		// them the delete path would throw a TypeError instead of reaching
+		// its assertions.
+		supportCase: { findUnique: supportCaseFindUnique, delete: supportCaseDelete },
+		supportCaseAttachment: { findMany: attachmentFindMany },
 	}),
 );
 
@@ -148,6 +154,13 @@ describe("listCasesAdmin", () => {
 });
 
 describe("deleteCase", () => {
+	beforeEach(() => {
+		// The case is there unless a test says otherwise: the delete reads the
+		// row first and returns an empty list when it is not.
+		supportCaseFindUnique.mockReset();
+		supportCaseFindUnique.mockResolvedValue({ id: "case-1" });
+	});
+
 	test("returns the attachments it removed", async () => {
 		attachmentFindMany.mockResolvedValue([
 			{ id: "att-1", case_id: "case-1", file_path: "/uploads/support/a.png" },
@@ -165,5 +178,38 @@ describe("deleteCase", () => {
 		attachmentFindMany.mockResolvedValue([]);
 		await deleteCase("case-1");
 		expect(attachmentFindMany).toHaveBeenCalledWith({ where: { case_id: "case-1" } });
+	});
+
+	// A case that is not there is not an error: the contract says this
+	// returns the attachments, and a missing case has none.
+	// prisma.supportCase.delete raises P2025 for a missing row, so the row is
+	// read first.
+	test("returns an empty list for a case that is not there", async () => {
+		supportCaseFindUnique.mockResolvedValue(null);
+		const removed = await deleteCase("case-missing");
+		expect(removed).toEqual([]);
+		expect(supportCaseDelete).not.toHaveBeenCalled();
+	});
+
+	// A case deleted by somebody else between the read and the delete makes
+	// Prisma raise P2025. That is not a failure either: the attachments went
+	// with the case, so there is nothing left to clean up.
+	test("returns an empty list when the case was deleted concurrently", async () => {
+		supportCaseFindUnique.mockResolvedValue({ id: "case-1" });
+		supportCaseDelete.mockImplementationOnce(async () => {
+			const error = new Error("Record to delete does not exist.");
+			error.code = "P2025";
+			throw error;
+		});
+		const removed = await deleteCase("case-1");
+		expect(removed).toEqual([]);
+	});
+
+	// Without one transaction a concurrent delete can slip between the read
+	// and the delete, and the attachment list is lost.
+	test("reads and deletes inside one transaction", async () => {
+		attachmentFindMany.mockResolvedValue([]);
+		await deleteCase("case-1");
+		expect(transaction).toHaveBeenCalledTimes(1);
 	});
 });

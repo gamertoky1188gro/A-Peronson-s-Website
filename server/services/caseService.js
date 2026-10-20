@@ -155,13 +155,48 @@ export async function listCasesAdmin() {
  * anchor them — those are not part of the case's foreign key, so the database
  * cannot remove them.
  *
+ * A case that is not there is not an error: the contract says this returns
+ * the attachments, and a missing case has none. `prisma.supportCase.delete`
+ * raises P2025 for a missing row, so the row is read first and an absent
+ * case returns `[]` instead of throwing.
+ *
+ * The read and the delete share ONE transaction. Without it a concurrent
+ * delete can slip between them: this call reads the attachments, the other
+ * call deletes the case (and the attachments with it), and this call then
+ * fails on a row that is already gone — or worse, returns an attachment list
+ * for a case that no longer exists.
+ *
  * @param {string} caseId
  * @returns {Promise<Object[]>} The attachment rows that were removed.
  */
 export async function deleteCase(caseId) {
-	const attachments = await prisma.supportCaseAttachment.findMany({ where: { case_id: caseId } });
-	await prisma.supportCase.delete({ where: { id: caseId } });
-	return attachments;
+	return prisma.$transaction(async (tx) => {
+		const attachments = await tx.supportCaseAttachment.findMany({
+			where: { case_id: caseId },
+		});
+
+		const existing = await tx.supportCase.findUnique({
+			where: { id: caseId },
+			select: { id: true },
+		});
+		if (!existing) {
+			return [];
+		}
+
+		try {
+			await tx.supportCase.delete({ where: { id: caseId } });
+		} catch (error) {
+			// The case was deleted by somebody else between the read and the
+			// delete. Its attachments went with it (the relation cascades), so
+			// there is nothing left for the caller to clean up.
+			if (error?.code === "P2025") {
+				return [];
+			}
+			throw error;
+		}
+
+		return attachments;
+	});
 }
 
 /**
