@@ -1,0 +1,489 @@
+/**
+ * @jest-environment node
+ *
+ * The investigation queue, driven end to end with the runtime, the agents and
+ * the database mocked out.
+ *
+ * The runtime is mocked because a real one spawns an `opencode serve` process
+ * and talks to a model; what has to be proved here is the ORCHESTRATION:
+ * one session per role, the verifier running last over the findings the
+ * specialists produced, the confidence rules of the pipeline, the row that is
+ * written per role, and the promise that the runtime is stopped whatever
+ * happens.
+ */
+import { jest } from "@jest/globals";
+
+// --- the database ------------------------------------------------------------
+//
+// An in-memory store, so the test can assert on what was actually written:
+// the row of every role, with its status, its findings and its errors.
+
+const rows = [];
+const attachments = [];
+const cases = new Map();
+
+const supportInvestigationCreate = jest.fn(async ({ data }) => {
+	const row = { ...data };
+	rows.push(row);
+	return row;
+});
+const supportInvestigationUpdate = jest.fn(async ({ where, data }) => {
+	const row = rows.find((entry) => entry.id === where.id);
+	if (row) {
+		Object.assign(row, data);
+	}
+	return row;
+});
+const supportInvestigationFindMany = jest.fn(async ({ where } = {}) => {
+	if (!where?.case_id) {
+		return [...rows];
+	}
+	return rows.filter((row) => row.case_id === where.case_id);
+});
+const supportCaseUpdateMany = jest.fn(async ({ where, data }) => {
+	const row = cases.get(where.id);
+	if (!row || (where.status && row.status !== where.status)) {
+		return { count: 0 };
+	}
+	Object.assign(row, data);
+	return { count: 1 };
+});
+const supportCaseAttachmentFindMany = jest.fn(async ({ where } = {}) => {
+	if (!where?.case_id) {
+		return [...attachments];
+	}
+	return attachments.filter((entry) => entry.case_id === where.case_id);
+});
+
+jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
+	default: {
+		supportInvestigation: {
+			create: supportInvestigationCreate,
+			update: supportInvestigationUpdate,
+			findMany: supportInvestigationFindMany,
+		},
+		supportCase: { updateMany: supportCaseUpdateMany },
+		supportCaseAttachment: { findMany: supportCaseAttachmentFindMany },
+	},
+}));
+
+// --- the case ---------------------------------------------------------------
+
+const getCaseWithMessages = jest.fn(async (caseId) => cases.get(caseId) || null);
+
+jest.unstable_mockModule("../../server/services/caseService.js", () => ({
+	getCaseWithMessages,
+}));
+
+// --- the runtime -------------------------------------------------------------
+
+const startInvestigationRuntime = jest.fn(async ({ password }) => ({
+	baseUrl: "http://127.0.0.1:4200",
+	port: 4200,
+	client: { session: { remove: jest.fn(async () => ({ data: true })) } },
+	password,
+	stop: jest.fn(async () => {}),
+}));
+const createInvestigationSession = jest.fn(async ({ title }) => ({
+	data: { id: `session-${title}` },
+}));
+const listAvailableModels = jest.fn(async () => [
+	{ id: "deepseek-v4.1-flash-free", providerID: "opencode" },
+]);
+const runAgentPrompt = jest.fn(async ({ text }) => ({ text, toolCalls: [], error: undefined }));
+
+jest.unstable_mockModule("../../server/services/investigation/opencodeRuntime.js", () => ({
+	REPOSITORY_ROOT: "C:\\repo",
+	startInvestigationRuntime,
+	createInvestigationSession,
+	listAvailableModels,
+	runAgentPrompt,
+}));
+
+const { enqueueInvestigation, queueDepth } = await import(
+	"../../server/services/investigationQueue.js"
+);
+
+// --- helpers ----------------------------------------------------------------
+
+const CASE_ID = "case-1";
+
+/** A reply that satisfies the agents' JSON contract. */
+function agentReply(findings, limitations = [], summary = "a summary") {
+	return JSON.stringify({ summary, findings, limitations });
+}
+
+/** The role a prompt belongs to. The prompts name their role in the first line. */
+function roleOf(prompt) {
+	return /You are the (\w+) investigator/.exec(prompt)?.[1] || "unknown";
+}
+
+/**
+ * The default answer of every role: each specialist reports its own finding,
+ * the verifier refutes nothing.
+ */
+function defaultAnswer({ text }) {
+	if (roleOf(text) === "verify") {
+		return { text: agentReply([]), toolCalls: [] };
+	}
+	const role = roleOf(text);
+	return {
+		text: agentReply(
+			[
+				{
+					confidence: "confirmed",
+					detail: `finding from ${role}`,
+					evidence: [{ file: "server/feed.js", lines: "10-20", commit: "abc1234" }],
+				},
+			],
+			[],
+			`the ${role} summary`,
+		),
+		toolCalls: [],
+	};
+}
+
+/** The row of one role. */
+function rowFor(role, caseId = CASE_ID) {
+	return rows.find((row) => row.role === role && row.case_id === caseId);
+}
+
+/** The LAST row of one role - the one a re-run wrote. */
+function lastRowFor(role, caseId = CASE_ID) {
+	return rows.filter((row) => row.role === role && row.case_id === caseId).at(-1);
+}
+
+/** Wait until the queue has drained. */
+async function waitForDrain(timeoutMs = 10_000) {
+	const deadline = Date.now() + timeoutMs;
+	while (queueDepth() > 0 && Date.now() < deadline) {
+		await new Promise((resolve) => setTimeout(resolve, 10));
+	}
+	if (queueDepth() !== 0) {
+		throw new Error(`the queue did not drain: ${queueDepth()} jobs left`);
+	}
+}
+
+function seedCase(caseId = CASE_ID, overrides = {}) {
+	const caseRow = {
+		id: caseId,
+		user_id: "user-1",
+		status: "investigating",
+		subject: "the feed is empty",
+		summary: "the feed shows nothing after the migration",
+		ticket_id: "TICKET-1",
+		messages: [
+			{ role: "client", kind: "question", content: "the feed is empty", sequence: 1 },
+			{ role: "assistant", kind: "answer", content: "what did you migrate?", sequence: 2 },
+		],
+		...overrides,
+	};
+	cases.set(caseId, caseRow);
+	return caseRow;
+}
+
+beforeEach(() => {
+	rows.length = 0;
+	attachments.length = 0;
+	cases.clear();
+	seedCase();
+
+	supportInvestigationCreate.mockClear();
+	supportInvestigationUpdate.mockClear();
+	supportInvestigationFindMany.mockClear();
+	supportCaseUpdateMany.mockClear();
+	supportCaseAttachmentFindMany.mockClear();
+	getCaseWithMessages.mockClear();
+	startInvestigationRuntime.mockClear();
+	createInvestigationSession.mockClear();
+	listAvailableModels.mockClear();
+	runAgentPrompt.mockClear();
+
+	listAvailableModels.mockResolvedValue([
+		{ id: "deepseek-v4.1-flash-free", providerID: "opencode" },
+	]);
+	createInvestigationSession.mockImplementation(async ({ title }) => ({
+		data: { id: `session-${title}` },
+	}));
+	runAgentPrompt.mockImplementation(defaultAnswer);
+});
+
+describe("the investigation queue", () => {
+	test("queues one row per role and drains to zero when the run is over", async () => {
+		await enqueueInvestigation(CASE_ID);
+
+		expect(rows).toHaveLength(5);
+		for (const role of ["lead", "code", "repo", "research", "verify"]) {
+			const row = rowFor(role);
+			expect(row).toBeDefined();
+			expect(row.status).toBe("queued");
+			expect(row.case_id).toBe(CASE_ID);
+		}
+
+		// The depth reports the work that is outstanding: one job, waiting or
+		// running, until it is over.
+		expect(queueDepth()).toBe(1);
+
+		await waitForDrain();
+
+		expect(queueDepth()).toBe(0);
+		for (const role of ["lead", "code", "repo", "research", "verify"]) {
+			expect(rowFor(role).status).toBe("complete");
+		}
+	});
+
+	test("a re-run of the same case gets a higher attempt", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+		await enqueueInvestigation(CASE_ID);
+
+		expect(lastRowFor("lead").attempt).toBe(2);
+		await waitForDrain();
+	});
+
+	test("the runtime is started with a per-run random password", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		expect(startInvestigationRuntime).toHaveBeenCalledTimes(2);
+		const [first] = startInvestigationRuntime.mock.calls[0];
+		const [second] = startInvestigationRuntime.mock.calls[1];
+		expect(typeof first.password).toBe("string");
+		expect(first.password.length).toBeGreaterThan(16);
+		expect(first.password).not.toBe(second.password);
+	});
+
+	test("every role gets its own session, and the verifier runs last", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		expect(createInvestigationSession).toHaveBeenCalledTimes(5);
+		const titles = createInvestigationSession.mock.calls.map(([call]) => call.title);
+		expect(titles).toEqual([
+			`investigation lead ${CASE_ID}`,
+			`investigation code ${CASE_ID}`,
+			`investigation repo ${CASE_ID}`,
+			`investigation research ${CASE_ID}`,
+			`investigation verify ${CASE_ID}`,
+		]);
+
+		// One session each: the queue never delegates through the model's own
+		// `task` tool.
+		expect(new Set(titles).size).toBe(5);
+	});
+
+	test("the verify prompt carries the findings of the specialists", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const verifyCall = runAgentPrompt.mock.calls.find(([call]) => roleOf(call.text) === "verify");
+		expect(verifyCall).toBeDefined();
+		expect(verifyCall[0].text).toContain("finding from lead");
+		expect(verifyCall[0].text).toContain("finding from research");
+		expect(verifyCall[0].text).toContain("server/feed.js");
+	});
+
+	test("a refuted finding is downgraded in the final set and in its own row", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				// The verifier refutes the lead's finding by repeating its exact
+				// detail as a speculative finding.
+				return {
+					text: agentReply([
+						{
+							confidence: "speculative",
+							detail: "finding from lead",
+							evidence: [{ file: "server/feed.js", lines: "99-100" }],
+						},
+					]),
+					toolCalls: [],
+				};
+			}
+			return defaultAnswer({ text });
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		// The final set - the verify row - carries every specialist finding.
+		const verifyRow = rowFor("verify");
+		expect(verifyRow.status).toBe("complete");
+		expect(verifyRow.findings.findings).toHaveLength(4);
+		const leadFinding = verifyRow.findings.findings.find(
+			(finding) => finding.detail === "finding from lead",
+		);
+		expect(leadFinding.confidence).toBe("speculative");
+		const codeFinding = verifyRow.findings.findings.find(
+			(finding) => finding.detail === "finding from code",
+		);
+		expect(codeFinding.confidence).toBe("confirmed");
+
+		// The row the refuted finding came from must not keep claiming
+		// "confirmed".
+		expect(rowFor("lead").findings.findings[0].confidence).toBe("speculative");
+		expect(rowFor("code").findings.findings[0].confidence).toBe("confirmed");
+	});
+
+	test("a finding with no evidence never stays confirmed", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			return {
+				text: agentReply([{ confidence: "confirmed", detail: "a guess" }]),
+				toolCalls: [],
+			};
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		expect(rowFor("verify").findings.findings[0].confidence).toBe("speculative");
+		expect(rowFor("lead").findings.findings[0].confidence).toBe("speculative");
+	});
+
+	test("the row of a role keeps its summary, findings, limitations and tool log", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([], ["no history was readable"]), toolCalls: [] };
+			}
+			return {
+				text: agentReply(
+					[
+						{
+							confidence: "probable",
+							detail: "the migration left a stale index",
+							evidence: [{ file: "prisma/schema.prisma", lines: "1-5" }],
+						},
+					],
+					["the git history was not readable"],
+					"the migration is the likely cause",
+				),
+				toolCalls: [{ tool: "read", status: "completed" }],
+			};
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const row = rowFor("lead");
+		expect(row.status).toBe("complete");
+		expect(row.findings.summary).toBe("the migration is the likely cause");
+		expect(row.findings.limitations).toEqual(["the git history was not readable"]);
+		expect(row.findings.findings[0].confidence).toBe("probable");
+		expect(row.evidence.files).toEqual(["prisma/schema.prisma"]);
+		expect(row.evidence.commits).toEqual([]);
+		expect(row.evidence.queries).toEqual([]);
+		expect(row.evidence.failures).toEqual([]);
+		expect(row.tool_log).toEqual([{ tool: "read", status: "completed" }]);
+		expect(row.model_id).toBe("deepseek-v4.1-flash-free");
+		expect(row.prompt).toContain("the feed is empty");
+		expect(row.started_at).toBeInstanceOf(Date);
+		expect(row.completed_at).toBeInstanceOf(Date);
+		expect(row.error).toBeUndefined();
+	});
+
+	test("a reply that is not JSON is recorded as a failure, with the raw answer", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			return { text: "I am sorry, I could not do that.", toolCalls: [] };
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const row = rowFor("lead");
+		expect(row.status).toBe("failed");
+		expect(row.error).toContain("did not answer with JSON");
+		expect(row.error).toContain("I am sorry, I could not do that.");
+		// A failed parse never becomes an empty-but-successful result.
+		expect(row.findings).toBeUndefined();
+	});
+
+	test("a verification that fails leaves the findings recorded, but unverified", async () => {
+		runAgentPrompt.mockImplementation(async ({ text }) => {
+			if (roleOf(text) === "verify") {
+				return { text: "I could not verify anything.", toolCalls: [] };
+			}
+			return defaultAnswer({ text });
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const verifyRow = rowFor("verify");
+		expect(verifyRow.status).toBe("failed");
+		expect(verifyRow.error).toContain("did not answer with JSON");
+		// The specialists' findings survive the failed verification.
+		expect(verifyRow.findings.findings).toHaveLength(4);
+		expect(rowFor("lead").status).toBe("complete");
+	});
+
+	test("the runtime is stopped even when a role fails", async () => {
+		let runtime = null;
+		startInvestigationRuntime.mockImplementation(async ({ password }) => {
+			runtime = {
+				baseUrl: "http://127.0.0.1:4200",
+				port: 4200,
+				client: { session: { remove: jest.fn(async () => ({ data: true })) } },
+				password,
+				stop: jest.fn(async () => {}),
+			};
+			return runtime;
+		});
+		runAgentPrompt.mockImplementation(async () => {
+			throw new Error("the runtime fell over");
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		expect(runtime.stop).toHaveBeenCalledTimes(1);
+		expect(rowFor("lead").status).toBe("failed");
+		expect(rowFor("lead").error).toContain("the runtime fell over");
+	});
+
+	test("the case moves on to reporting when the investigation is over", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		expect(supportCaseUpdateMany).toHaveBeenCalled();
+		const [call] = supportCaseUpdateMany.mock.calls.at(-1);
+		expect(call.where).toEqual({ id: CASE_ID, status: "investigating" });
+		expect(call.data.status).toBe("reporting");
+	});
+
+	test("two investigations run at once, and never three", async () => {
+		let active = 0;
+		let peak = 0;
+		startInvestigationRuntime.mockImplementation(async ({ password }) => {
+			active += 1;
+			peak = Math.max(peak, active);
+			return {
+				baseUrl: "http://127.0.0.1:4200",
+				port: 4200,
+				client: { session: { remove: jest.fn(async () => ({ data: true })) } },
+				password,
+				stop: jest.fn(async () => {
+					active -= 1;
+				}),
+			};
+		});
+
+		seedCase("case-2");
+		seedCase("case-3");
+
+		await enqueueInvestigation(CASE_ID);
+		await enqueueInvestigation("case-2");
+		await enqueueInvestigation("case-3");
+		await waitForDrain();
+
+		expect(peak).toBe(2);
+		expect(queueDepth()).toBe(0);
+		expect(rows.filter((row) => row.case_id === "case-3")).toHaveLength(5);
+	});
+});
