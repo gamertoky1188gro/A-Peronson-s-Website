@@ -170,12 +170,41 @@ Responsibilities, in order:
 Every investigation gets a **fresh session** and a **fresh process**. Nothing is reused
 across cases.
 
-### 6.3 Model selection
+### 6.3 Model selection - free models only
 
-`OPENCODE_INVESTIGATION_MODEL` (default `opencode/deepseek-v4.1-flash-free`) with
-`OPENCODE_INVESTIGATION_PROVIDER` (default `opencode`). The runtime validates the
-model against `GET /api/provider` at startup and fails loudly with an actionable
-message if it does not exist (V11).
+The investigation **always** uses free models. There is no paid fallback in this
+path, and the repo's Gemini key is deliberately **not** wired into it - a keyed
+provider would make the free tier an accident rather than a guarantee.
+
+`OPENCODE_INVESTIGATION_MODELS` is a comma-separated, ordered fallback chain
+(default below). The runtime tries each in turn; on a provider error for model *N* it
+moves to *N+1* and records the attempt in `SupportInvestigation.error`.
+
+```
+opencode/deepseek-v4.1-flash-free
+opencode/mimo-v2.6-flash-free
+opencode/glm-5.3-flash-free
+opencode/minimax-m3.1-flash-free
+opencode/nemotron-3-ultra-free
+opencode/longcat-2.5-preview-free
+opencode/nemotron-3.5-lightning-free
+opencode/beam-free
+opencode/nemotron-3.5-super-vl-free
+opencode/big-pickle
+```
+
+Rules:
+
+- **If every model in the chain fails, the investigation fails.** It does not fall
+  back to a keyed or paid provider. The case records the per-model errors and stays
+  retryable; the client is told the investigation could not run, not that it found
+  nothing.
+- At startup the runtime validates the chain against `GET /api/provider` and logs
+  any configured model that does not exist (V11) - a stale `OPENCODE_MODEL_ID` was
+  a live problem in this repo.
+- A `provider.auth` 403 is a **model-level** failure and advances the chain. A
+  configuration or spawn failure is **runtime-level** and aborts the investigation
+  immediately - retrying with another model cannot fix a missing binary.
 
 ### 6.4 The spike gate (Phase 1 exit criterion)
 
@@ -231,6 +260,22 @@ duplicating file metadata; the bytes live in a **gated** `support/` upload prefi
 
 Status transitions: `collecting -> investigating -> reporting -> completed`, with
 `failed` reachable from any non-terminal state.
+
+### 7.1 Case lifecycle and retention
+
+- **A client may delete their own case at any time.** Deletion removes the case,
+  its messages, its attachments and the uploaded bytes, and leaves the `SupportTicket`
+  (which is the business record) intact.
+- **Cases are swept after 90 days** (`CASE_RETENTION_DAYS`, default 90), measured
+  from `updated_at`. A case with `status` in (`collecting`, `investigating`) is not
+  swept - it is still live work.
+- **Evidence bytes follow the case.** A swept or deleted case's attachment files
+  are removed from disk, not just unlinked.
+- **Owner/admin can extend retention** on a case under investigation, which pins
+  `updated_at` forward and excludes it from the sweep. A `retain` flag on the case
+  records the intent.
+- The sweep runs on the same schedule as the existing worker loops and reports its
+  depth to the log hub.
 
 ## 8. Evidence privacy
 
@@ -330,6 +375,14 @@ steps, and audit/delivery status.
 - Delivery status is recorded on the case (`report_delivery_status`,
   `report_delivered_at`).
 
+**Escalation.** A finding whose `confidence` is `confirmed` **and** whose category
+is a security or data-loss issue escalates immediately and separately: an in-app
+notification to every owner/admin, and an `escalated` flag on the case. It does not
+wait for the report email, because a confirmed data-loss finding should not be
+delayed by a mail failure. Non-security confirmed findings do not escalate
+automatically - they appear in the report and the admin console like any other
+finding.
+
 ## 11. UI
 
 **Client** - `src/pages/SupportReports.jsx` is rewritten chat-first: a message list, a
@@ -403,13 +456,31 @@ log, the report, and re-run / escalate actions.
 
 Each phase is independently shippable and independently testable.
 
-## 16. Open questions
+## 16. Decisions taken, and the ones still open
 
-- **Which provider in production.** The free `opencode/*` models need a release-CLI
-  User-Agent, which the spawned server provides, but the free tier may be rate
-  limited. The repo's Gemini key is the fallback. Which should be primary is a
-  deployment decision.
-- **Case retention.** How long a case and its evidence are kept, and whether the
-  client can delete their case.
-- **Escalation.** Whether a case auto-escalates to a human when the investigator
-  reports a confirmed security issue.
+**Resolved:**
+
+- **Provider: free models only, always.** `opencode/deepseek-v4.1-flash-free`
+  primary, with the 10-model free chain as fallback (6.3). No keyed or paid
+  provider in the investigation path.
+- **Retention: 90 days**, client may delete their own case any time, evidence
+  bytes follow the case, owner/admin can pin a case (7.1).
+- **Escalation: automatic for confirmed security/data-loss findings**, via in-app
+  notification and a case flag, independent of the email (10).
+
+**Still open - carried to implementation, not blocking the spec:**
+
+- Whether the free tier's rate limits justify a **queue-side backoff** (retry a
+  failed investigation later) versus failing the case outright. The default in this
+  spec is: fail the investigation, keep the case retryable.
+- Whether the `research` specialist should get the `parallel-search` MCP enabled
+  (it is read-only, but it adds context weight; the docs warn that MCP tools
+  consume context quickly).
+- Whether `repo` should get the `github` MCP enabled. It carries a personal access
+  token, so it is off by default and would need a read-only scoped token.
+
+**Explicitly deferred by the design, not by omission:**
+
+- The 1200-character `SupportTicket` truncation still applies to the final ticket.
+  The full detail lives on the case and in the report, which is the system of record
+  for the investigation.
