@@ -30,6 +30,67 @@ import { logError, logInfo } from "../utils/logger.js";
 import { deny, handleControllerError } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
 
+/**
+ * Resolves the case or ticket a support-evidence upload claims to belong to.
+ *
+ * `entity_id` arrives in the request body and used to be written straight
+ * onto the Document row, so any authenticated caller could mint unlimited
+ * `support_case` rows pointing at an id they made up. The row's `entity_id`
+ * is the fact the authorization rests on, so it has to be resolved against a
+ * row that actually exists, and the caller has to own it:
+ *
+ *   - a `SupportCase` with that id  -> the case's own user
+ *   - a `SupportTicket` with that id -> the ticket's own user
+ *   - neither                       -> 400, there is nothing to attach to
+ *
+ * The legacy client (FeedbackPage.jsx, SupportReports.jsx) posts a TICKET id,
+ * so that branch is load-bearing: without it the legacy upload breaks.
+ *
+ * @param {string} entityId The id the request claimed.
+ * @param {string} userId The authenticated caller's id.
+ * @returns {Promise<{ ok: boolean, status: number, error: string, kind: string }>}
+ */
+async function resolveSupportEvidenceOwner(entityId, userId) {
+	const id = String(entityId || "").trim();
+	if (!id) {
+		return {
+			ok: false,
+			status: 400,
+			error: "entity_id is required for support evidence",
+			kind: "",
+		};
+	}
+
+	const supportCase = await prisma.supportCase.findUnique({
+		where: { id },
+		select: { id: true, user_id: true },
+	});
+	if (supportCase) {
+		if (String(supportCase.user_id) !== String(userId)) {
+			return { ok: false, status: 403, error: "Forbidden", kind: "support_case" };
+		}
+		return { ok: true, status: 200, error: "", kind: "support_case" };
+	}
+
+	const ticket = await prisma.supportTicket.findUnique({
+		where: { id },
+		select: { id: true, user_id: true },
+	});
+	if (ticket) {
+		if (String(ticket.user_id) !== String(userId)) {
+			return { ok: false, status: 403, error: "Forbidden", kind: "support_ticket" };
+		}
+		return { ok: true, status: 200, error: "", kind: "support_ticket" };
+	}
+
+	return {
+		ok: false,
+		status: 400,
+		error: "entity_id does not name a support case or a support ticket",
+		kind: "",
+	};
+}
+
 export async function uploadDocument(req, res) {
 	if (!req.file) {
 		return res.status(400).json({ error: "No file uploaded" });
@@ -49,6 +110,14 @@ export async function uploadDocument(req, res) {
 		// feed media, product media) stays on saveDocumentMetadata, which
 		// writes to the public root on purpose.
 		if (isSupportEvidenceEntityType(entityType)) {
+			// The evidence has to belong to the caller: the id in the request
+			// is resolved against the case (or the legacy ticket) it names,
+			// and the caller has to own it.
+			const ownership = await resolveSupportEvidenceOwner(req.body?.entity_id, req.user.id);
+			if (!ownership.ok) {
+				return res.status(ownership.status).json({ error: ownership.error });
+			}
+
 			const doc = await saveSupportEvidence(req.user.id, entityId, type, req.file);
 			// No media queue for evidence. The image/video pipeline rewrites the
 			// file in place, and an attachment that is evidence must stay

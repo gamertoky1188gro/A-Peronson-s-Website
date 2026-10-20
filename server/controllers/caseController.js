@@ -63,6 +63,29 @@ const CONFIRMED_STATUSES = new Set(["investigating", "reporting", "completed"]);
 // The event type is fixed by contracts.md §4.
 const CASE_STATUS_EVENT = "support.case.status";
 
+// The five event types of contracts.md §4, in the order they are subscribed.
+// The list is READ FROM the realtime bus rather than re-declared here: the
+// bus is where the contract's strings live, and a second copy of them is a
+// second thing to keep in step. The filter drops anything that is not a
+// string, so a bus that has not grown the export yet yields an empty list -
+// a stream that forwards nothing, rather than a module that throws on import
+// and takes the whole route table down with it.
+const CASE_STREAM_EVENT_TYPES = Object.freeze(
+	[
+		realtime.CASE_EVENTS?.message,
+		realtime.CASE_EVENTS?.status,
+		realtime.CASE_EVENTS?.progress,
+		realtime.CASE_EVENTS?.finding,
+		realtime.CASE_EVENTS?.report,
+	].filter((type) => typeof type === "string"),
+);
+
+// How often a comment frame is written while the case is quiet. Proxies and
+// load balancers close an idle connection; a comment keeps the pipe open
+// without looking like an event to the client, which ignores every line that
+// starts with a colon.
+const CASE_STREAM_KEEPALIVE_MS = 30_000;
+
 /**
  * May this caller read this case?
  *
@@ -631,6 +654,124 @@ export async function confirmCaseController(req, res) {
 	} catch (error) {
 		return handleControllerError(res, error);
 	}
+}
+
+/**
+ * GET /api/support/cases/:caseId/stream — the case's live event stream.
+ *
+ * Server-Sent Events. The client subscribes with a plain `fetch`, not an
+ * EventSource, because an EventSource cannot carry the Authorization header
+ * this server requires — and a token in a query string would put a credential
+ * in a URL.
+ *
+ * The wire format is contracts.md §4's, unchanged:
+ *
+ *   event: support.case.message
+ *   data: {"caseId":"<case id>","message":{...}}
+ *
+ * So every frame names one of the five fixed event types and carries a JSON
+ * envelope that ALWAYS carries the case id. The envelope is flat: the
+ * payload's own keys sit next to `caseId` rather than inside a nested
+ * `payload` object, exactly as contracts.md §4 writes it.
+ *
+ * The stream is case-scoped. The bus is shared by every case, so an event
+ * for another case is dropped instead of forwarded, and the case id in the
+ * envelope is the one this stream is for.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+export async function streamCaseController(req, res) {
+	let caseId;
+	try {
+		caseId = sanitizeString(String(req.params.caseId || ""), 120);
+		if (!caseId) {
+			return res.status(400).json({ error: "caseId is required" });
+		}
+
+		const found = await caseService.getCaseWithMessages(caseId);
+		if (!found) {
+			return res.status(404).json({ error: "Case not found" });
+		}
+		// The stream is the case's own thread. A stranger gets the same 403
+		// the read route gives them, not a silent empty stream.
+		if (!canReadCase(req.user, found)) {
+			return res.status(403).json({ error: "Forbidden" });
+		}
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+
+	res.writeHead(200, {
+		"Content-Type": "text/event-stream",
+		"Cache-Control": "no-cache, no-transform",
+		Connection: "keep-alive",
+		"X-Accel-Buffering": "no",
+	});
+
+	// The client's reconnect delay. It is read out of this frame, the same
+	// way the feed stream publishes it.
+	res.write("retry: 3000\n\n");
+
+	let eventId = 0;
+	let closed = false;
+
+	const write = (frame) => {
+		if (closed || res.writableEnded) {
+			return;
+		}
+		try {
+			res.write(frame);
+		} catch {
+			// The socket went away between the close event and this write.
+			// Nothing to do here: the teardown below removes the listeners.
+		}
+	};
+
+	const send = (type, payload) => {
+		eventId += 1;
+		const envelope = {
+			...(payload && typeof payload === "object" ? payload : {}),
+			// The case id in the envelope always wins over one inside the
+			// payload: a client routes on it, and a payload that disagreed with
+			// the stream would send the event to the wrong case.
+			caseId,
+		};
+		write(`id: ${eventId}\nevent: ${type}\ndata: ${JSON.stringify(envelope)}\n\n`);
+	};
+
+	const handlers = new Map();
+	for (const type of CASE_STREAM_EVENT_TYPES) {
+		const handler = (payload) => {
+			if (String(payload?.caseId ?? "") !== String(caseId)) {
+				return;
+			}
+			send(type, payload);
+		};
+		handlers.set(type, handler);
+		realtime.realtimeBus.on(type, handler);
+	}
+
+	const keepalive = setInterval(() => {
+		write(":keepalive\n\n");
+	}, CASE_STREAM_KEEPALIVE_MS);
+
+	// The teardown is idempotent: both the request and the response emit
+	// "close", and the listeners must be removed exactly once or every closed
+	// stream would leak a handler on the bus.
+	const teardown = () => {
+		if (closed) {
+			return;
+		}
+		closed = true;
+		clearInterval(keepalive);
+		for (const [type, handler] of handlers) {
+			realtime.realtimeBus.off(type, handler);
+		}
+	};
+
+	req.on("close", teardown);
+	res.on("close", teardown);
 }
 
 /**

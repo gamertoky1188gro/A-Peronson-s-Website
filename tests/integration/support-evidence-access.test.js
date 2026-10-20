@@ -14,9 +14,17 @@ import request from "supertest";
 const documentFindMany = jest.fn(async () => []);
 const documentCreate = jest.fn(async (args) => ({ id: "doc-new", ...args.data }));
 
+// The upload resolves `entity_id` against the case (or the legacy ticket)
+// it names, and refuses anything the caller does not own. These two mocks
+// are that lookup.
+const supportCaseFindUnique = jest.fn(async () => null);
+const supportTicketFindUnique = jest.fn(async () => null);
+
 jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 	default: {
 		document: { findMany: documentFindMany, create: documentCreate },
+		supportCase: { findUnique: supportCaseFindUnique },
+		supportTicket: { findUnique: supportTicketFindUnique },
 	},
 }));
 
@@ -70,6 +78,14 @@ beforeEach(() => {
 	documentFindMany.mockResolvedValue([]);
 	documentCreate.mockReset();
 	documentCreate.mockImplementation(async (args) => ({ id: "doc-new", ...args.data }));
+	supportCaseFindUnique.mockReset();
+	supportCaseFindUnique.mockImplementation(async ({ where }) =>
+		where?.id === "case-1" ? { id: "case-1", user_id: "client-1" } : null,
+	);
+	supportTicketFindUnique.mockReset();
+	supportTicketFindUnique.mockImplementation(async ({ where }) =>
+		where?.id === "ticket-1" ? { id: "ticket-1", user_id: "client-1" } : null,
+	);
 });
 
 describe("GET /api/documents — support evidence is owner-scoped", () => {
@@ -192,9 +208,9 @@ function fakeRes() {
 	return res;
 }
 
-function uploadReq({ entityType, entityId, name, mimetype }) {
+function uploadReq({ entityType, entityId, name, mimetype, user }) {
 	return {
-		user: { id: "client-1", role: "buyer" },
+		user: user || { id: "client-1", role: "buyer" },
 		body: { entity_type: entityType, entity_id: entityId, type: "screenshot" },
 		file: {
 			originalname: name,
@@ -309,5 +325,105 @@ describe("the support upload lands in the gated namespace", () => {
 		expect(row.file_path).not.toMatch(/^\/uploads\/support\//);
 		expect(path.dirname(onDisk)).toBe(UPLOADS_ROOT);
 		expect(await fs.readFile(onDisk, "utf8")).toBe("SUPPORT-EVIDENCE-BYTES");
+	});
+});
+
+// --- the upload checks that the caller owns the case ------------------------
+//
+// `entity_id` arrives in the request body. It used to be written straight onto
+// the Document row, so any authenticated caller could mint unlimited
+// `support_case` rows naming an id they made up. The id is now resolved
+// against a SupportCase (or, for the legacy client, a SupportTicket) and the
+// caller has to own it.
+describe("the support upload resolves who owns the entity", () => {
+	test("a stranger cannot attach evidence to somebody else's case", async () => {
+		const res = fakeRes();
+		await uploadDocument(
+			uploadReq({
+				entityType: "support_case",
+				entityId: "case-1",
+				name: "stolen.png",
+				mimetype: "image/png",
+				user: { id: "intruder", role: "buyer" },
+			}),
+			res,
+		);
+
+		expect(res.statusCode).toBe(403);
+		expect(typeof res.body.error).toBe("string");
+		// No row was minted, and no bytes were written.
+		expect(documentCreate).not.toHaveBeenCalled();
+	});
+
+	test("a stranger cannot attach evidence to somebody else's ticket", async () => {
+		const res = fakeRes();
+		await uploadDocument(
+			uploadReq({
+				entityType: "support_ticket",
+				entityId: "ticket-1",
+				name: "stolen.png",
+				mimetype: "image/png",
+				user: { id: "intruder", role: "buyer" },
+			}),
+			res,
+		);
+
+		expect(res.statusCode).toBe(403);
+		expect(documentCreate).not.toHaveBeenCalled();
+	});
+
+	test("an entity_id that names nothing is refused", async () => {
+		const res = fakeRes();
+		await uploadDocument(
+			uploadReq({
+				entityType: "support_case",
+				entityId: "made-up-id",
+				name: "nowhere.png",
+				mimetype: "image/png",
+			}),
+			res,
+		);
+
+		expect(res.statusCode).toBe(400);
+		expect(typeof res.body.error).toBe("string");
+		expect(documentCreate).not.toHaveBeenCalled();
+	});
+
+	test("an upload with no entity_id at all is refused", async () => {
+		const res = fakeRes();
+		await uploadDocument(
+			uploadReq({
+				entityType: "support_case",
+				entityId: undefined,
+				name: "nowhere.png",
+				mimetype: "image/png",
+			}),
+			res,
+		);
+
+		expect(res.statusCode).toBe(400);
+		expect(documentCreate).not.toHaveBeenCalled();
+	});
+
+	// The legacy client is load-bearing: FeedbackPage.jsx and
+	// SupportReports.jsx create a TICKET and upload against its id.
+	test("the legacy ticket branch still lets the ticket's own user upload", async () => {
+		const res = fakeRes();
+		await uploadDocument(
+			uploadReq({
+				entityType: "support_ticket",
+				entityId: "ticket-1",
+				name: "legacy.png",
+				mimetype: "image/png",
+			}),
+			res,
+		);
+
+		const row = documentCreate.mock.calls[0]?.[0]?.data || {};
+		const onDisk = onDiskPath(row.file_path);
+		writtenFiles.push(onDisk);
+
+		expect(res.statusCode).toBe(201);
+		expect(row).toMatchObject({ entity_type: "support_case", entity_id: "ticket-1" });
 	});
 });

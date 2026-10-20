@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import http from "node:http";
 import { fileURLToPath } from "node:url";
 import { jest } from "@jest/globals";
 import express from "express";
@@ -251,6 +252,87 @@ function postMessage(caseId, content, auth = AUTH.owner) {
 		.send({ content });
 }
 
+// --- the event stream -------------------------------------------------------
+//
+// The stream is a plain HTTP response that never ends, so supertest is the
+// wrong tool for it: it waits for the response to finish. A raw http request
+// against an ephemeral port is used instead, so the test can read the frames
+// as they arrive and then hang up.
+function openStream(path, headers = {}) {
+	const server = http.createServer(buildApp());
+	return new Promise((resolve, reject) => {
+		server.listen(0, "127.0.0.1", () => {
+			const { port } = server.address();
+			let body = "";
+			const waiters = [];
+
+			const checkWaiters = () => {
+				for (let index = waiters.length - 1; index >= 0; index -= 1) {
+					const waiter = waiters[index];
+					if (!waiter.predicate(body)) {
+						continue;
+					}
+					clearTimeout(waiter.timer);
+					waiters.splice(index, 1);
+					waiter.resolve(body);
+				}
+			};
+
+			const clientRequest = http.request(
+				{ host: "127.0.0.1", port, path, method: "GET", headers },
+				(response) => {
+					response.setEncoding("utf8");
+					response.on("data", (chunk) => {
+						body += chunk;
+						checkWaiters();
+					});
+					resolve({
+						status: response.statusCode,
+						headers: response.headers,
+						get body() {
+							return body;
+						},
+						waitFor(predicate, timeoutMs = 5000) {
+							if (predicate(body)) {
+								return Promise.resolve(body);
+							}
+							return new Promise((resolveWait, rejectWait) => {
+								const waiter = {
+									predicate,
+									resolve: resolveWait,
+									reject: rejectWait,
+									timer: setTimeout(() => {
+										const index = waiters.indexOf(waiter);
+										if (index !== -1) {
+											waiters.splice(index, 1);
+										}
+										rejectWait(
+											new Error(`the stream never carried the expected frame; body was:\n${body}`),
+										);
+									}, timeoutMs),
+								};
+								waiters.push(waiter);
+							});
+						},
+						close() {
+							clientRequest.destroy();
+							server.closeAllConnections?.();
+							server.close();
+						},
+					});
+				},
+			);
+			clientRequest.on("error", reject);
+			clientRequest.end();
+		});
+	});
+}
+
+// The one frame of the stream that carries a given event type.
+function frameOf(body, type) {
+	return body.split("\n\n").find((chunk) => chunk.includes(`event: ${type}`));
+}
+
 beforeEach(() => {
 	state.users.length = 0;
 	state.users.push(
@@ -474,6 +556,102 @@ describe("case events on the realtime bus", () => {
 		} finally {
 			realtimeBus.off(CASE_EVENTS.message, listener);
 		}
+	});
+});
+
+// --- the case event stream (contracts.md §4's wire format) -----------------
+describe("the case event stream", () => {
+	test("a stranger is refused with a 403", async () => {
+		const created = await createCase();
+		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.stranger);
+		try {
+			expect(stream.status).toBe(403);
+		} finally {
+			stream.close();
+		}
+	});
+
+	test("an unknown case is a 404", async () => {
+		const stream = await openStream("/api/support/cases/no-such-case/stream", AUTH.owner);
+		try {
+			expect(stream.status).toBe(404);
+		} finally {
+			stream.close();
+		}
+	});
+
+	test("the owner gets an event stream with the retry hint on it", async () => {
+		const created = await createCase();
+		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
+		try {
+			expect(stream.status).toBe(200);
+			expect(stream.headers["content-type"]).toContain("text/event-stream");
+			await stream.waitFor((body) => body.includes("retry: 3000"));
+			expect(stream.body).toContain("retry: 3000");
+		} finally {
+			stream.close();
+		}
+	});
+
+	// The wire format of contracts.md §4:
+	//
+	//   event: support.case.message
+	//   data: {"caseId":"<case id>","message":{...}}
+	//
+	// so the frame names one of the five fixed types and the envelope always
+	// carries the case id.
+	test("an event arrives as a frame whose envelope carries the case id", async () => {
+		const created = await createCase();
+		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
+		try {
+			emitCaseEvent(created.id, CASE_EVENTS.message, {
+				message: { id: "m-1", role: "client", content: "hello" },
+			});
+			const body = await stream.waitFor((text) => frameOf(text, CASE_EVENTS.message));
+
+			const frame = frameOf(body, CASE_EVENTS.message);
+			expect(frame).toBeDefined();
+			expect(frame).toMatch(/^id: \d+\nevent: support\.case\.message\ndata: \{/);
+
+			const data = JSON.parse(frame.split("data: ")[1]);
+			expect(data.caseId).toBe(created.id);
+			expect(data.message).toMatchObject({ id: "m-1", role: "client" });
+		} finally {
+			stream.close();
+		}
+	});
+
+	// The bus is shared by every case, so the stream has to drop the events
+	// that belong to another one.
+	test("an event for another case is not forwarded", async () => {
+		const created = await createCase();
+		const other = await createCase("Another case");
+		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
+		try {
+			// A frame for THIS case first, so the stream is known to be live.
+			emitCaseEvent(created.id, CASE_EVENTS.message, { message: { id: "mine" } });
+			await stream.waitFor((text) => frameOf(text, CASE_EVENTS.message));
+
+			emitCaseEvent(other.id, CASE_EVENTS.status, { status: "investigating" });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			expect(frameOf(stream.body, CASE_EVENTS.status)).toBeUndefined();
+		} finally {
+			stream.close();
+		}
+	});
+
+	// A closed stream must not leave a listener on the bus, or every case
+	// that ever streamed would keep the process alive.
+	test("the stream stops listening when the client hangs up", async () => {
+		const created = await createCase();
+		const before = realtimeBus.listenerCount(CASE_EVENTS.message);
+		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
+		expect(realtimeBus.listenerCount(CASE_EVENTS.message)).toBe(before + 1);
+
+		stream.close();
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(realtimeBus.listenerCount(CASE_EVENTS.message)).toBe(before);
 	});
 });
 

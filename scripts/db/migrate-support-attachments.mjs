@@ -29,6 +29,22 @@ const prisma = new PrismaClient();
 // the resolver has exactly one branch for the namespace and an unrecognised
 // type is a hard deny: a file moved into the gated prefix but left under the
 // old type would be unreachable for everyone, the uploader included.
+//
+// --- the --dry-run flag ----------------------------------------------------
+//
+// `--dry-run` prints the plan and changes NOTHING: no file is moved, no row
+// is retyped, no row is deleted, and the target directory is not even
+// created. It reads the rows and stats the files, which is the only way to
+// know what the real run would do.
+//
+// The flag matters because of WHERE the script has to run. It resolves its
+// paths from `process.cwd()`, so it must be run on the host that actually
+// holds the served files: run from a laptop against a production database it
+// reports every row unmovable, moves nothing, and raises no error — which
+// looks exactly like a successful no-op. See
+// docs/rollout/2026-10-20-support-attachment-migration.md.
+
+const DRY_RUN = process.argv.includes("--dry-run") || process.argv.includes("-n");
 
 const SUPPORT_ENTITY_TYPES = ["support_ticket", "support_case"];
 const TARGET_ENTITY_TYPE = "support_case";
@@ -121,7 +137,11 @@ async function moveFile(source, target) {
 
 // One row, one outcome. The row is only re-pointed when the bytes actually
 // moved: a row that points at a file that is not there authorizes nothing.
-async function processRow(row) {
+//
+// With `dryRun` the outcome is the same, computed the same way, but nothing
+// is written: the file is not moved, the row is not retyped, the row is not
+// deleted.
+async function processRow(row, { dryRun = false } = {}) {
 	const filePath = text(row.file_path);
 	if (!filePath) {
 		return {
@@ -134,6 +154,14 @@ async function processRow(row) {
 	if (isAlreadyMoved(filePath)) {
 		if (row.entity_type === TARGET_ENTITY_TYPE) {
 			return { outcome: "skipped", id: row.id, file_path: filePath };
+		}
+		if (dryRun) {
+			return {
+				outcome: "would-retype",
+				id: row.id,
+				file_path: filePath,
+				from: row.entity_type,
+			};
 		}
 		await prisma.document.update({
 			where: { id: row.id },
@@ -186,6 +214,18 @@ async function processRow(row) {
 		};
 	}
 
+	if (dryRun) {
+		// The plan, and nothing else: the bytes stay where they are and the
+		// row keeps pointing at them.
+		return {
+			outcome: "would-move",
+			id: row.id,
+			from: filePath,
+			to: `${SUPPORT_PREFIX}${targetName}`,
+			uploaded_by: row.uploaded_by,
+		};
+	}
+
 	const moved = await moveFile(source, path.join(SUPPORT_DIR, targetName));
 	if (!moved.ok) {
 		return { outcome: "unmovable", id: row.id, file_path: filePath, reason: moved.reason };
@@ -221,8 +261,12 @@ async function processRow(row) {
 	};
 }
 
-async function run() {
-	await fs.mkdir(SUPPORT_DIR, { recursive: true });
+async function run({ dryRun = false } = {}) {
+	// The target directory is created only for a real run. A dry run must not
+	// touch the filesystem at all.
+	if (!dryRun) {
+		await fs.mkdir(SUPPORT_DIR, { recursive: true });
+	}
 
 	const rows = await prisma.document.findMany({
 		where: { entity_type: { in: SUPPORT_ENTITY_TYPES } },
@@ -239,19 +283,21 @@ async function run() {
 		// filesystem and then the database, and doing them concurrently would
 		// make the name-collision check racy.
 		// biome-ignore lint/performance/noAwaitInLoops: the moves must be sequential
-		const result = await processRow(row);
-		if (result.outcome === "moved") moved.push(result);
-		else if (result.outcome === "retyped") retyped.push(result);
+		const result = await processRow(row, { dryRun });
+		if (result.outcome === "moved" || result.outcome === "would-move") moved.push(result);
+		else if (result.outcome === "retyped" || result.outcome === "would-retype")
+			retyped.push(result);
 		else if (result.outcome === "unmovable") unmovable.push(result);
 		else skipped += 1;
 	}
 
-	console.log(`support attachment migration: ${rows.length} support row(s) examined`);
-	console.log(`  moved   : ${moved.length}`);
+	const mode = dryRun ? " (DRY RUN)" : "";
+	console.log(`support attachment migration${mode}: ${rows.length} support row(s) examined`);
+	console.log(`  ${dryRun ? "would move" : "moved  "} : ${moved.length}`);
 	for (const item of moved) {
 		console.log(`    ${item.from} -> ${item.to} (row ${item.id})`);
 	}
-	console.log(`  retyped : ${retyped.length}`);
+	console.log(`  ${dryRun ? "would retype" : "retyped "} : ${retyped.length}`);
 	for (const item of retyped) {
 		console.log(`    ${item.file_path} (row ${item.id}: ${item.from} -> ${TARGET_ENTITY_TYPE})`);
 	}
@@ -264,9 +310,14 @@ async function run() {
 		console.log("  the unmovable files above were NOT deleted and their rows were NOT changed;");
 		console.log("  move them into server/uploads/support by hand and re-run this script.");
 	}
+	if (dryRun) {
+		console.log("");
+		console.log("  DRY RUN: nothing was moved, retyped or deleted, and no file was written.");
+		console.log("  Re-run without --dry-run to apply this plan.");
+	}
 }
 
-run()
+run({ dryRun: DRY_RUN })
 	.then(() => prisma.$disconnect())
 	.catch((err) => {
 		console.error(err);

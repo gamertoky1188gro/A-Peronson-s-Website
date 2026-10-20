@@ -284,6 +284,7 @@ const uploadsRoot = path.join(process.cwd(), "server", "uploads");
 const chatUploadsRoot = path.join(uploadsRoot, "chat");
 const feedUploadsRoot = path.join(uploadsRoot, "feed");
 const profileUploadsRoot = path.join(uploadsRoot, "profile");
+const supportUploadsRoot = path.join(uploadsRoot, "support");
 if (!fs.existsSync(uploadsRoot)) {
 	fs.mkdirSync(uploadsRoot, { recursive: true });
 }
@@ -295,6 +296,9 @@ if (!fs.existsSync(feedUploadsRoot)) {
 }
 if (!fs.existsSync(profileUploadsRoot)) {
 	fs.mkdirSync(profileUploadsRoot, { recursive: true });
+}
+if (!fs.existsSync(supportUploadsRoot)) {
+	fs.mkdirSync(supportUploadsRoot, { recursive: true });
 }
 
 // Signed-file access is registered ahead of the static mount so that no later

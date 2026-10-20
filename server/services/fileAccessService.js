@@ -245,6 +245,24 @@ function canAccessSearchImage(user, doc) {
 	return text(doc?.file_path).toLowerCase().startsWith("/uploads/search/");
 }
 
+// A support case's evidence belongs to whoever attached it.
+//
+// The same shape as the search image's branch, and for the same reason: the
+// type may only ever authorise the prefix it was minted for. Without the
+// prefix check a `support_case` row could be pointed at another namespace's
+// bytes - a chat attachment, a contract PDF - and the uploader grant would
+// then hand out a file the support namespace never had any claim to.
+//
+// The rows the legacy client produced (entity_type "support_ticket", the
+// bytes still in the uploads root) are NOT reachable through this branch
+// until the migration script has moved them under /uploads/support/. That is
+// the fail-closed direction: the bytes stop being readable through the
+// resolver before they stop being readable through the static mount.
+function canAccessSupportEvidence(user, doc) {
+	if (!matchesId(doc?.uploaded_by, user.id)) return false;
+	return text(doc?.file_path).toLowerCase().startsWith("/uploads/support/");
+}
+
 export function isAdminRole(user) {
 	// permissions.js already owns the owner/admin set; re-declaring it here would
 	// be a second source of truth for "who is privileged".
@@ -298,7 +316,12 @@ export async function canUserAccessDocument(user, doc, context) {
 			// A case is anchored on the CASE id (entity_id), not on the file
 			// name: the case is the fact the file belongs to, and the file name
 			// is not.
-			return matchesId(doc.uploaded_by, user.id) || isAdminRole(user);
+			//
+			// The branch also requires the row's own bytes to live under
+			// /uploads/support/, so a row of this type cannot be pointed at
+			// another namespace's bytes. The admin grant is NOT repeated here:
+			// it already happened at the top of this function.
+			return canAccessSupportEvidence(user, doc);
 
 		default:
 			// Unknown type. `uploaded_by` is self-asserted by anyone who can reach

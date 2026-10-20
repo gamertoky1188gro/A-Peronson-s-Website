@@ -6,6 +6,7 @@ import {
 	getCaseController,
 	listCasesController,
 	postCaseMessageController,
+	streamCaseController,
 } from "../controllers/caseController.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -19,6 +20,10 @@ const router = Router();
 // role) is enforced inside the controller, where the case row is read.
 router.post("/", requireAuth, createCaseController);
 router.get("/", requireAuth, listCasesController);
+// The event stream is registered before `/:caseId` so the more specific path
+// is matched first, even though Express would not confuse the two: the
+// parameter route matches exactly one path segment.
+router.get("/:caseId/stream", requireAuth, streamCaseController);
 router.get("/:caseId", requireAuth, getCaseController);
 router.post("/:caseId/messages", requireAuth, postCaseMessageController);
 router.post("/:caseId/confirm", requireAuth, confirmCaseController);

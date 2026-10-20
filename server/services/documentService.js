@@ -529,8 +529,24 @@ export async function saveSupportEvidence(uploadedBy, caseId, type, file) {
 		moderation,
 	});
 
+	// The row IS the authorization key: authorizeFilePath refuses to serve a
+	// path that no row anchors, so a file whose row failed to write is
+	// unreachable for EVERYONE - the uploader included. A 201 that claims
+	// success would hand the client a path it can never read, and the client
+	// would attach that dead path to the case. The upload fails loudly
+	// instead of pretending.
+	//
+	// The bytes stay on disk. They are inside the gated prefix, so they are
+	// not served by the static mount, and the uploads registry adopts them as
+	// a "system" row on the next boot (an admin can still reach them).
+	if (!(row && row.id)) {
+		const error = new Error("Support evidence could not be anchored");
+		error.status = 500;
+		throw error;
+	}
+
 	return {
-		...(row || {}),
+		...row,
 		uploaded_by: uploadedBy,
 		entity_type: SUPPORT_EVIDENCE_ENTITY_TYPE,
 		entity_id: caseId,

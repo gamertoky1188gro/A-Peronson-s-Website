@@ -346,6 +346,27 @@ describe("file access authorization (server/services/fileAccessService.js)", () 
 		expect(await canUserAccessDocument(ADMIN, doc)).toBe(true);
 	});
 
+	// The type may only ever authorise the prefix it was minted for, exactly
+	// like the search image's branch. Without the check a `support_case` row
+	// could be pointed at another namespace's bytes - a chat attachment, a
+	// contract PDF - and the uploader grant would hand out a file the support
+	// namespace never had any claim to.
+	test("denies a support attachment whose bytes are not under /uploads/support", async () => {
+		const doc = supportDoc({ file_path: "/uploads/chat/1700000000000-shot.png" });
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+		// An admin is authorised by the admin branch, not by this one.
+		expect(await canUserAccessDocument(ADMIN, doc)).toBe(true);
+	});
+
+	// The legacy rows still name the uploads ROOT. They are denied until the
+	// migration moves the bytes under /uploads/support/ - the fail-closed
+	// direction, and the reason the rollout note puts the deploy before the
+	// migration script.
+	test("denies a legacy support row whose bytes are still in the uploads root", async () => {
+		const doc = supportDoc({ file_path: "/uploads/1700000000000-shot.png" });
+		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
+	});
+
 	test("denies an unknown entity type to a non-admin", async () => {
 		const doc = { id: "d1", entity_type: "mystery", uploaded_by: "someone-else" };
 		expect(await canUserAccessDocument(BUYER, doc)).toBe(false);
