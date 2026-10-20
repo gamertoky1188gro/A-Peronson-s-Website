@@ -210,10 +210,21 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 		 *     resource-scoped rule set and its leaves are effects too;
 		 *  2. composed with the global map, every mutating action is still
 		 *     denied on every swept resource;
-		 *  3. composed with the global map, a denied read is not re-opened.
+		 *  3. composed with the global map, a denied read is STILL denied.
 		 *
-		 * Rule 3 is deliberately "not allow" and not "deny" verbatim: an "ask"
-		 * is not a grant, so a legitimate narrowing is not rejected.
+		 * Rule 3 is "deny" VERBATIM, the same treatment rule 2 gives a
+		 * mutating action, and NOT "not allow".
+		 *
+		 * The reason is that "ask" is not a neutral middle ground on the read
+		 * side. opencode v2's own default is `read *.env -> ask`, so the
+		 * explicit "deny" this config carries is a deliberate STRENGTHENING
+		 * of the default. A rule that accepted "ask" would permit weakening
+		 * that denial back to the default - a hard deny silently downgraded
+		 * to a prompt - and upstream has reports of an "ask" being
+		 * auto-approved in some configurations (anomalyco/opencode issues
+		 * #55593 and #54790). A denial that can be turned into a prompt is
+		 * not a denial, so the composed effect on a sensitive resource has to
+		 * be exactly "deny".
 		 */
 		function expectNoAllowAtAnyDepth(agentPermission) {
 			expect(leafEffects(agentPermission)).not.toContain("allow");
@@ -229,11 +240,11 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 			}
 		}
 
-		function expectDeniedReadsNotWidened(agentPermission) {
+		function expectSensitiveReadsStillDenied(agentPermission) {
 			for (const resource of SENSITIVE_RESOURCES) {
-				expect(
-					resolveEffectivePermission([permission, agentPermission], "read", resource),
-				).not.toBe("allow");
+				expect(resolveEffectivePermission([permission, agentPermission], "read", resource)).toBe(
+					"deny",
+				);
 			}
 		}
 
@@ -245,8 +256,8 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 			expectMutatingActionsStillDenied(agents.investigator.permission);
 		});
 
-		test("the investigator's own permission set does not widen a denied read", () => {
-			expectDeniedReadsNotWidened(agents.investigator.permission);
+		test("the investigator's own permission set does not downgrade a denied read", () => {
+			expectSensitiveReadsStillDenied(agents.investigator.permission);
 		});
 
 		test("the global map denies every mutating action on every swept resource", () => {
@@ -274,21 +285,41 @@ describe("investigation runtime config (server/services/investigation/runtimeCon
 			// granting. The base is a literal on purpose: this test is about the
 			// GATE's rules, and it must not be affected by a change to the
 			// shipped config.
+			//
+			// "ask" narrows only where the global map ALLOWS. For the sensitive
+			// resources the global map DENIES, so an "ask" there is not a
+			// narrowing at all: it downgrades a hard deny to a prompt, which
+			// is the hole this rule was tightened to close. The sensitive
+			// patterns are therefore re-denied explicitly, and that is the
+			// honest form of "ask is a narrowing".
 			const asking = {
 				edit: "deny",
 				bash: "deny",
 				webfetch: "deny",
 				task: "deny",
-				read: "ask",
+				read: { "*": "ask", "*.env": "deny", "*.env.*": "deny" },
 			};
 			expectNoAllowAtAnyDepth(asking);
 			expectMutatingActionsStillDenied(asking);
-			expectDeniedReadsNotWidened(asking);
+			expectSensitiveReadsStillDenied(asking);
 
-			const askingGlobally = { ...asking, read: { "*": "ask" } };
-			expectNoAllowAtAnyDepth(askingGlobally);
-			expectMutatingActionsStillDenied(askingGlobally);
-			expectDeniedReadsNotWidened(askingGlobally);
+			// The narrowing is real: an ordinary source file is ASKED for, not
+			// granted.
+			expect(resolveEffectivePermission([permission, asking], "read", "server/server.js")).toBe(
+				"ask",
+			);
+
+			// The negative control for rule 3: the SAME helper rejects the
+			// form that downgrades the hard deny. Without it, rule 3 could be
+			// weakened back to "not allow" and nothing in this file would
+			// notice - which is precisely the weakening that was found.
+			//
+			// The expected message is matched too, so the control cannot pass
+			// on an unrelated error: it has to be the "deny" assertion that
+			// failed.
+			const downgrading = { read: "ask" };
+			expect(resolveEffectivePermission([permission, downgrading], "read", ".env")).toBe("ask");
+			expect(() => expectSensitiveReadsStillDenied(downgrading)).toThrow(/Expected: "deny"/);
 		});
 	});
 });
