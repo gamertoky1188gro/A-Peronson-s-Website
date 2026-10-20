@@ -29,6 +29,7 @@
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
 		"test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/unit",
 		"test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/integration",
+		"test:spike": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/integration/investigation-readonly.test.js",
 		"test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --coverage",
 		"test:e2e": "playwright test",
 		"test:report": "node scripts/neon-report.mjs",
@@ -48,7 +49,7 @@
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^6.7.2",
 		"@google/genai": "^2.3.0",
-		"@opencode-ai/sdk": "^1.15.3",
+		"@opencode/client": "^2.0.32",
 		"@opensearch-project/opensearch": "^2.13.0",
 		"@prisma/client": "6.19.3",
 		"@qdrant/qdrant-js": "^1.18.0",

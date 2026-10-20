@@ -1,8 +1,10 @@
 import { execSync, spawn } from "node:child_process";
 import crypto from "node:crypto";
+import fs from "node:fs";
 import net from "node:net";
+import path from "node:path";
 import { GoogleGenAI } from "@google/genai";
-import { createOpencodeClient } from "@opencode-ai/sdk";
+import { OpenCode } from "@opencode/client";
 
 async function findFreePort(startPort = 4096, maxAttempts = 100) {
 	for (let port = startPort; port < startPort + maxAttempts; port++) {
@@ -494,51 +496,82 @@ function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
 const MAX_CONTEXT_CHARS = 1600;
 const MAX_KNOWLEDGE_CONTEXT_CHARS = 1200;
 
-async function searchCodeContext(questionText) {
-	const port = await ensureOpencodeServer();
-	if (!port) {
-		return { summary: "", snippets: [], prompt_context: "" };
-	}
+const SEARCHABLE_ROOTS = ["server", "src", "shared", "prisma"];
+const SEARCHABLE_EXTENSIONS = new Set([".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]);
 
-	try {
-		const client = createOpencodeClient({
-			baseUrl: `http://localhost:${port}`,
-			throwOnError: false,
-		});
-		const result = await client.find.text({
-			query: { pattern: questionText },
-		});
-		const raw = Array.isArray(result) ? result : result?.data;
-		const matches = Array.isArray(raw) ? raw : [];
-		if (matches.length === 0) {
-			return { summary: "", snippets: [], prompt_context: "" };
+/**
+ * Scan the repository for source lines that mention the question.
+ *
+ * This replaces the opencode `find` call, which targeted the v1 API and
+ * answered with the SPA's HTML on a v2 server.
+ */
+function searchSourceTree(questionText, limit = 20) {
+	const root = process.cwd();
+	const needles = tokenize(questionText).filter((word) => word.length >= 4);
+	if (!needles.length) return [];
+	const results = [];
+	const stack = SEARCHABLE_ROOTS.map((dir) => path.join(root, dir));
+	while (stack.length && results.length < limit) {
+		const current = stack.pop();
+		let entries = [];
+		try {
+			entries = fs.readdirSync(current, { withFileTypes: true });
+		} catch {
+			continue;
 		}
+		for (const entry of entries) {
+			if (entry.name === "node_modules" || entry.name === "dist" || entry.name.startsWith(".")) {
+				continue;
+			}
+			const full = path.join(current, entry.name);
+			if (entry.isDirectory()) {
+				stack.push(full);
+				continue;
+			}
+			if (!SEARCHABLE_EXTENSIONS.has(path.extname(entry.name))) continue;
+			try {
+				const lines = fs.readFileSync(full, "utf8").split(/\r?\n/);
+				for (let index = 0; index < lines.length; index += 1) {
+					const haystack = lines[index].toLowerCase();
+					if (!needles.some((needle) => haystack.includes(needle))) continue;
+					results.push({
+						path: path.relative(root, full).split(path.sep).join("/"),
+						line: index + 1,
+						text: lines[index].trim().slice(0, 240),
+					});
+					if (results.length >= limit) break;
+				}
+			} catch {
+				// unreadable file
+			}
+		}
+	}
+	return results;
+}
 
-		const snippets = matches.slice(0, 8).map((m) => {
-			const rawLines = m.lines;
-			const linesStr = Array.isArray(rawLines) ? rawLines.join("\n") : String(rawLines || "");
-			return {
-				file: m.path || "",
-				line: m.line_number || null,
-				snippet: linesStr.trim().substring(0, 320),
-			};
-		});
-
-		const summary = snippets.map((s) => `${s.file}${s.line ? `:${s.line}` : ""}`).join(", ");
-
-		const promptContext = snippets
-			.map((s) => `[${s.file}${s.line ? `:${s.line}` : ""}] ${s.snippet}`)
-			.join("\n");
-
-		return {
-			summary,
-			snippets,
-			prompt_context: sanitizeString(promptContext, MAX_CONTEXT_CHARS),
-		};
-	} catch (error) {
-		logError("Opencode code search failed", { error: error.message });
+async function searchCodeContext(questionText) {
+	const matches = searchSourceTree(questionText, 20);
+	if (!matches.length) {
 		return { summary: "", snippets: [], prompt_context: "" };
 	}
+
+	const snippets = matches.slice(0, 8).map((match) => ({
+		file: match.path,
+		line: match.line,
+		snippet: match.text,
+	}));
+
+	const summary = snippets.map((s) => `${s.file}${s.line ? `:${s.line}` : ""}`).join(", ");
+
+	const promptContext = snippets
+		.map((s) => `[${s.file}${s.line ? `:${s.line}` : ""}] ${s.snippet}`)
+		.join("\n");
+
+	return {
+		summary,
+		snippets,
+		prompt_context: sanitizeString(promptContext, MAX_CONTEXT_CHARS),
+	};
 }
 
 async function shouldSearchCodeContext(questionText) {
@@ -911,12 +944,44 @@ async function callGemini(prompt, systemPrompt = "You are a helpful GarTex assis
 
 let opencodePort = null;
 let _opencodeServer = null;
+let opencodeServerPassword = process.env.OPENCODE_SERVER_PASSWORD || null;
+
+/**
+ * Build an opencode v2 API client.
+ *
+ * The v1 SDK is gone: it targeted the v1 root paths, and a v2 server answers
+ * those with the SPA's HTML. The v2 API lives under /api/* and, when the
+ * server has a password, requires basic auth.
+ */
+function opencodeV2Client(baseUrl) {
+	const authorization = `Basic ${Buffer.from(`opencode:${opencodeServerPassword || ""}`).toString(
+		"base64",
+	)}`;
+	return OpenCode.make({
+		baseUrl,
+		// The client hands over a `Headers` instance. Spreading it with
+		// `{...headers}` yields `{}` and silently drops `content-type`, which
+		// the server answers with 415. Rebuild it instead.
+		fetch: (input, init = {}) => {
+			const headers = new Headers(init.headers || {});
+			if (opencodeServerPassword) headers.set("Authorization", authorization);
+			return fetch(input, { ...init, headers });
+		},
+	});
+}
 
 async function checkOpencodeRunning(port) {
 	try {
 		const testUrl = `http://localhost:${port}`;
+		const headers = {};
+		if (opencodeServerPassword) {
+			headers.Authorization = `Basic ${Buffer.from(`opencode:${opencodeServerPassword}`).toString(
+				"base64",
+			)}`;
+		}
 		const response = await fetch(`${testUrl}/api/global/health`, {
 			method: "GET",
+			headers,
 			signal: AbortSignal.timeout(3000),
 		});
 		return response.ok;
@@ -930,6 +995,75 @@ function formatSessionId(userId) {
 		return "guest";
 	}
 	return `session-${userId}`;
+}
+
+/**
+ * Map a v2 assistant content part onto the part shape the rest of this file
+ * already understands (v1 used `parts`, v2 uses `content`).
+ */
+function mapAssistantPart(part) {
+	if (part.type === "text" || part.type === "reasoning") {
+		return { type: part.type, text: part.text || "" };
+	}
+	if (part.type === "tool") {
+		const failed = part.state?.status === "error";
+		return {
+			type: failed ? "tool-result" : "tool-call",
+			toolName: part.name || part.tool || "unknown",
+			args: part.state?.input || {},
+			result: part.state?.content || part.state?.error || null,
+		};
+	}
+	return { type: part.type };
+}
+
+/**
+ * Send a prompt and wait for the assistant turn to finish.
+ *
+ * On the v2 API `session.prompt` is asynchronous: it returns as soon as the
+ * user message is queued. The reply has to be polled for. A turn is finished
+ * when the last assistant message carries a `finish` that is not
+ * `tool-calls`, or when the session reports itself idle.
+ */
+async function promptOpencodeSession({
+	client,
+	sessionID,
+	text,
+	timeoutMs = 120000,
+	onText = null,
+}) {
+	await client.session.prompt({ sessionID, text });
+
+	const deadline = Date.now() + timeoutMs;
+	let parts = [];
+	let emitted = "";
+
+	while (Date.now() < deadline) {
+		await new Promise((resolve) => setTimeout(resolve, 700));
+		let messages = [];
+		try {
+			const listed = await client.message.list({ sessionID });
+			messages = listed?.data || [];
+		} catch {
+			continue;
+		}
+		const assistants = messages.filter((message) => message.type === "assistant");
+		const last = assistants[assistants.length - 1];
+		parts = (last?.content || []).map(mapAssistantPart);
+
+		const fullText = parts
+			.filter((part) => part.type === "text")
+			.map((part) => part.text || "")
+			.join("\n");
+		if (onText && fullText.length > emitted.length) {
+			onText(fullText.slice(emitted.length), fullText);
+			emitted = fullText;
+		}
+
+		if (last?.finish && last.finish !== "tool-calls") break;
+	}
+
+	return { parts, text: emitted };
 }
 
 function isOpencodeBinaryAvailable() {
@@ -977,12 +1111,20 @@ async function ensureOpencodeServer() {
 		try {
 			logInfo("Starting opencode server...", { port });
 
+			if (!opencodeServerPassword) {
+				opencodeServerPassword = crypto.randomBytes(24).toString("hex");
+			}
+
 			const child = spawn(
 				"opencode",
 				["serve", "--port", String(port), "--hostname", "127.0.0.1"],
 				{
 					stdio: ["ignore", "pipe", "pipe"],
-					env: { ...process.env, OPENCODE_LOG_LEVEL: "DEBUG" },
+					env: {
+						...process.env,
+						OPENCODE_LOG_LEVEL: "DEBUG",
+						OPENCODE_SERVER_PASSWORD: opencodeServerPassword,
+					},
 				},
 			);
 
@@ -1063,68 +1205,31 @@ export async function initOpencodeServer() {
 
 	try {
 		const testPrompt = "Hello";
-		const client = createOpencodeClient({
-			baseUrl: `http://localhost:${port}`,
-			throwOnError: false,
-		});
+		const client = opencodeV2Client(`http://localhost:${port}`);
 
-		const initSessionId = "init-test-session";
-
-		const existingSession = await client.session.get({
-			path: { id: initSessionId },
-		});
-
-		let sessionId;
-		if (existingSession?.error || !existingSession?.data) {
-			const createRes = await client.session.create({
-				body: { title: "init-test", id: initSessionId },
-			});
-
-			if (createRes?.error) {
-				logError("Opencode session create failed", {
-					port,
-					error: createRes.error,
-				});
-				return port;
-			}
-			sessionId = createRes?.data?.id || initSessionId;
-			logInfo("Session created", { id: sessionId });
-		} else {
-			sessionId = initSessionId;
-			logInfo("Reusing existing init session", { id: sessionId });
+		const created = await client.session.create({ title: "init-test" });
+		const sessionId = created?.id;
+		if (!sessionId) {
+			logError("Opencode session create failed", { port });
+			return port;
 		}
+		logInfo("Session created", { id: sessionId });
 
-		const response = await client.session.prompt({
-			path: { id: sessionId },
-			body: {
-				model: {
-					providerID: aiConfig.opencode.providerID,
-					modelID: aiConfig.opencode.modelID,
-				},
-				parts: [{ type: "text", text: testPrompt }],
-				systemInstruction: "You are a test assistant.",
-			},
+		const response = await promptOpencodeSession({
+			client,
+			sessionID: sessionId,
+			text: testPrompt,
+			timeoutMs: 60_000,
 		});
 
-		if (response?.error) {
-			logError("Opencode test response error", {
+		const textPart = response.parts.find((part) => part.type === "text");
+		if (textPart?.text) {
+			logInfo("Opencode test successful", {
 				port,
-				errorName: response.error.name,
-				errorData: response.error.data,
-				provider: aiConfig.opencode.providerID,
-				model: aiConfig.opencode.modelID,
+				response: textPart.text.substring(0, 100),
 			});
 		} else {
-			const parts = response?.data?.parts;
-			const textPart = Array.isArray(parts) ? parts.find((p) => p.type === "text") : null;
-			if (textPart?.text) {
-				logInfo("Opencode test successful", {
-					port,
-					response: textPart.text.substring(0, 100),
-				});
-			} else {
-				logInfo("Opencode server is up and responding", { port });
-			}
+			logInfo("Opencode server is up and responding", { port });
 		}
 	} catch (error) {
 		logError("Opencode test exception", {
@@ -1151,30 +1256,32 @@ export async function createUserOpencodeSession(userId) {
 	const sessionId = formatSessionId(userId);
 
 	try {
-		const client = createOpencodeClient({ baseUrl, throwOnError: false });
+		const client = opencodeV2Client(baseUrl);
 
-		const existing = await client.session.get({ path: { id: sessionId } });
-		if (!existing?.error && existing?.data) {
-			logInfo("User session already exists", {
-				userId,
-				sessionId: existing.data.id,
-			});
-			return existing.data.id;
+		// Reuse the session the user already has, if the server still knows it.
+		if (userId) {
+			const meta = await loadSessionMeta(userId);
+			if (meta?.sessionId) {
+				const existing = await client.session.get({ sessionID: meta.sessionId }).catch(() => null);
+				if (existing?.id) {
+					logInfo("User session already exists", {
+						userId,
+						sessionId: existing.id,
+					});
+					return existing.id;
+				}
+			}
 		}
 
-		const createRes = await client.session.create({
-			body: { title: userId ? `user-${userId}` : "guest" },
+		const created = await client.session.create({
+			title: userId ? `user-${userId}` : "guest",
 		});
 
-		if (createRes?.error) {
-			logError("Failed to create user session", {
-				userId,
-				error: createRes.error,
-			});
+		const actualSessionId = created?.id;
+		if (!actualSessionId) {
+			logError("Failed to create user session", { userId });
 			return null;
 		}
-
-		const actualSessionId = createRes?.data?.id;
 		logInfo("Created user session", { userId, actualSessionId });
 
 		if (userId && actualSessionId) {
@@ -1187,7 +1294,7 @@ export async function createUserOpencodeSession(userId) {
 			});
 		}
 
-		return actualSessionId || sessionId;
+		return actualSessionId;
 	} catch (error) {
 		logError("Failed to create user opencode session", {
 			userId,
@@ -1247,36 +1354,42 @@ export async function getOpencodeSessionMessages(userId) {
 	}
 
 	try {
-		const client = createOpencodeClient({ baseUrl, throwOnError: false });
-		const response = await client.session.messages({
-			path: { id: actualSessionId },
-		});
-
-		if (response?.error) {
-			logError("Opencode session messages error", {
-				error: response.error,
-				actualSessionId,
-			});
-			return [];
-		}
+		const client = opencodeV2Client(baseUrl);
+		const listed = await client.message.list({ sessionID: actualSessionId });
 
 		logInfo("Opencode session messages response", {
 			baseUrl,
 			actualSessionId,
-			hasData: Boolean(response?.data),
+			hasData: Boolean(listed?.data),
 		});
 
-		const rawData = response?.data;
-		if (!rawData) {
-			return [];
-		}
-
-		const msgArray = Array.isArray(rawData) ? rawData : rawData.info || [];
-		const messages = msgArray.map((msg) => ({
-			role: msg.info?.role || msg.role || "user",
-			text: msg.parts?.[0]?.text || msg.text || "",
-			createdAt: msg.info?.created_at || msg.created_at || null,
-		}));
+		const msgArray = listed?.data || [];
+		// The v2 message list is newest first; the caller wants chronological.
+		const messages = [...msgArray].reverse().map((msg) => {
+			if (msg.type === "user") {
+				return {
+					role: "user",
+					text: msg.text || "",
+					createdAt: msg.time?.created || null,
+				};
+			}
+			if (msg.type === "assistant") {
+				const text = (msg.content || [])
+					.filter((part) => part.type === "text")
+					.map((part) => part.text || "")
+					.join("\n");
+				return {
+					role: "assistant",
+					text,
+					createdAt: msg.time?.created || null,
+				};
+			}
+			return {
+				role: msg.type || "system",
+				text: "",
+				createdAt: msg.time?.created || null,
+			};
+		});
 
 		let title = null;
 		if (userId) {
@@ -1329,8 +1442,8 @@ export async function deleteOpencodeSession(userId) {
 	}
 
 	try {
-		const client = createOpencodeClient({ baseUrl, throwOnError: true });
-		await client.session.delete({ path: { id: actualSessionId } });
+		const client = opencodeV2Client(baseUrl);
+		await client.session.remove({ sessionID: actualSessionId });
 		await deleteSessionMeta(userId);
 		logInfo("Deleted opencode session", { actualSessionId });
 		return true;
@@ -1379,34 +1492,17 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 	});
 
 	try {
-		const client = createOpencodeClient({
-			baseUrl,
-			throwOnError: false,
+		const client = opencodeV2Client(baseUrl);
+
+		const response = await promptOpencodeSession({
+			client,
+			sessionID: actualSessionId,
+			text: String(prompt || ""),
 		});
 
-		const response = await client.session.prompt({
-			path: { id: actualSessionId },
-			body: {
-				model: {
-					providerID: cfg.providerID,
-					modelID: cfg.modelID,
-				},
-				parts: [{ type: "text", text: String(prompt || "") }],
-				systemInstruction: String(systemPrompt || ""),
-			},
-		});
-
-		const responseStr = JSON.stringify(response);
+		const parts = response.parts;
+		const responseStr = JSON.stringify(parts);
 		logInfo("Opencode response full", responseStr.substring(0, 800));
-
-		if (response?.error) {
-			logError("Opencode server returned error", {
-				errorName: response.error.name,
-				errorData: JSON.stringify(response.error.data),
-				errorRef: response.error.data?.ref,
-				rawResponse: responseStr.substring(0, 2000),
-			});
-		}
 
 		let text = null;
 		const reasoningParts = [];
@@ -1414,7 +1510,6 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 		const toolCallParts = [];
 		const toolResultParts = [];
 		const commandParts = [];
-		const parts = response?.data?.parts;
 		if (Array.isArray(parts)) {
 			for (const part of parts) {
 				if (part.type === "text") {
@@ -1835,17 +1930,25 @@ async function fetchSessionHistory(userId, currentQuestion, baseUrl = null) {
 		}
 
 		const url = baseUrl || `http://localhost:${opencodePort || 4096}`;
-		const client = createOpencodeClient({ baseUrl: url, throwOnError: false });
-		const historyResponse = await client.session.messages({
-			path: { id: actualSessionId },
-		});
-		const rawData = historyResponse?.data;
-		const msgArray = Array.isArray(rawData) ? rawData : rawData?.info || [];
-		return msgArray
-			.map((msg) => ({
-				role: msg.info?.role || msg.role || "user",
-				text: msg.parts?.[0]?.text || msg.text || "",
-			}))
+		const client = opencodeV2Client(url);
+		const listed = await client.message.list({ sessionID: actualSessionId });
+		const msgArray = listed?.data || [];
+		// The v2 message list is newest first; history reads chronologically.
+		return [...msgArray]
+			.reverse()
+			.map((msg) => {
+				if (msg.type === "user") {
+					return { role: "user", text: msg.text || "" };
+				}
+				if (msg.type === "assistant") {
+					const text = (msg.content || [])
+						.filter((part) => part.type === "text")
+						.map((part) => part.text || "")
+						.join("\n");
+					return { role: "assistant", text };
+				}
+				return { role: msg.type || "system", text: "" };
+			})
 			.filter((m) => m.text && m.text !== currentQuestion);
 	} catch {
 		return [];
@@ -1936,7 +2039,7 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 	}
 
 	const baseUrl = `http://localhost:${port}`;
-	const client = createOpencodeClient({ baseUrl, throwOnError: false });
+	const client = opencodeV2Client(baseUrl);
 
 	let sessionId = null;
 	if (userId) {
@@ -1962,75 +2065,26 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 		conversationHistory,
 	);
 
-	const deadline = Date.now() + 120_000;
-
 	try {
 		let fullText = "";
 
-		const blockingPrompt = client.session.prompt({
-			path: { id: sessionId },
-			body: {
-				model: { providerID: cfg.providerID, modelID: cfg.modelID },
-				parts: [{ type: "text", text: prompt }],
-				systemInstruction: systemPrompt,
+		// The v2 API queues the prompt and answers asynchronously, so the
+		// reply is polled for and the chunk callback fires as the text grows.
+		const response = await promptOpencodeSession({
+			client,
+			sessionID: sessionId,
+			text: prompt,
+			timeoutMs: 120_000,
+			onText: (delta, total) => {
+				fullText = total;
+				onChunk(unescapeHtml(delta), unescapeHtml(total));
 			},
 		});
 
-		// Subscribe to SSE events for streaming chunks
-		try {
-			const events = await client.event.subscribe();
-			const streamObj = events.stream;
-			let aborted = false;
-
-			const stopStream = () => {
-				aborted = true;
-				if (streamObj?.controller?.abort) {
-					try {
-						streamObj.controller.abort();
-					} catch {
-						void 0;
-					}
-				}
-			};
-
-			const sseLoop = (async () => {
-				for await (const event of streamObj) {
-					if (aborted || Date.now() > deadline) {
-						break;
-					}
-					if (event?.type === "message.part.updated") {
-						const part = event.properties?.part;
-						if (part?.type === "text") {
-							const delta = event.properties?.delta || "";
-							if (delta) {
-								fullText += delta;
-								onChunk(unescapeHtml(delta), unescapeHtml(fullText));
-							}
-						}
-					}
-					if (event?.type === "session.status" || event?.type === "session.updated") {
-						const status = event.properties?.status || event.properties?.info?.status;
-						if (status === "idle") {
-							break;
-						}
-					}
-				}
-			})();
-
-			const raceTimeout = new Promise((r) => setTimeout(r, 6000));
-			await Promise.race([sseLoop, raceTimeout]);
-			stopStream();
-		} catch {
-			// SSE best-effort; blocking call still resolves
-		}
-
-		const blockingResult = await blockingPrompt;
-		const parts = blockingResult?.data?.parts;
-		if (Array.isArray(parts)) {
-			const textPart = parts.find((p) => p.type === "text");
-			if (textPart?.text && (!fullText || textPart.text.length > fullText.length)) {
-				fullText = textPart.text;
-			}
+		const parts = response.parts;
+		const textPart = (parts || []).find((p) => p.type === "text");
+		if (textPart?.text && (!fullText || textPart.text.length > fullText.length)) {
+			fullText = textPart.text;
 		}
 
 		if (fullText) {
