@@ -566,6 +566,16 @@ describe("read-only investigation runtime (spike gate)", () => {
 		expect(result.text).toContain("CANARY_VALUE_9f3a2b");
 	}, TIMEOUT + 60000);
 
+	test("can list files", async () => {
+		const result = await runAgentPrompt({
+			client: runtime.client,
+			sessionID,
+			text: "List the files in the current directory. Reply with the file names only.",
+			timeoutMs: TIMEOUT,
+		});
+		expect(result.text).toMatch(/package\.json|server|src/);
+	}, TIMEOUT + 60000);
+
 	test("cannot delegate a write to a subagent", async () => {
 		const result = await runAgentPrompt({
 			client: runtime.client,
@@ -574,6 +584,19 @@ describe("read-only investigation runtime (spike gate)", () => {
 			timeoutMs: TIMEOUT,
 		});
 		expect(fs.existsSync(writePath)).toBe(false);
+	}, TIMEOUT + 60000);
+
+	test("no MCP tool is available to the agent", async () => {
+		const listed = await runtime.client.mcp.list();
+		const servers = (listed?.data || listed || []).map((entry) => entry.name || entry);
+		for (const name of ["render", "chrome-devtools", "blender-mcp", "minecraft", "github"]) {
+			expect(servers).not.toContain(name);
+		}
+		const toolNames = await runtime.client.experimental?.tool?.ids?.().catch(() => null);
+		if (toolNames?.data) {
+			const ids = (toolNames.data || []).map((entry) => entry.id || entry);
+			expect(ids.some((id) => /^(render|chrome-devtools|blender-mcp|minecraft|github)[_-]/i.test(String(id)))).toBe(false);
+		}
 	}, TIMEOUT + 60000);
 });
 ```
@@ -828,21 +851,26 @@ describe("support evidence access", () => {
 	beforeEach(() => { documentFindMany.mockReset(); });
 
 	test("a user cannot list another user's case attachments", async () => {
-		documentFindMany.mockResolvedValue([]);
-		await request(buildApp({ id: "other-user", role: "buyer" }))
+		documentFindMany.mockResolvedValue([
+			{ id: "d1", entity_type: "support_case", entity_id: "case-1", uploaded_by: "someone-else" },
+		]);
+		const res = await request(buildApp({ id: "other-user", role: "buyer" }))
 			.get("/api/documents")
 			.query({ entity_type: "support_case", entity_id: "case-1" })
 			.expect(200);
-		expect(documentFindMany).not.toHaveBeenCalled();
+		expect(res.body.documents ?? res.body.items ?? res.body).toEqual([]);
 	});
 
 	test("an admin can list any case attachments", async () => {
-		documentFindMany.mockResolvedValue([]);
-		await request(buildApp({ id: "admin1", role: "admin" }))
+		documentFindMany.mockResolvedValue([
+			{ id: "d1", entity_type: "support_case", entity_id: "case-1", uploaded_by: "someone-else" },
+		]);
+		const res = await request(buildApp({ id: "admin1", role: "admin" }))
 			.get("/api/documents")
 			.query({ entity_type: "support_case", entity_id: "case-1" })
 			.expect(200);
-		expect(documentFindMany).toHaveBeenCalled();
+		const listed = res.body.documents ?? res.body.items ?? res.body;
+		expect(Array.isArray(listed) ? listed.length : 1).toBeGreaterThan(0);
 	});
 });
 ```
