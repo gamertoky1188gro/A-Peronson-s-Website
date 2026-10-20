@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
+import { useSearchParams } from "react-router-dom";
 import AccessDeniedState from "../components/AccessDeniedState.jsx";
 import RejectionReasonModal from "../components/admin/RejectionReasonModal.jsx";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
@@ -937,6 +938,23 @@ export default function AdminPanel() {
 	const [securityGateNotice, setSecurityGateNotice] = useState("");
 	const [activeCategory, setActiveCategory] = useState("home");
 	const [actionBusy, setActionBusy] = useState("");
+
+	// The emailed deep link.
+	//
+	// The support investigation report mail links to `/admin?case=<caseId>`,
+	// and the case lives in the platform section. A link that arrives in the
+	// console therefore has to open that section - otherwise the link lands
+	// on the admin home page and the case it names is nowhere on screen.
+	// The case itself is selected by AdminPlatformSection, which reads the
+	// same query parameter.
+	const [searchParams] = useSearchParams();
+	const deepLinkedCaseId = searchParams.get("case") || "";
+	useEffect(() => {
+		if (!deepLinkedCaseId) {
+			return;
+		}
+		setActiveCategory("platform");
+	}, [deepLinkedCaseId]);
 
 	const [configEditorTab, setConfigEditorTab] = useState("inventory");
 	const [configEditorData, setConfigEditorData] = useState({

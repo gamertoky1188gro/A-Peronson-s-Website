@@ -65,6 +65,7 @@ import {
 	runAgentPrompt,
 	startInvestigationRuntime,
 } from "./investigation/opencodeRuntime.js";
+import { buildReport } from "./investigation/report.js";
 import { buildInvestigationConfig } from "./investigation/runtimeConfig.js";
 
 /** How many investigations may run at once when nothing says otherwise. */
@@ -87,6 +88,14 @@ const MAX_CONVERSATION_MESSAGES = 20;
 
 /** The role that runs last and tries to refute the other roles' findings. */
 const VERIFY_ROLE = "verify";
+
+/**
+ * The statuses a case may hold when the investigation ends.
+ *
+ * A case that already reached a terminal status keeps it: the queue never
+ * rewrites a case that somebody else has moved on.
+ */
+const TERMINAL_SOURCE_STATUSES = new Set(["collecting", "investigating", "reporting"]);
 
 /** The roles that investigate, in the order they run. */
 const SPECIALIST_ROLES = AGENT_ROLES.filter((role) => role !== VERIFY_ROLE);
@@ -258,7 +267,7 @@ async function runInvestigation(job) {
 		const context = await loadCaseContext(caseId);
 		if (!context) {
 			await failRows(rows, finished, "The support case was not found.");
-			await advanceCaseStatus(caseId, "failed");
+			await setTerminalStatus(caseId, "failed");
 			return;
 		}
 
@@ -271,7 +280,7 @@ async function runInvestigation(job) {
 		const model = await pickModel(runtime.client);
 		if (!model) {
 			await failRows(rows, finished, "No free investigation model is available on the runtime.");
-			await advanceCaseStatus(caseId, "failed");
+			await setTerminalStatus(caseId, "failed");
 			return;
 		}
 
@@ -315,10 +324,15 @@ async function runInvestigation(job) {
 		// update only moves a case that is still `investigating`, so the queue
 		// can never undo a state the case has already left.
 		await advanceCaseStatus(caseId, "reporting");
+
+		// The report, the escalation, the mail and the terminal status. This
+		// is the end of the job: without it the investigation would run and
+		// nobody would ever read what it found.
+		await finalizeInvestigation({ caseId, rows });
 	} catch (error) {
 		logError("investigation failed", error);
 		await failRows(rows, finished, error?.message || String(error));
-		await advanceCaseStatus(caseId, "failed");
+		await setTerminalStatus(caseId, "failed");
 	} finally {
 		await removeSessions(runtime, sessionIDs);
 		await stopRuntime(runtime);
@@ -733,6 +747,240 @@ async function failRows(rows, finished, message) {
 			continue;
 		}
 		await finishRow(row, { status: "failed", error: truncate(message, MAX_ERROR_CHARS) });
+	}
+}
+
+/**
+ * The end of the investigation: the report, the escalation, the delivery and
+ * the terminal status of the case.
+ *
+ * The order is the point, and two of the steps are deliberately independent:
+ *
+ *  - The REPORT is written before the mail goes out, so a mail that never
+ *    leaves the box still leaves a report the admin console can read.
+ *  - The ESCALATION does not wait for the mail. A confirmed security or
+ *    data-loss finding must reach the owners even when the mail provider is
+ *    broken, so the escalation runs first, on its own, and its outcome is
+ *    never read by the mail path (or the other way round).
+ *  - Every step is contained. A step that fails is logged and the next one
+ *    still runs: a broken mail provider must not cost the owner the
+ *    escalation, and a broken escalation must not cost the owner the report.
+ *
+ * @param {Object} params
+ * @param {string} params.caseId The case the run belongs to.
+ * @param {Array<{role: string, id: string, attempt: number}>} params.rows The
+ *   rows THIS run created.
+ * @returns {Promise<void>}
+ */
+async function finalizeInvestigation({ caseId, rows }) {
+	const found = await getCaseWithMessages(caseId);
+	const caseRow = found && typeof found === "object" ? found : null;
+	const messages = Array.isArray(found?.messages) ? found.messages : [];
+
+	// The rows that go INTO the report have their own `report` column
+	// blanked: the report quotes the rows, and a row that already holds a
+	// report would put the previous report inside the new one.
+	const investigations = (await readRunRows(caseId, rows)).map((row) => ({
+		...row,
+		report: null,
+	}));
+
+	let report = "";
+	try {
+		report = buildReport({ caseRow, messages, investigations });
+	} catch (error) {
+		logError("investigation report build failed", error);
+	}
+	await persistReport(rows, report);
+
+	await escalate(caseId, finalFindings(investigations));
+	await deliver(caseRow, report);
+	await setTerminalStatus(caseId, "completed");
+}
+
+/**
+ * The rows of THIS run.
+ *
+ * A case holds one set of rows per attempt, so a re-run leaves the previous
+ * run's rows behind. The report describes the run that just happened, so
+ * only this run's rows are read.
+ *
+ * @param {string} caseId
+ * @param {Array<{id: string}>} rows
+ * @returns {Promise<Array<Object>>}
+ */
+async function readRunRows(caseId, rows) {
+	const ids = new Set((rows || []).map((row) => row?.id).filter(Boolean));
+	if (ids.size === 0) {
+		return [];
+	}
+	try {
+		const all = await prisma.supportInvestigation.findMany({ where: { case_id: caseId } });
+		return (all || []).filter((row) => ids.has(row?.id));
+	} catch (error) {
+		logWarn("investigation queue could not read the run rows", {
+			caseId,
+			error: error?.message || String(error),
+		});
+		return [];
+	}
+}
+
+/**
+ * The FINAL set of findings of the run: the verify row's findings, which
+ * hold every specialist finding with the verification applied.
+ *
+ * @param {Array<Object>} investigations
+ * @returns {{summary: string, findings: Array<Object>, limitations: Array<string>}}
+ */
+function finalFindings(investigations) {
+	const verify = (investigations || []).find((row) => row?.role === VERIFY_ROLE);
+	const payload = verify?.findings;
+	if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+		return payload;
+	}
+
+	// No verify row (the verification run itself failed): the specialists'
+	// own findings are what is left.
+	const findings = [];
+	for (const row of investigations || []) {
+		const rowPayload = row?.findings;
+		if (Array.isArray(rowPayload)) {
+			findings.push(...rowPayload);
+		} else if (Array.isArray(rowPayload?.findings)) {
+			findings.push(...rowPayload.findings);
+		}
+	}
+	return { summary: "", findings, limitations: [] };
+}
+
+/**
+ * Write the report to the verify row of this run.
+ *
+ * The report is stored on ONE row - the verify row, the one that holds the
+ * final set of findings - because that is where the admin console reads it
+ * from, and because a report that is copied onto every row would be copied
+ * five times.
+ *
+ * @param {Array<{role: string, id: string}>} rows
+ * @param {string} report
+ * @returns {Promise<boolean>}
+ */
+async function persistReport(rows, report) {
+	const verify = findRow(rows, VERIFY_ROLE);
+	if (!verify?.id || typeof report !== "string" || report === "") {
+		return false;
+	}
+	try {
+		await prisma.supportInvestigation.update({
+			where: { id: verify.id },
+			data: { report },
+		});
+		return true;
+	} catch (error) {
+		logWarn("investigation queue could not persist the report", {
+			role: verify.role,
+			error: error?.message || String(error),
+		});
+		return false;
+	}
+}
+
+/**
+ * The delivery module, loaded on demand.
+ *
+ * It belongs to the report workstream and pulls the mail service in with it,
+ * so it is loaded lazily: a checkout without it must still finish the
+ * investigation and write the report.
+ *
+ * @returns {Promise<Object|null>}
+ */
+async function loadDeliveryModule() {
+	try {
+		return await import("./investigation/delivery.js");
+	} catch (error) {
+		logWarn("investigation delivery module is not available", {
+			error: error?.message || String(error),
+		});
+		return null;
+	}
+}
+
+/**
+ * Escalate the case when the final findings call for it.
+ *
+ * This path never reads the mail result: a confirmed security finding must
+ * not wait for (or be swallowed by) a mail failure.
+ *
+ * @param {string} caseId
+ * @param {unknown} findings The final findings of the run.
+ * @returns {Promise<boolean>}
+ */
+async function escalate(caseId, findings) {
+	try {
+		const delivery = await loadDeliveryModule();
+		if (typeof delivery?.escalateIfNeeded !== "function") {
+			return false;
+		}
+		return await delivery.escalateIfNeeded(caseId, findings);
+	} catch (error) {
+		logError("investigation escalation failed", error);
+		return false;
+	}
+}
+
+/**
+ * Mail the report to the owners and record the verdict on the case.
+ *
+ * @param {Object} caseRow
+ * @param {string} report
+ * @returns {Promise<{ok: boolean, status?: string, error?: string}>}
+ */
+async function deliver(caseRow, report) {
+	try {
+		const delivery = await loadDeliveryModule();
+		if (typeof delivery?.deliverReport !== "function") {
+			return { ok: false, status: "failed", error: "delivery_unavailable" };
+		}
+		return await delivery.deliverReport({ caseRow, report });
+	} catch (error) {
+		logError("investigation report delivery failed", error);
+		return { ok: false, status: "failed", error: error?.message || String(error) };
+	}
+}
+
+/**
+ * Move the case to its terminal status.
+ *
+ * The transition is forward-only: a case that already reached a terminal
+ * status keeps it, and a case that is still live work is moved. The read is
+ * a guard, not the decision - the write is unconditional, so two runs that
+ * finish at the same time cannot leave the case in between.
+ *
+ * @param {string} caseId
+ * @param {string} status "completed" or "failed".
+ * @returns {Promise<boolean>}
+ */
+async function setTerminalStatus(caseId, status) {
+	try {
+		const found = await getCaseWithMessages(caseId);
+		const current = String(found?.status || "");
+		if (!TERMINAL_SOURCE_STATUSES.has(current)) {
+			return false;
+		}
+		await prisma.supportCase.update({
+			where: { id: caseId },
+			data: { status, updated_at: new Date() },
+		});
+		await emitCaseStatus(caseId, status);
+		return true;
+	} catch (error) {
+		logWarn("investigation queue could not set the terminal case status", {
+			caseId,
+			status,
+			error: error?.message || String(error),
+		});
+		return false;
 	}
 }
 

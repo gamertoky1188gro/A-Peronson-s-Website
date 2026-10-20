@@ -409,3 +409,47 @@ describe("buildReport — an unevidenced claim is never sold as confirmed", () =
 		expect(confidenceFor(md, index)).toBe("speculative");
 	});
 });
+
+// The verify run holds the FINAL set of findings — every specialist finding
+// with the verification applied — and each specialist run holds its own copy
+// of the findings it produced. The same finding therefore reaches the report
+// twice, and counting it twice would report twice as many findings as the
+// investigation produced.
+describe("buildReport — the final finding set is counted once", () => {
+	const codeRun = INVESTIGATIONS[1];
+	const verifyRun = {
+		...codeRun,
+		id: "inv-verify",
+		role: "verify",
+		findings: {
+			summary: "the final set of findings",
+			findings: codeRun.findings.findings,
+			limitations: [],
+		},
+	};
+
+	test("a finding the verify row repeats is counted once", () => {
+		const md = buildReport({
+			caseRow: CASE_ROW,
+			messages: MESSAGES,
+			investigations: [codeRun, verifyRun],
+		});
+
+		expect(md).toContain("### Confirmed findings (1)");
+		expect(md).toContain("### Probable findings (1)");
+		expect(md).toContain("### Speculative findings (0)");
+		// The finding is attributed to the run that FOUND it, not to the
+		// verifier that checked it.
+		expect(md).toContain("**Source role:** code");
+	});
+
+	test("the count of rendered findings is the count of the findings", () => {
+		const md = buildReport({
+			caseRow: CASE_ROW,
+			messages: MESSAGES,
+			investigations: [codeRun, verifyRun],
+		});
+
+		expect(md).toContain("**Findings rendered:** 2");
+	});
+});

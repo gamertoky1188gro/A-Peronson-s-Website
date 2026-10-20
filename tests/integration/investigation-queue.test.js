@@ -48,6 +48,14 @@ const supportCaseUpdateMany = jest.fn(async ({ where, data }) => {
 	Object.assign(row, data);
 	return { count: 1 };
 });
+const supportCaseUpdate = jest.fn(async ({ where, data }) => {
+	const row = cases.get(where.id);
+	if (!row) {
+		throw new Error(`no case ${where.id}`);
+	}
+	Object.assign(row, data);
+	return { ...row };
+});
 const supportCaseAttachmentFindMany = jest.fn(async ({ where } = {}) => {
 	if (!where?.case_id) {
 		return [...attachments];
@@ -62,9 +70,25 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 			update: supportInvestigationUpdate,
 			findMany: supportInvestigationFindMany,
 		},
-		supportCase: { updateMany: supportCaseUpdateMany },
+		supportCase: { updateMany: supportCaseUpdateMany, update: supportCaseUpdate },
 		supportCaseAttachment: { findMany: supportCaseAttachmentFindMany },
 	},
+}));
+
+// --- the report and the delivery --------------------------------------------
+//
+// The delivery belongs to the report workstream and it is mocked here: this
+// suite is about the ORCHESTRATION - what the queue does with the run - and
+// the delivery module has its own suite. The mock records what the queue
+// handed over.
+const deliverReport = jest.fn(async () => ({ ok: true, status: "sent" }));
+const escalateIfNeeded = jest.fn(async () => false);
+
+jest.unstable_mockModule("../../server/services/investigation/delivery.js", () => ({
+	deliverReport,
+	escalateIfNeeded,
+	buildCaseReportLink: (caseId) => `http://localhost:4000/admin?case=${caseId}`,
+	classifyFinding: () => null,
 }));
 
 // --- the case ---------------------------------------------------------------
@@ -192,12 +216,17 @@ beforeEach(() => {
 	supportInvestigationUpdate.mockClear();
 	supportInvestigationFindMany.mockClear();
 	supportCaseUpdateMany.mockClear();
+	supportCaseUpdate.mockClear();
 	supportCaseAttachmentFindMany.mockClear();
 	getCaseWithMessages.mockClear();
 	startInvestigationRuntime.mockClear();
 	createInvestigationSession.mockClear();
 	listAvailableModels.mockClear();
 	runAgentPrompt.mockClear();
+	deliverReport.mockClear();
+	deliverReport.mockResolvedValue({ ok: true, status: "sent" });
+	escalateIfNeeded.mockClear();
+	escalateIfNeeded.mockResolvedValue(false);
 
 	listAvailableModels.mockResolvedValue([
 		{ id: "deepseek-v4.1-flash-free", providerID: "opencode" },
@@ -485,5 +514,89 @@ describe("the investigation queue", () => {
 		expect(peak).toBe(2);
 		expect(queueDepth()).toBe(0);
 		expect(rows.filter((row) => row.case_id === "case-3")).toHaveLength(5);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The end of the investigation.
+//
+// The queue used to stop at `reporting`: the agents ran, the rows were
+// written, and nobody ever built a report, mailed it or escalated anything.
+// These tests pin the rest of the job.
+// ---------------------------------------------------------------------------
+describe("the end of the investigation", () => {
+	test("the report is built, written to the verify row, and mailed", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const report = rowFor("verify").report;
+		expect(typeof report).toBe("string");
+		expect(report.length).toBeGreaterThan(0);
+		// It is the report of THIS case: its id and its conversation.
+		expect(report).toContain(CASE_ID);
+		expect(report).toContain("the feed is empty");
+
+		// The mail carried the very same report.
+		expect(deliverReport).toHaveBeenCalledTimes(1);
+		expect(deliverReport.mock.calls[0][0].report).toBe(report);
+	});
+
+	// The verify row holds the accumulated set of findings, and each
+	// specialist row holds its own copy of the findings it produced, so the
+	// same finding reaches the report twice. It must be counted ONCE.
+	test("a finding is counted once, not once per run that reported it", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const report = rowFor("verify").report;
+		expect(report).toContain("### Confirmed findings (4)");
+		expect(report).not.toContain("### Confirmed findings (8)");
+	});
+
+	// The report must not quote a report: a row that already holds one would
+	// put the previous report inside the new one.
+	test("the report does not quote a report", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const first = rowFor("verify").report;
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const second = lastRowFor("verify").report;
+		expect(second).not.toContain(first);
+		expect(second).not.toContain("**Agent report**");
+	});
+
+	test("the escalation runs on the final findings, and the mail does not gate it", async () => {
+		// The mail provider is broken.
+		deliverReport.mockResolvedValueOnce({ ok: false, status: "failed", error: "no_smtp" });
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		// The escalation happened anyway.
+		expect(escalateIfNeeded).toHaveBeenCalledTimes(1);
+		const [caseId, findings] = escalateIfNeeded.mock.calls[0];
+		expect(caseId).toBe(CASE_ID);
+		// The FINAL set: every specialist finding, with the verification
+		// applied - the verify row's findings, not one specialist's.
+		expect(findings.findings).toHaveLength(4);
+		expect(findings.findings.map((finding) => finding.detail)).toContain("finding from lead");
+		expect(findings.findings.map((finding) => finding.detail)).toContain("finding from research");
+	});
+
+	test("the case ends completed", async () => {
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		expect(cases.get(CASE_ID).status).toBe("completed");
+	});
+
+	test("a case that cannot be found is failed, not left investigating", async () => {
+		await enqueueInvestigation("case-that-does-not-exist");
+		await waitForDrain();
+
+		expect(queueDepth()).toBe(0);
 	});
 });

@@ -630,15 +630,41 @@ export async function escalateIfNeeded(caseId, findings) {
 }
 
 /**
+ * The public base URL of this deployment.
+ *
+ * `APP_BASE_URL` is the repo-wide name for it - it is what every other link
+ * the server builds uses (README, .env.example) - and `PUBLIC_APP_URL` is
+ * accepted as a second name, because a link that points at `localhost` is
+ * worse than no link at all: the owner reads the mail on their own machine
+ * and the link opens nothing. The local port is the last resort, and it is
+ * right in development and wrong everywhere else.
+ *
+ * @returns {string}
+ */
+function baseUrl() {
+	for (const candidate of [process.env.APP_BASE_URL, process.env.PUBLIC_APP_URL]) {
+		const value = String(candidate || "")
+			.trim()
+			.replace(TRAILING_SLASH_RE, "");
+		if (value) {
+			return value;
+		}
+	}
+	return `http://localhost:${process.env.PORT || DEFAULT_PORT}`;
+}
+
+/**
  * The authenticated admin link to the full report.
+ *
+ * The link is `/admin?case=<caseId>`: the admin console reads the `case`
+ * query parameter and opens that case, so the link and the console agree on
+ * one spelling of the deep link.
  *
  * @param {string} caseId
  * @returns {string}
  */
 export function buildCaseReportLink(caseId) {
-	const base = String(process.env.APP_BASE_URL || "").replace(TRAILING_SLASH_RE, "");
-	const origin = base || `http://localhost:${process.env.PORT || DEFAULT_PORT}`;
-	return `${origin}${REPORT_LINK_PATH}?case=${encodeURIComponent(String(caseId || ""))}`;
+	return `${baseUrl()}${REPORT_LINK_PATH}?case=${encodeURIComponent(String(caseId || ""))}`;
 }
 
 /**

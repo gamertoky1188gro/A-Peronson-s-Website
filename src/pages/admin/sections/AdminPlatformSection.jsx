@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
+import { useSearchParams } from "react-router-dom";
 import PaymentProofReviewModal from "../../../components/admin/PaymentProofReviewModal.jsx";
 import { apiRequest, getToken } from "../../../lib/auth.js";
 import { exportEmailsCsv } from "../../AdminPanel.utils.js";
@@ -17,13 +18,18 @@ const SUPPORT_CASE_CONFIDENCE_CLASS = {
  * The report of a case: the verify run holds the final one, but a report
  * written on any other run is better than none.
  *
+ * The LAST verify run wins: a re-run writes a new set of rows, and the
+ * newest report is the one the owner should read.
+ *
  * @param {Array} investigations
  * @returns {string}
  */
 function pickSupportCaseReport(investigations) {
 	const rows = Array.isArray(investigations) ? investigations : [];
-	const verify = rows.find((row) => row?.role === "verify" && String(row?.report || "").trim());
-	const other = rows.find((row) => String(row?.report || "").trim());
+	const verify = [...rows]
+		.reverse()
+		.find((row) => row?.role === "verify" && String(row?.report || "").trim());
+	const other = [...rows].reverse().find((row) => String(row?.report || "").trim());
 	return String(verify?.report || other?.report || "");
 }
 
@@ -179,6 +185,10 @@ export function AdminPlatformSection({
 	const [supportCaseNote, setSupportCaseNote] = useState("");
 	const [supportCaseBusy, setSupportCaseBusy] = useState(false);
 	const supportCasesLoadedRef = useRef(false);
+
+	// The case the report mail points at: `/admin?case=<caseId>`.
+	const [searchParams] = useSearchParams();
+	const deepLinkedCaseId = searchParams.get("case") || "";
 
 	const setSystemReportsSafe = setSystemReports || setSystemReportsLocal;
 	const setProductAppealReportsSafe = setProductAppealReports || setProductAppealReportsLocal;
@@ -581,6 +591,20 @@ export function AdminPlatformSection({
 		supportCasesLoadedRef.current = true;
 		refreshSupportCases();
 	}, [activeCategory, refreshSupportCases]);
+
+	// The emailed deep link.
+	//
+	// The report mail links to `/admin?case=<caseId>`, and the console has to
+	// open THAT case - not merely the page. The parameter is read here, in
+	// the section that owns the cases, so the link and the console agree on
+	// one spelling of the deep link.
+	useEffect(() => {
+		const caseId = deepLinkedCaseId;
+		if (!caseId) {
+			return;
+		}
+		openSupportCase(caseId);
+	}, [deepLinkedCaseId, openSupportCase]);
 
 	const supportCaseToolLog = useMemo(
 		() => collectSupportCaseToolLog(supportCaseDetail?.investigations),

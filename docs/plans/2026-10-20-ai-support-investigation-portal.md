@@ -1076,7 +1076,7 @@ git commit -m "feat(support): case API with ownership enforcement"
   - `AGENT_ROLES: string[]` - `["lead", "code", "repo", "research", "verify"]`
   - `buildAgentPrompt(role: string, context: { description: string, evidence: string[] }): string`
   - `parseAgentJson(text: string): { ok: true, value: object } | { ok: false, reason: string }`
-  - `normalizeFindings(raw: unknown): Array<{ confidence: string, detail: string, evidence: Array<{ file?: string, lines?: string, commit?: string, url?: string }> }>`
+  - `normalizeFindings(raw: unknown): Array<{ confidence: string, detail: string, evidence: Array<{ file?: string, lines?: string, commit?: string, url?: string }>, category?: string }>` - `category` is **OPTIONAL** and free-form. It is a hint for the escalation path, which classifies a finding by `category` when the finding carries one and otherwise by phrase-matching the `detail` text, so the phrase matching keeps working when the field is absent.
   - `demoteUnsubstantiated(findings): Array<...>` - a finding with no evidence becomes `speculative`
   - `enqueueInvestigation(caseId: string): Promise<void>`
   - `queueDepth(): number`

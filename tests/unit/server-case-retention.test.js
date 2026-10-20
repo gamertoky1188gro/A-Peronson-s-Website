@@ -20,19 +20,29 @@ import { jest } from "@jest/globals";
 
 const supportCaseFindMany = jest.fn(async () => []);
 const supportCaseDelete = jest.fn(async () => ({ id: "case-1" }));
+const supportCaseFindUnique = jest.fn(async ({ where } = {}) => ({ id: where?.id ?? "case-1" }));
 const attachmentFindMany = jest.fn(async () => []);
 const documentDeleteMany = jest.fn(async () => ({ count: 0 }));
 const logInfo = jest.fn();
 const logWarn = jest.fn();
 const logError = jest.fn();
 
-jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
-	default: {
-		supportCase: { findMany: supportCaseFindMany, delete: supportCaseDelete },
-		supportCaseAttachment: { findMany: attachmentFindMany },
-		document: { deleteMany: documentDeleteMany },
+// The sweep removes the case through `caseService.deleteCase`, which reads
+// the row and deletes it inside ONE transaction. The store under the sweep
+// therefore has to offer the transaction and the read, or every sweep ends
+// in an error and sweeps nothing.
+const prismaMock = {
+	supportCase: {
+		findMany: supportCaseFindMany,
+		delete: supportCaseDelete,
+		findUnique: supportCaseFindUnique,
 	},
-}));
+	supportCaseAttachment: { findMany: attachmentFindMany },
+	document: { deleteMany: documentDeleteMany },
+	$transaction: async (fn) => fn(prismaMock),
+};
+
+jest.unstable_mockModule("../../server/utils/prisma.js", () => ({ default: prismaMock }));
 
 jest.unstable_mockModule("../../server/utils/logger.js", () => ({
 	logInfo,

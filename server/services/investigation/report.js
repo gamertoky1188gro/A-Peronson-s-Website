@@ -705,6 +705,23 @@ function renderAuditSection(row, runs, grouped, generated) {
 }
 
 /**
+ * The identity of a finding.
+ *
+ * The same claim, with the same confidence and the same evidence, is ONE
+ * finding however many runs report it.
+ *
+ * @param {Object} finding A normalized finding.
+ * @returns {string}
+ */
+function findingKey(finding) {
+	return JSON.stringify([
+		finding.detail,
+		finding.confidence,
+		(finding.evidence || []).map((entry) => [entry.file, entry.lines, entry.commit, entry.url]),
+	]);
+}
+
+/**
  * Build the Markdown report for one support case.
  *
  * @param {Object} params
@@ -722,8 +739,22 @@ export function buildReport({ caseRow, messages, investigations, generatedAt } =
 	const generated = formatTimestamp(generatedAt ?? new Date());
 
 	const grouped = { confirmed: [], probable: [], speculative: [] };
+	// The verify run holds the FINAL set of findings - every specialist
+	// finding with the verification applied - and each specialist run holds
+	// its own copy of the findings it produced. The same finding therefore
+	// arrives twice, and counting it twice would report twice as many
+	// findings as the investigation produced.
+	//
+	// Each finding is counted ONCE, under the run that first reported it:
+	// the specialist that found it, not the verifier that checked it.
+	const counted = new Set();
 	for (const run of runs) {
 		for (const finding of run.findings) {
+			const key = findingKey(finding);
+			if (counted.has(key)) {
+				continue;
+			}
+			counted.add(key);
 			grouped[finding.confidence].push({ finding, source: run });
 		}
 	}

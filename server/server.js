@@ -103,6 +103,7 @@ import { logError, logInfo, logWarn } from "./utils/logger.js";
 import { consumePendingInvites, enqueuePendingInvites } from "./utils/pendingInvites.js";
 import prisma from "./utils/prisma.js";
 import { closeRedis, initRedis } from "./utils/redis.js";
+import { startCaseRetentionWorker } from "./workers/caseRetentionWorker.js";
 
 const RECOMMENDED_ENV_VARS = [
 	"REDIS_URL",
@@ -1278,6 +1279,16 @@ async function start() {
 		markWorker("esign_retry");
 	} catch (err) {
 		logError("start_esign_retry_worker_failed", err);
+	}
+
+	// The support-case retention sweep. A case that has been quiet for the
+	// retention window is swept away - thread, evidence rows and the evidence
+	// BYTES - so it runs on the same schedule as the other worker loops.
+	try {
+		startCaseRetentionWorker();
+		markWorker("case_retention");
+	} catch (err) {
+		logError("start_case_retention_worker_failed", err);
 	}
 
 	import("./services/videoQueue.js")

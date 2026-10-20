@@ -914,3 +914,102 @@ describe("staff can read any case", () => {
 		expect(res.body.signed[EVIDENCE_B].url).toContain("/api/files/content?");
 	});
 });
+
+// ---------------------------------------------------------------------------
+// The staff actions on a case: escalate and re-run.
+//
+// Both routes are behind the admin guard chain, so the isolation rule holds
+// for them as well: a client cannot escalate another client's case, and a
+// client cannot start an investigation of one either.
+// ---------------------------------------------------------------------------
+describe("the staff actions on a case", () => {
+	test("an admin can escalate a case, and the case records it", async () => {
+		const res = await request(buildApp())
+			.post(`/api/admin/support/cases/${CASE_B}/escalate`)
+			.set(AUTH.admin)
+			.send({ reason: "confirmed data loss" });
+
+		expect(res.status).toBe(200);
+		expect(res.body.ok).toBe(true);
+		expect(res.body.case).toMatchObject({ id: CASE_B, escalated: true });
+
+		// The flag is on the ROW, not only in the answer.
+		const row = state.cases.find((candidate) => candidate.id === CASE_B);
+		expect(row.escalated).toBe(true);
+
+		// The escalation is traceable: it is written into the thread.
+		const messages = state.caseMessages.filter((message) => message.case_id === CASE_B);
+		const note = messages.find((message) => message.role === "admin");
+		expect(note).toBeDefined();
+		expect(note.content).toContain("confirmed data loss");
+	});
+
+	test("a client cannot escalate a case - 403, and the case is not escalated", async () => {
+		const res = await request(buildApp())
+			.post(`/api/admin/support/cases/${CASE_B}/escalate`)
+			.set(AUTH.b)
+			.send({ reason: "let me in" });
+
+		expect(res.status).toBe(403);
+		const row = state.cases.find((candidate) => candidate.id === CASE_B);
+		expect(row.escalated).toBe(false);
+	});
+
+	test("an admin can re-run a case, and a new investigation is queued", async () => {
+		const res = await request(buildApp())
+			.post(`/api/admin/support/cases/${CASE_B}/rerun`)
+			.set(AUTH.admin)
+			.send({});
+
+		expect(res.status).toBe(200);
+		expect(res.body).toMatchObject({ ok: true, queued: true, case_id: CASE_B });
+
+		// The job was handed to the queue.
+		expect(enqueueInvestigation).toHaveBeenCalledWith(CASE_B);
+
+		// A re-run starts the case over, so the queue - which only moves a
+		// case that is `investigating` - can pick it up.
+		const row = state.cases.find((candidate) => candidate.id === CASE_B);
+		expect(row.status).toBe("investigating");
+	});
+
+	test("a client cannot re-run a case - 403, and nothing is queued", async () => {
+		const res = await request(buildApp())
+			.post(`/api/admin/support/cases/${CASE_B}/rerun`)
+			.set(AUTH.b)
+			.send({});
+
+		expect(res.status).toBe(403);
+		expect(enqueueInvestigation).not.toHaveBeenCalled();
+	});
+
+	// The investigation queue belongs to another workstream and may not be in
+	// the tree. The route has to say so - 503 - instead of pretending it
+	// queued a run that will never happen.
+	test("a re-run reports that the runtime is not available - 503", async () => {
+		// The queue module is re-registered WITHOUT its enqueue function and
+		// the router is imported again into a fresh module registry, so the
+		// route sees a checkout that has no investigation runtime in it.
+		jest.resetModules();
+		jest.unstable_mockModule(QUEUE_MODULE_PATH, () => ({ queueDepth: () => 0 }));
+		const isolatedAdminRoutes = (await import("../../server/routes/adminRoutes.js")).default;
+		const app = express();
+		app.use(express.json());
+		app.use("/api/admin", isolatedAdminRoutes);
+
+		const res = await request(app)
+			.post(`/api/admin/support/cases/${CASE_B}/rerun`)
+			.set(AUTH.admin)
+			.send({});
+
+		expect(res.status).toBe(503);
+		expect(typeof res.body.error).toBe("string");
+
+		// The mock registration is shared by the whole module registry, so the
+		// original factory goes back for the tests that follow.
+		jest.unstable_mockModule(QUEUE_MODULE_PATH, () => ({
+			enqueueInvestigation,
+			queueDepth: () => 0,
+		}));
+	});
+});

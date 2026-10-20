@@ -451,6 +451,67 @@ describe("support case API (real router, real controller)", () => {
 		expect(confirmed.body.case).toMatchObject({ id: created.id, status: "investigating" });
 	});
 
+	// The route serves TWO intents: "start the investigation" and "this
+	// report is accurate". The second one arrives when the case is `reporting`
+	// or `completed`, and it must not restart anything - a literal
+	// implementation would rewrite the status to `investigating` and
+	// overwrite the summary the investigation was run under.
+	test("confirming a case that is already being investigated changes nothing", async () => {
+		const created = await createCase();
+
+		const first = await request(buildApp())
+			.post(`/api/support/cases/${created.id}/confirm`)
+			.set(AUTH.owner)
+			.expect(200);
+		expect(first.body.case).toMatchObject({ id: created.id, status: "investigating" });
+		const summary = first.body.case.summary;
+		expect(typeof summary).toBe("string");
+
+		const queued = enqueueInvestigation.mock.calls.length;
+
+		const again = await request(buildApp())
+			.post(`/api/support/cases/${created.id}/confirm`)
+			.set(AUTH.owner)
+			.expect(200);
+
+		expect(again.body.case).toMatchObject({ id: created.id, status: "investigating" });
+		expect(again.body.case.summary).toBe(summary);
+		// No second investigation was queued for the same case.
+		expect(enqueueInvestigation.mock.calls.length).toBe(queued);
+	});
+
+	test("confirming a finished case is an acknowledgement, not a restart", async () => {
+		const created = await createCase();
+
+		await request(buildApp())
+			.post(`/api/support/cases/${created.id}/confirm`)
+			.set(AUTH.owner)
+			.expect(200);
+
+		// The investigation finished and the report is on its way.
+		const row = state.cases.find((candidate) => candidate.id === created.id);
+		row.status = "completed";
+		row.summary = "the summary the finished investigation was run under";
+
+		const queued = enqueueInvestigation.mock.calls.length;
+
+		const again = await request(buildApp())
+			.post(`/api/support/cases/${created.id}/confirm`)
+			.set(AUTH.owner)
+			.expect(200);
+
+		expect(again.body.case).toMatchObject({
+			id: created.id,
+			status: "completed",
+			summary: "the summary the finished investigation was run under",
+		});
+		// The case did not go back to `investigating`, and the summary it was
+		// investigated under survived.
+		expect(row.status).toBe("completed");
+		expect(row.summary).toBe("the summary the finished investigation was run under");
+		expect(enqueueInvestigation.mock.calls.length).toBe(queued);
+	});
+
 	test("an owner/admin may read another client's case; a buyer may not", async () => {
 		const created = await createCase();
 

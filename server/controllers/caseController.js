@@ -626,10 +626,26 @@ export async function postCaseMessageController(req, res) {
 }
 
 /**
- * POST /api/support/cases/:caseId/confirm — the client confirms the summary.
+ * POST /api/support/cases/:caseId/confirm — the client confirms the case.
  *
- * Moves the case into `investigating`, stores the summary it is investigated
- * under, and hands the case to the investigation queue.
+ * The route serves TWO intents, and they are told apart by the status the
+ * case is in:
+ *
+ *  - "Start the investigation" (the case is `collecting`): the case moves to
+ *    `investigating`, the summary it is investigated under is written, and
+ *    the investigation is enqueued.
+ *  - "This report is accurate" (the case is `reporting` or `completed`): an
+ *    ACKNOWLEDGEMENT. The status and the summary stay exactly as they are,
+ *    and no second investigation is queued.
+ *
+ * The second intent is why the route is idempotent. A literal
+ * implementation - always write `investigating` and always overwrite the
+ * summary - would restart the investigation of a finished case and destroy
+ * the summary it was investigated under.
+ *
+ * There is no column for "the client confirmed the report", so the
+ * confirmation is recorded nowhere: it is an acknowledgement, and the case
+ * row says nothing about it.
  *
  * @param {Object} req
  * @param {Object} res
@@ -649,8 +665,15 @@ export async function confirmCaseController(req, res) {
 			return res.status(403).json({ error: "Forbidden" });
 		}
 
-		const updated = await startInvestigation(found, found.messages || []);
-		return res.json({ case: updated });
+		if (String(found.status || "") === "collecting") {
+			const updated = await startInvestigation(found, found.messages || []);
+			return res.json({ case: updated });
+		}
+
+		// The case has already left `collecting`. It keeps its status, its
+		// summary and its report, and the case row is returned unchanged.
+		const { messages, ...caseRow } = found;
+		return res.json({ case: caseRow });
 	} catch (error) {
 		return handleControllerError(res, error);
 	}

@@ -47,6 +47,11 @@ npmcache/
 server/tui/ink/.cache/
 server/tui/ink/app.mjs
 
+# Support-case evidence. The uploads tree is tracked (the seeded fixture
+# files are part of the repo), but a case's own evidence is the CLIENT's
+# material: it must never become a committable file.
+server/uploads/support/
+
 # Generated test-report artifacts (NEON TEST LAB)
 reports/
 coverage/

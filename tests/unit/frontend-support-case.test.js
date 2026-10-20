@@ -28,6 +28,18 @@ const subscribeToCase = jest.fn(() => () => {});
 // The hook imports exactly these two symbols from auth.js. An ESM mock factory
 // that omits one fails at link time with "does not provide an export named ...".
 jest.unstable_mockModule("../../src/lib/auth.js", () => ({ apiRequest, getToken }));
+
+// The SSE client itself, loaded BEFORE the mock below is registered.
+//
+// The hook tests mock `src/lib/caseRealtime.js` out on purpose: the endpoint
+// and its wire format belong to the server (contracts.md §4 says so
+// explicitly). The PARSER is ours though - it decides which frames are
+// contract events and which are noise - so it is tested here against the
+// real module. Jest picks the mock per import, so the real module imported
+// first and the mock registered afterwards live side by side: the hook gets
+// the mock, this file keeps the real parser.
+const realCaseRealtime = await import("../../src/lib/caseRealtime.js");
+
 jest.unstable_mockModule("../../src/lib/caseRealtime.js", () => ({ subscribeToCase }));
 
 const { useSupportCase } = await import("../../src/hooks/useSupportCase.js");
@@ -315,5 +327,115 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 
 		expect(apiRequest).not.toHaveBeenCalled();
 		expect(result.current.error).toBeTruthy();
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The SSE parser (src/lib/caseRealtime.js), directly.
+//
+// The contract is contracts.md §4: exactly five `support.case.*` event type
+// strings, and the frame's data is the payload. A frame with any other type
+// is ignored rather than guessed at.
+// ---------------------------------------------------------------------------
+
+/**
+ * A fetch stub that answers with one SSE body and then ends the stream.
+ *
+ * @param {string} text The raw stream text.
+ * @returns {Function} A fetch stub.
+ */
+function stubStream(text) {
+	const encoder = new TextEncoder();
+	const chunk = encoder.encode(text);
+	let sent = false;
+	return jest.fn(async () => ({
+		ok: true,
+		body: {
+			getReader() {
+				return {
+					async read() {
+						if (sent) {
+							return { done: true, value: undefined };
+						}
+						sent = true;
+						return { done: false, value: chunk };
+					},
+				};
+			},
+		},
+	}));
+}
+
+/** One SSE frame: a type, a data line and the blank line that ends it. */
+function sseFrame(type, data) {
+	return `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
+}
+
+describe("the case SSE parser (src/lib/caseRealtime.js)", () => {
+	const originalFetch = global.fetch;
+
+	afterEach(() => {
+		global.fetch = originalFetch;
+	});
+
+	test("the event types are exactly the five contracts.md 4 names", () => {
+		expect(realCaseRealtime.CASE_EVENT_TYPES).toEqual([
+			"support.case.message",
+			"support.case.status",
+			"support.case.progress",
+			"support.case.finding",
+			"support.case.report",
+		]);
+	});
+
+	test("each of the five types is dispatched on, with its payload", () => {
+		for (const type of realCaseRealtime.CASE_EVENT_TYPES) {
+			const event = realCaseRealtime.normalizeCaseEvent(type, { caseId: CASE_ID, detail: "x" });
+			expect(event).not.toBeNull();
+			expect(event.type).toBe(type);
+			expect(event.payload).toEqual({ caseId: CASE_ID, detail: "x" });
+		}
+	});
+
+	test("a type that is not one of the five is ignored", () => {
+		for (const type of ["support.case.something-else", "support.case", "message", "status", ""]) {
+			expect(realCaseRealtime.normalizeCaseEvent(type, { caseId: CASE_ID })).toBeNull();
+		}
+	});
+
+	test("a frame of the stream reaches the handler with its type and its payload", async () => {
+		const events = [];
+		global.fetch = stubStream(
+			sseFrame("support.case.status", { caseId: CASE_ID, status: "reporting" }),
+		);
+
+		const unsubscribe = realCaseRealtime.subscribeToCase(CASE_ID, (type, payload) => {
+			events.push({ type, payload });
+		});
+		await waitFor(() => expect(events).toHaveLength(1));
+		unsubscribe?.();
+
+		expect(events[0].type).toBe("support.case.status");
+		expect(events[0].payload).toMatchObject({ caseId: CASE_ID, status: "reporting" });
+	});
+
+	test("a frame of an unknown type never reaches the handler", async () => {
+		const events = [];
+		global.fetch = stubStream(
+			sseFrame("support.case.something-else", { caseId: CASE_ID, status: "completed" }),
+		);
+
+		const unsubscribe = realCaseRealtime.subscribeToCase(CASE_ID, (type, payload) => {
+			events.push({ type, payload });
+		});
+		// The frame is read from the stream; the handler is not called.
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		unsubscribe?.();
+
+		expect(events).toHaveLength(0);
+	});
+
+	test("the stream path is the case stream of contracts.md 4", () => {
+		expect(realCaseRealtime.caseStreamPath(CASE_ID)).toBe(`/api/support/cases/${CASE_ID}/stream`);
 	});
 });
