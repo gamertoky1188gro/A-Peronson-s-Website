@@ -190,6 +190,15 @@ export async function waitForAssistantTurn({
 				part.type === "tool" &&
 				(part.state?.status === "running" || part.state?.status === "streaming"),
 		);
+		// The newest assistant message still says it is going to call another
+		// tool, so the model has NOT finished - it is thinking about its next
+		// action. The v2 message list does not change while a model thinks, so
+		// the stability heuristic below would fire during a long generation
+		// pause and declare the turn finished with NO TEXT AT ALL. The second
+		// live end-to-end run lost a role that way: 7 tool calls, then a
+		// generation pause longer than the stability window, and the answer
+		// was an empty string.
+		const inToolCycle = newest?.finish === "tool-calls";
 		if (finished) {
 			settled = true;
 			break;
@@ -198,7 +207,7 @@ export async function waitForAssistantTurn({
 			settled = true;
 			break;
 		}
-		if (stablePolls >= stablePollsToSettle && !stillRunning) {
+		if (stablePolls >= stablePollsToSettle && !stillRunning && !inToolCycle) {
 			settled = true;
 			break;
 		}

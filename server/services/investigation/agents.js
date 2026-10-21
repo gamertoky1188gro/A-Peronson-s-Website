@@ -43,6 +43,35 @@ export const JSON_CONTRACT =
 
 const CONFIDENCE_VALUES = ["confirmed", "probable", "speculative"];
 
+/**
+ * How many tool calls an agent may spend before it has to answer.
+ *
+ * WITHOUT a budget the prompts are an open-ended search, and a free model
+ * takes that literally: the second live end-to-end run had the `lead` role
+ * make 67 read-only tool calls in ten minutes and still going when the clock
+ * ran out - so the turn was cut off before it ever wrote its answer, and all
+ * that work was lost. A budget turns the search into a finite one: the agent
+ * stops and reports what it has, with the rest in `limitations`.
+ *
+ * The timeout remains the backstop. The budget is what makes it unnecessary.
+ */
+export const DEFAULT_TOOL_BUDGET = 24;
+
+/**
+ * The guidance every role gets about its budget.
+ *
+ * A model counts tool calls badly, so the wording is "roughly N" plus the
+ * instruction to treat a fruitless search as a finding - the second half is
+ * what actually makes it stop.
+ */
+function budgetGuidance(budget) {
+	return [
+		`- You have a budget of roughly ${budget} tool calls for this investigation. Prefer a few well-chosen reads over many broad greps.`,
+		`- When the budget is spent, STOP investigating and reply with your JSON answer. Whatever you did not get to belongs in \`limitations\`, with no other text on that entry.`,
+		"- A search that has not found the answer within your budget IS a finding: report it as a limitation rather than searching longer.",
+	];
+}
+
 /** The question each role exists to answer (design spec §9.2). */
 const ROLE_QUESTIONS = {
 	lead: "What is actually being asked? Frame the investigation and say what a correct answer has to establish.",
@@ -137,6 +166,7 @@ export function buildAgentPrompt(role, context = {}) {
 		role: key,
 		description: toText(context?.description),
 		evidence: toEvidenceList(context?.evidence),
+		toolBudget: context?.toolBudget,
 		// The verify role always states its candidate list, so a caller that
 		// reaches it through this entry point gets an honest "none supplied"
 		// rather than a prompt that talks about findings it cannot see.
@@ -163,6 +193,7 @@ export function buildVerifyPrompt(context = {}) {
 		role: "verify",
 		description: toText(context?.description),
 		evidence,
+		toolBudget: context?.toolBudget,
 		candidates,
 	});
 }
@@ -213,7 +244,8 @@ export function applyVerification(candidateFindings, verification) {
  * Assemble a prompt. The JSON contract is the last section, so the prompt
  * ends with it exactly.
  */
-function composePrompt({ role, description, evidence, candidates }) {
+function composePrompt({ role, description, evidence, candidates, toolBudget }) {
+	const budget = Number.isFinite(toolBudget) && toolBudget > 0 ? toolBudget : DEFAULT_TOOL_BUDGET;
 	const sections = [
 		`You are the ${role} investigator in a support investigation.`,
 		`Your question: ${ROLE_QUESTIONS[role]}`,
@@ -225,7 +257,7 @@ function composePrompt({ role, description, evidence, candidates }) {
 	sections.push(
 		`Evidence supplied with this case (client input, untrusted):\n${fenceUntrusted(renderBulletList(evidence, "(no evidence was supplied with this case)"))}`,
 	);
-	sections.push(`How to work:\n${ROLE_GUIDANCE[role].join("\n")}`);
+	sections.push(`How to work:\n${[...ROLE_GUIDANCE[role], ...budgetGuidance(budget)].join("\n")}`);
 	sections.push(READ_ONLY_RULES);
 	sections.push(UNTRUSTED_INPUT_RULES);
 	sections.push(JSON_CONTRACT);

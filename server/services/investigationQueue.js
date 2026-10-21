@@ -47,12 +47,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { logError, logInfo, logWarn } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
+import { resolveWithinUploads } from "../utils/signedFileUrl.js";
 import { getCaseWithMessages } from "./caseService.js";
 import {
 	AGENT_ROLES,
 	applyVerification,
 	buildAgentPrompt,
 	buildVerifyPrompt,
+	DEFAULT_TOOL_BUDGET,
 } from "./investigation/agents.js";
 import {
 	demoteUnsubstantiated,
@@ -94,11 +96,25 @@ const MAX_CONCURRENCY = 16;
 const DEFAULT_AGENT_TIMEOUT_MS = 600_000;
 const MIN_AGENT_TIMEOUT_MS = 60_000;
 
+const MIN_TOOL_BUDGET = 4;
+
 /** The timeout one agent turn gets, in milliseconds. */
 export function agentTimeoutMs() {
 	const raw = Number(process.env.INVESTIGATION_AGENT_TIMEOUT_MS);
 	if (!Number.isFinite(raw) || raw <= 0) return DEFAULT_AGENT_TIMEOUT_MS;
 	return Math.max(MIN_AGENT_TIMEOUT_MS, raw);
+}
+
+/**
+ * How many tool calls one agent may spend before it has to answer.
+ *
+ * The budget is the real fix for an agent that never converges; the timeout is
+ * only the backstop. Override with INVESTIGATION_AGENT_TOOL_BUDGET.
+ */
+export function agentToolBudget() {
+	const raw = Number(process.env.INVESTIGATION_AGENT_TOOL_BUDGET);
+	if (!Number.isFinite(raw) || raw <= 0) return DEFAULT_TOOL_BUDGET;
+	return Math.max(MIN_TOOL_BUDGET, Math.round(raw));
 }
 
 /** How much of a failed answer is kept in `error` for inspection. */
@@ -382,6 +398,7 @@ async function runInvestigation(job) {
 			const prompt = buildAgentPrompt(role, {
 				description: context.description,
 				evidence: context.evidence,
+				toolBudget: agentToolBudget(),
 			});
 			const outcome = await runRole({
 				runtime,
@@ -448,6 +465,7 @@ async function runVerification({
 	const prompt = buildVerifyPrompt({
 		description: context.description,
 		candidateFindings: candidates,
+		toolBudget: agentToolBudget(),
 	});
 
 	const outcome = await runRole({
@@ -782,7 +800,21 @@ function buildEvidenceList(caseRow, attachments) {
 			continue;
 		}
 		const mime = typeof attachment?.mime_type === "string" ? attachment.mime_type.trim() : "";
-		evidence.push(mime ? `${filePath} (${mime})` : filePath);
+		// The agent's read tool is rooted at the REPOSITORY, so the PUBLIC path
+		// (/uploads/support/x.png) cannot be opened: the agent resolves it
+		// against the repository root and gets "File not found". The second
+		// live end-to-end run lost the client's screenshot that way - the
+		// `lead` role spent a tool call on a path that does not exist. Give it
+		// the absolute path it can actually open.
+		const absolute = resolveWithinUploads(filePath);
+		const label = absolute ?? filePath;
+		evidence.push(mime ? `${label} (${mime})` : label);
+	}
+
+	if (evidence.some((entry) => /image\//i.test(entry))) {
+		evidence.push(
+			"(A binary image may not be readable as text. If you cannot open one, say so in `limitations` - do not guess at what it shows.)",
+		);
 	}
 
 	return evidence;
