@@ -18,7 +18,8 @@
   - **"Available" and "working" are different questions.** `listAvailableModels` says the server *offers* the model; it says nothing about whether the account has quota left for it.
   - **A refusal produces no content, so it is indistinguishable from silence unless the error is read.** The error lives on the *message*, not in the content — `message.error` is where the provider's reason is.
   - **A model that answers with prose is worth retrying too.** The models differ in how well they follow the JSON contract, and a preamble ("I'll start by exploring the repository structure…") with no JSON is a different model answering, not a broken one.
-  - **The per-model quota is why the chain is long.** A single free model cannot carry a five-agent investigation: one investigation spent 67 tool calls on the first role alone.
+  - **A model that answers with prose is worth retrying too — but first, ask it again.** The commonest miss is not a refusal but an *explanation*: "Based on my investigation, I can now provide a" and then prose, or a preamble and no JSON. That model has usually **already done the work** — the answer is one formatting step away and the session still holds the context. So the queue first sends **one more turn in the same session** ("reply with ONLY the JSON object"), which costs a single call and does not re-run the investigation, and only then falls back to the next model. In a live run this turned two failed roles into completed ones with real findings.
+  - **A fallback must not erase the diagnostics.** The row used to be OVERWRITTEN by each attempt, so the reason the *first* model failed was gone by the time anyone looked. Every attempt's failure is now kept on the row.
 
 ## 28. Never kill a process by its name (Owner)
 
