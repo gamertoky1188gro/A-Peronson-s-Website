@@ -384,8 +384,8 @@ async function runInvestigation(job) {
 			password: mintRuntimePassword(),
 		});
 
-		const model = await pickModel(runtime.client);
-		if (!model) {
+		const models = await pickModels(runtime.client);
+		if (!models.length) {
 			await failRows(rows, finished, "No free investigation model is available on the runtime.");
 			await setTerminalStatus(caseId, "failed");
 			return;
@@ -402,7 +402,7 @@ async function runInvestigation(job) {
 			});
 			const outcome = await runRole({
 				runtime,
-				model,
+				models,
 				role,
 				prompt,
 				row: findRow(rows, role),
@@ -418,7 +418,7 @@ async function runInvestigation(job) {
 
 		await runVerification({
 			runtime,
-			model,
+			models,
 			caseId,
 			context,
 			candidates: accumulated,
@@ -453,7 +453,7 @@ async function runInvestigation(job) {
  */
 async function runVerification({
 	runtime,
-	model,
+	models,
 	caseId,
 	context,
 	candidates,
@@ -470,7 +470,7 @@ async function runVerification({
 
 	const outcome = await runRole({
 		runtime,
-		model,
+		models,
 		role: VERIFY_ROLE,
 		prompt,
 		row: findRow(rows, VERIFY_ROLE),
@@ -528,14 +528,67 @@ async function runVerification({
 }
 
 /**
- * Run one role: its own session, its own prompt, its own row.
+ * Run one role, falling back through the free model chain.
+ *
+ * The free tier's quota is PER MODEL, so the first model of the chain can be
+ * exhausted while the fourth still answers. A role that gave up on the first
+ * refusal is a role that produced no findings for a reason that has nothing
+ * to do with the question.
+ *
+ * Only two failures are worth retrying on another model: the model REFUSED
+ * the request (a quota, a rate limit, a provider error) and the model
+ * answered with something the parser could not read. A timeout or a wedge is
+ * NOT retried - the model was working, it just needed longer, and retrying
+ * would double the wall clock for the same result.
  *
  * @returns {Promise<{role: string, status: string, findings: object[], limitations: string[], summary: string, error?: string}>}
  */
-async function runRole({ runtime, model, role, prompt, row, caseId, sessionIDs }) {
+async function runRole({ runtime, models, role, prompt, row, caseId, sessionIDs }) {
 	if (!row) {
 		return { role, status: "failed", findings: [], limitations: [], summary: "", error: "no row" };
 	}
+
+	const chain = (Array.isArray(models) ? models : [models]).filter(Boolean);
+	if (!chain.length) {
+		const error = "No free investigation model is available on the runtime.";
+		await finishRow(row, { status: "failed", error });
+		await emitProgress(caseId, role, "failed", error);
+		return { role, status: "failed", findings: [], limitations: [], summary: "", error };
+	}
+
+	let lastError = "";
+	for (const model of chain) {
+		const outcome = await runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionIDs });
+		if (outcome.status === "complete") {
+			return outcome;
+		}
+		lastError = outcome.error || lastError;
+		if (!outcome.retryable) {
+			return outcome;
+		}
+		logWarn("investigation model did not deliver; trying the next free model", {
+			caseId,
+			role,
+			model: model.id,
+			error: outcome.error,
+		});
+	}
+
+	const error = truncate(
+		`Every free model in the chain failed for this role. Last failure: ${lastError}`,
+		MAX_ERROR_CHARS,
+	);
+	await finishRow(row, { status: "failed", error });
+	await emitProgress(caseId, role, "failed", error);
+	return { role, status: "failed", findings: [], limitations: [], summary: "", error };
+}
+
+/**
+ * One attempt at one role with one model.
+ *
+ * @returns {Promise<{role: string, status: string, findings: object[], limitations: string[], summary: string, error?: string, retryable?: boolean}>}
+ */
+async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionIDs }) {
 
 	await updateRow(row, {
 		status: "running",
@@ -568,9 +621,22 @@ async function runRole({ runtime, model, role, prompt, row, caseId, sessionIDs }
 
 		if (result?.error) {
 			const error = truncate(result.error, MAX_ERROR_CHARS);
-			await finishRow(row, { status: "failed", error, tool_log: toolCalls });
-			await emitProgress(caseId, role, "failed", error);
-			return { role, status: "failed", findings: [], limitations: [], summary: "", error };
+			// A model that REFUSED the request is worth retrying on the next
+			// model of the chain: the free tier's quota is per model.
+			const retryable = result?.errorKind === "model_refused";
+			if (!retryable) {
+				await finishRow(row, { status: "failed", error, tool_log: toolCalls });
+				await emitProgress(caseId, role, "failed", error);
+			}
+			return {
+				role,
+				status: "failed",
+				findings: [],
+				limitations: [],
+				summary: "",
+				error,
+				retryable,
+			};
 		}
 
 		const parsed = parseAgentJson(rawText);
@@ -581,9 +647,21 @@ async function runRole({ runtime, model, role, prompt, row, caseId, sessionIDs }
 				`The agent did not answer with JSON (${parsed.reason}). Raw answer: ${rawText}`,
 				MAX_ERROR_CHARS,
 			);
+			// A model that answered with something unreadable is worth retrying
+			// on the next model of the chain: the models differ in how well they
+			// follow the answer contract.
+			const retryable = true;
 			await finishRow(row, { status: "failed", error, tool_log: toolCalls });
 			await emitProgress(caseId, role, "failed", error);
-			return { role, status: "failed", findings: [], limitations: [], summary: "", error };
+			return {
+				role,
+				status: "failed",
+				findings: [],
+				limitations: [],
+				summary: "",
+				error,
+				retryable,
+			};
 		}
 
 		// The demotions run FIRST, on what the agent actually said: the
@@ -873,20 +951,25 @@ function normalizeToolCalls(toolCalls) {
 }
 
 /**
- * Pick the first model of the chain the runtime actually offers.
+ * Every model of the chain the runtime actually offers, IN ORDER.
  *
  * The chain holds free models only (see investigation/modelChain.js), so the
  * portal never spends somebody else's money on an investigation.
+ *
+ * The ORDER matters, because the free tier's quota is PER MODEL. Measured
+ * against a live runtime on an exhausted account: deepseek-v4.1-flash-free,
+ * mimo-v2.6-flash-free and glm-5.3-flash-free all answered HTTP 429
+ * "provider.quota" while minimax-m3.1-flash-free answered normally. A chain
+ * that is only used to PICK the first model buys nothing - it has to be used
+ * to FALL BACK.
  */
-async function pickModel(client) {
+async function pickModels(client) {
 	const available = await listAvailableModels(client);
 	const chain = parseModelChain(process.env.OPENCODE_INVESTIGATION_MODELS);
-	return (
-		chain.find((candidate) =>
-			(available || []).some(
-				(model) => model?.id === candidate.id && model?.providerID === candidate.providerID,
-			),
-		) || null
+	return chain.filter((candidate) =>
+		(available || []).some(
+			(model) => model?.id === candidate.id && model?.providerID === candidate.providerID,
+		),
 	);
 }
 

@@ -222,6 +222,13 @@ export async function waitForAssistantTurn({
 				part.type === "tool" &&
 				(part.state?.status === "running" || part.state?.status === "streaming"),
 		);
+		// The model refused the request. It may not have set `finish` yet, so
+		// check the error itself rather than waiting for a finish that is not
+		// coming.
+		if (assistants.some((message) => message?.error)) {
+			settled = true;
+			break;
+		}
 		if (finished) {
 			settled = true;
 			break;
@@ -262,6 +269,19 @@ export async function waitForAssistantTurn({
 	// for a parsing bug instead of looking at the clock.
 	const timedOut = !settled;
 
+	// The model can REFUSE the request, and it says so on the message:
+	//
+	//   finish: "error"
+	//   error: { type: "provider.quota", message: "Rate limit exceeded…", status: 429 }
+	//
+	// A refused model produces no content at all, so without this the refusal
+	// was indistinguishable from an agent that said nothing - and a free-tier
+	// quota error was reported as "the agent did not answer with JSON".
+	const modelError =
+		newest?.error ??
+		[...assistants].reverse().find((message) => message?.error)?.error ??
+		null;
+
 	return {
 		messages: fresh,
 		assistants,
@@ -271,6 +291,7 @@ export async function waitForAssistantTurn({
 		text: texts.join("\n"),
 		timedOut,
 		wedged,
+		modelError,
 		timeoutMs,
 	};
 }

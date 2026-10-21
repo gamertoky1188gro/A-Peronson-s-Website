@@ -435,6 +435,21 @@ export async function runAgentPrompt({ client, sessionID, text, timeoutMs = 180_
 			error: part.state?.error ? formatToolError(part.state.error) : undefined,
 		}));
 
+	// The model REFUSED the request. The free tier's quota is PER MODEL, so
+	// this is the one failure another model in the chain can answer for.
+	if (turn.modelError) {
+		const kind = turn.modelError.type || "provider error";
+		const status = turn.modelError.status ? ` (HTTP ${turn.modelError.status})` : "";
+		const message = turn.modelError.message || kind;
+		return {
+			text: turn.text,
+			toolCalls,
+			agent: turn.newest?.agent || null,
+			errorKind: "model_refused",
+			error: `The model refused the request: ${message}${status} [${kind}]`,
+		};
+	}
+
 	// A turn that ran out of time is reported as a timeout, not as an agent
 	// that said nothing. The tool calls it DID make are kept, because they are
 	// the evidence that it was still working when the clock ran out.
@@ -443,6 +458,7 @@ export async function runAgentPrompt({ client, sessionID, text, timeoutMs = 180_
 			text: turn.text,
 			toolCalls,
 			agent: turn.newest?.agent || null,
+			errorKind: "wedged",
 			error: `The agent stopped making progress: it had made ${toolCalls.length} read-only tool call(s) and then produced nothing for several minutes.`,
 		};
 	}
@@ -451,6 +467,7 @@ export async function runAgentPrompt({ client, sessionID, text, timeoutMs = 180_
 			text: turn.text,
 			toolCalls,
 			agent: turn.newest?.agent || null,
+			errorKind: "timeout",
 			error: `The agent did not finish within ${Math.round((turn.timeoutMs ?? timeoutMs) / 1000)}s. It had made ${toolCalls.length} read-only tool call(s) and was still working.`,
 		};
 	}

@@ -376,10 +376,40 @@ const SECURITY_CATEGORY_RE =
 const DATA_LOSS_CATEGORY_RE =
 	/\b(data[\s_-]?(loss|leak|breach|exposure|deletion)|loss[\s_-]?of[\s_-]?data|destructive[\s_-]?(delete|operation)|integrity[\s_-]?loss)\b/;
 
+/**
+ * A finding that DENIES the harm is not evidence of the harm.
+ *
+ * The measured false positive: a CONFIRMED finding that correctly described
+ * the API surface -
+ *
+ *   "The only DELETE route in documentRoutes.js is DELETE /api/documents/:documentId,
+ *    which is a hard delete of a Document row and IS NOT CALLED from ContractVault."
+ *
+ * - was classified as a data-loss issue and escalated, because the phrase
+ * "hard delete" appears in it. The finding says the OPPOSITE of an incident:
+ * it says the destructive route is never reached. Escalating that pages the
+ * staff for a missing feature.
+ *
+ * The list is deliberately narrow: it names the ways a finding says the harm
+ * does not HAPPEN (not called, never called, no route, cannot delete), not the
+ * ways a finding might merely mention a negative. A confirmed incident - "the
+ * archive endpoint permanently deletes every contract" - contains none of
+ * them and still escalates.
+ *
+ * "does nothing" belongs here for the same reason: "the delete button does
+ * nothing when clicked" is the measured benign complaint, and it names the
+ * harm in the very words a data-loss pattern looks for.
+ */
+const HARM_DENIAL_RE =
+	/\b(?:is|are|was|were)\s+not\s+(?:called|used|wired|invoked|reached|executed|triggered|connected|linked)\b|\bnever\s+(?:called|used|wired|invoked|reached|executed|triggered|connected)\b|\bnot\s+(?:wired|connected|implemented|reachable|called\s+from|invoked\s+from|triggered\s+from)\b|\bno\s+(?:route|endpoint|button|path|server\s+endpoint|call)\b|\bcannot\s+(?:be\s+)?(?:delete|removed?|destroyed|wiped|erased|purged|leaked|exposed)\b|\bdoes\s+not\s+(?:delete|remove|destroy|wipe|erase|purge|leak|expose)\b|\bdoes\s+nothing\b|\bdoes\s+not\s+work\b|\b(?:has|have|had)\s+no\s+effect\b|\bno[\s-]?op\b/;
+
 const DATA_NOUN_RE =
 	/\b(record|records|row|rows|data|file|files|document|documents|user|users|order|orders|contract|contracts|message|messages|table|tables|entry|entries|history|payment|payments|invoice|invoices|backup|backups)\b/;
+// The present and future forms matter: a finding that says the endpoint
+// DELETES every contract is reporting a live harm, and only the past tense
+// was matched before.
 const DATA_LOSS_VERB_RE =
-	/\b(deleted|removed|wiped|erased|destroyed|lost|missing|gone|vanished|disappeared|corrupted|truncated|overwritten|clobbered|leaked|leaking|purged|dropped)\b/;
+	/\b(delet(?:e|es|ed|ing)|remov(?:e|es|ed|ing)|wip(?:e|es|ed)|er(?:a|as)se(?:d|s)?|destroy(?:s|ed|ing)?|lost|loss|missing|gone|vanish(?:ed|es)?|disappear(?:s|ed|ing)?|corrupt(?:s|ed|ing)?|truncat(?:e|es|ed)|overwritt?(?:e|en)|clobb(?:er|ered|ering)|leak(?:s|ed|ing)?|purg(?:e|es|ed|ing)|drop(?:s|ped|ping))\b/;
 
 const SECURITY_PATTERNS = [
 	/\bsecurit(y|ies)\b/,
@@ -393,6 +423,9 @@ const SECURITY_PATTERNS = [
 	/\b(auth|authentication|authorization|authn|authz|access control|permission)s?\s+(check\s+)?(bypass|is bypassed|are bypassed)\b/,
 	/\bbypass(es|ed|ing)?\s+(the\s+)?(auth|authentication|authorization|access control|permission|login)\b/,
 	/\bmissing (authorization|authentication|access control)\b/,
+	// "has no authorization check" is the same defect as "missing
+	// authorization", and it is how the code under investigation words it.
+	/\b(no|without|missing|lacks?|lacking|omits?|omitting)\s+(an?\s+)?(authorization|authentication|authz|authn|access[\s-]?control|permission)\b/,
 	/\bunauthenticated\b/,
 	/\bunauthori[sz]ed\b/,
 	/\barbitrary (file|command|code|path|read|write|object)\b/,
@@ -417,7 +450,9 @@ const SECURITY_PATTERNS = [
 const DATA_LOSS_PATTERNS = [
 	/\bdata[\s-]?(loss|leak|breach|exposure|deletion)\b/,
 	/\bloss of data\b/,
-	/\b(permanently|hard|bulk|mass)\s+delete\b/,
+	// The separator is a hyphen as well as a space: the code under
+	// investigation writes "hard-deletes", not "hard delete".
+	/\b(permanently|hard|bulk|mass)[\s_-]?delet(?:e|es|ed|ing)\b/,
 	new RegExp(`${DATA_LOSS_VERB_RE.source}[^.]{0,60}${DATA_NOUN_RE.source}`),
 	new RegExp(`${DATA_NOUN_RE.source}[^.]{0,60}${DATA_LOSS_VERB_RE.source}`),
 ];
@@ -750,11 +785,20 @@ export function classifyFinding(finding) {
 	if (!haystack) {
 		return null;
 	}
-	if (DATA_LOSS_PATTERNS.some((pattern) => pattern.test(haystack))) {
-		return "data_loss";
+	// The finding says the harmful thing is not reached. It is describing a
+	// CAPABILITY, not reporting an incident, so it must not page anybody.
+	if (HARM_DENIAL_RE.test(haystack)) {
+		return null;
 	}
+	// SECURITY is tested FIRST. A finding that says "any authenticated user
+	// can delete another user's contract" matches BOTH sets - the access
+	// control is the defect, the deletion is the consequence - and the defect
+	// is the more precise classification.
 	if (SECURITY_PATTERNS.some((pattern) => pattern.test(haystack))) {
 		return "security";
+	}
+	if (DATA_LOSS_PATTERNS.some((pattern) => pattern.test(haystack))) {
+		return "data_loss";
 	}
 	return null;
 }
