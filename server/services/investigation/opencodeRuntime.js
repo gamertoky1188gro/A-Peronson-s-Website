@@ -435,6 +435,18 @@ export async function runAgentPrompt({ client, sessionID, text, timeoutMs = 180_
 			error: part.state?.error ? formatToolError(part.state.error) : undefined,
 		}));
 
+	// A turn that ran out of time is reported as a timeout, not as an agent
+	// that said nothing. The tool calls it DID make are kept, because they are
+	// the evidence that it was still working when the clock ran out.
+	if (turn.timedOut) {
+		return {
+			text: turn.text,
+			toolCalls,
+			agent: turn.newest?.agent || null,
+			error: `The agent did not finish within ${Math.round((turn.timeoutMs ?? timeoutMs) / 1000)}s. It had made ${toolCalls.length} read-only tool call(s) and was still working.`,
+		};
+	}
+
 	return {
 		text: turn.text,
 		toolCalls,

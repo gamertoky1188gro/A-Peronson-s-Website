@@ -78,8 +78,28 @@ const DEFAULT_CONCURRENCY = 2;
 /** The ceiling on `INVESTIGATION_CONCURRENCY`. Each slot holds a runtime. */
 const MAX_CONCURRENCY = 16;
 
-/** How long one agent turn may take. */
-const AGENT_TIMEOUT_MS = 180_000;
+/**
+ * How long one agent turn may take.
+ *
+ * A real codebase investigation is NOT a one-shot question: the agent reads a
+ * file, greps, reads three more, and only then writes its answer. On a free
+ * model that routinely takes several minutes. The first live end-to-end run
+ * was cut off at 180s with 17 COMPLETED read-only tool calls and no answer at
+ * all - every role died the same way, and the failure was misreported as
+ * "the agent did not answer with JSON".
+ *
+ * Override with INVESTIGATION_AGENT_TIMEOUT_MS. The floor is 60s, so a typo
+ * cannot quietly turn a case into a one-minute no-op.
+ */
+const DEFAULT_AGENT_TIMEOUT_MS = 600_000;
+const MIN_AGENT_TIMEOUT_MS = 60_000;
+
+/** The timeout one agent turn gets, in milliseconds. */
+export function agentTimeoutMs() {
+	const raw = Number(process.env.INVESTIGATION_AGENT_TIMEOUT_MS);
+	if (!Number.isFinite(raw) || raw <= 0) return DEFAULT_AGENT_TIMEOUT_MS;
+	return Math.max(MIN_AGENT_TIMEOUT_MS, raw);
+}
 
 /** How much of a failed answer is kept in `error` for inspection. */
 const MAX_ERROR_CHARS = 4000;
@@ -523,7 +543,7 @@ async function runRole({ runtime, model, role, prompt, row, caseId, sessionIDs }
 			client: runtime.client,
 			sessionID,
 			text: prompt,
-			timeoutMs: AGENT_TIMEOUT_MS,
+			timeoutMs: agentTimeoutMs(),
 		});
 		toolCalls = normalizeToolCalls(result?.toolCalls);
 		const rawText = typeof result?.text === "string" ? result.text : "";

@@ -144,6 +144,7 @@ export async function waitForAssistantTurn({
 	let stablePolls = 0;
 	let signature = "";
 	let emitted = 0;
+	let settled = false;
 
 	while (Date.now() < deadline) {
 		await sleep(pollIntervalMs);
@@ -189,10 +190,25 @@ export async function waitForAssistantTurn({
 				part.type === "tool" &&
 				(part.state?.status === "running" || part.state?.status === "streaming"),
 		);
-		if (finished) break;
-		if (idle && stablePolls >= 2) break;
-		if (stablePolls >= stablePollsToSettle && !stillRunning) break;
+		if (finished) {
+			settled = true;
+			break;
+		}
+		if (idle && stablePolls >= 2) {
+			settled = true;
+			break;
+		}
+		if (stablePolls >= stablePollsToSettle && !stillRunning) {
+			settled = true;
+			break;
+		}
 	}
+
+	// A deadline that expires is NOT the same as an agent that answered with
+	// nothing. Without this flag the caller sees an empty string and reports
+	// "the agent did not answer with JSON", which sends the operator hunting
+	// for a parsing bug instead of looking at the clock.
+	const timedOut = !settled;
 
 	return {
 		messages: fresh,
@@ -201,5 +217,7 @@ export async function waitForAssistantTurn({
 		content,
 		parts,
 		text: texts.join("\n"),
+		timedOut,
+		timeoutMs,
 	};
 }
