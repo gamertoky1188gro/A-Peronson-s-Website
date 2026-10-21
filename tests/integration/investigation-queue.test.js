@@ -153,6 +153,14 @@ function roleOf(prompt) {
 }
 
 /**
+ * Is this the NUDGE - the follow-up turn that asks a model which answered with
+ * prose to give the same answer as JSON?
+ */
+function isNudge(prompt) {
+	return /^Your previous reply was not a JSON object\./.test(String(prompt || ""));
+}
+
+/**
  * The default answer of every role: each specialist reports its own finding,
  * the verifier refutes nothing.
  */
@@ -538,6 +546,9 @@ describe("the investigation queue", () => {
 			if (roleOf(text) === "verify") {
 				return { text: agentReply([]), toolCalls: [] };
 			}
+			// The nudge asks the SAME session for the answer as JSON. A model
+			// that cannot answer in the contract cannot answer it on the
+			// second ask either.
 			return { text: "I am sorry, I could not do that.", toolCalls: [] };
 		});
 
@@ -552,9 +563,55 @@ describe("the investigation queue", () => {
 		expect(row.findings).toBeUndefined();
 	});
 
+	test("a model that answered with prose is NUDGED for JSON in the same session", async () => {
+		const asked = [];
+		runAgentPrompt.mockImplementation(async ({ text, sessionID }) => {
+			asked.push({ text, sessionID });
+			if (roleOf(text) === "verify") {
+				return { text: agentReply([]), toolCalls: [] };
+			}
+			if (isNudge(text)) {
+				// The nudge is answered with the JSON the model should have
+				// given the first time.
+				return {
+					text: agentReply([
+						{
+							confidence: "confirmed",
+							detail: "the recovered finding",
+							evidence: [{ file: "server/server.js", lines: "1-2", commit: "abc1234" }],
+						},
+					]),
+					toolCalls: [],
+				};
+			}
+			if (roleOf(text) === "lead") {
+				// Only the LEAD answers with prose; every other role answers in
+				// the contract, so exactly one nudge is sent.
+				return { text: "Based on my investigation, I can now provide a summary.", toolCalls: [] };
+			}
+			return defaultAnswer({ text });
+		});
+
+		await enqueueInvestigation(CASE_ID);
+		await waitForDrain();
+
+		const row = rowFor("lead");
+		expect(row.status).toBe("complete");
+		expect(row.findings.findings[0].detail).toBe("the recovered finding");
+
+		// The nudge was sent, exactly once, and it went to the SAME session as
+		// the original turn - the session still holds the investigation, so the
+		// work is not repeated.
+		const nudges = asked.filter((a) => isNudge(a.text));
+		expect(nudges).toHaveLength(1);
+		const original = asked.find((a) => /You are the lead investigator/.test(a.text));
+		expect(original).toBeTruthy();
+		expect(nudges[0].sessionID).toBe(original.sessionID);
+	});
+
 	test("a verification that fails leaves the findings recorded, but unverified", async () => {
 		runAgentPrompt.mockImplementation(async ({ text }) => {
-			if (roleOf(text) === "verify") {
+			if (roleOf(text) === "verify" || isNudge(text)) {
 				return { text: "I could not verify anything.", toolCalls: [] };
 			}
 			return defaultAnswer({ text });

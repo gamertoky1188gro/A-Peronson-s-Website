@@ -557,12 +557,14 @@ async function runRole({ runtime, models, role, prompt, row, caseId, sessionIDs 
 	}
 
 	let lastError = "";
+	const attempts = [];
 	for (const model of chain) {
 		const outcome = await runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionIDs });
 		if (outcome.status === "complete") {
 			return outcome;
 		}
 		lastError = outcome.error || lastError;
+		attempts.push(`${model.id}: ${lastError}`);
 		if (!outcome.retryable) {
 			return outcome;
 		}
@@ -574,8 +576,11 @@ async function runRole({ runtime, models, role, prompt, row, caseId, sessionIDs 
 		});
 	}
 
+	// Every attempt's failure is kept, not just the last one: the row used to
+	// be OVERWRITTEN by each fallback, so the reason the FIRST model failed
+	// was lost by the time anyone looked at it.
 	const error = truncate(
-		`Every free model in the chain failed for this role. Last failure: ${lastError}`,
+		`Every free model in the chain failed for this role. Attempts:\n${attempts.join("\n")}`,
 		MAX_ERROR_CHARS,
 	);
 	await finishRow(row, { status: "failed", error });
@@ -641,6 +646,31 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 
 		const parsed = parseAgentJson(rawText);
 		if (!parsed.ok) {
+			// The model EXPLAINED itself instead of answering in the contract.
+			// That is the commonest way a free model misses the answer format:
+			// "Based on my investigation, I can now provide a..." and then the
+			// JSON, or a preamble and no JSON at all.
+			//
+			// The session still holds the work, so ONE more turn in the SAME
+			// session - "reply with only the JSON object" - costs a single call
+			// and recovers the answer without re-running the investigation.
+			const nudged = await nudgeForJson({
+				client: runtime.client,
+				sessionID,
+				timeoutMs: agentTimeoutMs(),
+			});
+			const retry = nudged ? parseAgentJson(nudged) : { ok: false, reason: "no_nudge" };
+			if (retry.ok) {
+				return finishRoleWithFindings({
+					runtime,
+					model,
+					role,
+					row,
+					caseId,
+					parsed: retry.value,
+					toolCalls,
+				});
+			}
 			// The raw answer is kept so the failure can be inspected, and NO
 			// findings are recorded from a reply that could not be parsed.
 			const error = truncate(
@@ -664,43 +694,88 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 			};
 		}
 
-		// The demotions run FIRST, on what the agent actually said: the
-		// resolver has to see the cited path, not the redacted text.
-		//
-		// Then the redaction runs, and it runs on the WHOLE payload - the
-		// detail, the evidence references, the summary and the limitations.
-		// The report is not the only consumer of a finding: the raw findings
-		// are stored on the row and pushed to the client over SSE, and the
-		// client renders `finding.detail` as it stands. A redacted report
-		// with an un-redacted finding is a secret with a lid on one end.
-		const findings = redactFindingsSecrets(
-			demoteUnverifiedReferences(demoteUnsubstantiated(normalizeFindings(parsed.value)), {
-				isResolvable: resolvesInsideRepository,
-			}),
-		);
-		const limitations = redactFindingsSecrets(toStringList(parsed.value?.limitations));
-		const summary = redactReportSecrets(
-			typeof parsed.value?.summary === "string" ? parsed.value.summary : "",
-		);
-
-		await finishRow(row, {
-			status: "complete",
-			findings: { summary, findings, limitations },
-			evidence: buildEvidence(findings, toolCalls),
-			tool_log: toolCalls,
+		return finishRoleWithFindings({
+			runtime,
+			model,
+			role,
+			row,
+			caseId,
+			parsed: parsed.value,
+			toolCalls,
 		});
-
-		for (const finding of findings) {
-			await emitFinding(caseId, role, finding);
-		}
-		await emitProgress(caseId, role, "complete");
-
-		return { role, status: "complete", findings, limitations, summary };
 	} catch (error) {
 		const message = truncate(error?.message || String(error), MAX_ERROR_CHARS);
 		await finishRow(row, { status: "failed", error: message, tool_log: toolCalls });
 		await emitProgress(caseId, role, "failed", message);
 		return { role, status: "failed", findings: [], limitations: [], summary: "", error: message };
+	}
+}
+
+/**
+ * Record a role's findings and tell everybody.
+ *
+ * The demotions run FIRST, on what the agent actually said: the resolver has
+ * to see the cited path, not the redacted text.
+ *
+ * Then the redaction runs, and it runs on the WHOLE payload - the detail, the
+ * evidence references, the summary and the limitations. The report is not the
+ * only consumer of a finding: the raw findings are stored on the row and
+ * pushed to the client over SSE, and the client renders `finding.detail` as it
+ * stands. A redacted report with an un-redacted finding is a secret with a lid
+ * on one end.
+ */
+async function finishRoleWithFindings({ role, row, caseId, parsed, toolCalls }) {
+	const findings = redactFindingsSecrets(
+		demoteUnverifiedReferences(demoteUnsubstantiated(normalizeFindings(parsed)), {
+			isResolvable: resolvesInsideRepository,
+		}),
+	);
+	const limitations = redactFindingsSecrets(toStringList(parsed?.limitations));
+	const summary = redactReportSecrets(typeof parsed?.summary === "string" ? parsed.summary : "");
+
+	await finishRow(row, {
+		status: "complete",
+		findings: { summary, findings, limitations },
+		evidence: buildEvidence(findings, toolCalls),
+		tool_log: toolCalls,
+	});
+
+	for (const finding of findings) {
+		await emitFinding(caseId, role, finding);
+	}
+	await emitProgress(caseId, role, "complete");
+
+	return { role, status: "complete", findings, limitations, summary };
+}
+
+/**
+ * Ask the model, in the SAME session, to give the answer as JSON.
+ *
+ * A free model that explained itself instead of answering in the contract has
+ * usually ALREADY DONE the work - the answer is one formatting step away, and
+ * the session still holds the context. One more turn costs a single call and
+ * does not re-run the investigation.
+ *
+ * @returns {Promise<string|null>} The nudged text, or null if the nudge failed.
+ */
+async function nudgeForJson({ client, sessionID, timeoutMs }) {
+	const nudge = [
+		"Your previous reply was not a JSON object.",
+		"Reply with ONLY the JSON object itself: it must start with { and end with }.",
+		"No prose before it, no prose after it, no explanation, no code fence.",
+		"Use exactly this shape: {summary, findings:[{confidence, detail, evidence:[{file, lines, commit, url}]}], limitations}",
+		"confidence is one of confirmed, probable, speculative.",
+	].join(" ");
+
+	try {
+		const result = await runAgentPrompt({ client, sessionID, text: nudge, timeoutMs });
+		if (result?.error) {
+			return null;
+		}
+		const text = typeof result?.text === "string" ? result.text : "";
+		return text.trim() ? text : null;
+	} catch {
+		return null;
 	}
 }
 
