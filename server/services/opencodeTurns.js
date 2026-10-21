@@ -25,6 +25,15 @@ const DEFAULT_POLL_INTERVAL_MS = 1200;
 const DEFAULT_STABLE_POLLS = 20;
 const DEFAULT_TIMEOUT_MS = 180_000;
 
+/**
+ * How many polls the reader waits before it decides the model is wedged.
+ *
+ * 150 polls at the default 1200 ms interval is three minutes of the model
+ * producing the same message. It is the last-resort exit: without it, a
+ * model that never sets `finish` would be waited out to the full deadline.
+ */
+const LONG_STABLE_POLLS = 150;
+
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -145,6 +154,7 @@ export async function waitForAssistantTurn({
 	let signature = "";
 	let emitted = 0;
 	let settled = false;
+	let wedged = false;
 
 	while (Date.now() < deadline) {
 		await sleep(pollIntervalMs);
@@ -176,6 +186,11 @@ export async function waitForAssistantTurn({
 			content.map((part) =>
 				part.type === "tool" ? `${part.name || part.tool}:${part.state?.status}` : part.type,
 			),
+			// The TEXT of a message the model is still writing keeps growing.
+			// Without its length in the signature, a long answer looks exactly
+			// like a stalled turn - the reader would settle and report a
+			// half-written answer as the final one.
+			texts.join("").length,
 		]);
 		if (nextSignature === signature) stablePolls += 1;
 		else {
@@ -183,31 +198,59 @@ export async function waitForAssistantTurn({
 			stablePolls = 0;
 		}
 
-		const finished = Boolean(newest?.finish) && newest.finish !== "tool-calls";
+		// What the v2 server actually tells us, measured against a live
+		// runtime:
+		//
+		//   finish === undefined / null   the model is STILL PRODUCING this
+		//                                message. A message is in the list
+		//                                before it has any content, and its
+		//                                `finish` only settles later - a
+		//                                measured reply carried finish
+		//                                undefined at 2s and "stop" at 16s.
+		//   finish === "tool-calls"      it will call another tool
+		//   finish === "stop"            this is the last message
+		//
+		// So a message with NO finish is not a finished message, and treating
+		// it as one is what made the reader abandon a turn mid-generation
+		// and report it as an agent that "did not answer".
+		const newestFinish = newest?.finish;
+		const finished = Boolean(newestFinish) && newestFinish !== "tool-calls";
+		const stillProducing = !newestFinish;
 		const idle = fresh.some((message) => message.type === "idle");
 		const stillRunning = content.some(
 			(part) =>
 				part.type === "tool" &&
 				(part.state?.status === "running" || part.state?.status === "streaming"),
 		);
-		// The newest assistant message still says it is going to call another
-		// tool, so the model has NOT finished - it is thinking about its next
-		// action. The v2 message list does not change while a model thinks, so
-		// the stability heuristic below would fire during a long generation
-		// pause and declare the turn finished with NO TEXT AT ALL. The second
-		// live end-to-end run lost a role that way: 7 tool calls, then a
-		// generation pause longer than the stability window, and the answer
-		// was an empty string.
-		const inToolCycle = newest?.finish === "tool-calls";
 		if (finished) {
 			settled = true;
 			break;
 		}
-		if (idle && stablePolls >= 2) {
+		// The server says the turn is over. Give the last content a couple of
+		// polls to land, but never break while the model is still writing.
+		if (idle && stablePolls >= 2 && !stillProducing) {
 			settled = true;
 			break;
 		}
-		if (stablePolls >= stablePollsToSettle && !stillRunning && !inToolCycle) {
+		// The stability heuristic is a FALLBACK, and it must not fire while the
+		// model is still producing a message: the v2 message list does not
+		// change during a generation pause, so a pause longer than the window
+		// used to look like a finished turn. The second live end-to-end run
+		// lost a role that way - 7 tool calls, then a generation pause, and
+		// the answer was an empty string.
+		//
+		// When it DOES fire, the model has stopped making progress. That is a
+		// WEDGE, not a finish: a turn that genuinely ended is caught by
+		// `finished` or by the server's own `idle` message above.
+		if (stablePolls >= stablePollsToSettle && !stillRunning && !stillProducing) {
+			wedged = true;
+			settled = true;
+			break;
+		}
+		// The model is wedged for good: it has been producing the same message
+		// for minutes. Stop waiting for it, but say so.
+		if (stablePolls >= LONG_STABLE_POLLS) {
+			wedged = true;
 			settled = true;
 			break;
 		}
@@ -227,6 +270,7 @@ export async function waitForAssistantTurn({
 		parts,
 		text: texts.join("\n"),
 		timedOut,
+		wedged,
 		timeoutMs,
 	};
 }

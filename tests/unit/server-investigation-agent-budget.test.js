@@ -47,8 +47,8 @@ function makeSlowThinkingClient() {
 		id: "a1",
 		type: "assistant",
 		agent: "investigator",
-		// The model says it is going to call another tool - it has NOT finished.
-		finish: "tool-calls",
+		// The model has NOT finished: it is still producing this message, so
+		// it carries no finish at all.
 		content: [{ type: "tool", tool: "read", state: { status: "completed" } }],
 	};
 	return {
@@ -73,7 +73,7 @@ describe("the turn reader does not end a turn while the model is still thinking"
 			timeoutMs: 400,
 			pollIntervalMs: 20,
 			// A stability window that expires quickly - the point is that it
-			// must not fire while the newest message says "tool-calls".
+			// must not fire while the newest message carries no finish.
 			stablePollsToSettle: 3,
 		});
 
