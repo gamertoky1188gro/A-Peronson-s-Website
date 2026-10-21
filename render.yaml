@@ -49,7 +49,19 @@ services:
       - key: ADMIN_EXEC_TIMEOUT_MS
         value: "5000"
       - key: ADMIN_OWNER_EMAILS
-        value: "admin@gmail.com"
+        value: "admin@gmail.com,tokyintelligentgamer@gmail.com"
+      # The AI support-investigation report is sent through Gmail over SMTP
+      # with an App Password. The App Password is NOT in this file: the key is
+      # declared and the value is set in the Render dashboard (sync: false),
+      # so the credential never reaches the repository.
+      - key: EMAIL_PROVIDER
+        value: "gmail"
+      - key: GMAIL_USER
+        value: "tokyintelligentgamer@gmail.com"
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: INVESTIGATION_REPORT_EMAIL_PROVIDER
+        value: "gmail"
       - key: AI_HANDOFF_THRESHOLD
         value: "0.65"
       - key: AI_HALLUCINATION_THRESHOLD

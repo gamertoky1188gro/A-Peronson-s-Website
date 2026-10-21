@@ -12,6 +12,20 @@ export function isSmtpConfigured() {
 	return isConfigured(process.env.SMTP_HOST) && isConfigured(process.env.SMTP_USER);
 }
 
+/**
+ * Gmail over SMTP with an App Password.
+ *
+ * This is NOT the `gmail_api` provider: that one drives the Gmail REST API and
+ * needs an OAuth2 client id, a client secret and a refresh token. An App
+ * Password is a plain SMTP credential, so it gets its own transport with its
+ * own settings, and it does NOT read SMTP_HOST or SMTP_USER - those belong to
+ * the other transport, and a fallback would silently send "Gmail" mail
+ * through Brevo.
+ */
+export function isGmailAppPasswordConfigured() {
+	return isConfigured(process.env.GMAIL_USER) && isConfigured(process.env.GMAIL_APP_PASSWORD);
+}
+
 function isGmailConfigured() {
 	return (
 		isConfigured(process.env.GMAIL_CLIENT_ID) &&
@@ -19,6 +33,18 @@ function isGmailConfigured() {
 		isConfigured(process.env.GMAIL_REFRESH_TOKEN) &&
 		isConfigured(process.env.GMAIL_SENDER)
 	);
+}
+
+/**
+ * The provider a send uses.
+ *
+ * A send may PIN its provider (the investigation report pins "gmail"), then
+ * the EMAIL_PROVIDER env override, then the admin config. The env override
+ * exists so the transport can be changed without a database write, but a
+ * pinned provider wins over it.
+ */
+function resolveProvider(emailConfig, pinned) {
+	return String(pinned || process.env.EMAIL_PROVIDER || emailConfig?.provider || "smtp").toLowerCase();
 }
 
 async function getEmailConfig() {
@@ -35,11 +61,18 @@ async function getEmailConfig() {
 
 export async function getEmailDeliveryStatus() {
 	const emailConfig = await getEmailConfig();
-	const provider = String(emailConfig.provider || "smtp").toLowerCase();
+	const provider = resolveProvider(emailConfig, null);
 	const smtpConfigured = isSmtpConfigured();
 	const gmailConfigured = isGmailConfigured();
+	const gmailAppPasswordConfigured = isGmailAppPasswordConfigured();
 	const providerConfigured =
-		provider === "smtp" ? smtpConfigured : provider === "gmail_api" ? gmailConfigured : false;
+		provider === "smtp"
+			? smtpConfigured
+			: provider === "gmail"
+				? gmailAppPasswordConfigured
+				: provider === "gmail_api"
+					? gmailConfigured
+					: false;
 
 	return {
 		enabled: Boolean(emailConfig.enabled),
@@ -47,6 +80,7 @@ export async function getEmailDeliveryStatus() {
 		provider_configured: providerConfigured,
 		ready: Boolean(emailConfig.enabled && providerConfigured),
 		smtp: { configured: smtpConfigured },
+		gmail: { configured: gmailAppPasswordConfigured },
 		gmail_api: { configured: gmailConfigured },
 		from_name_set: Boolean(emailConfig.from_name),
 		from_email_set: Boolean(emailConfig.from_email),
@@ -83,7 +117,7 @@ async function logEmailToDb({ to, subject, text, html, status, source, error }) 
 	}
 }
 
-export async function sendEmail({ to, subject, text, html, source }) {
+export async function sendEmail({ to, subject, text, html, source, provider: pinnedProvider }) {
 	const recipients = normalizeRecipients(to);
 	if (recipients.length === 0) {
 		return { ok: false, status: "no_recipients" };
@@ -115,19 +149,23 @@ export async function sendEmail({ to, subject, text, html, source }) {
 		return { ok: false, status: "logged_disabled" };
 	}
 
-	const provider = String(emailConfig.provider || "smtp").toLowerCase();
-	if (provider === "smtp") {
-		if (!isSmtpConfigured()) {
+	const provider = resolveProvider(emailConfig, pinnedProvider);
+	if (provider === "smtp" || provider === "gmail") {
+		const configured = provider === "gmail" ? isGmailAppPasswordConfigured() : isSmtpConfigured();
+		if (!configured) {
 			await logEmailToDb({
 				to: recipients,
 				subject: payload.subject,
 				text: payload.text,
 				html: payload.html,
-				status: "logged_no_smtp",
+				status: provider === "gmail" ? "logged_no_gmail" : "logged_no_smtp",
 				source,
 			});
-			logWarn("email_logged_no_smtp", { to: recipients, subject: payload.subject });
-			return { ok: false, status: "logged_no_smtp" };
+			logWarn(
+				provider === "gmail" ? "email_logged_no_gmail" : "email_logged_no_smtp",
+				{ to: recipients, subject: payload.subject },
+			);
+			return { ok: false, status: provider === "gmail" ? "logged_no_gmail" : "logged_no_smtp" };
 		}
 	} else if (provider === "gmail_api") {
 		if (!isGmailConfigured()) {
@@ -157,24 +195,41 @@ export async function sendEmail({ to, subject, text, html, source }) {
 
 	try {
 		const fromName = emailConfig.from_name || "GarTexHub";
+		const isGmail = provider === "gmail";
 		const fromEmail =
 			emailConfig.from_email ||
-			process.env.SMTP_FROM ||
-			process.env.SMTP_USER ||
+			(isGmail
+				? process.env.GMAIL_SENDER || process.env.GMAIL_USER
+				: process.env.SMTP_FROM || process.env.SMTP_USER) ||
 			process.env.GMAIL_SENDER ||
 			"noreply@gartexhub.local";
 
-		if (provider === "smtp") {
+		if (provider === "smtp" || provider === "gmail") {
 			const nodemailer = await import("nodemailer");
-			const port = Number(process.env.SMTP_PORT || 587);
-			const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
+			// The Gmail transport has its OWN settings and its OWN credentials.
+			// It must not fall back to SMTP_HOST or SMTP_USER: those belong to
+			// the other transport, and a fallback would send "Gmail" mail
+			// through a different provider and call it a day.
+			const host = isGmail
+				? process.env.GMAIL_SMTP_HOST || "smtp.gmail.com"
+				: process.env.SMTP_HOST;
+			const port = Number(
+				isGmail ? process.env.GMAIL_SMTP_PORT || 465 : process.env.SMTP_PORT || 587,
+			);
+			const secure = isGmail
+				? String(process.env.GMAIL_SMTP_SECURE || "").toLowerCase() === "true" || port === 465
+				: String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
+			const user = isGmail ? process.env.GMAIL_USER || "" : process.env.SMTP_USER;
+			const pass = isGmail
+				? process.env.GMAIL_APP_PASSWORD || ""
+				: process.env.SMTP_PASS || "";
 			const transport = nodemailer.createTransport({
-				host: process.env.SMTP_HOST,
+				host,
 				port,
 				secure,
 				auth: {
-					user: process.env.SMTP_USER,
-					pass: process.env.SMTP_PASS || "",
+					user,
+					pass,
 				},
 			});
 

@@ -50,6 +50,19 @@ const FIT_GUARD_MAX = 500;
 // Marks the mail in the email log / outbox.
 const EMAIL_SOURCE = "support_investigation_report";
 
+/**
+ * The transport the investigation report is sent through.
+ *
+ * Override with INVESTIGATION_REPORT_EMAIL_PROVIDER - "gmail" (SMTP with an
+ * App Password), "smtp" (the generic SMTP transport) or "gmail_api" (the
+ * Gmail REST API). It is PINNED here so that changing the admin config's
+ * provider, or the EMAIL_PROVIDER env override, cannot silently move the
+ * report off the transport the owner chose for it.
+ */
+const REPORT_EMAIL_PROVIDER = String(
+	process.env.INVESTIGATION_REPORT_EMAIL_PROVIDER || "gmail",
+).toLowerCase();
+
 // The admin console. `/admin` is already behind the owner/admin
 // ProtectedRoute in src/App.jsx, so the link is authenticated by the session
 // the owner/admin already has - no token in the URL, nothing to leak.
@@ -329,6 +342,12 @@ async function sendReportMail({ caseRow, text, html }) {
 			text,
 			html,
 			source: EMAIL_SOURCE,
+			// The investigation report is PINNED to Gmail (SMTP with an App
+			// Password). The other three email sources - ticket notifications,
+			// lead reminders, admin actions - keep whatever transport the admin
+			// config names, so pinning this one does not change the rest of
+			// the app's mail.
+			provider: REPORT_EMAIL_PROVIDER,
 		});
 		return interpretSendResult(result);
 	} catch (error) {
