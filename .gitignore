@@ -61,3 +61,7 @@ playwright-report/
 
 
 .superpowers/
+
+# The assistant's per-user opencode session map and the live server port.
+# Runtime state: it changes on every conversation and holds user -> session ids.
+sessions/

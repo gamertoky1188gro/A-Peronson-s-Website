@@ -5,6 +5,32 @@ import { logInfo } from "../utils/logger.js";
 
 const SENSITIVE_KEYS = new Set(["password", "token", "authorization", "secret", "otp", "passkey"]);
 
+// AI routes wait for a model turn, and a turn on a free model can take far
+// longer than the default request budget. That mismatch was invisible while
+// the assistant never reached the model: the probe failed in twenty seconds
+// and the route answered from its fallback almost at once. Once the assistant
+// really does reach the model, the 45-second default cuts the answer off and
+// the client gets a 504 for a turn that was about to succeed.
+const AI_ROUTE_PREFIXES = ["/api/assistant/", "/api/ai/"];
+const DEFAULT_AI_TIMEOUT_MS = 180_000;
+
+/**
+ * How long this request is allowed to run.
+ *
+ * The default budget is the ceiling for ordinary routes. An AI route only
+ * ever gets a LONGER budget, never a shorter one, so a deliberately small
+ * REQUEST_TIMEOUT_MS is still honoured. Override with AI_REQUEST_TIMEOUT_MS.
+ */
+export function resolveRequestTimeoutMs(originalUrl, defaultMs) {
+	const isAiRoute = AI_ROUTE_PREFIXES.some((prefix) => String(originalUrl || "").startsWith(prefix));
+	if (!isAiRoute) {
+		return defaultMs;
+	}
+	const raw = Number(process.env.AI_REQUEST_TIMEOUT_MS);
+	const configured = Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_AI_TIMEOUT_MS;
+	return Math.max(defaultMs, configured);
+}
+
 function redactValue(value) {
 	if (Array.isArray(value)) {
 		return value.map((entry) => redactValue(entry));
@@ -205,6 +231,7 @@ export function requestLogger({ timeoutMs = 45_000 } = {}) {
 
 		const requestId = crypto.randomUUID();
 		const startedAt = Date.now();
+		const requestTimeoutMs = resolveRequestTimeoutMs(req.originalUrl, timeoutMs);
 		const authInfo = decodeAuthSubject(req.headers.authorization);
 		const body = redactValue(req.body || {});
 
@@ -270,7 +297,7 @@ export function requestLogger({ timeoutMs = 45_000 } = {}) {
 					event: "timeout",
 				}),
 			});
-		}, timeoutMs);
+		}, requestTimeoutMs);
 
 		function finalize(eventName = "request_end") {
 			clearTimeout(timer);
