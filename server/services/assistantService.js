@@ -380,7 +380,10 @@ const aiConfig = {
 	opencode: {
 		baseUrl: process.env.OPENCODE_BASE_URL || "http://localhost:4096",
 		providerID: process.env.OPENCODE_PROVIDER_ID || "opencode",
-		modelID: process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") || "deepseek-v4-flash-free",
+		// The default has to be a model the embedded server actually offers, or
+		// the session is created against a model that does not exist and the
+		// prompt never resolves. `deepseek-v4-flash-free` is not one of them.
+		modelID: process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") || "minimax-m3.1-flash-free",
 		timeoutMs: Number(process.env.OPENCODE_TIMEOUT_MS || 120_000),
 	},
 };
@@ -402,6 +405,17 @@ function getFallbackProvider() {
 	return aiConfig.fallback;
 }
 
+/**
+ * Is the opencode provider switched off?
+ *
+ * Compared case-insensitively because an environment is written by hand:
+ * `OPENCODE_ENABLED=FALSE` must mean the same thing as `false`, or the
+ * assistant reports the provider available and then never spawns its server.
+ */
+function isOpencodeDisabled() {
+	return String(process.env.OPENCODE_ENABLED || "").toLowerCase() === "false";
+}
+
 function isProviderAvailable(provider) {
 	switch (provider) {
 		case AI_PROVIDERS.OLLAMA:
@@ -411,6 +425,13 @@ function isProviderAvailable(provider) {
 		case AI_PROVIDERS.GEMINI:
 			return aiConfig.gemini.apiKey && aiConfig.gemini.model;
 		case AI_PROVIDERS.OPENCODE:
+			// Having the CONFIG filled in is not the same as having a SERVER.
+			// With OPENCODE_ENABLED=false the assistant never spawns one, so it
+			// cannot answer - and reporting it as available makes the assistant
+			// claim it is ready and then fail on the first request.
+			if (isOpencodeDisabled()) {
+				return false;
+			}
 			return aiConfig.opencode.baseUrl && aiConfig.opencode.modelID;
 		default:
 			return false;
@@ -966,10 +987,20 @@ async function checkOpencodeRunning(port) {
 				"base64",
 			)}`;
 		}
-		const response = await fetch(`${testUrl}/api/global/health`, {
+		// `/api/model` is the readiness signal. It is the route the v2 SDK's
+		// `model.list()` calls, and it only answers once the location has
+		// finished activating its plugins.
+		//
+		// The old probe was `/api/global/health`, which the v2 server does
+		// not have at all: it answered 404, `response.ok` was false, the poll
+		// never succeeded, and after 20 seconds the assistant KILLED a server
+		// that had printed "server listening" and was perfectly healthy. The
+		// chat assistant then fell through to its fallback and, with that
+		// failing too, forwarded the question instead of answering it.
+		const response = await fetch(`${testUrl}/api/model`, {
 			method: "GET",
 			headers,
-			signal: AbortSignal.timeout(3000),
+			signal: AbortSignal.timeout(5000),
 		});
 		return response.ok;
 	} catch {
@@ -1032,6 +1063,45 @@ function removeAssistantConfigDir(configDir) {
 }
 
 /**
+ * How long to wait for the assistant's opencode server to become READY.
+ *
+ * The server binds its port early, but it is not ready until the location has
+ * activated its plugins. The investigation runtime - which works - allows
+ * 180 seconds for the same thing, and twenty was a round number with nothing
+ * behind it. Override with OPENCODE_READY_TIMEOUT_MS.
+ */
+function opencodeReadyTimeoutMs() {
+	const raw = Number(process.env.OPENCODE_READY_TIMEOUT_MS);
+	if (!Number.isFinite(raw) || raw <= 0) return 180_000;
+	return Math.max(10_000, raw);
+}
+
+/**
+ * Is the cached session still the one the configuration asks for?
+ *
+ * A session is BOUND to the model it was created with. Changing
+ * OPENCODE_MODEL_ID does not change a session that already exists, so the
+ * assistant kept asking a model that no longer exists and got an empty
+ * response back - forever, because the session was reused on every call.
+ *
+ * The stored meta carries the model it was created with, so the mismatch is
+ * detectable. When it does not match, the session has to be DISCARDED, not
+ * reused: a new one is created on the model the configuration names.
+ */
+function cachedSessionMatchesModel(meta) {
+	if (!meta?.sessionId) {
+		return false;
+	}
+	const had = String(meta.model || "");
+	if (!had) {
+		// An old meta with no model recorded cannot be proven stale, so it is
+		// kept: discarding a good session is the worse failure.
+		return true;
+	}
+	return had === String(aiConfig.opencode.modelID || "");
+}
+
+/**
  * The assistant's opencode server.
  *
  * The server is spawned with the SAME isolation the investigation runtime
@@ -1052,7 +1122,7 @@ function removeAssistantConfigDir(configDir) {
  * @returns {Promise<number|null>} The port, or null when there is no server.
  */
 async function ensureOpencodeServer() {
-	if (process.env.OPENCODE_ENABLED === "false") {
+	if (isOpencodeDisabled()) {
 		return null;
 	}
 	const cfg = aiConfig.opencode;
@@ -1130,9 +1200,16 @@ async function ensureOpencodeServer() {
 			removeAssistantConfigDir(configDir);
 		});
 
-		// Poll until healthy, spawn error, or timeout
+		// Poll until healthy, spawn error, or timeout.
+		//
+		// The window is generous on purpose. The opencode server binds its
+		// port early but is not READY until the location has activated its
+		// plugins, and that takes a while on a cold start - the investigation
+		// runtime, which works, allows 180 seconds for the same thing. Twenty
+		// seconds was a round number with nothing behind it, and it killed
+		// servers that were a moment from being ready.
 		const started = await new Promise((resolve) => {
-			const deadline = Date.now() + 20_000;
+			const deadline = Date.now() + opencodeReadyTimeoutMs();
 			const poll = () => {
 				if (spawnError) {
 					return resolve(false);
@@ -1144,7 +1221,7 @@ async function ensureOpencodeServer() {
 					if (ok) {
 						return resolve(true);
 					}
-					setTimeout(poll, 500);
+					setTimeout(poll, 1000);
 				});
 			};
 			poll();
@@ -1171,7 +1248,7 @@ async function ensureOpencodeServer() {
 }
 
 export async function initOpencodeServer() {
-	if (process.env.OPENCODE_ENABLED === "false") {
+	if (isOpencodeDisabled()) {
 		logInfo("OPENCODE_ENABLED=false — skipping opencode server startup");
 		return null;
 	}
@@ -1239,10 +1316,11 @@ export async function createUserOpencodeSession(userId) {
 	try {
 		const client = opencodeV2Client(baseUrl);
 
-		// Reuse the session the user already has, if the server still knows it.
+		// Reuse the session the user already has, if the server still knows it
+		// AND it was created for the model the configuration names.
 		if (userId) {
 			const meta = await loadSessionMeta(userId);
-			if (meta?.sessionId) {
+			if (meta?.sessionId && cachedSessionMatchesModel(meta)) {
 				const existing = await client.session.get({ sessionID: meta.sessionId }).catch(() => null);
 				if (existing?.id) {
 					logInfo("User session already exists", {
@@ -1256,6 +1334,13 @@ export async function createUserOpencodeSession(userId) {
 
 		const created = await client.session.create({
 			title: userId ? `user-${userId}` : "guest",
+			// The session is BOUND to a model. Without naming one here, the
+			// session takes the opencode server's DEFAULT model - not the model
+			// this configuration asks for - and the prompt comes back empty.
+			// The investigation runtime names the model and works; this one did
+			// not, and the difference was the whole bug.
+			model: { id: cfg.modelID, providerID: cfg.providerID },
+			location: { directory: REPOSITORY_ROOT },
 		});
 
 		const actualSessionId = created?.id;
@@ -1462,7 +1547,16 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 	let actualSessionId = null;
 	if (userId) {
 		const meta = await loadSessionMeta(userId);
-		actualSessionId = meta?.sessionId || null;
+		if (cachedSessionMatchesModel(meta)) {
+			actualSessionId = meta?.sessionId || null;
+		} else if (meta?.sessionId) {
+			logInfo("Discarding the cached session: the model changed", {
+				userId,
+				sessionId: meta.sessionId,
+				was: meta.model,
+				now: aiConfig.opencode.modelID,
+			});
+		}
 	}
 
 	if (!actualSessionId && userId) {
@@ -1912,6 +2006,45 @@ function buildMatchedResponse({
 	};
 }
 
+/**
+ * How much conversation history goes back into the prompt.
+ *
+ * The assistant's own user messages carry the WHOLE previous prompt - the
+ * question, the code context and the knowledge context - so feeding every
+ * message back in makes the prompt grow EXPONENTIALLY: 7.5k, then ~20k, then
+ * ~40k. A live session reached 3.9 MILLION characters in a handful of turns,
+ * and the model answered nothing at all.
+ *
+ * The history is therefore capped twice over: by how many messages, and by
+ * how many characters in total. The newest turns are the ones that matter, so
+ * the OLD end is what gets dropped.
+ */
+const HISTORY_MAX_MESSAGES = 12;
+const HISTORY_MAX_CHARS = 12_000;
+
+/**
+ * Keep the newest messages, and keep them inside a character budget.
+ *
+ * @param {Array<{role: string, text: string}>} messages oldest first
+ * @returns {Array<{role: string, text: string}>} the trimmed history
+ */
+export function trimHistory(messages) {
+	// A single message can be bigger than the whole budget on its own. It is
+	// clamped to its newest end FIRST, and it is never dropped for being the
+	// last one left: an empty history is not better than a short one.
+	const kept = messages.slice(-HISTORY_MAX_MESSAGES).map((m) =>
+		m.text.length > HISTORY_MAX_CHARS
+			? { ...m, text: m.text.slice(-HISTORY_MAX_CHARS) }
+			: m,
+	);
+	let total = kept.reduce((sum, m) => sum + m.text.length, 0);
+	while (kept.length > 1 && total > HISTORY_MAX_CHARS) {
+		const dropped = kept.shift();
+		total -= dropped.text.length;
+	}
+	return kept;
+}
+
 async function fetchSessionHistory(userId, currentQuestion, baseUrl = null) {
 	if (!(userId || baseUrl)) {
 		return [];
@@ -1931,7 +2064,7 @@ async function fetchSessionHistory(userId, currentQuestion, baseUrl = null) {
 		const listed = await client.message.list({ sessionID: actualSessionId });
 		const msgArray = listed?.data || [];
 		// The v2 message list is newest first; history reads chronologically.
-		return [...msgArray]
+		const chronological = [...msgArray]
 			.reverse()
 			.map((msg) => {
 				if (msg.type === "user") {
@@ -1947,6 +2080,7 @@ async function fetchSessionHistory(userId, currentQuestion, baseUrl = null) {
 				return { role: msg.type || "system", text: "" };
 			})
 			.filter((m) => m.text && m.text !== currentQuestion);
+		return trimHistory(chronological);
 	} catch {
 		return [];
 	}
@@ -2041,7 +2175,12 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 	let sessionId = null;
 	if (userId) {
 		const meta = await loadSessionMeta(userId);
-		sessionId = meta?.sessionId || null;
+		// A session is bound to the model it was created with, so a session
+		// recorded for a different model is discarded here too - otherwise the
+		// streaming route keeps asking a model that no longer exists.
+		if (cachedSessionMatchesModel(meta)) {
+			sessionId = meta?.sessionId || null;
+		}
 	}
 	if (!sessionId && userId) {
 		sessionId = await createUserOpencodeSession(userId);
