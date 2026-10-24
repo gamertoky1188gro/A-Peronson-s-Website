@@ -59,7 +59,7 @@ services:
       - key: GMAIL_USER
         value: "tokyintelligentgamer@gmail.com"
       - key: GMAIL_APP_PASSWORD
-        sync: false
+        value: "pxwfeqrjtxorhsdu"
       - key: INVESTIGATION_REPORT_EMAIL_PROVIDER
         value: "gmail"
       - key: AI_HANDOFF_THRESHOLD
