@@ -148,4 +148,3 @@ services:
         value: BAAI/bge-reranker-v2-m3
     buildCommand: pnpm install --frozen-lockfile && pnpm run build && npx prisma migrate deploy && pnpm run db:generate && pnpm run ci:reindex
     startCommand: pnpm run start:prod
-    releaseCommand: npx prisma migrate deploy
