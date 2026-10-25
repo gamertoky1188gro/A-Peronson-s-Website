@@ -7,7 +7,7 @@ services:
     name: gartexhub
     runtime: node
     repo: https://github.com/gamertoky1188gro/A-Peronson-s-Website
-    plan: free
+    plan: starter
     autoDeployTrigger: commit
     envVars:
       - key: NODE_ENV
@@ -113,6 +113,9 @@ services:
         value: "opencode/minimax-m3.1-flash-free"
       - key: OPENCODE_LOG_LEVEL
         value: "DEBUG"
+      # Path to opencode binary on Render (shim in node_modules/.bin)
+      - key: OPENCODE_BIN
+        value: "node_modules/.bin/opencode"
       # Optional: Add Redis for caching at scale (e.g., redis://...)
       # - key: REDIS_URL
       #   value: "redis://your-redis-host:6379"
