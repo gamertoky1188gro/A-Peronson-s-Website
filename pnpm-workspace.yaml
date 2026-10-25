@@ -1,0 +1,14 @@
+packages:
+  - .
+allowBuilds:
+  '@google/genai': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  electron: true
+  esbuild: true
+  inotify: true
+  opencode-ai: true
+  prisma: true
+  protobufjs: true
+overrides:
+  lodash: ^4.17.21

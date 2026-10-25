@@ -17,7 +17,7 @@ const STABLE_POLLS_TO_SETTLE = 20;
 
 const POWERSHELL_SHIM_TARGET = /& "([^"]*opencode\.exe)"/;
 const CMD_SHIM_TARGET = /"?%~dp0\\?([^"]*?opencode\.exe)"?/i;
-const V2_VERSION = /v2\.\d+/i;
+const V2_VERSION = /v2\.\d+|^1\.(?:1[9-9]|[2-9]\d|[1-9]\d{2,})/i;
 
 /**
  * The repository root, resolved ONCE at startup and never taken from a
