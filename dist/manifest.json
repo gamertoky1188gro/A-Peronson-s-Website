@@ -28,7 +28,13 @@
 			"src": "/android-chrome-512x512.png",
 			"sizes": "512x512",
 			"type": "image/png",
-			"purpose": "any maskable"
+			"purpose": "any"
+		},
+		{
+			"src": "/android-chrome-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
 		},
 		{
 			"src": "/apple-touch-icon.png",
@@ -42,49 +48,120 @@
 			"name": "Home",
 			"short_name": "Home",
 			"description": "Go to homepage",
-			"url": "/"
+			"url": "/",
+			"icons": [
+				{
+					"src": "/favicon-96x96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
 		},
 		{
 			"name": "Pricing",
 			"short_name": "Pricing",
 			"description": "View pricing plans",
-			"url": "/pricing"
+			"url": "/pricing",
+			"icons": [
+				{
+					"src": "/favicon-96x96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
 		},
 		{
 			"name": "About",
 			"short_name": "About",
 			"description": "Learn about GarTexHub",
-			"url": "/about"
+			"url": "/about",
+			"icons": [
+				{
+					"src": "/favicon-96x96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
 		},
 		{
 			"name": "Help Center",
 			"short_name": "Help",
 			"description": "Get help and support",
-			"url": "/help"
+			"url": "/help",
+			"icons": [
+				{
+					"src": "/favicon-96x96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
 		},
 		{
 			"name": "Login",
 			"short_name": "Login",
 			"description": "Sign in to your account",
-			"url": "/login"
+			"url": "/login",
+			"icons": [
+				{
+					"src": "/favicon-96x96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
 		},
 		{
 			"name": "Create Account",
 			"short_name": "Sign Up",
 			"description": "Create a new account",
-			"url": "/signup"
+			"url": "/signup",
+			"icons": [
+				{
+					"src": "/favicon-96x96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
 		},
 		{
 			"name": "Terms of Service",
 			"short_name": "Terms",
 			"description": "Read terms of service",
-			"url": "/terms"
+			"url": "/terms",
+			"icons": [
+				{
+					"src": "/favicon-96x96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
 		},
 		{
 			"name": "Privacy Policy",
 			"short_name": "Privacy",
 			"description": "Read privacy policy",
-			"url": "/privacy"
+			"url": "/privacy",
+			"icons": [
+				{
+					"src": "/favicon-96x96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
+		}
+	],
+	"screenshots": [
+		{
+			"src": "/screenshot-wide.png",
+			"sizes": "1280x720",
+			"type": "image/png",
+			"form_factor": "wide",
+			"label": "GarTexHub feed on desktop"
+		},
+		{
+			"src": "/screenshot-narrow.png",
+			"sizes": "540x720",
+			"type": "image/png",
+			"label": "GarTexHub feed on mobile"
 		}
 	]
 }

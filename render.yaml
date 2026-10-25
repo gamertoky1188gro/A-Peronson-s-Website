@@ -7,7 +7,7 @@ services:
     name: gartexhub
     runtime: node
     repo: https://github.com/gamertoky1188gro/A-Peronson-s-Website
-    plan: starter
+    plan: free
     autoDeployTrigger: commit
     envVars:
       - key: NODE_ENV

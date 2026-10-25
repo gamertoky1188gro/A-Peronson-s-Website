@@ -44,34 +44,35 @@
       name="description"
       content="GarTexHub — The global marketplace connecting textile and garment buyers with verified factories, buying houses, and suppliers. Source products, post requirements, and manage your textile supply chain."
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link rel="dns-prefetch" href="https://gartexhub.onrender.com" />
     <link rel="preconnect" href="https://gartexhub.onrender.com" crossorigin />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      media="print"
-      onload="this.media='all'"
+      rel="preload"
+      href="./fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      />
-    </noscript>
     <link rel="prefetch" href="/login" as="document" />
     <link rel="prefetch" href="/signup" as="document" />
     <script>"use strict";
       (() => {
-        const theme = localStorage.getItem("theme");
-        if (
-          theme === "dark" ||
-          (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)
-        ) {
-          document.documentElement.classList.add("dark");
+        const root = document.documentElement;
+        const VALID = {
+          blue: 1, aurora: 1, violet: 1, sapphire: 1, arctic: 1, emerald: 1,
+          blurple: 1, mono: 1, plasma: 1, solaris: 1, forest: 1, crimson: 1,
+        };
+        const storedName = localStorage.getItem("themeName");
+        root.setAttribute("data-theme", storedName && VALID[storedName] ? storedName : "blue");
+        const stored = localStorage.getItem("theme");
+        let resolved = "light";
+        if (stored === "dark" || stored === "light") {
+          resolved = stored;
+        } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          resolved = "dark";
+        }
+        root.setAttribute("data-mode", resolved);
+        if (resolved === "dark") {
+          root.classList.add("dark");
         }
       })();
     </script>
@@ -121,12 +122,12 @@
       }
     }
     </script>
-    <script type="module" crossorigin src="./assets/index-DiGPdYrk.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/vendor-react-Be1CJpd6.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-motion-BfIyo1H3.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-redux-DqgUu7N2.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-icons-DE8rK91R.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-C87OqzNS.css">
+    <script type="module" crossorigin src="./assets/index-D8XO0gJR.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/vendor-react-ClUwnUMM.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-motion-mASRQi3J.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-redux-tjhir20W.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-icons-CgBYEd0E.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-w4LLdOx9.css">
   </head>
   <body>
     <div id="root">
@@ -343,6 +344,6 @@
           }
         }
       </style>
-    </div>
+    </div>
   </body>
 </html>

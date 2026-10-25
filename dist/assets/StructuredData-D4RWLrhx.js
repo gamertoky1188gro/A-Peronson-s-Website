@@ -1,0 +1,1 @@
+import{r}from"./vendor-react-ClUwnUMM.js";function o({data:e}){return r.useEffect(()=>{const t=document.createElement("script");return t.type="application/ld+json",t.textContent=JSON.stringify(e),document.head.appendChild(t),()=>{t.parentNode&&t.parentNode.removeChild(t)}},[e]),null}export{o as S};
