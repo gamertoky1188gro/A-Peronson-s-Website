@@ -143,6 +143,6 @@ services:
         value: ""
       - key: RERANKER_MODEL
         value: BAAI/bge-reranker-v2-m3
-    buildCommand: npm install --include=dev && npm run build && npx prisma migrate deploy && npm run db:generate && npm run ci:reindex
-    startCommand: npm run start:prod
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build && npx prisma migrate deploy && pnpm run db:generate && pnpm run ci:reindex
+    startCommand: pnpm run start:prod
     releaseCommand: npx prisma migrate deploy
