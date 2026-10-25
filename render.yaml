@@ -113,9 +113,6 @@ services:
         value: "opencode/minimax-m3.1-flash-free"
       - key: OPENCODE_LOG_LEVEL
         value: "DEBUG"
-      # Ensure node_modules/.bin is in PATH so opencode binary can be found
-      - key: PATH
-        value: "/opt/render/project/src/node_modules/.bin:/usr/local/bin:/usr/bin:/bin"
       # Path to opencode binary on Render (shim in node_modules/.bin)
       - key: OPENCODE_BIN
         value: "node_modules/.bin/opencode"
