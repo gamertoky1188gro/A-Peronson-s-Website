@@ -1,5 +1,9 @@
 import { Router } from "express";
 import {
+	changeMyPassword,
+	completePasswordReset,
+	forgotPassword,
+	listMySessions,
 	login,
 	logout,
 	me,
@@ -11,6 +15,8 @@ import {
 	passkeyRemove,
 	refreshToken,
 	register,
+	revokeMySession,
+	revokeOtherSessions,
 } from "../controllers/authController.js";
 import { requireAuth } from "../middleware/auth.js";
 import { authLimiter, passkeyLimiter } from "../middleware/rateLimiter.js";
@@ -28,5 +34,11 @@ router.get("/passkeys", requireAuth, passkeyList);
 router.delete("/passkeys/:credentialId", requireAuth, passkeyRemove);
 router.get("/me", requireAuth, me);
 router.post("/logout", requireAuth, logout);
+router.get("/sessions", requireAuth, listMySessions);
+router.delete("/sessions/:sessionId", requireAuth, revokeMySession);
+router.post("/sessions/revoke-others", requireAuth, revokeOtherSessions);
+router.put("/password", requireAuth, authLimiter, changeMyPassword);
+router.post("/password/forgot", authLimiter, forgotPassword);
+router.post("/password/reset", authLimiter, completePasswordReset);
 
 export default router;

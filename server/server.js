@@ -10,6 +10,7 @@ import express from "express";
 import helmet from "helmet";
 import jwt from "jsonwebtoken";
 import { WebSocketServer } from "ws";
+import { answerFaq, formatFaqAnswer } from "../shared/assistant/faqEngine.js";
 import { logHub } from "./log/logHub.js";
 import { registerLogHttp, startLogTransport } from "./log/transport.js";
 import viewerRouter from "./log/viewer/router.js";
@@ -45,7 +46,6 @@ import industryRoutes from "./routes/industryRoutes.js";
 import infraRoutes from "./routes/infraRoutes.js";
 import joinRequestRoutes from "./routes/joinRequestRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
-
 import linkPreviewRoutes from "./routes/linkPreviewRoutes.js";
 import logRoutes from "./routes/logRoutes.js";
 import memberRoutes from "./routes/memberRoutes.js";
@@ -62,7 +62,6 @@ import productRoutes from "./routes/productRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import qdrantRoutes from "./routes/qdrantRoutes.js";
 import ratingsRoutes from "./routes/ratingsRoutes.js";
-
 import reportRoutes from "./routes/reportRoutes.js";
 import requirementRoutes from "./routes/requirementRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
@@ -114,7 +113,6 @@ import { logError, logInfo, logWarn } from "./utils/logger.js";
 import { consumePendingInvites, enqueuePendingInvites } from "./utils/pendingInvites.js";
 import prisma from "./utils/prisma.js";
 import { closeRedis, initRedis } from "./utils/redis.js";
-import { answerFaq, formatFaqAnswer } from "../shared/assistant/faqEngine.js";
 import { startCaseRetentionWorker } from "./workers/caseRetentionWorker.js";
 
 const RECOMMENDED_ENV_VARS = [
@@ -456,7 +454,8 @@ app.use("/api/network", networkRoutes);
 app.use("/api/exports", exportRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/log-viewer", viewerRouter);
-app.use("/api/dev", devRoutes);
+// E-sign sandbox: lets the caller mark any contract signed, so never in production.
+if (process.env.NODE_ENV !== "production") app.use("/api/dev", devRoutes);
 app.use(seoRoutes);
 // Liveness: the process is up and the event loop answers. Deliberately no
 // database or provider calls - a slow dependency must not get a healthy
