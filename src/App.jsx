@@ -19,7 +19,13 @@ import ScrollToTop from "./components/ScrollToTop.jsx";
 import ThemeSwitcher from "./components/ThemeSwitcher.jsx";
 import { ToastProvider } from "./components/ToastContainer.jsx";
 import NeonAtom from "./components/ui/NeonAtom.jsx";
-import { clearSession, getCurrentUser, getToken, verifyAndSyncUser } from "./lib/auth.js";
+import {
+	clearSession,
+	getCurrentUser,
+	getToken,
+	SESSION_CLEARED_EVENT,
+	verifyAndSyncUser,
+} from "./lib/auth.js";
 import { trackClientEvent } from "./lib/events.js";
 import { logger } from "./lib/logger.js";
 
@@ -189,6 +195,15 @@ function ProtectedRoute({ children, roles }) {
 	const location = useLocation();
 	const token = getToken();
 	const [user, setUser] = useState(() => getCurrentUser());
+	// A request found the session invalid and cleared it: re-render, which
+	// sends the user to the login page (and back here after signing in)
+	// instead of leaving them on a page where every request fails.
+	const [, setSessionEpoch] = useState(0);
+	useEffect(() => {
+		const onCleared = () => setSessionEpoch((n) => n + 1);
+		window.addEventListener(SESSION_CLEARED_EVENT, onCleared);
+		return () => window.removeEventListener(SESSION_CLEARED_EVENT, onCleared);
+	}, []);
 
 	// Background sync: if user is null on mount, poll until cached or redirect after timeout.
 	// Hooks run before any early return - a token that disappears mid-session
@@ -613,67 +628,66 @@ function AppLayout() {
 	const isViewportLockedRoute = ["/owner", "/contracts", "/leads", "/verification"].includes(
 		location.pathname,
 	);
-	const content =
-		isImmersiveRoute ? (
-			<ErrorBoundary>
-				<Suspense
-					fallback={
-						<div class="flex min-h-screen items-center justify-center">
-							<NeonAtom size={48} />
-						</div>
-					}
-				>
-					<AppRoutes />
-				</Suspense>
-			</ErrorBoundary>
-		) : (
-			<>
-				{hideChrome ? null : <ScrollProgressBar />}
-				<div class="flex w-full justify-center bg-transparent">
-					<div
-						class={`app-shell flex ${isViewportLockedRoute ? "h-dvh overflow-hidden lg:h-[125dvh]" : "min-h-[125vh]"} flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
-						style={{ width: "100%" }}
-					>
-						{hideChrome ? null : (
-							<div className="global-navbar">
-								<NavBar />
-							</div>
-						)}
-						<main class="flex flex-1 min-h-0 flex-col bg-transparent overflow-x-hidden">
-							<ErrorBoundary>
-								<Suspense
-									fallback={
-										<div class="flex min-h-screen items-center justify-center">
-											<NeonAtom size={48} />
-										</div>
-									}
-								>
-									<motion.div
-										key={location.pathname}
-										initial={landingPathRef.current === location.pathname ? false : { opacity: 0 }}
-										animate={{ opacity: 1 }}
-										transition={{ duration: 0.15, ease: "easeOut" }}
-										class="flex min-h-0 flex-1 flex-col"
-									>
-										<AppRoutes />
-									</motion.div>
-								</Suspense>
-							</ErrorBoundary>
-						</main>
-						{!hideChrome && location.pathname !== "/feed" ? (
-							<div className="global-footer">
-								<Footer />
-							</div>
-						) : null}
-						{hideChrome ? null : (
-							<Suspense fallback={null}>
-								<FloatingAssistant />
-							</Suspense>
-						)}
+	const content = isImmersiveRoute ? (
+		<ErrorBoundary>
+			<Suspense
+				fallback={
+					<div class="flex min-h-screen items-center justify-center">
+						<NeonAtom size={48} />
 					</div>
+				}
+			>
+				<AppRoutes />
+			</Suspense>
+		</ErrorBoundary>
+	) : (
+		<>
+			{hideChrome ? null : <ScrollProgressBar />}
+			<div class="flex w-full justify-center bg-transparent">
+				<div
+					class={`app-shell flex ${isViewportLockedRoute ? "h-dvh overflow-hidden lg:h-[125dvh]" : "min-h-[125vh]"} flex-col text-slate-900 dark:text-slate-100 overflow-x-hidden lg:[zoom:0.8]${location.pathname === "/feed" ? " h-screen" : ""}`}
+					style={{ width: "100%" }}
+				>
+					{hideChrome ? null : (
+						<div className="global-navbar">
+							<NavBar />
+						</div>
+					)}
+					<main class="flex flex-1 min-h-0 flex-col bg-transparent overflow-x-hidden">
+						<ErrorBoundary>
+							<Suspense
+								fallback={
+									<div class="flex min-h-screen items-center justify-center">
+										<NeonAtom size={48} />
+									</div>
+								}
+							>
+								<motion.div
+									key={location.pathname}
+									initial={landingPathRef.current === location.pathname ? false : { opacity: 0 }}
+									animate={{ opacity: 1 }}
+									transition={{ duration: 0.15, ease: "easeOut" }}
+									class="flex min-h-0 flex-1 flex-col"
+								>
+									<AppRoutes />
+								</motion.div>
+							</Suspense>
+						</ErrorBoundary>
+					</main>
+					{!hideChrome && location.pathname !== "/feed" ? (
+						<div className="global-footer">
+							<Footer />
+						</div>
+					) : null}
+					{hideChrome ? null : (
+						<Suspense fallback={null}>
+							<FloatingAssistant />
+						</Suspense>
+					)}
 				</div>
-			</>
-		);
+			</div>
+		</>
+	);
 
 	const navigationRef = useRef({ path: "", startedAt: 0 });
 	const sessionRef = useRef({ startedAt: 0, ended: false });

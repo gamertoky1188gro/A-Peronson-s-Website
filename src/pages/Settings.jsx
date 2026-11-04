@@ -217,7 +217,11 @@ const hasRoleAccess = (userRole, requiredRole) => {
 	if (!(userRole && requiredRole)) {
 		return false;
 	}
-	const userIndex = ROLE_HIERARCHY.indexOf(userRole.toLowerCase());
+	// A buyer is a company account like a factory (verification, Premium,
+	// billing). "buyer" was missing from the hierarchy, so a buyer failed every
+	// check and Settings rendered no tabs and no content at all.
+	const normalizedRole = userRole.toLowerCase() === "buyer" ? "factory" : userRole.toLowerCase();
+	const userIndex = ROLE_HIERARCHY.indexOf(normalizedRole);
 	const requiredIndex = ROLE_HIERARCHY.indexOf(requiredRole.toLowerCase());
 	return userIndex >= requiredIndex && userIndex !== -1;
 };
@@ -243,6 +247,23 @@ const TABS = [
 	{ id: "theme", label: "Theme", requiredRole: "viewer" },
 ];
 
+// What each tab needs from the API. Org-only data is loaded for org managers.
+const TAB_LOADERS = {
+	profile: ["profile"],
+	privacy: ["profile"],
+	notifications: ["profile"],
+	theme: [],
+	security: ["profile", "sessions", "passkeys"],
+	verification: ["billing"],
+	subscription: ["billing"],
+	general: ["chatbot", "policy"],
+	assistant_knowledge: ["faqs"],
+	branding: ["profile"],
+	members: ["members"],
+};
+const ORG_ONLY_LOADERS = new Set(["chatbot", "policy", "faqs", "members"]);
+const ORG_ONLY_TABS = new Set(["general", "assistant_knowledge", "branding", "members"]);
+
 const STANDALONE_TAB_IDS = ["profile", "theme", "security", "notifications", "verification"];
 
 export default function Settings({ embedded = false, initialTabProp = "", tabIds = null }) {
@@ -257,7 +278,9 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 		: TABS.filter((t) => STANDALONE_TAB_IDS.includes(t.id));
 	const initialTab = useMemo(() => {
 		const candidate = searchParams.get(tabParamName) || initialTabProp || "profile";
-		return visibleTabs.some((t) => t.id === candidate) ? candidate : visibleTabs[0]?.id || "profile";
+		return visibleTabs.some((t) => t.id === candidate)
+			? candidate
+			: visibleTabs[0]?.id || "profile";
 	}, [searchParams, tabParamName, initialTabProp]);
 
 	const [tab, setTab] = useState(initialTab);
@@ -347,7 +370,10 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 	// Profile tab state
 	const [profileDisplayName, setProfileDisplayName] = useState(() =>
 		String(
-			currentUser?.profile?.organization_name || currentUser?.display_name || currentUser?.name || "",
+			currentUser?.profile?.organization_name ||
+				currentUser?.display_name ||
+				currentUser?.name ||
+				"",
 		),
 	);
 	const [orgNameChangedAt, setOrgNameChangedAt] = useState(0);
@@ -440,6 +466,9 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 	const [renewingVerification, setRenewingVerification] = useState(false);
 	const [billingFeedback, setBillingFeedback] = useState("");
 	const [cancellingSubscription, setCancellingSubscription] = useState(false);
+	// Prices come from the API (GET /subscriptions/me): the amount shown is the amount charged.
+	const [premiumPricing, setPremiumPricing] = useState(null);
+	const [upgradingPremium, setUpgradingPremium] = useState(false);
 	const [entitlements] = useState(() => secureEntitlements || currentUser?.entitlements || null);
 
 	// Account lock state
@@ -654,14 +683,20 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 	}, [remainingDays]);
 
 	const planPrice = useMemo(() => {
+		if (subscriptionPlan === "premium" && premiumPricing?.renewal_usd) {
+			return Number(premiumPricing.renewal_usd).toFixed(2);
+		}
 		const prices = {
 			free: "0.00",
 			starter: "9.99",
-			premium: "49.00",
 			enterprise: "99.00",
 		};
 		return prices[subscriptionPlan] || "0.00";
-	}, [subscriptionPlan]);
+	}, [subscriptionPlan, premiumPricing]);
+
+	const walletShortfall = premiumPricing?.next_charge_usd
+		? Math.max(0, Number(premiumPricing.next_charge_usd) - walletBalance - walletRestricted)
+		: 0;
 
 	const save = (msg) => setStatusMessage(msg || "Saved.");
 
@@ -679,6 +714,7 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 				apiRequest("/verification/me", { token }),
 			]);
 			setSubscriptionPlan(sub?.plan || "free");
+			setPremiumPricing(sub?.pricing || null);
 			setRemainingDays(Number(remaining?.remaining_days || 0));
 			setWalletBalance(Number(wallet?.balance_usd || 0));
 			setWalletRestricted(Number(wallet?.restricted_balance_usd || 0));
@@ -1287,6 +1323,41 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 		}
 	};
 
+	// Upgrade to (or extend) Premium: 30 days, charged to the wallet by the API.
+	const upgradePremium = async () => {
+		const token = getToken();
+		const price = Number(premiumPricing?.next_charge_usd || 0);
+		if (!(token && price)) {
+			return;
+		}
+		const action =
+			subscriptionPlan === "premium" ? "Extend Premium by 30 days" : "Upgrade to Premium";
+		if (
+			!window.confirm(`${action} for $${price.toFixed(2)}? It is paid from your wallet balance.`)
+		) {
+			return;
+		}
+		setUpgradingPremium(true);
+		setBillingFeedback("");
+		try {
+			const res = await apiRequest("/subscriptions/me/renew-monthly", {
+				method: "POST",
+				token,
+				body: { auto_renew: true },
+			});
+			const until = res?.end_date ? new Date(res.end_date).toLocaleDateString() : "";
+			const charged = Number(res?.price_usd ?? price).toFixed(2);
+			setBillingFeedback(
+				`Premium is active${until ? ` until ${until}` : ""}. $${charged} was charged to your wallet.`,
+			);
+			await loadBilling();
+		} catch (err) {
+			setBillingFeedback(err.message || "Upgrade failed");
+		} finally {
+			setUpgradingPremium(false);
+		}
+	};
+
 	// Cancel subscription (downgrade to free)
 	const cancelSubscription = async () => {
 		const token = getToken();
@@ -1475,25 +1546,37 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 		}
 	};
 
-	// Initial load — single full-screen loader until everything resolves
-	useEffect(() => {
-		if (isOrgManager) {
-			Promise.allSettled([
-				// eslint-disable-next-line react-hooks/set-state-in-effect
-				loadBilling(),
-				loadUserProfile(),
-				loadSessions(),
-				loadPasskeys(),
-				loadChatbotSettings(),
-				loadCommunicationPolicy(),
-				loadFaqs(),
-				loadMembers(),
-			]).finally(() => setPageLoading(false));
-		} else {
-			setPageLoading(false);
+	// Initial load: only what this instance's tabs show. Every instance used to
+	// load all eight groups - and the Owner Dashboard mounts one per section -
+	// while a buyer (not an org manager) got none of them: no billing, no
+	// sessions, no passkeys, not even the fresh profile.
+	const neededLoaders = useMemo(() => {
+		const needed = new Set();
+		for (const t of accessibleTabs) {
+			for (const name of TAB_LOADERS[t.id] || []) {
+				if (isOrgManager || !ORG_ONLY_LOADERS.has(name)) needed.add(name);
+			}
 		}
+		// The standalone header shows the verification badge (from billing).
+		if (!embedded) needed.add("billing");
+		return [...needed].sort().join(",");
+	}, [accessibleTabs, isOrgManager, embedded]);
+
+	useEffect(() => {
+		const loaders = {
+			billing: loadBilling,
+			profile: loadUserProfile,
+			sessions: loadSessions,
+			passkeys: loadPasskeys,
+			chatbot: loadChatbotSettings,
+			policy: loadCommunicationPolicy,
+			faqs: loadFaqs,
+			members: loadMembers,
+		};
+		const names = neededLoaders ? neededLoaders.split(",") : [];
+		Promise.allSettled(names.map((name) => loaders[name]?.())).finally(() => setPageLoading(false));
 	}, [
-		isOrgManager,
+		neededLoaders,
 		loadBilling,
 		loadUserProfile,
 		loadSessions,
@@ -1527,7 +1610,10 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 	const bodyTheme = theme === "dark" ? "dark" : "";
 
 	// Lock modal — defined here so it has access to Settings state
-	const LockModal = () => {
+	// Rendered by a plain function call, not as a JSX element: a component
+	// defined inside Settings is a new type on every render, so React remounted
+	// it on each keystroke and the password field lost focus.
+	const renderLockModal = () => {
 		if (!lockModalOpen) return null;
 		return (
 			<div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
@@ -1610,6 +1696,7 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 								value={lockPassword}
 								onChange={(e) => setLockPassword(e.target.value)}
 								placeholder="Enter your password"
+								// biome-ignore lint/a11y/noAutofocus: focus moves into the dialog/editor the user just opened
 								autoFocus={true}
 								class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-red-400 focus:ring-4 focus:ring-red-400/10 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
 								onKeyDown={(e) => {
@@ -1676,6 +1763,7 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 								value={lockConfirmText}
 								onChange={(e) => setLockConfirmText(e.target.value)}
 								placeholder='Type "LOCK"'
+								// biome-ignore lint/a11y/noAutofocus: focus moves into the dialog/editor the user just opened
 								autoFocus={true}
 								class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-mono uppercase outline-none transition focus:border-red-400 focus:ring-4 focus:ring-red-400/10 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
 								onKeyDown={(e) => {
@@ -1720,35 +1808,35 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 
 	const settingsContent = (
 		<>
-			<LockModal />
+			{renderLockModal()}
 			{/* Tab Navigation */}
 			{accessibleTabs.length > 1 ? (
-			<div
-				class="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70"
-				style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}
-			>
-				<div class="flex min-w-max gap-2">
-					{accessibleTabs.map((tabItem) => (
-						<button
-							key={tabItem.id}
-							onClick={() => {
-								if (tabItem.id === "members") {
-									loadMembers();
-								}
-								goSettingsTab(tabItem.id);
-							}}
-							class={cx(
-								"rounded-2xl px-4 py-3 text-sm font-semibold transition",
-								activeTab === tabItem.id
-									? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25"
-									: "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-900",
-							)}
-						>
-							{tabItem.label}
-						</button>
-					))}
+				<div
+					class="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70"
+					style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}
+				>
+					<div class="flex min-w-max gap-2">
+						{accessibleTabs.map((tabItem) => (
+							<button
+								key={tabItem.id}
+								onClick={() => {
+									if (tabItem.id === "members") {
+										loadMembers();
+									}
+									goSettingsTab(tabItem.id);
+								}}
+								class={cx(
+									"rounded-2xl px-4 py-3 text-sm font-semibold transition",
+									activeTab === tabItem.id
+										? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25"
+										: "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-900",
+								)}
+							>
+								{tabItem.label}
+							</button>
+						))}
+					</div>
 				</div>
-			</div>
 			) : null}
 
 			{/* Save feedback. The old permanent "Status: Ready." panel with wallet
@@ -2861,14 +2949,17 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 								</div>
 							)}
 							<div class="mt-5 flex flex-wrap gap-3">
-								{subscriptionPlan === "free" && (
+								{premiumPricing?.next_charge_usd ? (
 									<SecondaryButton
 										class="border-white/20 bg-white/15 text-white hover:bg-white/25"
-										onClick={() => navigate("/pricing")}
+										onClick={upgradePremium}
+										disabled={upgradingPremium || walletShortfall > 0}
 									>
-										Upgrade
+										{upgradingPremium
+											? "Processing..."
+											: `${subscriptionPlan === "premium" ? "Extend 30 days" : "Upgrade to Premium"} · $${Number(premiumPricing.next_charge_usd).toFixed(2)}`}
 									</SecondaryButton>
-								)}
+								) : null}
 								{subscriptionPlan !== "free" && (
 									<SecondaryButton
 										class="border-red-300/30 bg-red-500/20 text-red-100 hover:bg-red-500/30"
@@ -2885,6 +2976,12 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 									View plans
 								</SecondaryButton>
 							</div>
+							{walletShortfall > 0 ? (
+								<p class="mt-3 text-sm text-white/85">
+									Add at least ${walletShortfall.toFixed(2)} to your wallet to{" "}
+									{subscriptionPlan === "premium" ? "extend Premium" : "upgrade to Premium"}.
+								</p>
+							) : null}
 							{billingFeedback && <p class="mt-3 text-sm text-white/90">{billingFeedback}</p>}
 						</div>
 					</SectionCard>
@@ -3160,7 +3257,7 @@ export default function Settings({ embedded = false, initialTabProp = "", tabIds
 				</div>
 			)}
 
-			{!isOrgManager && (
+			{!isOrgManager && ORG_ONLY_TABS.has(activeTab) && (
 				<div class="rounded-xl bg-red-50 p-4 text-red-600">
 					You do not have permission to view organization settings.
 				</div>
