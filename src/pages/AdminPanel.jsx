@@ -272,7 +272,7 @@ function AdminSecurityGate({
 						type="button"
 						onClick={onUnlock}
 						disabled={passkeyBusy}
-						class="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+						class="rounded-full bg-sky-500 px-3 py-1.5 text-xs sm:px-4 sm:py-2 font-semibold text-white disabled:opacity-60"
 					>
 						Unlock access
 					</button>
@@ -2998,9 +2998,9 @@ export default function AdminPanel() {
 				<div class="admin-noise" />
 
 				<aside
-					class={`fixed left-0 top-0 z-20 h-full w-[320px] overflow-hidden border-r border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 ${
+					class={`fixed left-0 top-0 z-20 h-full max-w-[85vw] sm:w-[320px] overflow-hidden border-r border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 ${
 						sidebarOpen ? "translate-x-0" : "-translate-x-full"
-					} lg:translate-x-0`}
+					} lg:translate-x-0 lg:w-[320px] lg:max-w-[320px]`}
 				>
 					<div class="absolute inset-0 pointer-events-none">
 						<div
@@ -3013,29 +3013,29 @@ export default function AdminPanel() {
 
 					<div class="relative flex h-full flex-col p-5">
 						{/* Header */}
-						<div class="flex items-start justify-between gap-4">
-							<div class="flex items-center gap-3">
+						<div class="flex items-start justify-between gap-3">
+							<div class="flex items-center gap-2 sm:gap-3">
 								<div
-									class={`grid h-12 w-12 place-items-center rounded-2xl ${adminDark ? "bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600" : "bg-gradient-to-br from-sky-400 via-cyan-400 to-blue-500"} shadow-[0_0_24px_rgba(109,171,223,0.25)]`}
+									class={`grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-2xl ${adminDark ? "bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600" : "bg-gradient-to-br from-sky-400 via-cyan-400 to-blue-500"} shadow-[0_0_24px_rgba(109,171,223,0.25)]`}
 								>
-									<span class="text-lg font-black tracking-tight text-white">G</span>
+									<span class="text-base sm:text-lg font-black tracking-tight text-white">G</span>
 								</div>
 								<div>
-									<div class={`text-lg font-semibold tracking-tight ${themeStyles.soft}`}>
+									<div class={`text-base sm:text-lg font-semibold tracking-tight ${themeStyles.soft}`}>
 										GarTexHub
 									</div>
 									<div
-										class={`mt-0.5 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${themeStyles.chip}`}
+										class={`mt-0.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-medium ${themeStyles.chip}`}
 									>
-										<Crown class="h-3.5 w-3.5" />
+										<Crown class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
 										Admin Matrix
 									</div>
-									<div class="mt-3 flex gap-2">
+									<div class="mt-2 flex gap-1">
 										<button
 											type="button"
 											onClick={toggleNav}
 											aria-expanded={navCollapsed ? "false" : "true"}
-											class="rounded-full border border-slate-200/80 px-3 py-1 text-[11px] font-medium dark:border-white/10"
+											class="rounded-full border border-slate-200/80 px-2 py-0.5 text-[10px] font-medium sm:px-3 sm:py-1 sm:text-[11px] dark:border-white/10"
 										>
 											{navCollapsed ? "Show nav" : "Hide nav"}
 										</button>
@@ -3043,7 +3043,7 @@ export default function AdminPanel() {
 											type="button"
 											onClick={toggleFooter}
 											aria-expanded={footerCollapsed ? "false" : "true"}
-											class="rounded-full border border-slate-200/80 px-3 py-1 text-[11px] font-medium dark:border-white/10"
+											class="rounded-full border border-slate-200/80 px-2 py-0.5 text-[10px] font-medium sm:px-3 sm:py-1 sm:text-[11px] dark:border-white/10"
 										>
 											{footerCollapsed ? "Show footer" : "Hide footer"}
 										</button>
@@ -3053,16 +3053,16 @@ export default function AdminPanel() {
 
 							<button
 								onClick={toggleTheme}
-								class={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all duration-300 ${
+								class={`inline-flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 sm:h-11 sm:w-11 ${
 									adminDark
 										? "border-white/10 bg-white/5 hover:bg-white/10"
 										: "border-slate-200 bg-white hover:bg-slate-50"
 								}`}
 							>
 								{adminDark ? (
-									<SunMedium class="h-5 w-5 text-cyan-200" />
+									<SunMedium class="h-4 w-4 sm:h-5 sm:w-5 text-cyan-200" />
 								) : (
-									<Moon class="h-5 w-5 text-sky-700" />
+									<Moon class="h-4 w-4 sm:h-5 sm:w-5 text-sky-700" />
 								)}
 							</button>
 						</div>
@@ -3080,12 +3080,12 @@ export default function AdminPanel() {
 										key={item.id}
 										type="button"
 										onClick={() => setActiveCategory(item.id)}
-										class={`group relative flex w-full items-center gap-3 rounded-[16px] border px-4 py-3 text-left transition-all duration-300 ${
+										class={`group relative flex w-full items-center gap-2 sm:gap-3 rounded-[16px] border px-3 py-2 sm:px-4 sm:py-3 text-left transition-all duration-300 ${
 											isActive ? themeStyles.itemActive : themeStyles.item
 										} ${isActive ? "border-cyan-300/20" : "border-transparent"}`}
 									>
 										<div
-											class={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all duration-300 ${
+											class={`grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl border transition-all duration-300 ${
 												isActive
 													? adminDark
 														? "border-cyan-300/20 bg-cyan-400/12"
@@ -3101,7 +3101,7 @@ export default function AdminPanel() {
 										</div>
 
 										{/* Tooltip */}
-										<div class="absolute left-[70px] z-50 whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-[-5px] group-hover:translate-x-0 transition-all duration-200 pointer-events-none">
+										<div class="absolute left-[62px] z-50 whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-[-5px] group-hover:translate-x-0 transition-all duration-200 pointer-events-none">
 											<div
 												class={`px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg ${adminDark ? "bg-slate-900 text-white border border-white/10" : "bg-white text-slate-900 border border-slate-200"}`}
 											>
@@ -3112,7 +3112,7 @@ export default function AdminPanel() {
 										<div class="min-w-0 flex-1">
 											<div class="flex items-center gap-2">
 												<span
-													class={`truncate text-sm font-medium ${adminDark ? "text-white" : "text-slate-900"}`}
+													class={`truncate text-xs sm:text-sm font-medium ${adminDark ? "text-white" : "text-slate-900"}`}
 												>
 													{item.label}
 												</span>
@@ -3124,11 +3124,11 @@ export default function AdminPanel() {
 													</span>
 												)}
 											</div>
-											<p class={`mt-0.5 truncate text-xs ${themeStyles.muted}`}>{item.sub}</p>
+											<p class={`mt-0.5 truncate text-[9px] sm:text-xs ${themeStyles.muted}`}>{item.sub}</p>
 										</div>
 
 										<ChevronRight
-											class={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? themeStyles.accentText : themeStyles.muted}`}
+											class={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? themeStyles.accentText : themeStyles.muted}`}
 										/>
 									</button>
 								);
@@ -3138,7 +3138,7 @@ export default function AdminPanel() {
 				</aside>
 
 				<main
-					class={`relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden pr-4 py-4 sm:pr-6 sm:py-6 ${sidebarOpen ? "pl-[320px]" : "pl-0"} lg:pl-[320px]`}
+					class={`relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden pr-4 py-4 sm:pr-6 sm:py-6 ${sidebarOpen ? "pl-[85vw] sm:pl-[320px] lg:pl-[320px]" : "pl-0 lg:pl-[320px]"}`}
 				>
 					<div class="flex flex-wrap items-center justify-between gap-3 pb-4">
 						<button
@@ -3561,7 +3561,7 @@ export default function AdminPanel() {
 							<button
 								type="button"
 								onClick={toggleNav}
-								class="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+								class="rounded-full bg-sky-500 px-3 py-1.5 text-xs sm:px-4 sm:py-2 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
 							>
 								Show nav
 							</button>
@@ -3570,7 +3570,7 @@ export default function AdminPanel() {
 							<button
 								type="button"
 								onClick={toggleFooter}
-								class="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+								class="rounded-full bg-sky-500 px-3 py-1.5 text-xs sm:px-4 sm:py-2 font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
 							>
 								Show footer
 							</button>
