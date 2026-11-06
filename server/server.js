@@ -30,6 +30,7 @@ import callSessionRoutes from "./routes/callSessionRoutes.js";
 import caseRoutes from "./routes/caseRoutes.js";
 import certificationRoutes from "./routes/certificationRoutes.js";
 import chatbotRoutes from "./routes/chatbotRoutes.js";
+import codeInvestigationRoutes from "./routes/codeInvestigationRoutes.js";
 import conversationRoutes from "./routes/conversationRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import crmRoutes from "./routes/crmRoutes.js";
@@ -407,6 +408,7 @@ app.use("/api/coupons", couponRoutes);
 // `/api/support` router so the more specific prefix is matched first.
 app.use("/api/support/cases", caseRoutes);
 app.use("/api/support", supportRoutes);
+app.use("/api/code-investigation", codeInvestigationRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/certifications", certificationRoutes);
 app.use("/api/crm", crmRoutes);
