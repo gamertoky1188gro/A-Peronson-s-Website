@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function MasonryGrid({
 	children,
@@ -9,13 +10,25 @@ export default function MasonryGrid({
 }) {
 	const reduceMotion = useReducedMotion();
 	const items = Array.isArray(children) ? children : [children];
+	const [responsiveColumnCount, setResponsiveColumnCount] = useState(columnCount);
+
+	useEffect(() => {
+		const updateColumns = () => {
+			setResponsiveColumnCount(window.innerWidth < 640 ? 1 : columnCount);
+		};
+		updateColumns();
+		window.addEventListener("resize", updateColumns);
+		return () => window.removeEventListener("resize", updateColumns);
+	}, [columnCount]);
+
+	const columns = responsiveColumnCount;
 
 	if (reduceMotion) {
 		return (
 			<div
 				className={className}
 				style={{
-					columns: columnCount,
+					columns: columns,
 					columnGap: `${gap * 0.25}rem`,
 				}}
 			>
@@ -32,7 +45,7 @@ export default function MasonryGrid({
 		<div
 			className={className}
 			style={{
-				columns: columnCount,
+				columns: columns,
 				columnGap: `${gap * 0.25}rem`,
 			}}
 		>

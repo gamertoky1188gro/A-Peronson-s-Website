@@ -289,7 +289,7 @@ function SearchModal({ open, searchInputRef, query, onQueryChange, onClose, exec
 	}
 	const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 	return (
-		<div className="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/40 px-4 pt-24 backdrop-blur-sm">
+		<div className="fixed inset-0 z-40 flex items-start justify-center bg-slate-950/40 px-4 pt-16 sm:pt-24 backdrop-blur-sm">
 			<div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl">
 				<div className="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 p-4">
 					<Search className="h-5 w-5 text-sky-500" />
@@ -2276,11 +2276,11 @@ export default function SearchResults() {
 												to="/notifications"
 												className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
 											>
-												<Bell className="h-4 w-4" /> Alerts
+												<Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Alerts
 											</Link>
 											<button
 												onClick={toggleTheme}
-												className="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 lg:ml-0"
+												className="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-xs font-medium sm:px-4 sm:py-2.5 sm:text-sm hover:border-sky-300 dark:hover:border-sky-700 lg:ml-0"
 											>
 												{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
 												{dark ? "Light" : "Dark"} mode
@@ -3037,7 +3037,7 @@ export default function SearchResults() {
 														}
 														className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
 													>
-														{r} <X className="h-3.5 w-3.5" />
+														{r} <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
 													</button>
 												))}
 											</div>
@@ -3137,7 +3137,7 @@ export default function SearchResults() {
 														}
 														className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-1.5 text-sm"
 													>
-														{c} <X className="h-3.5 w-3.5" />
+														{c} <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
 													</button>
 												))}
 											</div>
@@ -3260,12 +3260,12 @@ export default function SearchResults() {
 									</p>
 								</div>
 								<div className="flex flex-wrap items-center gap-2">
-									<div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2">
-										<ArrowUpDown className="h-4 w-4 text-slate-400" />
+									<div className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-2.5 py-1.5 sm:px-3 sm:py-2">
+										<ArrowUpDown className="h-3.5 w-3.5 text-slate-400 sm:h-4 sm:w-4" />
 										<select
 											value={sortBy}
 											onChange={(e) => setSortBy(e.target.value)}
-											className="bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200"
+											className="bg-transparent text-xs outline-none text-slate-700 dark:text-slate-200 sm:text-sm"
 										>
 											{SORT_OPTIONS.map((opt) => (
 												<option key={opt.key} value={opt.key}>
@@ -3275,7 +3275,7 @@ export default function SearchResults() {
 										</select>
 									</div>
 									<div className="relative flex items-center">
-										<ScanSearch className="absolute left-3 h-4 w-4 text-slate-400" />
+										<ScanSearch className="absolute left-2 h-3.5 w-3.5 text-slate-400 sm:left-3 sm:h-4 sm:w-4" />
 										<input
 											value={refineQuery}
 											onChange={(e) => setRefineQuery(e.target.value)}
@@ -3287,38 +3287,38 @@ export default function SearchResults() {
 												onClick={() => setRefineQuery("")}
 												className="absolute right-2 text-slate-400 hover:text-slate-600"
 											>
-												<X className="h-3.5 w-3.5" />
+												<X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
 											</button>
 										)}
 									</div>
 									<button
 										onClick={exportCSV}
 										disabled={exportingCsv}
-										className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 disabled:opacity-50"
+										className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-2.5 py-1.5 text-xs font-medium sm:px-3 sm:py-2 sm:text-sm hover:border-sky-300 dark:hover:border-sky-700 disabled:opacity-50"
 									>
-										<Download className="h-4 w-4" /> CSV
+										<Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> CSV
 									</button>
 									<button
 										onClick={() => setShowShortlist((v) => !v)}
-										className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium ${shortlist.length > 0 ? "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300" : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200"} hover:border-sky-300 dark:hover:border-sky-700`}
+										className={`inline-flex items-center gap-2 rounded-2xl border px-2.5 py-1.5 text-xs font-medium sm:px-3 sm:py-2 sm:text-sm ${shortlist.length > 0 ? "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300" : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200"} hover:border-sky-300 dark:hover:border-sky-700`}
 									>
-										<ArrowLeftRight className="h-4 w-4" /> Compare ({shortlist.length})
+										<ArrowLeftRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Compare ({shortlist.length})
 									</button>
 									<button
 										onClick={() => setViewMode("all")}
-										className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "all")}`}
+										className={`rounded-full border px-2.5 py-1 text-xs font-medium sm:px-3 sm:py-1.5 sm:text-sm ${pillClass(viewMode === "all")}`}
 									>
 										All
 									</button>
 									<button
 										onClick={() => setViewMode("requests")}
-										className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "requests")}`}
+										className={`rounded-full border px-2.5 py-1 text-xs font-medium sm:px-3 sm:py-1.5 sm:text-sm ${pillClass(viewMode === "requests")}`}
 									>
 										Buyer Requests
 									</button>
 									<button
 										onClick={() => setViewMode("companies")}
-										className={`rounded-full border px-3 py-1.5 text-sm font-medium ${pillClass(viewMode === "companies")}`}
+										className={`rounded-full border px-2.5 py-1 text-xs font-medium sm:px-3 sm:py-1.5 sm:text-sm ${pillClass(viewMode === "companies")}`}
 									>
 										Companies
 									</button>
@@ -3391,7 +3391,7 @@ export default function SearchResults() {
 													<button
 														onClick={loadMore}
 														disabled={loadingMore}
-														className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500 disabled:opacity-60"
+														className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500 sm:px-8 sm:py-3 disabled:opacity-60"
 													>
 														{loadingMore ? (
 															<ThreeDot
@@ -3485,7 +3485,7 @@ export default function SearchResults() {
 										disabled={exportingCsv}
 										className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-50"
 									>
-										<Download className="h-4 w-4" /> Export compared
+										<Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Export compared
 									</button>
 									<button
 										onClick={() => setShortlist([])}
