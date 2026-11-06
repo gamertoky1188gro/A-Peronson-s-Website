@@ -26,7 +26,7 @@
       mutation-heavy; no shared-entity caching registry entry. No behavior change.
 */
 
-import { Bell, CircleHelp, Download, FolderOpen, Home, MessageCircle, Search } from "lucide-react";
+import { Bell, CircleHelp, Download, FolderOpen, Home, MessageCircle, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AttachmentPreviewModal from "../components/chat/AttachmentPreviewModal.jsx";
@@ -106,6 +106,7 @@ export default function ChatInterface() {
 	const [grantUserId, setGrantUserId] = useState("");
 	const [grantMode, setGrantMode] = useState(""); // "grant" | "transfer"
 	const [pageLoading, setPageLoading] = useState(true);
+	const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 	const [uploading, setUploading] = useState(false);
 	const [uploadStatus, setUploadStatus] = useState("");
 	const [uploadProgress, setUploadProgress] = useState(0);
@@ -1573,6 +1574,49 @@ export default function ChatInterface() {
 					</div>
 				</div>
 			) : null}
+			{/* Mobile header with sidebar toggle */}
+			<div class="md:hidden flex items-center justify-between p-2 border-b border-slate-700/50 bg-black/20 backdrop-blur dark:border-white/10 dark:bg-white/5 z-40">
+				<button
+					onClick={() => setMobileSidebarOpen(true)}
+					class="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10"
+				>
+					<MessageCircle size={20} />
+				</button>
+				<h1 class="flex-1 text-center font-semibold text-xs sm:text-sm">
+					{activeThreadDisplayName || "Messages"}
+				</h1>
+				<div class="h-10 w-10" />
+			</div>
+
+			{/* Mobile thread list overlay */}
+			{mobileSidebarOpen && (
+				<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden">
+					<div class="absolute top-0 left-0 right-0 bottom-0 flex flex-col bg-white dark:bg-slate-950 shadow-2xl">
+						<div class="p-4 border-b border-slate-200/50 dark:border-white/10 flex items-center justify-between">
+							<h3 class="font-semibold text-sm text-slate-900 dark:text-white">Conversations</h3>
+							<button
+								onClick={() => setMobileSidebarOpen(false)}
+								class="p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
+							>
+								<X size={20} />
+							</button>
+						</div>
+						<ThreadList
+							query={query}
+							setQuery={setQuery}
+							allVisibleThreads={allVisibleThreads}
+							loading={loading}
+							visibleError={visibleError}
+							activeThreadId={activeThreadId}
+							setActiveThreadId={setActiveThreadId}
+							presenceStatus={presenceStatus}
+							isLight={isLight}
+							theme={theme}
+						/>
+					</div>
+				</div>
+			)}
+
 			<div class="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
 				<ChatSidebar
 					themeMode={themeMode}

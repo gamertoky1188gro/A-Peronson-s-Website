@@ -626,9 +626,9 @@ export default function VerificationPage({ embedded = false }) {
 				{!embedded && (
 					<button
 						onClick={toggleTheme}
-						className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all ${buttonGhost}`}
+						className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-xs font-medium sm:px-4 sm:py-2 sm:text-sm transition-all ${buttonGhost}`}
 					>
-						{isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+						{isDark ? <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
 						{isDark ? "Light" : "Dark"}
 					</button>
 				)}
@@ -711,7 +711,7 @@ export default function VerificationPage({ embedded = false }) {
 								<select
 									value={buyerCountry}
 									onChange={(e) => setBuyerCountry(e.target.value)}
-									className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition ${fieldBg}`}
+									className={`w-full rounded-2xl border px-3 py-2 text-xs outline-none ring-0 transition sm:px-4 sm:py-3 sm:text-sm ${fieldBg}`}
 								>
 									<option value="">Select country</option>
 									{BUYER_COUNTRY_OPTIONS.map((country) => (
@@ -799,7 +799,7 @@ export default function VerificationPage({ embedded = false }) {
 											disabled={
 												busyDoc === requiredDocs[idx] || (role === "buyer" && !buyerCountry)
 											}
-											className={`mt-4 w-full rounded-2xl border px-3 py-2 text-sm font-medium transition-all ${
+											className={`mt-3 w-full rounded-2xl border px-2.5 py-1.5 text-xs font-medium transition-all sm:px-3 sm:py-2 sm:text-sm ${
 												busyDoc === requiredDocs[idx] || (role === "buyer" && !buyerCountry)
 													? "opacity-50 cursor-not-allowed border-white/10"
 													: buttonGhost
@@ -845,11 +845,11 @@ export default function VerificationPage({ embedded = false }) {
 								value={optionalLicenseInput}
 								onChange={(e) => setOptionalLicenseInput(e.target.value)}
 								placeholder="Add a license or certification"
-								className={`w-full rounded-2xl border px-4 py-3 outline-none ring-0 transition placeholder:text-slate-400 focus:border-sky-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-3 py-2 text-xs outline-none ring-0 transition placeholder:text-slate-400 focus:border-sky-400 sm:px-4 sm:py-3 sm:text-sm ${fieldBg}`}
 							/>
 							<button
 								onClick={addOptionalLicense}
-								className={`rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary}`}
+								className={`rounded-2xl px-4 py-2 text-xs font-semibold sm:px-5 sm:py-3 sm:text-sm transition-all ${buttonPrimary}`}
 							>
 								Add
 							</button>
@@ -862,7 +862,7 @@ export default function VerificationPage({ embedded = false }) {
 										<button
 											key={lic}
 											onClick={() => removeOptionalLicense(lic)}
-											className={`rounded-full border px-3 py-2 text-sm ${chipBg}`}
+											className={`rounded-full border px-2.5 py-1 text-xs sm:px-3 sm:py-2 sm:text-sm ${chipBg}`}
 										>
 											{lic}
 											<X className="ml-2 inline h-3 w-3" />
@@ -895,7 +895,7 @@ export default function VerificationPage({ embedded = false }) {
 
 							<div className="mt-5">
 								<label
-									className={`flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-6 transition-all ${
+									className={`flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-4 py-4 sm:px-6 sm:py-6 transition-all ${
 										factoryVisitBusy
 											? "pointer-events-none opacity-50"
 											: "border-sky-400/40 bg-sky-500/5 hover:border-sky-400/70 hover:bg-sky-500/10"
@@ -1047,12 +1047,12 @@ export default function VerificationPage({ embedded = false }) {
 							)}
 						</div>
 
-						<div className="mt-4 grid gap-3">
+						<div className="mt-4 grid gap-2 sm:gap-3">
 							<button
 								onClick={handleRenewVerification}
-								className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary} opacity-80 cursor-default`}
+								className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold sm:px-5 sm:py-3 sm:text-sm transition-all ${buttonPrimary} opacity-80 cursor-default`}
 							>
-								<CreditCard className="h-4 w-4" />
+								<CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 								Pay / Renew Verification
 								<span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">
 									Coming Soon
@@ -1060,9 +1060,9 @@ export default function VerificationPage({ embedded = false }) {
 							</button>
 							<button
 								onClick={loadStatus}
-								className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost}`}
+								className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-xs font-semibold sm:px-5 sm:py-3 sm:text-sm transition-all ${buttonGhost}`}
 							>
-								<RefreshCw className="h-4 w-4" />
+								<RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 								Refresh status
 							</button>
 						</div>
@@ -1203,50 +1203,50 @@ export default function VerificationPage({ embedded = false }) {
 						</div>
 
 						<div className="space-y-3 mb-5">
-							<p className={`text-sm font-semibold ${softText}`}>
+							<p className={`text-xs font-semibold ${softText}`}>
 								Your details for the join request:
 							</p>
 							<input
 								value={joinName}
 								onChange={(e) => setJoinName(e.target.value)}
 								placeholder="Your full name"
-								className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-3 py-2 text-xs outline-none ring-0 transition placeholder:text-slate-400 sm:px-4 sm:py-2.5 sm:text-sm ${fieldBg}`}
 							/>
 							<input
 								value={joinEmail}
 								onChange={(e) => setJoinEmail(e.target.value)}
 								placeholder="Your email"
 								type="email"
-								className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-3 py-2 text-xs outline-none ring-0 transition placeholder:text-slate-400 sm:px-4 sm:py-2.5 sm:text-sm ${fieldBg}`}
 							/>
 							<input
 								value={joinPosition}
 								onChange={(e) => setJoinPosition(e.target.value)}
 								placeholder="Position (e.g. Merchandiser, Sample Manager)"
-								className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition placeholder:text-slate-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-3 py-2 text-xs outline-none ring-0 transition placeholder:text-slate-400 sm:px-4 sm:py-2.5 sm:text-sm ${fieldBg}`}
 							/>
 							<textarea
 								value={joinMessage}
 								onChange={(e) => setJoinMessage(e.target.value)}
 								placeholder="Optional short message (e.g. I am the sample manager)"
 								rows={2}
-								className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ring-0 transition resize-none placeholder:text-slate-400 ${fieldBg}`}
+								className={`w-full rounded-2xl border px-3 py-2 text-xs outline-none ring-0 transition resize-none placeholder:text-slate-400 sm:px-4 sm:py-2.5 sm:text-sm ${fieldBg}`}
 							/>
 						</div>
 
-						<div className="flex flex-col gap-3 sm:flex-row">
+						<div className="flex flex-col gap-2 sm:flex-row">
 							<button
 								onClick={requestJoinFromDuplicate}
 								disabled={joiningCompany}
-								className={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all ${buttonPrimary} ${joiningCompany ? "opacity-60 cursor-not-allowed" : ""}`}
+								className={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold sm:px-5 sm:py-3 sm:text-sm transition-all ${buttonPrimary} ${joiningCompany ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
-								<Users className="h-4 w-4" />
+								<Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 								{joiningCompany ? "Sending..." : "Request to Join"}
 							</button>
 							<button
 								onClick={disputeDuplicate}
 								disabled={disputingDuplicate}
-								className={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 font-semibold transition-all ${buttonGhost} ${disputingDuplicate ? "opacity-60 cursor-not-allowed" : ""}`}
+								className={`flex-1 inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-xs font-semibold sm:px-5 sm:py-3 sm:text-sm transition-all ${buttonGhost} ${disputingDuplicate ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
 								{disputingDuplicate ? "Submitting..." : "No, this is a different company"}
 							</button>

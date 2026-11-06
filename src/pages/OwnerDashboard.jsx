@@ -404,7 +404,7 @@ export default function OwnerDashboard() {
 						<div className="mt-4 shrink-0 space-y-3 border-t border-slate-200/70 pt-4 dark:border-white/10">
 							<button
 								onClick={toggleTheme}
-								className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
+								className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium sm:px-4 sm:py-3 sm:text-sm shadow-sm transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
 							>
 								<span>{theme === "dark" ? "Dark mode" : "Light mode"}</span>
 								<span className="rounded-full bg-sky-100 px-2.5 py-1 text-xs text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
@@ -413,12 +413,12 @@ export default function OwnerDashboard() {
 							</button>
 							<button
 								onClick={logout}
-								className="flex w-full items-center justify-between rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
+								className="flex w-full items-center justify-between rounded-2xl bg-slate-950 px-3 py-2 text-xs font-semibold sm:px-4 sm:py-3 sm:text-sm shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
 							>
 								<span>Logout</span>
 								<Icon
 									path="M16 17l5-5-5-5M21 12H9M13 5v2.2A2.8 2.8 0 0 1 10.2 10H6"
-									className="h-4 w-4"
+									className="h-3.5 w-3.5 sm:h-4 sm:w-4"
 								/>
 							</button>
 						</div>

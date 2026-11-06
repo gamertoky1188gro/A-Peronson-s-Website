@@ -29,9 +29,9 @@ export default function ThreadList({
 			</div>
 
 			<div className="relative mb-6">
-				<Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+				<Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
 				<input
-					className="h-11 w-full appearance-none rounded-[14px] shadow-borderless dark:shadow-borderlessDark pl-10 pr-11 text-[13px] outline-none transition-all"
+					className="h-10 w-full appearance-none rounded-[14px] shadow-borderless dark:shadow-borderlessDark pl-9 pr-10 text-xs outline-none transition-all sm:h-11 sm:pl-10 sm:pr-11 sm:text-[13px]"
 					style={{ background: theme.inputBg, color: theme.textPrimary }}
 					placeholder="Search conversations..."
 					value={query}
@@ -96,13 +96,13 @@ export default function ThreadList({
 													<LazyImage
 														src={avatarUrl(thread.avatar)}
 														alt={threadName}
-														width={44}
-														height={44}
-														className="h-11 w-11 rounded-full object-cover shadow-sm"
+														width={40}
+														height={40}
+														className="h-10 w-10 rounded-full object-cover shadow-sm sm:h-11 sm:w-11"
 													/>
 												) : (
 													<div
-														className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? "bg-gtBlue text-white" : "bg-slate-100 text-slate-500"}`}
+														className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold shadow-sm sm:h-11 sm:w-11${isActive ? " bg-gtBlue text-white" : " bg-slate-100 text-slate-500"}`}
 													>
 														{getInitials(threadName)}
 													</div>
@@ -119,7 +119,7 @@ export default function ThreadList({
 											<div className="min-w-0 flex-1">
 												<div className="flex items-center justify-between gap-1">
 													<p
-														className={`truncate text-[14px] font-semibold${isActive ? "text-gtBlue" : ""}`}
+														className={`truncate text-sm font-semibold sm:text-[14px]${isActive ? " text-gtBlue" : ""}`}
 													>
 														{threadName}
 													</p>

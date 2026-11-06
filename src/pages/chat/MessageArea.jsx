@@ -108,21 +108,21 @@ export default function MessageArea({
 								) : null}
 							</div>
 						</div>
-						<div class="flex items-center gap-3">
+						<div class="flex items-center gap-2 sm:gap-3">
 							<Link
 								to={
 									activeThread?.matchId
 										? `${ROUTES.CONTRACTS}?journey_match_id=${encodeURIComponent(activeThread.matchId)}`
 										: ROUTES.CONTRACTS
 								}
-								class="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40"
+								class="rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-semibold text-sky-700 sm:px-3 sm:py-1 sm:text-[11px] hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-800/40"
 							>
 								Contract draft
 							</Link>
 							{isLockOwner ? (
 								<button
 									onClick={openGrantModal}
-									class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+									class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2.5 py-1 text-[10px] font-semibold text-slate-600 sm:px-3 sm:py-1.5 sm:text-[11px] transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
 									title="Grant access to another member"
 								>
 									Grant access
@@ -131,7 +131,7 @@ export default function MessageArea({
 							{isLockOwner || isAdminUser ? (
 								<button
 									onClick={openTransferModal}
-									class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+									class="rounded-full shadow-borderless dark:shadow-borderlessDark px-2.5 py-1 text-[10px] font-semibold text-slate-600 sm:px-3 sm:py-1.5 sm:text-[11px] transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
 									title="Transfer this conversation to another agent"
 								>
 									Transfer
@@ -139,15 +139,15 @@ export default function MessageArea({
 							) : null}
 							<button
 								onClick={() => startInstantCall(activeThread)}
-								class="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
+								class="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
 								title="Start call"
 							>
 								<Phone size={16} />
 							</button>
-							<button class="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
+							<button class="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
 								<Search size={16} />
 							</button>
-							<button class="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
+							<button class="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
 								<EllipsisVertical size={16} />
 							</button>
 						</div>
@@ -319,14 +319,14 @@ export default function MessageArea({
 							style={{ background: theme.inputBg }}
 						>
 							<button
-								class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+								class="flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
 								onClick={() => fileInputRef.current?.click()}
 								disabled={uploading || !canSendMessage}
 							>
 								{uploading ? (
 									<ThreeDot variant="bounce" color="#337ab0" size="small" text="" textColor="" />
 								) : (
-									<Plus size={20} />
+									<Plus size={18} sm:size={20} />
 								)}
 							</button>
 							<textarea
@@ -361,11 +361,11 @@ export default function MessageArea({
 								disabled={!canSendMessage}
 							/>
 							<button
-								class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gtBlue text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
+								class="flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-full bg-gtBlue text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60"
 								onClick={sendMessage}
 								disabled={!canSendMessage}
 							>
-								<SendHorizontal size={18} />
+								<SendHorizontal size={16} sm:size={18} />
 							</button>
 						</div>
 						{policyFeedback.reason ? (
