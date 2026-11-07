@@ -78,6 +78,7 @@ import {
 	Plus,
 	RefreshCw,
 	Sparkles,
+	Star,
 	SunMedium,
 	Trash2,
 	X,

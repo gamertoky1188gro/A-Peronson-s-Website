@@ -83,6 +83,7 @@ const GUARDED = [
 	"src/components/chat/AttachmentPreviewModal.jsx",
 	"src/components/chat/FileAttachmentCard.jsx",
 	"src/components/chat/SignedMedia.jsx",
+	"src/pages/BuyerRequestManagement.jsx",
 ];
 
 /**
@@ -99,6 +100,7 @@ const GUARDED = [
  */
 const EXPECTED_JSX_ELEMENTS = {
 	"src/pages/chat/RightPanel.jsx": 63,
+	"src/pages/BuyerRequestManagement.jsx": 450,
 	"src/pages/ChatInterface.jsx": 85,
 	"src/components/chat/AttachmentPreviewModal.jsx": 100,
 	"src/components/chat/FileAttachmentCard.jsx": 20,
