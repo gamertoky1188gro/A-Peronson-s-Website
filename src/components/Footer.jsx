@@ -97,16 +97,16 @@ export default function Footer() {
 									Search
 								</Link>
 							</li>
-							<li>
-								<Link to="/buyer-requests" className="hover:text-gtBlue">
-									Buyer Requests
-								</Link>
-							</li>
-							<li>
-								<Link to="/product-management" className="hover:text-gtBlue">
-									Company Products
-								</Link>
-							</li>
+							{[
+								{ to: "/buyer-requests", label: "Buyer Requests", roles: ["buyer", "buying_house", "admin"] },
+								{ to: "/product-management", label: "Company Products", roles: ["factory", "buying_house", "admin"] },
+							].filter((link) => !link.roles || link.roles.includes(String(user?.role || "").toLowerCase())).map((link) => (
+								<li key={link.to}>
+									<Link to={link.to} className="hover:text-gtBlue">
+										{link.label}
+									</Link>
+								</li>
+							))}
 							<li>
 								<Link to="/pricing" className="hover:text-gtBlue">
 									Subscription Plans

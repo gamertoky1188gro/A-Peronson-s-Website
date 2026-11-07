@@ -64,14 +64,24 @@ import { isRouteValid } from "../lib/routeHealthCheck.js";
 import { ROUTES } from "../lib/routes.js";
 import MessageArea from "./chat/MessageArea.jsx";
 
+// Role filter mirrors App.jsx CONTRACT_ROLES (agent may not open /contracts).
 const CHAT_NAV_ITEMS = [
 	{ to: ROUTES.FEED, label: "Feed", icon: Home },
 	{ to: ROUTES.SEARCH, label: "Search", icon: Search },
 	{ to: ROUTES.NOTIFICATIONS, label: "Alerts", icon: Bell },
 	{ to: ROUTES.CHAT, label: "Chat", icon: MessageCircle },
-	{ to: ROUTES.CONTRACTS, label: "Vault", icon: FolderOpen },
+	{
+		to: ROUTES.CONTRACTS,
+		label: "Vault",
+		icon: FolderOpen,
+		roles: ["buyer", "owner", "admin", "buying_house", "factory"],
+	},
 	{ to: ROUTES.HELP, label: "Help", icon: CircleHelp },
-].filter((item) => isRouteValid(item.to));
+].filter(
+	(item) =>
+		isRouteValid(item.to) &&
+		(!item.roles || item.roles.includes(String(getCurrentUser()?.role || "").toLowerCase())),
+);
 
 import ChatSidebar from "./chat/ChatSidebar.jsx";
 import {
