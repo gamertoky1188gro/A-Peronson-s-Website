@@ -504,7 +504,7 @@ export default function OwnerDashboard() {
 					</header>
 
 					<main className="flex flex-col flex-1 min-h-0 px-4 py-6 sm:px-6 xl:px-8">
-						{loading && (
+						{pageLoading && (
 							<Mosaic
 								color="#337ab0"
 								size="large"
@@ -728,7 +728,7 @@ export default function OwnerDashboard() {
 										title="Conversion Funnel"
 										subtitle="How demand flows through the platform."
 									>
-										{loading ? (
+										{pageLoading ? (
 											<div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-400 dark:border-slate-700 dark:bg-slate-950/40">
 												Loading funnel data...
 											</div>
