@@ -238,7 +238,7 @@ export default function OwnerDashboard() {
 	const { theme, toggleTheme } = useTheme();
 	const { navCollapsed, footerCollapsed, toggleNav, toggleFooter } = usePageChrome("owner");
 
-	const { dashboard, subscription, isEnterprise, loading, error } = useAnalyticsDashboard();
+	const { dashboard, subscription, isEnterprise, error } = useAnalyticsDashboard();
 	const [policy, setPolicy] = useState(null);
 	const [opsEscalations, setOpsEscalations] = useState([]);
 	const [opsWorkload, setOpsWorkload] = useState([]);
@@ -263,6 +263,7 @@ export default function OwnerDashboard() {
 	useEffect(() => {
 		const token = getToken();
 		if (!token) {
+			setPageLoading(false);
 			return;
 		}
 		Promise.all([
@@ -291,7 +292,7 @@ export default function OwnerDashboard() {
 			})
 			.catch(() => null)
 			.finally(() => setPageLoading(false));
-		syncUserFromApi(token).finally(() => {});
+		syncUserFromApi(token).catch(() => null);
 	}, []);
 
 	const go = (href) => {
@@ -519,7 +520,7 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "home" && !loading && (
+						{active === "home" && !pageLoading && (
 							<div className="space-y-6">
 								<CoreMetricsCards />
 								<ScrollReveal as="section">
@@ -751,7 +752,7 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "requests" && !loading && (
+						{active === "requests" && !pageLoading && (
 							<div className="space-y-6">
 								<ScrollReveal as="section">
 									<div className="grid gap-4 md:grid-cols-3">
@@ -845,7 +846,7 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "chats" && !loading && (
+						{active === "chats" && !pageLoading && (
 							<div className="space-y-6">
 								<ScrollReveal as="section">
 									<div className="grid gap-4 md:grid-cols-3">
@@ -925,7 +926,7 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "network" && !loading && (
+						{active === "network" && !pageLoading && (
 							<div className="space-y-6">
 								<ScrollReveal as="section">
 									<div className="grid gap-4 md:grid-cols-3">
@@ -1018,7 +1019,7 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "leads" && !loading && (
+						{active === "leads" && !pageLoading && (
 							<div className="space-y-6">
 								<div className="grid gap-6 xl:grid-cols-3">
 									<SectionCard
@@ -1123,7 +1124,7 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "members" && !loading && (
+						{active === "members" && !pageLoading && (
 							<div className="space-y-6">
 								<SectionCard
 									title="Member Management"
@@ -1151,13 +1152,13 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "contracts" && !loading && (
+						{active === "contracts" && !pageLoading && (
 							<div className="flex-1 min-h-0 space-y-6" data-lenis-prevent={true}>
 								<ContractVaultPage embedded={true} />
 							</div>
 						)}
 
-						{active === "insights" && !loading && (
+						{active === "insights" && !pageLoading && (
 							<div className="space-y-6">
 								{!isEnterprise && (
 									<SectionCard
@@ -1202,19 +1203,19 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "verification" && !loading && (
+						{active === "verification" && !pageLoading && (
 							<div className="flex-1 min-h-0 space-y-6" data-lenis-prevent={true}>
 								<VerificationPage embedded={true} />
 							</div>
 						)}
 
-						{active === "profile" && !loading && (
+						{active === "profile" && !pageLoading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
 								<Settings embedded={true} initialTabProp="profile" tabIds={["profile"]} />
 							</div>
 						)}
 
-						{active === "settings" && !loading && (
+						{active === "settings" && !pageLoading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
 								<Settings
 									embedded={true}
@@ -1224,13 +1225,13 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "automation" && !loading && (
+						{active === "automation" && !pageLoading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
 								<Settings embedded={true} initialTabProp="general" tabIds={["general"]} />
 							</div>
 						)}
 
-						{active === "assistant" && !loading && (
+						{active === "assistant" && !pageLoading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
 								<Settings
 									embedded={true}
@@ -1240,13 +1241,13 @@ export default function OwnerDashboard() {
 							</div>
 						)}
 
-						{active === "branding" && !loading && (
+						{active === "branding" && !pageLoading && (
 							<div className="flex-1 min-h-0" data-lenis-prevent={true}>
 								<Settings embedded={true} initialTabProp="branding" tabIds={["branding"]} />
 							</div>
 						)}
 
-						{active === "subscription" && !loading && (
+						{active === "subscription" && !pageLoading && (
 							<div className="space-y-6">
 								<SectionCard
 									title="Subscription & Billing"
