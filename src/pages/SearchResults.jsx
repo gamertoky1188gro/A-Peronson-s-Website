@@ -2224,7 +2224,7 @@ export default function SearchResults() {
 			)}
 
 			<div className="mx-auto max-w-[1700px] px-4 py-5 sm:px-6 lg:px-8">
-				<div className="grid gap-5 xl:grid-cols-1">
+				<div className="grid grid-cols-1 gap-5">
 					<main className="space-y-5">
 						<section className="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
 							<div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
