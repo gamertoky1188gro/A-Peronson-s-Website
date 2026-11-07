@@ -674,8 +674,9 @@ function AppLayout() {
 							</Suspense>
 						</ErrorBoundary>
 					</main>
+					{/* footer (~990px stacked on mobile) exceeds the 100dvh locked shell and squeezes <main> to 0; hide below lg */}
 					{!hideChrome && location.pathname !== "/feed" ? (
-						<div className="global-footer">
+						<div className={isViewportLockedRoute ? "global-footer hidden lg:block" : "global-footer"}>
 							<Footer />
 						</div>
 					) : null}
