@@ -38,6 +38,7 @@ export default function RightPanel({
 	requestNegotiationHelper,
 	openAttachmentPreview,
 	userRole,
+	forceVisible = false,
 }) {
 	const activeThreadInitials = getInitials(activeThreadDisplayName);
 
@@ -46,7 +47,7 @@ export default function RightPanel({
 	return (
 		<aside
 			data-lenis-prevent={true}
-			className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto shadow-borderless dark:shadow-borderlessDark"
+			className={`${forceVisible ? "block" : "hidden xl:block"} rounded-[24px] p-6 h-full overflow-auto shadow-borderless dark:shadow-borderlessDark`}
 			style={{ background: theme.panelBg, boxShadow: theme.shadow }}
 		>
 			{activeThread ? (

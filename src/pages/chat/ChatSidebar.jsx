@@ -11,10 +11,11 @@ export default function ChatSidebar({
 	ROUTES,
 	CHAT_NAV_ITEMS,
 	totalUnread,
+	forceVisible = false,
 }) {
 	return (
 		<aside
-			class="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1"
+			class={`${forceVisible ? "flex" : "hidden md:flex"} h-full rounded-[22px] p-2 flex-col items-center justify-between py-1`}
 			style={{ background: "transparent", boxShadow: "none" }}
 		>
 			<div class="space-y-2">

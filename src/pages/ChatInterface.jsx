@@ -26,7 +26,18 @@
       mutation-heavy; no shared-entity caching registry entry. No behavior change.
 */
 
-import { Bell, CircleHelp, Download, FolderOpen, Home, MessageCircle, Search, X } from "lucide-react";
+import {
+	Bell,
+	CircleHelp,
+	Download,
+	FolderOpen,
+	Home,
+	Info,
+	Menu,
+	MessageCircle,
+	Search,
+	X,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AttachmentPreviewModal from "../components/chat/AttachmentPreviewModal.jsx";
@@ -107,6 +118,8 @@ export default function ChatInterface() {
 	const [grantMode, setGrantMode] = useState(""); // "grant" | "transfer"
 	const [pageLoading, setPageLoading] = useState(true);
 	const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
 	const [uploading, setUploading] = useState(false);
 	const [uploadStatus, setUploadStatus] = useState("");
 	const [uploadProgress, setUploadProgress] = useState(0);
@@ -1576,16 +1589,35 @@ export default function ChatInterface() {
 			) : null}
 			{/* Mobile header with sidebar toggle */}
 			<div class="md:hidden flex items-center justify-between p-2 border-b border-slate-700/50 bg-black/20 backdrop-blur dark:border-white/10 dark:bg-white/5 z-40">
-				<button
-					onClick={() => setMobileSidebarOpen(true)}
-					class="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10"
-				>
-					<MessageCircle size={20} />
-				</button>
-				<h1 class="flex-1 text-center font-semibold text-xs sm:text-sm">
+				<div class="flex items-center gap-1">
+					<button
+						onClick={() => setMobileMenuOpen(true)}
+						class="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10"
+						title="Menu"
+						aria-label="Open chat menu"
+					>
+						<Menu size={20} />
+					</button>
+					<button
+						onClick={() => setMobileSidebarOpen(true)}
+						class="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10"
+						title="Conversations"
+						aria-label="Open conversation list"
+					>
+						<MessageCircle size={20} />
+					</button>
+				</div>
+				<h1 class="flex-1 truncate px-1 text-center font-semibold text-xs sm:text-sm">
 					{activeThreadDisplayName || "Messages"}
 				</h1>
-				<div class="h-10 w-10" />
+				<button
+					onClick={() => setMobileDetailsOpen(true)}
+					class="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/10"
+					title="Conversation details"
+					aria-label="Open conversation details"
+				>
+					<Info size={20} />
+				</button>
 			</div>
 
 			{/* Mobile thread list overlay */}
@@ -1608,7 +1640,10 @@ export default function ChatInterface() {
 							loading={loading}
 							visibleError={visibleError}
 							activeThreadId={activeThreadId}
-							setActiveThreadId={setActiveThreadId}
+							setActiveThreadId={(id) => {
+								setActiveThreadId(id);
+								setMobileSidebarOpen(false);
+							}}
 							presenceStatus={presenceStatus}
 							isLight={isLight}
 							theme={theme}
@@ -1616,6 +1651,79 @@ export default function ChatInterface() {
 					</div>
 				</div>
 			)}
+
+			{/* Mobile menu: nav rail on small screens (theme toggle, quick nav, logout) */}
+			{mobileMenuOpen ? (
+				<div
+					class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden"
+					onClick={() => setMobileMenuOpen(false)}
+				>
+					<div
+						class="absolute left-0 top-0 bottom-0 flex w-20 flex-col items-center border-r border-slate-200/50 bg-white p-2 shadow-2xl dark:border-white/10 dark:bg-slate-950"
+						onClick={(event) => event.stopPropagation()}
+					>
+						<ChatSidebar
+							forceVisible={true}
+							themeMode={themeMode}
+							setThemeMode={setThemeMode}
+							isLight={isLight}
+							theme={theme}
+							location={location}
+							navigate={navigate}
+							ROUTES={ROUTES}
+							CHAT_NAV_ITEMS={CHAT_NAV_ITEMS}
+							totalUnread={totalUnread}
+						/>
+					</div>
+				</div>
+			) : null}
+
+			{/* Mobile conversation details: AI tools, shared media, lead info */}
+			{mobileDetailsOpen ? (
+				<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden">
+					<div class="absolute inset-0 flex flex-col bg-white shadow-2xl dark:bg-slate-950">
+						<div class="flex items-center justify-between border-b border-slate-200/50 p-4 dark:border-white/10">
+							<h3 class="font-semibold text-sm text-slate-900 dark:text-white">
+								Conversation details
+							</h3>
+							<button
+								onClick={() => setMobileDetailsOpen(false)}
+								class="rounded-full p-2 text-slate-500 hover:text-white hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10"
+								aria-label="Close conversation details"
+							>
+								<X size={20} />
+							</button>
+						</div>
+						<div class="min-h-0 flex-1 p-2">
+							<RightPanel
+								forceVisible={true}
+								activeThread={activeThread}
+								activeAvatar={activeAvatar}
+								activeThreadDisplayName={activeThreadDisplayName}
+								isLight={isLight}
+								theme={theme}
+								leadLoading={leadLoading}
+								prequal={prequal}
+								aiSummary={aiSummary}
+								aiSummaryLoading={aiSummaryLoading}
+								aiSummaryError={aiSummaryError}
+								aiNegotiation={aiNegotiation}
+								aiNegotiationLoading={aiNegotiationLoading}
+								aiNegotiationError={aiNegotiationError}
+								accordionState={accordionState}
+								setAccordionState={setAccordionState}
+								sharedMedia={sharedMedia}
+								sharedLinks={sharedLinks}
+								sharedPosts={sharedPosts}
+								requestAiSummary={requestAiSummary}
+								requestNegotiationHelper={requestNegotiationHelper}
+								openAttachmentPreview={openAttachmentPreview}
+								userRole={userRole}
+							/>
+						</div>
+					</div>
+				</div>
+			) : null}
 
 			<div class="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
 				<ChatSidebar
