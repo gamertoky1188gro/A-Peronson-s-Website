@@ -1480,10 +1480,9 @@ export default function ChatInterface() {
 		}
 	}
 
-	const activeThreadDisplayName = formatDisplayName(
-		activeThread?.name,
-		activeThread?.senderId || activeThread?.matchId,
-	);
+	const activeThreadDisplayName = activeThread
+		? formatDisplayName(activeThread?.name, activeThread?.senderId || activeThread?.matchId)
+		: "";
 	const activeAvatar = avatarUrl(activeThread?.avatar);
 	const visibleError = String(error || "")
 		.toLowerCase()
@@ -1662,18 +1661,27 @@ export default function ChatInterface() {
 						class="absolute left-0 top-0 bottom-0 flex w-20 flex-col items-center border-r border-slate-200/50 bg-white p-2 shadow-2xl dark:border-white/10 dark:bg-slate-950"
 						onClick={(event) => event.stopPropagation()}
 					>
-						<ChatSidebar
-							forceVisible={true}
-							themeMode={themeMode}
-							setThemeMode={setThemeMode}
-							isLight={isLight}
-							theme={theme}
-							location={location}
-							navigate={navigate}
-							ROUTES={ROUTES}
-							CHAT_NAV_ITEMS={CHAT_NAV_ITEMS}
-							totalUnread={totalUnread}
-						/>
+						<button
+							onClick={() => setMobileMenuOpen(false)}
+							class="mb-1 flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
+							aria-label="Close menu"
+						>
+							<X size={18} />
+						</button>
+						<div class="min-h-0 w-full flex-1">
+							<ChatSidebar
+								forceVisible={true}
+								themeMode={themeMode}
+								setThemeMode={setThemeMode}
+								isLight={isLight}
+								theme={theme}
+								location={location}
+								navigate={navigate}
+								ROUTES={ROUTES}
+								CHAT_NAV_ITEMS={CHAT_NAV_ITEMS}
+								totalUnread={totalUnread}
+							/>
+						</div>
 					</div>
 				</div>
 			) : null}
