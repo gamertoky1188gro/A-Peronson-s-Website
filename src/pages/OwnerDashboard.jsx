@@ -451,7 +451,7 @@ export default function OwnerDashboard() {
 
 				<div
 					data-lenis-prevent={true}
-					className="flex flex-1 flex-col min-h-0"
+					className="flex flex-1 flex-col min-h-full"
 					style={{ overflowY: "auto" }}
 				>
 					<header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/70 px-4 py-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 sm:px-6 xl:px-8">
