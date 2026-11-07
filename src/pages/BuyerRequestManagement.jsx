@@ -2525,7 +2525,7 @@ export default function BuyerRequestManagement() {
 						) : null}
 
 						{role === "buyer" ? (
-							<ScrollReveal as="section">
+							<ScrollReveal as="section" className="lg:col-span-12">
 								<div class="grid gap-4 border-t border-white/10 p-4 lg:grid-cols-12 lg:p-6">
 									<div class="lg:col-span-7">
 										<div class={`rounded-[28px] border p-5 ${panel}`}>
