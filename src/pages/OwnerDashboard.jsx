@@ -451,8 +451,8 @@ export default function OwnerDashboard() {
 
 				<div
 					data-lenis-prevent={true}
-					className="flex flex-1 flex-col min-h-screen"
-					style={{ overflowY: "auto" }}
+					className={"flex flex-1 flex-col overflow-hidden pr-4 py-4 sm:pr-6 sm:py-6 " + (sidebarOpen ? "pl-[85vw] sm:pl-[320px] lg:pl-[320px]" : "")}
+					style={{ height: '100vh', overflowY: 'auto' }}
 				>
 					<header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/70 px-4 py-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 sm:px-6 xl:px-8">
 						<div className="flex items-center gap-3">
