@@ -1,13 +1,13 @@
-﻿# Project History Index
+# Project History Index
 
-> Complete chronological documentation of all 894 commits in the GarTexHub B2B Textile Marketplace repository.
+> Complete chronological documentation of all 923 commits in the GarTexHub B2B Textile Marketplace repository.
 
 ## Summary Statistics
 
 | Metric                            | Value                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Total commits documented**      | 894                                                                                                                         |
-| **Date range**                    | 2026-03-01 → 2026-11-03                                                                                                                      |
+| **Total commits documented**      | 923                                                                                                                         |
+| **Date range**                    | 2026-03-01 → 2026-11-08                                                                                                                      |
 | **Unique files ever touched**     | 2,200+                                                                                                                                      |
 | **Most frequently changed files** | `src/pages/SearchResults.jsx` (77x), `server/server.js` (76x), `src/App.jsx` (65x), `src/components/NavBar.jsx` (59x), `package.json` (58x) |
 | **Largest commits (by files)**    | 2,087 files (commit `cb3ff7e` "meow", mostly a line-ending rewrite), 936 files (commit `bdbbbc1` "meow"), 515 files (commit `6b75ca5` "Fixed"), 299 files (commit `bb22700` "Fixed")                            |
@@ -45,6 +45,7 @@
 | **26. AI Support Investigation Portal** | 0824–0875 | Oct 20–24 | Read-only opencode runtime, support cases with private evidence, five-agent investigation queue, Markdown reports, delivery/escalation, retention sweep, cross-case isolation tests, secret redaction, free-model fallback, Gmail transport (credentials placed in render.yaml) |
 | **27. Render & Tooling** | 0876–0882 | Oct 25 | pnpm workspace/override fixes, Render pnpm commands, starter plan then back to free, PATH/releaseCommand fixes, repo-wide line-ending normalisation |
 | **28. Client Feedback & Hardening** | 0883–0894 | Nov 2–3 | Client WhatsApp evidence; 02/11 client requests, auth hardening, crash recovery; revocable sessions and password reset; LCP 2.4 s; contract/premium/boost authorization fixes; password change; migration fix; e2e; documentation rebuild |
+| **29. Production Stability & Mobile Sweep** | 0895–0923 | Nov 3–8 | History backfill; zero-lint branch; PR #102/#103 merges (client feedback, OOM/logout incident fix); code-investigation backend + authz tests; mobile optimisation across Search, Verification, Owner/Admin dashboards, Chat; viewport-locked mobile shell; role-gated nav; CI green (Jekyll + Biome); wiki auto-sync |
 
 ## Complete Commit List
 
@@ -388,7 +389,36 @@
 | [0893](./0893_2026-11-03_19-44-23_f3fbd97_add-end-to-end-tests-for-client-critical-workflows.md) | 2026-11-03 19:44 | `f3fbd97` | Add End-to-End Tests for Client-Critical Workflows | 1 files — Playwright spec covering the client tracker's browser flows on a phone viewport |
 | [0894](./0894_2026-11-03_19-47-00_b2287e8_rebuild-the-user-and-developer-documentation.md) | 2026-11-03 19:47 | `b2287e8` | Rebuild the User and Developer Documentation | 24 files — New `docs/user/` and `docs/developer/` guides, generated API/database/env references and a working `docs:gener… |
 
-> **Note**: Due to the large number of commits (894), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
+| [0895](./0895_2026-11-03_20-04-20_f32880f_backfill-commit-documentation-0732-through-0894.md) | 2026-11-03 20:04 | `f32880f` | Backfill Commit Documentation 0732–0894 | Document commits 0732-0894 in history/ |
+| [0896](./0896_2026-11-03_20-10-38_e9a9906_lint-zero-biome-errors-and-update-docs.md) | 2026-11-03 20:10 | `e9a9906` | Zero-Error Lint Pass and Doc Updates | Lint: no new Biome errors from this branch; update Claude.md and docs |
+| [0897](./0897_2026-11-03_20-12-38_4f34b88_restore-documents-ai-early-exit-default.md) | 2026-11-03 20:12 | `4f34b88` | Restore the documents.ai_early_exit Default | Restore documents.ai_early_exit default where production dropped it |
+| [0898](./0898_2026-11-03_20-15-11_28bd0e2_record-live-verification-of-pr-101.md) | 2026-11-03 20:15 | `28bd0e2` | Record the Live Verification of PR #101 | Claude.md: record live verification of PR #101 and the follow-up merge steps |
+| [0899](./0899_2026-11-03_20-39-53_b7001fe_merge-pr-102-client-feedback-branch.md) | 2026-11-03 20:39 | `b7001fe` | Merge PR #102 — Client Feedback Branch | Merge pull request #102 from arafat-mahmud/fix/client-feedback-2026-11-03 |
+| [0900](./0900_2026-11-04_00-52-37_9b009c7_stop-oom-restart-loop-and-invalid-token-logouts.md) | 2026-11-04 00:52 | `9b009c7` | Stop the OOM Restart Loop and 'Invalid Token' Logouts | Stop the OOM restart loop and the "Invalid token" logouts; cut DB round trips |
+| [0901](./0901_2026-11-04_01-08-45_34688d2_lint-passes-and-normalize-line-endings.md) | 2026-11-04 01:08 | `34688d2` | Lint Passes (798 → 0) and Normalize Line Endings | Lint: pnpm run lint passes (798 errors -> 0); normalize line endings |
+| [0902](./0902_2026-11-04_12-46-50_fb5280f_merge-pr-103-production-stability.md) | 2026-11-04 12:46 | `fb5280f` | Merge PR #103 — Production Stability | Merge pull request #103 from arafat-mahmud/fix/production-stability-2026-11-04 |
+| [0903](./0903_2026-11-06_21-00-44_2d024f6_add-code-investigation-backend.md) | 2026-11-06 21:00 | `2d024f6` | Add the Code Investigation Backend | feat: add code investigation backend |
+| [0904](./0904_2026-11-06_21-44-45_5ed15f7_code-investigation-authorization-tests.md) | 2026-11-06 21:44 | `5ed15f7` | Authorization and Ownership Tests for Code Investigation | test(code-investigation): add authorization and ownership unit tests |
+| [0905](./0905_2026-11-06_23-22-30_7da21f4_mobile-optimization-for-search-results.md) | 2026-11-06 23:22 | `7da21f4` | Mobile Optimization for the Search Page | fix(search): mobile optimization for search page results |
+| [0906](./0906_2026-11-07_00-12-37_c5bf8ca_mobile-optimization-verification-owner-dashboard-chat.md) | 2026-11-07 00:12 | `c5bf8ca` | Mobile Optimization: Verification, Owner Dashboard, Chat | fix(mobile): optimize Verification, Owner Dashboard, and Chat for mobile |
+| [0907](./0907_2026-11-07_00-21-01_0a2a7d2_mobile-optimization-admin-panel.md) | 2026-11-07 00:21 | `0a2a7d2` | Mobile Optimization for the Admin Panel | fix(mobile): optimize Admin Panel for smaller screens |
+| [0908](./0908_2026-11-07_14-35-28_5a7f213_owner-dashboard-render-without-analytics-loading.md) | 2026-11-07 14:35 | `5a7f213` | Don't Block Content on Analytics Loading | fix(owner-dashboard): don't block content rendering on analytics loading |
+| [0909](./0909_2026-11-07_16-16-59_cea4eab_remove-leftover-loading-references.md) | 2026-11-07 16:16 | `cea4eab` | Remove Leftover 'loading' References | fix(owner-dashboard): remove remaining 'loading' references causing blank conten |
+| [0910](./0910_2026-11-07_16-54-20_f28f07d_fix-owner-dashboard-mobile-main-content-height.md) | 2026-11-07 16:54 | `f28f07d` | Fix Owner Dashboard Mobile Main Content Height | fix(owner-dashboard): fix mobile main content height |
+| [0911](./0911_2026-11-07_17-21-59_8bcf0bb_owner-dashboard-height-h-dvh-attempt.md) | 2026-11-07 17:21 | `8bcf0bb` | Owner Dashboard Height: h-dvh Attempt | fix(owner-dashboard): fix mobile main height with h-dvh |
+| [0912](./0912_2026-11-07_17-29-21_86c5a45_owner-dashboard-height-100dvh-attempt.md) | 2026-11-07 17:29 | `86c5a45` | Owner Dashboard Height: h-[100dvh] Attempt | fix(owner-dashboard): fix mobile main height with h-[100dvh] |
+| [0913](./0913_2026-11-07_17-35-43_f9fa90b_owner-dashboard-height-min-h-screen-attempt.md) | 2026-11-07 17:35 | `f9fa90b` | Owner Dashboard Height: min-h-screen Attempt | fix(owner-dashboard): fix mobile main height with min-h-screen |
+| [0914](./0914_2026-11-07_18-01-05_a5be8b6_owner-dashboard-height-inline-100vh-attempt.md) | 2026-11-07 18:01 | `a5be8b6` | Owner Dashboard Height: Inline height 100vh Attempt | fix(owner-dashboard): fix mobile main height with inline style height: 100vh |
+| [0915](./0915_2026-11-07_18-23-59_7c306f3_hide-footer-on-mobile-locked-routes.md) | 2026-11-07 18:23 | `7c306f3` | Hide the Stacked Footer on Mobile for Locked Routes | fix(app): hide stacked footer on mobile for viewport-locked routes |
+| [0916](./0916_2026-11-07_18-24-50_1fee19b_constrain-search-results-grid-track.md) | 2026-11-07 18:24 | `1fee19b` | Constrain the Search Results Grid Track | fix(search): constrain results grid track on mobile |
+| [0917](./0917_2026-11-07_18-42-51_175235c_bring-desktop-chat-functions-to-mobile.md) | 2026-11-07 18:42 | `175235c` | Bring Desktop Chat Functions to Mobile | feat(chat): bring desktop chat functions to mobile |
+| [0918](./0918_2026-11-07_18-52-09_9ebc495_chat-mobile-drawer-close-and-honest-title.md) | 2026-11-07 18:52 | `9ebc495` | Mobile Drawer Close Button; Honest Header Title | fix(chat): close button on mobile nav drawer, honest header title |
+| [0919](./0919_2026-11-07_19-57-56_0d53a47_import-missing-star-icon.md) | 2026-11-07 19:57 | `0d53a47` | Import the Missing Star Icon | fix(buyer-requests): import missing Star icon |
+| [0920](./0920_2026-11-07_19-57-57_66e1872_hide-role-gated-links-without-permission.md) | 2026-11-07 19:57 | `66e1872` | Hide Role-Gated Links Without Permission | feat(nav): hide role-gated links lacking permission |
+| [0921](./0921_2026-11-07_20-14-15_2e2652c_span-buyer-request-panels-across-outer-grid.md) | 2026-11-07 20:14 | `2e2652c` | Span Panels Grid Across the Outer 12-Col Grid | fix(buyer-requests): span panels grid across the outer 12-col grid |
+| [0922](./0922_2026-11-08_11-42-24_1a0a87b_make-ci-workflows-green.md) | 2026-11-08 11:42 | `1a0a87b` | Make the CI Workflows Green | ci: make CI workflows green |
+| [0923](./0923_2026-11-08_12-23-09_46706ff_auto-sync-wiki-with-docs-and-history.md) | 2026-11-08 12:23 | `46706ff` | Auto-Sync the Wiki with docs/ and history/ | ci(wiki): auto-sync docs/ and history/ to the GitHub wiki on push |
+> **Note**: Due to the large number of commits (923), the full index table references individual files. Browse any commit's full analysis by clicking its number link above. For commits 0021–0089 and beyond, please navigate directly to the corresponding numbered file in this directory.
 
 ## File Naming Convention
 
