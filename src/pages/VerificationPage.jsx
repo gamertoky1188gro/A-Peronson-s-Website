@@ -628,7 +628,11 @@ export default function VerificationPage({ embedded = false }) {
 						onClick={toggleTheme}
 						className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-xs font-medium sm:px-4 sm:py-2 sm:text-sm transition-all ${buttonGhost}`}
 					>
-						{isDark ? <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+						{isDark ? (
+							<Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+						) : (
+							<Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+						)}
 						{isDark ? "Light" : "Dark"}
 					</button>
 				)}

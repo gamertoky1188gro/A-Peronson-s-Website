@@ -3302,7 +3302,8 @@ export default function SearchResults() {
 										onClick={() => setShowShortlist((v) => !v)}
 										className={`inline-flex items-center gap-2 rounded-2xl border px-2.5 py-1.5 text-xs font-medium sm:px-3 sm:py-2 sm:text-sm ${shortlist.length > 0 ? "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300" : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200"} hover:border-sky-300 dark:hover:border-sky-700`}
 									>
-										<ArrowLeftRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Compare ({shortlist.length})
+										<ArrowLeftRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Compare (
+										{shortlist.length})
 									</button>
 									<button
 										onClick={() => setViewMode("all")}

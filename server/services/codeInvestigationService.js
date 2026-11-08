@@ -118,7 +118,13 @@ export async function listInvestigationsForUser(userId) {
 	});
 }
 
-export async function addInvestigationMessage(caseId, userId, content, role = "user", agent = null) {
+export async function addInvestigationMessage(
+	caseId,
+	userId,
+	content,
+	role = "user",
+	agent = null,
+) {
 	const investigation = await prisma.supportCase.findUnique({ where: { id: caseId } });
 	if (!investigation) return null;
 	if (String(investigation.user_id) !== String(userId)) return "forbidden";
@@ -373,7 +379,8 @@ export async function generateFinalReport(caseId, userId) {
 			size: a.byte_size,
 		})),
 		generatedAt: new Date(),
-		disclaimer: "This investigation was performed by an AI agent with read-only access to the codebase. Findings are based on code analysis and should be verified by the development team before action.",
+		disclaimer:
+			"This investigation was performed by an AI agent with read-only access to the codebase. Findings are based on code analysis and should be verified by the development team before action.",
 	};
 
 	return report;
@@ -451,14 +458,18 @@ function renderReportHtml(report) {
 	<h2>Findings</h2>
 	<div>${report.findings.replace(/\n/g, "<br>")}</div>
 
-	${report.attachments.length > 0 ? `
+	${
+		report.attachments.length > 0
+			? `
 	<h2>Attachments</h2>
 	<div class="attachments">
 		<ul>
-			${report.attachments.map(a => `<li><code>${a.path}</code> (${a.mimeType}, ${a.size} bytes)</li>`).join("")}
+			${report.attachments.map((a) => `<li><code>${a.path}</code> (${a.mimeType}, ${a.size} bytes)</li>`).join("")}
 		</ul>
 	</div>
-	` : ""}
+	`
+			: ""
+	}
 
 	<div class="disclaimer">
 		<strong>Disclaimer:</strong> ${report.disclaimer}
@@ -486,11 +497,15 @@ FINDINGS
 --------
 ${report.findings}
 
-${report.attachments.length > 0 ? `
+${
+	report.attachments.length > 0
+		? `
 ATTACHMENTS
 -----------
-${report.attachments.map(a => `- ${a.path} (${a.mimeType}, ${a.size} bytes)`).join("\n")}
-` : ""}
+${report.attachments.map((a) => `- ${a.path} (${a.mimeType}, ${a.size} bytes)`).join("\n")}
+`
+		: ""
+}
 
 DISCLAIMER
 ----------

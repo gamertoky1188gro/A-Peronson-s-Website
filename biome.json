@@ -84,7 +84,15 @@
 				"noDefaultExport": "off",
 				"useNamingConvention": "off",
 				"noProcessEnv": "off",
-				"useGlobalThis": "warn"
+				"useGlobalThis": "warn",
+				"noExcessiveLinesPerFile": "warn",
+				"noHexColors": "warn",
+				"useExplicitLengthCheck": "warn",
+				"useBlockStatements": "warn"
+			},
+			"complexity": {
+				"noExcessiveCognitiveComplexity": "warn",
+				"noUselessUndefined": "warn"
 			},
 			"a11y": {
 				"useButtonType": "warn",

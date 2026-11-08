@@ -100,9 +100,7 @@ describe("code investigation service — ownership enforcement", () => {
 
 	test("generateFinalReport throws 'Forbidden' for a non-owner", async () => {
 		prisma.supportCase.findUnique.mockResolvedValue(caseRow);
-		await expect(
-			service.generateFinalReport("case-1", "stranger-2"),
-		).rejects.toThrow("Forbidden");
+		await expect(service.generateFinalReport("case-1", "stranger-2")).rejects.toThrow("Forbidden");
 	});
 
 	test("generateFinalReport succeeds for the owner", async () => {
@@ -121,11 +119,7 @@ describe("code investigation service — ownership enforcement", () => {
 	test("updateInvestigationStatus returns 'forbidden' for a non-owner", async () => {
 		prisma.supportCase.findUnique.mockResolvedValue(caseRow);
 		prisma.supportCase.update.mockResolvedValue(caseRow);
-		const result = await service.updateInvestigationStatus(
-			"case-1",
-			"completed",
-			"stranger-2",
-		);
+		const result = await service.updateInvestigationStatus("case-1", "completed", "stranger-2");
 		expect(result).toBe("forbidden");
 	});
 

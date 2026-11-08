@@ -3021,7 +3021,9 @@ export default function AdminPanel() {
 									<span class="text-base sm:text-lg font-black tracking-tight text-white">G</span>
 								</div>
 								<div>
-									<div class={`text-base sm:text-lg font-semibold tracking-tight ${themeStyles.soft}`}>
+									<div
+										class={`text-base sm:text-lg font-semibold tracking-tight ${themeStyles.soft}`}
+									>
 										GarTexHub
 									</div>
 									<div
@@ -3124,7 +3126,9 @@ export default function AdminPanel() {
 													</span>
 												)}
 											</div>
-											<p class={`mt-0.5 truncate text-[9px] sm:text-xs ${themeStyles.muted}`}>{item.sub}</p>
+											<p class={`mt-0.5 truncate text-[9px] sm:text-xs ${themeStyles.muted}`}>
+												{item.sub}
+											</p>
 										</div>
 
 										<ChevronRight
