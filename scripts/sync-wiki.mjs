@@ -7,16 +7,18 @@ import {
 	existsSync,
 	mkdirSync,
 	readdirSync,
-	rmSync,
 	readFileSync,
+	rmSync,
 	statSync,
 	writeFileSync,
 } from "node:fs";
 import path from "node:path";
 
 const wikiDir = process.argv[2];
-if (!wikiDir || !existsSync(path.join(wikiDir, ".git"))) {
-	console.error("Usage: node scripts/sync-wiki.mjs <wiki-dir>  (must be a git clone of the wiki repo)");
+if (!(wikiDir && existsSync(path.join(wikiDir, ".git")))) {
+	console.error(
+		"Usage: node scripts/sync-wiki.mjs <wiki-dir>  (must be a git clone of the wiki repo)",
+	);
 	process.exit(1);
 }
 
@@ -26,8 +28,11 @@ const W = "\n";
 
 function encode(prefix, relpath) {
 	const parts = relpath.split(path.sep).join("/").split("/");
-	const stem = [...parts.slice(0, -1), parts[parts.length - 1].replace(/\.md$/, "")].join("-");
-	return `${prefix}-${stem.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-{2,}/g, "-").replace(/^-|-$/g, "")}.md`;
+	const stem = [...parts.slice(0, -1), parts[parts.length - 1].replace(/\.md$/u, "")].join("-");
+	return `${prefix}-${stem
+		.replace(/[^A-Za-z0-9._-]+/gu, "-")
+		.replace(/-{2,}/gu, "-")
+		.replace(/^-|-$/gu, "")}.md`;
 }
 
 // Collect sources: filename -> { src, relpath (with folder prefix) }
@@ -41,7 +46,11 @@ for (const [folder, prefix] of Object.entries(PREFIXES)) {
 			if (entry.isDirectory()) walk(full);
 			else if (entry.name.endsWith(".md")) {
 				const rel = path.relative(base, full);
-				generated.set(encode(prefix, rel), { src: full, folder, rel: rel.split(path.sep).join("/") });
+				generated.set(encode(prefix, rel), {
+					src: full,
+					folder,
+					rel: rel.split(path.sep).join("/"),
+				});
 			}
 		}
 	};
@@ -51,7 +60,7 @@ for (const [folder, prefix] of Object.entries(PREFIXES)) {
 // Remove mirrored pages that no longer exist in the source tree.
 let removed = 0;
 for (const entry of readdirSync(wikiDir)) {
-	if (/^(Docs|History)-.*\.md$/.test(entry) && !generated.has(entry)) {
+	if (/^(Docs|History)-.*\.md$/u.test(entry) && !generated.has(entry)) {
 		rmSync(path.join(wikiDir, entry));
 		removed++;
 	}
@@ -74,11 +83,11 @@ for (const [name, { folder, rel }] of generated) {
 		const seg = rel.split("/");
 		group = seg.length > 1 ? `docs — ${seg[0]}` : "docs — (root)";
 	} else {
-		const m = /^(\d{4}-\d{2})/.exec(rel);
+		const m = /^(\d{4}-\d{2})/u.exec(rel);
 		group = m ? `history — ${m[1]}` : "history — (undated)";
 	}
 	if (!groups.has(group)) groups.set(group, []);
-	groups.get(group).push({ name: name.replace(/\.md$/, ""), rel });
+	groups.get(group).push({ name: name.replace(/\.md$/u, ""), rel });
 }
 const sortedGroups = [...groups.entries()].sort((a, b) => {
 	const docsA = a[0].startsWith("docs") ? 0 : 1;
@@ -95,12 +104,24 @@ const indexLines = [
 	"",
 	"## Jump to",
 	"",
-	...sortedGroups.map(([g]) => `- [${g}](#${g.replace(/\s+/g, "-").replace(/[^\w-]/g, "").toLowerCase()})`),
+	...sortedGroups.map(
+		([g]) =>
+			`- [${g}](#${g
+				.replace(/\s+/gu, "-")
+				.replace(/[^\w-]/gu, "")
+				.toLowerCase()})`,
+	),
 	"",
 ];
 for (const [group, items] of sortedGroups) {
 	items.sort((a, b) => a.rel.localeCompare(b.rel));
-	indexLines.push(`## ${group} (${items.length})`, "", "<details>", `<summary>${items.length} pages</summary>`, "");
+	indexLines.push(
+		`## ${group} (${items.length})`,
+		"",
+		"<details>",
+		`<summary>${items.length} pages</summary>`,
+		"",
+	);
 	for (const item of items) indexLines.push(`- [[${item.name}]] — \`${item.rel}\``);
 	indexLines.push("", "</details>", "");
 }
@@ -113,11 +134,13 @@ const assetsDst = path.join(wikiDir, "assets");
 if (existsSync(assetsSrc)) {
 	mkdirSync(assetsDst, { recursive: true });
 	for (const entry of readdirSync(assetsSrc)) {
-		if (/\.(svg|png)$/i.test(entry)) {
+		if (/\.(svg|png)$/iu.test(entry)) {
 			copyFileSync(path.join(assetsSrc, entry), path.join(assetsDst, entry));
 			assets++;
 		}
 	}
 }
 
-console.log(`wiki-sync: ${copied} mirrored, ${removed} removed, Site-Index.md written, ${assets} assets copied`);
+console.log(
+	`wiki-sync: ${copied} mirrored, ${removed} removed, Site-Index.md written, ${assets} assets copied`,
+);
