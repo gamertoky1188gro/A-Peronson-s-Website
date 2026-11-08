@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" width="320" height="200" role="img" aria-label="Empty page">
+  <g fill="none" stroke="#64748B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.85">
+    <rect x="70" y="28" width="180" height="132" rx="10"/>
+    <line x1="96" y1="66" x2="232" y2="66" stroke-dasharray="8 7" opacity="0.7"/>
+    <line x1="96" y1="96" x2="200" y2="96" stroke-dasharray="8 7" opacity="0.7"/>
+    <line x1="96" y1="126" x2="150" y2="126" stroke-dasharray="8 7" opacity="0.7"/>
+  </g>
+  <!-- stitched corner -->
+  <path d="M 262,28 L 262,24 L 250,24" fill="none" stroke="#0EA5E9" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 262,160 L 262,164 L 250,164" fill="none" stroke="#06B6D4" stroke-width="5" stroke-linecap="round"/>
+</svg>
