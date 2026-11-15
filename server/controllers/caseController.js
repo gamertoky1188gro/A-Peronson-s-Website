@@ -213,9 +213,10 @@ const CONVERSATION_ENTRYPOINTS = [
  * @param {string} params.clientMessage The turn the client just sent.
  * @param {boolean} params.ready Whether the case is already ready.
  * @param {number} params.round
+ * @param {Object} [params.caseRow] The case row already loaded by the caller (carries `model_id`).
  * @returns {Promise<{ reply: string, ready: boolean, degraded: boolean }>}
  */
-async function askClarifyingQuestion({ subject, messages, clientMessage, ready, round }) {
+async function askClarifyingQuestion({ subject, messages, clientMessage, ready, round, caseRow }) {
 	const history = (messages || [])
 		.slice(-MAX_HISTORY_MESSAGES)
 		.map((message) => ({ role: message.role, content: message.content }));
@@ -228,6 +229,16 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 		if (!entry) {
 			throw new Error("caseConversationService exports no answering function");
 		}
+		let provider = null;
+		const caseModelId = caseRow?.model_id || caseRow?.modelId || null;
+		if (caseModelId) {
+			try {
+				const { makeClarificationProvider } = await import("../services/clarificationOpencodeProvider.js");
+				provider = makeClarificationProvider({ modelId: caseModelId, caseId: caseRow?.id });
+			} catch {
+				provider = null; // fall back to env providers exactly as before
+			}
+		}
 		const answer = await entry({
 			subject,
 			history,
@@ -236,6 +247,7 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 			clientMessage,
 			ready,
 			maxRounds: MAX_CLARIFICATION_ROUNDS,
+			...(provider ? { provider } : {}),
 		});
 		const reply = sanitizeString(String(answer?.reply || ""), MAX_MESSAGE_LENGTH);
 		if (!reply) {
@@ -688,6 +700,7 @@ export async function postCaseMessageController(req, res) {
 			clientMessage: content,
 			ready,
 			round: rounds,
+			caseRow: found,
 		});
 		const reply = await caseService.appendCaseMessage({
 			caseId,
