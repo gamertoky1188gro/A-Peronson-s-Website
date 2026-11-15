@@ -201,11 +201,19 @@ export async function runAssistantPrompt({
 		let targetSessionID = sessionID;
 		let ephemeral = false;
 		if (i > 0) {
-			const created = await client.session.create({
-				title: `assistant-fallback-${Date.now()}`,
-				model: { id: candidate.id, providerID: candidate.providerID },
-				location: { directory: REPOSITORY_ROOT },
-			});
+			let created = null;
+			try {
+				created = await client.session.create({
+					title: `assistant-fallback-${Date.now()}`,
+					model: { id: candidate.id, providerID: candidate.providerID },
+					location: { directory: REPOSITORY_ROOT },
+				});
+			} catch (error) {
+				logWarn("opencode_model_fallback_session_failed", {
+					model: candidate.id,
+					message: error?.message,
+				});
+			}
 			targetSessionID = created?.data?.id || created?.id;
 			if (!targetSessionID) {
 				attempts.push({ model: candidate.id, outcome: "refused" });

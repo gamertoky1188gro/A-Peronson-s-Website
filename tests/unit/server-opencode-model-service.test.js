@@ -194,6 +194,49 @@ describe("runAssistantPrompt", () => {
 		expect(result?.attempts.map((a) => a.outcome)).toEqual(["refused", "ok"]);
 	});
 
+	it("a fallback session that cannot be created is refused and the chain advances", async () => {
+		process.env.OPENCODE_MODEL_ID = "minimax-m3.1-flash-free";
+		const prompted = new Set();
+		const refusedMsg = {
+			id: "refused-1",
+			type: "assistant",
+			time: { created: 1 },
+			finish: "error",
+			content: [],
+			error: { type: "provider.quota", message: "quota", status: 429 },
+		};
+		const create = jest
+			.fn()
+			.mockRejectedValueOnce(new Error("session create failed"))
+			.mockImplementation(async () => ({ id: "ephemeral-2" }));
+		const client = {
+			session: {
+				create,
+				remove: jest.fn(async () => ({})),
+				prompt: jest.fn(async ({ sessionID }) => {
+					prompted.add(sessionID);
+					return {};
+				}),
+			},
+			message: {
+				list: jest.fn(async ({ sessionID }) => {
+					if (!prompted.has(sessionID)) return { data: [] };
+					if (sessionID === "user-session-1") return { data: [refusedMsg] };
+					return { data: [assistantMsg("ok-1", 2, "ANSWER FROM FALLBACK")] };
+				}),
+			},
+		};
+		const result = await svc.runAssistantPrompt({
+			client,
+			sessionID: "user-session-1",
+			text: "hello",
+			timeoutMs: 5000,
+		});
+		// First fallback candidate's session.create threw; the next one answered.
+		expect(result?.model).toBe("mimo-v2.6-flash-free");
+		expect(result?.attempts.map((a) => a.outcome)).toEqual(["refused", "refused", "ok"]);
+	});
+
 	it("a timeout is NOT retried and the fallback chain does not advance", async () => {
 		process.env.OPENCODE_MODEL_ID = "minimax-m3.1-flash-free";
 		const createSpy = jest.fn(async () => ({ id: "ephemeral-1" }));
