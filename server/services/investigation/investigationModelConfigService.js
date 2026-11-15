@@ -13,7 +13,8 @@ async function readRows() {
 		const map = {};
 		for (const row of rows) map[row.brand_key] = row;
 		return map;
-	} catch {
+	} catch (error) {
+		logWarn("investigation_model_config_read_failed", { error: error?.message });
 		return {};
 	}
 }
@@ -78,23 +79,25 @@ export async function setInvestigationModelConfig({ allowed, default: def, buyer
 		throw error;
 	}
 	const nextToggle = typeof buyerSelectEnabled === "boolean" ? buyerSelectEnabled : previous.buyerSelectEnabled;
-	const write = async (key, value) => prisma.adminBranding.upsert({
+	const write = (key, value) => prisma.adminBranding.upsert({
 		where: { brand_key: key },
 		update: { value, active: true },
 		create: { brand_key: key, value, active: true },
 	});
 	try {
-		await write(KEY_ALLOWED, JSON.stringify(nextAllowed));
-		await write(KEY_DEFAULT, nextDefault);
-		await write(KEY_BUYER_TOGGLE, nextToggle ? "1" : "0");
-		await prisma.adminConfigHistory.create({
-			data: {
-				config_type: "investigation_model_config",
-				changed_by: String(actorId || "unknown"),
-				previous_value: JSON.stringify({ allowed: previous.allowed, default: previous.default, buyerSelectEnabled: previous.buyerSelectEnabled }),
-				new_value: JSON.stringify({ allowed: nextAllowed, default: nextDefault, buyerSelectEnabled: nextToggle }),
-			},
-		});
+		await prisma.$transaction([
+			write(KEY_ALLOWED, JSON.stringify(nextAllowed)),
+			write(KEY_DEFAULT, nextDefault),
+			write(KEY_BUYER_TOGGLE, nextToggle ? "1" : "0"),
+			prisma.adminConfigHistory.create({
+				data: {
+					config_type: "investigation_model_config",
+					changed_by: String(actorId || "unknown"),
+					previous_value: JSON.stringify({ allowed: previous.allowed, default: previous.default, buyerSelectEnabled: previous.buyerSelectEnabled }),
+					new_value: JSON.stringify({ allowed: nextAllowed, default: nextDefault, buyerSelectEnabled: nextToggle }),
+				},
+			}),
+		]);
 	} catch (error) {
 		logWarn("investigation model config persist failed", { error: error?.message });
 		const wrapped = new Error(`Could not persist the investigation model config: ${error?.message}`);

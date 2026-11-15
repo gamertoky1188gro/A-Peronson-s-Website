@@ -15,6 +15,7 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 			}),
 		},
 		adminConfigHistory: { create: jest.fn(async ({ data }) => { historyCalls.push(data); return data; }) },
+		$transaction: jest.fn(async (ops) => Promise.all(ops.map((op) => (op && typeof op.then === "function" ? op : Promise.resolve(op))))),
 	},
 }));
 jest.unstable_mockModule("../../server/services/investigation/modelCatalog.js", () => ({
