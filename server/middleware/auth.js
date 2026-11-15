@@ -8,6 +8,7 @@ import { findUserById } from "../services/userService.js";
 import { cachedSession, cachedUser } from "../utils/authCache.js";
 import { logWarn } from "../utils/logger.js";
 import { deny, hasRole } from "../utils/permissions.js";
+import { requireSupportToken } from "./supportToken.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -179,6 +180,21 @@ export async function optionalAuth(req, _res, next) {
 	}
 
 	return next();
+}
+
+/**
+ * Either a signed-in session (requireAuth) or a buyer support token
+ * (requireSupportToken). The two fill req.user identically, so every handler
+ * downstream works unchanged.
+ */
+export async function requireAuthOrSupportToken(req, res, next) {
+	const header = req.headers.authorization || "";
+	const bearer = header.startsWith("Bearer ") ? header.slice(7) : null;
+	const wantsToken = req.headers["x-support-token"] || bearer?.startsWith("gtk_sup_");
+	if (wantsToken) {
+		return requireSupportToken(req, res, next);
+	}
+	return requireAuth(req, res, next);
 }
 
 export function allowRoles(...roles) {

@@ -70,6 +70,8 @@ import seoRoutes from "./routes/seoRoutes.js";
 import socialRoutes from "./routes/socialRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
+import supportTokenRoutes from "./routes/supportTokenRoutes.js";
+import adminSupportTokenRoutes from "./routes/adminSupportTokenRoutes.js";
 import syncRoutes from "./routes/syncRoutes.js";
 import systemRoutes from "./routes/systemRoutes.js";
 import uploadsRoutes from "./routes/uploadsRoutes.js";
@@ -407,6 +409,10 @@ app.use("/api/coupons", couponRoutes);
 // The support-case API (contracts.md §3). It is mounted BEFORE the general
 // `/api/support` router so the more specific prefix is matched first.
 app.use("/api/support/cases", caseRoutes);
+// The two-mode support page posts to /api/support/token/*; mount BEFORE the
+// /api/support router.
+app.use("/api/support/token", supportTokenRoutes);
+app.use("/api/admin/support-tokens", adminSupportTokenRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/code-investigation", codeInvestigationRoutes);
 app.use("/api/reports", reportRoutes);
