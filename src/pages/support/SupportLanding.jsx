@@ -137,77 +137,77 @@ export default function SupportLanding() {
 	}
 
 	return (
-		<div class="relative min-h-screen overflow-hidden bg-[#050b1d] text-[#e8eefc]">
+		<div className="relative min-h-screen overflow-hidden bg-[#050b1d] text-[#e8eefc]">
 			<div
 				aria-hidden="true"
-				class="pointer-events-none absolute -top-40 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl"
+				className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl"
 			/>
 			<div
 				aria-hidden="true"
-				class="pointer-events-none absolute top-40 -left-40 h-80 w-80 rounded-full bg-sky-600/10 blur-3xl"
+				className="pointer-events-none absolute top-40 -left-40 h-80 w-80 rounded-full bg-sky-600/10 blur-3xl"
 			/>
 			<div
 				aria-hidden="true"
-				class="pointer-events-none absolute top-96 -right-40 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl"
+				className="pointer-events-none absolute top-96 -right-40 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl"
 			/>
 
-			<div class="relative mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-				<header class="flex items-center justify-between">
+			<div className="relative mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
+				<header className="flex items-center justify-between">
 					<Link
 						to="/"
-						class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300 transition hover:text-cyan-200"
+						className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300 transition hover:text-cyan-200"
 					>
-						GarTexHub <span class="text-[#8ea3c8]">Support</span>
+						GarTexHub <span className="text-[#8ea3c8]">Support</span>
 					</Link>
 					<Link
 						to="/help"
-						class="text-xs font-medium text-[#8ea3c8] transition hover:text-cyan-300"
+						className="text-xs font-medium text-[#8ea3c8] transition hover:text-cyan-300"
 					>
 						Help center
 					</Link>
 				</header>
 
 				<main>
-					<section class="mx-auto mt-14 max-w-3xl text-center sm:mt-20">
-						<p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
+					<section className="mx-auto mt-14 max-w-3xl text-center sm:mt-20">
+						<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
 							GarTexHub Support
 						</p>
-						<h1 class="mt-4 text-4xl font-semibold leading-[1.12] tracking-tight text-[#f2f6ff] sm:text-5xl">
+						<h1 className="mt-4 text-4xl font-semibold leading-[1.12] tracking-tight text-[#f2f6ff] sm:text-5xl">
 							Something isn&apos;t working as expected?{" "}
-							<span class="bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-200 bg-clip-text text-transparent">
+							<span className="bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-200 bg-clip-text text-transparent">
 								Let&apos;s investigate.
 							</span>
 						</h1>
-						<p class="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#a9bcd9]">
+						<p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#a9bcd9]">
 							Explain what happened. Share screenshots. Discuss the issue with our AI technical
 							assistant. It will investigate the available evidence and prepare a detailed case
 							report for our team.
 						</p>
 					</section>
 
-					<section class="mt-12 grid gap-4 sm:mt-14 md:grid-cols-3">
+					<section className="mt-12 grid gap-4 sm:mt-14 md:grid-cols-3">
 						{FEATURES.map((feature) => (
-							<GlassCard key={feature.title} class="p-5">
-								<feature.icon class="h-5 w-5 text-cyan-300" aria-hidden="true" />
-								<h2 class="mt-3 text-base font-semibold text-[#f2f6ff]">{feature.title}</h2>
-								<p class="mt-1 text-sm leading-6 text-[#8ea3c8]">{feature.body}</p>
+							<GlassCard key={feature.title} className="p-5">
+								<feature.icon className="h-5 w-5 text-cyan-300" aria-hidden="true" />
+								<h2 className="mt-3 text-base font-semibold text-[#f2f6ff]">{feature.title}</h2>
+								<p className="mt-1 text-sm leading-6 text-[#8ea3c8]">{feature.body}</p>
 							</GlassCard>
 						))}
 					</section>
 
-					<section class="mt-6 grid gap-6 md:grid-cols-2">
-						<GlassCard class="flex flex-col p-6 sm:p-7">
-							<div class="flex items-center gap-3">
-								<span class="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10">
-									<Sparkles class="h-5 w-5 text-cyan-300" aria-hidden="true" />
+					<section className="mt-6 grid gap-6 md:grid-cols-2">
+						<GlassCard className="flex flex-col p-6 sm:p-7">
+							<div className="flex items-center gap-3">
+								<span className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10">
+									<Sparkles className="h-5 w-5 text-cyan-300" aria-hidden="true" />
 								</span>
-								<h2 class="text-xl font-semibold text-[#f2f6ff]">AI Investigation</h2>
+								<h2 className="text-xl font-semibold text-[#f2f6ff]">AI Investigation</h2>
 							</div>
-							<p class="mt-3 text-sm leading-6 text-[#a9bcd9]">
+							<p className="mt-3 text-sm leading-6 text-[#a9bcd9]">
 								For buyers: paste the secure support token issued by our team.
 							</p>
-							<form onSubmit={handleContinue} class="mt-5 flex flex-1 flex-col">
-								<label for="support-token" class={labelClasses}>
+							<form onSubmit={handleContinue} className="mt-5 flex flex-1 flex-col">
+								<label htmlFor="support-token" className={labelClasses}>
 									Support token
 								</label>
 								<input
@@ -218,56 +218,56 @@ export default function SupportLanding() {
 									placeholder="gtk_sup_…"
 									autoComplete="off"
 									spellCheck={false}
-									class={`mt-2 font-mono ${inputClasses}`}
+									className={`mt-2 font-mono ${inputClasses}`}
 								/>
 								{tokenError ? (
-									<p role="alert" class="mt-3 text-sm text-rose-300">
+									<p role="alert" className="mt-3 text-sm text-rose-300">
 										{tokenError}
 									</p>
 								) : null}
 								<button
 									type="submit"
 									disabled={tokenBusy}
-									class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition hover:from-cyan-300 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+									className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition hover:from-cyan-300 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
 								>
 									{tokenBusy ? "Verifying…" : "Continue"}
-									<ArrowRight class="h-4 w-4" aria-hidden="true" />
+									<ArrowRight className="h-4 w-4" aria-hidden="true" />
 								</button>
 							</form>
 						</GlassCard>
 
-						<GlassCard class="flex flex-col p-6 sm:p-7">
-							<div class="flex items-center gap-3">
-								<span class="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10">
-									<LifeBuoy class="h-5 w-5 text-sky-300" aria-hidden="true" />
+						<GlassCard className="flex flex-col p-6 sm:p-7">
+							<div className="flex items-center gap-3">
+								<span className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10">
+									<LifeBuoy className="h-5 w-5 text-sky-300" aria-hidden="true" />
 								</span>
-								<h2 class="text-xl font-semibold text-[#f2f6ff]">General Support</h2>
+								<h2 className="text-xl font-semibold text-[#f2f6ff]">General Support</h2>
 							</div>
-							<p class="mt-3 text-sm leading-6 text-[#a9bcd9]">
+							<p className="mt-3 text-sm leading-6 text-[#a9bcd9]">
 								For signed-in members: open a ticket and our team will get back to you by email.
 							</p>
-							<div class="mt-auto pt-5">
+							<div className="mt-auto pt-5">
 								{signedIn ? (
 									<button
 										type="button"
 										onClick={() => setFormOpen((open) => !open)}
 										aria-expanded={formOpen}
 										aria-controls="general-support-form"
-										class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-5 py-3 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-400/15"
+										className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-5 py-3 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-400/15"
 									>
 										{formOpen ? "Hide the form" : "Open the form"}
 										<ArrowRight
-											class={`h-4 w-4 transition-transform ${formOpen ? "rotate-90" : ""}`}
+											className={`h-4 w-4 transition-transform ${formOpen ? "rotate-90" : ""}`}
 											aria-hidden="true"
 										/>
 									</button>
 								) : (
 									<Link
 										to="/login"
-										class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-[#e8eefc] transition hover:border-cyan-400/40 hover:text-cyan-200"
+										className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-[#e8eefc] transition hover:border-cyan-400/40 hover:text-cyan-200"
 									>
 										Sign in to submit
-										<ArrowRight class="h-4 w-4" aria-hidden="true" />
+										<ArrowRight className="h-4 w-4" aria-hidden="true" />
 									</Link>
 								)}
 							</div>
@@ -275,15 +275,15 @@ export default function SupportLanding() {
 					</section>
 
 					{signedIn && formOpen ? (
-						<section id="general-support-form" class="mt-6">
+						<section id="general-support-form" className="mt-6">
 							{ticketId === null ? (
-								<GlassCard class="p-6 sm:p-7">
+								<GlassCard className="p-6 sm:p-7">
 									<form onSubmit={handleTicketSubmit}>
-										<h2 class="text-lg font-semibold text-[#f2f6ff]">Describe the issue</h2>
-										<p class="mt-1 text-sm text-[#8ea3c8]">Our team will respond by email.</p>
+										<h2 className="text-lg font-semibold text-[#f2f6ff]">Describe the issue</h2>
+										<p className="mt-1 text-sm text-[#8ea3c8]">Our team will respond by email.</p>
 
-										<div class="mt-5">
-											<label for="ticket-subject" class={labelClasses}>
+										<div className="mt-5">
+											<label htmlFor="ticket-subject" className={labelClasses}>
 												Subject
 											</label>
 											<input
@@ -293,20 +293,20 @@ export default function SupportLanding() {
 												value={subject}
 												onChange={(event) => setSubject(event.target.value)}
 												placeholder="What do you need help with?"
-												class={`mt-2 ${inputClasses}`}
+												className={`mt-2 ${inputClasses}`}
 											/>
 										</div>
 
-										<div class="mt-4 grid gap-4 sm:grid-cols-2">
+										<div className="mt-4 grid gap-4 sm:grid-cols-2">
 											<div>
-												<label for="ticket-category" class={labelClasses}>
+												<label htmlFor="ticket-category" className={labelClasses}>
 													Category
 												</label>
 												<select
 													id="ticket-category"
 													value={category}
 													onChange={(event) => setCategory(event.target.value)}
-													class={`mt-2 ${inputClasses}`}
+													className={`mt-2 ${inputClasses}`}
 												>
 													{TICKET_CATEGORIES.map((entry) => (
 														<option key={entry.value} value={entry.value}>
@@ -316,14 +316,14 @@ export default function SupportLanding() {
 												</select>
 											</div>
 											<div>
-												<label for="ticket-priority" class={labelClasses}>
+												<label htmlFor="ticket-priority" className={labelClasses}>
 													Priority
 												</label>
 												<select
 													id="ticket-priority"
 													value={priority}
 													onChange={(event) => setPriority(event.target.value)}
-													class={`mt-2 ${inputClasses}`}
+													className={`mt-2 ${inputClasses}`}
 												>
 													<option value="standard">Standard</option>
 													<option value="urgent">Urgent</option>
@@ -331,8 +331,8 @@ export default function SupportLanding() {
 											</div>
 										</div>
 
-										<div class="mt-4">
-											<label for="ticket-description" class={labelClasses}>
+										<div className="mt-4">
+											<label htmlFor="ticket-description" className={labelClasses}>
 												Description
 											</label>
 											<textarea
@@ -342,12 +342,12 @@ export default function SupportLanding() {
 												value={description}
 												onChange={(event) => setDescription(event.target.value)}
 												placeholder="What happened, what you expected, and how to reproduce it."
-												class={`mt-2 resize-y ${inputClasses}`}
+												className={`mt-2 resize-y ${inputClasses}`}
 											/>
 										</div>
 
 										{formError ? (
-											<p role="alert" class="mt-4 text-sm text-rose-300">
+											<p role="alert" className="mt-4 text-sm text-rose-300">
 												{formError}
 											</p>
 										) : null}
@@ -355,31 +355,31 @@ export default function SupportLanding() {
 										<button
 											type="submit"
 											disabled={submitting}
-											class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition hover:from-cyan-300 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+											className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition hover:from-cyan-300 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
 										>
-											<Send class="h-4 w-4" aria-hidden="true" />
+											<Send className="h-4 w-4" aria-hidden="true" />
 											{submitting ? "Submitting…" : "Submit request"}
 										</button>
 									</form>
 								</GlassCard>
 							) : (
-								<GlassCard class="p-8 text-center">
-									<CheckCircle2 class="mx-auto h-12 w-12 text-cyan-300" aria-hidden="true" />
-									<h2 class="mt-4 text-xl font-semibold text-[#f2f6ff]">Request received</h2>
-									<p class="mt-2 text-sm text-[#a9bcd9]">
+								<GlassCard className="p-8 text-center">
+									<CheckCircle2 className="mx-auto h-12 w-12 text-cyan-300" aria-hidden="true" />
+									<h2 className="mt-4 text-xl font-semibold text-[#f2f6ff]">Request received</h2>
+									<p className="mt-2 text-sm text-[#a9bcd9]">
 										Our team will respond by email. Keep this reference:
 									</p>
 									{ticketId ? (
-										<p class="mt-4 font-mono text-lg font-semibold text-cyan-200">
+										<p className="mt-4 font-mono text-lg font-semibold text-cyan-200">
 											{String(ticketId)}
 										</p>
 									) : null}
 									<button
 										type="button"
 										onClick={resetTicketFlow}
-										class="mt-6 inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-[#e8eefc] transition hover:border-cyan-400/40 hover:text-cyan-200"
+										className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-[#e8eefc] transition hover:border-cyan-400/40 hover:text-cyan-200"
 									>
-										<ArrowLeft class="h-4 w-4" aria-hidden="true" />
+										<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 										Back to support
 									</button>
 								</GlassCard>
@@ -387,8 +387,8 @@ export default function SupportLanding() {
 						</section>
 					) : null}
 
-					<p class="mt-10 flex items-center justify-center gap-2 text-center text-xs text-[#5b6b8f]">
-						<ShieldCheck class="h-4 w-4 text-cyan-400" aria-hidden="true" />
+					<p className="mt-10 flex items-center justify-center gap-2 text-center text-xs text-[#5b6b8f]">
+						<ShieldCheck className="h-4 w-4 text-cyan-400" aria-hidden="true" />
 						Support tokens are single-purpose and never stored by this page.
 					</p>
 				</main>
