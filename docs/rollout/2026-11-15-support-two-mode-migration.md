@@ -52,3 +52,21 @@ npx prisma migrate resolve --applied 20261020000000_add_support_investigation_ca
 ```
 
 Until that baseline exists, `render.yaml`'s `prisma migrate deploy` cannot run against Aiven and remains effectively non-functional there; the raw `db execute` path used on 2026-11-15 is the only proven apply route. The live database state beyond what this note records was not audited.
+
+## Phase 2 — model_id column (2026-11-16)
+
+`prisma/migrations/20261116000000_add_case_model_id/migration.sql` — one idempotent statement
+(`ALTER TABLE "support_cases" ADD COLUMN IF NOT EXISTS "model_id" TEXT`) — applied raw to the
+shared Aiven DB on 2026-11-16 via `npx prisma db execute` (the DB has no `_prisma_migrations`
+ledger; `migrate deploy` cannot run there). Verified: `information_schema.columns` shows
+`support_cases.model_id`.
+
+Notes for whoever baselines Aiven later:
+- This migration was applied raw, not via `migrate deploy`; record it as applied when a ledger is
+  created (`prisma migrate resolve --applied 20261116000000_add_case_model_id`).
+- The Dynamic catalog endpoint (`opencode.ai/inference/v1/models`) is PUBLIC and needs no env vars;
+  the picker never shows models outside the owner-approved allowlist (server-validated on every
+  write and intersected against the live catalog on every read).
+- `iceman-free` is excluded at four layers: catalog fetch, PUT validation, default selection, and the
+  investigation queue's `FORBIDDEN` set — it is permanently unavailable.
+- Behavior with `buyer_model_select = "0"`: no dropdown; every case uses the owner default.
