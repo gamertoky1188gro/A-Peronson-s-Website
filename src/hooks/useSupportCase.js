@@ -242,6 +242,7 @@ async function loadCaseAction(caseId, dispatch, supportToken = "") {
 		const data = await apiRequest(`/support/cases/${caseId}`, {
 			token: getToken(),
 			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
 		});
 		dispatch({
 			type: "load:ok",
@@ -277,6 +278,7 @@ async function sendMessageAction(caseId, dispatch, content, attachmentList, supp
 			method: "POST",
 			token: getToken(),
 			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
 			body: { content: text, ...(attachments.length > 0 ? { attachments } : {}) },
 		});
 		dispatch({ type: "sent", data, attachments });
@@ -314,6 +316,7 @@ async function attachFileAction(caseId, dispatch, file, supportToken = "") {
 			method: "POST",
 			token: getToken(),
 			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
 			body: form,
 		});
 		const descriptor = toAttachmentPayload({
@@ -351,6 +354,7 @@ async function confirmCaseAction(caseId, dispatch, supportToken = "") {
 			method: "POST",
 			token: getToken(),
 			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
 		});
 		const caseRow = data?.case ?? null;
 		dispatch({ type: "confirmed", caseRow });

@@ -1252,6 +1252,7 @@ function SupportCasePanel({ buyer, supportLabel, supportToken, onExit }) {
 			const data = await apiRequest("/support/cases", {
 				token,
 				headers: supportToken ? { "x-support-token": supportToken } : undefined,
+				skipSessionClear: Boolean(supportToken),
 			});
 			setCases(Array.isArray(data?.cases) ? data.cases : []);
 		} catch (err) {
@@ -1350,6 +1351,7 @@ function SupportCasePanel({ buyer, supportLabel, supportToken, onExit }) {
 				method: "POST",
 				token,
 				headers: supportToken ? { "x-support-token": supportToken } : undefined,
+				skipSessionClear: Boolean(supportToken),
 				body: {},
 			});
 			const created = data?.case ?? null;

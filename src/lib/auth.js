@@ -288,6 +288,9 @@ export function clearSession() {
  * @param {Object} [options] - The request options.
  * @param {string} [options.method='GET'] - HTTP method.
  * @param {string} [options.token=''] - JWT token.
+ * @param {boolean} [options.skipSessionClear=false] - On a 401, do not
+ *   refresh the session or clear it (used for support-token requests, whose
+ *   401 is about the support token, not the session).
  * @param {any} [options.body] - Request body.
  * @param {AbortSignal} [options.signal] - Abort signal.
  * @param {Object} [options.headers={}] - HTTP headers.
@@ -398,7 +401,7 @@ async function readJson(res, method, path) {
 
 async function performApiRequest(
 	path,
-	{ method = "GET", token = "", body, signal, headers = {} } = {},
+	{ method = "GET", token = "", body, signal, headers = {}, skipSessionClear = false } = {},
 ) {
 	const debugRequests = import.meta.env.DEV;
 	const startedAt = debugRequests ? performance.now() : 0;
@@ -481,7 +484,9 @@ async function performApiRequest(
 		// BUG-033: On 401, try refreshing the token once before clearing the session.
 		// The API answers 401 only for a token that is really invalid or expired;
 		// a slow or unavailable backend is a 503 and never ends the session.
-		if (res.status === 401 && path !== "/auth/refresh" && activeToken) {
+		// A support-token 401 is about the support token, not the session:
+		// skip the refresh dance and leave the session alone entirely.
+		if (res.status === 401 && path !== "/auth/refresh" && activeToken && !skipSessionClear) {
 			const refreshed = await refreshAuthToken();
 			if (refreshed) {
 				try {

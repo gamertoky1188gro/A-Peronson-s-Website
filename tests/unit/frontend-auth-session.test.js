@@ -108,6 +108,31 @@ describe("frontend session helpers (src/lib/auth.js)", () => {
 		}
 	});
 
+	test("apiRequest with skipSessionClear does not clear the session on a 401", async () => {
+		const originalFetch = globalThis.fetch;
+		global.localStorage.setItem("jwt", "tok-1");
+		global.localStorage.setItem(
+			"user",
+			JSON.stringify({ id: "u-1", name: "Buyer", email: "b@x.com", role: "buyer" }),
+		);
+		globalThis.fetch = jest.fn(async () => ({
+			ok: false,
+			status: 401,
+			headers: { get: () => "application/json" },
+			json: async () => ({ error: "Invalid, expired or revoked support token" }),
+			text: async () => "unauthorized",
+		}));
+		try {
+			await expect(
+				auth.apiRequest("/support/cases", { token: "tok-1", skipSessionClear: true }),
+			).rejects.toMatchObject({ status: 401 });
+			expect(global.localStorage.getItem("jwt")).toBe("tok-1");
+			expect(auth.getToken()).toBe("tok-1");
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
 	test("hasEntitlement checks feature flags then premium plan fallback", () => {
 		expect(
 			auth.hasEntitlement(
