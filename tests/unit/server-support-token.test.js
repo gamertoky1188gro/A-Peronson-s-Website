@@ -57,6 +57,7 @@ beforeEach(() => {
 		role: "buyer",
 		email: "b@example.com",
 		name: "Buyer One",
+		status: "active",
 	});
 });
 
@@ -104,5 +105,41 @@ describe("supportTokenService", () => {
 		await expect(
 			svc.issueToken({ buyerId: "ghost", label: "e", expiresAt: null, createdBy: "owner-1" }),
 		).rejects.toMatchObject({ status: 404 });
+	});
+
+	it("issuing a token for a non-buyer role rejects and creates no row", async () => {
+		stores.users.set("owner-9", {
+			id: "owner-9",
+			role: "owner",
+			email: "o@example.com",
+			name: "Owner Nine",
+			status: "active",
+		});
+		await expect(
+			svc.issueToken({ buyerId: "owner-9", label: "e", expiresAt: null, createdBy: "owner-1" }),
+		).rejects.toMatchObject({ status: 400 });
+		expect(stores.tokens.size).toBe(0);
+	});
+
+	it("a buyer whose role flips to owner fails validation", async () => {
+		const { token } = await svc.issueToken({
+			buyerId: "buyer-1",
+			label: "e",
+			expiresAt: null,
+			createdBy: "owner-1",
+		});
+		stores.users.get("buyer-1").role = "owner";
+		expect((await svc.validateToken(token)).reason).toBe("invalid");
+	});
+
+	it("a buyer whose access is later locked fails validation", async () => {
+		const { token } = await svc.issueToken({
+			buyerId: "buyer-1",
+			label: "e",
+			expiresAt: null,
+			createdBy: "owner-1",
+		});
+		stores.users.get("buyer-1").status = "locked";
+		expect((await svc.validateToken(token)).reason).toBe("invalid");
 	});
 });

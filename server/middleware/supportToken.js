@@ -9,13 +9,23 @@ const REASON_STATUS = {
 export async function requireSupportToken(req, res, next) {
 	const header = req.headers.authorization || "";
 	const bearer = header.startsWith("Bearer ") ? header.slice(7) : null;
-	const token = req.headers["x-support-token"] || (bearer?.startsWith("gtk_sup_") ? bearer : null);
+	const headerToken = req.headers["x-support-token"];
+	const token =
+		(headerToken ? String(headerToken) : null) || (bearer?.startsWith("gtk_sup_") ? bearer : null);
 	if (!token) {
 		return res
 			.status(401)
 			.json({ error: "A support token is required", code: "SUPPORT_TOKEN_REQUIRED" });
 	}
-	const result = await validateToken(token);
+	let result;
+	try {
+		result = await validateToken(token);
+	} catch {
+		return res.status(503).json({
+			error: "Service temporarily unavailable. Please try again.",
+			code: "SUPPORT_BACKEND_UNAVAILABLE",
+		});
+	}
 	if (!result.ok) {
 		const code = REASON_STATUS[result.reason] || "SUPPORT_TOKEN_INVALID";
 		return res.status(401).json({ error: "Invalid, expired or revoked support token", code });
