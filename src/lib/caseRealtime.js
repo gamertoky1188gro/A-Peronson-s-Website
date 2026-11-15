@@ -217,15 +217,18 @@ async function readEventStream(response, onEvent) {
  * @param {string} caseId - The support case id.
  * @param {(type: string, payload: unknown) => void} handler - Called for each
  *   event. Event types that are not on the contract list are never passed to it.
+ * @param {string} [supportToken] - The buyer support token, set only in the
+ *   "ai" care mode; it authenticates the stream with `x-support-token` instead
+ *   of a session bearer.
  * @returns {(() => void) | null} An unsubscribe function, or null when there
- *   is no token (nothing to authenticate the stream with) or the arguments are
+ *   is no credential (nothing to authenticate the stream with) or the arguments are
  *   unusable.
  */
-function subscribeToCase(caseId, handler) {
+function subscribeToCase(caseId, handler, supportToken = "") {
 	if (typeof caseId !== "string" || caseId === "" || typeof handler !== "function") {
 		return null;
 	}
-	if (!getToken()) {
+	if (!supportToken && !getToken()) {
 		return null;
 	}
 
@@ -250,14 +253,17 @@ function subscribeToCase(caseId, handler) {
 			return;
 		}
 		const current = getToken();
-		if (!current) {
+		if (!supportToken && !current) {
 			return;
 		}
+		const headers = supportToken
+			? { "x-support-token": supportToken }
+			: { Authorization: `Bearer ${current}` };
 		abortController = new AbortController();
 
 		try {
 			const response = await fetch(`${BASE}${caseStreamPath(caseId)}`, {
-				headers: { Authorization: `Bearer ${current}` },
+				headers,
 				signal: abortController.signal,
 			});
 

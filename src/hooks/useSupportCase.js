@@ -16,6 +16,7 @@ const INITIAL_CASE_STATE = {
 	messages: [],
 	status: null,
 	error: null,
+	errorStatus: null,
 	report: null,
 	progress: [],
 	findings: [],
@@ -193,14 +194,20 @@ function caseReducer(state, action) {
 				...state,
 				loading: false,
 				error: null,
+				errorStatus: null,
 				caseRow: action.caseRow,
 				messages: Array.isArray(action.messages) ? action.messages : [],
 				status: action.status ?? null,
 			};
 		case "error:set":
-			return { ...state, loading: false, error: action.error ?? null };
+			return {
+				...state,
+				loading: false,
+				error: action.error ?? null,
+				errorStatus: action.status ?? null,
+			};
 		case "error:clear":
-			return { ...state, error: null };
+			return { ...state, error: null, errorStatus: null };
 		case "event":
 			return applyCaseEvent(state, action);
 		case "sent":
@@ -218,15 +225,24 @@ function caseReducer(state, action) {
 	}
 }
 
+// The support token, when a buyer is in "ai" care mode. Spread into apiRequest's
+// headers only then; signed-in requests carry nothing new.
+function supportTokenHeaders(supportToken) {
+	return supportToken ? { "x-support-token": supportToken } : undefined;
+}
+
 // GET /support/cases/:caseId
-async function loadCaseAction(caseId, dispatch) {
+async function loadCaseAction(caseId, dispatch, supportToken = "") {
 	if (!caseId) {
 		dispatch({ type: "reset" });
 		return null;
 	}
 	dispatch({ type: "load:start" });
 	try {
-		const data = await apiRequest(`/support/cases/${caseId}`, { token: getToken() });
+		const data = await apiRequest(`/support/cases/${caseId}`, {
+			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
+		});
 		dispatch({
 			type: "load:ok",
 			caseRow: data?.case ?? null,
@@ -235,13 +251,17 @@ async function loadCaseAction(caseId, dispatch) {
 		});
 		return data?.case ?? null;
 	} catch (err) {
-		dispatch({ type: "error:set", error: err.message || "Unable to load this support case." });
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to load this support case.",
+			status: err?.status ?? null,
+		});
 		return null;
 	}
 }
 
 // POST /support/cases/:caseId/messages
-async function sendMessageAction(caseId, dispatch, content, attachmentList) {
+async function sendMessageAction(caseId, dispatch, content, attachmentList, supportToken = "") {
 	const text = String(content ?? "").trim();
 	if (!caseId) {
 		dispatch({ type: "error:set", error: "No support case is open." });
@@ -256,12 +276,17 @@ async function sendMessageAction(caseId, dispatch, content, attachmentList) {
 		const data = await apiRequest(`/support/cases/${caseId}/messages`, {
 			method: "POST",
 			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
 			body: { content: text, ...(attachments.length > 0 ? { attachments } : {}) },
 		});
 		dispatch({ type: "sent", data, attachments });
 		return data ?? null;
 	} catch (err) {
-		dispatch({ type: "error:set", error: err.message || "Unable to send the message." });
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to send the message.",
+			status: err?.status ?? null,
+		});
 		return null;
 	}
 }
@@ -270,7 +295,7 @@ async function sendMessageAction(caseId, dispatch, content, attachmentList) {
 // is served only through a signed url. The document row is anchored on the
 // CASE, and it is written at upload time, which is the only moment the
 // uploader is known.
-async function attachFileAction(caseId, dispatch, file) {
+async function attachFileAction(caseId, dispatch, file, supportToken = "") {
 	if (!caseId) {
 		dispatch({ type: "error:set", error: "No support case is open." });
 		return null;
@@ -288,6 +313,7 @@ async function attachFileAction(caseId, dispatch, file) {
 		const doc = await apiRequest("/documents", {
 			method: "POST",
 			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
 			body: form,
 		});
 		const descriptor = toAttachmentPayload({
@@ -305,13 +331,17 @@ async function attachFileAction(caseId, dispatch, file) {
 		dispatch({ type: "attached", attachment: descriptor });
 		return descriptor;
 	} catch (err) {
-		dispatch({ type: "error:set", error: err.message || "Unable to upload the attachment." });
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to upload the attachment.",
+			status: err?.status ?? null,
+		});
 		return null;
 	}
 }
 
 // POST /support/cases/:caseId/confirm
-async function confirmCaseAction(caseId, dispatch) {
+async function confirmCaseAction(caseId, dispatch, supportToken = "") {
 	if (!caseId) {
 		dispatch({ type: "error:set", error: "No support case is open." });
 		return null;
@@ -320,12 +350,17 @@ async function confirmCaseAction(caseId, dispatch) {
 		const data = await apiRequest(`/support/cases/${caseId}/confirm`, {
 			method: "POST",
 			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
 		});
 		const caseRow = data?.case ?? null;
 		dispatch({ type: "confirmed", caseRow });
 		return caseRow;
 	} catch (err) {
-		dispatch({ type: "error:set", error: err.message || "Unable to confirm the case." });
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to confirm the case.",
+			status: err?.status ?? null,
+		});
 		return null;
 	}
 }
@@ -336,9 +371,11 @@ async function confirmCaseAction(caseId, dispatch) {
  * @param {string | { caseId?: string }} [caseIdInput] - The support case id,
  *   either directly or as `{ caseId }`. With no id the hook is inert: it
  *   exposes the same actions and they report that no case is open.
+ * @param {string} [supportToken] - The buyer support token, set only in the
+ *   "ai" care mode. It rides the `x-support-token` header; nothing persists it.
  * @returns {Object} The case state and its actions.
  */
-function useSupportCase(caseIdInput = null) {
+function useSupportCase(caseIdInput = null, supportToken = "") {
 	const caseId = typeof caseIdInput === "string" ? caseIdInput : (caseIdInput?.caseId ?? null);
 	const [state, dispatch] = useReducer(caseReducer, INITIAL_CASE_STATE);
 
@@ -346,25 +383,39 @@ function useSupportCase(caseIdInput = null) {
 		dispatch({ type: "error:clear" });
 	}, []);
 
-	const refresh = useCallback(() => loadCaseAction(caseId, dispatch), [caseId]);
-
-	const send = useCallback(
-		(content, attachmentList) => sendMessageAction(caseId, dispatch, content, attachmentList),
-		[caseId],
+	const refresh = useCallback(
+		() => loadCaseAction(caseId, dispatch, supportToken),
+		[caseId, supportToken],
 	);
 
-	const attach = useCallback((file) => attachFileAction(caseId, dispatch, file), [caseId]);
+	const send = useCallback(
+		(content, attachmentList) =>
+			sendMessageAction(caseId, dispatch, content, attachmentList, supportToken),
+		[caseId, supportToken],
+	);
 
-	const confirm = useCallback(() => confirmCaseAction(caseId, dispatch), [caseId]);
+	const attach = useCallback(
+		(file) => attachFileAction(caseId, dispatch, file, supportToken),
+		[caseId, supportToken],
+	);
+
+	const confirm = useCallback(
+		() => confirmCaseAction(caseId, dispatch, supportToken),
+		[caseId, supportToken],
+	);
 
 	useEffect(() => {
 		refresh();
 		if (!caseId) {
 			return;
 		}
-		const unsubscribe = subscribeToCase(caseId, (eventType, payload) => {
-			dispatch({ type: "event", eventType, payload });
-		});
+		const unsubscribe = subscribeToCase(
+			caseId,
+			(eventType, payload) => {
+				dispatch({ type: "event", eventType, payload });
+			},
+			supportToken,
+		);
 		return () => {
 			unsubscribe?.();
 		};
@@ -375,6 +426,7 @@ function useSupportCase(caseIdInput = null) {
 		messages: state.messages,
 		status: state.status,
 		error: state.error,
+		errorStatus: state.errorStatus,
 		report: state.report,
 		progress: state.progress,
 		findings: state.findings,

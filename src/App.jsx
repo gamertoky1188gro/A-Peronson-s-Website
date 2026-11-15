@@ -477,14 +477,7 @@ function AppRoutes() {
 					</ProtectedRoute>
 				}
 			/>
-			<Route
-				path="/support"
-				element={
-					<ProtectedRoute roles={AUTH_ROLES}>
-						<SupportReports />
-					</ProtectedRoute>
-				}
-			/>
+			<Route path="/support" element={<SupportReports />} />
 
 			<Route
 				path="/member-management"

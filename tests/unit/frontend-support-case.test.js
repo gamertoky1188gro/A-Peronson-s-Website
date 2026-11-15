@@ -132,7 +132,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		renderHook(() => useSupportCase(CASE_ID));
 
 		await waitFor(() =>
-			expect(subscribeToCase).toHaveBeenCalledWith(CASE_ID, expect.any(Function)),
+			expect(subscribeToCase).toHaveBeenCalledWith(CASE_ID, expect.any(Function), ""),
 		);
 	});
 

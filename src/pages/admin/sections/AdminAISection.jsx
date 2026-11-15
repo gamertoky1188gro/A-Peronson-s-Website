@@ -5,9 +5,12 @@
 import {
 	AlertCircle,
 	Bot,
+	Check,
 	CheckCircle,
 	Code2,
+	Copy,
 	Cpu,
+	KeyRound,
 	Lightbulb,
 	MessageSquare,
 	Plus,
@@ -20,10 +23,21 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
-import { apiRequest } from "../../../lib/auth.js";
+import { apiRequest, getToken } from "../../../lib/auth.js";
 import { cn } from "../../../lib/cn.js";
 import { TIMEOUTS } from "../../../lib/constants.js";
 import { logger } from "../../../lib/logger.js";
+
+/**
+ * A date for the tokens table, or an em dash.
+ *
+ * @param {string|null|undefined} value - The stored timestamp.
+ * @returns {string} The local date-time, or "—".
+ */
+function formatTokenDate(value) {
+	const date = new Date(value);
+	return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
+}
 
 export function AdminAISection({ activeCategory, adminDark }) {
 	const [rules, setRules] = useState({ globalRules: [], smallTalkRules: [] });
@@ -56,6 +70,21 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	const [modelsSaving, setModelsSaving] = useState(false);
 	const [modelsNotice, setModelsNotice] = useState("");
 	const [modelsError, setModelsError] = useState("");
+
+	const [tokens, setTokens] = useState([]);
+	const [tokensLoading, setTokensLoading] = useState(false);
+	const [tokensError, setTokensError] = useState("");
+	const [tokensNotice, setTokensNotice] = useState("");
+	const [buyerQuery, setBuyerQuery] = useState("");
+	const [buyerResults, setBuyerResults] = useState([]);
+	const [buyerSearching, setBuyerSearching] = useState(false);
+	const [pickedBuyer, setPickedBuyer] = useState(null);
+	const [newLabel, setNewLabel] = useState("");
+	const [newExpiry, setNewExpiry] = useState("never"); // never|30d|90d|custom
+	const [customDate, setCustomDate] = useState("");
+	const [issuedToken, setIssuedToken] = useState(null); // { token, …row } — shown once
+	const [issuedBusy, setIssuedBusy] = useState(false);
+	const [tokenCopied, setTokenCopied] = useState(false);
 
 	async function fetchModels() {
 		try {
@@ -103,6 +132,126 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		}
 	}
 
+	async function fetchTokens() {
+		try {
+			setTokensLoading(true);
+			setTokensError("");
+			const data = await apiRequest("/admin/support-tokens", { token: getToken() });
+			setTokens(Array.isArray(data?.items) ? data.items : []);
+		} catch (err) {
+			setTokensError(err?.message || "Failed to load buyer tokens");
+		} finally {
+			setTokensLoading(false);
+		}
+	}
+
+	async function searchBuyers(event) {
+		event?.preventDefault?.();
+		const q = buyerQuery.trim();
+		if (!q) {
+			setBuyerResults([]);
+			return;
+		}
+		try {
+			setBuyerSearching(true);
+			setTokensError("");
+			const data = await apiRequest(`/users/search?q=${encodeURIComponent(q)}`, {
+				token: getToken(),
+			});
+			const items = Array.isArray(data?.items) ? data.items : [];
+			// Only buyers can hold a support token; the server refuses anyone else.
+			setBuyerResults(items.filter((user) => user?.role === "buyer"));
+		} catch (err) {
+			setTokensError(err?.message || "Unable to search users");
+		} finally {
+			setBuyerSearching(false);
+		}
+	}
+
+	function expiryForSelection() {
+		const now = Date.now();
+		if (newExpiry === "30d") {
+			return new Date(now + 30 * 86_400_000).toISOString();
+		}
+		if (newExpiry === "90d") {
+			return new Date(now + 90 * 86_400_000).toISOString();
+		}
+		if (newExpiry === "custom") {
+			const date = new Date(customDate);
+			return Number.isNaN(date.getTime()) ? null : date.toISOString();
+		}
+		return null;
+	}
+
+	async function issueToken() {
+		if (!(pickedBuyer && newLabel.trim())) {
+			return;
+		}
+		if (newExpiry === "custom" && !expiryForSelection()) {
+			setTokensError("Pick a date for the custom expiry.");
+			return;
+		}
+		try {
+			setIssuedBusy(true);
+			setTokensError("");
+			setTokensNotice("");
+			const expiresAt = expiryForSelection();
+			const body = { buyerUserId: pickedBuyer.id, label: newLabel.trim() };
+			if (expiresAt) {
+				body.expiresAt = expiresAt;
+			}
+			const issued = await apiRequest("/admin/support-tokens", {
+				method: "POST",
+				token: getToken(),
+				body,
+			});
+			setIssuedToken(issued ?? null);
+			setTokenCopied(false);
+			setNewLabel("");
+			setNewExpiry("never");
+			setCustomDate("");
+			setPickedBuyer(null);
+			setBuyerQuery("");
+			setBuyerResults([]);
+			await fetchTokens();
+		} catch (err) {
+			setTokensError(err?.message || "Failed to issue the token");
+		} finally {
+			setIssuedBusy(false);
+		}
+	}
+
+	async function revokeToken(id) {
+		if (!window.confirm("Revoke this support token? The buyer loses AI access immediately.")) {
+			return;
+		}
+		try {
+			setTokensError("");
+			setTokensNotice("");
+			const result = await apiRequest(`/admin/support-tokens/${id}/revoke`, {
+				method: "POST",
+				token: getToken(),
+				body: {},
+			});
+			setTokensNotice(result?.revoked ? "Token revoked" : "Token already revoked");
+			await fetchTokens();
+		} catch (err) {
+			setTokensError(err?.message || "Failed to revoke the token");
+		}
+	}
+
+	async function copyIssuedToken() {
+		if (!issuedToken?.token) {
+			return;
+		}
+		try {
+			await navigator.clipboard.writeText(issuedToken.token);
+			setTokenCopied(true);
+		} catch {
+			setTokensError("Copy failed — select the token and copy it manually.");
+		}
+	}
+
 	async function fetchData() {
 		try {
 			setLoading(true);
@@ -145,6 +294,14 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		fetchModels();
 	}, []);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fetch when the tab opens
+	useEffect(() => {
+		if (activeTab === "tokens") {
+			// eslint-disable-next-line react-hooks/set-state-in-effect
+			fetchTokens();
+		}
+	}, [activeTab]);
 
 	if (activeCategory !== "ai") {
 		return null;
@@ -244,6 +401,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		{ id: "global", label: "Global Rules", icon: Lightbulb },
 		{ id: "smalltalk", label: "Small Talk", icon: MessageSquare },
 		{ id: "models", label: "OpenCode Models", icon: Cpu },
+		{ id: "tokens", label: "Buyer Tokens", icon: KeyRound },
 	];
 
 	return (
@@ -557,6 +715,377 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								</label>
 							))}
 						</div>
+					</div>
+				</div>
+			) : activeTab === "tokens" ? (
+				<div className="space-y-6">
+					<div
+						className={cn(
+							"rounded-3xl border p-6",
+							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
+						)}
+					>
+						<div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+							<div className="flex items-center gap-2">
+								<KeyRound className="h-5 w-5 text-indigo-400" />
+								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									Buyer Tokens
+								</h3>
+							</div>
+							<button
+								type="button"
+								onClick={fetchTokens}
+								disabled={tokensLoading}
+								className="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
+							>
+								<RefreshCw className={cn("h-3.5 w-3.5", tokensLoading && "animate-spin")} />
+								Refresh
+							</button>
+						</div>
+						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+							Issue a support token so a buyer can reach the AI investigation care path. Only buyer
+							accounts are eligible. The token is shown once, at creation time.
+						</p>
+
+						{tokensError && (
+							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+								<AlertCircle className="h-4 w-4" />
+								{tokensError}
+							</div>
+						)}
+						{tokensNotice && (
+							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+								<CheckCircle className="h-4 w-4" />
+								{tokensNotice}
+							</div>
+						)}
+
+						<form onSubmit={searchBuyers} className="flex gap-2">
+							<input
+								type="text"
+								value={buyerQuery}
+								onChange={(event) => setBuyerQuery(event.target.value)}
+								placeholder="Search buyers by name or email…"
+								aria-label="Search buyers"
+								className={cn(
+									"flex-1 rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
+									adminDark
+										? "border-white/10 bg-slate-900/70 placeholder:text-slate-500 text-white focus:border-indigo-400"
+										: "border-slate-200 bg-white placeholder:text-slate-400 text-slate-900 focus:border-indigo-400",
+								)}
+							/>
+							<button
+								type="submit"
+								disabled={buyerSearching}
+								className="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20 disabled:opacity-50"
+							>
+								{buyerSearching ? (
+									<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
+								) : (
+									<KeyRound className="h-4 w-4" />
+								)}
+								Search
+							</button>
+						</form>
+
+						{buyerResults.length > 0 && (
+							<ul
+								className={cn(
+									"mt-2 divide-y overflow-hidden rounded-2xl border",
+									adminDark
+										? "divide-white/5 border-white/10 bg-slate-900/40"
+										: "divide-slate-100 border-slate-200 bg-slate-50",
+								)}
+							>
+								{buyerResults.map((user) => (
+									<li key={user.id}>
+										<button
+											type="button"
+											onClick={() => {
+												setPickedBuyer(user);
+												setBuyerResults([]);
+											}}
+											className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-indigo-500/5"
+										>
+											<span className="min-w-0">
+												<span
+													className={cn(
+														"block truncate text-sm font-medium",
+														adminDark ? "text-slate-100" : "text-slate-800",
+													)}
+												>
+													{user.name || user.email}
+												</span>
+												<span className="block truncate text-xs text-slate-500">{user.email}</span>
+											</span>
+											<span className="shrink-0 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2.5 py-0.5 text-xs text-indigo-300">
+												buyer
+											</span>
+										</button>
+									</li>
+								))}
+							</ul>
+						)}
+
+						{pickedBuyer && (
+							<div
+								className={cn(
+									"mt-3 flex items-center justify-between gap-4 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-sm",
+									adminDark ? "text-indigo-200" : "text-indigo-700",
+								)}
+							>
+								<span className="min-w-0 truncate">
+									Issuing to: <strong>{pickedBuyer.name || pickedBuyer.email}</strong> (
+									{pickedBuyer.email})
+								</span>
+								<button
+									type="button"
+									onClick={() => setPickedBuyer(null)}
+									className="shrink-0 text-xs text-slate-400 hover:text-white"
+								>
+									Clear
+								</button>
+							</div>
+						)}
+
+						<div className="mt-4 grid gap-4 sm:grid-cols-2">
+							<input
+								type="text"
+								value={newLabel}
+								onChange={(event) => setNewLabel(event.target.value)}
+								placeholder="Label — e.g. Acme Corp, Nov issue"
+								aria-label="Token label"
+								className={cn(
+									"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
+									adminDark
+										? "border-white/10 bg-slate-900/70 placeholder:text-slate-500 text-white focus:border-indigo-400"
+										: "border-slate-200 bg-white placeholder:text-slate-400 text-slate-900 focus:border-indigo-400",
+								)}
+							/>
+							<select
+								value={newExpiry}
+								onChange={(event) => setNewExpiry(event.target.value)}
+								aria-label="Token expiry"
+								className={cn(
+									"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
+									adminDark
+										? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
+										: "border-slate-200 bg-white text-slate-900 focus:border-indigo-400",
+								)}
+							>
+								<option value="never">Never expires</option>
+								<option value="30d">Expires in 30 days</option>
+								<option value="90d">Expires in 90 days</option>
+								<option value="custom">Custom date…</option>
+							</select>
+						</div>
+						{newExpiry === "custom" && (
+							<div className="mt-3">
+								<input
+									type="date"
+									value={customDate}
+									onChange={(event) => setCustomDate(event.target.value)}
+									aria-label="Custom expiry date"
+									className={cn(
+										"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
+										adminDark
+											? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
+											: "border-slate-200 bg-white text-slate-900 focus:border-indigo-400",
+									)}
+								/>
+							</div>
+						)}
+						<button
+							type="button"
+							onClick={issueToken}
+							disabled={issuedBusy || !pickedBuyer || !newLabel.trim()}
+							className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-400 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							{issuedBusy ? (
+								<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
+							) : (
+								<KeyRound className="h-4 w-4" />
+							)}
+							{issuedBusy ? "Issuing…" : "Issue token"}
+						</button>
+					</div>
+
+					{/* The token is shown exactly once, right after issue. */}
+					{issuedToken && (
+						<div
+							className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+							role="dialog"
+							aria-modal="true"
+							aria-label="Support token issued"
+						>
+							<div
+								className={cn(
+									"w-full max-w-lg rounded-3xl border p-6",
+									adminDark
+										? "border-white/10 bg-slate-900 text-white"
+										: "border-slate-200 bg-white text-slate-900",
+								)}
+							>
+								<h3 className="text-lg font-semibold">Token issued</h3>
+								<p className="mt-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-300">
+									This token will not be shown again. Store it somewhere safe.
+								</p>
+								<div className="mt-4 flex items-stretch gap-2">
+									<code
+										className={cn(
+											"flex-1 select-all break-all rounded-2xl border px-4 py-3 font-mono text-xs leading-5",
+											adminDark
+												? "border-white/10 bg-slate-950 text-emerald-300"
+												: "border-slate-200 bg-slate-50 text-emerald-700",
+										)}
+									>
+										{issuedToken.token}
+									</code>
+									<button
+										type="button"
+										onClick={copyIssuedToken}
+										className="flex items-center gap-1.5 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
+									>
+										{tokenCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+										{tokenCopied ? "Copied" : "Copy"}
+									</button>
+								</div>
+								<div className="mt-4 flex justify-end">
+									<button
+										type="button"
+										onClick={() => setIssuedToken(null)}
+										className="rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-400 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+									>
+										Done
+									</button>
+								</div>
+							</div>
+						</div>
+					)}
+
+					<div
+						className={cn(
+							"overflow-x-auto rounded-3xl border",
+							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
+						)}
+					>
+						<div className="border-b border-slate-200/10 px-6 py-4">
+							<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+								Issued tokens ({tokens.length})
+							</h3>
+						</div>
+						{tokensLoading ? (
+							<div className="flex justify-center px-6 py-12">
+								<Mosaic
+									color="#6366f1"
+									size="large"
+									style={{ fontSize: "40px" }}
+									text=""
+									textColor=""
+								/>
+							</div>
+						) : tokens.length === 0 ? (
+							<div className="px-6 py-12 text-center">
+								<KeyRound
+									className={cn(
+										"mx-auto h-12 w-12 mb-4",
+										adminDark ? "text-slate-600" : "text-slate-300",
+									)}
+								/>
+								<p className={adminDark ? "text-slate-400" : "text-slate-500"}>
+									No tokens issued yet
+								</p>
+							</div>
+						) : (
+							<table className="min-w-full text-sm">
+								<thead>
+									<tr className={cn("text-left", adminDark ? "text-slate-400" : "text-slate-500")}>
+										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+											Buyer
+										</th>
+										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+											Label
+										</th>
+										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+											Created
+										</th>
+										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+											Last used
+										</th>
+										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+											Expiry
+										</th>
+										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+											Status
+										</th>
+										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" />
+									</tr>
+								</thead>
+								<tbody
+									className={cn("divide-y", adminDark ? "divide-white/5" : "divide-slate-100")}
+								>
+									{tokens.map((row) => {
+										const revoked = Boolean(row.revoked_at);
+										const expired = row.expires_at
+											? new Date(row.expires_at).getTime() <= Date.now()
+											: false;
+										const status = revoked ? "Revoked" : expired ? "Expired" : "Active";
+										const statusClass = revoked
+											? "border-rose-500/30 bg-rose-500/10 text-rose-400"
+											: expired
+												? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+												: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
+										return (
+											<tr key={row.id}>
+												<td className="px-6 py-3">
+													<span
+														className={cn(
+															"block font-medium",
+															adminDark ? "text-slate-100" : "text-slate-800",
+														)}
+													>
+														{row.buyer?.name || row.buyer?.email || row.buyer_id}
+													</span>
+													<span className="block text-xs text-slate-500">{row.buyer?.email}</span>
+												</td>
+												<td className="px-6 py-3">{row.label}</td>
+												<td className="px-6 py-3 whitespace-nowrap">
+													{formatTokenDate(row.created_at)}
+												</td>
+												<td className="px-6 py-3 whitespace-nowrap">
+													{row.last_used_at ? formatTokenDate(row.last_used_at) : "—"}
+												</td>
+												<td className="px-6 py-3 whitespace-nowrap">
+													{row.expires_at ? formatTokenDate(row.expires_at) : "Never"}
+												</td>
+												<td className="px-6 py-3">
+													<span
+														className={cn(
+															"inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium",
+															statusClass,
+														)}
+													>
+														{status}
+													</span>
+												</td>
+												<td className="px-6 py-3 text-right">
+													{!revoked && (
+														<button
+															type="button"
+															onClick={() => revokeToken(row.id)}
+															className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-400 transition-all hover:bg-rose-500/20"
+														>
+															<Trash2 className="h-3.5 w-3.5" />
+															Revoke
+														</button>
+													)}
+												</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						)}
 					</div>
 				</div>
 			) : (

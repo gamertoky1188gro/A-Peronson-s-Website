@@ -1,6 +1,12 @@
 /*
   Route: /support
-  Access: Protected (login required)
+  Access: public. Two modes behind one route:
+    - AI Investigation ("ai"): a buyer pastes the support token an admin
+      issued; the case conversation UI runs against the case API with the
+      token in the x-support-token header. The token lives in component
+      state only — never localStorage/sessionStorage/cookies.
+    - General Support ("form"): a signed-in user submits a support ticket.
+    The chooser ("choose") is the default view.
 
   Purpose:
     - Open a support INVESTIGATION and talk to it: describe the problem,
@@ -21,6 +27,7 @@
 import {
 	AlertTriangle,
 	ArrowLeft,
+	Bot,
 	Check,
 	CheckCircle,
 	ClipboardList,
@@ -29,6 +36,8 @@ import {
 	ExternalLink,
 	FileText,
 	Loader2,
+	LogIn,
+	LogOut,
 	MessageSquare,
 	Moon,
 	Paperclip,
@@ -45,9 +54,10 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Mosaic, ThreeDot } from "react-loading-indicators";
 import ReactMarkdown from "react-markdown";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import remarkGfm from "remark-gfm";
 import ScrollReveal from "../components/ScrollReveal.jsx";
+import BrandMark from "../components/ui/BrandMark.jsx";
 import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
 import { usePremiumCheck } from "../hooks/useSecureUser.js";
@@ -93,8 +103,38 @@ const CONFIDENCE_LABELS = {
 };
 
 // Top level, so they are compiled once.
-const IMAGE_FILE_PATTERN = /\.(png|jpe?g|gif|webp|avif|bmp)$/i;
-const EXTERNAL_URL_PATTERN = /^https?:\/\//i;
+const IMAGE_FILE_PATTERN = /\.(png|jpe?g|gif|webp|avif|bmp)$/iu;
+const EXTERNAL_URL_PATTERN = /^https?:\/\//iu;
+
+/**
+ * The background, card and input classes for one theme. Shared by the chooser,
+ * the ticket form and the case panel so all three stay on one palette.
+ *
+ * @param {boolean} darkMode - Whether the dark theme is on.
+ * @returns {{theme: string, cardTheme: string, inputTheme: string}} The classes.
+ */
+function supportThemes(darkMode) {
+	return {
+		theme: darkMode ? "bg-slate-950 text-white" : "bg-sky-50 text-slate-900",
+		cardTheme: darkMode
+			? "bg-white/5 border-white/10 shadow-[0_20px_80px_rgba(32,101,152,0.18)]"
+			: "bg-white border-slate-200 shadow-[0_20px_60px_rgba(51,122,176,0.10)]",
+		inputTheme: darkMode
+			? "bg-slate-900/70 border-white/10 placeholder:text-slate-400 text-white focus:border-sky-400 focus:ring-sky-400/20"
+			: "bg-white border-slate-200 placeholder:text-slate-400 text-slate-900 focus:border-sky-500 focus:ring-sky-500/20",
+	};
+}
+
+/** The decorative background blobs shared by the public views. */
+function PageBackground() {
+	return (
+		<div className="absolute inset-0 pointer-events-none overflow-hidden">
+			<div className="absolute -top-24 left-[-6rem] h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
+			<div className="absolute top-40 right-[-6rem] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
+			<div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
+		</div>
+	);
+}
 
 /**
  * Reverses the HTML escaping the server applies to stored message content.
@@ -110,11 +150,11 @@ const EXTERNAL_URL_PATTERN = /^https?:\/\//i;
  */
 function decodeStoredText(value) {
 	return String(value ?? "")
-		.replace(/&lt;/g, "<")
-		.replace(/&gt;/g, ">")
-		.replace(/&quot;/g, '"')
-		.replace(/&#39;/g, "'")
-		.replace(/&amp;/g, "&");
+		.replace(/&lt;/gu, "<")
+		.replace(/&gt;/gu, ">")
+		.replace(/&quot;/gu, '"')
+		.replace(/&#39;/gu, "'")
+		.replace(/&amp;/gu, "&");
 }
 
 /**
@@ -1137,7 +1177,19 @@ function NextStepsPanel({ darkMode }) {
 	);
 }
 
-export default function SupportReports() {
+/**
+ * The AI Investigation care panel: the existing case conversation UI, run
+ * against the case API with the buyer's support token attached. Mounted only
+ * in "ai" mode; the token is held by the parent and passed in as a prop.
+ *
+ * @param {Object} props - The component props.
+ * @param {Object|null} props.buyer - The buyer the token belongs to ({ id, name }).
+ * @param {string} props.supportLabel - The label the admin gave the token.
+ * @param {string} props.supportToken - The raw token; memory only.
+ * @param {(reason: "manual"|"unauthorized") => void} props.onExit - Leaves the panel.
+ * @returns {JSX.Element} The panel.
+ */
+function SupportCasePanel({ buyer, supportLabel, supportToken, onExit }) {
 	const token = useMemo(() => getToken(), []);
 	const navigate = useNavigate();
 	const sessionUser = getCurrentUser();
@@ -1174,28 +1226,17 @@ export default function SupportReports() {
 
 	// The hook owns every call to the case API. The page renders what it
 	// returns and calls the actions it exposes.
-	const supportCase = useSupportCase(activeCaseId);
+	const supportCase = useSupportCase(activeCaseId, supportToken);
+	const { theme, cardTheme, inputTheme } = supportThemes(darkMode);
 
-	const theme = useMemo(
-		() => (darkMode ? "bg-slate-950 text-white" : "bg-sky-50 text-slate-900"),
-		[darkMode],
-	);
-
-	const cardTheme = useMemo(
-		() =>
-			darkMode
-				? "bg-white/5 border-white/10 shadow-[0_20px_80px_rgba(32,101,152,0.18)]"
-				: "bg-white border-slate-200 shadow-[0_20px_60px_rgba(51,122,176,0.10)]",
-		[darkMode],
-	);
-
-	const inputTheme = useMemo(
-		() =>
-			darkMode
-				? "bg-slate-900/70 border-white/10 placeholder:text-slate-400 text-white focus:border-sky-400 focus:ring-sky-400/20"
-				: "bg-white border-slate-200 placeholder:text-slate-400 text-slate-900 focus:border-sky-500 focus:ring-sky-500/20",
-		[darkMode],
-	);
+	// A 401 from any case request means the token was revoked, expired or
+	// deleted: drop it and go back to the chooser.
+	const errorStatus = supportCase.errorStatus ?? null;
+	useEffect(() => {
+		if (errorStatus === 401) {
+			onExit("unauthorized");
+		}
+	}, [errorStatus, onExit]);
 
 	const caseStatus = supportCase.status || supportCase.caseRow?.status || "collecting";
 	const isOpen = activeCaseId !== null;
@@ -1203,20 +1244,27 @@ export default function SupportReports() {
 	const messageCount = supportCase.messages.length;
 
 	const loadCases = useCallback(async () => {
-		if (!token) {
+		if (!(token || supportToken)) {
 			return;
 		}
 		setCasesLoading(true);
 		try {
-			const data = await apiRequest("/support/cases", { token });
+			const data = await apiRequest("/support/cases", {
+				token,
+				headers: supportToken ? { "x-support-token": supportToken } : undefined,
+			});
 			setCases(Array.isArray(data?.cases) ? data.cases : []);
 		} catch (err) {
+			if (err?.status === 401 && supportToken) {
+				onExit("unauthorized");
+				return;
+			}
 			logger.warn("Failed to load support cases:", err);
 			setCases([]);
 		} finally {
 			setCasesLoading(false);
 		}
-	}, [token]);
+	}, [token, supportToken, onExit]);
 
 	const loadTickets = useCallback(async () => {
 		if (!token) {
@@ -1290,7 +1338,7 @@ export default function SupportReports() {
 	}
 
 	async function startCase() {
-		if (!token) {
+		if (!(token || supportToken)) {
 			setProblem("Please login again to start an investigation.");
 			return;
 		}
@@ -1301,6 +1349,7 @@ export default function SupportReports() {
 			const data = await apiRequest("/support/cases", {
 				method: "POST",
 				token,
+				headers: supportToken ? { "x-support-token": supportToken } : undefined,
 				body: {},
 			});
 			const created = data?.case ?? null;
@@ -1312,6 +1361,10 @@ export default function SupportReports() {
 			setNotice("Investigation opened. Describe the problem below.");
 			await loadCases();
 		} catch (err) {
+			if (err?.status === 401 && supportToken) {
+				onExit("unauthorized");
+				return;
+			}
 			setProblem(err instanceof Error ? err.message : "Unable to open the investigation.");
 		} finally {
 			setCreating(false);
@@ -1407,16 +1460,12 @@ export default function SupportReports() {
 	const failure = problem || supportCase.error || "";
 
 	if (pageLoading) {
-		return <NeonAtom fill={true} timeout={10000} />;
+		return <NeonAtom fill={true} timeout={10_000} />;
 	}
 
 	return (
 		<div className={`min-h-screen ${theme} transition-colors duration-300`}>
-			<div className="absolute inset-0 pointer-events-none overflow-hidden">
-				<div className="absolute -top-24 left-[-6rem] h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
-				<div className="absolute top-40 right-[-6rem] h-80 w-80 rounded-full bg-cyan-400/15 blur-3xl" />
-				<div className="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
-			</div>
+			<PageBackground />
 
 			<div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 				<header
@@ -1487,6 +1536,36 @@ export default function SupportReports() {
 						</div>
 					</div>
 				</header>
+
+				{buyer ? (
+					<div
+						className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${
+							darkMode ? "border-sky-400/20 bg-sky-500/5" : "border-sky-200 bg-sky-50"
+						}`}
+					>
+						<p className="text-sm">
+							<span className="font-semibold">Buyer: {buyer.name}</span>
+							{supportLabel ? (
+								<span className={darkMode ? "text-slate-400" : "text-slate-500"}>
+									{" "}
+									· token: {supportLabel}
+								</span>
+							) : null}
+						</p>
+						<button
+							type="button"
+							onClick={() => onExit("manual")}
+							className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition ${
+								darkMode
+									? "border-white/10 bg-white/5 text-slate-300 hover:text-white"
+									: "border-slate-200 bg-white text-slate-600 hover:text-slate-900"
+							}`}
+						>
+							<LogOut className="h-4 w-4" />
+							Exit
+						</button>
+					</div>
+				) : null}
 
 				{failure ? (
 					<div className="mb-6 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-rose-300">
@@ -1691,6 +1770,488 @@ export default function SupportReports() {
 						</ScrollReveal>
 					</aside>
 				</main>
+			</div>
+		</div>
+	);
+}
+
+const TICKET_CATEGORIES = [
+	{ value: "bug", label: "Bug" },
+	{ value: "account", label: "Account" },
+	{ value: "search", label: "Search" },
+	{ value: "orders", label: "Orders" },
+	{ value: "verification", label: "Verification" },
+	{ value: "other", label: "Other" },
+];
+
+/**
+ * The general support request form, shown in "form" mode to a signed-in user.
+ * Submits to the existing ticket endpoint and shows the returned ticket id.
+ *
+ * @param {Object} props - The component props.
+ * @param {() => void} props.onBack - Returns to the chooser.
+ * @returns {JSX.Element} The form (or its confirmation).
+ */
+function GeneralSupportForm({ onBack }) {
+	const sessionUser = getCurrentUser();
+	const { isPremium } = usePremiumCheck();
+	const { theme: currentTheme, toggleTheme } = useTheme();
+	const darkMode = currentTheme === "dark";
+	const { theme, cardTheme, inputTheme } = supportThemes(darkMode);
+
+	const [name, setName] = useState(sessionUser?.name || "");
+	const [email, setEmail] = useState(sessionUser?.email || "");
+	const [subject, setSubject] = useState("");
+	const [category, setCategory] = useState("bug");
+	const [priority, setPriority] = useState("standard");
+	const [description, setDescription] = useState("");
+	const [submitting, setSubmitting] = useState(false);
+	const [formError, setFormError] = useState("");
+	const [ticketId, setTicketId] = useState(null);
+
+	const canChooseUrgent = Boolean(isPremium);
+
+	async function handleSubmit(event) {
+		event.preventDefault();
+		setFormError("");
+		setSubmitting(true);
+		try {
+			const data = await apiRequest("/support/tickets", {
+				method: "POST",
+				token: getToken(),
+				body: {
+					subject: subject.trim(),
+					description: description.trim(),
+					category,
+					page_url: window.location.href,
+					contact_email: email.trim(),
+					// The server only honours "urgent" for premium accounts anyway.
+					priority: canChooseUrgent ? priority : "standard",
+				},
+			});
+			setTicketId(data?.ticket?.id ?? "");
+		} catch (err) {
+			setFormError(err instanceof Error ? err.message : "Unable to submit the request.");
+		} finally {
+			setSubmitting(false);
+		}
+	}
+
+	return (
+		<div className={`min-h-screen ${theme} transition-colors duration-300`}>
+			<PageBackground />
+
+			<div className="relative mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+				<div className="mb-6 flex items-center justify-between gap-4">
+					<button
+						type="button"
+						onClick={onBack}
+						className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition ${
+							darkMode
+								? "border-white/10 bg-white/5 text-slate-200 hover:text-white"
+								: "border-slate-200 bg-white text-slate-600 hover:text-slate-900"
+						}`}
+					>
+						<ArrowLeft className="h-4 w-4" />
+						Back
+					</button>
+					<button
+						type="button"
+						onClick={toggleTheme}
+						className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition ${
+							darkMode
+								? "border-white/10 bg-white/5 text-white hover:bg-white/10"
+								: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+						}`}
+					>
+						{darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+						{darkMode ? "Light mode" : "Dark mode"}
+					</button>
+				</div>
+
+				{ticketId === null ? (
+					<form
+						onSubmit={handleSubmit}
+						className={`rounded-[28px] border ${cardTheme} p-6 backdrop-blur-xl sm:p-8`}
+					>
+						<h1 className="text-2xl font-semibold tracking-tight">General Support</h1>
+						<p className={`mt-2 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
+							Describe the issue and our team will get back to you by email.
+						</p>
+
+						<div className="mt-6 grid gap-4 sm:grid-cols-2">
+							<div>
+								<label
+									htmlFor="ticket-name"
+									className="text-xs font-semibold uppercase tracking-wide text-slate-400"
+								>
+									Name
+								</label>
+								<input
+									id="ticket-name"
+									type="text"
+									value={name}
+									onChange={(event) => setName(event.target.value)}
+									className={`mt-1.5 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${inputTheme}`}
+								/>
+							</div>
+							<div>
+								<label
+									htmlFor="ticket-email"
+									className="text-xs font-semibold uppercase tracking-wide text-slate-400"
+								>
+									Email
+								</label>
+								<input
+									id="ticket-email"
+									type="email"
+									required={true}
+									value={email}
+									onChange={(event) => setEmail(event.target.value)}
+									className={`mt-1.5 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${inputTheme}`}
+								/>
+							</div>
+						</div>
+
+						<div className="mt-4">
+							<label
+								htmlFor="ticket-subject"
+								className="text-xs font-semibold uppercase tracking-wide text-slate-400"
+							>
+								Subject
+							</label>
+							<input
+								id="ticket-subject"
+								type="text"
+								required={true}
+								value={subject}
+								onChange={(event) => setSubject(event.target.value)}
+								placeholder="What do you need help with?"
+								className={`mt-1.5 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${inputTheme}`}
+							/>
+						</div>
+
+						<div className="mt-4 grid gap-4 sm:grid-cols-2">
+							<div>
+								<label
+									htmlFor="ticket-category"
+									className="text-xs font-semibold uppercase tracking-wide text-slate-400"
+								>
+									Category
+								</label>
+								<select
+									id="ticket-category"
+									value={category}
+									onChange={(event) => setCategory(event.target.value)}
+									className={`mt-1.5 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${inputTheme}`}
+								>
+									{TICKET_CATEGORIES.map((entry) => (
+										<option key={entry.value} value={entry.value}>
+											{entry.label}
+										</option>
+									))}
+								</select>
+							</div>
+							<div>
+								<label
+									htmlFor="ticket-priority"
+									className="text-xs font-semibold uppercase tracking-wide text-slate-400"
+								>
+									Priority
+								</label>
+								<select
+									id="ticket-priority"
+									value={priority}
+									onChange={(event) => setPriority(event.target.value)}
+									className={`mt-1.5 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${inputTheme}`}
+								>
+									<option value="standard">Standard</option>
+									<option value="urgent" disabled={!canChooseUrgent}>
+										Urgent{canChooseUrgent ? "" : " (premium)"}
+									</option>
+								</select>
+							</div>
+						</div>
+
+						<div className="mt-4">
+							<label
+								htmlFor="ticket-description"
+								className="text-xs font-semibold uppercase tracking-wide text-slate-400"
+							>
+								Description
+							</label>
+							<textarea
+								id="ticket-description"
+								required={true}
+								rows={5}
+								value={description}
+								onChange={(event) => setDescription(event.target.value)}
+								placeholder="What happened, what you expected, and how to reproduce it."
+								className={`mt-1.5 w-full resize-y rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${inputTheme}`}
+							/>
+						</div>
+
+						{formError ? (
+							<p role="alert" className="mt-4 text-sm text-rose-300">
+								{formError}
+							</p>
+						) : null}
+
+						<button
+							type="submit"
+							disabled={submitting}
+							className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+						>
+							{submitting ? (
+								<ThreeDot variant="bounce" color="#8b5cf6" size="small" text="" textColor="" />
+							) : (
+								<Send className="h-4 w-4" />
+							)}
+							{submitting ? "Submitting…" : "Submit request"}
+						</button>
+					</form>
+				) : (
+					<div className={`rounded-[28px] border ${cardTheme} p-8 text-center backdrop-blur-xl`}>
+						<CheckCircle className="mx-auto h-12 w-12 text-emerald-400" />
+						<h1 className="mt-4 text-2xl font-semibold tracking-tight">Request received</h1>
+						<p className={`mt-2 text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
+							Our team will respond by email. Keep this reference:
+						</p>
+						{ticketId ? (
+							<p className="mt-4 font-mono text-lg font-semibold text-emerald-300">
+								{String(ticketId)}
+							</p>
+						) : null}
+						<button
+							type="button"
+							onClick={onBack}
+							className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Back
+						</button>
+					</div>
+				)}
+			</div>
+		</div>
+	);
+}
+
+/**
+ * The /support chooser. Public route; the default view.
+ *
+ * Two cards: an AI investigation care path for buyers holding a support token
+ * an admin issued, and a general support ticket path for signed-in users.
+ * The token lives in component state only — never in localStorage,
+ * sessionStorage or a cookie.
+ */
+export default function SupportReports() {
+	const { theme: currentTheme, toggleTheme } = useTheme();
+	const darkMode = currentTheme === "dark";
+	const { theme, cardTheme, inputTheme } = supportThemes(darkMode);
+
+	const [mode, setMode] = useState("choose"); // "choose" | "ai" | "form"
+	const [supportBuyer, setSupportBuyer] = useState(null); // { id, name }
+	const [supportLabel, setSupportLabel] = useState("");
+	// The raw token. Component state only — never persisted anywhere.
+	const [supportToken, setSupportToken] = useState("");
+	const [tokenInput, setTokenInput] = useState("");
+	const [tokenBusy, setTokenBusy] = useState(false);
+	const [tokenError, setTokenError] = useState("");
+	const [gateNotice, setGateNotice] = useState("");
+
+	const sessionUser = getCurrentUser();
+	const signedIn = Boolean(sessionUser);
+
+	const exitAi = useCallback((reason) => {
+		setSupportBuyer(null);
+		setSupportLabel("");
+		setSupportToken("");
+		setTokenInput("");
+		setTokenError("");
+		setGateNotice(reason === "unauthorized" ? "Your support token is no longer authorized." : "");
+		setMode("choose");
+	}, []);
+
+	async function handleContinue() {
+		const raw = tokenInput.trim();
+		if (!raw) {
+			setTokenError("Paste a support token to continue.");
+			return;
+		}
+		setTokenBusy(true);
+		setTokenError("");
+		setGateNotice("");
+		try {
+			const data = await apiRequest("/support/token/validate", {
+				method: "POST",
+				body: { token: raw },
+			});
+			if (data?.ok) {
+				setSupportBuyer(data.buyer ?? null);
+				setSupportLabel(data.label || "");
+				setSupportToken(raw);
+				setMode("ai");
+				return;
+			}
+			setTokenError("That support token is invalid, expired or revoked.");
+		} catch (err) {
+			// A 400 means the token was missing, not that a session expired.
+			setTokenError(
+				err?.status === 400
+					? "Paste a support token to continue."
+					: "That support token is invalid, expired or revoked.",
+			);
+		} finally {
+			setTokenBusy(false);
+		}
+	}
+
+	if (mode === "ai") {
+		return (
+			<SupportCasePanel
+				buyer={supportBuyer}
+				supportLabel={supportLabel}
+				supportToken={supportToken}
+				onExit={exitAi}
+			/>
+		);
+	}
+
+	if (mode === "form") {
+		return <GeneralSupportForm onBack={() => setMode("choose")} />;
+	}
+
+	const subdued = darkMode ? "text-slate-400" : "text-slate-600";
+	const subduedSoft = darkMode ? "text-slate-300" : "text-slate-600";
+
+	return (
+		<div className={`min-h-screen ${theme} transition-colors duration-300`}>
+			<PageBackground />
+
+			<div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+				<div className="mb-8 flex items-center justify-between gap-4">
+					<div className="flex items-center gap-3">
+						<BrandMark size={44} alt="" />
+						<div>
+							<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Support</h1>
+							<p className={`mt-1 text-sm ${subdued}`}>How can we help today?</p>
+						</div>
+					</div>
+					<button
+						type="button"
+						onClick={toggleTheme}
+						className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition ${
+							darkMode
+								? "border-white/10 bg-white/5 text-white hover:bg-white/10"
+								: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+						}`}
+					>
+						{darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+						{darkMode ? "Light mode" : "Dark mode"}
+					</button>
+				</div>
+
+				{gateNotice ? (
+					<div
+						role="alert"
+						className="mb-6 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
+					>
+						{gateNotice}
+					</div>
+				) : null}
+
+				<div className="grid gap-6 md:grid-cols-2">
+					{/* Card A — AI investigation care path */}
+					<section
+						className={`flex flex-col rounded-[28px] border ${cardTheme} p-6 backdrop-blur-xl sm:p-8`}
+					>
+						<div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/20">
+							<Bot className="h-6 w-6" />
+						</div>
+						<h2 className="text-xl font-semibold tracking-tight">AI Investigation</h2>
+						<p className={`mt-2 text-sm leading-6 ${subduedSoft}`}>
+							Talk to our technical assistant. It can inspect authorized sources and prepare a
+							detailed report.
+						</p>
+						<label
+							htmlFor="support-token"
+							className="mt-6 text-xs font-semibold uppercase tracking-wide text-slate-400"
+						>
+							Support token
+						</label>
+						<input
+							id="support-token"
+							type="text"
+							autoComplete="off"
+							spellCheck={false}
+							value={tokenInput}
+							onChange={(event) => {
+								setTokenInput(event.target.value);
+								setTokenError("");
+							}}
+							onKeyDown={(event) => {
+								if (event.key === "Enter") {
+									event.preventDefault();
+									handleContinue();
+								}
+							}}
+							placeholder="gtk_sup_…"
+							className={`mt-1.5 w-full rounded-2xl border px-4 py-3 font-mono text-sm outline-none transition focus:ring-2 ${inputTheme}`}
+						/>
+						{tokenError ? (
+							<p role="alert" className="mt-2 text-sm text-rose-300">
+								{tokenError}
+							</p>
+						) : null}
+						<button
+							type="button"
+							onClick={handleContinue}
+							disabled={tokenBusy}
+							className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+						>
+							{tokenBusy ? (
+								<ThreeDot variant="bounce" color="#337ab0" size="small" text="" textColor="" />
+							) : (
+								<Sparkles className="h-4 w-4" />
+							)}
+							{tokenBusy ? "Checking…" : "Continue"}
+						</button>
+					</section>
+
+					{/* Card B — general support ticket path */}
+					<section
+						className={`flex flex-col rounded-[28px] border ${cardTheme} p-6 backdrop-blur-xl sm:p-8`}
+					>
+						<div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-400 text-white shadow-lg shadow-violet-500/20">
+							<MessageSquare className="h-6 w-6" />
+						</div>
+						<h2 className="text-xl font-semibold tracking-tight">General Support</h2>
+						<p className={`mt-2 text-sm leading-6 ${subduedSoft}`}>
+							Submit a support request and our team will respond by email.
+						</p>
+						<div className="mt-auto pt-8">
+							{signedIn ? (
+								<button
+									type="button"
+									onClick={() => setMode("form")}
+									className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:-translate-y-0.5"
+								>
+									<Ticket className="h-4 w-4" />
+									Open the form
+								</button>
+							) : (
+								<Link
+									to="/login"
+									className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:-translate-y-0.5"
+								>
+									<LogIn className="h-4 w-4" />
+									Sign in to submit
+								</Link>
+							)}
+						</div>
+					</section>
+				</div>
 			</div>
 		</div>
 	);
