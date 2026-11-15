@@ -121,6 +121,17 @@ describe("supportTokenService", () => {
 		expect(stores.tokens.size).toBe(0);
 	});
 
+	it("issuing to a locked buyer rejects with 400 and creates nothing", async () => {
+		stores.users.get("buyer-1").status = "locked";
+		await expect(
+			svc.issueToken({ buyerId: "buyer-1", label: "e", expiresAt: null, createdBy: "owner-1" }),
+		).rejects.toMatchObject({
+			status: 400,
+			message: "This buyer account is locked and cannot be issued a support token",
+		});
+		expect(stores.tokens.size).toBe(0);
+	});
+
 	it("a buyer whose role flips to owner fails validation", async () => {
 		const { token } = await svc.issueToken({
 			buyerId: "buyer-1",

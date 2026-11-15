@@ -19,7 +19,7 @@ export function generateToken() {
 export async function issueToken({ buyerId, label, expiresAt = null, createdBy }) {
 	const buyer = await prisma.user.findUnique({
 		where: { id: String(buyerId) },
-		select: { id: true, role: true, email: true, name: true },
+		select: { id: true, role: true, email: true, name: true, status: true },
 	});
 	if (!buyer) {
 		const error = new Error("Buyer not found");
@@ -28,6 +28,11 @@ export async function issueToken({ buyerId, label, expiresAt = null, createdBy }
 	}
 	if (!SUPPORT_ELIGIBLE_ROLES.has(buyer.role)) {
 		const error = new Error("Only buyer accounts can be issued a support token");
+		error.status = 400;
+		throw error;
+	}
+	if (buyer.status === "locked") {
+		const error = new Error("This buyer account is locked and cannot be issued a support token");
 		error.status = 400;
 		throw error;
 	}

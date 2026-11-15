@@ -27,6 +27,6 @@ export async function getSupportTokenMe(req, res) {
 	return res.json({
 		ok: true,
 		buyer: { id: buyer.id, name: buyer.name || buyer.email },
-		label: req.tokenId ? "support token" : undefined,
+		label: req.tokenLabel || "support token",
 	});
 }

@@ -24,6 +24,9 @@ export async function issueSupportTokenHandler(req, res) {
 		if (expiresAt && Number.isNaN(expiresAt.getTime())) {
 			return res.status(400).json({ error: "expiresAt must be a valid date" });
 		}
+		if (expiresAt && expiresAt.getTime() <= Date.now()) {
+			return res.status(400).json({ error: "expiresAt must be in the future" });
+		}
 		const issued = await issueToken({ buyerId, label, expiresAt, createdBy: req.user.id });
 		return res.status(201).json(issued);
 	} catch (error) {

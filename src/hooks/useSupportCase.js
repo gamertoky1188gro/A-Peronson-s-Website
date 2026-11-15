@@ -334,10 +334,12 @@ async function attachFileAction(caseId, dispatch, file, supportToken = "") {
 		dispatch({ type: "attached", attachment: descriptor });
 		return descriptor;
 	} catch (err) {
+		// No status on purpose: a /documents 401 is JWT-only and must not be
+		// read as a support-token 401 by the panel's watcher. The panel shows
+		// the message; it must not exit.
 		dispatch({
 			type: "error:set",
 			error: err?.message || "Unable to upload the attachment.",
-			status: err?.status ?? null,
 		});
 		return null;
 	}

@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "support_access_tokens" (
+CREATE TABLE IF NOT EXISTS "support_access_tokens" (
     "id" TEXT NOT NULL,
     "buyer_id" TEXT NOT NULL,
     "token_hash" TEXT NOT NULL,
@@ -14,14 +14,20 @@ CREATE TABLE "support_access_tokens" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "support_access_tokens_token_hash_key" ON "support_access_tokens"("token_hash");
+CREATE UNIQUE INDEX IF NOT EXISTS "support_access_tokens_token_hash_key" ON "support_access_tokens"("token_hash");
 
 -- CreateIndex
-CREATE INDEX "support_access_tokens_buyer_id_idx" ON "support_access_tokens"("buyer_id");
+CREATE INDEX IF NOT EXISTS "support_access_tokens_buyer_id_idx" ON "support_access_tokens"("buyer_id");
 
 -- CreateIndex
-CREATE INDEX "support_access_tokens_revoked_at_expires_at_idx" ON "support_access_tokens"("revoked_at", "expires_at");
+CREATE INDEX IF NOT EXISTS "support_access_tokens_revoked_at_expires_at_idx" ON "support_access_tokens"("revoked_at", "expires_at");
 
 -- AddForeignKey
-ALTER TABLE "support_access_tokens" ADD CONSTRAINT "support_access_tokens_buyer_id_fkey" FOREIGN KEY ("buyer_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'support_access_tokens_buyer_id_fkey'
+    ) THEN
+        ALTER TABLE "support_access_tokens" ADD CONSTRAINT "support_access_tokens_buyer_id_fkey" FOREIGN KEY ("buyer_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+    END IF;
+END $$;

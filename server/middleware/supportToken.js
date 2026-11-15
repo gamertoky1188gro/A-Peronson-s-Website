@@ -41,5 +41,6 @@ export async function requireSupportToken(req, res, next) {
 	req.authUser = buyer;
 	req.viaSupportToken = true;
 	req.tokenId = result.tokenId;
+	req.tokenLabel = result.label;
 	next();
 }
