@@ -126,7 +126,10 @@ const AgentDashboard = safeLazy(() => import("./pages/AgentDashboard.jsx"));
 
 const IndustryPage = safeLazy(() => import("./pages/IndustryPage.jsx"));
 const RatingFeedback = safeLazy(() => import("./pages/RatingFeedback.jsx"));
-const SupportReports = safeLazy(() => import("./pages/SupportReports.jsx"));
+const SupportLanding = safeLazy(() => import("./pages/support/SupportLanding.jsx"));
+const SupportCase = safeLazy(() => import("./pages/support/SupportCase.jsx"));
+const SupportCaseReport = safeLazy(() => import("./pages/support/SupportCaseReport.jsx"));
+const SupportCaseSubmitted = safeLazy(() => import("./pages/support/SupportCaseSubmitted.jsx"));
 const VerificationPage = safeLazy(() => import("./pages/VerificationPage.jsx"));
 const JoinRequestPage = safeLazy(() => import("./pages/JoinRequestPage.jsx"));
 const TaskTracker = safeLazy(() => import("./pages/TaskTracker.jsx"));
@@ -477,7 +480,10 @@ function AppRoutes() {
 					</ProtectedRoute>
 				}
 			/>
-			<Route path="/support" element={<SupportReports />} />
+			<Route path="/support" element={<SupportLanding />} />
+			<Route path="/support/case/:caseId" element={<SupportCase />} />
+			<Route path="/support/case/:caseId/report" element={<SupportCaseReport />} />
+			<Route path="/support/case/:caseId/submitted" element={<SupportCaseSubmitted />} />
 
 			<Route
 				path="/member-management"

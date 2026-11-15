@@ -52,6 +52,9 @@ const ROUTE_PATTERNS = [
 	/^\/org-settings\?.+$/,
 	/^\/join-requests\/[^/]+$/,
 	/^\/verification$/,
+	/^\/support\/case\/[^/]+$/,
+	/^\/support\/case\/[^/]+\/report$/,
+	/^\/support\/case\/[^/]+\/submitted$/,
 ];
 
 export function isRouteValid(path) {
