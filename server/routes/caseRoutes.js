@@ -8,6 +8,7 @@ import {
 	postCaseMessageController,
 	streamCaseController,
 } from "../controllers/caseController.js";
+import { getCaseModelController, putCaseModelController } from "../controllers/caseModelController.js";
 import { requireAuthOrSupportToken } from "../middleware/auth.js";
 import { createRateLimiter } from "../middleware/rateLimiter.js";
 
@@ -60,6 +61,10 @@ router.get("/", requireAuthOrSupportToken, caseLimiter, listCasesController);
 // is matched first, even though Express would not confuse the two: the
 // parameter route matches exactly one path segment.
 router.get("/:caseId/stream", requireAuthOrSupportToken, caseLimiter, streamCaseController);
+// The model pick is a two-segment nested path: registered before the bare
+// `/:caseId` parameter route so the more specific path is matched first.
+router.get("/:caseId/model", requireAuthOrSupportToken, caseLimiter, getCaseModelController);
+router.put("/:caseId/model", requireAuthOrSupportToken, caseLimiter, caseWriteLimiter, putCaseModelController);
 router.get("/:caseId", requireAuthOrSupportToken, caseLimiter, getCaseController);
 router.post(
 	"/:caseId/messages",

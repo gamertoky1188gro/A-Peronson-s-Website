@@ -1725,6 +1725,7 @@ model SupportCase {
   report_status       String?
   report_delivered_at DateTime?
   retain              Boolean   @default(false)
+  model_id            String?
   created_at          DateTime  @default(now())
   updated_at          DateTime  @default(now())
 

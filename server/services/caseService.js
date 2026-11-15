@@ -65,6 +65,22 @@ export async function createCase({ userId, subject }) {
 }
 
 /**
+ * Stores (or clears) the model the investigation for this case should lead
+ * with. Ownership is NOT checked here — the caller checks `canReadCase`
+ * first, like every other case route.
+ *
+ * @param {string} caseId The case to update.
+ * @param {string|null} modelId The model id, or null to clear the pick.
+ * @returns {Promise<Object>} The updated case row.
+ */
+export async function setCaseModel(caseId, modelId) {
+	return prisma.supportCase.update({
+		where: { id: caseId },
+		data: { model_id: modelId ?? null },
+	});
+}
+
+/**
  * Appends one message to a case.
  *
  * The sequence is allocated inside a transaction: two appends that race (the

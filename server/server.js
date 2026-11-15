@@ -72,6 +72,7 @@ import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
 import supportTokenRoutes from "./routes/supportTokenRoutes.js";
 import adminSupportTokenRoutes from "./routes/adminSupportTokenRoutes.js";
+import adminSupportModelRoutes from "./routes/adminSupportModelRoutes.js";
 import syncRoutes from "./routes/syncRoutes.js";
 import systemRoutes from "./routes/systemRoutes.js";
 import uploadsRoutes from "./routes/uploadsRoutes.js";
@@ -413,6 +414,7 @@ app.use("/api/support/cases", caseRoutes);
 // /api/support router.
 app.use("/api/support/token", supportTokenRoutes);
 app.use("/api/admin/support-tokens", adminSupportTokenRoutes);
+app.use("/api/admin/support-models", adminSupportModelRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/code-investigation", codeInvestigationRoutes);
 app.use("/api/reports", reportRoutes);
