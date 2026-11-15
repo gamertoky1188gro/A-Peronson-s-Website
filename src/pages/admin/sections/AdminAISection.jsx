@@ -7,9 +7,11 @@ import {
 	Bot,
 	CheckCircle,
 	Code2,
+	Cpu,
 	Lightbulb,
 	MessageSquare,
 	Plus,
+	RefreshCw,
 	Save,
 	Settings,
 	ToggleLeft,
@@ -43,6 +45,63 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		response: "",
 	});
 	const [showAddForm, setShowAddForm] = useState(false);
+
+	const [modelsInfo, setModelsInfo] = useState({
+		models: [],
+		active: null,
+		source: null,
+		serverAvailable: false,
+	});
+	const [modelsLoading, setModelsLoading] = useState(false);
+	const [modelsSaving, setModelsSaving] = useState(false);
+	const [modelsNotice, setModelsNotice] = useState("");
+	const [modelsError, setModelsError] = useState("");
+
+	async function fetchModels() {
+		try {
+			setModelsLoading(true);
+			setModelsError("");
+			const data = await apiRequest("/api/assistant/models", { token: true });
+			if (data) {
+				setModelsInfo({
+					models: data.models || [],
+					active: data.active || null,
+					source: data.source || null,
+					serverAvailable: Boolean(data.serverAvailable),
+				});
+			}
+		} catch (err) {
+			setModelsError(err?.message || "Failed to load the model list");
+		} finally {
+			setModelsLoading(false);
+		}
+	}
+
+	async function saveModel(modelId) {
+		try {
+			setModelsSaving(true);
+			setModelsNotice("");
+			setModelsError("");
+			const data = await apiRequest("/api/assistant/models", {
+				method: "PUT",
+				token: true,
+				body: { modelId },
+			});
+			if (data) {
+				setModelsInfo({
+					models: data.models || [],
+					active: data.active || null,
+					source: data.source || null,
+					serverAvailable: Boolean(data.serverAvailable),
+				});
+			}
+			setModelsNotice("Active model saved");
+		} catch (err) {
+			setModelsError(err?.message || "Failed to switch the model");
+		} finally {
+			setModelsSaving(false);
+		}
+	}
 
 	async function fetchData() {
 		try {
@@ -80,6 +139,12 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		fetchData,
 	]);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fetch once on mount
+	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		fetchModels();
+	}, []);
 
 	if (activeCategory !== "ai") {
 		return null;
@@ -178,6 +243,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		{ id: "settings", label: "Settings", icon: Settings },
 		{ id: "global", label: "Global Rules", icon: Lightbulb },
 		{ id: "smalltalk", label: "Small Talk", icon: MessageSquare },
+		{ id: "models", label: "OpenCode Models", icon: Cpu },
 	];
 
 	return (
@@ -392,6 +458,106 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						)}
 						{saving ? "Saving..." : "Save Settings"}
 					</button>
+				</div>
+			) : activeTab === "models" ? (
+				<div className="space-y-6">
+					<div
+						className={cn(
+							"rounded-3xl border p-6",
+							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
+						)}
+					>
+						<div className="mb-4 flex items-center justify-between gap-4">
+							<div className="flex items-center gap-2">
+								<Cpu className="h-5 w-5 text-indigo-400" />
+								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									OpenCode Models
+								</h3>
+								{modelsInfo.source && (
+									<span className="rounded-full border border-indigo-400/40 bg-indigo-500/10 px-3 py-0.5 text-xs text-indigo-300">
+										{modelsInfo.source === "admin"
+											? "Admin pick"
+											: modelsInfo.source === "env"
+												? "Env default"
+												: "Default"}
+									</span>
+								)}
+							</div>
+							<button
+								type="button"
+								onClick={fetchModels}
+								disabled={modelsLoading}
+								className="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
+							>
+								<RefreshCw className={cn("h-3.5 w-3.5", modelsLoading && "animate-spin")} />
+								Refresh
+							</button>
+						</div>
+						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+							Free-tier models offered by the embedded opencode server. Switching takes effect for
+							new turns immediately; existing sessions are rebound on their next turn. Free models
+							only — paid models are never listed.
+						</p>
+
+						{modelsError && (
+							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+								<AlertCircle className="h-4 w-4" />
+								{modelsError}
+							</div>
+						)}
+						{modelsNotice && (
+							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+								<CheckCircle className="h-4 w-4" />
+								{modelsNotice}
+							</div>
+						)}
+						{!modelsInfo.serverAvailable && (
+							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-300">
+								<AlertCircle className="h-4 w-4" />
+								The opencode server is not running (or is memory-guarded on this host). The
+								persisted choice will apply when it starts.
+							</div>
+						)}
+
+						<div className="space-y-2">
+							{(modelsInfo.models.length
+								? modelsInfo.models
+								: [{ id: modelsInfo.active || "minimax-m3.1-flash-free", providerID: "opencode" }]
+							).map((model) => (
+								<label
+									key={model.id}
+									className={cn(
+										"flex cursor-pointer items-center justify-between rounded-2xl border px-4 py-3 transition-all",
+										modelsInfo.active === model.id
+											? "border-indigo-500/60 bg-indigo-500/10"
+											: adminDark
+												? "border-white/10 hover:border-white/20"
+												: "border-slate-200 hover:border-slate-300",
+									)}
+								>
+									<input
+										type="radio"
+										name="opencode-model"
+										className="sr-only"
+										checked={modelsInfo.active === model.id}
+										disabled={modelsSaving}
+										onChange={() => saveModel(model.id)}
+									/>
+									<span
+										className={cn(
+											"font-mono text-sm",
+											adminDark ? "text-slate-100" : "text-slate-800",
+										)}
+									>
+										{model.id}
+									</span>
+									<span className={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
+										{model.providerID}
+									</span>
+								</label>
+							))}
+						</div>
+					</div>
 				</div>
 			) : (
 				<div className="space-y-4">
