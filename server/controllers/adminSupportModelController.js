@@ -16,12 +16,20 @@ function shape(config) {
 		buyerSelectEnabled: config.buyerSelectEnabled,
 		catalogStale: Boolean(config.catalogStale),
 		catalogFetchedAt: config.catalogFetchedAt ?? null,
+		// The catalog array ({ id, name, providerID, created, ownedBy }) — the
+		// admin "Investigation Models" tab renders it.
+		catalog: Array.isArray(config.catalog) ? config.catalog : [],
 	};
 }
 
 export async function getAdminSupportModels(req, res) {
 	try {
-		return res.json(shape(await getInvestigationModelConfig()));
+		// ?refresh=1 forces a live catalog fetch; otherwise the service's
+		// TTL cache may serve.
+		const config = await getInvestigationModelConfig({
+			forceCatalogRefresh: req.query?.refresh === "1",
+		});
+		return res.json(shape(config));
 	} catch (error) {
 		return handleControllerError(res, error);
 	}

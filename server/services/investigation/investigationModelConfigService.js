@@ -20,8 +20,8 @@ async function readRows() {
 }
 const FREE_ID = (id) => typeof id === "string" && (id.endsWith("-free") || id === "big-pickle") && id !== "iceman-free";
 
-export async function getInvestigationModelConfig() {
-	const catalogResult = await getOpenCodeFreeModels().catch(async () => ({ models: [], stale: true, fetchedAt: null }));
+export async function getInvestigationModelConfig({ forceCatalogRefresh = false } = {}) {
+	const catalogResult = await getOpenCodeFreeModels({ forceRefresh: forceCatalogRefresh }).catch(async () => ({ models: [], stale: true, fetchedAt: null }));
 	const catalog = catalogResult.models;
 	const catalogIds = new Set(catalog.map((m) => m.id));
 	const persisted = await readRows();

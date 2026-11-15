@@ -57,6 +57,7 @@ import ReactMarkdown from "react-markdown";
 import { Link, useNavigate } from "react-router-dom";
 import remarkGfm from "remark-gfm";
 import ScrollReveal from "../components/ScrollReveal.jsx";
+import InvestigationModelPicker from "../components/support/InvestigationModelPicker.jsx";
 import BrandMark from "../components/ui/BrandMark.jsx";
 import LazyImage from "../components/ui/LazyImage.jsx";
 import NeonAtom from "../components/ui/NeonAtom.jsx";
@@ -1662,6 +1663,13 @@ function SupportCasePanel({ buyer, supportLabel, supportToken, onExit }) {
 										darkMode={darkMode}
 									/>
 								) : null}
+
+								<InvestigationModelPicker
+									caseId={activeCaseId}
+									token={token}
+									supportToken={supportToken}
+									darkMode={darkMode}
+								/>
 
 								<Composer
 									draft={draft}

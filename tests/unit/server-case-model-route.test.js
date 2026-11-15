@@ -40,10 +40,15 @@ jest.unstable_mockModule("../../server/services/userService.js", () => ({
 	findUserById,
 }));
 
+const CATALOG = [
+	{ id: "minimax-m3.1-flash-free", name: "MiniMax M3.1 Flash", providerID: "opencode", created: 1730000000000, ownedBy: "minimax" },
+	{ id: "deepseek-v4.1-flash-free", name: "DeepSeek V4.1 Flash", providerID: "opencode", created: 1730000000001, ownedBy: "deepseek" },
+];
 const configState = {
 	allowed: ["minimax-m3.1-flash-free", "deepseek-v4.1-flash-free"],
 	default: "minimax-m3.1-flash-free",
 	buyerSelectEnabled: true,
+	catalog: CATALOG,
 	catalogStale: false,
 	catalogFetchedAt: 1730000000000,
 };
@@ -221,9 +226,19 @@ describe("GET /api/admin/support-models", () => {
 			allowed: ["minimax-m3.1-flash-free", "deepseek-v4.1-flash-free"],
 			default: "minimax-m3.1-flash-free",
 			buyerSelectEnabled: true,
+			catalog: CATALOG,
 			catalogStale: false,
 			catalogFetchedAt: 1730000000000,
 		});
+	});
+
+	test("?refresh=1 forwards forceCatalogRefresh to the service", async () => {
+		getInvestigationModelConfig.mockClear();
+		const res = await request(buildApp())
+			.get("/api/admin/support-models?refresh=1")
+			.set(AUTH.admin);
+		expect(res.status).toBe(200);
+		expect(getInvestigationModelConfig).toHaveBeenCalledWith({ forceCatalogRefresh: true });
 	});
 
 	test("a buyer is refused", async () => {

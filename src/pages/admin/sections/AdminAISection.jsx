@@ -12,6 +12,7 @@ import {
 	Cpu,
 	KeyRound,
 	Lightbulb,
+	ListChecks,
 	MessageSquare,
 	Plus,
 	RefreshCw,
@@ -85,6 +86,11 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	const [issuedToken, setIssuedToken] = useState(null); // { token, …row } — shown once
 	const [issuedBusy, setIssuedBusy] = useState(false);
 	const [tokenCopied, setTokenCopied] = useState(false);
+	const [modelsAdmin, setModelsAdmin] = useState(null);
+	const [modelsAdminLoading, setModelsAdminLoading] = useState(false);
+	const [modelsAdminSaving, setModelsAdminSaving] = useState(false);
+	const [modelsAdminError, setModelsAdminError] = useState("");
+	const [modelsAdminNotice, setModelsAdminNotice] = useState("");
 
 	async function fetchModels() {
 		try {
@@ -129,6 +135,78 @@ export function AdminAISection({ activeCategory, adminDark }) {
 			setModelsError(err?.message || "Failed to switch the model");
 		} finally {
 			setModelsSaving(false);
+		}
+	}
+
+	async function fetchModelsAdmin(refresh = false) {
+		try {
+			setModelsAdminLoading(true);
+			setModelsAdminError("");
+			const data = await apiRequest(
+				refresh ? "/admin/support-models?refresh=1" : "/admin/support-models",
+				{ token: getToken() },
+			);
+			setModelsAdmin({
+				catalog: Array.isArray(data?.catalog) ? data.catalog : [],
+				allowed: Array.isArray(data?.allowed) ? data.allowed : [],
+				default: data?.default ?? "",
+				buyerSelectEnabled: data?.buyerSelectEnabled !== false,
+				catalogStale: Boolean(data?.catalogStale),
+				catalogFetchedAt: data?.catalogFetchedAt ?? null,
+			});
+		} catch (err) {
+			setModelsAdminError(err?.message || "Failed to load the investigation models");
+		} finally {
+			setModelsAdminLoading(false);
+		}
+	}
+
+	// Toggling a checkbox edits the pending allowlist in component state;
+	// nothing is persisted until Save. The default snaps to the first
+	// pending allowed id when its option disappears.
+	function toggleAllowedModel(id) {
+		setModelsAdmin((prev) => {
+			if (!prev) {
+				return prev;
+			}
+			const checked = !prev.allowed.includes(id);
+			const allowed = checked ? [...prev.allowed, id] : prev.allowed.filter((x) => x !== id);
+			const def = allowed.includes(prev.default) ? prev.default : (allowed[0] ?? "");
+			return { ...prev, allowed, default: def };
+		});
+	}
+
+	async function saveModelsAdmin() {
+		if (!modelsAdmin) {
+			return;
+		}
+		if (modelsAdmin.allowed.length === 0) {
+			setModelsAdminError("At least one model must stay allowed");
+			return;
+		}
+		setModelsAdminSaving(true);
+		setModelsAdminError("");
+		setModelsAdminNotice("");
+		const def = modelsAdmin.allowed.includes(modelsAdmin.default)
+			? modelsAdmin.default
+			: modelsAdmin.allowed[0];
+		try {
+			await apiRequest("/admin/support-models", {
+				method: "PUT",
+				token: getToken(),
+				body: {
+					allowed: modelsAdmin.allowed,
+					default: def,
+					buyerSelectEnabled: modelsAdmin.buyerSelectEnabled,
+				},
+			});
+			await fetchModelsAdmin();
+			setModelsAdminNotice("Saved");
+			setTimeout(() => setModelsAdminNotice(""), TIMEOUTS.LONG);
+		} catch (err) {
+			setModelsAdminError(err?.message || "Failed to save the investigation models");
+		} finally {
+			setModelsAdminSaving(false);
 		}
 	}
 
@@ -300,6 +378,9 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		if (activeTab === "tokens") {
 			// eslint-disable-next-line react-hooks/set-state-in-effect
 			fetchTokens();
+		} else if (activeTab === "models-admin") {
+			// eslint-disable-next-line react-hooks/set-state-in-effect
+			fetchModelsAdmin();
 		}
 	}, [activeTab]);
 
@@ -402,6 +483,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		{ id: "smalltalk", label: "Small Talk", icon: MessageSquare },
 		{ id: "models", label: "OpenCode Models", icon: Cpu },
 		{ id: "tokens", label: "Buyer Tokens", icon: KeyRound },
+		{ id: "models-admin", label: "Investigation Models", icon: ListChecks },
 	];
 
 	return (
@@ -1086,6 +1168,211 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								</tbody>
 							</table>
 						)}
+					</div>
+				</div>
+			) : activeTab === "models-admin" ? (
+				<div className="space-y-6">
+					<div
+						className={cn(
+							"rounded-3xl border p-6",
+							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
+						)}
+					>
+						<div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+							<div className="flex flex-wrap items-center gap-2">
+								<ListChecks className="h-5 w-5 text-indigo-400" />
+								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+									Investigation Models
+								</h3>
+								{modelsAdmin?.catalogStale && (
+									<span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-0.5 text-xs text-yellow-300">
+										stale catalog
+									</span>
+								)}
+							</div>
+							<button
+								type="button"
+								onClick={() => fetchModelsAdmin(true)}
+								disabled={modelsAdminLoading}
+								className="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
+							>
+								<RefreshCw className={cn("h-3.5 w-3.5", modelsAdminLoading && "animate-spin")} />
+								Refresh
+							</button>
+						</div>
+						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+							Owner-controlled. Free OpenCode models only.
+						</p>
+
+						{modelsAdminError && (
+							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+								<AlertCircle className="h-4 w-4" />
+								{modelsAdminError}
+							</div>
+						)}
+						{modelsAdminNotice && (
+							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+								<CheckCircle className="h-4 w-4" />
+								{modelsAdminNotice}
+							</div>
+						)}
+
+						<div className="space-y-2">
+							{(modelsAdmin?.catalog ?? []).length === 0 && !modelsAdminLoading ? (
+								<p className={cn("text-sm", adminDark ? "text-slate-500" : "text-slate-400")}>
+									The live catalog is unavailable — the persisted allowlist is kept as-is.
+								</p>
+							) : null}
+							{(modelsAdmin?.catalog ?? []).map((model) => (
+								<label
+									key={model.id}
+									className={cn(
+										"flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition-all",
+										adminDark
+											? "border-white/10 hover:border-white/20"
+											: "border-slate-200 hover:border-slate-300",
+									)}
+								>
+									<input
+										type="checkbox"
+										checked={modelsAdmin?.allowed.includes(model.id) ?? false}
+										onChange={() => toggleAllowedModel(model.id)}
+										disabled={modelsAdminSaving}
+										className="h-4 w-4 accent-indigo-500"
+										aria-label={`Allow ${model.id}`}
+									/>
+									<span
+										className={cn(
+											"min-w-0 flex-1 font-mono text-sm",
+											adminDark ? "text-slate-100" : "text-slate-800",
+										)}
+									>
+										{model.id}
+									</span>
+									<span className={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
+										{model.ownedBy ?? model.providerID}
+									</span>
+								</label>
+							))}
+						</div>
+
+						{/* Allowed but not in the catalog (e.g. catalog down) — shown so the
+						    allowlist is never silently truncated. */}
+						{(modelsAdmin?.allowed ?? [])
+							.filter((id) => !(modelsAdmin?.catalog ?? []).some((m) => m.id === id))
+							.map((id) => (
+								<div
+									key={id}
+									className={cn(
+										"mt-2 flex items-center gap-3 rounded-2xl border border-dashed px-4 py-3 text-xs",
+										adminDark
+											? "border-white/15 text-slate-400"
+											: "border-slate-300 text-slate-500",
+									)}
+								>
+									<span className="font-mono">{id}</span>
+									<span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-yellow-300">
+										persisted
+									</span>
+								</div>
+							))}
+
+						<div className="mt-4 grid gap-4 sm:grid-cols-2">
+							<div>
+								<label
+									className={cn(
+										"mb-1.5 block text-sm font-medium",
+										adminDark ? "text-slate-300" : "text-slate-700",
+									)}
+									htmlFor="investigation-default-model"
+								>
+									Default model
+								</label>
+								<select
+									id="investigation-default-model"
+									value={modelsAdmin?.default ?? ""}
+									onChange={(event) =>
+										setModelsAdmin((prev) =>
+											prev ? { ...prev, default: event.target.value } : prev,
+										)
+									}
+									disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
+									aria-label="Default model"
+									className={cn(
+										"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
+										adminDark
+											? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
+											: "border-slate-200 bg-white text-slate-900 focus:border-indigo-400",
+									)}
+								>
+									{(modelsAdmin?.allowed ?? []).map((id) => (
+										<option key={id} value={id}>
+											{id}
+										</option>
+									))}
+								</select>
+							</div>
+
+							<div className="flex items-end">
+								<div
+									className={cn(
+										"flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3",
+										adminDark ? "border-white/10" : "border-slate-200",
+									)}
+								>
+									<div className="min-w-0">
+										<p
+											className={cn(
+												"text-sm font-medium",
+												adminDark ? "text-slate-200" : "text-slate-700",
+											)}
+										>
+											Buyers can change model per message
+										</p>
+										<p className={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
+											Exposes the picker in the buyer's composer
+										</p>
+									</div>
+									<button
+										type="button"
+										onClick={() =>
+											setModelsAdmin((prev) =>
+												prev ? { ...prev, buyerSelectEnabled: !prev.buyerSelectEnabled } : prev,
+											)
+										}
+										disabled={modelsAdminSaving}
+										aria-label="Buyers can change model per message"
+										aria-pressed={modelsAdmin?.buyerSelectEnabled ?? true}
+										className="shrink-0 text-indigo-400 disabled:opacity-50"
+									>
+										{(modelsAdmin?.buyerSelectEnabled ?? true) ? (
+											<ToggleRight className="h-7 w-7" />
+										) : (
+											<ToggleLeft className="h-7 w-7" />
+										)}
+									</button>
+								</div>
+							</div>
+						</div>
+
+						<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+							<p className={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
+								iceman-free is permanently excluded (trains on prompts).
+							</p>
+							<button
+								type="button"
+								onClick={saveModelsAdmin}
+								disabled={modelsAdminSaving || !modelsAdmin}
+								className="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-5 py-2.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								{modelsAdminSaving ? (
+									<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
+								) : (
+									<Save className="h-4 w-4" />
+								)}
+								{modelsAdminSaving ? "Saving…" : "Save"}
+							</button>
+						</div>
 					</div>
 				</div>
 			) : (
