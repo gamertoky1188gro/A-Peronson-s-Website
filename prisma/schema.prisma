@@ -48,6 +48,7 @@ model User {
   assignedLeads                                     Lead[]           @relation("LeadAssignedAgent")
   counterpartyLeads                                 Lead[]           @relation("LeadCounterpartyUser")
   ownedLeads                                        Lead[]           @relation("LeadOrgOwner")
+  support_access_tokens                             SupportAccessToken[] @relation("buyerSupportTokens")
 
   @@map("users")
 }
@@ -1844,4 +1845,22 @@ model PasswordResetToken {
 
   @@index([user_id])
   @@map("password_reset_tokens")
+}
+
+model SupportAccessToken {
+  id           String    @id @default(cuid())
+  buyer_id     String
+  token_hash   String    @unique
+  label        String
+  expires_at   DateTime?
+  revoked_at   DateTime?
+  created_by   String
+  last_used_at DateTime?
+  created_at   DateTime  @default(now())
+
+  buyer        User      @relation("buyerSupportTokens", fields: [buyer_id], references: [id])
+
+  @@index([buyer_id])
+  @@index([revoked_at, expires_at])
+  @@map("support_access_tokens")
 }
