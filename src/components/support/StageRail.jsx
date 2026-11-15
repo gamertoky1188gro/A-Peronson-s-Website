@@ -1,0 +1,60 @@
+import { Check } from "lucide-react";
+import { cn } from "../../lib/cn.js";
+
+const STAGE_BY_STATUS = {
+	collecting: 0,
+	investigating: 1,
+	verifying: 2,
+	completed: 3,
+};
+
+export const DEFAULT_STAGES = ["Understand", "Investigate", "Discuss", "Report"];
+
+/**
+ * Horizontal progress rail for the four support stages. Chips are
+ * non-interactive; the current stage is derived from the case status.
+ * Unknown statuses park on stage 0.
+ *
+ * @param {Object} props
+ * @param {string[]} [props.steps]
+ * @param {string} [props.status] - collecting | investigating | verifying | completed
+ * @param {string} [props.className]
+ */
+export function StageRail({ steps = DEFAULT_STAGES, status, className }) {
+	const current = STAGE_BY_STATUS[String(status ?? "").toLowerCase()] ?? 0;
+	return (
+		<ol aria-label="Case progress" className={cn("flex flex-wrap items-center gap-2", className)}>
+			{steps.map((step, index) => {
+				const state = index < current ? "done" : index === current ? "current" : "upcoming";
+				return (
+					<li key={step} className="flex items-center gap-2">
+						{index > 0 ? (
+							<span
+								aria-hidden="true"
+								className={cn(
+									"hidden h-px w-6 sm:block",
+									index <= current ? "bg-cyan-400/60" : "bg-white/10",
+								)}
+							/>
+						) : null}
+						<span
+							data-stage={step}
+							data-stage-state={state}
+							aria-current={state === "current" ? "step" : undefined}
+							className={cn(
+								"inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+								state === "done" && "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
+								state === "current" &&
+									"border-cyan-400/50 bg-gradient-to-r from-cyan-400/20 to-sky-400/20 text-[#e8eefc] shadow-[0_0_16px_-6px_rgba(34,211,238,0.5)]",
+								state === "upcoming" && "border-white/10 bg-white/5 text-[#8ea3c8]",
+							)}
+						>
+							{state === "done" ? <Check aria-hidden="true" className="h-3 w-3" /> : null}
+							{step}
+						</span>
+					</li>
+				);
+			})}
+		</ol>
+	);
+}

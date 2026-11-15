@@ -10,6 +10,7 @@ import { Cpu } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest, getToken } from "../../lib/auth.js";
 import { logger } from "../../lib/logger.js";
+import { ModelBadge } from "./ModelBadge.jsx";
 
 /**
  * @param {Object} props - The component props.
@@ -99,15 +100,9 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 				<Cpu className={`h-4 w-4 ${muted}`} aria-hidden="true" />
 				{config.buyerSelectEnabled ? (
 					config.allowed.length === 0 ? (
-						<span
-							className={`inline-flex items-center rounded-full border px-3 py-1 text-xs ${
-								darkMode
-									? "border-white/10 bg-white/5 text-slate-300"
-									: "border-slate-200 bg-slate-100 text-slate-600"
-							}`}
-						>
+						<ModelBadge darkMode={darkMode}>
 							No investigation models available — using the platform default
-						</span>
+						</ModelBadge>
 					) : (
 						<select
 							value={config.effectiveModelId}
@@ -116,8 +111,8 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 							aria-label="Investigation model"
 							className={`rounded-xl border px-3 py-1.5 text-xs outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${
 								darkMode
-									? "border-white/10 bg-slate-900/70 text-slate-100 focus:border-indigo-400"
-									: "border-slate-200 bg-white text-slate-800 focus:border-indigo-400"
+									? "border-white/10 bg-slate-900/70 text-slate-100 focus:border-cyan-400"
+									: "border-slate-200 bg-white text-slate-800 focus:border-cyan-400"
 							}`}
 						>
 							{config.allowed.map((id) => (
@@ -128,15 +123,9 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 						</select>
 					)
 				) : (
-					<span
-						className={`inline-flex items-center rounded-full border px-3 py-1 text-xs ${
-							darkMode
-								? "border-white/10 bg-white/5 text-slate-300"
-								: "border-slate-200 bg-slate-100 text-slate-600"
-						}`}
-					>
+					<ModelBadge darkMode={darkMode}>
 						Investigation model: {config.effectiveModelId}
-					</span>
+					</ModelBadge>
 				)}
 				{saving ? <span className={`text-xs ${muted}`}>Saving…</span> : null}
 			</div>
