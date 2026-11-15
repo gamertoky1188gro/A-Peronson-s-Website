@@ -154,12 +154,10 @@ New "OpenCode Models" tab next to the existing Settings/Rules tabs:
   down; it takes effect on next boot/spawn.
 - All candidates refuse → opencode path returns null → existing HTTP-provider /
   FAQ fallback unchanged. Outcome stash still records the attempts; logged.
-- Timeout on a candidate → not retried; treated as failure of that candidate
-  but NOT advanced (matches the investigation queue's semantics). Actually —
-  decision: a timeout IS a failed attempt for chain purposes? No. The
-  investigation runtime deliberately does not retry timeouts because the model
-  was working; retrying would double wall-clock. Keep: timeout → no retry,
-  opencode path returns null → HTTP/FAQ fallback.
+- Timeout on a candidate → NOT retried, and the chain does not advance past it.
+  The opencode path returns null and the caller's existing HTTP-provider / FAQ
+  fallback applies (matches the investigation runtime's semantics: the model
+  was working, retrying would double the wall clock).
 - `AdminConfigHistory` write failure → `PUT` returns 500, no branding write
   happened (order: branding first would violate "audit or nothing"; do
   branding write → history write, and if history fails, attempt to roll the
