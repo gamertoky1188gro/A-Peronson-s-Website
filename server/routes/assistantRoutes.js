@@ -5,6 +5,7 @@ import {
 	deleteAssistantRule,
 	deleteSession,
 	getAssistantConfigHandler,
+	getAssistantModelsHandler,
 	getAssistantRules,
 	getConversationSummary,
 	getNegotiationHelper,
@@ -14,6 +15,7 @@ import {
 	postGenerateFirstResponse,
 	postValidateResponse,
 	putAssistantConfigHandler,
+	putAssistantModelsHandler,
 	putAssistantRules,
 } from "../controllers/assistantController.js";
 import {
@@ -57,5 +59,8 @@ router.delete(
 
 router.get("/config", requireAuth, allowRoles("owner", "admin"), getAssistantConfigHandler);
 router.put("/config", requireAuth, allowRoles("owner", "admin"), putAssistantConfigHandler);
+
+router.get("/models", requireAuth, allowRoles("owner", "admin"), getAssistantModelsHandler);
+router.put("/models", requireAuth, allowRoles("owner", "admin"), putAssistantModelsHandler);
 
 export default router;

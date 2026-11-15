@@ -29,6 +29,8 @@ import {
 } from "./opencodeModelService.js";
 import { waitForAssistantTurn } from "./opencodeTurns.js";
 
+export { getModelsSnapshot, setActiveModel } from "./opencodeModelService.js";
+
 const _KNOWLEDGE_MODEL = "assistantKnowledge";
 const KNOWLEDGE_TYPES = {
 	FAQ: "faq",
@@ -983,6 +985,17 @@ function opencodeV2Client(baseUrl) {
 			return fetch(input, { ...init, headers });
 		},
 	});
+}
+
+/**
+ * A client for the RUNNING assistant opencode server, or null. Never spawns
+ * one — the admin model list must not boot a server as a side effect.
+ */
+export function getRunningOpencodeClient() {
+	if (!(_opencodeServer && opencodePort)) {
+		return null;
+	}
+	return opencodeV2Client(`http://localhost:${opencodePort}`);
 }
 
 async function checkOpencodeRunning(port) {

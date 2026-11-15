@@ -14,10 +14,13 @@ import {
 	deleteKnowledgeEntry,
 	deleteOpencodeSession,
 	getAssistantConfig,
+	getModelsSnapshot,
 	getOpencodeSessionMessages,
+	getRunningOpencodeClient,
 	listAssistantRules,
 	listKnowledge,
 	removeAssistantRule,
+	setActiveModel,
 	updateAssistantConfig,
 	updateAssistantRules,
 	updateKnowledgeEntry,
@@ -336,6 +339,36 @@ export async function putAssistantConfigHandler(req, res) {
 		const config = await updateAssistantConfig(req.body || {});
 		return res.json(config);
 	} catch (error) {
+		return handleError(res, error);
+	}
+}
+
+export async function getAssistantModelsHandler(req, res) {
+	if (!canManageMembers(req.user)) {
+		return deny(res);
+	}
+	try {
+		const client = getRunningOpencodeClient();
+		const snapshot = await getModelsSnapshot(client);
+		return res.json(snapshot);
+	} catch (error) {
+		return handleError(res, error);
+	}
+}
+
+export async function putAssistantModelsHandler(req, res) {
+	if (!canManageMembers(req.user)) {
+		return deny(res);
+	}
+	try {
+		const client = getRunningOpencodeClient();
+		const saved = await setActiveModel(req.body?.modelId, req.user?.id, client);
+		const snapshot = await getModelsSnapshot(client);
+		return res.json({ ...snapshot, active: saved.id, source: "admin" });
+	} catch (error) {
+		if (error?.status) {
+			return res.status(error.status).json({ error: error.message });
+		}
 		return handleError(res, error);
 	}
 }
