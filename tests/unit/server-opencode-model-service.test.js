@@ -105,6 +105,25 @@ describe("getActiveModel", () => {
 	});
 });
 
+describe("getModelsSnapshot", () => {
+	it("reports serverAvailable: false and no models when the live list throws", async () => {
+		const client = {
+			model: {
+				list: async () => {
+					throw new Error("connect ECONNREFUSED");
+				},
+			},
+		};
+		const snapshot = await svc.getModelsSnapshot(client);
+		expect(snapshot).toEqual({
+			models: [],
+			active: "minimax-m3.1-flash-free",
+			source: "default",
+			serverAvailable: false,
+		});
+	});
+});
+
 describe("setActiveModel", () => {
 	it("refuses a non-free model id", async () => {
 		await expect(svc.setActiveModel("gpt-5-paid", "admin-1", null)).rejects.toMatchObject({

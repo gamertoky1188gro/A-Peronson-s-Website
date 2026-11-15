@@ -164,8 +164,14 @@ export async function getModelsSnapshot(client = null) {
 	if (!client) {
 		return { models: [], active: active.id, source: active.source, serverAvailable: false };
 	}
-	const models = await fetchAvailableModels(client);
-	return { models, active: active.id, source: active.source, serverAvailable: true };
+	try {
+		// fresh: a picker must notice a down server even inside the cache window.
+		const models = await fetchAvailableModels(client, { fresh: true });
+		return { models, active: active.id, source: active.source, serverAvailable: true };
+	} catch (error) {
+		logWarn("opencode_model_list_failed", { message: error?.message });
+		return { models: [], active: active.id, source: active.source, serverAvailable: false };
+	}
 }
 
 export function getLastOpencodeOutcome() {
@@ -193,7 +199,20 @@ export async function runAssistantPrompt({
 	const attempts = [];
 
 	async function attempt(useSessionID) {
-		return waitForAssistantTurn({ client, sessionID: useSessionID, text, timeoutMs, onText });
+		try {
+			return await waitForAssistantTurn({
+				client,
+				sessionID: useSessionID,
+				text,
+				timeoutMs,
+				onText,
+			});
+		} catch (error) {
+			logWarn("opencode_model_prompt_failed", { message: error?.message });
+			// A prompt that throws is a failed CANDIDATE, not a failed run: report
+			// it as a refusal so the chain advances instead of rejecting.
+			return { text: "", parts: [], modelError: error ?? new Error("prompt failed") };
+		}
 	}
 
 	for (let i = 0; i < chain.length; i += 1) {
