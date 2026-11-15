@@ -2101,7 +2101,10 @@ export function buildMatchedResponse({
 		code_context: codeContext,
 		knowledge_context: knowledgeContext,
 	};
-	if (opencodeMeta?.model) {
+	// The model is reported only when opencode actually PRODUCED the answer:
+	// a failed attempt (timeout, wedge, refusal) stashes the model it tried,
+	// and that model answered nothing.
+	if (opencodeMeta?.model && !opencodeMeta?.failed) {
 		metadata.model = opencodeMeta.model;
 		metadata.fallback_attempts = opencodeMeta.attempts || [];
 	}
