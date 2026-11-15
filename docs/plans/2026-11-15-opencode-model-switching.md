@@ -190,31 +190,29 @@ describe("runAssistantPrompt", () => {
 
 	test("a refusal on the active model falls back to the next free model", async () => {
 		process.env.OPENCODE_MODEL_ID = "minimax-m3.1-flash-free";
-		// First call (active model): refusal. Second call (fallback): success.
-		let call = 0;
+		const prompted = new Set();
+		const refusedMsg = {
+			id: "refused-1",
+			type: "assistant",
+			time: { created: 1 },
+			finish: "error",
+			content: [],
+			error: { type: "provider.quota", message: "quota", status: 429 },
+		};
 		const client = {
 			session: {
-				create: jest.fn(async () => ({ id: `ephemeral-${call}` })),
+				create: jest.fn(async () => ({ id: "ephemeral-1" })),
 				remove: jest.fn(async () => ({})),
-				prompt: jest.fn(async () => ({})),
+				prompt: jest.fn(async ({ sessionID }) => {
+					prompted.add(sessionID);
+					return {};
+				}),
 			},
 			message: {
-				list: jest.fn(async () => {
-					call += 1;
-					return call === 1
-						? {
-								data: [
-									{
-										id: "refused-1",
-										type: "assistant",
-										time: { created: 1 },
-										finish: "error",
-										content: [],
-										error: { type: "provider.quota", message: "quota", status: 429 },
-									},
-								],
-							}
-						: { data: [assistantMsg("ok-1", 2, "ANSWER FROM FALLBACK")] };
+				list: jest.fn(async ({ sessionID }) => {
+					if (!prompted.has(sessionID)) return { data: [] };
+					if (sessionID === "user-session-1") return { data: [refusedMsg] };
+					return { data: [assistantMsg("ok-1", 2, "ANSWER FROM FALLBACK")] };
 				}),
 			},
 		};
@@ -226,6 +224,30 @@ describe("runAssistantPrompt", () => {
 		});
 		expect(result?.model).toBe("deepseek-v4.1-flash-free"); // first entry of DEFAULT_MODEL_CHAIN
 		expect(result?.attempts.map((a) => a.outcome)).toEqual(["refused", "ok"]);
+	});
+
+	test("a timeout is NOT retried and the fallback chain does not advance", async () => {
+		process.env.OPENCODE_MODEL_ID = "minimax-m3.1-flash-free";
+		const createSpy = jest.fn(async () => ({ id: "ephemeral-1" }));
+		const client = {
+			session: {
+				create: createSpy,
+				remove: jest.fn(async () => ({})),
+				prompt: jest.fn(async () => ({})),
+			},
+			message: {
+				// No assistant message ever appears; the deadline (1 ms) expires first.
+				list: jest.fn(async () => ({ data: [] })),
+			},
+		};
+		const result = await svc.runAssistantPrompt({
+			client,
+			sessionID: "user-session-1",
+			text: "hello",
+			timeoutMs: 1,
+		});
+		expect(result).toBeNull();
+		expect(createSpy).not.toHaveBeenCalled();
 	});
 });
 ```
@@ -254,7 +276,7 @@ import prisma from "../utils/prisma.js";
 import { logInfo, logWarn, logError } from "../utils/logger.js";
 import { DEFAULT_MODEL_CHAIN, isFreeOpencodeModel } from "./investigation/modelChain.js";
 import { REPOSITORY_ROOT } from "./investigation/opencodeRuntime.js";
-import { waitForAssistantTurn, formatToolError } from "./opencodeTurns.js";
+import { waitForAssistantTurn } from "./opencodeTurns.js";
 
 const BRANDING_KEY = "ai.opencode.model_id";
 const DEFAULT_MODEL_ID = "minimax-m3.1-flash-free";
@@ -407,10 +429,6 @@ export function clearLastOpencodeOutcome() {
 	_lastOutcome = null;
 }
 
-export function setLastOpencodeOutcome(outcome) {
-	_lastOutcome = outcome;
-}
-
 /**
  * Run one assistant prompt with per-turn fallback. The first attempt uses the
  * caller's session (bound to the active model). On a model refusal, each
@@ -471,7 +489,7 @@ export async function runAssistantPrompt({ client, sessionID, text, timeoutMs = 
 - [ ] **Step 5: Run the test to verify it passes**
 
 Run: `node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/unit/server-opencode-model-service.test.js`
-Expected: PASS (all 9 tests). If the refusal-fallback test flakes on list ordering, print `client.message.list` call count — the loop counts calls, not order.
+Expected: PASS (all 10 tests). The fallback test keys the list response off `prompted`/`sessionID`, so poll order does not matter.
 
 - [ ] **Step 6: Commit**
 
