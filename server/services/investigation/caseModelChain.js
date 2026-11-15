@@ -4,6 +4,24 @@ const FORBIDDEN = new Set(["iceman-free"]);
 const okId = (id) => typeof id === "string" && (id.endsWith("-free") || id === "big-pickle") && !FORBIDDEN.has(id);
 const offerSet = (available) => new Set((available || []).map((m) => (typeof m === "string" ? m : m?.id)));
 
+/**
+ * The case model to actually use, or null when the buyer's pick is not usable.
+ */
+export function effectiveCaseModelId({
+	caseModelId = null,
+	buyerSelectEnabled = true,
+	allowed = [],
+} = {}) {
+	if (!buyerSelectEnabled) {
+		return null;
+	}
+	const id = typeof caseModelId === "string" ? caseModelId.trim() : "";
+	if (!id || !okId(id) || !(Array.isArray(allowed) ? allowed : []).includes(id)) {
+		return null;
+	}
+	return id;
+}
+
 export function computeCaseModelOrder({ caseModelId = null, allowed = [], available = [] } = {}) {
 	const offered = offerSet(available);
 	const allowedClean = (Array.isArray(allowed) ? allowed : []).filter(okId);

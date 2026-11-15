@@ -79,9 +79,11 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 		} catch (err) {
 			const status = err?.status;
 			setError(
-				status === 400 || status === 403
-					? "That model is no longer available"
-					: "Could not update the investigation model",
+				status === 403
+					? "That change isn't allowed right now — ask the owner."
+					: status === 400
+						? "That model is no longer available"
+						: "Could not update the investigation model",
 			);
 			// Nudge a re-render so the controlled select snaps back to the
 			// stored value.
@@ -96,23 +98,35 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 			<div className="flex flex-wrap items-center gap-2">
 				<Cpu className={`h-4 w-4 ${muted}`} aria-hidden="true" />
 				{config.buyerSelectEnabled ? (
-					<select
-						value={config.effectiveModelId}
-						onChange={handleChange}
-						disabled={saving}
-						aria-label="Investigation model"
-						className={`rounded-xl border px-3 py-1.5 text-xs outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${
-							darkMode
-								? "border-white/10 bg-slate-900/70 text-slate-100 focus:border-indigo-400"
-								: "border-slate-200 bg-white text-slate-800 focus:border-indigo-400"
-						}`}
-					>
-						{config.allowed.map((id) => (
-							<option key={id} value={id}>
-								{id} · free
-							</option>
-						))}
-					</select>
+					config.allowed.length === 0 ? (
+						<span
+							className={`inline-flex items-center rounded-full border px-3 py-1 text-xs ${
+								darkMode
+									? "border-white/10 bg-white/5 text-slate-300"
+									: "border-slate-200 bg-slate-100 text-slate-600"
+							}`}
+						>
+							No investigation models available — using the platform default
+						</span>
+					) : (
+						<select
+							value={config.effectiveModelId}
+							onChange={handleChange}
+							disabled={saving}
+							aria-label="Investigation model"
+							className={`rounded-xl border px-3 py-1.5 text-xs outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${
+								darkMode
+									? "border-white/10 bg-slate-900/70 text-slate-100 focus:border-indigo-400"
+									: "border-slate-200 bg-white text-slate-800 focus:border-indigo-400"
+							}`}
+						>
+							{config.allowed.map((id) => (
+								<option key={id} value={id}>
+									{id} · free
+								</option>
+							))}
+						</select>
+					)
 				) : (
 					<span
 						className={`inline-flex items-center rounded-full border px-3 py-1 text-xs ${

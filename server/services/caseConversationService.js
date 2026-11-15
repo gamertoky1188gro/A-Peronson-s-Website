@@ -422,17 +422,48 @@ async function answerClarification(options = {}) {
 		return { reply: READY_REPLY, ready: true };
 	}
 
-	const call = options.provider || providerOverride || callConfiguredProvider;
-	if (!call) {
-		return { reply: FALLBACK_CLARIFYING_QUESTION, ready: false };
-	}
-
+	const configured = providerOverride || callConfiguredProvider;
 	try {
 		const prompt = buildClarificationPrompt(turn);
-		const answer = await withTimeout(
-			Promise.resolve().then(() => call(prompt, CLARIFICATION_SYSTEM_PROMPT)),
-			timeoutMs(),
-		);
+		let answer = null;
+		if (options.provider) {
+			try {
+				answer = await withTimeout(
+					Promise.resolve().then(() => options.provider(prompt, CLARIFICATION_SYSTEM_PROMPT)),
+					timeoutMs(),
+				);
+			} catch (error) {
+				logWarn("clarification provider failed; trying the configured provider", {
+					message: String(error),
+				});
+				answer = null;
+			}
+			if (!sanitizeString(text(answer)) && configured) {
+				try {
+					answer = await withTimeout(
+						Promise.resolve().then(() => configured(prompt, CLARIFICATION_SYSTEM_PROMPT)),
+						timeoutMs(),
+					);
+				} catch (error) {
+					logWarn("Clarification configured provider failed; falling back to the fixed question", {
+						message: String(error),
+					});
+					answer = null;
+				}
+			}
+		} else if (configured) {
+			try {
+				answer = await withTimeout(
+					Promise.resolve().then(() => configured(prompt, CLARIFICATION_SYSTEM_PROMPT)),
+					timeoutMs(),
+				);
+			} catch (error) {
+				logWarn("Clarification provider failed; falling back to the fixed question", {
+					message: String(error),
+				});
+				answer = null;
+			}
+		}
 		const reply = sanitizeString(text(answer), MAX_REPLY_CHARS);
 		if (!reply) {
 			return { reply: FALLBACK_CLARIFYING_QUESTION, ready: false };

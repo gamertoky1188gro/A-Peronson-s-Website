@@ -29,7 +29,7 @@ export async function getAdminSupportModels(req, res) {
 		const config = await getInvestigationModelConfig({
 			forceCatalogRefresh: req.query?.refresh === "1",
 		});
-		return res.json(shape(config));
+		return res.json({ ok: true, ...shape(config) });
 	} catch (error) {
 		return handleControllerError(res, error);
 	}
@@ -55,7 +55,7 @@ export async function putAdminSupportModels(req, res) {
 			{ allowed, default: def, buyerSelectEnabled },
 			req.user?.id,
 		);
-		return res.json(shape(result));
+		return res.json({ ok: true, ...shape(result) });
 	} catch (error) {
 		return handleControllerError(res, error);
 	}

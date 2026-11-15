@@ -56,7 +56,7 @@ import {
 	buildVerifyPrompt,
 	DEFAULT_TOOL_BUDGET,
 } from "./investigation/agents.js";
-import { computeCaseModelOrder } from "./investigation/caseModelChain.js";
+import { computeCaseModelOrder, effectiveCaseModelId } from "./investigation/caseModelChain.js";
 import {
 	demoteUnsubstantiated,
 	demoteUnverifiedReferences,
@@ -1035,8 +1035,13 @@ function normalizeToolCalls(toolCalls) {
  */
 async function pickCaseModels(client, caseRow) {
 	const available = await listAvailableModels(client);
-	const { allowed } = await getInvestigationModelConfig();
-	return computeCaseModelOrder({ caseModelId: caseRow?.model_id || null, allowed, available });
+	const { allowed, buyerSelectEnabled } = await getInvestigationModelConfig();
+	const caseModelId = effectiveCaseModelId({
+		caseModelId: caseRow?.model_id || null,
+		buyerSelectEnabled,
+		allowed,
+	});
+	return computeCaseModelOrder({ caseModelId, allowed, available });
 }
 
 /**

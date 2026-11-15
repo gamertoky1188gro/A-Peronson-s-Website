@@ -13,6 +13,7 @@ import * as realtime from "../realtime/realtimeBus.js";
 import * as caseService from "../services/caseService.js";
 import { isSupportEvidenceEntityType } from "../services/documentService.js";
 import { authorizeFilePath } from "../services/fileAccessService.js";
+import { effectiveCaseModelId } from "../services/investigation/caseModelChain.js";
 import { logError, logInfo, logWarn } from "../utils/logger.js";
 import { handleControllerError } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
@@ -233,8 +234,17 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 		const caseModelId = caseRow?.model_id || caseRow?.modelId || null;
 		if (caseModelId) {
 			try {
-				const { makeClarificationProvider } = await import("../services/clarificationOpencodeProvider.js");
-				provider = makeClarificationProvider({ modelId: caseModelId, caseId: caseRow?.id });
+				const { getInvestigationModelConfig } = await import(
+					"../services/investigation/investigationModelConfigService.js"
+				);
+				const { allowed, buyerSelectEnabled } = await getInvestigationModelConfig();
+				const effectiveModelId = effectiveCaseModelId({ caseModelId, buyerSelectEnabled, allowed });
+				if (effectiveModelId) {
+					const { makeClarificationProvider } = await import(
+						"../services/clarificationOpencodeProvider.js"
+					);
+					provider = makeClarificationProvider({ modelId: effectiveModelId, caseId: caseRow?.id });
+				}
 			} catch {
 				provider = null; // fall back to env providers exactly as before
 			}

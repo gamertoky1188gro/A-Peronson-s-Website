@@ -223,6 +223,7 @@ describe("GET /api/admin/support-models", () => {
 			.set(AUTH.admin);
 		expect(res.status).toBe(200);
 		expect(res.body).toEqual({
+			ok: true,
 			allowed: ["minimax-m3.1-flash-free", "deepseek-v4.1-flash-free"],
 			default: "minimax-m3.1-flash-free",
 			buyerSelectEnabled: true,
