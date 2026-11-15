@@ -21,6 +21,12 @@ import {
 	REPOSITORY_ROOT,
 	resolveOpencodeBinary,
 } from "./investigation/opencodeRuntime.js";
+import {
+	clearLastOpencodeOutcome,
+	getActiveModel,
+	getLastOpencodeOutcome,
+	runAssistantPrompt,
+} from "./opencodeModelService.js";
 import { waitForAssistantTurn } from "./opencodeTurns.js";
 
 const _KNOWLEDGE_MODEL = "assistantKnowledge";
@@ -1087,9 +1093,9 @@ function opencodeReadyTimeoutMs() {
  *
  * The stored meta carries the model it was created with, so the mismatch is
  * detectable. When it does not match, the session has to be DISCARDED, not
- * reused: a new one is created on the model the configuration names.
+ * reused: a new one is created on the model that is active now.
  */
-function cachedSessionMatchesModel(meta) {
+async function cachedSessionMatchesModel(meta) {
 	if (!meta?.sessionId) {
 		return false;
 	}
@@ -1099,7 +1105,8 @@ function cachedSessionMatchesModel(meta) {
 		// kept: discarding a good session is the worse failure.
 		return true;
 	}
-	return had === String(aiConfig.opencode.modelID || "");
+	const active = await getActiveModel();
+	return had === String(active.id || "");
 }
 
 /**
@@ -1390,15 +1397,18 @@ export async function createUserOpencodeSession(userId) {
 
 	const baseUrl = `http://localhost:${port}`;
 	const sessionId = formatSessionId(userId);
+	// The session is bound to ONE model, so the model it is created with is the
+	// model that is active now - not the one the environment names.
+	const active = await getActiveModel();
 
 	try {
 		const client = opencodeV2Client(baseUrl);
 
 		// Reuse the session the user already has, if the server still knows it
-		// AND it was created for the model the configuration names.
+		// AND it was created for the model that is active now.
 		if (userId) {
 			const meta = await loadSessionMeta(userId);
-			if (meta?.sessionId && cachedSessionMatchesModel(meta)) {
+			if (meta?.sessionId && (await cachedSessionMatchesModel(meta))) {
 				const existing = await client.session.get({ sessionID: meta.sessionId }).catch(() => null);
 				if (existing?.id) {
 					logInfo("User session already exists", {
@@ -1417,7 +1427,7 @@ export async function createUserOpencodeSession(userId) {
 			// this configuration asks for - and the prompt comes back empty.
 			// The investigation runtime names the model and works; this one did
 			// not, and the difference was the whole bug.
-			model: { id: cfg.modelID, providerID: cfg.providerID },
+			model: { id: active.id, providerID: active.providerID },
 			location: { directory: REPOSITORY_ROOT },
 		});
 
@@ -1426,14 +1436,19 @@ export async function createUserOpencodeSession(userId) {
 			logError("Failed to create user session", { userId });
 			return null;
 		}
-		logInfo("Created user session", { userId, actualSessionId });
+		logInfo("Created user session", {
+			userId,
+			actualSessionId,
+			model: active.id,
+			modelSource: active.source,
+		});
 
 		if (userId && actualSessionId) {
 			await saveSessionMeta(userId, {
 				sessionId: actualSessionId,
 				sessionIdKey: sessionId,
-				model: cfg.modelID,
-				provider: cfg.providerID,
+				model: active.id,
+				provider: active.providerID,
 				createdAt: new Date().toISOString(),
 			});
 		}
@@ -1485,6 +1500,7 @@ export async function getOpencodeSessionMessages(userId) {
 	}
 
 	const baseUrl = `http://localhost:${port}`;
+	const active = await getActiveModel();
 
 	let actualSessionId = null;
 	if (userId) {
@@ -1550,8 +1566,8 @@ export async function getOpencodeSessionMessages(userId) {
 			}
 			await saveSessionMeta(userId, {
 				sessionId: actualSessionId,
-				model: cfg.modelID,
-				provider: cfg.providerID,
+				model: active.id,
+				provider: active.providerID,
 				messageCount: messages.length,
 				title: title || meta?.title || null,
 			});
@@ -1608,6 +1624,8 @@ export async function deleteOpencodeSession(userId) {
 }
 
 async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId = null) {
+	// A stale outcome from an earlier turn must never leak into this one.
+	clearLastOpencodeOutcome();
 	const cfg = aiConfig.opencode;
 
 	if (!(cfg.baseUrl && cfg.modelID)) {
@@ -1621,18 +1639,19 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 
 	const baseUrl = `http://localhost:${port}`;
 	const sessionIdKey = formatSessionId(userId);
+	const active = await getActiveModel();
 
 	let actualSessionId = null;
 	if (userId) {
 		const meta = await loadSessionMeta(userId);
-		if (cachedSessionMatchesModel(meta)) {
+		if (await cachedSessionMatchesModel(meta)) {
 			actualSessionId = meta?.sessionId || null;
 		} else if (meta?.sessionId) {
 			logInfo("Discarding the cached session: the model changed", {
 				userId,
 				sessionId: meta.sessionId,
 				was: meta.model,
-				now: aiConfig.opencode.modelID,
+				now: active.id,
 			});
 		}
 	}
@@ -1653,21 +1672,25 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 
 	logInfo("Calling Opencode", {
 		baseUrl,
-		model: cfg.modelID,
+		model: active.id,
 		sessionId: actualSessionId,
 		sessionIdKey,
-		providerID: cfg.providerID,
+		providerID: active.providerID,
 		promptLength: prompt?.length || 0,
 	});
 
 	try {
 		const client = opencodeV2Client(baseUrl);
 
-		const response = await promptOpencodeSession({
+		const response = await runAssistantPrompt({
 			client,
 			sessionID: actualSessionId,
 			text: String(prompt || ""),
+			timeoutMs: 120_000,
 		});
+		if (!response) {
+			return null; // outcome stashed by runAssistantPrompt; caller falls back
+		}
 
 		const parts = response.parts;
 		const responseStr = JSON.stringify(parts);
@@ -1734,8 +1757,8 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 
 		await saveOpencodeConfig({
 			baseUrl,
-			providerID: cfg.providerID,
-			modelID: cfg.modelID,
+			providerID: active.providerID,
+			modelID: active.id,
 			port,
 			updatedAt: new Date().toISOString(),
 		});
@@ -1745,8 +1768,8 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 			if (meta?.title) {
 				await saveSessionMeta(userId, {
 					sessionId: actualSessionId,
-					model: cfg.modelID,
-					provider: cfg.providerID,
+					model: active.id,
+					provider: active.providerID,
 					title: meta.title,
 				});
 			} else {
@@ -1756,15 +1779,15 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 				if (title) {
 					await saveSessionMeta(userId, {
 						sessionId: actualSessionId,
-						model: cfg.modelID,
-						provider: cfg.providerID,
+						model: active.id,
+						provider: active.providerID,
 						title,
 					});
 				} else {
 					await saveSessionMeta(userId, {
 						sessionId: actualSessionId,
-						model: cfg.modelID,
-						provider: cfg.providerID,
+						model: active.id,
+						provider: active.providerID,
 					});
 				}
 			}
@@ -2060,7 +2083,7 @@ export async function removeAssistantRule(type, ruleId) {
 	return deleted;
 }
 
-function buildMatchedResponse({
+export function buildMatchedResponse({
 	matchedAnswer,
 	source,
 	score,
@@ -2068,19 +2091,25 @@ function buildMatchedResponse({
 	matchedType = null,
 	codeContext = null,
 	knowledgeContext = "",
+	opencodeMeta = null,
 }) {
+	const metadata = {
+		matched_source: source,
+		matched_type: matchedType,
+		confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
+		fallback_reason: fallbackReason,
+		code_context: codeContext,
+		knowledge_context: knowledgeContext,
+	};
+	if (opencodeMeta?.model) {
+		metadata.model = opencodeMeta.model;
+		metadata.fallback_attempts = opencodeMeta.attempts || [];
+	}
 	return {
 		matched_answer: matchedAnswer,
 		source,
-		confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
-		metadata: {
-			matched_source: source,
-			matched_type: matchedType,
-			confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
-			fallback_reason: fallbackReason,
-			code_context: codeContext,
-			knowledge_context: knowledgeContext,
-		},
+		confidence: metadata.confidence,
+		metadata,
 	};
 }
 
@@ -2174,6 +2203,9 @@ export async function assistantReply(orgId, question = "", userId = null) {
 
 	const conversationHistory = await fetchSessionHistory(userId, questionText);
 
+	// Only an outcome produced by THIS request's opencode call may be
+	// reported, so a stale one is dropped before the provider runs.
+	clearLastOpencodeOutcome();
 	const dynamicAnswer = await generateDynamicAnswer(
 		questionText,
 		codeContext,
@@ -2181,6 +2213,10 @@ export async function assistantReply(orgId, question = "", userId = null) {
 		userId,
 		conversationHistory,
 	);
+	// The outcome is stashed by the opencode provider; it says WHICH model
+	// answered and which ones refused before it.
+	const opencodeMeta = getLastOpencodeOutcome();
+	clearLastOpencodeOutcome();
 	if (dynamicAnswer) {
 		await updateLocalJson(
 			"ai_response_audit.json",
@@ -2205,6 +2241,7 @@ export async function assistantReply(orgId, question = "", userId = null) {
 			matchedType: "dynamic_ai",
 			codeContext,
 			knowledgeContext,
+			opencodeMeta,
 		});
 	}
 
@@ -2242,6 +2279,8 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 		return onComplete(null, "AI not configured");
 	}
 
+	const active = await getActiveModel();
+
 	const port = await ensureOpencodeServer();
 	if (!port) {
 		return onComplete(null, "AI server unavailable");
@@ -2256,7 +2295,7 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 		// A session is bound to the model it was created with, so a session
 		// recorded for a different model is discarded here too - otherwise the
 		// streaming route keeps asking a model that no longer exists.
-		if (cachedSessionMatchesModel(meta)) {
+		if (await cachedSessionMatchesModel(meta)) {
 			sessionId = meta?.sessionId || null;
 		}
 	}
@@ -2269,6 +2308,8 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 	if (!sessionId) {
 		return onComplete(null, "Could not create AI session");
 	}
+	// A stale outcome from an earlier turn must never leak into this one.
+	clearLastOpencodeOutcome();
 
 	const conversationHistory = await fetchSessionHistory(userId, questionText, baseUrl);
 
@@ -2284,7 +2325,7 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 
 		// The v2 API queues the prompt and answers asynchronously, so the
 		// reply is polled for and the chunk callback fires as the text grows.
-		const response = await promptOpencodeSession({
+		const response = await runAssistantPrompt({
 			client,
 			sessionID: sessionId,
 			text: prompt,
@@ -2294,6 +2335,17 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 				onChunk(unescapeHtml(delta), unescapeHtml(total));
 			},
 		});
+		const outcome = getLastOpencodeOutcome();
+		clearLastOpencodeOutcome();
+		const meta = outcome ? { model: outcome.model, attempts: outcome.attempts } : null;
+
+		if (!response) {
+			return onComplete(
+				null,
+				outcome?.failed === "refused" ? "opencode_refused" : "opencode_unavailable",
+				meta,
+			);
+		}
 
 		const parts = response.parts;
 		const textPart = (parts || []).find((p) => p.type === "text");
@@ -2344,17 +2396,17 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 				if (title) {
 					await saveSessionMeta(userId, {
 						sessionId,
-						model: cfg.modelID,
-						provider: cfg.providerID,
+						model: active.id,
+						provider: active.providerID,
 						title,
 					});
 				}
 			}
 		}
 
-		onComplete(unescapeHtml(fullText) || null, null);
+		onComplete(unescapeHtml(fullText) || null, null, meta);
 	} catch (error) {
 		logError("Opencode stream failed", { error: error.message });
-		onComplete(null, error.message);
+		onComplete(null, error.message, null);
 	}
 }

@@ -1149,7 +1149,7 @@ wsServer.on("connection", (socket, req) => {
 				});
 			};
 
-			const gotComplete = (answer, error) => {
+			const gotComplete = (answer, error, meta) => {
 				streamDone = true;
 				_streamError = error;
 				clearTimeout(faqTimer);
@@ -1167,6 +1167,9 @@ wsServer.on("connection", (socket, req) => {
 								matched_type: "error",
 								confidence: 0,
 								fallback_reason: error,
+								...(meta?.model
+									? { model: meta.model, fallback_attempts: meta.attempts || [] }
+									: {}),
 							},
 						});
 					} else {
@@ -1184,6 +1187,7 @@ wsServer.on("connection", (socket, req) => {
 							matched_type: "ai_generated",
 							confidence: 2,
 							fallback_reason: null,
+							...(meta?.model ? { model: meta.model, fallback_attempts: meta.attempts || [] } : {}),
 						},
 					});
 				}
