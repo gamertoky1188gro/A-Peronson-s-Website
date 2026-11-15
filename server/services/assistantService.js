@@ -21,12 +21,7 @@ import {
 	REPOSITORY_ROOT,
 	resolveOpencodeBinary,
 } from "./investigation/opencodeRuntime.js";
-import {
-	clearLastOpencodeOutcome,
-	getActiveModel,
-	getLastOpencodeOutcome,
-	runAssistantPrompt,
-} from "./opencodeModelService.js";
+import { getActiveModel, runAssistantPrompt } from "./opencodeModelService.js";
 import { waitForAssistantTurn } from "./opencodeTurns.js";
 
 export { getModelsSnapshot, setActiveModel } from "./opencodeModelService.js";
@@ -783,7 +778,13 @@ export async function callLlama(prompt, systemPromptOverride = null) {
 	return null;
 }
 
-async function callAiProvider(provider, prompt, systemPrompt = null, userId = null) {
+async function callAiProvider(
+	provider,
+	prompt,
+	systemPrompt = null,
+	userId = null,
+	outcomeRef = null,
+) {
 	switch (provider) {
 		case AI_PROVIDERS.OLLAMA:
 			return callOllama(prompt, systemPrompt);
@@ -792,7 +793,7 @@ async function callAiProvider(provider, prompt, systemPrompt = null, userId = nu
 		case AI_PROVIDERS.GEMINI:
 			return callGemini(prompt, systemPrompt);
 		case AI_PROVIDERS.OPENCODE:
-			return callOpencode(prompt, systemPrompt, userId);
+			return callOpencode(prompt, systemPrompt, userId, outcomeRef);
 		default:
 			logError("Unknown AI provider", { provider });
 			return null;
@@ -1120,6 +1121,22 @@ async function cachedSessionMatchesModel(meta) {
 	}
 	const active = await getActiveModel();
 	return had === String(active.id || "");
+}
+
+/**
+ * The model a persisted session is bound to.
+ *
+ * A session is bound to ONE model for its whole life, so its recorded model
+ * must never be overwritten with the model that is active NOW: that would
+ * undo an admin switch (the next turn would reuse the old session as if it
+ * matched the new model) and report a model that never answered. Only a
+ * session that records no model gets the active one stamped on it.
+ */
+function sessionModel(meta, sessionId, activeId) {
+	if (meta?.sessionId === sessionId && meta.model) {
+		return meta.model;
+	}
+	return activeId;
 }
 
 /**
@@ -1579,7 +1596,7 @@ export async function getOpencodeSessionMessages(userId) {
 			}
 			await saveSessionMeta(userId, {
 				sessionId: actualSessionId,
-				model: active.id,
+				model: sessionModel(meta, actualSessionId, active.id),
 				provider: active.providerID,
 				messageCount: messages.length,
 				title: title || meta?.title || null,
@@ -1636,9 +1653,12 @@ export async function deleteOpencodeSession(userId) {
 	}
 }
 
-async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId = null) {
-	// A stale outcome from an earlier turn must never leak into this one.
-	clearLastOpencodeOutcome();
+async function callOpencode(
+	prompt,
+	systemPrompt = DEFAULT_SYSTEM_PROMPT,
+	userId = null,
+	outcomeRef = null,
+) {
 	const cfg = aiConfig.opencode;
 
 	if (!(cfg.baseUrl && cfg.modelID)) {
@@ -1702,7 +1722,16 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 			timeoutMs: 120_000,
 		});
 		if (!response) {
-			return null; // outcome stashed by runAssistantPrompt; caller falls back
+			return null; // opencode produced no answer; the caller falls back
+		}
+
+		// The outcome travels back BY VALUE: it belongs to THIS turn only.
+		try {
+			if (outcomeRef) {
+				outcomeRef.value = { model: response.model, attempts: response.attempts };
+			}
+		} catch {
+			// A frozen ref must not break the answer.
 		}
 
 		const parts = response.parts;
@@ -1781,7 +1810,7 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 			if (meta?.title) {
 				await saveSessionMeta(userId, {
 					sessionId: actualSessionId,
-					model: active.id,
+					model: sessionModel(meta, actualSessionId, active.id),
 					provider: active.providerID,
 					title: meta.title,
 				});
@@ -1792,14 +1821,14 @@ async function callOpencode(prompt, systemPrompt = DEFAULT_SYSTEM_PROMPT, userId
 				if (title) {
 					await saveSessionMeta(userId, {
 						sessionId: actualSessionId,
-						model: active.id,
+						model: sessionModel(meta, actualSessionId, active.id),
 						provider: active.providerID,
 						title,
 					});
 				} else {
 					await saveSessionMeta(userId, {
 						sessionId: actualSessionId,
-						model: active.id,
+						model: sessionModel(meta, actualSessionId, active.id),
 						provider: active.providerID,
 					});
 				}
@@ -1827,6 +1856,13 @@ async function runWithTimeout(callback, timeoutMs) {
 	}
 }
 
+/**
+ * Ask the configured provider for a dynamic answer.
+ *
+ * Returns `{ answer, opencodeMeta }`. `opencodeMeta` is the outcome of THIS
+ * call only - it travels by value, so two concurrent requests can never
+ * report each other's model.
+ */
 async function generateDynamicAnswer(
 	questionText,
 	codeContext,
@@ -1836,7 +1872,7 @@ async function generateDynamicAnswer(
 ) {
 	if (!aiConfig.enabled) {
 		logInfo("AI is disabled");
-		return null;
+		return { answer: null, opencodeMeta: null };
 	}
 
 	const prompt = await buildAgentPrompt(
@@ -1855,23 +1891,25 @@ async function generateDynamicAnswer(
 		userId,
 	});
 
+	const outcomeRef = { value: null };
+
 	if (primary !== AI_PROVIDERS.NONE && isProviderAvailable(primary)) {
-		const result = await callAiProvider(primary, prompt, null, userId);
+		const result = await callAiProvider(primary, prompt, null, userId, outcomeRef);
 		if (result) {
-			return result;
+			return { answer: result, opencodeMeta: outcomeRef.value };
 		}
 	}
 
 	if (fallback !== AI_PROVIDERS.NONE && isProviderAvailable(fallback)) {
 		logInfo(`Primary ${primary} failed, trying fallback ${fallback}`);
-		const result = await callAiProvider(fallback, prompt, null, userId);
+		const result = await callAiProvider(fallback, prompt, null, userId, outcomeRef);
 		if (result) {
-			return result;
+			return { answer: result, opencodeMeta: outcomeRef.value };
 		}
 	}
 
 	logError("All AI providers failed or unavailable");
-	return null;
+	return { answer: null, opencodeMeta: null };
 }
 
 export async function listKnowledge(orgId) {
@@ -2219,20 +2257,15 @@ export async function assistantReply(orgId, question = "", userId = null) {
 
 	const conversationHistory = await fetchSessionHistory(userId, questionText);
 
-	// Only an outcome produced by THIS request's opencode call may be
-	// reported, so a stale one is dropped before the provider runs.
-	clearLastOpencodeOutcome();
-	const dynamicAnswer = await generateDynamicAnswer(
+	// The outcome comes back with the answer, so it always belongs to THIS
+	// request - no shared stash, no stale outcome from an earlier turn.
+	const { answer: dynamicAnswer, opencodeMeta } = await generateDynamicAnswer(
 		questionText,
 		codeContext,
 		knowledgeContext,
 		userId,
 		conversationHistory,
 	);
-	// The outcome is stashed by the opencode provider; it says WHICH model
-	// answered and which ones refused before it.
-	const opencodeMeta = getLastOpencodeOutcome();
-	clearLastOpencodeOutcome();
 	if (dynamicAnswer) {
 		await updateLocalJson(
 			"ai_response_audit.json",
@@ -2324,8 +2357,6 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 	if (!sessionId) {
 		return onComplete(null, "Could not create AI session");
 	}
-	// A stale outcome from an earlier turn must never leak into this one.
-	clearLastOpencodeOutcome();
 
 	const conversationHistory = await fetchSessionHistory(userId, questionText, baseUrl);
 
@@ -2351,16 +2382,11 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 				onChunk(unescapeHtml(delta), unescapeHtml(total));
 			},
 		});
-		const outcome = getLastOpencodeOutcome();
-		clearLastOpencodeOutcome();
-		const meta = outcome ? { model: outcome.model, attempts: outcome.attempts } : null;
+		// The outcome travels back BY VALUE: it belongs to THIS turn only.
+		const meta = response?.model ? { model: response.model, attempts: response.attempts } : null;
 
 		if (!response) {
-			return onComplete(
-				null,
-				outcome?.failed === "refused" ? "opencode_refused" : "opencode_unavailable",
-				meta,
-			);
+			return onComplete(null, "opencode_unavailable", meta);
 		}
 
 		const parts = response.parts;
@@ -2412,7 +2438,7 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 				if (title) {
 					await saveSessionMeta(userId, {
 						sessionId,
-						model: active.id,
+						model: sessionModel(meta, sessionId, active.id),
 						provider: active.providerID,
 						title,
 					});

@@ -20,15 +20,8 @@ import { waitForAssistantTurn } from "./opencodeTurns.js";
 const BRANDING_KEY = "ai.opencode.model_id";
 const DEFAULT_MODEL_ID = "minimax-m3.1-flash-free";
 const FREE_PROVIDER_ID = "opencode";
-const CACHE_TTL_MS = 60_000;
 
-let _modelsCache = null; // { at: number, models: [{id, providerID}] }
-let _lastOutcome = null;
-
-export async function fetchAvailableModels(client, { fresh = false } = {}) {
-	if (!fresh && _modelsCache && Date.now() - _modelsCache.at < CACHE_TTL_MS) {
-		return _modelsCache.models;
-	}
+export async function fetchAvailableModels(client) {
 	const response = await client.model.list();
 	const flat = Object.values(response?.data || response || {}).flat();
 	const seen = new Set();
@@ -42,7 +35,6 @@ export async function fetchAvailableModels(client, { fresh = false } = {}) {
 		seen.add(id);
 		models.push({ id, providerID });
 	}
-	_modelsCache = { at: Date.now(), models };
 	return models;
 }
 
@@ -75,6 +67,12 @@ export async function getActiveModel() {
 	if (envId && isFreeOpencodeModel(envId, FREE_PROVIDER_ID)) {
 		return { id: envId, providerID: FREE_PROVIDER_ID, source: "env" };
 	}
+	if (envId) {
+		logWarn("opencode_model_env_pick_ignored", {
+			pick: envId,
+			reason: "not a free opencode-tier model",
+		});
+	}
 	return { id: DEFAULT_MODEL_ID, providerID: FREE_PROVIDER_ID, source: "default" };
 }
 
@@ -99,7 +97,12 @@ export async function setActiveModel(modelId, changedBy, client = null) {
 	}
 	if (client) {
 		try {
-			const live = await fetchAvailableModels(client, { fresh: true });
+			const live = await fetchAvailableModels(client);
+			if (live.length === 0) {
+				logWarn("opencode_model_live_list_empty", {
+					reason: "server up but no free models offered; presence validation skipped",
+				});
+			}
 			if (live.length > 0 && !live.some((m) => m.id === id)) {
 				const error = new Error(
 					`Refusing to persist "${id}": the running opencode server does not offer it.`,
@@ -134,11 +137,18 @@ export async function setActiveModel(modelId, changedBy, client = null) {
 		} catch {
 			// Audit or nothing: roll the branding row back to the previous pick.
 			try {
-				await prisma.adminBranding.upsert({
-					where: { brand_key: BRANDING_KEY },
-					update: { value: previous ?? DEFAULT_MODEL_ID, active: true },
-					create: { brand_key: BRANDING_KEY, value: previous ?? DEFAULT_MODEL_ID, active: true },
-				});
+				if (previous === null) {
+					// There was NO admin pick before this switch. Upserting one
+					// would turn "default/env" into an admin pick that nobody
+					// chose, so the row is removed instead.
+					await prisma.adminBranding.deleteMany({ where: { brand_key: BRANDING_KEY } });
+				} else {
+					await prisma.adminBranding.upsert({
+						where: { brand_key: BRANDING_KEY },
+						update: { value: previous, active: true },
+						create: { brand_key: BRANDING_KEY, value: previous, active: true },
+					});
+				}
 			} catch (rollbackError) {
 				logError("opencode_model_rollback_failed", { message: rollbackError?.message });
 			}
@@ -165,8 +175,7 @@ export async function getModelsSnapshot(client = null) {
 		return { models: [], active: active.id, source: active.source, serverAvailable: false };
 	}
 	try {
-		// fresh: a picker must notice a down server even inside the cache window.
-		const models = await fetchAvailableModels(client, { fresh: true });
+		const models = await fetchAvailableModels(client);
 		return { models, active: active.id, source: active.source, serverAvailable: true };
 	} catch (error) {
 		logWarn("opencode_model_list_failed", { message: error?.message });
@@ -174,19 +183,15 @@ export async function getModelsSnapshot(client = null) {
 	}
 }
 
-export function getLastOpencodeOutcome() {
-	return _lastOutcome;
-}
-
-export function clearLastOpencodeOutcome() {
-	_lastOutcome = null;
-}
-
 /**
  * Run one assistant prompt with per-turn fallback. The first attempt uses the
  * caller's session (bound to the active model). On a model refusal, each
  * remaining chain candidate gets a FRESH EPHEMERAL session, which is deleted
  * after the turn. Timeouts and wedges are never retried.
+ *
+ * The outcome travels BY VALUE: the caller receives `{ text, parts, model,
+ * providerID, attempts }` or null. Nothing is stashed in module scope, so
+ * two concurrent requests can never read each other's outcome.
  */
 export async function runAssistantPrompt({
 	client,
@@ -249,10 +254,8 @@ export async function runAssistantPrompt({
 		}
 		if (refused) continue;
 		if (turn.timedOut || turn.wedged) {
-			_lastOutcome = { model: candidate.id, attempts, failed: outcome };
 			return null;
 		}
-		_lastOutcome = { model: candidate.id, attempts };
 		return {
 			text: turn.text,
 			parts: turn.parts,
@@ -261,6 +264,5 @@ export async function runAssistantPrompt({
 			attempts,
 		};
 	}
-	_lastOutcome = { model: null, attempts, failed: "refused" };
 	return null;
 }

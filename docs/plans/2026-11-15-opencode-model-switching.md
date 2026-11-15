@@ -15,6 +15,7 @@
 - No new Prisma models, no migration. Persistence: `AdminBranding` + `AdminConfigHistory` only.
 - A timeout on a candidate is NEVER retried (matches the investigation runtime semantics); only model refusals (429 / provider quota / `message.error`) advance the chain.
 - `docs/superpowers/specs/2026-11-15-opencode-model-switching-design.md` is the source of truth for behavior.
+- **Amended by the final fix wave (2026-11-15):** the run outcome travels by value (no process-global stash), the free-model list is fetched live (no 60 s cache), and a persisted session's recorded model is never re-stamped with the model that is active now. The Task 1 / Task 2 interface lists below carry the amendments; the fenced code blocks are the original task text.
 
 ---
 
@@ -28,12 +29,11 @@
 **Interfaces:**
 - Consumes: `DEFAULT_MODEL_CHAIN`, `isFreeOpencodeModel` from `server/services/investigation/modelChain.js`; `REPOSITORY_ROOT` from `server/services/investigation/opencodeRuntime.js`; `waitForAssistantTurn` from `server/services/opencodeTurns.js`; `prisma` default export from `server/utils/prisma.js`; `aiConfig`-equivalent read via `process.env` (do NOT import assistantService — avoid a cycle).
 - Produces (used by Tasks 2–4):
-  - `fetchAvailableModels(client): Promise<Array<{id: string, providerID: string}>>` — 60 s cache, bypass with `{ fresh: true }`.
+  - `fetchAvailableModels(client): Promise<Array<{id: string, providerID: string}>>` — fetches the live list every time (amended by the final fix wave: the 60 s cache is gone).
   - `getActiveModel(): Promise<{id: string, providerID: string, source: "admin"|"env"|"default"}>` — DB row wins, then `OPENCODE_MODEL_ID` env, then `minimax-m3.1-flash-free`.
   - `setActiveModel(modelId: string, changedBy: string, client?): Promise<{id: string, providerID: string, source: "admin"}>` — throws `Error` with `.status = 400` on refusal; `.status = 500` on write failure.
   - `getCandidateChain(): Promise<Array<{id: string, providerID: string}>>` — active first, then the default chain minus active.
-  - `runAssistantPrompt({client, sessionID, text, timeoutMs, onText}): Promise<{text: string, parts: Array, model: string, providerID: string, attempts: Array<{model: string, outcome: "ok"|"refused"|"timeout"|"wedged"}>}>` or `null` (timeout / wedge / all refused). Stashes the outcome for `getLastOpencodeOutcome()`.
-  - `getLastOpencodeOutcome()`, `clearLastOpencodeOutcome()`
+  - `runAssistantPrompt({client, sessionID, text, timeoutMs, onText}): Promise<{text: string, parts: Array, model: string, providerID: string, attempts: Array<{model: string, outcome: "ok"|"refused"|"timeout"|"wedged"}>}>` or `null` (timeout / wedge / all refused). The outcome travels BY VALUE (amended by the final fix wave: there is no process-global stash).
   - `getModelsSnapshot(client?): Promise<{models, active, source, serverAvailable}>` — used by the GET route.
 
 - [ ] **Step 1: Clean the spec paragraph**
@@ -503,11 +503,11 @@ git commit -m "feat(assistant): opencode model service — fetch, switch, per-tu
 ### Task 2: Wire the assistant service to the new service
 
 **Files:**
-- Modify: `server/services/assistantService.js` (imports; `clearLastOpencodeOutcome` call; `cachedSessionMatchesModel` → active model; `callOpencode`; `buildMatchedResponse`; `assistantReply`; `streamOpencodeReply`)
+- Modify: `server/services/assistantService.js` (imports; outcome by value instead of the stash; `cachedSessionMatchesModel` → active model; `callOpencode`; `buildMatchedResponse`; `assistantReply`; `streamOpencodeReply`)
 - Test: `tests/unit/server-assistant-opencode-metadata.test.js` (new)
 
 **Interfaces:**
-- Consumes (from Task 1): `getActiveModel`, `runAssistantPrompt`, `getLastOpencodeOutcome`, `clearLastOpencodeOutcome`.
+- Consumes (from Task 1): `getActiveModel`, `runAssistantPrompt` (amended by the final fix wave: the outcome comes back by value, so there is no `getLastOpencodeOutcome()` / `clearLastOpencodeOutcome()` to consume).
 - Produces: REST `/ask` responses carry `metadata.model` + `metadata.fallback_attempts` when (and only when) the opencode provider produced the answer; streaming WS replies carry the same in `metadata`.
 
 - [ ] **Step 1: Write the failing test**

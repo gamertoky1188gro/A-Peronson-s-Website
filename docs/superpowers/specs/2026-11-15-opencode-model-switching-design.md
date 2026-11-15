@@ -44,7 +44,7 @@ assistantRoutes.js ──► opencodeModelService.js  (new, server/services/)
                             │  setActiveModel(id, id-of-user)
                             │  runAssistantPrompt()    ──► waitForAssistantTurn + fallback loop
 assistantService.js
-   │  callOpencode()        ──► uses runAssistantPrompt(); stashes outcome
+   │  callOpencode()        ──► uses runAssistantPrompt(); returns the outcome
    │  createUserOpencodeSession() / cachedSessionMatchesModel()
    │     compare against RESOLVED active model (admin pick wins over env)
    ▼
@@ -57,8 +57,8 @@ response metadata { model, attempts }   (REST /ask envelope, and streaming onCom
 
 - `fetchAvailableModels(client?)` — flatten `client.model.list()` (same shape
   handling as `listAvailableModels` in `investigation/opencodeRuntime.js`),
-  filter with `isFreeOpencodeModel`, return `[{ id, providerID }]`. 60 s
-  in-memory cache; cache is bypassed when the admin explicitly refreshes.
+  filter with `isFreeOpencodeModel`, return `[{ id, providerID }]`. The live
+  list is fetched every time (no cache: a picker must notice a down server).
 - `getActiveModel()` — read `AdminBranding` row `ai.opencode.model_id`.
   - If present and `isFreeOpencodeModel`: use it (`source: "admin"`).
   - Else fall back to `aiConfig.opencode.modelID` (`source: "env"` when set,
@@ -85,9 +85,7 @@ response metadata { model, attempts }   (REST /ask envelope, and streaming onCom
      `{ model, outcome }`.
   4. On exhaustion, return the last outcome's text if any, else null, so the
      caller's existing fallback (HTTP providers / FAQ) still applies.
-- Outcome stash: the module exports `getLastOpencodeOutcome()` / internal
-  `setLastOpencodeOutcome()` so `assistantReply` can read `{ model, attempts }`
-  without retyping the provider chain.
+- `runAssistantPrompt` returns the outcome by value (`{ text, parts, model, providerID, attempts }` or null). Concurrent requests never share an outcome — there is no process-global stash.
 
 ### 2. `assistantService.js` (surgical changes)
 
@@ -96,9 +94,14 @@ response metadata { model, attempts }   (REST /ask envelope, and streaming onCom
   Stale sessions are discarded as today.
 - `createUserOpencodeSession(userId)` binds sessions to the resolved active
   model; log line carries the source (`admin|env|default`).
-- `callOpencode()` delegates the prompt to `runAssistantPrompt()` and stashes
-  `{ model, attempts }` via `setLastOpencodeOutcome()`. Empty catch-all
-  behavior (`return null`) unchanged.
+- A persisted session's recorded model is never overwritten with the model that
+  is active now. A session is bound to ONE model, so re-stamping it would undo
+  an admin switch (the stale session would be reused as if it matched) and
+  report a model that never answered. Only a session that records no model
+  gets the active model stamped on it.
+- `callOpencode()` delegates the prompt to `runAssistantPrompt()` and hands the
+  outcome back through an `outcomeRef` the caller owns, so it belongs to that
+  turn alone. Empty catch-all behavior (`return null`) unchanged.
 - `assistantReply` (non-streaming path): when the opencode provider produced
   the answer, `metadata` gains `model` and `fallback_attempts`
   (existing `buildMatchedResponse` + the dynamic-answer branch). When the
@@ -141,7 +144,7 @@ New "OpenCode Models" tab next to the existing Settings/Rules tabs:
 1. `assistantReply` → dynamic answer path → primary provider is opencode.
 2. `callOpencode` → `runAssistantPrompt` → active model session.
 3. Model refuses (429) → fresh session on next chain candidate → succeeds.
-4. Outcome stashed `{ model: "glm-5.3-flash-free", attempts: [{minimax…, "refused"}, {glm…, "ok"}] }`.
+4. Outcome returned `{ model: "glm-5.3-flash-free", attempts: [{minimax…, "refused"}, {glm…, "ok"}] }`.
 5. Reply JSON: `matched_answer` = text, `metadata.model` +
    `metadata.fallback_attempts` added. Client shows answer as usual; the
    metadata is there for the UI to surface (and for debugging).
@@ -153,7 +156,7 @@ New "OpenCode Models" tab next to the existing Settings/Rules tabs:
   free-tier rule only (logged) — an admin can still switch while the server is
   down; it takes effect on next boot/spawn.
 - All candidates refuse → opencode path returns null → existing HTTP-provider /
-  FAQ fallback unchanged. Outcome stash still records the attempts; logged.
+  FAQ fallback unchanged. The attempts are logged.
 - Timeout on a candidate → NOT retried, and the chain does not advance past it.
   The opencode path returns null and the caller's existing HTTP-provider / FAQ
   fallback applies (matches the investigation runtime's semantics: the model
@@ -162,7 +165,12 @@ New "OpenCode Models" tab next to the existing Settings/Rules tabs:
   happened (order: branding first would violate "audit or nothing"; do
   branding write → history write, and if history fails, attempt to roll the
   branding row back to the previous value; if rollback fails, log loudly and
-  still 500).
+  still 500). The rollback REMOVES the branding row when there was no admin
+  pick before the switch — a `default`/`env` choice must not turn into an
+  admin pick that nobody chose.
+- Live list comes back empty (the server is up but offers no free model) →
+  presence validation is skipped and logged
+  (`opencode_model_live_list_empty`); the free-tier rule still applies.
 
 ## Testing
 

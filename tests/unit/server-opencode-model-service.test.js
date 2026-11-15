@@ -1,12 +1,17 @@
 import { jest } from "@jest/globals";
 
 const upsertBranding = jest.fn(async () => ({}));
+const deleteBranding = jest.fn(async () => ({}));
 const findBranding = jest.fn(async () => null);
 const createHistory = jest.fn(async () => ({}));
 
 jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 	default: {
-		adminBranding: { findUnique: findBranding, upsert: upsertBranding },
+		adminBranding: {
+			findUnique: findBranding,
+			upsert: upsertBranding,
+			deleteMany: deleteBranding,
+		},
 		adminConfigHistory: { create: createHistory },
 	},
 }));
@@ -55,9 +60,9 @@ function makeClient({ listResponse, refusalFirst = false } = {}) {
 
 beforeEach(() => {
 	upsertBranding.mockClear();
+	deleteBranding.mockClear();
 	findBranding.mockResolvedValue(null);
 	createHistory.mockClear();
-	svc.clearLastOpencodeOutcome();
 	delete process.env.OPENCODE_MODEL_ID;
 });
 
@@ -74,7 +79,7 @@ describe("fetchAvailableModels", () => {
 				}),
 			},
 		};
-		const models = await svc.fetchAvailableModels(client, { fresh: true });
+		const models = await svc.fetchAvailableModels(client);
 		expect(models).toEqual([{ id: "minimax-m3.1-flash-free", providerID: "opencode" }]);
 	});
 });
@@ -157,6 +162,19 @@ describe("setActiveModel", () => {
 		});
 		// 1st upsert = the switch, 2nd upsert = the rollback to the previous value
 		expect(upsertBranding).toHaveBeenCalledTimes(2);
+	});
+
+	it("removes the branding row on rollback when there was no admin pick", async () => {
+		const client = {
+			model: { list: async () => ({ data: [{ modelID: "beam-free", providerID: "opencode" }] }) },
+		};
+		createHistory.mockRejectedValueOnce(new Error("db down"));
+		await expect(svc.setActiveModel("beam-free", "admin-1", client)).rejects.toMatchObject({
+			status: 500,
+		});
+		// "default/env" must not become an admin pick that nobody chose.
+		expect(deleteBranding).toHaveBeenCalledWith({ where: { brand_key: "ai.opencode.model_id" } });
+		expect(upsertBranding).toHaveBeenCalledTimes(1); // the switch only
 	});
 });
 
