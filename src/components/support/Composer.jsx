@@ -45,23 +45,17 @@ export function Composer({
 	}, []);
 	useEffect(resize, [draft, resize]);
 
-	const applyAttachments = useCallback(
-		(next) => {
-			setAttachments(next);
-			onFiles?.(next);
-		},
-		[onFiles],
-	);
+	// Notify the parent whenever the pending list changes, including mount ([]).
+	useEffect(() => {
+		onFiles?.(attachments);
+	}, [attachments, onFiles]);
 
-	const addFiles = useCallback(
-		(fileList) => {
-			const files = Array.from(fileList ?? []).filter((file) => file instanceof File);
-			if (files.length > 0) {
-				applyAttachments([...attachments, ...files]);
-			}
-		},
-		[attachments, applyAttachments],
-	);
+	const addFiles = useCallback((fileList) => {
+		const files = Array.from(fileList ?? []).filter((file) => file instanceof File);
+		if (files.length > 0) {
+			setAttachments((prev) => [...prev, ...files]);
+		}
+	}, []);
 
 	const send = useCallback(() => {
 		const text = draft.trim();
@@ -70,8 +64,8 @@ export function Composer({
 		}
 		onSend?.(text, attachments);
 		setDraft("");
-		applyAttachments([]);
-	}, [draft, attachments, disabled, sending, onSend, applyAttachments]);
+		setAttachments([]);
+	}, [draft, attachments, disabled, sending, onSend]);
 
 	const canSend = !disabled && !sending && (draft.trim().length > 0 || attachments.length > 0);
 	const iconButton =
@@ -111,7 +105,7 @@ export function Composer({
 							) : null}
 							<button
 								type="button"
-								onClick={() => applyAttachments(attachments.filter((_, i) => i !== index))}
+								onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== index))}
 								aria-label={`Remove ${file.name}`}
 								className="shrink-0 rounded p-0.5 text-[#8ea3c8] transition hover:bg-white/10 hover:text-[#e8eefc]"
 							>

@@ -63,6 +63,8 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 	}, [navigate, onClose]);
 
 	// Wheel must be non-passive so preventDefault stops the page scrolling.
+	// `item` is a dep: the stage only renders once an item exists, so the
+	// listener binds (and re-binds) against live content, not a null ref.
 	useEffect(() => {
 		const stage = stageRef.current;
 		if (!stage) {
@@ -74,7 +76,7 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 		};
 		stage.addEventListener("wheel", onWheel, { passive: false });
 		return () => stage.removeEventListener("wheel", onWheel);
-	}, []);
+	}, [item]);
 
 	if (!item) {
 		return null;
