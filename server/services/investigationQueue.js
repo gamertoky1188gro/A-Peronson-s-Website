@@ -56,13 +56,14 @@ import {
 	buildVerifyPrompt,
 	DEFAULT_TOOL_BUDGET,
 } from "./investigation/agents.js";
+import { computeCaseModelOrder } from "./investigation/caseModelChain.js";
 import {
 	demoteUnsubstantiated,
 	demoteUnverifiedReferences,
 	normalizeFindings,
 	parseAgentJson,
 } from "./investigation/findings.js";
-import { parseModelChain } from "./investigation/modelChain.js";
+import { getInvestigationModelConfig } from "./investigation/investigationModelConfigService.js";
 import {
 	createInvestigationSession,
 	listAvailableModels,
@@ -384,7 +385,7 @@ async function runInvestigation(job) {
 			password: mintRuntimePassword(),
 		});
 
-		const models = await pickModels(runtime.client);
+		const models = await pickCaseModels(runtime.client, context.caseRow);
 		if (!models.length) {
 			await failRows(rows, finished, "No free investigation model is available on the runtime.");
 			await setTerminalStatus(caseId, "failed");
@@ -843,6 +844,7 @@ async function loadCaseContext(caseId) {
 	const messages = Array.isArray(caseRow.messages) ? caseRow.messages : [];
 
 	return {
+		caseRow,
 		description: buildDescription(caseRow, messages),
 		evidence: buildEvidenceList(caseRow, attachments),
 	};
@@ -1025,26 +1027,16 @@ function normalizeToolCalls(toolCalls) {
 }
 
 /**
- * Every model of the chain the runtime actually offers, IN ORDER.
+ * Pick the ordered model chain for one investigation.
  *
- * The chain holds free models only (see investigation/modelChain.js), so the
- * portal never spends somebody else's money on an investigation.
- *
- * The ORDER matters, because the free tier's quota is PER MODEL. Measured
- * against a live runtime on an exhausted account: deepseek-v4.1-flash-free,
- * mimo-v2.6-flash-free and glm-5.3-flash-free all answered HTTP 429
- * "provider.quota" while minimax-m3.1-flash-free answered normally. A chain
- * that is only used to PICK the first model buys nothing - it has to be used
- * to FALL BACK.
+ * The case's own model, when it was set and the runtime still offers it, leads
+ * the chain; the rest of the allowlist follows in allowlist order; the default
+ * chain backstops when the allowlist is exhausted by the runtime.
  */
-async function pickModels(client) {
+async function pickCaseModels(client, caseRow) {
 	const available = await listAvailableModels(client);
-	const chain = parseModelChain(process.env.OPENCODE_INVESTIGATION_MODELS);
-	return chain.filter((candidate) =>
-		(available || []).some(
-			(model) => model?.id === candidate.id && model?.providerID === candidate.providerID,
-		),
-	);
+	const { allowed } = await getInvestigationModelConfig();
+	return computeCaseModelOrder({ caseModelId: caseRow?.model_id || null, allowed, available });
 }
 
 /**
