@@ -19,6 +19,20 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({ default: {} })
 jest.unstable_mockModule("../../server/services/userService.js", () => ({
 	findUserById: jest.fn(async (id) => USERS[id] ?? null),
 }));
+// The support-token branch of requireAuthOrSupportToken validates through
+// supportTokenService; the route test pins the envelope, not the HMAC.
+jest.unstable_mockModule("../../server/services/supportTokenService.js", () => ({
+	validateToken: jest.fn(async (token) =>
+		token === "gtk_sup_valid-test"
+			? {
+					ok: true,
+					buyer: { id: "support-buyer-1", role: "buyer", email: "support@example.com" },
+					tokenId: "tok_test",
+					label: "test",
+				}
+			: { ok: false, reason: "invalid" },
+	),
+}));
 
 const { signToken } = await import("../../server/middleware/auth.js");
 const supportRoutes = (await import("../../server/routes/supportRoutes.js")).default;
@@ -54,6 +68,36 @@ afterAll(() => {
 describe("GET /api/support/capabilities", () => {
 	it("rejects an unauthenticated request with 401", async () => {
 		const res = await request(buildApp()).get("/api/support/capabilities");
+		expect(res.status).toBe(401);
+	});
+
+	it("answers 200 with the capability envelope for a valid x-support-token", async () => {
+		const res = await request(buildApp())
+			.get("/api/support/capabilities")
+			.set("x-support-token", "gtk_sup_valid-test");
+		expect(res.status).toBe(200);
+		expect(res.body).toEqual({
+			repositoryInspection: true,
+			githubHistory: false,
+			renderServices: false,
+			research: true,
+			libraryDocs: false,
+			applicationData: false,
+		});
+	});
+
+	it("answers 200 with the capability envelope for a Bearer gtk_sup_ support token", async () => {
+		const res = await request(buildApp())
+			.get("/api/support/capabilities")
+			.set("Authorization", "Bearer gtk_sup_valid-test");
+		expect(res.status).toBe(200);
+		expect(res.body.githubHistory).toBe(false);
+	});
+
+	it("rejects a revoked-looking support token with 401", async () => {
+		const res = await request(buildApp())
+			.get("/api/support/capabilities")
+			.set("x-support-token", "gtk_sup_not-a-real-token");
 		expect(res.status).toBe(401);
 	});
 

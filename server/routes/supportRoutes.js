@@ -8,11 +8,11 @@ import {
 	listSupportTicketMessagesController,
 	postSupportTicketMessageController,
 } from "../controllers/supportController.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireAuthOrSupportToken } from "../middleware/auth.js";
 
 const router = Router();
 
-router.get("/capabilities", requireAuth, capabilitiesHandler);
+router.get("/capabilities", requireAuthOrSupportToken, capabilitiesHandler);
 router.get("/categories", requireAuth, getSupportCategories);
 router.post("/reports", requireAuth, createSupportReport);
 router.get("/tickets", requireAuth, listMySupportTicketsController);
