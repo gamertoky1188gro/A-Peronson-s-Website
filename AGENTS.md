@@ -312,3 +312,12 @@
   - **A session only inherits its agent's rules when the agent is pinned.** Without `agent: "investigator"` at `session.create`, the investigation silently ran the stock, unrestricted `build` agent.
   - **Allowlisted MCP tool names in frontmatter are inert when the servers don't exist** — safe to keep for the future merge.
   - **Verification status: not proven live.** `npm test` / `npm run build` were not executed at the time of writing; the operator's main opencode should be re-checked (no pinned agent, no MCP servers, shell unprompted) before merging.
+
+## 24. The disk request log stored plaintext passwords and support tokens (Owner)
+
+- **Problem:** `server/middleware/requestCapture.js` wrote every request body, every header and the full URL (with query) to `log/requests.log` with no redaction. That persisted: plaintext passwords and password-reset tokens (auth routes), `x-support-token` buyer bearer tokens (some never expire), and full signed-file URLs (`sig` is an HMAC bearer credential). The in-memory `requestLogger` redacted `authorization`/`cookie` headers, but the disk path skipped it. Signed URLs also leaked into the live log stream via `path: req.originalUrl` (double-mounted for `/api/files`).
+- **Fix:** `SENSITIVE_HEADERS` += `x-support-token`; body deep-redaction on `password|token|secret|refresh|authorization|api_key|credential|code` keys and `gtk_sup_` values (JSON bodies via `redactBodyValue`; form-encoded raw bodies via `redactRawBody`; multipart/binary bodies are omitted, never persisted). Both `path` fields now strip query. `errorHandler` truncates the logged error message to 300 chars. `FileAttachmentCard` no longer forwards private `/uploads/...` paths to the client log sink. `log/requests.log` is gitignored.
+- **Gotchas:**
+  - **The in-memory and disk loggers are two different sanitizers.** Hardening one is not hardening the other; audit every sink separately.
+  - **Query strings are credentials.** `/api/files/content?path=&exp=&uid=&sig=` is replayable until expiry. Never log the query, never log a signed URL, never paste one into a transcript.
+  - **Non-JSON bodies have no schema to redact against** — treat as opaque and omit, never "log the first 2000 bytes".
