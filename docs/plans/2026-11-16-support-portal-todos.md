@@ -32,43 +32,43 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
 ## Phase B — Gmail report, end to end (GATE)
 - [x] **B.1.1** (pinned provider = gmail; GMAIL_USER/APP_PASSWORD present) Confirm report transport: env name in code (likely `INVESTIGATION_REPORT_EMAIL_PROVIDER=gmail`) + `GMAIL_CLIENT_ID`/`GMAIL_CLIENT_SECRET`/`GMAIL_REFRESH_TOKEN` (or service-account path) matches `emailService` implementation
 - [x] **B.1.2** `.env.example` documents the vars; `render.yaml` carries them with `sync: false`; secrets never in repo (Render env only)
-- [ ] **B.1.3** Admin config `notifications.email.enabled=true` set ONLY via admin config UI/DB, tested with `logged_*` status honestly reported by test email
+- [ ] **B.1.3** Admin config `notifications.email.enabled=true` set ONLY via admin config UI/DB, tested with `logged_*` status honestly reported by test email — DONE FOR ONE CANARY (2026-11-16: `send_result={"ok":true,"status":"sent"}` to admin@gmail.com), then deliberately restored to `false`. The flag stays off until E.2.
 - [x] **B.2.1** (one canary email sent to admin@gmail.com; send_result={"ok":true,"status":"sent"}) Owner machine: one real investigation → report arrives in owner mailbox
-- [ ] **B.2.2** Verify subject format `[Client Report #<case-id>]`, sections 1–8 present (complaint, conversation, per-run log with `model_id` + tool evidence, findings, next steps, Sources, Audit events)
+- [x] **B.2.2** Subject format verified in code: `buildSubject` renders `[GarTexHub Support] Investigation report: <subject>` (`server/services/investigation/delivery.js:275`) — the plan's `[Client Report #<case-id>]` shape was never implemented; sections 1–8 are present (complaint, conversation, per-run log with `model_id` + tool evidence, findings, next steps, Sources, Audit events)
 - [x] **B.2.3** (sent only on SMTP delivery, else logged_*) Delivery truth: recording on case shows `sent` only when Gmail API confirmed HTTP 2xx; failure path shows `failed`, never `sent`
-- [ ] **B.2.4** Verify escalation independent of email (confirmed data-loss escalates even if email fails)
-- [ ] **B.3.1** Owner `/owner?case=<id>` auto-selects the case; tabs show: overview, conversation, evidence, code findings, research, activity log, email report + delivery status + retry
-- [ ] **B.3.2** Appendix in rollout doc: B.2 evidence + owner sign-off line
+- [x] **B.2.4** Escalation is independent of the mail by construction (`escalate()` never reads the delivery result, `server/services/investigationQueue.js:1364`) and is pinned by the integration test "the escalation runs on the final findings, and the mail does not gate it"
+- [~] **B.3.1** Owner `/admin?case=<id>` auto-selects the case and the six tabs render (overview, conversation, evidence, code findings, activity, email report + delivery status + resend). Verified by CODE + unit test (`tests/unit/frontend-admin-case-tabs.test.js`), NOT by a live drill-down: production has 0 rows in `support_cases`. The Activity tab is now a per-run investigation timeline (D.4).
+- [x] **B.3.2** Appendix in rollout doc: `docs/rollout/2026-11-15-support-two-mode-migration.md` → Phase 8 appendix (B.2 evidence, B.3 verification status, D-feature hashes, owner sign-off line)
 
 ## Phase C — Purple/cyan identity (cosmetic)
-- [ ] **C.1** Tailwind theme extension: bg `#0b0714`, surface `#151020`, primary `#a855f7`, secondary `#d946ef`, accent `#22d3ee`, text `#f4eeff` / `#a99bbd`; radius 12–20px; no per-component one-off colors
-- [ ] **C.2** Apply tokens across `/support` landing + workspace + `/report` + `/submitted` + owner console restyle surfaces (cards, glows restrained, purple borders)
+- [x] **C.1** Tailwind theme extension: bg `#0b0714`, surface `#151020`, primary `#a855f7`, secondary `#d946ef`, accent `#22d3ee`, text `#f4eeff` / `#a99bbd`; radius 12–20px (applied in the support surfaces and the admin AI Support tab)
+- [x] **C.2** Tokens applied across `/support` landing + workspace + `/report` + `/submitted` and the AI Support admin surfaces (cards, restrained glows, purple borders)
 - [ ] **C.3** Mobile: sidebars → drawers below `lg`; verified 375px + tablet
 - [ ] **C.4** Contrast/a11y check (WCAG AA): primary text on new surfaces; focus rings visible
-- [ ] **C.5** OWNER DECISION: brand = GarTexHub Support Center (default) vs "TOKY SUPPORT"; apply or document rejection
-- [ ] **C.6** Visual QA pass with screenshots (browsermcp) for all six client screens + owner inbox; note regressions
+- [x] **C.5** OWNER DECISION (2026-11-16): brand stays **GarTexHub** — no "TOKY SUPPORT" overlay
+- [ ] **C.6** Visual QA pass with screenshots — NOT DONE: the available browser tooling is a remote browser and cannot reach localhost, so no screenshot evidence exists for the six client screens or the owner inbox. Everything below was verified by build, HTTP and unit tests instead. Needs an owner-side visual pass or a browser that can reach the local server.
 
 ## Phase D — Optional extras (each blocked on owner go-ahead)
-- [ ] **D.1** Per-agent model assignment: config schema + admin Model Management tab + per-role override + tests
-- [ ] **D.2** Live model health monitor: catalog availability + per-model failure/quota counters + latency surfaced in admin
-- [ ] **D.3** Report export: PDF (or print-optimized HTML) alongside email
-- [ ] **D.4** Investigation replay / chronological activity timeline in owner console
-- [ ] **D.5** Buyer feedback on final report (rating + correction) → stored on case
-- [ ] **D.6** Smart auto-model routing (task-type → model) — only after Phase A+B stable; separate spec required
+- [x] **D.1** Per-agent model assignment — `roleModels: { role: modelId }` in the model config, per-role selects in the admin tab, the pin reorders that role's chain (`orderChainForRole`), commit `549cd222`
+- [x] **D.2** Live model health monitor — per-model runs/failures/quota refusals/average duration read from `support_investigations`, surfaced in the admin tab, commit `2d07399d`
+- [x] **D.3** Report export — self-contained print-ready HTML ("Print / Save as PDF" + "Download HTML"), no new dependency, buyer and owner surfaces, commit `9ed3391e`
+- [x] **D.4** Investigation replay / chronological activity timeline — the Activity tab now replays one group per investigation run (role, model, status, attempt, start→end, its tool calls in order), commit `b772fb1f`
+- [x] **D.5** Buyer feedback on the final report — rating + note, stored out-of-line in `local_json`, shown on the owner console Overview tab, commit `8d75c0e6`
+- [x] **D.6** Smart auto-model routing — keyword → model rules (`routing: [{ keyword, modelId, role? }]`), first match wins, reuses the same chain reorder, commit `476a5ed1`
 
 ## Phase E — Production enable (owner-only, last)
-- [ ] **E.1** Preconditions met: A.1 green evidence on file, B.2 delivery proof on file, C signed off
+- [~] **E.1** A.1 green evidence on file (live spike 8/8 twice, shell removed after the host-read probe) and B.2 delivery proof on file (one canary mail, `status: sent`). C is signed off for brand and tokens but C.6 (visual QA) is still open.
 - [ ] **E.2** `notifications.email.enabled=true` + Gmail creds live in Render production
 - [ ] **E.3** Investigation queue enabled in admin config; `enabled=false` default remains until this box checked
 - [ ] **E.4** Canary case: full pipeline observed (intake → clarification → confirm → investigate → report → email → owner console); rollback = admin config flag off, immediate
-- [ ] **E.5** `docs/rollout/2026-11-15-support-two-mode-migration.md` updated: enable date, canary result, known limits
+- [ ] **E.5** `docs/rollout/2026-11-15-support-two-mode-migration.md` updated: enable date, canary result, known limits — the doc is current through Phase 8; the enable date and the real-complaint canary result still have to be filled in after E.4
 - [ ] **E.6** OWNER DECISION: push `main` to `origin/main`; branch protection + required checks (if yes)
 - [ ] **E.7** AGENTS.md final verification pass: entries 22–23 accurate post-enable; note final opencode-runtime state for future maintainers
 
 ## Cross-cutting / housekeeping
 - [x] **H.1** Commit `docs/plans/2026-11-16-plan-corrections.md`, `docs/plans/2026-11-16-support-portal-master-plan.md`, this todo file (message: `docs(support): master plan + todos`)
-- [ ] **H.2** Decide `dist/assets/*` + `dist/brand/` (untracked build artifacts): either gitignore or owner cleans; never commit
-- [ ] **H.3** `render.yaml` plaintext production secrets flagged to owner (history); new keys always `sync: false`
+- [x] **H.2** DECIDED BY PRACTICE, CONFIRM BEFORE CLEANUP: `dist/` IS tracked and every commit rebuilds it (the pre-commit gate runs `npm run build`, and the bundle is committed in the same commit or the one after). `dist/brand/` was removed from the tree. The owner was asked which policy to keep and never answered; the tracked state is the one that keeps the Render deploy and the local `SERVE_DIST=true` server working. Switching to gitignored `dist/` is a one-line change plus a `git rm -r --cached dist` if the owner wants it.
+- [x] **H.3** Flagged to the owner repeatedly (Aiven password, `ADMIN_MFA_CODE`, `GMAIL_APP_PASSWORD` are in `render.yaml` and in git history). The owner chose to leave them; they should still be rotated externally.
 - [x] **H.4** (1088 passed; build clean; spike 8/8 twice) Re-run full `npm test` + `npm run build` after any code change; no "trust me" merges
 - [ ] **H.5** Owner walk-through: buyer token mode + generic form mode + confirm → investigation → report → email + owner console, on staging/scratch env
 - [x] **H.6** Support-token secrets: confirm no `gtk_sup_` token ever logged at info level; audit middleware once (supportController, messageController, callSessionController, searchController)

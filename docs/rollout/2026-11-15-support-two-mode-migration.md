@@ -298,3 +298,67 @@ before investigations are enabled or merged.
 - `main` now at `53a0846a` — purple portal live for Render auto-deploy; AI Support sidebar + minimal two-tab AdminAISection recreated; Support Tokens (both roles) work end-to-end; `.husky/pre-commit` repaired to be self-contained and executable; `core.filemode=true`.
 - B.3.1 verified by **code + unit test**, not a live drill-down: `/admin?case=<caseId>` toggles `AdminPlatformSection` to `activeCategory="platform"`; `openSupportCase(caseId)` fetches `/admin/support/cases/:caseId` and renders `CaseDetailTabs` (tabs: overview, conversation, evidence, code findings, activity, email report) with resend/re-run wired to `POST /admin/support/cases/:caseId/rerun`. **No live drill-down has been run** — zero rows in `support_cases` and no canary investigation has completed on production data; the tab renderer is pinned by `tests/unit/frontend-admin-case-tabs.test.js`.
 - Email notifications remain OFF (`notifications.email.enabled=false`) — enabling is owner-only.
+
+## Phase 8 — Phase D extras shipped, canary runbook written (2026-11-16)
+
+`main` is at `72f94e5f`. Everything below was verified by the full unit suite
+and a clean build; the live canary is still owed (see the runbook).
+
+### The six Phase D extras
+
+| # | Feature | Commit | What it is |
+|---|---------|--------|------------|
+| D.5 | Buyer feedback on the report | `8d75c0e6` | thumbs up/down + a ≤500-char note, stored out-of-line in `local_json`, shown on the owner console Overview tab |
+| D.4 | Investigation timeline | `b772fb1f` | the Activity tab replays one group per investigation run (role, model, status, attempt, start → end, its tool calls in order) |
+| D.2 | Live model health | `2d07399d` | per-model runs / failures / quota refusals / average duration, read from `support_investigations`, surfaced in the admin tab |
+| D.1 | Per-agent model assignment | `549cd222` | `roleModels: { role: modelId }` — the pin reorders that role's chain and never adds to it |
+| D.6 | Keyword auto-routing | `476a5ed1` | `routing: [{ keyword, modelId, role? }]` — the first matching rule leads the chain for that role |
+| D.3 | Report export | `9ed3391e` | a self-contained print-ready HTML document: "Print / Save as PDF" + "Download HTML", buyer and owner surfaces |
+
+Two rules hold across D.1 and D.6, because they are the same mechanism: a pin
+or a routing rule only **reorders** the chain the runtime already agreed to. A
+model the runtime does not offer is skipped, never requested, so routing can
+never send an investigation to a model it could not have used anyway.
+
+### B.2 evidence (appendix for B.3.2)
+
+- **Mail transport:** Gmail SMTP (`GMAIL_USER` / `GMAIL_APP_PASSWORD`). One
+  canary mail was accepted by the provider — `send_result={"ok":true,"status":"sent"}`
+  — and the flag was restored to `false` afterwards.
+- **Subject:** `[GarTexHub Support] Investigation report: <subject>`
+  (`server/services/investigation/delivery.js:275`). The plan's
+  `[Client Report #<case-id>]` shape was never implemented; this is the shape
+  that ships.
+- **Sections:** 1–8 are present (complaint, conversation, per-run log with
+  `model_id` and tool evidence, findings, next steps, Sources, Audit events).
+- **Delivery truth:** `sent` is recorded only when the provider confirmed a
+  2xx; the four log-only branches report `ok: false` with their real status.
+- **Escalation is independent of the mail:** `escalate()` never reads the
+  delivery result (`server/services/investigationQueue.js:1364`), and the
+  integration test *"the escalation runs on the final findings, and the mail
+  does not gate it"* pins it.
+
+### B.3 verification status (honest)
+
+The owner console deep link is verified by **code + unit test**, not by a live
+drill-down: production has **0 rows** in `support_cases` and no canary
+investigation has completed on production data. `/admin?case=<id>` switches the
+console to the platform section and opens the case; `CaseDetailTabs` renders
+Overview, Conversation, Evidence, Code findings, Activity and Email report with
+the delivery status and the resend action.
+
+### H.2 — the dist/ policy, as it actually is
+
+`dist/` **is tracked** and every commit rebuilds it (the pre-commit gate runs
+`npm run build`; the bundle is committed in the same commit or the one after).
+`dist/brand/` was removed from the tree. The owner was asked which policy to
+keep and did not answer; the tracked state is the one that keeps the Render
+deploy and the local `SERVE_DIST=true` server working. Moving to a gitignored
+`dist/` is `git rm -r --cached dist` plus a `.gitignore` line, if the owner
+wants it.
+
+### Owner sign-off
+
+- [ ] Owner has read this appendix.
+- [ ] Owner has run the Phase E canary (see `docs/rollout/2026-11-16-support-canary-runbook.md`) and recorded the result.
+- [ ] Owner decides whether investigations stay token-gated or open to everyone, and whether the report mail stays on.
