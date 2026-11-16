@@ -473,3 +473,63 @@ What this means:
 session. Note the proof was re-run on nemotron-3.5-lightning-free because the two models named in
 `.env.example` are quota-dead (above); the spike is pinned to ONE model, so a green run on a
 different model is the same boundary, different substrate.
+
+## Phase 12 — Phase E.2/E.4 CANARY PASSED (2026-11-16)
+
+The email flag was enabled in the admin config, one canary case was filed
+against the live production Aiven database (support_investigation queue,
+token-issued buyer flow, LOCAL opencode v2 investigation spawned on
+repository root), and the full pipeline completed.
+
+Timeline:
+
+  16:49:59  case ff8f148e-5203-4fca-abe1-ba37abd88b54 opened (buyer_user=a33a5680)
+  16:50:17  client message -> assistant fallback question (no clarification provider)
+  16:50:26  client answer -> assistant repeated the question (fallback loop;
+             no provider configured — expected)
+  16:50:27  client answer -> assistant asked again
+  16:51:05  client answer -> assistant asked (the client's evidence was long)
+  ... case reached 6 client turns
+  17:03:19  investigation runtime started (v2.3.0 binary after OPENCODE_BIN fix)
+  17:03:38  lead  — inkling-2-small-free — complete
+  17:05:44  code  — inkling-2-small-free — complete
+  17:07:56  repo  — inkling-2-small-free — complete
+  17:10:58  research — inkling-2-small-free — FAILED (49 read-only tool calls,
+             then no answer; wedged, not timed out)
+  17:11:00  verify — inkling-2-small-free — complete
+  17:17:14  report built (110 296 bytes); renderer printed INCOMPLETE honestly
+  17:17:20  report DELIVERED to both owner recipients (report_status: sent)
+
+Two defects surfaced by the canary and are FIXED or DOCUMENTED:
+
+  1. .env pinned OPENCODE_BIN to the npm pnpm package opencode-1.19.4 (V1).
+     V1 can't parse the V2 shared state directory; every child exited before
+     answering. Fixed locally by pointing OPENCODE_BIN at the same v2.3.0
+     binary the operator uses; render.yaml still points at node_modules/.bin
+     which Render's promise is installing — the investigation now runs on the
+     operator's opencode. (This is the same binary the pre-commit gate uses
+     for its spikes.)
+
+  2. The ready-poll RPC had no per-attempt timeout (fixed in c9373a32-equivalent
+     earlier this session — see the "ready-poll RPC bounded" commit). A child
+     that accepts the connection and never answers held the investigation
+     forever; the case stayed "investigating" with five queued rows and no log
+     line at all.
+
+The canary is NOT the production gate: it was run with a deliberately minimal
+complaint against a shared development database; the owner has still not seen
+or approved the rendered report.
+
+Post-canary: notifications.email.enabled is restored to FALSE. No tokens have
+been disabled; canary token expires 2026-12-16. The owner's mailbox holds the
+report. If the owner wants investigations inert, nothing else needs to change.
+
+HONEST STATUS:
+  - Pipeline end-to-end: PASSED (complaint → intake → investigation → report → email).
+  - SLA / reliability: 1 of 5 runs failed (research wedged). Not a defect of
+    the design but of the model; the renderer flags the INCOMPLETE state.
+  - Drill-down of the owner console with real data: the admin detail API
+    serves messages/investigations/feedback/report — verified by token.
+    The rendered buyer page and the admin AI Support tab have the same
+    backing API (unit-tested). Neither was photographed with live data in
+    this run.

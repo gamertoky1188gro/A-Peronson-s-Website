@@ -13,9 +13,9 @@ const SERVER_USER = "opencode";
 const POLL_INTERVAL_MS = 1200;
 const STABLE_POLLS_TO_SETTLE = 20;
 
-const POWERSHELL_SHIM_TARGET = /& "([^"]*opencode\.exe)"/;
-const CMD_SHIM_TARGET = /"?%~dp0\\?([^"]*?opencode\.exe)"?/i;
-const V2_VERSION = /v2\.\d+|^1\.(?:1[9-9]|[2-9]\d|[1-9]\d{2,})/i;
+const POWERSHELL_SHIM_TARGET = /& "([^"]*opencode\.exe)"/u;
+const CMD_SHIM_TARGET = /"?%~dp0\\?([^"]*?opencode\.exe)"?/iu;
+const V2_VERSION = /v2\.\d+|^1\.(?:1[9-9]|[2-9]\d|[1-9]\d{2,})/iu;
 
 /**
  * The repository root, resolved ONCE at startup and never taken from a
@@ -62,6 +62,20 @@ export function assertRepositoryRoot(directory) {
 	return resolved;
 }
 
+const RPC_TIMEOUT_MS = 5000;
+
+/** Bounded RPC: an opencode child that accepts but never answers must not
+ * wedge the whole investigation. Returns after `ms` with an error the ready
+ * loop scores as one failed attempt. */
+function withTimeout(promise, ms, label) {
+	return Promise.race([
+		promise,
+		new Promise((_, reject) =>
+			setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms),
+		),
+	]);
+}
+
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -79,12 +93,12 @@ function readShimTarget(shimPath) {
 		const dir = path.dirname(shimPath);
 		const psMatch = text.match(POWERSHELL_SHIM_TARGET);
 		if (psMatch) {
-			const raw = psMatch[1].replace(/\$basedir/g, dir).replace(/^\/\//, "\\\\");
+			const raw = psMatch[1].replace(/\$basedir/gu, dir).replace(/^\/\//u, "\\\\");
 			return path.resolve(raw);
 		}
 		const cmdMatch = text.match(CMD_SHIM_TARGET);
 		if (cmdMatch) {
-			return path.resolve(dir, cmdMatch[1].replace(/\\/g, path.sep));
+			return path.resolve(dir, cmdMatch[1].replace(/\\/gu, path.sep));
 		}
 	} catch {
 		return null;
@@ -310,7 +324,9 @@ export async function startInvestigationRuntime({
 			// `model.list()` only answers once the location has finished
 			// activating its plugins. `/api/config` answers much earlier, while
 			// the server is still initializing, so it is not a readiness signal.
-			await client.model.list();
+			// The RPC itself is bounded: a child that accepts the connection and
+			// never answers would otherwise hold the investigation forever.
+			await withTimeout(client.model.list(), RPC_TIMEOUT_MS, "model list");
 			ready = true;
 			break;
 		} catch (error) {
