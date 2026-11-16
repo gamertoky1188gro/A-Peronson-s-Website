@@ -63,6 +63,17 @@
         };
         const storedName = localStorage.getItem("themeName");
         root.setAttribute("data-theme", storedName && VALID[storedName] ? storedName : "blue");
+        // The saved theme's own stylesheet, requested now and render-blocking,
+        // so the page does not flash the default palette first. The file names
+        // are filled in at build time (themeCssMapPlugin in vite.config.js).
+        const THEME_CSS = {"aurora":"./assets/aurora-CVSAoM7T.css","violet":"./assets/violet-BaKjBx50.css","sapphire":"./assets/sapphire-Dx7kyr0P.css","arctic":"./assets/arctic-D2G0t7iz.css","emerald":"./assets/emerald-DJg72jOU.css","blurple":"./assets/blurple-D-27J_Ui.css","mono":"./assets/mono-ImZUucIL.css","plasma":"./assets/plasma-BWSzbtQm.css","solaris":"./assets/solaris-BJJYzexW.css","forest":"./assets/forest-DcfZAFIq.css","crimson":"./assets/crimson-MzU_UwiC.css"};
+        if (storedName && THEME_CSS[storedName]) {
+          const link = document.createElement("link");
+          link.rel = "stylesheet";
+          link.href = THEME_CSS[storedName];
+          link.setAttribute("blocking", "render");
+          document.head.appendChild(link);
+        }
         const stored = localStorage.getItem("theme");
         let resolved = "light";
         if (stored === "dark" || stored === "light") {
@@ -122,12 +133,13 @@
       }
     }
     </script>
-    <script type="module" crossorigin src="./assets/index-D8XO0gJR.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/vendor-react-ClUwnUMM.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-motion-mASRQi3J.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-redux-tjhir20W.js">
-    <link rel="modulepreload" crossorigin href="./assets/vendor-icons-CgBYEd0E.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-w4LLdOx9.css">
+    <script type="module" crossorigin src="./assets/index-qDLNIKJ5.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/vendor-react-CXsrWM97.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-redux-v5yF_zMT.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-motion-WuJlZpsG.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-router-coMJAhZ6.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-icons-D0p56-Sl.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-B0Np_MXE.css">
   </head>
   <body>
     <div id="root">
