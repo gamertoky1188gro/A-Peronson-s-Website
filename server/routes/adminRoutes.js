@@ -172,10 +172,17 @@ async function getSupportCaseHandler(req, res) {
 		where: { case_id: caseId },
 		orderBy: { created_at: "asc" },
 	});
+	// The evidence the client attached to the case. Same route, same guards -
+	// just the rows the Evidence tab renders.
+	const attachments = await prisma.supportCaseAttachment.findMany({
+		where: { case_id: caseId },
+		orderBy: { created_at: "asc" },
+	});
 	return res.json({
 		case: caseRow,
 		messages: Array.isArray(messages) ? messages : [],
 		investigations: Array.isArray(investigations) ? investigations : [],
+		attachments: Array.isArray(attachments) ? attachments : [],
 	});
 }
 

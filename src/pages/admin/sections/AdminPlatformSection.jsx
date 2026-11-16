@@ -4,15 +4,12 @@ import { useSearchParams } from "react-router-dom";
 import PaymentProofReviewModal from "../../../components/admin/PaymentProofReviewModal.jsx";
 import { apiRequest, getToken } from "../../../lib/auth.js";
 import { exportEmailsCsv } from "../../AdminPanel.utils.js";
+import { CaseDetailTabs } from "../caseTabs/CaseDetailTabs.jsx";
+import { InvestigationStatusChip, PriorityChip, ReportStatusPill } from "../caseTabs/chips.jsx";
 
 // The support investigation cases (Task 8). The findings carry one of three
-// confidences and nothing else, so the badge colour is looked up rather than
-// derived - a confidence the contract does not name still has to render.
-const SUPPORT_CASE_CONFIDENCE_CLASS = {
-	confirmed: "bg-emerald-600 text-white",
-	probable: "bg-amber-500 text-white",
-	speculative: "bg-slate-600 text-white",
-};
+// confidences and nothing else, so the chips look the tone up rather than
+// derive it - see ./caseTabs/chips.jsx.
 
 /**
  * The report of a case: the verify run holds the final one, but a report
@@ -184,6 +181,8 @@ export function AdminPlatformSection({
 	const [supportCaseNotice, setSupportCaseNotice] = useState("");
 	const [supportCaseNote, setSupportCaseNote] = useState("");
 	const [supportCaseBusy, setSupportCaseBusy] = useState(false);
+	const [supportCaseFilters, setSupportCaseFilters] = useState({ status: "all", priority: "all" });
+	const [supportCaseSearch, setSupportCaseSearch] = useState("");
 	const supportCasesLoadedRef = useRef(false);
 
 	// The case the report mail points at: `/admin?case=<caseId>`.
@@ -535,6 +534,7 @@ export function AdminPlatformSection({
 					case: data?.case || null,
 					messages: Array.isArray(data?.messages) ? data.messages : [],
 					investigations: Array.isArray(data?.investigations) ? data.investigations : [],
+					attachments: Array.isArray(data?.attachments) ? data.attachments : [],
 				});
 			} catch (err) {
 				setSupportCaseDetail(null);
@@ -615,6 +615,55 @@ export function AdminPlatformSection({
 		() => pickSupportCaseReport(supportCaseDetail?.investigations),
 		[supportCaseDetail],
 	);
+
+	// The inbox joins each case to the admin's already-loaded user list for
+	// the client name/email; rows without a match show the raw user id.
+	const usersById = useMemo(() => {
+		const map = new Map();
+		for (const user of users || []) {
+			if (user?.id != null) {
+				map.set(String(user.id), user);
+			}
+		}
+		return map;
+	}, [users]);
+
+	const supportCasesFiltered = useMemo(() => {
+		const query = supportCaseSearch.trim().toLowerCase();
+		return (supportCases || []).filter((item) => {
+			if (
+				supportCaseFilters.status !== "all" &&
+				String(item?.status || "").toLowerCase() !== supportCaseFilters.status
+			) {
+				return false;
+			}
+			if (
+				supportCaseFilters.priority !== "all" &&
+				String(item?.priority || "").toLowerCase() !== supportCaseFilters.priority
+			) {
+				return false;
+			}
+			if (!query) {
+				return true;
+			}
+			const client = usersById.get(String(item?.user_id || ""));
+			const haystack = [
+				item?.id,
+				item?.subject,
+				item?.summary,
+				item?.user_id,
+				client?.name,
+				client?.email,
+			]
+				.map((value) => String(value || "").toLowerCase())
+				.join(" ");
+			return haystack.includes(query);
+		});
+	}, [supportCases, supportCaseFilters, supportCaseSearch, usersById]);
+
+	const selectedCaseClient = supportCaseDetail?.case?.user_id
+		? usersById.get(String(supportCaseDetail.case.user_id)) || null
+		: null;
 
 	async function refreshSignups() {
 		const token = getToken();
@@ -2447,232 +2496,258 @@ export function AdminPlatformSection({
 						<button
 							type="button"
 							onClick={() => refreshSupportCases()}
-							class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
+							className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
 						>
 							Refresh cases
 						</button>
 					</div>
-					<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-						<div class="space-y-2">
-							{supportCasesLoading ? <p class="text-xs text-slate-500">Loading cases...</p> : null}
-							{!supportCasesLoading && supportCases.length === 0 ? (
-								<p class="text-xs text-slate-500">No support cases.</p>
-							) : null}
-							{supportCases.map((item) => (
+
+					{/* Filters + search above the inbox. */}
+					<div class="mt-4 flex flex-wrap items-center gap-2">
+						{[
+							["all", "All status"],
+							["collecting", "Collecting"],
+							["investigating", "Investigating"],
+							["verifying", "Verifying"],
+							["completed", "Completed"],
+							["failed", "Failed"],
+						].map(([value, label]) => {
+							const active = supportCaseFilters.status === value;
+							return (
 								<button
-									key={item.id}
+									key={value}
 									type="button"
-									onClick={() => openSupportCase(item.id)}
-									class={`block w-full rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3 text-left text-xs ${
-										supportCaseSelectedId === item.id ? "ring-1 ring-emerald-500" : ""
+									aria-pressed={active}
+									onClick={() => setSupportCaseFilters((prev) => ({ ...prev, status: value }))}
+									className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] transition ${
+										active
+											? "border-sky-400/50 bg-sky-500/15 text-sky-300"
+											: "border-white/10 bg-white/5 text-slate-400 hover:text-slate-200"
 									}`}
 								>
-									<p class="font-semibold text-slate-900 dark:text-white">
-										{item.subject || "Support case"}
-									</p>
-									<p class="text-[11px] text-slate-500">
-										{String(item.id || "").slice(0, 8)} · {item.status || "collecting"}
-										{item.escalated ? " · escalated" : ""}
-										{item.retain ? " · retained" : ""}
-									</p>
-									<p class="text-[11px] text-slate-500">
-										{item.updated_at ? new Date(item.updated_at).toLocaleString() : "--"}
-									</p>
+									{label}
 								</button>
-							))}
-						</div>
-						<div class="space-y-3">
-							{supportCaseBusy ? <p class="text-xs text-slate-500">Working...</p> : null}
-							{supportCaseNotice ? (
-								<p class="rounded-2xl bg-emerald-500/10 p-3 text-[11px] text-emerald-600 dark:text-emerald-300">
-									{supportCaseNotice}
-								</p>
-							) : null}
-							{supportCaseDetailLoading ? (
-								<p class="text-xs text-slate-500">Loading the case...</p>
-							) : null}
-							{supportCaseDetailLoading || supportCaseDetail ? null : (
-								<p class="text-xs text-slate-500">Select a case to review it.</p>
-							)}
-							{supportCaseDetail ? (
-								<>
-									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-										<p class="text-sm font-semibold text-slate-900 dark:text-white">
-											{supportCaseDetail.case?.subject || "Support case"}
-										</p>
-										<p class="text-[11px] text-slate-500">
-											Case: {supportCaseDetail.case?.id} · Status:{" "}
-											{supportCaseDetail.case?.status || "collecting"} · Ticket:{" "}
-											{supportCaseDetail.case?.ticket_id || "--"}
-										</p>
-										<p class="text-[11px] text-slate-500">
-											Owner: {supportCaseDetail.case?.user_id || "--"} · Report:{" "}
-											{supportCaseDetail.case?.report_status || "--"}
-											{supportCaseDetail.case?.escalated ? " · escalated" : ""}
-											{supportCaseDetail.case?.retain ? " · retained" : ""}
-										</p>
-										{supportCaseDetail.case?.summary ? (
-											<p class="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-												{supportCaseDetail.case.summary}
-											</p>
-										) : null}
-										<div class="mt-3 flex flex-wrap items-center gap-2">
-											<button
-												type="button"
-												disabled={supportCaseBusy}
-												onClick={() =>
-													runSupportCaseAction(supportCaseDetail.case?.id, "rerun", {})
+							);
+						})}
+						<span aria-hidden="true" className="mx-1 hidden h-4 w-px bg-white/10 sm:block" />
+						{[
+							["all", "All priority"],
+							["low", "Low"],
+							["normal", "Normal"],
+							["high", "High"],
+							["urgent", "Urgent"],
+						].map(([value, label]) => {
+							const active = supportCaseFilters.priority === value;
+							return (
+								<button
+									key={value}
+									type="button"
+									aria-pressed={active}
+									onClick={() => setSupportCaseFilters((prev) => ({ ...prev, priority: value }))}
+									className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] transition ${
+										active
+											? "border-amber-400/50 bg-amber-500/15 text-amber-300"
+											: "border-white/10 bg-white/5 text-slate-400 hover:text-slate-200"
+									}`}
+								>
+									{label}
+								</button>
+							);
+						})}
+						<input
+							type="search"
+							value={supportCaseSearch}
+							onChange={(event) => setSupportCaseSearch(event.target.value)}
+							placeholder="Search cases, clients, subjects…"
+							aria-label="Search support cases"
+							className="min-w-48 flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] text-slate-100 placeholder:text-slate-500 focus:border-cyan-400/40 focus:outline-none"
+						/>
+					</div>
+
+					{/* Dense inbox table. Row click opens the case, as before. */}
+					<div class="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+						<table className="w-full min-w-[56rem] border-collapse text-left text-[11px]">
+							<thead>
+								<tr className="border-b border-white/10 text-[10px] uppercase tracking-[0.18em] text-slate-500">
+									<th scope="col" className="px-3 py-2 font-semibold">
+										Case
+									</th>
+									<th scope="col" className="px-3 py-2 font-semibold">
+										Client
+									</th>
+									<th scope="col" className="px-3 py-2 font-semibold">
+										Subject
+									</th>
+									<th scope="col" className="px-3 py-2 font-semibold">
+										Priority
+									</th>
+									<th scope="col" className="px-3 py-2 font-semibold">
+										Status
+									</th>
+									<th scope="col" className="px-3 py-2 font-semibold">
+										Email
+									</th>
+									<th scope="col" className="px-3 py-2 font-semibold">
+										Submitted
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{supportCasesLoading ? (
+									<tr>
+										<td colSpan={7} className="px-3 py-4 text-slate-500">
+											Loading cases…
+										</td>
+									</tr>
+								) : null}
+								{!supportCasesLoading && supportCasesFiltered.length === 0 ? (
+									<tr>
+										<td colSpan={7} className="px-3 py-4 text-slate-500">
+											{supportCases.length === 0
+												? "No support cases."
+												: "No support cases match the filters."}
+										</td>
+									</tr>
+								) : null}
+								{supportCasesFiltered.map((item) => {
+									const client = usersById.get(String(item?.user_id || ""));
+									const selected = supportCaseSelectedId === item.id;
+									return (
+										<tr
+											key={item.id}
+											tabIndex={0}
+											aria-label={`Open case ${item.subject || item.id}`}
+											onClick={() => openSupportCase(item.id)}
+											onKeyDown={(event) => {
+												if (event.key === "Enter" || event.key === " ") {
+													event.preventDefault();
+													openSupportCase(item.id);
 												}
-												class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600 disabled:opacity-50"
-											>
-												Re-run investigation
-											</button>
-											<button
-												type="button"
-												disabled={supportCaseBusy || supportCaseDetail.case?.escalated}
-												onClick={() =>
-													runSupportCaseAction(supportCaseDetail.case?.id, "escalate", {
-														reason: supportCaseNote,
-													})
-												}
-												class="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
-											>
-												Escalate
-											</button>
-											<input
-												value={supportCaseNote}
-												onChange={(event) => setSupportCaseNote(event.target.value)}
-												placeholder="Escalation note (optional)"
-												class="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] dark:bg-slate-950"
-											/>
-										</div>
-									</div>
-
-									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-										<p class="text-[11px] font-semibold uppercase text-slate-500">Conversation</p>
-										<div class="mt-2 space-y-2">
-											{supportCaseDetail.messages.length === 0 ? (
-												<p class="text-[11px] text-slate-500">No messages.</p>
-											) : null}
-											{supportCaseDetail.messages.map((message) => (
-												<div key={message.id} class="rounded-xl border border-slate-500/20 p-3">
-													<p class="text-[11px] text-slate-500">
-														#{message.sequence} · {message.role}
-														{message.kind ? ` · ${message.kind}` : ""}
-														{message.agent ? ` · ${message.agent}` : ""}
-													</p>
-													{/* The stored content is HTML-escaped by the server, so it is
-													    rendered as TEXT and never as markup. */}
-													<p class="mt-1 text-xs text-slate-700 dark:text-slate-200">
-														{message.content}
-													</p>
-												</div>
-											))}
-										</div>
-									</div>
-
-									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-										<p class="text-[11px] font-semibold uppercase text-slate-500">
-											Findings by agent
-										</p>
-										<div class="mt-2 space-y-3">
-											{supportCaseDetail.investigations.length === 0 ? (
-												<p class="text-[11px] text-slate-500">No investigation has run yet.</p>
-											) : null}
-											{supportCaseDetail.investigations.map((investigation) => {
-												const findings = Array.isArray(investigation?.findings?.findings)
-													? investigation.findings.findings
-													: [];
-												const limitations = Array.isArray(investigation?.findings?.limitations)
-													? investigation.findings.limitations
-													: [];
-												return (
-													<div
-														key={investigation.id}
-														class="rounded-xl border border-slate-500/20 p-3"
-													>
-														<p class="text-[11px] text-slate-500">
-															{investigation.role} · {investigation.status} · attempt{" "}
-															{investigation.attempt}
-															{investigation.model_id ? ` · ${investigation.model_id}` : ""}
-														</p>
-														{investigation.error ? (
-															<p class="mt-1 text-[11px] text-rose-500">{investigation.error}</p>
-														) : null}
-														{investigation.findings?.summary ? (
-															<p class="mt-1 text-xs text-slate-700 dark:text-slate-200">
-																{investigation.findings.summary}
-															</p>
-														) : null}
-														{findings.map((finding) => (
-															<div
-																key={`${investigation.id}-${finding.confidence}-${finding.detail}`}
-																class="mt-2"
-															>
-																<span
-																	class={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-																		SUPPORT_CASE_CONFIDENCE_CLASS[finding.confidence] ||
-																		SUPPORT_CASE_CONFIDENCE_CLASS.speculative
-																	}`}
-																>
-																	{finding.confidence}
-																</span>
-																<p class="mt-1 text-xs text-slate-700 dark:text-slate-200">
-																	{finding.detail}
-																</p>
-																{Array.isArray(finding.evidence) && finding.evidence.length > 0 ? (
-																	<ul class="mt-1 list-disc pl-4 text-[11px] text-slate-500">
-																		{finding.evidence.map((entry) => (
-																			<li key={`${entry.file}-${entry.lines}-${entry.commit}`}>
-																				{entry.file}
-																				{entry.lines ? `:${entry.lines}` : ""}
-																				{entry.commit ? ` @ ${entry.commit}` : ""}
-																				{entry.url ? ` · ${entry.url}` : ""}
-																			</li>
-																		))}
-																	</ul>
-																) : null}
-															</div>
-														))}
-														{limitations.length > 0 ? (
-															<p class="mt-2 text-[11px] text-slate-500">
-																Limitations: {limitations.join(" · ")}
-															</p>
-														) : null}
-													</div>
-												);
-											})}
-										</div>
-									</div>
-
-									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-										<p class="text-[11px] font-semibold uppercase text-slate-500">Tool log</p>
-										<div class="mt-2 space-y-1">
-											{supportCaseToolLog.length === 0 ? (
-												<p class="text-[11px] text-slate-500">No tool call was recorded.</p>
-											) : null}
-											{supportCaseToolLog.map((entry) => (
-												<p key={entry.key} class="text-[11px] text-slate-500">
-													{entry.role} · {entry.tool} · {entry.status}
-													{entry.error ? ` · ${entry.error}` : ""}
+											}}
+											className={`cursor-pointer border-b border-white/5 transition last:border-b-0 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400/60 ${
+												selected ? "bg-sky-500/10" : ""
+											}`}
+										>
+											<td className="px-3 py-2 font-mono text-slate-300">
+												{String(item.id || "").slice(0, 8)}
+												{item.escalated ? (
+													<span className="ml-1 text-[9px] font-semibold uppercase text-amber-300">
+														esc
+													</span>
+												) : null}
+												{item.retain ? (
+													<span className="ml-1 text-[9px] font-semibold uppercase text-sky-300">
+														retain
+													</span>
+												) : null}
+											</td>
+											<td className="px-3 py-2">
+												<p className="text-slate-200">{client?.name || client?.email || "--"}</p>
+												<p className="text-[10px] text-slate-500">
+													{client?.email || item.user_id || ""}
 												</p>
-											))}
-										</div>
-									</div>
+											</td>
+											<td
+												className="max-w-64 truncate px-3 py-2 text-slate-200"
+												title={item.subject || ""}
+											>
+												{item.subject || "Support case"}
+											</td>
+											<td className="px-3 py-2">
+												<PriorityChip priority={item.priority} />
+											</td>
+											<td className="px-3 py-2">
+												<InvestigationStatusChip status={item.status} />
+											</td>
+											<td className="px-3 py-2">
+												<ReportStatusPill status={item.report_status} />
+											</td>
+											<td className="px-3 py-2 tabular-nums text-slate-400">
+												{item.created_at ? new Date(item.created_at).toLocaleString() : "--"}
+											</td>
+										</tr>
+									);
+								})}
+							</tbody>
+						</table>
+					</div>
 
-									<div class="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-										<p class="text-[11px] font-semibold uppercase text-slate-500">Report</p>
-										{supportCaseReport ? (
-											<pre class="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">
-												{supportCaseReport}
-											</pre>
-										) : (
-											<p class="mt-2 text-[11px] text-slate-500">No report has been written yet.</p>
-										)}
+					<div class="mt-4 space-y-3">
+						{supportCaseBusy ? <p class="text-xs text-slate-500">Working…</p> : null}
+						{supportCaseNotice ? (
+							<p className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-[11px] text-emerald-300">
+								{supportCaseNotice}
+							</p>
+						) : null}
+						{supportCaseDetailLoading ? (
+							<p className="text-xs text-slate-500">Loading the case…</p>
+						) : null}
+						{supportCaseDetailLoading || supportCaseDetail ? null : (
+							<p className="text-xs text-slate-500">Select a case to review it.</p>
+						)}
+						{supportCaseDetail ? (
+							<>
+								{/* Header + actions stay above the tab bar - the escalate/rerun contract is unchanged. */}
+								<div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+									<p className="text-sm font-semibold text-slate-100">
+										{supportCaseDetail.case?.subject || "Support case"}
+									</p>
+									<p className="mt-1 font-mono text-[11px] text-slate-500">
+										{supportCaseDetail.case?.id} · {supportCaseDetail.case?.status || "collecting"}
+										{supportCaseDetail.case?.ticket_id
+											? ` · ticket ${supportCaseDetail.case.ticket_id}`
+											: ""}
+									</p>
+									{supportCaseDetail.case?.summary ? (
+										<p className="mt-2 text-[11px] text-slate-400">
+											{supportCaseDetail.case.summary}
+										</p>
+									) : null}
+									<div className="mt-3 flex flex-wrap items-center gap-2">
+										<button
+											type="button"
+											disabled={supportCaseBusy}
+											onClick={() => runSupportCaseAction(supportCaseDetail.case?.id, "rerun", {})}
+											className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300 disabled:opacity-50"
+										>
+											Re-run investigation
+										</button>
+										<button
+											type="button"
+											disabled={supportCaseBusy || supportCaseDetail.case?.escalated}
+											onClick={() =>
+												runSupportCaseAction(supportCaseDetail.case?.id, "escalate", {
+													reason: supportCaseNote,
+												})
+											}
+											className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white transition disabled:opacity-50"
+										>
+											Escalate
+										</button>
+										<input
+											value={supportCaseNote}
+											onChange={(event) => setSupportCaseNote(event.target.value)}
+											placeholder="Escalation note (optional)"
+											className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-slate-100 placeholder:text-slate-500 focus:border-cyan-400/40 focus:outline-none"
+										/>
 									</div>
-								</>
-							) : null}
-						</div>
+								</div>
+
+								<CaseDetailTabs
+									caseRow={supportCaseDetail.case}
+									clientUser={selectedCaseClient}
+									messages={supportCaseDetail.messages}
+									investigations={supportCaseDetail.investigations}
+									attachments={supportCaseDetail.attachments}
+									toolLog={supportCaseToolLog}
+									report={supportCaseReport}
+									busy={supportCaseBusy}
+									onResendReport={() =>
+										runSupportCaseAction(supportCaseDetail.case?.id, "rerun", {})
+									}
+								/>
+							</>
+						) : null}
 					</div>
 				</div>
 			) : null}
