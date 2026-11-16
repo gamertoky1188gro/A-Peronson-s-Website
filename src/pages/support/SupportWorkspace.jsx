@@ -95,12 +95,30 @@ const CONFIDENCE_LABELS = {
 	speculative: "Speculative",
 };
 
-const RESOURCES = [
-	"Repository inspection",
-	"GitHub history",
-	"External research",
-	"Approved application data",
+// The six capability rows in the right rail. The pills come from
+// GET /api/support/capabilities: until that answers — or when it fails — every
+// pill reads "Unknown", never "Authorized" without the server saying so.
+const CAPABILITY_ROWS = [
+	{ label: "Repository inspection", key: "repositoryInspection" },
+	{ label: "GitHub history", key: "githubHistory" },
+	{ label: "Render services", key: "renderServices" },
+	{ label: "Parallel research", key: "research" },
+	{ label: "Library docs", key: "libraryDocs" },
+	{ label: "Approved application data", key: "applicationData" },
 ];
+
+const PILL_AUTHORIZED = "border-emerald-400/30 bg-emerald-400/10 text-emerald-300";
+const PILL_UNAVAILABLE = "border-slate-400/30 bg-slate-400/10 text-slate-400";
+
+/** The pill for one capability: authorized only when the endpoint said so. */
+function capabilityPill(capabilities, key) {
+	if (capabilities === null || capabilities === "error") {
+		return { label: "Unknown", className: PILL_UNAVAILABLE };
+	}
+	return capabilities[key] === true
+		? { label: "Authorized", className: PILL_AUTHORIZED }
+		: { label: "Unavailable", className: PILL_UNAVAILABLE };
+}
 
 // Top level, so they are compiled once.
 const IMAGE_FILE_PATTERN = /\.(png|jpe?g|gif|webp|avif|bmp)$/iu;
@@ -369,6 +387,9 @@ export default function SupportWorkspace() {
 	const [signedUrls, setSignedUrls] = useState({});
 	const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
 	const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
+	// null while the capabilities request is in flight; "error" when it fails;
+	// otherwise the envelope from GET /api/support/capabilities.
+	const [capabilities, setCapabilities] = useState(null);
 
 	const transcriptRef = useRef(null);
 	const descriptorsRef = useRef(new Map()); // File -> uploaded descriptor
@@ -394,6 +415,27 @@ export default function SupportWorkspace() {
 			navigate("/support", { replace: true });
 		}
 	}, [errorStatus, navigate]);
+
+	// Load the investigation capabilities once on mount. Failure is not a
+	// reason to claim access: the pills fall back to "Unknown".
+	useEffect(() => {
+		let cancelled = false;
+		apiRequest("/support/capabilities", { token: jwt ?? undefined })
+			.then((data) => {
+				if (cancelled) {
+					return;
+				}
+				setCapabilities(data && typeof data === "object" ? data : "error");
+			})
+			.catch(() => {
+				if (!cancelled) {
+					setCapabilities("error");
+				}
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [jwt]);
 
 	// Escape closes either mobile drawer.
 	const anyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
@@ -771,17 +813,25 @@ export default function SupportWorkspace() {
 					Resources
 				</p>
 				<ul className="space-y-1.5">
-					{RESOURCES.map((resource) => (
-						<li
-							key={resource}
-							className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5"
-						>
-							<span className="text-[11px] text-[#c8d4ee]">{resource}</span>
-							<span className="inline-flex shrink-0 items-center rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-300">
-								Authorized
-							</span>
-						</li>
-					))}
+					{CAPABILITY_ROWS.map(({ label, key }) => {
+						const pill = capabilityPill(capabilities, key);
+						return (
+							<li
+								key={key}
+								className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5"
+							>
+								<span className="text-[11px] text-[#c8d4ee]">{label}</span>
+								<span
+									className={cn(
+										"inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
+										pill.className,
+									)}
+								>
+									{pill.label}
+								</span>
+							</li>
+						);
+					})}
 				</ul>
 			</div>
 

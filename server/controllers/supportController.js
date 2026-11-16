@@ -10,6 +10,20 @@ import {
 } from "../services/supportTicketService.js";
 import { sanitizeString } from "../utils/validators.js";
 
+/** A capability key counts only when it is a non-empty string. */
+const envBool = (key) => typeof process.env[key] === "string" && process.env[key].trim().length > 0;
+
+export async function capabilitiesHandler(_req, res) {
+	return res.json({
+		repositoryInspection: true,
+		githubHistory: envBool("GITHUB_PERSONAL_ACCESS_TOKEN"),
+		renderServices: envBool("RENDER_API_KEY"),
+		research: true,
+		libraryDocs: envBool("CONTEXT7_API_KEY"),
+		applicationData: false,
+	});
+}
+
 export async function getSupportCategories(req, res) {
 	return res.json({
 		categories: [
