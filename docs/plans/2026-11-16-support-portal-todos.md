@@ -63,7 +63,7 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
 - [ ] **E.4** Canary case: full pipeline observed (intake → clarification → confirm → investigate → report → email → owner console); rollback = admin config flag off, immediate
 - [ ] **E.5** `docs/rollout/2026-11-15-support-two-mode-migration.md` updated: enable date, canary result, known limits — the doc is current through Phase 8; the enable date and the real-complaint canary result still have to be filled in after E.4
 - [ ] **E.6** OWNER DECISION: push `main` to `origin/main`; branch protection + required checks (if yes)
-- [ ] **E.7** AGENTS.md final verification pass: entries 22–23 accurate post-enable; note final opencode-runtime state for future maintainers
+- [x] **E.7** AGENTS.md final verification pass: entries 22–23 accurate post-enable; entry 32 added (crash logger prune bug, with the measured 6-of-8 → 8-of-8 evidence); the final opencode-runtime state is documented (native V2 ordered permissions, read-only, no shell, MCP opt-in)
 
 ## Cross-cutting / housekeeping
 - [x] **H.1** Commit `docs/plans/2026-11-16-plan-corrections.md`, `docs/plans/2026-11-16-support-portal-master-plan.md`, this todo file (message: `docs(support): master plan + todos`)
