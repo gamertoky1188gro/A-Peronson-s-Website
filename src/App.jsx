@@ -169,12 +169,12 @@ function RouteScrollManager() {
 
 	useEffect(() => {
 		if (navigationType === "POP") {
-			return undefined;
+			return;
 		}
-		const id = decodeURIComponent(location.hash.replace(/^#/, ""));
+		const id = decodeURIComponent(location.hash.replace(/^#/u, ""));
 		if (!id) {
 			window.scrollTo(0, 0);
-			return undefined;
+			return;
 		}
 		// Lazy pages render after navigation, so look for the anchor briefly.
 		let frame = 0;
@@ -624,9 +624,9 @@ function AppLayout() {
 	const isImmersiveRoute = location.pathname === "/chat" || location.pathname === "/call";
 	const isAdminRoute = location.pathname.startsWith("/admin");
 	const hideChrome = isImmersiveRoute;
-	const isViewportLockedRoute = ["/owner", "/contracts", "/leads", "/verification"].includes(
-		location.pathname,
-	);
+	const isViewportLockedRoute =
+		["/owner", "/contracts", "/leads", "/verification"].includes(location.pathname) ||
+		location.pathname.startsWith("/support");
 	const content = isImmersiveRoute ? (
 		<ErrorBoundary>
 			<Suspense
@@ -648,7 +648,7 @@ function AppLayout() {
 					style={{ width: "100%" }}
 				>
 					{hideChrome ? null : (
-						<div className="global-navbar">
+						<div class="global-navbar">
 							<NavBar />
 						</div>
 					)}
@@ -678,9 +678,7 @@ function AppLayout() {
 					{!hideChrome &&
 					location.pathname !== "/feed" &&
 					!location.pathname.startsWith("/support") ? (
-						<div
-							className={isViewportLockedRoute ? "global-footer hidden lg:block" : "global-footer"}
-						>
+						<div class={isViewportLockedRoute ? "global-footer hidden lg:block" : "global-footer"}>
 							<Footer />
 						</div>
 					) : null}

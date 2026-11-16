@@ -95,8 +95,16 @@ export default function SupportLanding() {
 				return;
 			}
 			setTokenError("That support token is invalid, expired or revoked.");
-		} catch {
-			setTokenError("We couldn't verify that token just now. Please try again.");
+		} catch (err) {
+			// A 429 is not a token problem: it's the per-minute validate cap.
+			// Distinguish it so the buyer knows to WAIT, not to reformat or re-issue.
+			if (err?.status === 429) {
+				setTokenError(
+					"Too many verification attempts this minute. Please wait a moment and try again.",
+				);
+			} else {
+				setTokenError("We couldn't verify that token just now. Please try again.");
+			}
 		} finally {
 			setTokenBusy(false);
 		}
