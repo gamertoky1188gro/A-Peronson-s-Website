@@ -97,7 +97,7 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 		setDragging(false);
 	};
 	const navButton =
-		"rounded-full border border-white/10 bg-white/5 p-2 text-[#e8eefc] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30";
+		"rounded-full border border-white/10 bg-white/5 p-2 text-[#f4eeff] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30";
 
 	return (
 		<div
@@ -113,8 +113,8 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 			>
 				<div className="flex items-center justify-between gap-3 pb-3">
 					<div className="min-w-0">
-						<p className="truncate text-sm font-medium text-[#e8eefc]">{item.name}</p>
-						<p className="text-[11px] tabular-nums text-[#8ea3c8]">
+						<p className="truncate text-sm font-medium text-[#f4eeff]">{item.name}</p>
+						<p className="text-[11px] tabular-nums text-[#a99bbd]">
 							{index + 1} of {items.length}
 							{item.size ? ` · ${formatBytes(item.size)}` : ""}
 						</p>
@@ -128,7 +128,7 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 						>
 							<Minus aria-hidden="true" className="h-4 w-4" />
 						</button>
-						<span className="w-12 text-center text-xs tabular-nums text-[#8ea3c8]">
+						<span className="w-12 text-center text-xs tabular-nums text-[#a99bbd]">
 							{Math.round(zoom * 100)}%
 						</span>
 						<button
@@ -155,7 +155,7 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 
 				<div
 					ref={stageRef}
-					className="relative flex-1 touch-none overflow-hidden rounded-2xl border border-white/10 bg-[#050b1d]"
+					className="relative flex-1 touch-none overflow-hidden rounded-2xl border border-white/10 bg-[#0b0714]"
 					onPointerDown={onPointerDown}
 					onPointerMove={onPointerMove}
 					onPointerUp={onPointerUp}
@@ -181,7 +181,7 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 						) : (
 							<div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
 								<FileText aria-hidden="true" className="h-12 w-12 text-cyan-300/70" />
-								<p className="text-sm text-[#e8eefc]">{item.name}</p>
+								<p className="text-sm text-[#f4eeff]">{item.name}</p>
 								<a
 									href={item.url}
 									download={item.name}

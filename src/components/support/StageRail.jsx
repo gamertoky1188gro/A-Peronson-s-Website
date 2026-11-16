@@ -34,7 +34,7 @@ export function StageRail({ steps = DEFAULT_STAGES, status, className }) {
 								aria-hidden="true"
 								className={cn(
 									"hidden h-px w-6 sm:block",
-									index <= current ? "bg-cyan-400/60" : "bg-white/10",
+									index <= current ? "bg-purple-500/60" : "bg-white/10",
 								)}
 							/>
 						) : null}
@@ -44,10 +44,10 @@ export function StageRail({ steps = DEFAULT_STAGES, status, className }) {
 							aria-current={state === "current" ? "step" : undefined}
 							className={cn(
 								"inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-								state === "done" && "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
+								state === "done" && "border-purple-500/30 bg-purple-500/10 text-purple-400",
 								state === "current" &&
-									"border-cyan-400/50 bg-gradient-to-r from-cyan-400/20 to-sky-400/20 text-[#e8eefc] shadow-[0_0_16px_-6px_rgba(34,211,238,0.5)]",
-								state === "upcoming" && "border-white/10 bg-white/5 text-[#8ea3c8]",
+									"border-purple-500/50 bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 text-[#f4eeff] shadow-[0_0_16px_-6px_rgba(168,85,247,0.5)]",
+								state === "upcoming" && "border-white/10 bg-white/5 text-[#a99bbd]",
 							)}
 						>
 							{state === "done" ? <Check aria-hidden="true" className="h-3 w-3" /> : null}

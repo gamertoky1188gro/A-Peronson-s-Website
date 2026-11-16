@@ -17,7 +17,7 @@ const PILL_TONES = {
 	emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
 	rose: "border-rose-400/30 bg-rose-400/10 text-rose-300",
 	amber: "border-amber-400/30 bg-amber-400/10 text-amber-300",
-	sky: "border-sky-400/30 bg-sky-400/10 text-sky-300",
+	sky: "border-purple-500/30 bg-purple-500/10 text-purple-400",
 	cyan: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
 };
 
@@ -25,7 +25,7 @@ const DOT_TONES = {
 	emerald: "bg-emerald-400",
 	rose: "bg-rose-400",
 	amber: "bg-amber-400",
-	sky: "bg-sky-400",
+	sky: "bg-purple-500",
 	cyan: "bg-cyan-400",
 };
 
@@ -59,7 +59,7 @@ function deliveryPill(caseRow) {
 	return null;
 }
 
-const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60";
+const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60";
 
 export default function SupportSubmitted() {
 	const { caseId } = useParams();
@@ -98,24 +98,24 @@ export default function SupportSubmitted() {
 			.trim() === "failed";
 
 	return (
-		<div className="relative min-h-dvh overflow-hidden bg-[#050b1d] text-[#e8eefc]">
+		<div className="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(34,211,238,0.14),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(56,189,248,0.08),transparent_70%)]"
+				className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(168,85,247,0.16),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(217,70,239,0.10),transparent_70%)]"
 			/>
 			<div className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col items-center justify-center px-4 py-12 text-center sm:px-6">
-				<div className="flex h-20 w-20 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/10 shadow-[0_0_40px_-8px_rgba(34,211,238,0.45)]">
-					<Check className="h-10 w-10 text-cyan-300" aria-hidden="true" />
+				<div className="flex h-20 w-20 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-400/10 shadow-[0_0_40px_-8px_rgba(52,211,153,0.4)]">
+					<Check className="h-10 w-10 text-emerald-400" aria-hidden="true" />
 				</div>
-				<h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#f2f6ff] sm:text-4xl">
+				<h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#f4eeff] sm:text-4xl">
 					Report submitted!
 				</h1>
-				<p className="mt-2 text-sm leading-6 text-[#a9bcd9]">
+				<p className="mt-2 text-sm leading-6 text-[#a99bbd]">
 					Your investigation report is on its way to the support team.
 				</p>
 
 				<GlassCard className="mt-8 w-full p-5">
-					<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#8ea3c8]">
+					<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a99bbd]">
 						CASE REFERENCE
 					</p>
 					<p className="mt-2 break-all font-mono text-base font-semibold text-cyan-200 sm:text-lg">
@@ -123,7 +123,7 @@ export default function SupportSubmitted() {
 					</p>
 					{pill ? (
 						<div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-							<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#8ea3c8]">
+							<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a99bbd]">
 								Email report
 							</p>
 							<span
@@ -139,7 +139,7 @@ export default function SupportSubmitted() {
 					) : null}
 				</GlassCard>
 
-				<p className="mt-6 inline-flex items-center gap-2 text-sm text-[#8ea3c8]">
+				<p className="mt-6 inline-flex items-center gap-2 text-sm text-[#a99bbd]">
 					<Mail className="h-4 w-4 text-cyan-400" aria-hidden="true" />
 					{failed
 						? "We couldn't send the report yet — we'll retry."
@@ -148,7 +148,7 @@ export default function SupportSubmitted() {
 
 				<Link
 					to="/support"
-					className={`mt-8 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-8 py-3 text-sm font-semibold text-[#050b1d] transition motion-reduce:transition-none hover:-translate-y-0.5 ${focusRing}`}
+					className={`mt-8 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-8 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 ${focusRing}`}
 				>
 					Back to Support
 				</Link>

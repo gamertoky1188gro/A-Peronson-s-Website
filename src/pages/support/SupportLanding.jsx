@@ -44,9 +44,9 @@ const TICKET_CATEGORIES = [
 ];
 
 const inputClasses =
-	"w-full rounded-xl border border-white/10 bg-[#050b1d]/70 px-4 py-3 text-sm text-[#e8eefc] placeholder-[#5b6b8f] outline-none transition focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20";
+	"w-full rounded-xl border border-white/10 bg-[#0b0714]/70 px-4 py-3 text-sm text-[#f4eeff] placeholder-[#a99bbd]/60 outline-none transition focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20";
 
-const labelClasses = "text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8ea3c8]";
+const labelClasses = "text-[11px] font-semibold uppercase tracking-[0.14em] text-[#a99bbd]";
 
 export default function SupportLanding() {
 	const navigate = useNavigate();
@@ -137,31 +137,31 @@ export default function SupportLanding() {
 	}
 
 	return (
-		<div className="relative min-h-screen overflow-hidden bg-[#050b1d] text-[#e8eefc]">
+		<div className="relative min-h-screen overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl"
+				className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-purple-600/10 blur-3xl"
 			/>
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute top-40 -left-40 h-80 w-80 rounded-full bg-sky-600/10 blur-3xl"
+				className="pointer-events-none absolute top-40 -left-40 h-80 w-80 rounded-full bg-fuchsia-500/10 blur-3xl"
 			/>
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute top-96 -right-40 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl"
+				className="pointer-events-none absolute top-96 -right-40 h-80 w-80 rounded-full bg-fuchsia-500/10 blur-3xl"
 			/>
 
 			<div className="relative mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
 				<header className="flex items-center justify-between">
 					<Link
 						to="/"
-						className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300 transition hover:text-cyan-200"
+						className="text-sm font-semibold uppercase tracking-[0.22em] text-purple-400 transition hover:text-purple-300"
 					>
-						GarTexHub <span className="text-[#8ea3c8]">Support</span>
+						GarTexHub <span className="text-[#a99bbd]">Support</span>
 					</Link>
 					<Link
 						to="/help"
-						className="text-xs font-medium text-[#8ea3c8] transition hover:text-cyan-300"
+						className="text-xs font-medium text-[#a99bbd] transition hover:text-purple-300"
 					>
 						Help center
 					</Link>
@@ -169,16 +169,16 @@ export default function SupportLanding() {
 
 				<main>
 					<section className="mx-auto mt-14 max-w-3xl text-center sm:mt-20">
-						<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
+						<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-purple-400">
 							GarTexHub Support
 						</p>
-						<h1 className="mt-4 text-4xl font-semibold leading-[1.12] tracking-tight text-[#f2f6ff] sm:text-5xl">
+						<h1 className="mt-4 text-4xl font-semibold leading-[1.12] tracking-tight text-[#f4eeff] sm:text-5xl">
 							Something isn&apos;t working as expected?{" "}
-							<span className="bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-200 bg-clip-text text-transparent">
+							<span className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-300 bg-clip-text text-transparent">
 								Let&apos;s investigate.
 							</span>
 						</h1>
-						<p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#a9bcd9]">
+						<p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#a99bbd]">
 							Explain what happened. Share screenshots. Discuss the issue with our AI technical
 							assistant. It will investigate the available evidence and prepare a detailed case
 							report for our team.
@@ -188,9 +188,9 @@ export default function SupportLanding() {
 					<section className="mt-12 grid gap-4 sm:mt-14 md:grid-cols-3">
 						{FEATURES.map((feature) => (
 							<GlassCard key={feature.title} className="p-5">
-								<feature.icon className="h-5 w-5 text-cyan-300" aria-hidden="true" />
-								<h2 className="mt-3 text-base font-semibold text-[#f2f6ff]">{feature.title}</h2>
-								<p className="mt-1 text-sm leading-6 text-[#8ea3c8]">{feature.body}</p>
+								<feature.icon className="h-5 w-5 text-purple-400" aria-hidden="true" />
+								<h2 className="mt-3 text-base font-semibold text-[#f4eeff]">{feature.title}</h2>
+								<p className="mt-1 text-sm leading-6 text-[#a99bbd]">{feature.body}</p>
 							</GlassCard>
 						))}
 					</section>
@@ -198,12 +198,12 @@ export default function SupportLanding() {
 					<section className="mt-6 grid gap-6 md:grid-cols-2">
 						<GlassCard className="flex flex-col p-6 sm:p-7">
 							<div className="flex items-center gap-3">
-								<span className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10">
-									<Sparkles className="h-5 w-5 text-cyan-300" aria-hidden="true" />
+								<span className="flex h-11 w-11 items-center justify-center rounded-xl border border-purple-500/30 bg-purple-500/10">
+									<Sparkles className="h-5 w-5 text-purple-400" aria-hidden="true" />
 								</span>
-								<h2 className="text-xl font-semibold text-[#f2f6ff]">AI Investigation</h2>
+								<h2 className="text-xl font-semibold text-[#f4eeff]">AI Investigation</h2>
 							</div>
-							<p className="mt-3 text-sm leading-6 text-[#a9bcd9]">
+							<p className="mt-3 text-sm leading-6 text-[#a99bbd]">
 								For buyers: paste the secure support token issued by our team.
 							</p>
 							<form onSubmit={handleContinue} className="mt-5 flex flex-1 flex-col">
@@ -228,7 +228,7 @@ export default function SupportLanding() {
 								<button
 									type="submit"
 									disabled={tokenBusy}
-									className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition hover:from-cyan-300 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+									className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-[#f4eeff] transition hover:from-purple-400 hover:to-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-60"
 								>
 									{tokenBusy ? "Verifying…" : "Continue"}
 									<ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -238,12 +238,12 @@ export default function SupportLanding() {
 
 						<GlassCard className="flex flex-col p-6 sm:p-7">
 							<div className="flex items-center gap-3">
-								<span className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10">
-									<LifeBuoy className="h-5 w-5 text-sky-300" aria-hidden="true" />
+								<span className="flex h-11 w-11 items-center justify-center rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10">
+									<LifeBuoy className="h-5 w-5 text-fuchsia-400" aria-hidden="true" />
 								</span>
-								<h2 className="text-xl font-semibold text-[#f2f6ff]">General Support</h2>
+								<h2 className="text-xl font-semibold text-[#f4eeff]">General Support</h2>
 							</div>
-							<p className="mt-3 text-sm leading-6 text-[#a9bcd9]">
+							<p className="mt-3 text-sm leading-6 text-[#a99bbd]">
 								For signed-in members: open a ticket and our team will get back to you by email.
 							</p>
 							<div className="mt-auto pt-5">
@@ -253,7 +253,7 @@ export default function SupportLanding() {
 										onClick={() => setFormOpen((open) => !open)}
 										aria-expanded={formOpen}
 										aria-controls="general-support-form"
-										className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-5 py-3 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-400/15"
+										className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-500/40 bg-fuchsia-500/10 px-5 py-3 text-sm font-semibold text-fuchsia-200 transition hover:border-fuchsia-400/60 hover:bg-fuchsia-500/15"
 									>
 										{formOpen ? "Hide the form" : "Open the form"}
 										<ArrowRight
@@ -264,7 +264,7 @@ export default function SupportLanding() {
 								) : (
 									<Link
 										to="/login"
-										className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-[#e8eefc] transition hover:border-cyan-400/40 hover:text-cyan-200"
+										className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-[#f4eeff] transition hover:border-cyan-400/40 hover:text-cyan-200"
 									>
 										Sign in to submit
 										<ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -279,8 +279,8 @@ export default function SupportLanding() {
 							{ticketId === null ? (
 								<GlassCard className="p-6 sm:p-7">
 									<form onSubmit={handleTicketSubmit}>
-										<h2 className="text-lg font-semibold text-[#f2f6ff]">Describe the issue</h2>
-										<p className="mt-1 text-sm text-[#8ea3c8]">Our team will respond by email.</p>
+										<h2 className="text-lg font-semibold text-[#f4eeff]">Describe the issue</h2>
+										<p className="mt-1 text-sm text-[#a99bbd]">Our team will respond by email.</p>
 
 										<div className="mt-5">
 											<label htmlFor="ticket-subject" className={labelClasses}>
@@ -355,7 +355,7 @@ export default function SupportLanding() {
 										<button
 											type="submit"
 											disabled={submitting}
-											className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition hover:from-cyan-300 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+											className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-[#f4eeff] transition hover:from-purple-400 hover:to-fuchsia-400 disabled:cursor-not-allowed disabled:opacity-60"
 										>
 											<Send className="h-4 w-4" aria-hidden="true" />
 											{submitting ? "Submitting…" : "Submit request"}
@@ -364,9 +364,9 @@ export default function SupportLanding() {
 								</GlassCard>
 							) : (
 								<GlassCard className="p-8 text-center">
-									<CheckCircle2 className="mx-auto h-12 w-12 text-cyan-300" aria-hidden="true" />
-									<h2 className="mt-4 text-xl font-semibold text-[#f2f6ff]">Request received</h2>
-									<p className="mt-2 text-sm text-[#a9bcd9]">
+									<CheckCircle2 className="mx-auto h-12 w-12 text-emerald-400" aria-hidden="true" />
+									<h2 className="mt-4 text-xl font-semibold text-[#f4eeff]">Request received</h2>
+									<p className="mt-2 text-sm text-[#a99bbd]">
 										Our team will respond by email. Keep this reference:
 									</p>
 									{ticketId ? (
@@ -377,7 +377,7 @@ export default function SupportLanding() {
 									<button
 										type="button"
 										onClick={resetTicketFlow}
-										className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-[#e8eefc] transition hover:border-cyan-400/40 hover:text-cyan-200"
+										className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-[#f4eeff] transition hover:border-cyan-400/40 hover:text-cyan-200"
 									>
 										<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 										Back to support
@@ -387,7 +387,7 @@ export default function SupportLanding() {
 						</section>
 					) : null}
 
-					<p className="mt-10 flex items-center justify-center gap-2 text-center text-xs text-[#5b6b8f]">
+					<p className="mt-10 flex items-center justify-center gap-2 text-center text-xs text-[#a99bbd]/70">
 						<ShieldCheck className="h-4 w-4 text-cyan-400" aria-hidden="true" />
 						Support tokens are single-purpose and never stored by this page.
 					</p>

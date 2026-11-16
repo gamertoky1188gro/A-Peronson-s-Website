@@ -103,7 +103,7 @@ function OverviewPanel({ caseRow, clientUser, reportStatus }) {
 					</span>
 				) : null}
 				{caseRow?.retain ? (
-					<span className="inline-flex items-center rounded-full border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-sky-300">
+					<span className="inline-flex items-center rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-purple-400">
 						Retained
 					</span>
 				) : null}
@@ -136,7 +136,7 @@ function ConversationPanel({ messages = EMPTY }) {
 						>
 							<div
 								className={`max-w-[80%] rounded-2xl border px-3 py-2 ${
-									clientSide ? "border-sky-400/30 bg-sky-500/15" : "border-white/10 bg-white/5"
+									clientSide ? "border-purple-500/30 bg-purple-500/15" : "border-white/10 bg-white/5"
 								}`}
 							>
 								<p className={subtleText}>
@@ -215,7 +215,7 @@ function EvidencePanel({ attachments = EMPTY }) {
 							aria-label={`Open evidence ${name}`}
 							className="group overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-cyan-400/40"
 						>
-							<span className="flex h-24 w-full items-center justify-center overflow-hidden bg-[#050b1d]">
+							<span className="flex h-24 w-full items-center justify-center overflow-hidden bg-[#0b0714]">
 								{isImage && url ? (
 									<img src={url} alt={name} loading="lazy" className="h-full w-full object-cover" />
 								) : (
@@ -297,7 +297,7 @@ function FindingsPanel({ investigations = EMPTY }) {
 																href={entry.url}
 																target="_blank"
 																rel="noreferrer"
-																className="text-sky-400 hover:underline"
+																className="text-cyan-300 hover:underline"
 															>
 																{`Open ${entry.file || "evidence link"}`}
 															</a>

@@ -13,7 +13,7 @@ const BASE =
 
 const PRIORITY_CLASS = {
 	low: "border-slate-400/30 bg-slate-500/15 text-slate-300",
-	normal: "border-sky-400/30 bg-sky-500/15 text-sky-300",
+	normal: "border-purple-500/30 bg-purple-500/15 text-purple-400",
 	high: "border-amber-400/30 bg-amber-500/15 text-amber-300",
 	urgent: "border-rose-400/30 bg-rose-500/15 text-rose-300",
 };
@@ -32,10 +32,10 @@ export function PriorityChip({ priority }) {
 
 const STATUS_CLASS = {
 	completed: "border-emerald-400/30 bg-emerald-500/15 text-emerald-300",
-	investigating: "border-sky-400/30 bg-sky-500/15 text-sky-300",
-	running: "border-sky-400/30 bg-sky-500/15 text-sky-300",
-	verifying: "border-sky-400/30 bg-sky-500/15 text-sky-300",
-	reporting: "border-sky-400/30 bg-sky-500/15 text-sky-300",
+	investigating: "border-purple-500/30 bg-purple-500/15 text-purple-400",
+	running: "border-purple-500/30 bg-purple-500/15 text-purple-400",
+	verifying: "border-purple-500/30 bg-purple-500/15 text-purple-400",
+	reporting: "border-purple-500/30 bg-purple-500/15 text-purple-400",
 	collecting: "border-slate-400/30 bg-slate-500/15 text-slate-300",
 	failed: "border-rose-400/30 bg-rose-500/15 text-rose-300",
 };

@@ -74,7 +74,7 @@ export function Composer({
 	return (
 		<div
 			className={cn(
-				"rounded-2xl border bg-[#0a1025]/85 backdrop-blur-md transition-colors",
+				"rounded-2xl border bg-[#151020]/85 backdrop-blur-md transition-colors",
 				dragActive ? "border-cyan-400/50" : "border-white/10",
 				className,
 			)}
@@ -94,12 +94,12 @@ export function Composer({
 					{attachments.map((file, index) => (
 						<li
 							key={`${file.name}-${file.size}-${index}`}
-							className="flex max-w-[220px] items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 py-1 pl-2 pr-1 text-xs text-[#e8eefc]"
+							className="flex max-w-[220px] items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 py-1 pl-2 pr-1 text-xs text-[#f4eeff]"
 						>
 							<FileText aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-cyan-300" />
 							<span className="truncate">{file.name}</span>
 							{file.size ? (
-								<span className="shrink-0 text-[10px] tabular-nums text-[#8ea3c8]">
+								<span className="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
 									{formatBytes(file.size)}
 								</span>
 							) : null}
@@ -107,7 +107,7 @@ export function Composer({
 								type="button"
 								onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== index))}
 								aria-label={`Remove ${file.name}`}
-								className="shrink-0 rounded p-0.5 text-[#8ea3c8] transition hover:bg-white/10 hover:text-[#e8eefc]"
+								className="shrink-0 rounded p-0.5 text-[#a99bbd] transition hover:bg-white/10 hover:text-[#f4eeff]"
 							>
 								<X aria-hidden="true" className="h-3.5 w-3.5" />
 							</button>
@@ -126,7 +126,7 @@ export function Composer({
 							aria-label="Attach files"
 							className={cn(
 								iconButton,
-								"border-white/10 bg-white/5 text-[#8ea3c8] hover:bg-white/10 hover:text-[#e8eefc]",
+								"border-white/10 bg-white/5 text-[#a99bbd] hover:bg-white/10 hover:text-[#f4eeff]",
 							)}
 						>
 							<Paperclip aria-hidden="true" className="h-4 w-4" />
@@ -159,7 +159,7 @@ export function Composer({
 						}
 					}}
 					onPaste={(event) => addFiles(event.clipboardData?.files)}
-					className="max-h-40 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-6 text-[#e8eefc] outline-none placeholder:text-[#8ea3c8]/60 disabled:cursor-not-allowed disabled:opacity-50"
+					className="max-h-40 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-6 text-[#f4eeff] outline-none placeholder:text-[#a99bbd]/60 disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 
 				{sending ? (
@@ -182,7 +182,7 @@ export function Composer({
 						aria-label="Send message"
 						className={cn(
 							iconButton,
-							"border-cyan-400/40 bg-gradient-to-r from-cyan-400/20 to-sky-400/20 text-cyan-300 hover:from-cyan-400/30 hover:to-sky-400/30",
+							"border-purple-500/40 bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 text-purple-300 hover:from-purple-500/30 hover:to-fuchsia-500/30",
 						)}
 					>
 						<SendHorizontal aria-hidden="true" className="h-4 w-4" />
