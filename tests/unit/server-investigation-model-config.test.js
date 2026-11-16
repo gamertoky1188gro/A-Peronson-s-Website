@@ -160,3 +160,44 @@ it("a pin to a model that is not free never survives a read", async () => {
 	const cfg = await svc.getInvestigationModelConfig();
 	expect(cfg.roleModels).toEqual({ code: "minimax-m3.1-flash-free" });
 });
+
+it("a routing rule is persisted and survives a read", async () => {
+	await svc.setInvestigationModelConfig(
+		{
+			allowed: ["minimax-m3.1-flash-free", "deepseek-v4.1-flash-free"],
+			default: "minimax-m3.1-flash-free",
+			routing: [{ keyword: "csv", modelId: "deepseek-v4.1-flash-free", role: "code" }],
+		},
+		"owner-1",
+	);
+	const cfg = await svc.getInvestigationModelConfig();
+	expect(cfg.routing).toEqual([
+		{ keyword: "csv", modelId: "deepseek-v4.1-flash-free", role: "code" },
+	]);
+});
+
+it("a routing rule for a model that is not allowed is refused with a 400", async () => {
+	await expect(
+		svc.setInvestigationModelConfig(
+			{
+				allowed: ["minimax-m3.1-flash-free"],
+				default: "minimax-m3.1-flash-free",
+				routing: [{ keyword: "csv", modelId: "deepseek-v4.1-flash-free" }],
+			},
+			"owner-1",
+		),
+	).rejects.toMatchObject({ status: 400 });
+});
+
+it("a routing rule without a keyword is refused with a 400", async () => {
+	await expect(
+		svc.setInvestigationModelConfig(
+			{
+				allowed: ["minimax-m3.1-flash-free"],
+				default: "minimax-m3.1-flash-free",
+				routing: [{ keyword: "  ", modelId: "minimax-m3.1-flash-free" }],
+			},
+			"owner-1",
+		),
+	).rejects.toMatchObject({ status: 400 });
+});

@@ -4,6 +4,7 @@ import {
 	Copy,
 	KeyRound,
 	ListChecks,
+	Plus,
 	RefreshCw,
 	Save,
 	Search,
@@ -65,6 +66,7 @@ export function AdminAISection() {
 	const [modelsAdminSaving, setModelsAdminSaving] = useState(false);
 	const [modelsAdminError, setModelsAdminError] = useState("");
 	const [modelsAdminNotice, setModelsAdminNotice] = useState("");
+	const [newRule, setNewRule] = useState({ keyword: "", modelId: "", role: "" });
 
 	async function fetchModelsAdmin(refresh) {
 		try {
@@ -82,6 +84,7 @@ export function AdminAISection() {
 				catalogStale: Boolean(data?.catalogStale),
 				health: data?.health ?? { windowDays: 0, runs: 0, models: {} },
 				roleModels: data?.roleModels ?? {},
+				routing: Array.isArray(data?.routing) ? data.routing : [],
 			});
 		} catch (err) {
 			setModelsAdminError(err?.message || "Failed to load investigation models");
@@ -106,6 +109,7 @@ export function AdminAISection() {
 				body: {
 					allowed: modelsAdmin.allowed,
 					roleModels: modelsAdmin.roleModels ?? {},
+					routing: modelsAdmin.routing ?? [],
 					default: modelsAdmin.default,
 					buyerSelectEnabled: modelsAdmin.buyerSelectEnabled,
 				},
@@ -118,6 +122,36 @@ export function AdminAISection() {
 		} finally {
 			setModelsAdminSaving(false);
 		}
+	}
+
+	/**
+	 * Add an auto-routing rule: when the case text contains the keyword, the
+	 * named model leads that role's chain.
+	 */
+	function addRoutingRule() {
+		const keyword = newRule.keyword.trim();
+		const modelId = newRule.modelId.trim();
+		if (!(keyword && modelId)) {
+			setModelsAdminError("A routing rule needs a keyword and a model.");
+			return;
+		}
+		setModelsAdminError("");
+		setModelsAdmin((prev) => {
+			if (!prev) return prev;
+			const rule = newRule.role ? { keyword, modelId, role: newRule.role } : { keyword, modelId };
+			return { ...prev, routing: [...(prev.routing ?? []), rule] };
+		});
+		setNewRule({ keyword: "", modelId: "", role: "" });
+	}
+
+	function removeRoutingRule(index) {
+		setModelsAdmin((prev) => {
+			if (!prev) return prev;
+			return {
+				...prev,
+				routing: (prev.routing ?? []).filter((_, i) => i !== index),
+			};
+		});
 	}
 
 	/**
@@ -648,6 +682,83 @@ export function AdminAISection() {
 											</span>
 										</div>
 									))}
+							</div>
+
+							<div class="mt-4 rounded-2xl border border-purple-400/10 bg-[#0b0714]/40 p-4">
+								<p class="text-xs font-medium text-slate-300">Auto-routing rules</p>
+								<p class="mt-1 text-[11px] text-slate-500">
+									When the case text contains the keyword, that model leads the chain for the role.
+									The first matching rule wins.
+								</p>
+								{(modelsAdmin?.routing ?? []).length > 0 ? (
+									<ul class="mt-3 space-y-1.5">
+										{(modelsAdmin?.routing ?? []).map((rule, index) => (
+											<li
+												key={`${rule.keyword}-${rule.modelId}-${rule.role || "any"}-${index}`}
+												class="flex items-center gap-3 rounded-xl border border-white/5 bg-black/20 px-3 py-2 text-xs"
+											>
+												<span class="font-mono text-slate-100">{rule.keyword}</span>
+												<span class="text-slate-500">→</span>
+												<span class="font-mono text-slate-300">{rule.modelId}</span>
+												<span class="rounded-full border border-purple-400/20 bg-purple-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-purple-300">
+													{rule.role || "all roles"}
+												</span>
+												<button
+													type="button"
+													onClick={() => removeRoutingRule(index)}
+													aria-label={`Remove the routing rule for ${rule.keyword}`}
+													class="ml-auto rounded-lg border border-red-500/30 bg-red-500/10 p-1.5 text-red-400 transition-all hover:bg-red-500/20"
+												>
+													<Trash2 class="h-3.5 w-3.5" />
+												</button>
+											</li>
+										))}
+									</ul>
+								) : null}
+								<div class="mt-3 grid gap-2 sm:grid-cols-4">
+									<input
+										type="text"
+										value={newRule.keyword}
+										onChange={(e) => setNewRule((p) => ({ ...p, keyword: e.target.value }))}
+										placeholder="keyword"
+										aria-label="Routing keyword"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none placeholder:text-slate-500 focus:border-purple-500/40"
+									/>
+									<select
+										value={newRule.modelId}
+										onChange={(e) => setNewRule((p) => ({ ...p, modelId: e.target.value }))}
+										aria-label="Routing model"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/40"
+									>
+										<option value="">model…</option>
+										{(modelsAdmin?.allowed ?? []).map((id) => (
+											<option key={id} value={id}>
+												{id}
+											</option>
+										))}
+									</select>
+									<select
+										value={newRule.role}
+										onChange={(e) => setNewRule((p) => ({ ...p, role: e.target.value }))}
+										aria-label="Routing role"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/40"
+									>
+										<option value="">all roles</option>
+										{INVESTIGATION_ROLES.map((role) => (
+											<option key={role} value={role}>
+												{role}
+											</option>
+										))}
+									</select>
+									<button
+										type="button"
+										onClick={addRoutingRule}
+										class="flex items-center justify-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-xs font-medium text-purple-300 transition-all hover:bg-purple-500/20"
+									>
+										<Plus class="h-3.5 w-3.5" />
+										Add rule
+									</button>
+								</div>
 							</div>
 
 							<div class="mt-5 rounded-2xl border border-purple-400/10 bg-[#0b0714]/40 p-4">

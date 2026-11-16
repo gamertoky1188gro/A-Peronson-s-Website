@@ -17,6 +17,8 @@ function shape(config, health) {
 		buyerSelectEnabled: config.buyerSelectEnabled,
 		// The per-role model pins: { role: modelId }.
 		roleModels: config.roleModels ?? {},
+		// The auto-routing rules: [{ keyword, modelId, role? }].
+		routing: Array.isArray(config.routing) ? config.routing : [],
 		catalogStale: Boolean(config.catalogStale),
 		catalogFetchedAt: config.catalogFetchedAt ?? null,
 		// The catalog array ({ id, name, providerID, created, ownedBy }) — the
@@ -47,7 +49,7 @@ export async function getAdminSupportModels(req, res) {
 export async function putAdminSupportModels(req, res) {
 	try {
 		const body = req.body ?? {};
-		const { allowed, default: def, buyerSelectEnabled, roleModels } = body;
+		const { allowed, default: def, buyerSelectEnabled, roleModels, routing } = body;
 		if (allowed !== undefined && !Array.isArray(allowed)) {
 			return res.status(400).json({ error: "allowed must be an array of model ids" });
 		}
@@ -63,16 +65,20 @@ export async function putAdminSupportModels(req, res) {
 		) {
 			return res.status(400).json({ error: "roleModels must be an object of role -> model id" });
 		}
+		if (routing !== undefined && !Array.isArray(routing)) {
+			return res.status(400).json({ error: "routing must be an array of rules" });
+		}
 		if (
 			allowed === undefined &&
 			def === undefined &&
 			buyerSelectEnabled === undefined &&
-			roleModels === undefined
+			roleModels === undefined &&
+			routing === undefined
 		) {
 			return res.status(400).json({ error: "Nothing to update" });
 		}
 		const result = await setInvestigationModelConfig(
-			{ allowed, default: def, buyerSelectEnabled, roleModels },
+			{ allowed, default: def, buyerSelectEnabled, roleModels, routing },
 			req.user?.id,
 		);
 		return res.json({ ok: true, ...shape(result) });

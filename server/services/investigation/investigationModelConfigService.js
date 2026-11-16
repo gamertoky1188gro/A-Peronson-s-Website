@@ -7,6 +7,7 @@ const KEY_ALLOWED = "ai.opencode.investigation_allowed";
 const KEY_DEFAULT = "ai.opencode.investigation_default";
 const KEY_BUYER_TOGGLE = "ai.opencode.buyer_model_select";
 const KEY_ROLE_MODELS = "ai.opencode.investigation_role_models";
+const KEY_ROUTING = "ai.opencode.investigation_routing";
 
 // The roles a model can be pinned to. Kept as a literal so this module does
 // not depend on the agent prompts; the queue is the one that reads it.
@@ -15,7 +16,11 @@ const ASSIGNMENT_ROLES = ["lead", "code", "repo", "research", "verify"];
 async function readRows() {
 	try {
 		const rows = await prisma.adminBranding.findMany({
-			where: { brand_key: { in: [KEY_ALLOWED, KEY_DEFAULT, KEY_BUYER_TOGGLE, KEY_ROLE_MODELS] } },
+			where: {
+				brand_key: {
+					in: [KEY_ALLOWED, KEY_DEFAULT, KEY_BUYER_TOGGLE, KEY_ROLE_MODELS, KEY_ROUTING],
+				},
+			},
 		});
 		const map = {};
 		for (const row of rows) map[row.brand_key] = row;
@@ -44,6 +49,36 @@ function sanitizeRoleModels(raw, allowed) {
 		if (id && FREE_ID(id) && allowed.includes(id)) {
 			out[role] = id;
 		}
+	}
+	return out;
+}
+
+/**
+ * The auto-routing rules: `{ keyword, modelId, role? }`.
+ *
+ * A rule names a keyword in the case description and the model that should
+ * lead the chain when that keyword is there. A rule with no role applies to
+ * every role; one with a role applies to that role only.
+ *
+ * A rule survives only while its model is allowed and free — the same rule
+ * the per-role pins follow, because both of them only reorder a chain the
+ * runtime already agreed to.
+ */
+function sanitizeRouting(raw, allowed) {
+	if (!Array.isArray(raw)) {
+		return [];
+	}
+	const out = [];
+	for (const rule of raw) {
+		const keyword = typeof rule?.keyword === "string" ? rule.keyword.trim().slice(0, 60) : "";
+		const modelId = typeof rule?.modelId === "string" ? rule.modelId.trim() : "";
+		if (!(keyword && FREE_ID(modelId) && allowed.includes(modelId))) {
+			continue;
+		}
+		const role = typeof rule?.role === "string" ? rule.role.trim() : "";
+		out.push(
+			role && ASSIGNMENT_ROLES.includes(role) ? { keyword, modelId, role } : { keyword, modelId },
+		);
 	}
 	return out;
 }
@@ -79,11 +114,18 @@ export async function getInvestigationModelConfig({ forceCatalogRefresh = false 
 	} catch {
 		rawRoleModels = null;
 	}
+	let rawRouting = null;
+	try {
+		if (persisted[KEY_ROUTING]?.value) rawRouting = JSON.parse(persisted[KEY_ROUTING].value);
+	} catch {
+		rawRouting = null;
+	}
 	return {
 		allowed,
 		default: def,
 		buyerSelectEnabled,
 		roleModels: sanitizeRoleModels(rawRoleModels, allowed),
+		routing: sanitizeRouting(rawRouting, allowed),
 		catalog,
 		catalogStale: Boolean(catalogResult.stale),
 		catalogFetchedAt: catalogResult.fetchedAt ?? null,
@@ -91,7 +133,7 @@ export async function getInvestigationModelConfig({ forceCatalogRefresh = false 
 }
 
 export async function setInvestigationModelConfig(
-	{ allowed, default: def, buyerSelectEnabled, roleModels },
+	{ allowed, default: def, buyerSelectEnabled, roleModels, routing },
 	actorId,
 ) {
 	const catalogResult = await getOpenCodeFreeModels({ forceRefresh: true }).catch(() => ({
@@ -156,6 +198,40 @@ export async function setInvestigationModelConfig(
 			nextRoleModels[role] = id.trim();
 		}
 	}
+	// The auto-routing rules. A rule must name a model that is allowed, or
+	// the owner would be routing investigations to a model the chain can
+	// never use.
+	const nextRouting = routing === undefined ? [...(previous.routing || [])] : [];
+	if (routing !== undefined) {
+		if (!Array.isArray(routing)) {
+			const error = new Error("routing must be an array of rules");
+			error.status = 400;
+			throw error;
+		}
+		for (const rule of routing) {
+			const keyword = typeof rule?.keyword === "string" ? rule.keyword.trim() : "";
+			const modelId = typeof rule?.modelId === "string" ? rule.modelId.trim() : "";
+			if (!keyword) {
+				const error = new Error("A routing rule needs a keyword");
+				error.status = 400;
+				throw error;
+			}
+			if (!nextAllowed.includes(modelId)) {
+				const error = new Error(
+					`The routing rule for "${keyword}" names a model that is not allowed`,
+				);
+				error.status = 400;
+				throw error;
+			}
+			const role = typeof rule?.role === "string" ? rule.role.trim() : "";
+			if (role && !ASSIGNMENT_ROLES.includes(role)) {
+				const error = new Error(`Unknown investigation role "${role}"`);
+				error.status = 400;
+				throw error;
+			}
+			nextRouting.push(role ? { keyword, modelId, role } : { keyword, modelId });
+		}
+	}
 	const write = (key, value) =>
 		prisma.adminBranding.upsert({
 			where: { brand_key: key },
@@ -168,6 +244,7 @@ export async function setInvestigationModelConfig(
 			write(KEY_DEFAULT, nextDefault),
 			write(KEY_BUYER_TOGGLE, nextToggle ? "1" : "0"),
 			write(KEY_ROLE_MODELS, JSON.stringify(nextRoleModels)),
+			write(KEY_ROUTING, JSON.stringify(nextRouting)),
 			prisma.adminConfigHistory.create({
 				data: {
 					config_type: "investigation_model_config",
@@ -177,12 +254,14 @@ export async function setInvestigationModelConfig(
 						default: previous.default,
 						buyerSelectEnabled: previous.buyerSelectEnabled,
 						roleModels: previous.roleModels,
+						routing: previous.routing,
 					}),
 					new_value: JSON.stringify({
 						allowed: nextAllowed,
 						default: nextDefault,
 						buyerSelectEnabled: nextToggle,
 						roleModels: nextRoleModels,
+						routing: nextRouting,
 					}),
 				},
 			}),

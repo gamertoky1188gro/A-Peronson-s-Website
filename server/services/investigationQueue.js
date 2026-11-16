@@ -383,7 +383,11 @@ async function runInvestigation(job) {
 			password: mintRuntimePassword(),
 		});
 
-		const { models, roleModels } = await pickCaseModels(runtime.client, context.caseRow);
+		const { models, roleModels, routing, description } = await pickCaseModels(
+			runtime.client,
+			context.caseRow,
+			context.description,
+		);
 		if (!models.length) {
 			await failRows(rows, finished, "No free investigation model is available on the runtime.");
 			await setTerminalStatus(caseId, "failed");
@@ -403,6 +407,8 @@ async function runInvestigation(job) {
 				runtime,
 				models,
 				roleModels,
+				routing,
+				description,
 				role,
 				prompt,
 				row: findRow(rows, role),
@@ -420,6 +426,8 @@ async function runInvestigation(job) {
 			runtime,
 			models,
 			roleModels,
+			routing,
+			description,
 			caseId,
 			context,
 			candidates: accumulated,
@@ -456,6 +464,8 @@ async function runVerification({
 	runtime,
 	models,
 	roleModels,
+	routing,
+	description,
 	caseId,
 	context,
 	candidates,
@@ -474,6 +484,8 @@ async function runVerification({
 		runtime,
 		models,
 		roleModels,
+		routing,
+		description,
 		role: VERIFY_ROLE,
 		prompt,
 		row: findRow(rows, VERIFY_ROLE),
@@ -546,15 +558,28 @@ async function runVerification({
  *
  * @returns {Promise<{role: string, status: string, findings: object[], limitations: string[], summary: string, error?: string}>}
  */
-async function runRole({ runtime, models, role, prompt, row, caseId, sessionIDs, roleModels }) {
+async function runRole({
+	runtime,
+	models,
+	role,
+	prompt,
+	row,
+	caseId,
+	sessionIDs,
+	roleModels,
+	routing,
+	description,
+}) {
 	if (!row) {
 		return { role, status: "failed", findings: [], limitations: [], summary: "", error: "no row" };
 	}
 
-	const chain = orderChainForRole(
-		(Array.isArray(models) ? models : [models]).filter(Boolean),
+	// The order of preference: the model pinned to this role, then the model
+	// a routing rule points at for this role, then the rest of the chain.
+	const chain = orderChainForRole((Array.isArray(models) ? models : [models]).filter(Boolean), [
 		roleModels?.[role],
-	);
+		routedModelId(routing, description, role),
+	]);
 	if (!chain.length) {
 		const error = "No free investigation model is available on the runtime.";
 		await finishRow(row, { status: "failed", error });
@@ -1033,15 +1058,15 @@ function normalizeToolCalls(toolCalls) {
 
 /**
  * Pick the ordered model chain for one investigation, and the per-role pins
- * that reorder it.
+ * and routing rules that reorder it.
  *
  * The case's own model, when it was set and the runtime still offers it, leads
  * the chain; the rest of the allowlist follows in allowlist order; the default
  * chain backstops when the allowlist is exhausted by the runtime.
  */
-async function pickCaseModels(client, caseRow) {
+async function pickCaseModels(client, caseRow, description = "") {
 	const available = await listAvailableModels(client);
-	const { allowed, buyerSelectEnabled, roleModels } = await getInvestigationModelConfig();
+	const { allowed, buyerSelectEnabled, roleModels, routing } = await getInvestigationModelConfig();
 	const caseModelId = effectiveCaseModelId({
 		caseModelId: caseRow?.model_id || null,
 		buyerSelectEnabled,
@@ -1050,11 +1075,40 @@ async function pickCaseModels(client, caseRow) {
 	return {
 		models: computeCaseModelOrder({ caseModelId, allowed, available }),
 		roleModels: roleModels ?? {},
+		routing: routing ?? [],
+		description: String(description || ""),
 	};
 }
 
 /**
- * The chain for one role: the model pinned to that role first, then the rest.
+ * The model a routing rule points at, for one role.
+ *
+ * The first rule whose keyword appears in the case description wins. A rule
+ * with a role only applies to that role; a rule without one applies to all of
+ * them.
+ */
+export function routedModelId(routing, description, role) {
+	const text = String(description || "").toLowerCase();
+	if (!text) {
+		return "";
+	}
+	for (const rule of Array.isArray(routing) ? routing : []) {
+		const keyword = typeof rule?.keyword === "string" ? rule.keyword.trim().toLowerCase() : "";
+		if (!(keyword && text.includes(keyword))) {
+			continue;
+		}
+		const ruleRole = typeof rule?.role === "string" ? rule.role.trim() : "";
+		if (ruleRole && ruleRole !== role) {
+			continue;
+		}
+		return typeof rule?.modelId === "string" ? rule.modelId : "";
+	}
+	return "";
+}
+
+/**
+ * The chain for one role: the model pinned to that role first, then the
+ * model a routing rule points at, then the rest.
  *
  * A pin the runtime does not offer is ignored — the chain is the truth about
  * what the runtime can actually answer with, and the pin only decides the
@@ -1062,15 +1116,24 @@ async function pickCaseModels(client, caseRow) {
  */
 export function orderChainForRole(models, pinnedModelId) {
 	const chain = Array.isArray(models) ? models.filter(Boolean) : [];
-	const pinned = typeof pinnedModelId === "string" ? pinnedModelId : "";
-	if (!pinned) {
+	const preferred = (Array.isArray(pinnedModelId) ? pinnedModelId : [pinnedModelId])
+		.filter((id) => typeof id === "string" && id.trim())
+		.map((id) => id.trim());
+	if (!preferred.length) {
 		return chain;
 	}
-	const index = chain.findIndex((entry) => entry?.id === pinned);
-	if (index <= 0) {
-		return chain;
+	// The preferred ids keep their order: the first one that the runtime
+	// offers leads, the rest follow it.
+	const rest = [...chain];
+	const ordered = [];
+	for (const id of preferred) {
+		const index = rest.findIndex((entry) => entry?.id === id);
+		if (index >= 0) {
+			ordered.push(rest[index]);
+			rest.splice(index, 1);
+		}
 	}
-	return [chain[index], ...chain.slice(0, index), ...chain.slice(index + 1)];
+	return [...ordered, ...rest];
 }
 
 /**
