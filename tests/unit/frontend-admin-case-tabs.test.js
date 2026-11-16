@@ -234,7 +234,7 @@ describe("glass chips", () => {
 		expect(container.textContent).toContain("—");
 		expect(container.querySelector(".text-rose-300")).toBeTruthy();
 		expect(container.querySelector(".text-amber-300")).toBeTruthy();
-		expect(container.querySelector(".text-sky-300")).toBeTruthy();
+		expect(container.querySelector(".text-purple-400")).toBeTruthy();
 	});
 
 	it("investigation status chip: completed emerald, investigating sky, collecting slate", () => {
@@ -246,7 +246,7 @@ describe("glass chips", () => {
 			</div>,
 		);
 		expect(container.querySelector(".text-emerald-300")).toBeTruthy();
-		expect(container.querySelector(".text-sky-300")).toBeTruthy();
+		expect(container.querySelector(".text-purple-400")).toBeTruthy();
 		expect(container.querySelector(".text-slate-300")).toBeTruthy();
 	});
 
