@@ -67,7 +67,7 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
 
 ## Cross-cutting / housekeeping
 - [x] **H.1** Commit `docs/plans/2026-11-16-plan-corrections.md`, `docs/plans/2026-11-16-support-portal-master-plan.md`, this todo file (message: `docs(support): master plan + todos`)
-- [x] **H.2** DECIDED BY PRACTICE, CONFIRM BEFORE CLEANUP: `dist/` IS tracked and every commit rebuilds it (the pre-commit gate runs `npm run build`, and the bundle is committed in the same commit or the one after). `dist/brand/` was removed from the tree. The owner was asked which policy to keep and never answered; the tracked state is the one that keeps the Render deploy and the local `SERVE_DIST=true` server working. Switching to gitignored `dist/` is a one-line change plus a `git rm -r --cached dist` if the owner wants it.
+- [x] **H.2** DECIDED (owner, 2026-11-16): **`dist/` is gitignored and untracked**. Render rebuilds it on every deploy (buildCommand runs `pnpm run build`), so production is unaffected; `dist/` was `git rm --cached` in `31666c23`. Local `SERVE_DIST=true` needs `npm run build` after each commit now. `dist/brand/` was removed from the tree earlier.
 - [x] **H.3** Flagged to the owner repeatedly (Aiven password, `ADMIN_MFA_CODE`, `GMAIL_APP_PASSWORD` are in `render.yaml` and in git history). The owner chose to leave them; they should still be rotated externally.
 - [x] **H.4** (1088 passed; build clean; spike 8/8 twice) Re-run full `npm test` + `npm run build` after any code change; no "trust me" merges
 - [ ] **H.5** Owner walk-through: buyer token mode + generic form mode + confirm → investigation → report → email + owner console, on staging/scratch env
