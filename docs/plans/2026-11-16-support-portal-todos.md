@@ -6,14 +6,14 @@ Gate: Phase A.1 must pass before anything in B–E.
 Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send.
 
 ## Phase A — Read-only boundary (GATE)
-- [ ] **A.0.1** Rewrite `.opencode/agents/investigator.md` frontmatter to native V2 ordered `permissions` array (`{action, resource, effect}`), one rule per line
-- [ ] **A.0.2** Rewrite `.opencode/agents/assistant.md` the same way
-- [ ] **A.0.3** Drop V1-only keys from both files: `bash`→`shell`, `write`/`patch` folded into `edit` deny, `task`→`subagent` deny, nested maps removed, `list` rule removed (V2 has no `list`; `glob` covers it)
-- [ ] **A.0.4** Include `external_directory: * → deny` and the full read-only shell allowlist as explicit V2 rules (`git log*`, `grep*`, `rg*`, `find *`, `ls *`, `cat *`, `head *`, `tail *`, `sed -n *`, `wc *`, `pwd`, `sort*`, `diff *`, `stat *`, `file *`, `uniq *`, `cut *`, `du *`, `df *`, `true`, `echo *`, `whoami`, `uname*`), then `shell: * → deny` last
-- [ ] **A.0.5** Update `tests/unit/server-investigation-runtime-config.test.js` to assert ordered native format (rejects V1 syntax, requires deny-first rule and no stale actions)
-- [ ] **A.0.6** Run `npm test -- --testPathPattern="runtime-config|investigation-mcp"` → PASS
-- [ ] **A.0.7** Grep sweep: `grep -rn "bash:|write:|patch:|task:|permission:|default_agent" .opencode/ server/services/` → only expected hits (docs, tests)
-- [ ] **A.0.8** Commit: `refactor(investigation): native V2 ordered-permissions frontmatter`
+- [x] **A.0.1** Rewrite `.opencode/agents/investigator.md` frontmatter to native V2 ordered `permissions` array (`{action, resource, effect}`), one rule per line
+- [x] **A.0.2** Rewrite `.opencode/agents/assistant.md` the same way
+- [x] **A.0.3** Drop V1-only keys from both files: `bash`→`shell`, `write`/`patch` folded into `edit` deny, `task`→`subagent` deny, nested maps removed, `list` rule removed (V2 has no `list`; `glob` covers it)
+- [x] **A.0.4** Include `external_directory: * → deny` and the full read-only shell allowlist as explicit V2 rules (`git log*`, `grep*`, `rg*`, `find *`, `ls *`, `cat *`, `head *`, `tail *`, `sed -n *`, `wc *`, `pwd`, `sort*`, `diff *`, `stat *`, `file *`, `uniq *`, `cut *`, `du *`, `df *`, `true`, `echo *`, `whoami`, `uname*`), then `shell: * → deny` last
+- [x] **A.0.5** Update `tests/unit/server-investigation-runtime-config.test.js` to assert ordered native format (rejects V1 syntax, requires deny-first rule and no stale actions)
+- [x] **A.0.6** Run `npm test -- --testPathPattern="runtime-config|investigation-mcp"` → PASS
+- [x] **A.0.7** Grep sweep: `grep -rn "bash:|write:|patch:|task:|permission:|default_agent" .opencode/ server/services/` → only expected hits (docs, tests)
+- [x] **A.0.8** Commit: `refactor(investigation): native V2 ordered-permissions frontmatter`
 - [ ] **A.1.1** Owner machine: `INVESTIGATION_SPIKE=1 npm test -- --testPathPattern=investigation-readonly` → suite EXECUTES (not skipped)
 - [ ] **A.1.2** Scratch-repo probe, record in tool_log: `.env` refused; `write`/`edit` refused; `shell` outside allowlist refused; `git log`/`read`/`grep` work; `subagent` refused
 - [ ] **A.1.3** Record evidence (tool_log rows / screenshots) in `docs/rollout/2026-11-16-investigation-readonly-proof.md`
@@ -66,12 +66,12 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
 - [ ] **E.7** AGENTS.md final verification pass: entries 22–23 accurate post-enable; note final opencode-runtime state for future maintainers
 
 ## Cross-cutting / housekeeping
-- [ ] **H.1** Commit `docs/plans/2026-11-16-plan-corrections.md`, `docs/plans/2026-11-16-support-portal-master-plan.md`, this todo file (message: `docs(support): master plan + todos`)
+- [x] **H.1** Commit `docs/plans/2026-11-16-plan-corrections.md`, `docs/plans/2026-11-16-support-portal-master-plan.md`, this todo file (message: `docs(support): master plan + todos`)
 - [ ] **H.2** Decide `dist/assets/*` + `dist/brand/` (untracked build artifacts): either gitignore or owner cleans; never commit
 - [ ] **H.3** `render.yaml` plaintext production secrets flagged to owner (history); new keys always `sync: false`
 - [ ] **H.4** Re-run full `npm test` + `npm run build` after any code change; no "trust me" merges
 - [ ] **H.5** Owner walk-through: buyer token mode + generic form mode + confirm → investigation → report → email + owner console, on staging/scratch env
-- [ ] **H.6** Support-token secrets: confirm no `gtk_sup_` token ever logged at info level; audit middleware once (supportController, messageController, callSessionController, searchController)
+- [x] **H.6** Support-token secrets: confirm no `gtk_sup_` token ever logged at info level; audit middleware once (supportController, messageController, callSessionController, searchController)
 
 ## Blocked / waiting on owner
 1. MCP policy choice (A.3.1) — Option 1 (default) vs Option 2
@@ -86,3 +86,13 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
 - [x] Restriction removed from repo root `.opencode/opencode.json` (operator's own opencode unaffected)
 - [x] Full suite green at last run: 1070 passed / 13 spike-skipped / 102 suites
 - [x] Docs: rollout note addendum, AGENTS.md entries 22–23, plan corrections file
+
+
+## Evidence log (2026-11-16)
+
+- A.0 native V2 rewrite committed `b3dd68bb`; full suite 1084 passed / 103 suites; build OK.
+- Redaction fix committed `4d172c43` and `8c34212e` (disk log never holds bodies/support tokens/signed URLs; raw non-JSON bodies omitted).
+- H.6 audit findings closed; client-side `logger.warn(... url ...)` calls removed (`FileAttachmentCard.jsx`).
+- Server boot verified with `/health` → `{"status":"ok"}`.
+- A.1 spike: harness-backgrounded; earlier attempts invalid (OpenCode resolves `./node_modules/.bin/opencode` V1 under npm test — must set `OPENCODE_BIN=/home/ccm/.opencode/bin/opencode` (v2.3.0)). Result pending.
+- Husky pre-commit de-sourced from the missing `.husky/_/husky.sh` and chmod +x; gate re-verified end-to-end (biome → npm test → npm run build) on the main branch.

@@ -1,5 +1,7 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# Self-contained: this shim must work without the generated .husky/_ chain
+# (older checkouts and worktrees do not have it, and sourcing it silently
+# disabled the whole gate). See docs: husky v9 layout not in use here.
 
 # NOTE: this hook intentionally does NOT run `biome check --write .`.
 # A repo-wide auto-format rewrites hundreds of unrelated files (it touched 602
