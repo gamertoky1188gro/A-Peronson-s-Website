@@ -3,7 +3,7 @@ import { StatusPill } from "./StatusPill.jsx";
 
 /**
  * Page-level shell for the support case surfaces: the dark base canvas with
- * an ambient cyan wash, a constrained column, and a header row carrying the
+ * an ambient purple wash, a constrained column, and a header row carrying the
  * eyebrow, title, status pill and an action slot.
  *
  * @param {Object} props
@@ -16,10 +16,10 @@ import { StatusPill } from "./StatusPill.jsx";
  */
 export function CaseShell({ eyebrow, title, status, actions, className, children }) {
 	return (
-		<div className="relative min-h-dvh overflow-hidden bg-[#050b1d] text-[#e8eefc]">
+		<div className="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(34,211,238,0.12),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(56,189,248,0.08),transparent_70%)]"
+				className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(168,85,247,0.14),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(217,70,239,0.10),transparent_70%)]"
 			/>
 			<div
 				className={cn(
@@ -30,7 +30,7 @@ export function CaseShell({ eyebrow, title, status, actions, className, children
 				<header className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-4">
 					<div className="min-w-0">
 						{eyebrow ? (
-							<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-purple-400">
 								{eyebrow}
 							</p>
 						) : null}

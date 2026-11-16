@@ -186,9 +186,9 @@ function MessageBubble({ message }) {
 	const isAdmin = role === "admin";
 	const isNotice = role === "system" || kind === "notice" || kind === "progress";
 
-	let bubbleClass = "border-white/10 bg-white/5 text-[#e8eefc]";
+	let bubbleClass = "border-white/10 bg-white/5 text-[#f4eeff]";
 	if (isClient) {
-		bubbleClass = "border-sky-400/30 bg-sky-500/10 text-sky-50";
+		bubbleClass = "border-purple-500/30 bg-purple-500/10 text-purple-50";
 	} else if (isAdmin) {
 		bubbleClass = "border-amber-400/20 bg-amber-500/5 text-amber-100";
 	}
@@ -203,7 +203,7 @@ function MessageBubble({ message }) {
 	if (isNotice) {
 		return (
 			<div className="flex justify-center">
-				<p className="max-w-[85%] rounded-full border border-white/10 bg-white/5 px-4 py-2 text-center text-xs text-[#8ea3c8]">
+				<p className="max-w-[85%] rounded-full border border-white/10 bg-white/5 px-4 py-2 text-center text-xs text-[#a99bbd]">
 					{body}
 				</p>
 			</div>
@@ -213,7 +213,7 @@ function MessageBubble({ message }) {
 	return (
 		<div className={`flex ${isClient ? "justify-end" : "justify-start"}`}>
 			<div className={cn("max-w-[85%] rounded-2xl border px-4 py-3", bubbleClass)}>
-				<p className={cn("text-xs font-semibold", isClient ? "text-sky-300" : "text-[#8ea3c8]")}>
+				<p className={cn("text-xs font-semibold", isClient ? "text-purple-400" : "text-[#a99bbd]")}>
 					{label}
 					{message?.agent ? ` · ${message.agent}` : ""}
 				</p>
@@ -227,7 +227,7 @@ function MessageBubble({ message }) {
 function FindingsPanel({ findingRows }) {
 	return (
 		<section aria-label="Findings" className="rounded-2xl border border-white/10 bg-white/5 p-4">
-			<h3 className="text-sm font-semibold text-[#e8eefc]">Findings</h3>
+			<h3 className="text-sm font-semibold text-[#f4eeff]">Findings</h3>
 			<ul className="mt-3 space-y-3">
 				{findingRows.map(({ key, entry }) => {
 					const finding = entry?.finding || {};
@@ -240,18 +240,18 @@ function FindingsPanel({ findingRows }) {
 						tone = "bg-amber-500/15 text-amber-300";
 					}
 					return (
-						<li key={key} className="rounded-xl border border-white/10 bg-[#050b1d]/60 p-3">
+						<li key={key} className="rounded-xl border border-white/10 bg-[#0b0714]/60 p-3">
 							<div className="flex flex-wrap items-center gap-2">
 								<span className={cn("rounded-full px-2.5 py-1 text-[11px] font-semibold", tone)}>
 									{CONFIDENCE_LABELS[confidence] || confidence}
 								</span>
 								{entry?.role ? (
-									<span className="rounded-full bg-white/5 px-2.5 py-1 text-[11px] text-[#8ea3c8]">
+									<span className="rounded-full bg-white/5 px-2.5 py-1 text-[11px] text-[#a99bbd]">
 										{entry.role}
 									</span>
 								) : null}
 							</div>
-							<p className="mt-2 text-sm leading-6 text-[#e8eefc]">{finding.detail || ""}</p>
+							<p className="mt-2 text-sm leading-6 text-[#f4eeff]">{finding.detail || ""}</p>
 							{evidence.length > 0 ? (
 								<ul className="mt-2 space-y-1">
 									{evidence.map((item) => {
@@ -272,7 +272,7 @@ function FindingsPanel({ findingRows }) {
 														<ExternalLink className="h-3 w-3" />
 													</a>
 												) : (
-													<span className="text-[#8ea3c8]">
+													<span className="text-[#a99bbd]">
 														{label}
 														{suffix}
 													</span>
@@ -328,14 +328,14 @@ function ReportPanel({ report, confirming, confirmed, onConfirm }) {
 			className="rounded-2xl border border-emerald-400/20 bg-emerald-500/5 p-4"
 		>
 			<div className="flex flex-wrap items-center justify-between gap-3">
-				<h3 className="text-sm font-semibold text-[#e8eefc]">Investigation report</h3>
+				<h3 className="text-sm font-semibold text-[#f4eeff]">Investigation report</h3>
 				{report?.reportStatus ? (
-					<span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-semibold text-[#8ea3c8]">
+					<span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-semibold text-[#a99bbd]">
 						{report.reportStatus}
 					</span>
 				) : null}
 			</div>
-			<div className="mt-3 max-h-80 overflow-y-auto break-words text-sm leading-6 text-[#e8eefc]">
+			<div className="mt-3 max-h-80 overflow-y-auto break-words text-sm leading-6 text-[#f4eeff]">
 				<ReactMarkdown remarkPlugins={[remarkGfm]} components={REPORT_MARKDOWN_COMPONENTS}>
 					{String(report?.report ?? "")}
 				</ReactMarkdown>
@@ -345,10 +345,10 @@ function ReportPanel({ report, confirming, confirmed, onConfirm }) {
 					type="button"
 					onClick={onConfirm}
 					disabled={confirming || confirmed}
-					className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-4 py-2.5 text-xs font-semibold text-[#050b1d] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+					className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-4 py-2.5 text-xs font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					{confirming ? (
-						<ThreeDot variant="bounce" color="#050b1d" size="small" text="" textColor="" />
+						<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
 					) : (
 						<Check className="h-4 w-4" />
 					)}
@@ -664,23 +664,23 @@ export default function SupportWorkspace() {
 	const leftRail = (
 		<>
 			<div className="flex items-center gap-3">
-				<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-sky-500 text-[#050b1d]">
+				<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 text-[#f4eeff]">
 					<Bot className="h-5 w-5" aria-hidden="true" />
 				</div>
 				<div className="min-w-0">
-					<p className="text-sm font-semibold text-[#e8eefc]">Support</p>
-					<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
+					<p className="text-sm font-semibold text-[#f4eeff]">Support</p>
+					<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
 						AI Investigation
 					</p>
 				</div>
 			</div>
 
 			<div className="rounded-xl border border-white/10 bg-white/5 p-3">
-				<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea3c8]">
+				<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Case reference
 				</p>
 				<p
-					className="mt-1 truncate font-mono text-[11px] text-[#e8eefc]"
+					className="mt-1 truncate font-mono text-[11px] text-[#f4eeff]"
 					title={caseId ?? "not opened yet"}
 				>
 					{caseId ?? "not opened yet"}
@@ -688,18 +688,18 @@ export default function SupportWorkspace() {
 			</div>
 
 			<div>
-				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea3c8]">
+				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Case progress
 				</p>
 				<StageRail status={caseStatus} />
 			</div>
 
 			<div className="min-h-0">
-				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea3c8]">
+				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Evidence ({attachments.length})
 				</p>
 				{attachments.length === 0 ? (
-					<p className="text-[11px] text-[#8ea3c8]">No evidence yet.</p>
+					<p className="text-[11px] text-[#a99bbd]">No evidence yet.</p>
 				) : (
 					<ul className="space-y-1.5">
 						{attachments.map((attachment, index) => {
@@ -714,11 +714,11 @@ export default function SupportWorkspace() {
 										className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2 text-left transition hover:border-cyan-400/30 hover:bg-white/10"
 									>
 										<Icon className="h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
-										<span className="min-w-0 flex-1 truncate text-[11px] text-[#e8eefc]">
+										<span className="min-w-0 flex-1 truncate text-[11px] text-[#f4eeff]">
 											{name}
 										</span>
 										{attachment?.byte_size ? (
-											<span className="shrink-0 text-[10px] tabular-nums text-[#8ea3c8]">
+											<span className="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
 												{formatBytes(attachment.byte_size)}
 											</span>
 										) : null}
@@ -732,7 +732,7 @@ export default function SupportWorkspace() {
 
 			<div className="flex gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3">
 				<Lock className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
-				<p className="text-[11px] leading-5 text-[#c8d4ee]">
+				<p className="text-[11px] leading-5 text-[#f4eeff]">
 					Private session. Evidence is visible only to you and the support team. Nothing is shared
 					publicly.
 				</p>
@@ -741,7 +741,7 @@ export default function SupportWorkspace() {
 			<button
 				type="button"
 				onClick={endSession}
-				className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#e8eefc] transition hover:border-rose-400/30 hover:bg-white/10"
+				className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#f4eeff] transition hover:border-rose-400/30 hover:bg-white/10"
 			>
 				<LogOut className="h-4 w-4" aria-hidden="true" />
 				End session
@@ -752,7 +752,7 @@ export default function SupportWorkspace() {
 	const rightRail = (
 		<>
 			<div>
-				<p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
+				<p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
 					<Activity className="h-3.5 w-3.5" aria-hidden="true" />
 					Investigation
 				</p>
@@ -761,10 +761,10 @@ export default function SupportWorkspace() {
 						const resolvedState = investigationStepState(index, activeStep);
 						const chip =
 							resolvedState === "done"
-								? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"
+								? "border-purple-500/30 bg-purple-500/10 text-purple-400"
 								: resolvedState === "active"
-									? "border-sky-400/40 bg-sky-400/10 text-sky-300"
-									: "border-white/10 bg-white/5 text-[#8ea3c8]";
+									? "border-cyan-400/40 bg-cyan-400/10 text-cyan-300"
+									: "border-white/10 bg-white/5 text-[#a99bbd]";
 						return (
 							<li
 								key={step}
@@ -774,8 +774,8 @@ export default function SupportWorkspace() {
 									aria-hidden="true"
 									className={cn(
 										"flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
-										resolvedState === "done" && "border-cyan-400/60 bg-cyan-400/20 text-cyan-300",
-										resolvedState === "active" && "border-sky-400/60 bg-sky-400/20",
+										resolvedState === "done" && "border-purple-500/60 bg-purple-500/20 text-purple-400",
+										resolvedState === "active" && "border-cyan-400/60 bg-cyan-400/20",
 										resolvedState === "idle" && "border-white/15 bg-white/5",
 									)}
 								>
@@ -784,7 +784,7 @@ export default function SupportWorkspace() {
 								<span
 									className={cn(
 										"min-w-0 flex-1 text-[11px] leading-4",
-										resolvedState === "idle" ? "text-[#8ea3c8]" : "text-[#e8eefc]",
+										resolvedState === "idle" ? "text-[#a99bbd]" : "text-[#f4eeff]",
 									)}
 								>
 									{step}
@@ -813,7 +813,7 @@ export default function SupportWorkspace() {
 			</div>
 
 			<div>
-				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea3c8]">
+				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Resources
 				</p>
 				<ul className="space-y-1.5">
@@ -824,7 +824,7 @@ export default function SupportWorkspace() {
 								key={key}
 								className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5"
 							>
-								<span className="text-[11px] text-[#c8d4ee]">{label}</span>
+								<span className="text-[11px] text-[#f4eeff]">{label}</span>
 								<span
 									className={cn(
 										"inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
@@ -840,11 +840,11 @@ export default function SupportWorkspace() {
 			</div>
 
 			<div>
-				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea3c8]">
+				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Evidence collected
 				</p>
 				{attachments.length === 0 ? (
-					<p className="text-[11px] text-[#8ea3c8]">Nothing collected yet.</p>
+					<p className="text-[11px] text-[#a99bbd]">Nothing collected yet.</p>
 				) : (
 					<ul className="space-y-1.5">
 						{attachments.map((attachment, index) => {
@@ -858,11 +858,11 @@ export default function SupportWorkspace() {
 										className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-left transition hover:border-cyan-400/30 hover:bg-white/10"
 									>
 										<FileText className="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden="true" />
-										<span className="min-w-0 flex-1 truncate text-[11px] text-[#e8eefc]">
+										<span className="min-w-0 flex-1 truncate text-[11px] text-[#f4eeff]">
 											{name}
 										</span>
 										{attachment?.byte_size ? (
-											<span className="shrink-0 text-[10px] tabular-nums text-[#8ea3c8]">
+											<span className="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
 												{formatBytes(attachment.byte_size)}
 											</span>
 										) : null}
@@ -874,12 +874,12 @@ export default function SupportWorkspace() {
 				)}
 			</div>
 
-			<div className="rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-400/10 to-sky-400/5 p-3">
-				<p className="flex items-center gap-2 text-xs font-semibold text-cyan-200">
+			<div className="rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/5 p-3">
+				<p className="flex items-center gap-2 text-xs font-semibold text-purple-300">
 					<ShieldCheck className="h-4 w-4" aria-hidden="true" />
 					Read-only by design
 				</p>
-				<p className="mt-1.5 text-[11px] leading-5 text-[#c8d4ee]">
+				<p className="mt-1.5 text-[11px] leading-5 text-[#f4eeff]">
 					The AI cannot modify source code, create files, run commands or deploy. It inspects
 					authorized sources only.
 				</p>
@@ -888,7 +888,7 @@ export default function SupportWorkspace() {
 	);
 
 	return (
-		<div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-[#050b1d] text-[#e8eefc]">
+		<div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			{/* Header row */}
 			<header className="relative z-10 flex flex-wrap items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:gap-3 sm:px-4">
 				<button
@@ -896,20 +896,20 @@ export default function SupportWorkspace() {
 					onClick={() => setLeftDrawerOpen((value) => !value)}
 					aria-label="Toggle evidence panel"
 					aria-expanded={leftDrawerOpen}
-					className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#8ea3c8] transition hover:text-[#e8eefc] lg:hidden"
+					className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff] lg:hidden"
 				>
 					<PanelLeft className="h-5 w-5" aria-hidden="true" />
 				</button>
 
-				<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/30 bg-gradient-to-br from-cyan-400/25 to-sky-500/15 text-cyan-300">
+				<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/25 to-fuchsia-500/15 text-purple-400">
 					<Bot className="h-5 w-5" aria-hidden="true" />
 				</div>
 				<div className="min-w-0">
-					<h1 className="text-base font-semibold leading-tight text-[#e8eefc] sm:text-lg">
+					<h1 className="text-base font-semibold leading-tight text-[#f4eeff] sm:text-lg">
 						AI Investigation
 					</h1>
 					<p
-						className="max-w-[10rem] truncate font-mono text-[10px] text-[#8ea3c8] sm:max-w-[16rem]"
+						className="max-w-[10rem] truncate font-mono text-[10px] text-[#a99bbd] sm:max-w-[16rem]"
 						title={caseId ?? "new case"}
 					>
 						{caseId ? `case ${caseId}` : "new case"}
@@ -919,14 +919,14 @@ export default function SupportWorkspace() {
 					className={cn(
 						"inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider",
 						isInvestigating
-							? "border-sky-400/40 bg-sky-400/10 text-sky-300"
+							? "border-purple-500/40 bg-purple-500/10 text-purple-400"
 							: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
 					)}
 				>
 					{isInvestigating ? (
 						<span
 							aria-hidden="true"
-							className="h-1.5 w-1.5 animate-pulse motion-reduce:animate-none rounded-full bg-sky-400"
+							className="h-1.5 w-1.5 animate-pulse motion-reduce:animate-none rounded-full bg-purple-500"
 						/>
 					) : null}
 					{statusLabel}
@@ -944,7 +944,7 @@ export default function SupportWorkspace() {
 					<button
 						type="button"
 						onClick={endSession}
-						className="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-[#e8eefc] transition hover:border-rose-400/30 hover:text-rose-200 sm:inline-flex"
+						className="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-[#f4eeff] transition hover:border-rose-400/30 hover:text-rose-200 sm:inline-flex"
 					>
 						<LogOut className="h-4 w-4" aria-hidden="true" />
 						End session
@@ -954,7 +954,7 @@ export default function SupportWorkspace() {
 						onClick={() => setRightDrawerOpen((value) => !value)}
 						aria-label="Toggle investigation panel"
 						aria-expanded={rightDrawerOpen}
-						className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#8ea3c8] transition hover:text-[#e8eefc] lg:hidden"
+						className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff] lg:hidden"
 					>
 						<PanelRight className="h-5 w-5" aria-hidden="true" />
 					</button>
@@ -974,7 +974,7 @@ export default function SupportWorkspace() {
 					{leftRail}
 				</aside>
 
-				<main data-testid="workspace-center" className="flex min-h-0 flex-col bg-[#050b1d]">
+				<main data-testid="workspace-center" className="flex min-h-0 flex-col bg-[#0b0714]">
 					{failure ? (
 						<div
 							role="alert"
@@ -997,12 +997,12 @@ export default function SupportWorkspace() {
 					>
 						{!caseId ? (
 							<div className="flex h-full flex-col items-center justify-center gap-4 py-10 text-center">
-								<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-400/20 to-sky-500/10 text-cyan-300">
+								<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 text-purple-400">
 									<Sparkles className="h-7 w-7" aria-hidden="true" />
 								</div>
 								<div>
-									<h2 className="text-lg font-semibold text-[#e8eefc]">Start your investigation</h2>
-									<p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-[#8ea3c8]">
+									<h2 className="text-lg font-semibold text-[#f4eeff]">Start your investigation</h2>
+									<p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-[#a99bbd]">
 										Open a case and describe the problem in plain language. The assistant asks for
 										what it needs, then investigators work on it and report back.
 									</p>
@@ -1011,10 +1011,10 @@ export default function SupportWorkspace() {
 									type="button"
 									onClick={startCase}
 									disabled={creating}
-									className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+									className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
 								>
 									{creating ? (
-										<ThreeDot variant="bounce" color="#050b1d" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
 									) : (
 										<Sparkles className="h-4 w-4" aria-hidden="true" />
 									)}
@@ -1025,17 +1025,17 @@ export default function SupportWorkspace() {
 							<>
 								{supportCase.caseRow?.summary ? (
 									<div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-										<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea3c8]">
+										<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 											Summary
 										</p>
-										<p className="mt-1 text-sm leading-6 text-[#e8eefc]">
+										<p className="mt-1 text-sm leading-6 text-[#f4eeff]">
 											{supportCase.caseRow.summary}
 										</p>
 									</div>
 								) : null}
 
 								{messages.length === 0 ? (
-									<p className="py-8 text-center text-sm text-[#8ea3c8]">
+									<p className="py-8 text-center text-sm text-[#a99bbd]">
 										No messages yet. Describe the problem below and the assistant will take it from
 										there.
 									</p>
@@ -1061,7 +1061,7 @@ export default function SupportWorkspace() {
 										<Link
 											to={`/support/case/${caseId}/report`}
 											state={supportCase.report}
-											className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-4 py-2.5 text-xs font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-400/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+											className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-purple-500/40 bg-purple-500/10 px-4 py-2.5 text-xs font-semibold text-purple-300 transition hover:border-purple-400/60 hover:bg-purple-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60"
 										>
 											Review &amp; submit the report
 											<ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -1071,7 +1071,7 @@ export default function SupportWorkspace() {
 
 								{attachments.length > 0 ? (
 									<div>
-										<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea3c8]">
+										<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 											Evidence from this case
 										</p>
 										<div className="flex gap-2 overflow-x-auto pb-1">
@@ -1087,7 +1087,7 @@ export default function SupportWorkspace() {
 														aria-label={`Open evidence ${name}`}
 														className="group w-24 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-cyan-400/40"
 													>
-														<span className="flex h-16 w-full items-center justify-center overflow-hidden bg-[#050b1d]">
+														<span className="flex h-16 w-full items-center justify-center overflow-hidden bg-[#0b0714]">
 															{isImage && url ? (
 																<img
 																	src={url}
@@ -1099,7 +1099,7 @@ export default function SupportWorkspace() {
 																<FileText className="h-6 w-6 text-cyan-300/80" aria-hidden="true" />
 															)}
 														</span>
-														<span className="block truncate px-1.5 py-1 text-[9px] text-[#c8d4ee]">
+														<span className="block truncate px-1.5 py-1 text-[9px] text-[#f4eeff]">
 															{name}
 														</span>
 													</button>
@@ -1117,7 +1117,7 @@ export default function SupportWorkspace() {
 							{uploads.map((upload) => (
 								<li key={upload.key} className="flex items-center gap-2 text-[11px]">
 									<FileText className="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden="true" />
-									<span className="max-w-40 truncate text-[#c8d4ee]">{upload.name}</span>
+									<span className="max-w-40 truncate text-[#f4eeff]">{upload.name}</span>
 									<span
 										className={cn(
 											"shrink-0",
@@ -1125,7 +1125,7 @@ export default function SupportWorkspace() {
 												? "text-rose-300"
 												: upload.status === "done"
 													? "text-emerald-300"
-													: "text-[#8ea3c8]",
+													: "text-[#a99bbd]",
 										)}
 									>
 										{upload.status === "queued" && "Queued"}
@@ -1153,7 +1153,7 @@ export default function SupportWorkspace() {
 						</ul>
 					) : null}
 
-					<div className="border-t border-white/10 bg-[#0a1025]/60 p-3 sm:p-4">
+					<div className="border-t border-white/10 bg-[#151020]/60 p-3 sm:p-4">
 						<Composer
 							onSend={handleSend}
 							onFiles={handleFiles}
@@ -1166,7 +1166,7 @@ export default function SupportWorkspace() {
 									type="button"
 									onClick={handleConfirm}
 									disabled={confirming}
-									className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-[11px] font-semibold text-cyan-300 transition hover:bg-cyan-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+									className="inline-flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-[11px] font-semibold text-purple-300 transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									<ShieldCheck className="h-4 w-4" aria-hidden="true" />
 									{confirming ? "Starting…" : "Start the investigation"}
@@ -1197,13 +1197,13 @@ export default function SupportWorkspace() {
 					<div
 						role="dialog"
 						aria-label="Evidence panel"
-						className="fixed inset-y-0 left-0 z-40 flex w-80 max-w-[85vw] flex-col gap-5 overflow-y-auto border-r border-white/10 bg-[#0a1025] p-4"
+						className="fixed inset-y-0 left-0 z-40 flex w-80 max-w-[85vw] flex-col gap-5 overflow-y-auto border-r border-white/10 bg-[#151020] p-4"
 					>
 						<button
 							type="button"
 							onClick={() => setLeftDrawerOpen(false)}
 							aria-label="Close evidence panel"
-							className="inline-flex h-10 w-10 items-center justify-center self-end rounded-xl border border-white/10 bg-white/5 text-[#8ea3c8] transition hover:text-[#e8eefc]"
+							className="inline-flex h-10 w-10 items-center justify-center self-end rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff]"
 						>
 							<X className="h-5 w-5" aria-hidden="true" />
 						</button>
@@ -1223,13 +1223,13 @@ export default function SupportWorkspace() {
 					<div
 						role="dialog"
 						aria-label="Investigation panel"
-						className="fixed inset-y-0 right-0 z-40 flex w-80 max-w-[85vw] flex-col gap-5 overflow-y-auto border-l border-white/10 bg-[#0a1025] p-4"
+						className="fixed inset-y-0 right-0 z-40 flex w-80 max-w-[85vw] flex-col gap-5 overflow-y-auto border-l border-white/10 bg-[#151020] p-4"
 					>
 						<button
 							type="button"
 							onClick={() => setRightDrawerOpen(false)}
 							aria-label="Close investigation panel"
-							className="inline-flex h-10 w-10 items-center justify-center self-end rounded-xl border border-white/10 bg-white/5 text-[#8ea3c8] transition hover:text-[#e8eefc]"
+							className="inline-flex h-10 w-10 items-center justify-center self-end rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff]"
 						>
 							<X className="h-5 w-5" aria-hidden="true" />
 						</button>

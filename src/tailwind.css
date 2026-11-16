@@ -33,6 +33,15 @@
 	--shadow-dividerR: inset -1px 0 0 rgba(15, 23, 42, 0.12);
 	--shadow-dividerRDark: inset -1px 0 0 rgba(255, 255, 255, 0.08);
 
+	/* Support portal re-theme (Phase C): purple/magenta on near-black violet. Additive only. */
+	--color-support-bg: #0b0714;
+	--color-support-surface: #151020;
+	--color-support-primary: #a855f7;
+	--color-support-secondary: #d946ef;
+	--color-support-accent: #22d3ee;
+	--color-support-text: #f4eeff;
+	--color-support-muted: #a99bbd;
+
 	/* Semantic Blue Theme tokens (Tailwind v4: bg-theme-primary, text-theme-muted, border-theme-border, …) */
 	--color-theme-bg-deepest: var(--theme-slate-950);
 	--color-theme-bg: var(--theme-slate-900);

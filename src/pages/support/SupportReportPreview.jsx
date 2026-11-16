@@ -111,7 +111,7 @@ function splitReportSections(markdown) {
 	};
 }
 
-const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60";
+const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60";
 
 export default function SupportReportPreview() {
 	const { caseId } = useParams();
@@ -158,33 +158,33 @@ export default function SupportReportPreview() {
 	}
 
 	return (
-		<div className="relative min-h-dvh overflow-hidden bg-[#050b1d] text-[#e8eefc]">
+		<div className="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(34,211,238,0.12),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(56,189,248,0.08),transparent_70%)]"
+				className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(168,85,247,0.14),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(217,70,239,0.10),transparent_70%)]"
 			/>
 			<div className="relative mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<Link
 						to={`/support/case/${caseId}`}
-						className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#a9bcd9] transition hover:text-cyan-300 ${focusRing}`}
+						className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#a99bbd] transition hover:text-cyan-300 ${focusRing}`}
 					>
 						<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 						Back to conversation
 					</Link>
-					<p className="max-w-[12rem] truncate font-mono text-[11px] text-[#5b6b8f]" title={caseId}>
+					<p className="max-w-[12rem] truncate font-mono text-[11px] text-[#a99bbd]/70" title={caseId}>
 						{caseId}
 					</p>
 				</div>
 
 				<header className="mt-6">
-					<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
+					<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-purple-400">
 						Report preview
 					</p>
-					<h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#f2f6ff] sm:text-4xl">
+					<h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#f4eeff] sm:text-4xl">
 						Investigation report
 					</h1>
-					<p className="mt-2 max-w-xl text-sm leading-6 text-[#a9bcd9]">
+					<p className="mt-2 max-w-xl text-sm leading-6 text-[#a99bbd]">
 						Review what the investigation found. Nothing goes to the support team until you approve
 						it below.
 					</p>
@@ -200,11 +200,11 @@ export default function SupportReportPreview() {
 									{incomplete ? (
 										<AlertTriangle className="h-4 w-4 text-amber-300" aria-hidden="true" />
 									) : null}
-									<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8ea3c8]">
+									<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 										{incomplete ? "Incomplete investigation" : "Report summary"}
 									</p>
 								</div>
-								<div className="mt-2 text-sm leading-6 text-[#e8eefc]">
+								<div className="mt-2 text-sm leading-6 text-[#f4eeff]">
 									<ReactMarkdown
 										remarkPlugins={[remarkGfm]}
 										components={REPORT_MARKDOWN_COMPONENTS}
@@ -217,8 +217,8 @@ export default function SupportReportPreview() {
 
 						{sections.length === 0 ? (
 							<GlassCard className="mt-6 p-5">
-								<h2 className="text-base font-semibold text-[#f2f6ff]">Investigation report</h2>
-								<div className="mt-3 break-words text-sm leading-6 text-[#e8eefc]">
+								<h2 className="text-base font-semibold text-[#f4eeff]">Investigation report</h2>
+								<div className="mt-3 break-words text-sm leading-6 text-[#f4eeff]">
 									<ReactMarkdown
 										remarkPlugins={[remarkGfm]}
 										components={REPORT_MARKDOWN_COMPONENTS}
@@ -234,16 +234,16 @@ export default function SupportReportPreview() {
 										<div className="flex items-baseline gap-4">
 											<span
 												aria-hidden="true"
-												className="font-mono text-sm font-semibold tracking-widest text-cyan-400"
+												className="font-mono text-sm font-semibold tracking-widest text-purple-400"
 											>
 												{String(section.index + 1).padStart(2, "0")}
 											</span>
-											<h2 className="text-base font-semibold leading-snug text-[#f2f6ff]">
+											<h2 className="text-base font-semibold leading-snug text-[#f4eeff]">
 												{section.title}
 											</h2>
 										</div>
 										{section.body ? (
-											<div className="mt-3 break-words text-sm leading-6 text-[#e8eefc]">
+											<div className="mt-3 break-words text-sm leading-6 text-[#f4eeff]">
 												<ReactMarkdown
 													remarkPlugins={[remarkGfm]}
 													components={REPORT_MARKDOWN_COMPONENTS}
@@ -267,9 +267,9 @@ export default function SupportReportPreview() {
 									type="checkbox"
 									checked={approved}
 									onChange={(event) => setApproved(event.target.checked)}
-									className={`h-5 w-5 shrink-0 accent-cyan-400 ${focusRing}`}
+									className={`h-5 w-5 shrink-0 accent-purple-500 ${focusRing}`}
 								/>
-								<span className="text-sm leading-6 text-[#e8eefc]">
+								<span className="text-sm leading-6 text-[#f4eeff]">
 									I&apos;ve reviewed this report and I&apos;m ready to send it
 								</span>
 							</label>
@@ -282,7 +282,7 @@ export default function SupportReportPreview() {
 								</p>
 							) : null}
 							<div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-								<p className="max-w-xs text-xs leading-5 text-[#8ea3c8]">
+								<p className="max-w-xs text-xs leading-5 text-[#a99bbd]">
 									The support team receives this exact report. There is no way to edit it after
 									sending.
 								</p>
@@ -290,10 +290,10 @@ export default function SupportReportPreview() {
 									type="button"
 									onClick={handleSubmit}
 									disabled={!approved || confirming}
-									className={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-6 py-3 text-sm font-semibold text-[#050b1d] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${focusRing}`}
+									className={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${focusRing}`}
 								>
 									{confirming ? (
-										<ThreeDot variant="bounce" color="#050b1d" size="small" text="" textColor="" />
+										<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
 									) : (
 										<Check className="h-4 w-4" aria-hidden="true" />
 									)}
@@ -305,15 +305,15 @@ export default function SupportReportPreview() {
 				) : (
 					<GlassCard className="mt-6 p-10 text-center">
 						<FileText className="mx-auto h-10 w-10 text-cyan-300/70" aria-hidden="true" />
-						<h2 className="mt-4 text-lg font-semibold text-[#f2f6ff]">
+						<h2 className="mt-4 text-lg font-semibold text-[#f4eeff]">
 							The report isn&apos;t ready yet
 						</h2>
-						<p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#8ea3c8]">
+						<p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#a99bbd]">
 							It appears here as soon as the investigation finishes writing it.
 						</p>
 						<Link
 							to={`/support/case/${caseId}`}
-							className={`mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-[#e8eefc] transition hover:border-cyan-400/40 hover:text-cyan-200 ${focusRing}`}
+							className={`mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-[#f4eeff] transition hover:border-cyan-400/40 hover:text-cyan-200 ${focusRing}`}
 						>
 							Back to conversation
 						</Link>

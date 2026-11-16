@@ -2522,7 +2522,7 @@ export function AdminPlatformSection({
 									onClick={() => setSupportCaseFilters((prev) => ({ ...prev, status: value }))}
 									className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] transition ${
 										active
-											? "border-sky-400/50 bg-sky-500/15 text-sky-300"
+											? "border-purple-500/50 bg-purple-500/15 text-purple-300"
 											: "border-white/10 bg-white/5 text-slate-400 hover:text-slate-200"
 									}`}
 								>
@@ -2625,8 +2625,8 @@ export function AdminPlatformSection({
 													openSupportCase(item.id);
 												}
 											}}
-											className={`cursor-pointer border-b border-white/5 transition last:border-b-0 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400/60 ${
-												selected ? "bg-sky-500/10" : ""
+											className={`cursor-pointer border-b border-white/5 transition last:border-b-0 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-500/60 ${
+												selected ? "bg-purple-500/10" : ""
 											}`}
 										>
 											<td className="px-3 py-2 font-mono text-slate-300">
@@ -2637,7 +2637,7 @@ export function AdminPlatformSection({
 													</span>
 												) : null}
 												{item.retain ? (
-													<span className="ml-1 text-[9px] font-semibold uppercase text-sky-300">
+													<span className="ml-1 text-[9px] font-semibold uppercase text-purple-300">
 														retain
 													</span>
 												) : null}

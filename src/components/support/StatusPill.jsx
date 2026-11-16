@@ -10,20 +10,20 @@ const TONE_BY_STATUS = {
 
 const TONE_CLASSES = {
 	cyan: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
-	sky: "border-sky-400/30 bg-sky-400/10 text-sky-300",
+	sky: "border-purple-500/30 bg-purple-500/10 text-purple-400",
 	amber: "border-amber-400/30 bg-amber-400/10 text-amber-300",
 	emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
 	rose: "border-rose-400/30 bg-rose-400/10 text-rose-300",
-	slate: "border-white/10 bg-white/5 text-[#8ea3c8]",
+	slate: "border-white/10 bg-white/5 text-[#a99bbd]",
 };
 
 const DOT_CLASSES = {
 	cyan: "bg-cyan-400",
-	sky: "bg-sky-400",
+	sky: "bg-purple-500",
 	amber: "bg-amber-400",
 	emerald: "bg-emerald-400",
 	rose: "bg-rose-400",
-	slate: "bg-[#8ea3c8]",
+	slate: "bg-[#a99bbd]",
 };
 
 /**
