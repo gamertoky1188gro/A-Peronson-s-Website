@@ -219,14 +219,18 @@ const passkeyLimiter = createRateLimiter({
 });
 
 const adminLimiter = createRateLimiter({
+	// The admin panel fans out ~25 heavy reads on mount and reloads them on navigation.
+	// 60/min was structurally too small (two reloads + one parent refresh tripped it).
+	// Admin is gated by owner/admin + MFA, so a wider budget is safe in practice.
 	windowMs: 60 * 1000,
-	max: 60,
+	max: 180,
 	prefix: "admin",
 });
 
 const generalLimiter = createRateLimiter({
+	// The admin panel mounts with a large read burst; buyer-facing pages stay far under this.
 	windowMs: 60 * 1000,
-	max: 100,
+	max: 300,
 	prefix: "general",
 });
 

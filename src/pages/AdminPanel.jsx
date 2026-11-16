@@ -2868,9 +2868,9 @@ export default function AdminPanel() {
 
 		items.push({
 			id: "ai",
-			label: "AI Assistant",
+			label: "AI Support",
 			icon: Bot,
-			sub: "Configure AI rules & behavior",
+			sub: "Models, support investigations & tokens",
 			accent: true,
 		});
 
@@ -2912,8 +2912,8 @@ export default function AdminPanel() {
 		if (activeCategory === "ai") {
 			return {
 				id: "ai",
-				label: "AI Assistant",
-				sub: "Configure AI rules & behavior",
+				label: "AI Support",
+				sub: "Models, support investigations & tokens",
 				sections: [],
 			};
 		}
