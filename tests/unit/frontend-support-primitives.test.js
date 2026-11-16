@@ -96,6 +96,13 @@ test("StageRail maps case status onto the current stage", () => {
 		"current",
 	);
 	rerender(
+		<StageRail steps={["Understand", "Investigate", "Discuss", "Report"]} status="reporting" />,
+	);
+	expect(screen.getByText("Report").closest("[data-stage]")).toHaveAttribute(
+		"data-stage-state",
+		"current",
+	);
+	rerender(
 		<StageRail steps={["Understand", "Investigate", "Discuss", "Report"]} status="nonsense" />,
 	);
 	expect(screen.getByText("Understand").closest("[data-stage]")).toHaveAttribute(

@@ -466,7 +466,7 @@
 					"title": "Support Tickets",
 					"description": "Handle bug reports and feedback",
 					"isCompleted": true,
-					"notes": "SupportReports.jsx exists"
+					"notes": "Support UI lives in src/pages/support/ (landing, workspace, report, submitted)"
 				},
 				{
 					"id": "6.7",
@@ -675,7 +675,7 @@
 					"title": "Support Page",
 					"description": "Bug report, feature request, account issues",
 					"isCompleted": true,
-					"notes": "SupportReports.jsx exists"
+					"notes": "Support UI lives in src/pages/support/ (landing, workspace, report, submitted)"
 				},
 				{
 					"id": "10.2",

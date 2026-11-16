@@ -385,7 +385,7 @@ Key frontend facilities:
 | `/chat` | `ChatInterface` | **Immersive** — WS chat, policy engine |
 | `/call` | `CallInterface` | **Immersive** — WebRTC calls |
 | `/ratings/feedback` | `RatingFeedback` | Feedback + milestones |
-| `/support` | `SupportReports` | Tickets + reports |
+| `/support` | `SupportLanding` | Premium support landing (AI Investigation + General Support) |
 | `/feedback` | `FeedbackPage` | General feedback |
 
 ### Role-gated routes
@@ -511,9 +511,9 @@ Key frontend facilities:
 - Data: `POST /api/ratings/profiles/:profileKey`, `POST /api/ratings/milestones`, `GET /api/ratings/feedback-requests`.
 - Edge states: `AUTO_RATING_DAYS` and milestone qualification rules govern auto-generation.
 
-### SupportReports (`/support`)
-- Purpose: support tickets with threaded messages + system/product/content reports.
-- Data: `GET /api/support/categories`, `POST /api/support/reports`, ticket CRUD + messages, `POST /api/reports/system|product-appeal|content`.
+### Support (`/support`, `/support/case/:caseId[/report|/submitted]`)
+- Purpose: premium support — AI support investigations (buyer token in memory, case conversation, evidence viewer, report preview + submission) plus General Support tickets with threaded messages + system/product/content reports.
+- Data: `GET /api/support/categories`, `POST /api/support/reports`, ticket CRUD + messages, `POST /api/reports/system|product-appeal|content`, case API at `/api/support/cases`.
 
 ### FeedbackPage (`/feedback`)
 - Purpose: general product feedback submission (event-tracked).

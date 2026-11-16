@@ -3,7 +3,7 @@
 
   The premium investigation workspace: three columns (left rail / center
   conversation / right investigation status) above 1024px, single column with
-  two drawers below. Extracted from src/pages/SupportReports.jsx's case
+  two drawers below. Extracted from the legacy support page's case
   subtree, restyled to the premium spec. The case API contract and the SSE
   stream are untouched — src/hooks/useSupportCase.js owns both.
 
@@ -18,6 +18,7 @@
 import {
 	Activity,
 	AlertTriangle,
+	ArrowRight,
 	Bot,
 	Check,
 	ExternalLink,
@@ -36,7 +37,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import ReactMarkdown from "react-markdown";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import remarkGfm from "remark-gfm";
 import { Composer } from "../../components/support/Composer.jsx";
 import { EvidenceViewerModal } from "../../components/support/EvidenceViewerModal.jsx";
@@ -996,12 +997,22 @@ export default function SupportWorkspace() {
 								{findingRows.length > 0 ? <FindingsPanel findingRows={findingRows} /> : null}
 
 								{supportCase.report?.report ? (
-									<ReportPanel
-										report={supportCase.report}
-										confirming={confirming}
-										confirmed={confirmed}
-										onConfirm={handleConfirm}
-									/>
+									<>
+										<ReportPanel
+											report={supportCase.report}
+											confirming={confirming}
+											confirmed={confirmed}
+											onConfirm={handleConfirm}
+										/>
+										<Link
+											to={`/support/case/${caseId}/report`}
+											state={supportCase.report}
+											className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-4 py-2.5 text-xs font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-400/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+										>
+											Review &amp; submit the report
+											<ArrowRight className="h-4 w-4" aria-hidden="true" />
+										</Link>
+									</>
 								) : null}
 
 								{attachments.length > 0 ? (

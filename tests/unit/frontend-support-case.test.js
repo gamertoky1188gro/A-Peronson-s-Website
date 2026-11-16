@@ -127,6 +127,19 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.status).toBe("collecting");
 	});
 
+	test("threads the support token into the x-support-token header when one is set", async () => {
+		installApi();
+		renderHook(() => useSupportCase(CASE_ID, "gtk_sup_test-token"));
+		await waitFor(() => expect(apiRequest).toHaveBeenCalled());
+		expect(apiRequest).toHaveBeenCalledWith(
+			`/support/cases/${CASE_ID}`,
+			expect.objectContaining({
+				headers: { "x-support-token": "gtk_sup_test-token" },
+				skipSessionClear: true,
+			}),
+		);
+	});
+
 	test("subscribes to the case event stream", async () => {
 		installApi();
 		renderHook(() => useSupportCase(CASE_ID));

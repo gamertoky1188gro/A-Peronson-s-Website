@@ -43,8 +43,8 @@ import prisma from "../utils/prisma.js";
  *   - a `SupportTicket` with that id -> the ticket's own user
  *   - neither                       -> 400, there is nothing to attach to
  *
- * The legacy client (FeedbackPage.jsx, SupportReports.jsx) posts a TICKET id,
- * so that branch is load-bearing: without it the legacy upload breaks.
+ * The legacy client (FeedbackPage.jsx) posts a TICKET id, so that branch is
+ * load-bearing: without it the legacy upload breaks.
  *
  * @param {string} entityId The id the request claimed.
  * @param {string} userId The authenticated caller's id.

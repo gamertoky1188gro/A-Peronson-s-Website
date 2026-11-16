@@ -128,8 +128,8 @@ const IndustryPage = safeLazy(() => import("./pages/IndustryPage.jsx"));
 const RatingFeedback = safeLazy(() => import("./pages/RatingFeedback.jsx"));
 const SupportLanding = safeLazy(() => import("./pages/support/SupportLanding.jsx"));
 const SupportWorkspace = safeLazy(() => import("./pages/support/SupportWorkspace.jsx"));
-const SupportCaseReport = safeLazy(() => import("./pages/support/SupportCaseReport.jsx"));
-const SupportCaseSubmitted = safeLazy(() => import("./pages/support/SupportCaseSubmitted.jsx"));
+const SupportReportPreview = safeLazy(() => import("./pages/support/SupportReportPreview.jsx"));
+const SupportSubmitted = safeLazy(() => import("./pages/support/SupportSubmitted.jsx"));
 const VerificationPage = safeLazy(() => import("./pages/VerificationPage.jsx"));
 const JoinRequestPage = safeLazy(() => import("./pages/JoinRequestPage.jsx"));
 const TaskTracker = safeLazy(() => import("./pages/TaskTracker.jsx"));
@@ -482,8 +482,8 @@ function AppRoutes() {
 			/>
 			<Route path="/support" element={<SupportLanding />} />
 			<Route path="/support/case/:caseId" element={<SupportWorkspace />} />
-			<Route path="/support/case/:caseId/report" element={<SupportCaseReport />} />
-			<Route path="/support/case/:caseId/submitted" element={<SupportCaseSubmitted />} />
+			<Route path="/support/case/:caseId/report" element={<SupportReportPreview />} />
+			<Route path="/support/case/:caseId/submitted" element={<SupportSubmitted />} />
 
 			<Route
 				path="/member-management"

@@ -5,6 +5,7 @@ const STAGE_BY_STATUS = {
 	collecting: 0,
 	investigating: 1,
 	verifying: 2,
+	reporting: 3,
 	completed: 3,
 };
 
@@ -17,7 +18,7 @@ export const DEFAULT_STAGES = ["Understand", "Investigate", "Discuss", "Report"]
  *
  * @param {Object} props
  * @param {string[]} [props.steps]
- * @param {string} [props.status] - collecting | investigating | verifying | completed
+ * @param {string} [props.status] - collecting | investigating | verifying | reporting | completed
  * @param {string} [props.className]
  */
 export function StageRail({ steps = DEFAULT_STAGES, status, className }) {

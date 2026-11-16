@@ -464,11 +464,10 @@ export function renderContractPdfBuffer(contract) {
 // other type is a hard deny, so the write path normalises to this one.
 export const SUPPORT_EVIDENCE_ENTITY_TYPE = PRIVATE_ENTITY_TYPE.SUPPORT_CASE;
 
-// The type the live client sends. FeedbackPage.jsx and SupportReports.jsx
-// both post entity_type "support_ticket" with the ticket id, and the rows
-// they produced carry that value. Both spellings are support evidence, so
-// both are routed into the gated namespace and both are ownership-checked
-// when they are listed.
+// The type the live client sends. FeedbackPage.jsx posts entity_type
+// "support_ticket" with the ticket id, and the rows it produced carry
+// that value. Both spellings are support evidence, so both are routed into
+// the gated namespace and both are ownership-checked when they are listed.
 const SUPPORT_EVIDENCE_REQUEST_TYPES = new Set(["support_case", "support_ticket"]);
 
 export function isSupportEvidenceEntityType(entityType) {

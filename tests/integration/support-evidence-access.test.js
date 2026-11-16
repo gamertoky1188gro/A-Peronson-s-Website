@@ -276,8 +276,8 @@ describe("the support upload lands in the gated namespace", () => {
 		expect(path.dirname(onDisk)).toBe(SUPPORT_DIR);
 	});
 
-	// The legacy client posts entity_type "support_ticket" (FeedbackPage.jsx,
-	// SupportReports.jsx). It has to be routed into the gated namespace too,
+	// The legacy client posts entity_type "support_ticket" (FeedbackPage.jsx).
+	// It has to be routed into the gated namespace too,
 	// or the world-readable upload stays world-readable.
 	test("routes the legacy support_ticket type into the gated namespace as well", async () => {
 		const res = fakeRes();
@@ -405,8 +405,8 @@ describe("the support upload resolves who owns the entity", () => {
 		expect(documentCreate).not.toHaveBeenCalled();
 	});
 
-	// The legacy client is load-bearing: FeedbackPage.jsx and
-	// SupportReports.jsx create a TICKET and upload against its id.
+	// The legacy client is load-bearing: FeedbackPage.jsx creates a TICKET
+	// and uploads against its id.
 	test("the legacy ticket branch still lets the ticket's own user upload", async () => {
 		const res = fakeRes();
 		await uploadDocument(
